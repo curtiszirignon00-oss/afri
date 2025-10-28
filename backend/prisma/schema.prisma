@@ -1,0 +1,323 @@
+// 1. On dit à Prisma qu'on génère un client JS
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. On configure la base de données pour MONGODB
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URI") // On utilise la variable de ton .env
+}
+
+// ================================= //
+// === MODÈLES UTILISATEUR & AUTH === //
+// ================================= //
+
+model User {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                String
+  lastname            String
+  email               String    @unique
+  password            String
+  email_verified_at   DateTime?
+  remember_token      String?
+  created_at          DateTime? @default(now())
+  updated_at          DateTime? @updatedAt
+  telephone           String?
+  address             String?
+  role                String    @default("user")
+
+  // --- Relations ---
+  // Un User a un UserProfile (relation 1-à-1)
+  profile             UserProfile?
+  // Un User a un Portfolio (relation 1-à-plusieurs)
+  portfolios          Portfolio[]
+  // Un User a plusieurs items dans sa Watchlist
+  watchlistItems      WatchlistItem[]
+  // Un User a une progression dans plusieurs cours
+  learningProgress    LearningProgress[]
+
+  @@map("users")
+}
+
+// C'est ta table "user_profiles"
+model UserProfile {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  first_name         String?
+  last_name          String?
+  phone_number       String?
+  country            String?
+  avatar_url         String?
+  experience_level   String?   
+  investment_goals   String?
+  birth_date         DateTime?
+  has_invested       Boolean?
+  main_goals         String[] // Make sure this is an array if you store multiple
+  monthly_amount     String?   // <-- ADD THIS LINE
+  profile_type       String?   
+
+  // --- Relation 1-à-1 avec User ---
+  user               User      @relation(fields: [userId], references: [id])
+  userId             String    @unique @db.ObjectId 
+
+  @@map("user_profiles")
+}
+
+// ================================= //
+// === MODÈLES DE MARCHÉ (BRVM) === //
+// ================================= //
+
+model Stock {
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  symbol               String    @unique // ex: "SNTS"
+  company_name         String
+  sector               String?
+  country              String?
+  description          String?
+  logo_url             String?
+  website_url          String?
+  is_active            Boolean   @default(true)
+  
+  // --- Données de marché ---
+  current_price        Float     @default(0)
+  previous_close       Float     @default(0)
+  daily_change_percent Float     @default(0)
+  volume               Float     @default(0) // On utilise Float pour gérer les grands nombres
+  market_cap           Float     @default(0)
+  
+  created_at           DateTime? @default(now())
+  updated_at           DateTime? @updatedAt
+
+  // --- Relations ---
+  // Une action a un historique de prix
+  history              StockHistory[]
+  // Une action a des données fondamentales
+  fundamentals         StockFundamental[]
+
+  @@map("stocks")
+}
+
+model StockHistory {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  date         DateTime
+  open_price   Float
+  high_price   Float
+  low_price    Float
+  close_price  Float
+  volume       Float
+
+  // --- Relation avec Stock ---
+  stock        Stock     @relation(fields: [stockId], references: [id])
+  stockId      String    @db.ObjectId
+
+  @@map("stock_history")
+}
+
+model StockFundamental {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  year            Int
+  pe_ratio        Float?
+  dividend_yield  Float?
+  revenue         Float?
+  net_profit      Float?
+  eps             Float?
+  book_value      Float?
+  
+  created_at      DateTime? @default(now())
+  updated_at      DateTime? @updatedAt
+
+  // --- Relation avec Stock ---
+  stock           Stock    @relation(fields: [stockId], references: [id])
+  stockId         String   @db.ObjectId
+
+  @@map("stock_fundamentals")
+}
+
+model MarketIndex {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  index_name           String   @unique // <-- AJOUTE @unique ICI
+  index_value          Float
+  daily_change_percent Float
+  date                 DateTime
+  created_at           DateTime? @default(now())
+
+  @@map("market_indices")
+}
+
+// ================================= //
+// === MODÈLES DE SIMULATION === //
+// ================================= //
+
+model Portfolio {
+  id                      String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                    String
+  initial_balance         Float     @default(1000000) // 1 million par défaut
+  cash_balance            Float
+  is_virtual              Boolean   @default(true)
+
+  created_at              DateTime? @default(now())
+  updated_at              DateTime? @updatedAt
+  
+  // --- Relations ---
+  // Un portfolio appartient à un User
+  user                    User      @relation(fields: [userId], references: [id])
+  userId                  String    @db.ObjectId
+  // Un portfolio a plusieurs positions
+  positions               Position[]
+  // Un portfolio a plusieurs transactions
+  transactions            Transaction[]
+
+  @@map("portfolios")
+}
+
+// C'est ta table "positions"
+model Position {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker        String   // ex: "SNTS"
+  quantity            Float    // Nombre d'actions
+  average_buy_price   Float
+  
+  // --- Relation avec Portfolio ---
+  portfolio           Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId         String    @db.ObjectId
+
+  @@map("positions")
+}
+
+model Transaction {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker    String    // ex: "SNTS"
+  type            String    // "BUY" ou "SELL"
+  quantity        Float
+  price_per_share Float
+  created_at      DateTime? @default(now())
+
+  // --- Relation avec Portfolio ---
+  portfolio       Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId     String    @db.ObjectId
+
+  @@map("transactions")
+}
+
+model WatchlistItem {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker  String    // ex: "SNTS"
+  created_at    DateTime? @default(now())
+  
+  // --- Relation avec User ---
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String    @db.ObjectId
+
+  @@map("watchlist_items")
+}
+
+// ================================= //
+// === MODÈLES STARTUPS === //
+// ================================= //
+
+model Startup {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  slug            String?
+  description     String?
+  sector          String?
+  country         String?
+  founding_year   Int?
+  stage           String?   // ex: "Seed", "Serie A"
+  total_funding   Float?
+  team_size       String?
+  website_url     String?
+  logo_url        String?
+  linkedin_url    String?
+  twitter_url     String?
+  is_active       Boolean   @default(true)
+  is_featured     Boolean   @default(false)
+  created_at      DateTime? @default(now())
+
+  // --- Relations ---
+  // Une startup a plusieurs tours de financement
+  funding_rounds  FundingRound[]
+
+  @@map("startups")
+}
+
+model FundingRound {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  round_type        String?   // ex: "Seed"
+  amount            Float?
+  currency          String?   // ex: "XOF", "USD"
+  announcement_date DateTime?
+  lead_investors    String[]  // Une liste de noms
+  description       String?
+  created_at        DateTime? @default(now())
+
+  // --- Relation avec Startup ---
+  startup           Startup   @relation(fields: [startupId], references: [id])
+  startupId         String    @db.ObjectId
+
+  @@map("funding_rounds")
+}
+
+// ================================= //
+// === MODÈLES DE CONTENU === //
+// ================================= //
+
+model NewsArticle {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  slug          String?
+  summary       String?
+  content       String?   // On stockera le HTML ici
+  category      String?
+  author        String?
+  source        String?
+  country       String?
+  sector        String?
+  image_url     String?
+  is_featured   Boolean   @default(false)
+  published_at  DateTime? @default(now())
+  created_at    DateTime? @default(now())
+
+  @@map("news_articles")
+}
+
+model LearningModule {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  title             String
+  slug              String @unique
+  description       String?
+  content           String?   // Le contenu du cours en HTML
+  difficulty_level  String    // "debutant", "intermediaire", "avance"
+  content_type      String    // "article" ou "video"
+  duration_minutes  Int?
+  order_index       Int?
+  is_published      Boolean   @default(true)
+  thumbnail_url     String?
+  video_url         String?
+  created_at        DateTime? @default(now())
+  updated_at        DateTime? @updatedAt
+
+  // --- Relations ---
+  // Un module peut avoir plusieurs suivis par différents utilisateurs
+  progress          LearningProgress[]
+
+  @@map("learning_modules")
+}
+
+model LearningProgress {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  is_completed       Boolean   @default(false)
+  quiz_score         Float?
+  time_spent_minutes Float?
+  last_accessed_at   DateTime? @default(now())
+  completed_at       DateTime?
+  
+  // --- Relations (Table "pivot") ---
+  user               User      @relation(fields: [userId], references: [id])
+  userId             String    @db.ObjectId
+  
+  module             LearningModule @relation(fields: [moduleId], references: [id])
+  moduleId           String    @db.ObjectId
+
+  @@map("learning_progress")
+}
