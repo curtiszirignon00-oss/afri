@@ -47,7 +47,6 @@ model UserProfile {
   last_name          String?
   phone_number       String?
   country            String?
-  avatar_url         String?
   experience_level   String?   
   investment_goals   String?
   birth_date         DateTime?
@@ -55,7 +54,10 @@ model UserProfile {
   main_goals         String[] // Make sure this is an array if you store multiple
   monthly_amount     String?   // <-- ADD THIS LINE
   profile_type       String?   
-
+  avatar_url         String?   // URL de la photo de profil
+  is_public          Boolean   @default(false) // Statut public/privé
+  bio                String?   // Petite biographie pour le profil public
+  social_links       String[]  // Liens sociaux (ex: Twitter, LinkedIn)
   // --- Relation 1-à-1 avec User ---
   user               User      @relation(fields: [userId], references: [id])
   userId             String    @unique @db.ObjectId 
@@ -211,52 +213,7 @@ model WatchlistItem {
   @@map("watchlist_items")
 }
 
-// ================================= //
-// === MODÈLES STARTUPS === //
-// ================================= //
 
-model Startup {
-  id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  slug            String?
-  description     String?
-  sector          String?
-  country         String?
-  founding_year   Int?
-  stage           String?   // ex: "Seed", "Serie A"
-  total_funding   Float?
-  team_size       String?
-  website_url     String?
-  logo_url        String?
-  linkedin_url    String?
-  twitter_url     String?
-  is_active       Boolean   @default(true)
-  is_featured     Boolean   @default(false)
-  created_at      DateTime? @default(now())
-
-  // --- Relations ---
-  // Une startup a plusieurs tours de financement
-  funding_rounds  FundingRound[]
-
-  @@map("startups")
-}
-
-model FundingRound {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  round_type        String?   // ex: "Seed"
-  amount            Float?
-  currency          String?   // ex: "XOF", "USD"
-  announcement_date DateTime?
-  lead_investors    String[]  // Une liste de noms
-  description       String?
-  created_at        DateTime? @default(now())
-
-  // --- Relation avec Startup ---
-  startup           Startup   @relation(fields: [startupId], references: [id])
-  startupId         String    @db.ObjectId
-
-  @@map("funding_rounds")
-}
 
 // ================================= //
 // === MODÈLES DE CONTENU === //
