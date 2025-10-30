@@ -1,17 +1,18 @@
-// backend/src/routes/user.routes.ts
+// backend/src/routes/user.routes.ts (Exemple de ce à quoi il devrait ressembler)
 
 import { Router } from "express";
-import { getUsers, signup, login, getCurrentUser, logout, updateUserProfile } from "../controllers/user.controller"; // <-- Import updateUserProfile
-import { auth } from "../middlewares/auth.middleware";
+import { getUsers, getCurrentUser, updateUserProfile } from "../controllers/user.controller"; 
+import { auth } from "../middlewares/auth.middleware"; 
+// import { validate } from "../utils/validate.util"; // Si vous avez des schémas de validation pour les mises à jour
+
 const router = Router();
 
-// Public routes
-router.post('/signup', signup); 
-router.post('/login', login);   
-router.post('/logout', logout); // <-- ADDED Logout route
+// Route pour obtenir tous les utilisateurs (probablement pour les admins)
+router.get("/", getUsers);
 
-// Protected routes (require login)
-router.get('/me', auth, getCurrentUser); // <-- ADDED Get current user route (protected)
-router.get('/', /* auth, admin? */ getUsers); // Consider protecting/restricting getUsers
-router.put('/me/profile', auth, updateUserProfile);
+// Route pour l'utilisateur connecté et son profil
+router.get("/me", auth, getCurrentUser); 
+router.put("/profile", auth, updateUserProfile); 
+// router.patch("/profile", auth, updateUserProfile); // Optionnel
+
 export default router;

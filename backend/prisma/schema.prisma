@@ -320,4 +320,6 @@ model LearningProgress {
   moduleId           String    @db.ObjectId
 
   @@map("learning_progress")
+  @@unique([userId, moduleId]) // AJOUTEZ CETTE LIGNE
+ 
 }
