@@ -26,13 +26,10 @@ type Page =
   | 'stock-detail'
   | 'news'
   | 'learn'
-  // | 'startups' // Supprimé
-  // | 'startup-detail' // Supprimé
   | 'glossary'
   | 'signup'
   | 'login'
   | 'dashboard'
-  | 'guide-sgi' // Supprimé car focus sur la bourse
   | 'profile'
   | 'transactions';
 
@@ -165,6 +162,7 @@ function App() {
       )}
     </div>
   );
+  
 }
 
 export default App;

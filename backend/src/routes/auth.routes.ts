@@ -9,11 +9,15 @@ import { registerSchema, loginSchema } from "../validation/auth.validation";
 const router = Router();
 
 // Route d'INSCRIPTION (REGISTER)
-router.post('/register', validate(registerSchema), register); // Ajout de la route /register
+router.post('/register', validate(registerSchema), register); 
 
 // Route de CONNEXION (LOGIN)
 router.post('/login', validate(loginSchema), login); 
 
-// ... (autres routes)
+// --- CORRECTION : AJOUT DE LA ROUTE DE DÉCONNEXION ---
+router.post('/logout', logout); 
+
+// Route pour l'utilisateur courant (getMe)
+router.get('/me', auth, getMe);
 
 export default router;

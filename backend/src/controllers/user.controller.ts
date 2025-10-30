@@ -2,8 +2,9 @@
 
 import { Response, Request, NextFunction } from "express";
 import * as usersService from "../services/users.service.prisma"; 
+import { createError } from "../middlewares/errorHandlers";
 
-// Interface pour les requêtes authentifiées (pour la cohérence du typage)
+// FIX 1: Définir l'interface manquante
 interface AuthenticatedRequest extends Request {
   user?: { id: string }; 
 }
@@ -11,13 +12,9 @@ interface AuthenticatedRequest extends Request {
 // 1. Contrôleur pour GET /api/users
 export async function getUsers(req: Request, res: Response, next: NextFunction) {
   try {
-    const users = await usersService.getAllUsers();
-    // On ne renvoie pas le mot de passe, même pour la liste
-    const safeUsers = users.map(u => {
-        const { password, ...userWithoutPassword } = u;
-        return userWithoutPassword;
-    });
-    return res.status(200).json(safeUsers); 
+    // Le service retourne désormais les utilisateurs SANS mot de passe
+    const users = await usersService.getAllUsers(); 
+    return res.status(200).json(users); 
   } catch (error) {
     return next(error); 
   }
@@ -32,13 +29,13 @@ export async function getCurrentUser(req: AuthenticatedRequest, res: Response, n
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
+    // Le service getCurrentUserProfile retourne les données de l'utilisateur fusionnées (sans mot de passe)
     const userProfile = await usersService.getCurrentUserProfile(userId);
 
     if (!userProfile) {
       return res.status(404).json({ message: 'Profil utilisateur non trouvé' }); 
     }
 
-    // Renvoie l'utilisateur et les données de profil combinées
     return res.status(200).json(userProfile);
 
   } catch (error) {
@@ -59,13 +56,45 @@ export async function updateUserProfile(req: AuthenticatedRequest, res: Response
     if (!profileData || Object.keys(profileData).length === 0) {
         return res.status(400).json({ message: 'Aucune donnée de profil fournie.'});
     }
+    // Séparer les données: User (name, lastname) vs UserProfile (tout le reste)
+    const { name, lastname, telephone, address, ...profileFields } = profileData;
 
-    const updatedProfile = await usersService.upsertUserProfile(userId, profileData);
-    return res.status(200).json(updatedProfile); 
+  // Debug logs to help trace incoming payloads (will appear in server logs)
+  console.debug('[updateUserProfile] userId =', userId);
+  console.debug('[updateUserProfile] profileFields =', JSON.stringify(profileFields));
+
+    // --- 1. Mettre à jour les champs du Modèle User (name, lastname, etc.) ---
+    const userUpdate = await usersService.updateUser(userId, { name, lastname, telephone, address });
+
+    // --- 2. Mapper les clés camelCase du frontend vers le snake_case attendu par Prisma/service ---
+    const mappedProfileFields: any = { ...profileFields };
+    const keyMap: Record<string, string> = {
+      avatarUrl: 'avatar_url',
+      isPublic: 'is_public',
+      birthDate: 'birth_date',
+      hasInvested: 'has_invested',
+      mainGoals: 'main_goals',
+      monthlyAmount: 'monthly_amount',
+      profileType: 'profile_type',
+      socialLinks: 'social_links'
+    };
+    for (const [k, v] of Object.entries(keyMap)) {
+      if (k in mappedProfileFields) {
+        mappedProfileFields[v] = (mappedProfileFields as any)[k];
+        delete (mappedProfileFields as any)[k];
+      }
+    }
+
+    // --- 3. Mettre à jour/Créer les champs du Modèle UserProfile ---
+    // Le service upsertUserProfile attend les champs en snake_case
+    const updatedProfile = await usersService.upsertUserProfile(userId, mappedProfileFields);
+    
+    // Renvoyer les données fusionnées pour mettre à jour le frontend
+    const finalProfile = await usersService.getCurrentUserProfile(userId);
+
+    return res.status(200).json(finalProfile);
 
   } catch (error) {
     return next(error);
   }
 }
-
-// --- Les fonctions login, signup, et logout ont été retirées car elles sont gérées dans auth.controller.ts ---

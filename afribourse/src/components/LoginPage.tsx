@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Mail, Lock, TrendingUp, AlertCircle } from 'lucide-react';
-// import { supabase } from '../lib/supabase'; // <-- REMOVE Supabase import
-
 type LoginPageProps = {
   onNavigate: (page: string) => void;
 };
+
+// L'URL de base pour l'API
+const API_BASE_URL = 'http://localhost:3000/api'; 
 
 export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [email, setEmail] = useState('');
@@ -13,34 +14,35 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [error, setError] = useState('');
 
   // --- UPDATED handleLogin function ---
-  async function handleLogin(e: React.FormEvent) {
+ async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
       // Call your backend API's login endpoint
-      const response = await fetch('http://localhost:3000/api/users/login', { // Use your actual backend URL
+      const response = await fetch('http://localhost:3000/api/login', { // Chemin corrigé
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-        // IMPORTANT: Add 'credentials: include' if you rely on cookies set by the backend
-        // This tells the browser to send cookies (like the 'token' cookie) with the request
         credentials: 'include', 
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // If the API returned an error (e.g., 401 Unauthorized)
-        throw new Error(data.message || 'Identifiants incorrects'); 
+        throw new Error(data.message || data.error || 'Identifiants incorrects'); 
       }
 
-      // If login is successful, navigate to the dashboard
-      // The browser automatically stores the 'token' cookie set by the backend
+      // Si login est réussi:
+      // 1. Redirection vers le dashboard
       onNavigate('dashboard');
+      
+      // 2. FORCER LE RECHARGEMENT pour que le Header/App.tsx reconnaisse le cookie immédiatement
+      window.location.reload(); 
+      // ⚠️ NOTE : Ce rechargement garantit que le nouvel état de session est chargé.
 
     } catch (err: any) {
       console.error("Login error:", err);
@@ -49,6 +51,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
       setLoading(false);
     }
   }
+
   // --- END UPDATED handleLogin function ---
 
   return (
