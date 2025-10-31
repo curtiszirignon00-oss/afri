@@ -4,44 +4,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Wallet, AlertTriangl
 import toast from 'react-hot-toast';
 
 // --- Type Definitions (Ensure these match your actual Prisma schema / API responses) ---
-type Stock = {
-  id: string;
-  symbol: string;
-  company_name: string;
-  sector: string | null;
-  description: string | null;
-  website_url: string | null;
-  current_price: number;
-  previous_close: number; // Added for technical signal calculation
-  daily_change_percent: number;
-  volume: number;
-  market_cap: number;
-  // Add other fields if needed
-};
-
-// Simplified StockFundamental based on usage
-type StockFundamental = {
-  id: string;
-  stockId: string; // Changed from stock_id
-  year: number;
-  pe_ratio: number;
-  dividend_yield: number;
-  eps: number;
-  // Add other fields if needed
-};
-
-// Simplified Portfolio based on usage
-type Portfolio = {
-  id: string;
-  cash_balance: number;
-};
-
-// WatchlistItem type
-type WatchlistItem = {
-    id: string;
-    stock_ticker: string;
-    userId: string;
-};
+import { Stock, StockFundamental, Portfolio, WatchlistItem } from '../types';
 // --- End Type Definitions ---
 
 type StockDetailPageProps = {
@@ -99,7 +62,14 @@ export default function StockDetailPage({ stock, onNavigate }: StockDetailPagePr
         // Process Portfolio (only need cash_balance here)
         if (portfolioRes.ok) {
             const portfolioData = await portfolioRes.json();
-            setPortfolio({ id: portfolioData.id, cash_balance: portfolioData.cash_balance });
+           setPortfolio({ 
+  id: portfolioData.id, 
+  userId: portfolioData.userId || '',
+  name: portfolioData.name || 'Mon Portfolio',
+  initial_balance: portfolioData.initial_balance || 0,
+  cash_balance: portfolioData.cash_balance,
+  positions: portfolioData.positions || []
+});
         } else if (portfolioRes.status === 401) {
              // Not logged in, that's okay for viewing, just can't buy
              setPortfolio(null);

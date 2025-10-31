@@ -1,48 +1,45 @@
 import { useState } from 'react';
 import { Mail, Lock, TrendingUp, AlertCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
 type LoginPageProps = {
   onNavigate: (page: string) => void;
 };
 
-// L'URL de base pour l'API
-const API_BASE_URL = 'http://localhost:3000/api'; 
+const API_BASE_URL = 'http://localhost:3000/api';
 
 export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  const { checkAuth } = useAuth();
 
-  // --- UPDATED handleLogin function ---
- async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // Call your backend API's login endpoint
-      const response = await fetch('http://localhost:3000/api/login', { // Chemin corrigé
+      const response = await fetch('http://localhost:3000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', 
+        credentials: 'include',
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || 'Identifiants incorrects'); 
+        throw new Error(data.message || data.error || 'Identifiants incorrects');
       }
 
-      // Si login est réussi:
-      // 1. Redirection vers le dashboard
-      onNavigate('dashboard');
-      
-      // 2. FORCER LE RECHARGEMENT pour que le Header/App.tsx reconnaisse le cookie immédiatement
-      window.location.reload(); 
-      // ⚠️ NOTE : Ce rechargement garantit que le nouvel état de session est chargé.
+      // ✅ Si login est réussi : mettre à jour l'état d'authentification
+      await checkAuth(); // Met à jour le contexte d'authentification
+      onNavigate('dashboard'); // Navigue vers le dashboard
 
     } catch (err: any) {
       console.error("Login error:", err);
@@ -52,15 +49,13 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
     }
   }
 
-  // --- END UPDATED handleLogin function ---
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* --- Header --- */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <button onClick={() => onNavigate('home')} className="flex items-center space-x-2"> {/* Make logo clickable */}
+            <button onClick={() => onNavigate('home')} className="flex items-center space-x-2">
               <TrendingUp className="w-12 h-12 text-blue-600" />
               <span className="text-3xl font-bold text-gray-900">AfriBourse</span>
             </button>
@@ -180,7 +175,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         </div>
 
         {/* Link back to Home */}
-        <div className="text-center mt-8"> {/* Added margin top */}
+        <div className="text-center mt-8">
           <button
             onClick={() => onNavigate('home')}
             className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
