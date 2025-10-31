@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+// src/AppRefactored.tsx
+import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-// Import du AuthProvider et useAuth
+// Query Client
+import { queryClient } from './lib/queryClient';
+
+// Context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-// Imports des composants de page
-
+// Components
 import Header from './components/Header';
 import HomePage from './components/HomePage';
+import MarketsPageRefactored from './components/MarketsPageRefactored';
 import StockDetailPage from './components/StockDetailPage';
 import LearnPage from './components/LearnPage';
 import NewsPage from './components/NewsPage';
@@ -17,24 +23,21 @@ import LoginPage from './components/LoginPage';
 import ProfilePage from './components/ProfilePage';
 import DashboardPage from './components/DashboardPage';
 import TransactionsPage from './components/TransactionsPage';
+import { LoadingSpinner } from './components/ui';
 
-// Définir les pages possibles
+// Types
 import { Page, Navigation } from './types';
-import MarketsPageRefactored from './components/MarketsPageRefactored';
 
 // --- Composant principal avec la logique de navigation ---
 function AppContent() {
   const [navigation, setNavigation] = useState<Navigation>({ page: 'home' });
-  
-  // Utilise le hook useAuth pour accéder à l'état d'authentification
   const { isLoggedIn, loading } = useAuth();
 
   const handleNavigate = (page: string, data?: any) => {
-    // Pages protégées
     const protectedPages: Page[] = ['dashboard', 'profile', 'transactions'];
     
     if (protectedPages.includes(page as Page) && !isLoggedIn) {
-      console.log("Accès protégé refusé, redirection vers login.");
+      console.log('Accès protégé refusé, redirection vers login.');
       setNavigation({ page: 'login' });
     } else {
       setNavigation({ page: page as Page, data });
@@ -45,11 +48,7 @@ function AppContent() {
 
   // Affiche un spinner pendant la vérification de l'authentification
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen text="Chargement..." />;
   }
 
   // --- Rendu conditionnel des pages ---
@@ -60,7 +59,7 @@ function AppContent() {
       case 'home':
         return <HomePage onNavigate={handleNavigate} isLoggedIn={isLoggedIn} />;
       case 'markets':
-  return <MarketsPageRefactored onNavigate={handleNavigate} />;
+        return <MarketsPageRefactored onNavigate={handleNavigate} />;
       case 'stock-detail':
         return data ? (
           <StockDetailPage stock={data} onNavigate={handleNavigate} />
@@ -95,7 +94,9 @@ function AppContent() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Toaster position="top-center" />
 
-      {showLayout && <Header currentPage={navigation.page} onNavigate={handleNavigate} />}
+      {showLayout && (
+        <Header currentPage={navigation.page} onNavigate={handleNavigate} />
+      )}
 
       <main className="flex-grow">{renderPage()}</main>
 
@@ -112,13 +113,17 @@ function AppContent() {
   );
 }
 
-// --- Composant racine avec le Provider ---
-function App() {
+// --- Composant racine avec tous les Providers ---
+function AppRefactored() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+      {/* DevTools React Query (visible uniquement en développement) */}
+      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+    </QueryClientProvider>
   );
 }
 
-export default App;
+export default AppRefactored;
