@@ -4,52 +4,7 @@ import toast from 'react-hot-toast';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 // --- Type Definitions (Matching Prisma Schema) ---
-type Stock = {
-  id: string;
-  symbol: string;
-  company_name: string;
-  sector: string | null;
-  current_price: number;
-  daily_change_percent: number;
-  // Add other fields if needed for display
-};
-
-type UserProfile = {
-    id: string; // User ID
-    email: string;
-    name: string | null;
-    lastname: string | null;
-    first_name?: string | null;
-};
-
-type Portfolio = {
-    id: string;
-    userId: string;
-    name: string;
-    initial_balance: number;
-    cash_balance: number;
-    positions: Position[];
-};
-
-type Position = {
-    id: string;
-    portfolioId: string;
-    stock_ticker: string;
-    quantity: number;
-    average_buy_price: number;
-};
-
-type WatchlistItem = {
-    id: string;
-    stock_ticker: string;
-    userId: string;
-};
-
-type PortfolioHistoryPoint = {
-    date: string;
-    value: number;
-};
-// --- End Type Definitions ---
+import { Stock, UserProfile, Portfolio, Position, WatchlistItem, PortfolioHistoryPoint } from '../types';
 
 type DashboardPageProps = {
   onNavigate: (page: string, data?: any) => void;
@@ -111,7 +66,20 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
         setUserProfile({ ...profileData, first_name: profileData.name });
       } else {
           console.warn("Impossible de charger le profil utilisateur.");
-          setUserProfile({ id:'error-id', email:'error', name:'Investisseur', lastname:'', first_name: 'Investisseur' });
+          setUserProfile({ 
+  id: 'error-id', 
+  email: 'error', 
+  name: 'Investisseur', 
+  lastname: '', 
+  first_name: 'Investisseur',
+  country: null,
+  birth_date: null,
+  has_invested: null,
+  experience_level: null,
+  main_goals: null,
+  monthly_amount: null,
+  profile_type: null
+});
       }
 
       let watchlistTickers: string[] = [];

@@ -4,23 +4,7 @@ import { Search, TrendingUp, TrendingDown, Filter, Star, AlertTriangle } from 'l
 import toast from 'react-hot-toast';
 
 // --- Définitions des Types ---
-type Stock = {
-  id: string;
-  symbol: string;
-  company_name: string;
-  sector: string | null;
-  current_price: number;
-  daily_change_percent: number;
-  volume: number;
-  market_cap: number;
-  // Ajouter d'autres champs si nécessaire
-};
-
-type WatchlistItem = {
-    id: string;
-    stock_ticker: string;
-    userId: string;
-};
+import { Stock, WatchlistItem } from '../types';
 // --- Fin Types ---
 
 type MarketsPageProps = {
