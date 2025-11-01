@@ -1,8 +1,72 @@
 // backend/src/services/stock.service.prisma.ts
 
 import prisma from "../config/prisma";
-import { Prisma } from '@prisma/client'; // <-- ADD THIS LINE
-import { StockData } from "./scraping.service"; // On importe le type du scraper
+import { Prisma } from '@prisma/client';
+import { StockData } from "./scraping.service";
+
+// <-- AJOUT : Mapping des secteurs pour assignation automatique lors du scraping
+const SECTOR_MAPPING: Record<string, string> = {
+  // === CONSOMMATION DE BASE ===
+  'NTLC': 'Consommation de Base',
+  'PALC': 'Consommation de Base',
+  'SCRC': 'Consommation de Base',
+  'SICC': 'Consommation de Base',
+  'SLBC': 'Consommation de Base',
+  'SOGC': 'Consommation de Base',
+  'SPHC': 'Consommation de Base',
+  'STBC': 'Consommation de Base',
+  'UNLC': 'Consommation de Base',
+
+  // === CONSOMMATION DISCRÉTIONNAIRE ===
+  'ABJC': 'Consommation Discrétionnaire',
+  'BNBC': 'Consommation Discrétionnaire',
+  'CFAC': 'Consommation Discrétionnaire',
+  'LNBB': 'Consommation Discrétionnaire',
+  'NEIC': 'Consommation Discrétionnaire',
+  'PRSC': 'Consommation Discrétionnaire',
+  'UNXC': 'Consommation Discrétionnaire',
+
+  // === ENERGIE ===
+  'SHEC': 'Energie',
+  'SMBC': 'Energie',
+  'TTLC': 'Energie',
+  'TTLS': 'Energie',
+
+  // === INDUSTRIELS ===
+  'CABC': 'Industriels',
+  'FTSC': 'Industriels',
+  'SDSC': 'Industriels',
+  'SEMC': 'Industriels',
+  'SIVC': 'Industriels',
+  'STAC': 'Industriels',
+
+  // === SERVICES FINANCIERS ===
+  'BICB': 'Services Financiers',
+  'BICC': 'Services Financiers',
+  'BOAB': 'Services Financiers',
+  'BOABF': 'Services Financiers',
+  'BOAC': 'Services Financiers',
+  'BOAM': 'Services Financiers',
+  'BOAN': 'Services Financiers',
+  'BOAS': 'Services Financiers',
+  'CBIBF': 'Services Financiers',
+  'ECOC': 'Services Financiers',
+  'ETIT': 'Services Financiers',
+  'NSBC': 'Services Financiers',
+  'ORGT': 'Services Financiers',
+  'SAFC': 'Services Financiers',
+  'SGBC': 'Services Financiers',
+  'SIBC': 'Services Financiers',
+
+  // === SERVICES PUBLICS ===
+  'CIEC': 'Services Publics',
+  'SDCC': 'Services Publics',
+
+  // === TÉLÉCOMMUNICATIONS ===
+  'ONTBF': 'Télécommunications',
+  'ORAC': 'Télécommunications',
+  'SNTS': 'Télécommunications',
+};
 
 export async function saveStocks(stocksData: StockData[]) {
   try {
@@ -13,6 +77,9 @@ export async function saveStocks(stocksData: StockData[]) {
       const changeValue = data.change ? (data.lastPrice * (data.change / 100)) : 0;
       const previousClose = data.lastPrice - changeValue;
 
+      // <-- AJOUT : Récupérer le secteur depuis le mapping
+      const sector = SECTOR_MAPPING[data.symbol] || null;
+
       await prisma.stock.upsert({
         where: { symbol: data.symbol },
         update: {
@@ -21,6 +88,7 @@ export async function saveStocks(stocksData: StockData[]) {
           daily_change_percent: data.change ?? 0,
           volume: data.volume ?? 0,
           previous_close: previousClose,
+          sector: sector, // <-- AJOUT : Mise à jour du secteur
           updated_at: new Date(),
         },
         create: {
@@ -31,6 +99,7 @@ export async function saveStocks(stocksData: StockData[]) {
           volume: data.volume ?? 0,
           previous_close: previousClose,
           market_cap: data.volumeXOF ?? 0,
+          sector: sector, // <-- AJOUT : Assignation du secteur lors de la création
         }
       });
     }
@@ -51,7 +120,7 @@ export async function getAllStocks(filters: { searchTerm?: string, sector?: stri
     };
     if (searchTerm) {
       whereClause.OR = [ // Search in symbol OR company name
-        { symbol: { contains: searchTerm, mode: 'insensitive' } }, // insensitive = ignore case
+        { symbol: { contains: searchTerm, mode: 'insensitive' } },
         { company_name: { contains: searchTerm, mode: 'insensitive' } },
       ];
     }
@@ -72,7 +141,7 @@ export async function getAllStocks(filters: { searchTerm?: string, sector?: stri
         orderByClause = { volume: 'desc' };
         break;
       case 'name':
-      default: // Default sort by name
+      default:
         orderByClause = { company_name: 'asc' };
         break;
     }
@@ -87,6 +156,7 @@ export async function getAllStocks(filters: { searchTerm?: string, sector?: stri
     throw error;
   }
 }
+
 export async function getStockBySymbol(symbol: string) {
     try {
         const stock = await prisma.stock.findUnique({
@@ -97,10 +167,8 @@ export async function getStockBySymbol(symbol: string) {
         console.error(`❌ Erreur lors de la récupération de ${symbol}:`, error);
         throw error;
     }
-    // <-- Misplaced comment removed from here
-} // <-- Closing brace for getStockBySymbol
+}
 
-// Nouvelle fonction pour récupérer les top stocks
 export async function getTopStocks(limit: number = 6) {
   try {
     const stocks = await prisma.stock.findMany({
@@ -115,6 +183,4 @@ export async function getTopStocks(limit: number = 6) {
     console.error('❌ Erreur lors de la récupération des top stocks:', error);
     throw error;
   }
-} // <-- Closing brace for getTopStocks
-
-// <-- Extra closing brace removed from here
+}

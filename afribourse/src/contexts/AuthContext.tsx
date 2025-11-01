@@ -30,15 +30,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fonction pour vérifier l'authentification
   const checkAuth = async () => {
+    setLoading(true); // <-- AJOUT : Reset loading à chaque vérification
     try {
-      const response = await fetch(`${API_BASE_URL}/users/me`, {
+      const response = await fetch(`${API_BASE_URL}/users/me`, { // <-- CORRECTION : Endpoint correct
         credentials: 'include', // ✅ Envoie automatiquement le cookie
       });
 
       if (response.ok) {
         const data = await response.json();
-        setUserProfile(data);
-        setIsLoggedIn(true);
+        setUserProfile(data); // <-- Met à jour le profil
+        setIsLoggedIn(true); // <-- CRITIQUE : Met à jour isLoggedIn
       } else {
         setIsLoggedIn(false);
         setUserProfile(null);
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(false);
       setUserProfile(null);
     } finally {
-      setLoading(false);
+      setLoading(false); // <-- CRITIQUE : Arrête le chargement
     }
   };
 

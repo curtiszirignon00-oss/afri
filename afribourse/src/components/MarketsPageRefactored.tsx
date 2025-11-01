@@ -1,7 +1,8 @@
 // src/components/MarketsPageRefactored.tsx
-import { useState } from 'react';
+import { useState, useMemo } from 'react'; // <-- AJOUT : import useMemo
 import { Search, Filter, Star } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, type StockFilters } from '../hooks/useApi';
+import { useDebounce } from '../hooks/useDebounce'; // <-- AJOUT : import du hook useDebounce
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 
 type MarketsPageRefactoredProps = {
@@ -14,15 +15,18 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
   const [selectedSector, setSelectedSector] = useState('all');
   const [sortBy, setSortBy] = useState<'name' | 'change' | 'price' | 'volume'>('change');
 
-  // Préparer les filtres pour React Query
-  const filters: StockFilters = {
-    ...(searchTerm && { search: searchTerm }),
+  // <-- AJOUT : Debounce du terme de recherche (300ms de délai)
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  // <-- CORRECTION : Utiliser debouncedSearchTerm au lieu de searchTerm
+  const filters: StockFilters = useMemo(() => ({
+    ...(debouncedSearchTerm && { search: debouncedSearchTerm }), // <-- CORRECTION
     ...(selectedSector !== 'all' && { sector: selectedSector }),
     sort: sortBy,
-  };
+  }), [debouncedSearchTerm, selectedSector, sortBy]); // <-- CORRECTION : dependencies
 
   // Hooks React Query
-  const { data: stocks = [], isLoading, error, refetch } = useStocks(filters);
+  const { data: stocks = [], isLoading, isFetching, error, refetch } = useStocks(filters);
   const { data: watchlist = [] } = useWatchlist();
   const addToWatchlist = useAddToWatchlist();
   const removeFromWatchlist = useRemoveFromWatchlist();
@@ -30,8 +34,17 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
   // Set des tickers dans la watchlist pour un accès rapide
   const watchlistTickers = new Set(watchlist.map(item => item.stock_ticker));
 
-  // Liste des secteurs (à adapter selon vos données)
-  const sectors = ['all', 'Banque', 'Agriculture', 'Industrie', 'Services', 'Distribution'];
+  // <-- CORRECTION : Liste des secteurs mise à jour selon la classification BRVM
+  const sectors = [
+    'all',
+    'Consommation de Base',
+    'Consommation Discrétionnaire',
+    'Energie',
+    'Industriels',
+    'Services Financiers',
+    'Services Publics',
+    'Télécommunications'
+  ];
 
   // Fonction pour formater les nombres
   const formatNumber = (num: number, decimals = 0) => {
@@ -44,7 +57,7 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
   // Gestion de la watchlist avec optimistic update
   const handleToggleWatchlist = async (stockTicker: string) => {
     const isInWatchlist = watchlistTickers.has(stockTicker);
-    
+
     try {
       if (isInWatchlist) {
         await removeFromWatchlist.mutateAsync(stockTicker);
@@ -57,8 +70,8 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
     }
   };
 
-  // Affichage du loading
-  if (isLoading) {
+  // Affichage du loading initial uniquement (pas lors des recherches)
+  if (isLoading && !stocks.length) {
     return <LoadingSpinner fullScreen text="Chargement des marchés..." />;
   }
 
@@ -93,8 +106,14 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                 icon={<Search className="w-5 h-5" />}
                 placeholder="Rechercher une action..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)} // <-- Garde l'input réactif
               />
+              {/* <-- AJOUT : Indicateur de recherche en cours */}
+              {(searchTerm !== debouncedSearchTerm || isFetching) && (
+                <p className="text-xs text-gray-500 mt-1 ml-1">
+                  {isFetching ? 'Chargement...' : 'Recherche en cours...'}
+                </p>
+              )}
             </div>
 
             {/* Filtre secteur */}
@@ -131,16 +150,20 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
         {/* Tableau des actions */}
         <Card padding="none">
           {stocks.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500">Aucune action trouvée</p>
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">
+                {debouncedSearchTerm || selectedSector !== 'all'
+                  ? 'Aucune action trouvée avec ces critères.'
+                  : 'Aucune action disponible.'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <div className="w-5"></div>
+                      Watchlist
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Action
@@ -160,102 +183,117 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {stocks.map((stock) => {
-                    const isInWatchlist = watchlistTickers.has(stock.symbol);
-                    const isToggling =
-                      addToWatchlist.isPending || removeFromWatchlist.isPending;
-
-                    return (
-                      <tr
-                        key={stock.id}
-                        className="hover:bg-gray-50 transition-colors cursor-pointer"
-                      >
-                        {/* Watchlist */}
-                        <td className="px-6 py-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleWatchlist(stock.symbol);
-                            }}
-                            disabled={isToggling}
-                            className="p-1 hover:bg-yellow-50 rounded transition-colors"
-                          >
-                            <Star
-                              className={`w-5 h-5 ${
-                                isInWatchlist
-                                  ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
-                            />
-                          </button>
-                        </td>
-
-                        {/* Info action */}
-                        <td
-                          className="px-6 py-4"
-                          onClick={() => onNavigate('stock-detail', stock)}
+                  {stocks.map((stock) => (
+                    <tr
+                      key={stock.id}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      {/* Watchlist Star */}
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleWatchlist(stock.symbol);
+                          }}
+                          className="p-1 hover:scale-110 transition-transform"
                         >
-                          <div>
-                            <div className="font-bold text-gray-900">{stock.symbol}</div>
-                            <div className="text-sm text-gray-500 truncate max-w-xs">
-                              {stock.company_name}
-                            </div>
-                            {stock.sector && (
-                              <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
-                                {stock.sector}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Prix */}
-                        <td
-                          className="px-6 py-4 text-right font-semibold"
-                          onClick={() => onNavigate('stock-detail', stock)}
-                        >
-                          {formatNumber(stock.current_price)} F
-                        </td>
-
-                        {/* Variation */}
-                        <td
-                          className="px-6 py-4 text-right"
-                          onClick={() => onNavigate('stock-detail', stock)}
-                        >
-                          <span
-                            className={`font-semibold ${
-                              stock.daily_change_percent >= 0
-                                ? 'text-green-600'
-                                : 'text-red-600'
+                          <Star
+                            className={`w-5 h-5 ${
+                              watchlistTickers.has(stock.symbol)
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-gray-300'
                             }`}
-                          >
-                            {stock.daily_change_percent >= 0 ? '+' : ''}
-                            {stock.daily_change_percent.toFixed(2)}%
-                          </span>
-                        </td>
+                          />
+                        </button>
+                      </td>
 
-                        {/* Volume */}
-                        <td
-                          className="px-6 py-4 text-right text-gray-600"
-                          onClick={() => onNavigate('stock-detail', stock)}
-                        >
-                          {formatNumber(stock.volume)}
-                        </td>
+                      {/* Info action */}
+                      <td
+                        className="px-6 py-4"
+                        onClick={() => onNavigate('stock-detail', stock)}
+                      >
+                        <div>
+                          <div className="font-bold text-gray-900">{stock.symbol}</div>
+                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                            {stock.company_name}
+                          </div>
+                          {stock.sector && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
+                              {stock.sector}
+                            </span>
+                          )}
+                        </div>
+                      </td>
 
-                        {/* Cap. Boursière */}
-                        <td
-                          className="px-6 py-4 text-right text-gray-600"
-                          onClick={() => onNavigate('stock-detail', stock)}
+                      {/* Prix */}
+                      <td
+                        className="px-6 py-4 text-right font-semibold"
+                        onClick={() => onNavigate('stock-detail', stock)}
+                      >
+                        {formatNumber(stock.current_price)} F
+                      </td>
+
+                      {/* Variation */}
+                      <td
+                        className="px-6 py-4 text-right"
+                        onClick={() => onNavigate('stock-detail', stock)}
+                      >
+                        <span
+                          className={`font-semibold ${
+                            stock.daily_change_percent >= 0
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                          }`}
                         >
-                          {formatNumber(stock.market_cap / 1000000, 1)}M
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          {stock.daily_change_percent >= 0 ? '+' : ''}
+                          {stock.daily_change_percent.toFixed(2)}%
+                        </span>
+                      </td>
+
+                      {/* Volume */}
+                      <td
+                        className="px-6 py-4 text-right text-gray-600"
+                        onClick={() => onNavigate('stock-detail', stock)}
+                      >
+                        {formatNumber(stock.volume)}
+                      </td>
+
+                      {/* Cap. Boursière */}
+                      <td
+                        className="px-6 py-4 text-right text-gray-600"
+                        onClick={() => onNavigate('stock-detail', stock)}
+                      >
+                        {formatNumber(stock.market_cap / 1000000)} M
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
         </Card>
+
+        {/* Stats rapides */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-1">Actions disponibles</p>
+              <p className="text-3xl font-bold text-gray-900">{stocks.length}</p>
+            </div>
+          </Card>
+          <Card>
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-1">Secteurs</p>
+              <p className="text-3xl font-bold text-gray-900">{sectors.length - 1}</p>
+            </div>
+          </Card>
+          <Card>
+            <div className="text-center">
+              <p className="text-gray-600 text-sm mb-1">Dans ma watchlist</p>
+              <p className="text-3xl font-bold text-gray-900">{watchlist.length}</p>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
