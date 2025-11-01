@@ -70,6 +70,10 @@ export function useStocks(filters: StockFilters = {}) {
   return useQuery({
     queryKey: ['stocks', filters], // La clé change si les filtres changent
     queryFn: () => apiFetch<Stock[]>('/stocks', { params: filters as Record<string, string> }),
+    staleTime: 30000, // Les données restent fraîches pendant 30 secondes
+    gcTime: 5 * 60 * 1000, // Cache pendant 5 minutes (anciennement cacheTime)
+    placeholderData: (previousData) => previousData, // Garde les données précédentes pendant le chargement
+    refetchOnWindowFocus: false, // Ne pas recharger au focus de la fenêtre
   });
 }
 

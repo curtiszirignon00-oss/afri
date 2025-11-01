@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // <-- AJOUT : import useEffect
 import { Mail, Lock, TrendingUp, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 
 type LoginPageProps = {
   onNavigate: (page: string) => void;
@@ -14,7 +15,15 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { checkAuth } = useAuth();
+  const { checkAuth, isLoggedIn } = useAuth(); // <-- AJOUT : récupération de isLoggedIn
+
+  // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
+  useEffect(() => {
+    if (isLoggedIn) {
+      console.log('✅ Utilisateur déjà connecté, redirection vers dashboard');
+      onNavigate('dashboard');
+    }
+  }, [isLoggedIn, onNavigate]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +31,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -37,13 +46,18 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         throw new Error(data.message || data.error || 'Identifiants incorrects');
       }
 
-      // ✅ Si login est réussi : mettre à jour l'état d'authentification
-      await checkAuth(); // Met à jour le contexte d'authentification
-      onNavigate('dashboard'); // Navigue vers le dashboard
+      // ✅ CORRECTION CRITIQUE : Appeler checkAuth() et laisser le useEffect gérer la navigation
+      console.log('🔄 Mise à jour de l\'authentification...');
+      await checkAuth(); // <-- Met à jour isLoggedIn dans le contexte
+      console.log('✅ Authentification mise à jour');
+      
+      toast.success('Connexion réussie !');
+      // ❌ SUPPRESSION : Ne plus appeler onNavigate ici, le useEffect s'en charge
 
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || 'Une erreur est survenue lors de la connexion.');
+      toast.error(err.message || 'Erreur de connexion');
     } finally {
       setLoading(false);
     }
