@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "node-express-typescript-boilerplate",
   "main": "dist/index.js",
+
   "scripts": {
+    "update-sectors": "ts-node src/scripts/update-sectors.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",

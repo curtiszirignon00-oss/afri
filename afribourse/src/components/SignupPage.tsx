@@ -14,6 +14,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -32,6 +33,12 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
 
     if (password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caractères.');
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
       setLoading(false);
       return;
     }
@@ -120,6 +127,18 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
               placeholder="••••••••"
               icon={<Lock className="w-5 h-5 text-gray-400" />}
               helperText="Au moins 6 caractères"
+              disabled={loading}
+              required
+            />
+
+            <Input
+              type="password"
+              label="Confirmer le mot de passe"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              icon={<Lock className="w-5 h-5 text-gray-400" />}
+              helperText="Saisissez à nouveau votre mot de passe"
               disabled={loading}
               required
             />

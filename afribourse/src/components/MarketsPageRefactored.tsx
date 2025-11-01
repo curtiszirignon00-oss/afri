@@ -1,8 +1,8 @@
 // src/components/MarketsPageRefactored.tsx
-import { useState, useMemo } from 'react'; // <-- AJOUT : import useMemo
+import { useState, useMemo } from 'react';
 import { Search, Filter, Star } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, type StockFilters } from '../hooks/useApi';
-import { useDebounce } from '../hooks/useDebounce'; // <-- AJOUT : import du hook useDebounce
+import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 
 type MarketsPageRefactoredProps = {
@@ -15,26 +15,26 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
   const [selectedSector, setSelectedSector] = useState('all');
   const [sortBy, setSortBy] = useState<'name' | 'change' | 'price' | 'volume'>('change');
 
-  // <-- AJOUT : Debounce du terme de recherche (300ms de délai)
+  // Debounce du terme de recherche
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // <-- CORRECTION : Utiliser debouncedSearchTerm au lieu de searchTerm
+  // Préparer les filtres pour React Query
   const filters: StockFilters = useMemo(() => ({
-    ...(debouncedSearchTerm && { search: debouncedSearchTerm }), // <-- CORRECTION
+    ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
     ...(selectedSector !== 'all' && { sector: selectedSector }),
     sort: sortBy,
-  }), [debouncedSearchTerm, selectedSector, sortBy]); // <-- CORRECTION : dependencies
+  }), [debouncedSearchTerm, selectedSector, sortBy]);
 
   // Hooks React Query
-  const { data: stocks = [], isLoading, isFetching, error, refetch } = useStocks(filters);
+  const { data: stocks = [], isLoading, error, refetch } = useStocks(filters);
   const { data: watchlist = [] } = useWatchlist();
   const addToWatchlist = useAddToWatchlist();
   const removeFromWatchlist = useRemoveFromWatchlist();
 
-  // Set des tickers dans la watchlist pour un accès rapide
+  // Set des tickers dans la watchlist
   const watchlistTickers = new Set(watchlist.map(item => item.stock_ticker));
 
-  // <-- CORRECTION : Liste des secteurs mise à jour selon la classification BRVM
+  // Liste des secteurs BRVM
   const sectors = [
     'all',
     'Consommation de Base',
@@ -54,10 +54,27 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
     }).format(num);
   };
 
-  // Gestion de la watchlist avec optimistic update
+  // <-- AJOUT : Fonction pour obtenir la couleur du badge selon le secteur
+  const getSectorColor = (sector: string | null) => {
+    if (!sector) return 'bg-gray-100 text-gray-700';
+    
+    const colors: Record<string, string> = {
+      'Consommation de Base': 'bg-green-100 text-green-700',
+      'Consommation Discrétionnaire': 'bg-purple-100 text-purple-700',
+      'Energie': 'bg-orange-100 text-orange-700',
+      'Industriels': 'bg-blue-100 text-blue-700',
+      'Services Financiers': 'bg-indigo-100 text-indigo-700',
+      'Services Publics': 'bg-teal-100 text-teal-700',
+      'Télécommunications': 'bg-pink-100 text-pink-700',
+    };
+    
+    return colors[sector] || 'bg-gray-100 text-gray-700';
+  };
+
+  // Gestion de la watchlist
   const handleToggleWatchlist = async (stockTicker: string) => {
     const isInWatchlist = watchlistTickers.has(stockTicker);
-
+    
     try {
       if (isInWatchlist) {
         await removeFromWatchlist.mutateAsync(stockTicker);
@@ -65,13 +82,12 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
         await addToWatchlist.mutateAsync(stockTicker);
       }
     } catch (error) {
-      // L'erreur est déjà gérée dans le hook avec toast
       console.error('Erreur watchlist:', error);
     }
   };
 
-  // Affichage du loading initial uniquement (pas lors des recherches)
-  if (isLoading && !stocks.length) {
+  // Affichage du loading
+  if (isLoading) {
     return <LoadingSpinner fullScreen text="Chargement des marchés..." />;
   }
 
@@ -106,18 +122,15 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                 icon={<Search className="w-5 h-5" />}
                 placeholder="Rechercher une action..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)} // <-- Garde l'input réactif
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-              {/* <-- AJOUT : Indicateur de recherche en cours */}
-              {(searchTerm !== debouncedSearchTerm || isFetching) && (
-                <p className="text-xs text-gray-500 mt-1 ml-1">
-                  {isFetching ? 'Chargement...' : 'Recherche en cours...'}
-                </p>
+              {searchTerm !== debouncedSearchTerm && (
+                <p className="text-xs text-gray-500 mt-1 ml-1">Recherche en cours...</p>
               )}
             </div>
 
             {/* Filtre secteur */}
-            <div className="relative w-full md:w-48">
+            <div className="relative w-full md:w-64">
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none z-10" />
               <select
                 value={selectedSector}
@@ -217,8 +230,9 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                           <div className="text-sm text-gray-500 truncate max-w-xs">
                             {stock.company_name}
                           </div>
+                          {/* <-- AJOUT : Badge de secteur avec couleur dynamique */}
                           {stock.sector && (
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded">
+                            <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded font-medium ${getSectorColor(stock.sector)}`}>
                               {stock.sector}
                             </span>
                           )}
