@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'; // <-- AJOUT : import useEffect
+import { useState, useEffect } from 'react';
 import { Mail, Lock, TrendingUp, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
 
 type LoginPageProps = {
@@ -86,50 +87,34 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Email Input */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Adresse e-mail
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
-                  placeholder="votre@email.com"
-                />
-              </div>
-            </div>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              label="Adresse e-mail"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="votre@email.com"
+              icon={<Mail className="h-5 w-5 text-gray-400" />}
+              disabled={loading}
+            />
 
             {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Mot de passe
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              label="Mot de passe"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              icon={<Lock className="h-5 w-5 text-gray-400" />}
+              disabled={loading}
+            />
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
@@ -158,20 +143,16 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
             )}
 
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={loading}
               disabled={loading}
-              className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-lg shadow-md text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
-              {loading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Connexion...</span>
-                </div>
-              ) : (
-                'Se connecter'
-              )}
-            </button>
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </Button>
           </form>
 
           {/* Link to Signup */}
