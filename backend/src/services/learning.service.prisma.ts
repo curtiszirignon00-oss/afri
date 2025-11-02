@@ -135,4 +135,197 @@ export class LearningServicePrisma {
             orderBy: { module: { order_index: 'asc' } }
         });
     }
+
+    // --- 5. RÉCUPÉRER LE QUIZ D'UN MODULE ---
+    async getModuleQuiz(moduleSlug: string) {
+        try {
+            // Trouver le module par slug
+            const module = await prisma.learningModule.findFirst({
+                where: { slug: moduleSlug },
+                include: { quizzes: true }
+            });
+
+            if (!module) {
+                throw new Error('Module non trouvé.');
+            }
+
+            if (!module.has_quiz || module.quizzes.length === 0) {
+                return null;
+            }
+
+            // Retourner le premier quiz du module
+            return module.quizzes[0];
+        } catch (error) {
+            console.error(`❌ Erreur lors de la récupération du quiz:`, error);
+            throw error;
+        }
+    }
+
+    // --- 6. SOUMETTRE LE QUIZ ---
+    async submitQuiz(userId: string, moduleSlug: string, answers: any, timeSpent?: number) {
+        try {
+            // Récupérer le module et son quiz
+            const module = await prisma.learningModule.findFirst({
+                where: { slug: moduleSlug },
+                include: { quizzes: true }
+            });
+
+            if (!module || !module.has_quiz || module.quizzes.length === 0) {
+                throw new Error('Quiz non trouvé pour ce module.');
+            }
+
+            const quiz = module.quizzes[0];
+            const questions = quiz.questions as any[];
+
+            // Vérifier les tentatives précédentes
+            const existingProgress = await prisma.learningProgress.findUnique({
+                where: {
+                    userId_moduleId: {
+                        userId,
+                        moduleId: module.id
+                    }
+                }
+            });
+
+            // Limiter à 3 tentatives avec délai de 8h après la 3ème tentative
+            const MAX_ATTEMPTS = 3;
+            const RETRY_DELAY_HOURS = 8;
+
+            if (existingProgress && existingProgress.quiz_attempts >= MAX_ATTEMPTS) {
+                const hoursSinceLastAttempt = existingProgress.last_quiz_attempt_at
+                    ? (Date.now() - new Date(existingProgress.last_quiz_attempt_at).getTime()) / (1000 * 60 * 60)
+                    : 999;
+
+                if (hoursSinceLastAttempt < RETRY_DELAY_HOURS) {
+                    const canRetryAt = new Date(
+                        new Date(existingProgress.last_quiz_attempt_at!).getTime() + RETRY_DELAY_HOURS * 60 * 60 * 1000
+                    );
+
+                    throw {
+                        statusCode: 429,
+                        message: `Vous avez atteint le nombre maximum de tentatives (${MAX_ATTEMPTS}). Veuillez réessayer après ${RETRY_DELAY_HOURS}h.`,
+                        canRetryAt
+                    };
+                }
+            }
+
+            // Calculer le score
+            let correctCount = 0;
+            const detailedResults: any[] = [];
+
+            // Gérer les réponses comme array ou objet
+            const answersArray = Array.isArray(answers) ? answers : Object.values(answers);
+
+            questions.forEach((question: any, index: number) => {
+                const userAnswer = answersArray[index];
+                const isCorrect = userAnswer === question.correct_answer;
+
+                if (isCorrect) {
+                    correctCount++;
+                }
+
+                detailedResults.push({
+                    questionId: question.id,
+                    question: question.question,
+                    userAnswer,
+                    correctAnswer: question.correct_answer,
+                    isCorrect,
+                    explanation: question.explanation || null
+                });
+            });
+
+            const score = Math.round((correctCount / questions.length) * 100);
+            const passed = score >= quiz.passing_score;
+
+            // Calculer les nouvelles tentatives
+            const newAttempts = existingProgress ? existingProgress.quiz_attempts + 1 : 1;
+
+            // Mettre à jour la progression
+            const progress = await prisma.learningProgress.upsert({
+                where: {
+                    userId_moduleId: {
+                        userId,
+                        moduleId: module.id
+                    }
+                },
+                update: {
+                    quiz_score: score,
+                    quiz_attempts: newAttempts,
+                    last_quiz_attempt_at: new Date(),
+                    is_completed: passed,
+                    completed_at: passed ? new Date() : null,
+                    last_accessed_at: new Date(),
+                    time_spent_minutes: timeSpent ? (existingProgress?.time_spent_minutes || 0) + timeSpent : existingProgress?.time_spent_minutes
+                },
+                create: {
+                    userId,
+                    moduleId: module.id,
+                    quiz_score: score,
+                    quiz_attempts: 1,
+                    last_quiz_attempt_at: new Date(),
+                    is_completed: passed,
+                    completed_at: passed ? new Date() : null,
+                    last_accessed_at: new Date(),
+                    time_spent_minutes: timeSpent || 0
+                }
+            });
+
+            return {
+                score,
+                passed,
+                passingScore: quiz.passing_score,
+                correctAnswers: correctCount,
+                totalQuestions: questions.length,
+                attempts: progress.quiz_attempts,
+                attemptsRemaining: Math.max(0, MAX_ATTEMPTS - progress.quiz_attempts),
+                detailedResults
+            };
+        } catch (error: any) {
+            // Propager les erreurs personnalisées (comme la limite de tentatives)
+            if (error.statusCode) {
+                throw error;
+            }
+            console.error(`❌ Erreur lors de la soumission du quiz:`, error);
+            throw error;
+        }
+    }
+
+    // --- 7. RÉCUPÉRER LES TENTATIVES AU QUIZ ---
+    async getQuizAttempts(userId: string, moduleSlug: string) {
+        try {
+            const module = await prisma.learningModule.findFirst({
+                where: { slug: moduleSlug },
+                select: { id: true }
+            });
+
+            if (!module) {
+                throw new Error('Module non trouvé.');
+            }
+
+            const progress = await prisma.learningProgress.findUnique({
+                where: {
+                    userId_moduleId: {
+                        userId,
+                        moduleId: module.id
+                    }
+                },
+                select: {
+                    quiz_attempts: true,
+                    quiz_score: true,
+                    last_quiz_attempt_at: true,
+                    is_completed: true
+                }
+            });
+
+            return progress || {
+                quiz_attempts: 0,
+                quiz_score: null,
+                last_quiz_attempt_at: null,
+                is_completed: false
+            };
+        } catch (error) {
+            console.error(`❌ Erreur lors de la récupération des tentatives:`, error);
+            throw error;
+        }
+    }
 }

@@ -1,6 +1,23 @@
-// src/components/HomePage.tsx
-import { useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, ArrowRight, BookOpen, Newspaper, BarChart3, Users, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+// src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
+import { useRef, useEffect, useState } from 'react'; // <-- AJOUT: useState pour rotation images
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  ArrowRight, 
+  BookOpen, 
+  Newspaper, 
+  BarChart3, 
+  Users, 
+  FileText, 
+  ChevronLeft, 
+  ChevronRight,
+  Star, // <-- AJOUT: Pour témoignages
+  Quote, // <-- AJOUT: Pour témoignages
+  CheckCircle, // <-- AJOUT: Pour FAQ
+  Target, // <-- AJOUT: Pour stats
+  Award, // <-- AJOUT: Pour stats
+  TrendingUpIcon // <-- AJOUT: Pour stats
+} from 'lucide-react';
 import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 
@@ -11,12 +28,128 @@ type HomePageProps = {
 
 export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
   const newsContainerRef = useRef<HTMLDivElement>(null);
+  
+  // <-- AJOUT: État pour rotation des images de fond
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+
+  // Images de fond depuis backend/public/images
+  const backgroundImages = [
+    'http://localhost:3000/images/brvm-growth.png',
+    'http://localhost:3000/images/financial-ratios.png',
+    'http://localhost:3000/images/sonatel-dividend.png'
+  ];
 
   // ✅ React Query remplace useState + useEffect + fetch
   const { data, isLoading, error, refetch } = useHomePageData();
 
   const topStocks = data?.topStocks || [];
   const featuredNews = data?.featuredNews || [];
+
+  // <-- AJOUT: Rotation automatique des images de fond toutes les 6 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
+    }, 6000); // Change toutes les 6 secondes
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Données de témoignages avec avatars depuis backend/public/avatars
+  const testimonials = [
+    {
+      id: 1,
+      name: "Aminata Diallo",
+      role: "Investisseuse depuis 2 ans",
+      country: "🇸🇳 Sénégal",
+      avatar: "http://localhost:3000/avatars/aminata.png",
+      rating: 5,
+      comment: "AfriBourse m'a permis de comprendre la BRVM et de faire mes premiers investissements en toute confiance. Les formations sont exceptionnelles !"
+    },
+    {
+      id: 2,
+      name: "Kwame Mensah",
+      role: "Entrepreneur",
+      country: "🇬🇭 Ghana",
+      avatar: "http://localhost:3000/avatars/kwame.png",
+      rating: 5,
+      comment: "Interface intuitive, données en temps réel et analyses pertinentes. C'est l'outil qu'il manquait pour investir en Afrique de l'Ouest."
+    },
+    {
+      id: 3,
+      name: "Fatou Koné",
+      role: "Cadre bancaire",
+      country: "🇨🇮 Côte d'Ivoire",
+      avatar: "http://localhost:3000/avatars/fatou.png",
+      rating: 5,
+      comment: "Grâce à AfriBourse, j'ai diversifié mon portefeuille et augmenté mes rendements de 35% en 1 an. Je recommande vivement !"
+    }
+  ];
+
+  // <-- AJOUT: Données FAQ (exemples statiques)
+  const faqData = [
+    {
+      id: 1,
+      question: "Qu'est-ce que la BRVM ?",
+      answer: "La BRVM (Bourse Régionale des Valeurs Mobilières) est la bourse des valeurs des pays de l'UEMOA (Union Économique et Monétaire Ouest Africaine). Elle permet d'investir dans des entreprises cotées d'Afrique de l'Ouest."
+    },
+    {
+      id: 2,
+      question: "Combien faut-il pour commencer à investir ?",
+      answer: "Vous pouvez commencer avec aussi peu que 50 000 FCFA. AfriBourse vous aide à démarrer progressivement avec des formations gratuites et un simulateur de portefeuille."
+    },
+    {
+      id: 3,
+      question: "Les formations sont-elles vraiment gratuites ?",
+      answer: "Oui ! Tous nos modules d'apprentissage de base sont 100% gratuits. Nous proposons également des formations avancées premium pour ceux qui veulent aller plus loin."
+    },
+    {
+      id: 4,
+      question: "Comment puis-je suivre mes investissements ?",
+      answer: "AfriBourse propose un tableau de bord complet avec suivi en temps réel de votre portefeuille, graphiques de performance, et alertes personnalisées sur vos actions préférées."
+    },
+    {
+      id: 5,
+      question: "Est-ce que je peux investir depuis n'importe quel pays ?",
+      answer: "Oui, AfriBourse est accessible depuis n'importe où dans le monde. Vous avez besoin d'un compte SGI (Société de Gestion et d'Intermédiation) local pour exécuter vos ordres."
+    }
+  ];
+
+  // <-- AJOUT: État pour l'accordéon FAQ
+  const [openFaqId, setOpenFaqId] = useState<number | null>(null);
+
+  // Actualités d'exemple (sans images pour le moment - seront ajoutées plus tard)
+  const exampleNews = [
+    {
+      id: 'ex1',
+      title: "La BRVM enregistre une hausse de 8% au premier trimestre 2025",
+      summary: "Les investisseurs africains montrent un regain d'intérêt pour le marché boursier régional.",
+      category: "MARCHÉ",
+      image_url: null,
+      published_at: new Date().toISOString(),
+      is_featured: true
+    },
+    {
+      id: 'ex2',
+      title: "Sonatel annonce un dividende record de 12 000 FCFA par action",
+      summary: "L'opérateur télécoms récompense ses actionnaires après une année exceptionnelle.",
+      category: "DIVIDENDES",
+      image_url: null,
+      published_at: new Date().toISOString(),
+      is_featured: false
+    },
+    {
+      id: 'ex3',
+      title: "Formation gratuite : Comprendre les ratios financiers",
+      summary: "Apprenez à analyser le PER, le ROE et autres indicateurs clés pour choisir vos actions.",
+      category: "FORMATION",
+      image_url: null,
+      published_at: new Date().toISOString(),
+      is_featured: false
+    }
+  ];
+
+  // <-- CORRECTION: Utiliser exampleNews si featuredNews est vide
+  const displayedNews = featuredNews.length > 0 ? featuredNews : exampleNews;
 
   // --- Fonctions Utilitaires ---
   function formatNumber(num: number | null | undefined, options?: Intl.NumberFormatOptions): string {
@@ -48,7 +181,7 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
 
   // Auto-scroll carousel
   useEffect(() => {
-    if (featuredNews.length <= 3) return;
+    if (displayedNews.length <= 3) return;
 
     const interval = setInterval(() => {
       const container = newsContainerRef.current;
@@ -63,7 +196,7 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [featuredNews]);
+  }, [displayedNews]);
 
   // ✅ LoadingSpinner remplace le spinner manuel
   if (isLoading) {
@@ -84,25 +217,44 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
 
   return (
     <div className="pb-16 md:pb-24">
-      {/* === Section Héros === */}
+      {/* === Section Héros AMÉLIORÉE === */}
       <section className="relative bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <img 
-          src="/images/african-market-background.jpg" 
-          alt="Marché financier africain" 
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-50"></div>
+        {/* <-- AJOUT: Images de fond rotatives avec transition fluide */}
+        {backgroundImages.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt={`Marché financier africain ${index + 1}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              index === currentBgIndex ? 'opacity-20' : 'opacity-0'
+            }`}
+          />
+        ))}
+        
+        {/* <-- CORRECTION: Overlay amélioré pour meilleure lisibilité */}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-          <div className="max-w-3xl text-center mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 tracking-tight">
-              INVESTIR <span className="text-blue-400">MIEUX</span>
+          <div className="max-w-4xl text-center mx-auto">
+            {/* <-- AJOUT: Badge "Nouvelle plateforme" */}
+            <div className="inline-flex items-center space-x-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-200 px-6 py-2 rounded-full text-sm font-semibold mb-6 animate-pulse">
+              <Award className="w-4 h-4" />
+              <span>Plateforme #1 d'investissement en Afrique de l'Ouest</span>
+            </div>
+
+            {/* <-- CORRECTION: Titre amélioré et slogan plus impactant */}
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
+              Prenez des décisions éclairées pour votre{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400">
+                avenir financier
+              </span>
             </h1>
-            <p className="text-lg md:text-xl text-indigo-100 mb-10 max-w-2xl mx-auto">
-              Prenez des décisions éclairées pour votre avenir financier avec la BRVM.
+            
+            <p className="text-lg md:text-2xl text-indigo-100 mb-10 max-w-3xl mx-auto leading-relaxed">
+              Formations gratuites, données en temps réel et analyses d'experts pour vous aider à investir intelligemment sur la BRVM
             </p>
 
-            {/* ✅ Button remplace le bouton manuel */}
+            {/* ✅ Boutons inchangés (comme demandé) */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button
                 variant="primary"
@@ -127,49 +279,49 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
         </div>
       </section>
 
-      {/* === Section Statistiques === */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
+      {/* === Section Statistiques AMÉLIORÉE === */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* ✅ Card remplace les div bg-white */}
-          <Card variant="elevated" padding="lg" hoverable>
+          {/* <-- CORRECTION: Design modernisé avec dégradés et animations */}
+          <Card variant="elevated" padding="lg" hoverable className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 transform hover:scale-105 transition-transform duration-300">
             <div className="flex items-center space-x-4">
-              <div className="p-4 bg-blue-100 rounded-full">
-                <BarChart3 className="w-8 h-8 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Actions disponibles</p>
-                <p className="text-3xl font-bold text-gray-900">{topStocks.length}+</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card variant="elevated" padding="lg" hoverable>
-            <div className="flex items-center space-x-4">
-              <div className="p-4 bg-green-100 rounded-full">
-                <Users className="w-8 h-8 text-green-600" />
+              <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg">
+                <Users className="w-8 h-8 text-white" />
               </div>
               <div>
                 <p className="text-gray-600 text-sm font-medium">Investisseurs actifs</p>
-                <p className="text-3xl font-bold text-gray-900">10k+</p>
+                <p className="text-3xl font-bold text-gray-900">10,000+</p> {/* <-- AJOUT: Statistique demandée */}
               </div>
             </div>
           </Card>
 
-          <Card variant="elevated" padding="lg" hoverable>
+          <Card variant="elevated" padding="lg" hoverable className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 transform hover:scale-105 transition-transform duration-300">
             <div className="flex items-center space-x-4">
-              <div className="p-4 bg-purple-100 rounded-full">
-                <Newspaper className="w-8 h-8 text-purple-600" />
+              <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full shadow-lg">
+                <BookOpen className="w-8 h-8 text-white" />
               </div>
               <div>
-                <p className="text-gray-600 text-sm font-medium">Articles publiés</p>
-                <p className="text-3xl font-bold text-gray-900">500+</p>
+                <p className="text-gray-600 text-sm font-medium">Modules d'apprentissage</p>
+                <p className="text-3xl font-bold text-gray-900">50+</p> {/* <-- AJOUT: Statistique demandée */}
+              </div>
+            </div>
+          </Card>
+
+          <Card variant="elevated" padding="lg" hoverable className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 transform hover:scale-105 transition-transform duration-300">
+            <div className="flex items-center space-x-4">
+              <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full shadow-lg">
+                <Target className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Actifs Analysés</p>
+                <p className="text-3xl font-bold text-gray-900">200+</p> {/* <-- AJOUT: Statistique demandée */}
               </div>
             </div>
           </Card>
         </div>
       </section>
 
-      {/* === Section Académie === */}
+      {/* === Section Académie (inchangée) === */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-8">
@@ -186,7 +338,6 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
                 Apprenez à votre rythme.
               </p>
 
-              {/* ✅ Button remplace le bouton manuel */}
               <Button
                 variant="success"
                 size="lg"
@@ -218,46 +369,51 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
         </Card>
       </section>
 
-      {/* === Section Top Actions === */}
+      {/* === Section Top Performances AMÉLIORÉE === */}
       {topStocks.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Top Performances</h2>
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Top Performances</h2>
+              <p className="text-gray-600 mt-1">Les actions qui se démarquent aujourd'hui</p> {/* <-- AJOUT: Sous-titre */}
+            </div>
             <Button variant="ghost" onClick={() => onNavigate('markets')}>
               Voir le marché
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
 
+          {/* <-- CORRECTION: Design amélioré avec ombres et hover effects */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {topStocks.map((stock) => (
               <Card
                 key={stock.id}
                 hoverable
                 onClick={() => onNavigate('stock-detail', stock)}
-                className="cursor-pointer"
+                className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 text-sm overflow-hidden">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-sm overflow-hidden shadow-md">
                       {stock.logo_url ? (
-                        <img src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-contain" />
+                        <img src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
                       ) : (
-                        stock.symbol.substring(0, 3)
+                        stock.symbol.substring(0, 2)
                       )}
                     </div>
                     <div>
-                      <h3 className="font-bold text-base text-gray-900 group-hover:text-blue-600 transition-colors">
-                        {stock.symbol}
-                      </h3>
-                      <p className="text-xs text-gray-500 line-clamp-1">{stock.company_name}</p>
+                      <p className="font-bold text-gray-900">{stock.symbol}</p>
+                      <p className="text-xs text-gray-500 truncate max-w-[140px]">
+                        {stock.company_name}
+                      </p>
                     </div>
                   </div>
 
-                  <div className={`flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  {/* <-- CORRECTION: Badge de variation amélioré */}
+                  <div className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${
                     stock.daily_change_percent >= 0
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800'
+                      : 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800'
                   }`}>
                     {stock.daily_change_percent >= 0 ? (
                       <TrendingUp className="w-3 h-3" />
@@ -271,13 +427,13 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
                   </div>
                 </div>
 
-                <p className="text-xl font-bold text-gray-900 mb-1">
+                <p className="text-2xl font-bold text-gray-900 mb-1">
                   {formatNumber(stock.current_price)} F
                 </p>
 
                 <div className="pt-3 border-t border-gray-100 mt-3 text-xs text-gray-500 flex justify-between">
                   <span>Cap: {formatCurrency(stock.market_cap)}</span>
-                  {stock.sector && <span>{stock.sector}</span>}
+                  {stock.sector && <span className="font-medium text-blue-600">{stock.sector}</span>}
                 </div>
               </Card>
             ))}
@@ -285,18 +441,23 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
         </section>
       )}
 
-      {/* === Section Actualités === */}
-      {featuredNews.length > 0 && (
+      {/* === Section Actualités du Jour AVEC CAROUSEL === */}
+      {displayedNews.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Actualités du Jour</h2>
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Actualités du Jour</h2>
+              <p className="text-gray-600 mt-1">Restez informé des dernières nouvelles de la BRVM</p> {/* <-- AJOUT: Sous-titre */}
+            </div>
             <div className="flex items-center space-x-2">
+              {/* <-- AJOUT: Boutons de navigation carousel */}
               <Button variant="ghost" size="sm" onClick={() => scrollNews('left')}>
                 <ChevronLeft className="w-5 h-5" />
               </Button>
               <Button variant="ghost" size="sm" onClick={() => scrollNews('right')}>
                 <ChevronRight className="w-5 h-5" />
               </Button>
+              {/* <-- AJOUT: Bouton "Voir tout" demandé */}
               <Button variant="ghost" onClick={() => onNavigate('news')} className="ml-4">
                 Voir tout
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -304,37 +465,39 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
             </div>
           </div>
 
+          {/* <-- CORRECTION: Carousel avec scroll amélioré */}
           <div
             ref={newsContainerRef}
             className="flex space-x-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
             style={{ scrollPadding: '1rem' }}
           >
-            {featuredNews.map((article) => (
+            {displayedNews.map((article) => (
               <div
                 key={article.id}
-                className="snap-start flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[23%]"
+                className="snap-start flex-shrink-0 w-[85%] sm:w-[48%] md:w-[32%] lg:w-[24%]"
               >
-                <Card hoverable className="h-full flex flex-col">
+                {/* <-- CORRECTION: Card améliorée avec hover et ombres */}
+                <Card hoverable className="h-full flex flex-col transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl">
                   {article.image_url ? (
                     <img
                       src={article.image_url}
                       alt={article.title}
-                      className="w-full h-40 object-cover"
+                      className="w-full h-48 object-cover rounded-t-lg"
                     />
                   ) : (
-                    <div className="w-full h-40 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center rounded-t-lg">
                       <Newspaper className="w-12 h-12 text-white opacity-50" />
                     </div>
                   )}
 
                   <div className="p-4 flex-1 flex flex-col">
                     {article.category && (
-                      <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full mb-2 self-start">
+                      <span className="inline-block px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-semibold rounded-full mb-2 self-start">
                         {article.category}
                       </span>
                     )}
 
-                    <h3 className="font-semibold text-sm text-gray-900 mb-2 line-clamp-2 flex-1">
+                    <h3 className="font-bold text-sm text-gray-900 mb-2 line-clamp-2 flex-1">
                       {article.title}
                     </h3>
 
@@ -343,7 +506,7 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
                     )}
 
                     {article.published_at && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 font-medium">
                         {new Date(article.published_at).toLocaleDateString('fr-FR')}
                       </p>
                     )}
@@ -355,7 +518,114 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
         </section>
       )}
 
-      {/* === Section CTA Final === */}
+      {/* <-- AJOUT: Section Témoignages (Social Proof) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            Ce que disent nos utilisateurs
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Rejoignez des milliers d'investisseurs qui ont transformé leur avenir financier avec AfriBourse
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial) => (
+            <Card key={testimonial.id} hoverable className="transform hover:-translate-y-1 transition-all duration-300">
+              <div className="relative">
+                {/* Icône de quote */}
+                <div className="absolute -top-4 -left-4 bg-blue-500 text-white rounded-full p-3 shadow-lg">
+                  <Quote className="w-6 h-6" />
+                </div>
+
+                {/* Étoiles */}
+                <div className="flex justify-end mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+
+                {/* Commentaire */}
+                <p className="text-gray-700 mb-6 italic leading-relaxed">
+                  "{testimonial.comment}"
+                </p>
+
+                {/* Profil */}
+                <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden">
+                    {testimonial.avatar ? (
+                      <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
+                    ) : (
+                      testimonial.name.charAt(0)
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{testimonial.name}</p>
+                    <p className="text-sm text-gray-600">{testimonial.role}</p>
+                    <p className="text-xs text-gray-500 mt-1">{testimonial.country}</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* <-- AJOUT: Section FAQ */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            Questions Fréquentes
+          </h2>
+          <p className="text-gray-600">
+            Tout ce que vous devez savoir pour commencer à investir sur la BRVM
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {faqData.map((faq) => (
+            <Card
+              key={faq.id}
+              hoverable
+              className="cursor-pointer"
+              onClick={() => setOpenFaqId(openFaqId === faq.id ? null : faq.id)}
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 mb-2 flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
+                    {faq.question}
+                  </h3>
+                  
+                  {/* Réponse dépliable */}
+                  {openFaqId === faq.id && (
+                    <p className="text-gray-600 leading-relaxed ml-7 mt-2 animate-fadeIn">
+                      {faq.answer}
+                    </p>
+                  )}
+                </div>
+                
+                <ChevronRight 
+                  className={`w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-300 ${
+                    openFaqId === faq.id ? 'rotate-90' : ''
+                  }`}
+                />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* CTA après FAQ */}
+        <div className="text-center mt-8">
+          <p className="text-gray-600 mb-4">Vous avez d'autres questions ?</p>
+          <Button variant="outline" onClick={() => onNavigate('learn')}>
+            Consulter notre centre d'aide
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+      </section>
+
+      {/* === Section CTA Final (inchangée) === */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
         <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-center">
           <div className="py-12 px-6">

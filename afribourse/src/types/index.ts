@@ -139,6 +139,8 @@ export interface LearningModule {
   is_published: boolean;
   thumbnail_url: string | null;
   video_url: string | null;
+  audio_url: string | null; // URL du podcast/audio
+  has_quiz: boolean; // Indique si le module a un quiz
   created_at: string | null;
   updated_at: string | null;
 }
@@ -146,6 +148,11 @@ export interface LearningModule {
 export interface LearningProgress {
   id: string;
   is_completed: boolean;
+  quiz_score: number | null;
+  quiz_attempts: number; // Nombre de tentatives au quiz
+  last_quiz_attempt_at: string | null; // Date de la dernière tentative
+  time_spent_minutes: number | null;
+  last_accessed_at: string | null;
   completed_at: string | null;
   userId: string;
   moduleId: string;
@@ -154,6 +161,23 @@ export interface LearningProgress {
     title: string;
     order_index: number;
   };
+}
+
+// Types pour les Quiz
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[]; // Liste des réponses possibles
+  correct_answer: number; // Index de la bonne réponse (0-based)
+  explanation?: string; // Explication de la réponse
+}
+
+export interface Quiz {
+  id: string;
+  moduleId: string;
+  questions: QuizQuestion[];
+  passing_score: number; // Score minimum pour réussir (en %)
+  created_at: string | null;
 }
 
 // ========================================
