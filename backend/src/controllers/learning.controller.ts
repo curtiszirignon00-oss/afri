@@ -84,4 +84,85 @@ export class LearningController {
             return next(error);
         }
     }
+
+    // 5. OBTENIR LE QUIZ D'UN MODULE (GET /api/learning-modules/:slug/quiz)
+    async getModuleQuiz(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { slug } = req.params;
+
+            const quiz = await learningService.getModuleQuiz(slug);
+
+            if (!quiz) {
+                return res.status(404).json({ message: 'Quiz non trouvé pour ce module.' });
+            }
+
+            // Vérifier que quiz.questions existe et est un tableau
+            if (!quiz.questions || !Array.isArray(quiz.questions)) {
+                return res.status(500).json({ message: 'Format de quiz invalide.' });
+            }
+
+            // Ne pas renvoyer les bonnes réponses au client
+            const quizWithoutAnswers = {
+                ...quiz,
+                questions: (quiz.questions as any[]).map((q: any) => ({
+                    id: q.id,
+                    question: q.question,
+                    options: q.options,
+                    // Ne pas inclure correct_answer
+                }))
+            };
+
+            return res.status(200).json(quizWithoutAnswers);
+        } catch (error) {
+            return next(error);
+        }
+    }
+
+    // 6. SOUMETTRE LE QUIZ (POST /api/learning-modules/:slug/submit-quiz)
+    async submitQuiz(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = (req as any).user?.id as string;
+            const { slug } = req.params;
+            const { answers, timeSpent } = req.body; // answers = array d'index ou objet { questionId: answerIndex }
+
+            if (!userId) {
+                return res.status(401).json({ message: "Utilisateur non authentifié." });
+            }
+
+            if (!answers) {
+                return res.status(400).json({ message: "Réponses invalides." });
+            }
+
+            const result = await learningService.submitQuiz(userId, slug, answers, timeSpent);
+
+            return res.status(200).json(result);
+        } catch (error: any) {
+            // Gérer les erreurs personnalisées avec statusCode (ex: limite de tentatives)
+            if (error.statusCode) {
+                return res.status(error.statusCode).json({
+                    message: error.message,
+                    canRetryAt: error.canRetryAt
+                });
+            }
+            return next(error);
+        }
+    }
+
+    // 7. OBTENIR LES TENTATIVES AU QUIZ (GET /api/learning-modules/:slug/quiz-attempts)
+    async getQuizAttempts(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = (req as any).user?.id as string;
+            const { slug } = req.params;
+
+            if (!userId) {
+                return res.status(401).json({ message: "Utilisateur non authentifié." });
+            }
+
+            const attempts = await learningService.getQuizAttempts(userId, slug);
+
+            return res.status(200).json(attempts);
+        } catch (error) {
+            return next(error);
+        }
+    }
 }

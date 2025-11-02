@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "node-express-typescript-boilerplate",
   "main": "dist/index.js",
-
   "scripts": {
     "update-sectors": "ts-node src/scripts/update-sectors.ts",
+    "create-quiz": "ts-node scripts/create-quiz.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
@@ -38,6 +38,7 @@
     "nodemailer": "^7.0.9",
     "prisma": "^6.17.1",
     "sanitize-html": "^2.17.0",
+    "tailwind-scrollbar-hide": "^4.0.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
