@@ -201,3 +201,72 @@ export interface Navigation {
   page: Page;
   data?: any;
 }
+// src/types/index.ts - EXTRAIT MODIFIÉ pour UserProfile
+
+// ========================================
+// TYPES UTILISATEUR & AUTHENTIFICATION
+// ========================================
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  lastname: string | null;
+  telephone?: string | null; // <-- AJOUT: Numéro de téléphone
+
+  // Données personnelles
+  first_name?: string | null;
+  last_name?: string | null;
+  country: string | null;
+  birth_date: string | null;
+
+  // Profil investisseur
+  has_invested: boolean | null;
+  experience_level: string | null;
+  main_goals: string[] | null;
+  monthly_amount: string | null;
+  profile_type: string | null;
+
+  // <-- AJOUT: Préférences d'apprentissage
+  topic_interests?: string[] | null;  // Nouveaux sujets d'intérêt
+
+  // <-- AJOUT: Feedback & Amélioration
+  discovery_channel?: string | null;  // Comment découvert AfriBourse
+  key_feature?: string | null;        // Fonctionnalité préférée
+
+  // Personnalisation
+  avatar_url?: string | null;
+  is_public?: boolean;
+  bio?: string | null;
+  social_links?: string[];
+}
+
+// <-- AJOUT: Options pour les nouvelles questions (à utiliser dans les formulaires)
+export const TOPIC_INTERESTS = [
+  'Analyse Fondamentale (PER, ROE)',
+  'Analyse Technique (Graphiques)',
+  'Stratégies de Dividendes',
+  'Obligations',
+  'Actualités Économiques',
+  'Fiscalité des investissements'
+] as const;
+
+export const DISCOVERY_CHANNELS = [
+  'Recommandation',
+  'Réseaux sociaux (LinkedIn, FB...)',
+  'Recherche Google',
+  'Publicité',
+  'Média en ligne'
+] as const;
+
+export const KEY_FEATURES = [
+  'La qualité des formations',
+  'La précision du simulateur',
+  'Les données de marché en temps réel',
+  'Les analyses d\'experts'
+] as const;
+
+// Types stricts basés sur les constantes
+export type TopicInterest = typeof TOPIC_INTERESTS[number];
+export type DiscoveryChannel = typeof DISCOVERY_CHANNELS[number];
+export type KeyFeature = typeof KEY_FEATURES[number];

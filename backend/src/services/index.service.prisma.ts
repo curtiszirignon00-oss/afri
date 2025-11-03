@@ -41,18 +41,20 @@ export async function getAllIndices() {
     throw error;
   }
 }
-// Get latest 2 indices
+// Get latest main indices (BRVM 30 and BRVM COMPOSITE only)
 export async function getLatestIndices(limit: number = 2): Promise<MarketIndex[]> {
     try {
         const indices = await prisma.marketIndex.findMany({
+            where: {
+                index_name: {
+                    in: ['BRVM 30', 'BRVM COMPOSITE'] // Filter for main BRVM indices only
+                }
+            },
             orderBy: {
                 date: 'desc', // Order by date to get latest first
             },
             take: limit, // Take the specified number
-             distinct: ['index_name'] // Get only the latest entry for each distinct index name
         });
-        // Since we order by date desc and take distinct, we might get older dates first
-        // Optional: Re-sort if needed, or adjust query. For just 2, it might be okay.
         return indices;
     } catch (error) {
         console.error("❌ Error fetching latest indices:", error);

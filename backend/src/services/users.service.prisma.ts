@@ -198,14 +198,23 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
         } else if (profileData.is_public === null) {
              isPublicBoolean = null;
         }
-        
+
+        // Conversion pour topic_interests (array)
+        let topicInterestsArray: string[] | undefined | null = undefined;
+        if (Array.isArray(profileData.topic_interests)) {
+            topicInterestsArray = profileData.topic_interests.length > 0 ? profileData.topic_interests : [];
+        } else if (profileData.topic_interests === null) {
+            topicInterestsArray = null;
+        }
+
         // FIN Logique de conversion
 
         const profile = await prisma.userProfile.upsert({
             where: { userId: userId },
-            update: ({ 
+            update: ({
                 first_name: profileData.first_name,
                 last_name: profileData.last_name,
+                phone_number: profileData.phone_number,
                 country: profileData.country,
                 birth_date: birthDateObject,
                 has_invested: hasInvestedBoolean,
@@ -215,14 +224,19 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
                 profile_type: profileData.profile_type,
                 // CORRECTION UTILISANT SNAKE_CASE (car le client Prisma l'exige ici)
                 avatar_url: profileData.avatar_url,
-                is_public: isPublicBoolean, 
+                is_public: isPublicBoolean,
                 bio: profileData.bio,
                 social_links: profileData.social_links,
+                // Nouveaux champs pour les préférences
+                topic_interests: topicInterestsArray === null ? undefined : topicInterestsArray,
+                discovery_channel: profileData.discovery_channel,
+                key_feature: profileData.key_feature,
             } as Prisma.UserProfileUncheckedUpdateInput),
-            create: ({ 
+            create: ({
                 userId: userId,
                 first_name: profileData.first_name,
                 last_name: profileData.last_name,
+                phone_number: profileData.phone_number,
                 country: profileData.country,
                 birth_date: birthDateObject ?? null,
                 has_invested: hasInvestedBoolean ?? null,
@@ -231,9 +245,13 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
                 monthly_amount: profileData.monthly_amount,
                 profile_type: profileData.profile_type,
                 avatar_url: profileData.avatar_url,
-                is_public: isPublicBoolean ?? false, 
+                is_public: isPublicBoolean ?? false,
                 bio: profileData.bio,
                 social_links: profileData.social_links ?? [],
+                // Nouveaux champs pour les préférences
+                topic_interests: topicInterestsArray ?? [],
+                discovery_channel: profileData.discovery_channel ?? null,
+                key_feature: profileData.key_feature ?? null,
             } as Prisma.UserProfileUncheckedCreateInput),
         });
         return profile;

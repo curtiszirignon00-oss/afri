@@ -1,6 +1,6 @@
-// src/components/ProfilePage.tsx - VERSION MIGRÉE
+// src/components/ProfilePage.tsx - VERSION AMÉLIORÉE
 import { useState, useEffect } from 'react';
-import { User, Target, ArrowRight, Calendar, AlertTriangle } from 'lucide-react';
+import { User, Target, ArrowRight, Calendar, AlertTriangle, BookOpen, TrendingUp, Megaphone, Star } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useUserProfile, useUpdateProfile } from '../hooks/useApi';
 import { Button, Input, Card, LoadingSpinner, ErrorMessage } from './ui';
 
@@ -11,14 +11,40 @@ type ProfilePageProps = {
 const countries = ['Bénin', 'Burkina Faso', 'Côte d\'Ivoire', 'Guinée-Bissau', 'Mali', 'Niger', 'Sénégal', 'Togo', 'Autre'];
 const goalOptions = ['Apprendre les bases', 'Préparer ma retraite/un projet', 'Générer un revenu complémentaire', 'Suivre l\'actualité', 'Curiosité'];
 
+// <-- AJOUT: Nouvelles options pour les questions supplémentaires
+const topicInterests = [
+  'Analyse Fondamentale (PER, ROE)',
+  'Analyse Technique (Graphiques)',
+  'Stratégies de Dividendes',
+  'Obligations',
+  'Actualités Économiques',
+  'Fiscalité des investissements'
+];
+
+const discoveryChannels = [
+  'Recommandation',
+  'Réseaux sociaux (LinkedIn, FB...)',
+  'Recherche Google',
+  'Publicité',
+  'Média en ligne'
+];
+
+const keyFeatures = [
+  'La qualité des formations',
+  'La précision du simulateur',
+  'Les données de marché en temps réel',
+  'Les analyses d\'experts'
+];
+
 export default function ProfilePage({ onNavigate }: ProfilePageProps) {
   // ✅ React Query hooks
   const { data: profile, isLoading, error, refetch } = useUserProfile();
   const updateProfile = useUpdateProfile();
 
-  // Form state
+  // Form state - Questions existantes
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState(''); // <-- AJOUT: Numéro de téléphone
   const [country, setCountry] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [hasInvested, setHasInvested] = useState<string>('');
@@ -27,11 +53,17 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
   const [monthlyAmount, setMonthlyAmount] = useState('');
   const [profileType, setProfileType] = useState('');
 
+  // <-- AJOUT: États pour les nouvelles questions
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]); // Choix multiples
+  const [discoveryChannel, setDiscoveryChannel] = useState(''); // Choix unique
+  const [keyFeature, setKeyFeature] = useState(''); // Choix unique
+
   // ✅ Charger les données du profil
   useEffect(() => {
     if (profile) {
       setFirstName(profile.name || '');
       setLastName(profile.lastname || '');
+      setPhoneNumber((profile as any).telephone || (profile as any).phone_number || ''); // <-- AJOUT
       setCountry(profile.country || '');
       setBirthDate(profile.birth_date ? profile.birth_date.split('T')[0] : '');
       setHasInvested(profile.has_invested === true ? 'Oui' : profile.has_invested === false ? 'Non' : '');
@@ -39,6 +71,11 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
       setMainGoals(profile.main_goals || []);
       setMonthlyAmount(profile.monthly_amount || '');
       setProfileType(profile.profile_type || '');
+
+      // <-- AJOUT: Charger les nouvelles données si elles existent
+      setSelectedTopics((profile as any).topic_interests || []);
+      setDiscoveryChannel((profile as any).discovery_channel || '');
+      setKeyFeature((profile as any).key_feature || '');
     }
   }, [profile]);
 
@@ -46,12 +83,19 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
     setMainGoals(prev => prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]);
   };
 
+  // <-- AJOUT: Fonction pour gérer les sujets d'intérêt (choix multiples)
+  const toggleTopic = (topic: string) => {
+    setSelectedTopics(prev => prev.includes(topic) ? prev.filter(t => t !== topic) : [...prev, topic]);
+  };
+
   // ✅ Sauvegarder avec React Query mutation
   async function handleSave() {
     try {
+      // <-- CORRECTION: Inclure les nouvelles données dans la sauvegarde
       await updateProfile.mutateAsync({
         name: firstName || null,
         lastname: lastName || null,
+        telephone: phoneNumber || null, // <-- AJOUT
         country: country || null,
         birth_date: birthDate || null,
         has_invested: hasInvested === 'Oui' ? true : hasInvested === 'Non' ? false : null,
@@ -59,7 +103,11 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
         main_goals: mainGoals.length > 0 ? mainGoals : null,
         monthly_amount: monthlyAmount || null,
         profile_type: profileType || null,
-      });
+        // <-- AJOUT: Nouvelles données à sauvegarder
+        topic_interests: selectedTopics.length > 0 ? selectedTopics : null,
+        discovery_channel: discoveryChannel || null,
+        key_feature: keyFeature || null,
+      } as any);
       setTimeout(() => onNavigate('dashboard'), 1000);
     } catch (err) {
       console.error('Erreur sauvegarde profil:', err);
@@ -87,7 +135,6 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Button */}
         <div className="flex justify-end mb-6">
-          {/* ✅ Button remplace button manuel */}
           <Button variant="ghost" onClick={() => onNavigate('dashboard')}>
             Retour Dashboard
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -104,8 +151,8 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
 
         {/* Form Sections */}
         <div className="space-y-8">
-          {/* Personal Info */}
-          {/* ✅ Card remplace div bg-white */}
+          
+          {/* 1. Personal Info */}
           <Card>
             <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -115,7 +162,6 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
             </div>
             <div className="space-y-5">
               <div className="grid md:grid-cols-2 gap-5">
-                {/* ✅ Input remplace input manuel */}
                 <Input
                   type="text"
                   label="Prénom"
@@ -131,6 +177,15 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
                   placeholder="Votre nom"
                 />
               </div>
+
+              {/* <-- AJOUT: Numéro de téléphone */}
+              <Input
+                type="tel"
+                label="Numéro de téléphone"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+225 XX XX XX XX XX"
+              />
 
               <div>
                 <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -159,7 +214,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
             </div>
           </Card>
 
-          {/* Investor Profile */}
+          {/* 2. Investor Profile */}
           <Card>
             <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
               <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -168,12 +223,13 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
               <h2 className="text-xl font-bold text-gray-900">Profil d'Investisseur</h2>
             </div>
             <div className="space-y-6">
+              
               {/* Has Invested */}
               <fieldset>
                 <legend className="block text-sm font-semibold text-gray-700 mb-2">
                   Avez-vous déjà investi ?
                 </legend>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   {['Oui', 'Non'].map(o => (
                     <label key={o} className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -181,7 +237,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
                         name="hasInvested"
                         value={o}
                         checked={hasInvested === o}
-                        onChange={e => setHasInvested(e.target.value)}
+                        onChange={(e) => setHasInvested(e.target.value)}
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
                       <span>{o}</span>
@@ -193,7 +249,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
               {/* Knowledge Level */}
               <fieldset>
                 <legend className="block text-sm font-semibold text-gray-700 mb-2">
-                  Quel est votre niveau de connaissance en investissement ?
+                  Votre niveau de connaissance en investissement ?
                 </legend>
                 <div className="flex flex-col sm:flex-row gap-4">
                   {['Débutant', 'Intermédiaire', 'Avancé'].map(o => (
@@ -203,7 +259,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
                         name="knowledgeLevel"
                         value={o}
                         checked={knowledgeLevel === o}
-                        onChange={e => setKnowledgeLevel(e.target.value)}
+                        onChange={(e) => setKnowledgeLevel(e.target.value)}
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
                       <span>{o}</span>
@@ -215,18 +271,25 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
               {/* Main Goals */}
               <fieldset>
                 <legend className="block text-sm font-semibold text-gray-700 mb-2">
-                  Quels sont vos principaux objectifs en utilisant AfriBourse ? (Plusieurs choix possibles)
+                  Quels sont vos objectifs principaux ? <span className="text-xs text-gray-500">(Choix multiples)</span>
                 </legend>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {goalOptions.map(g => (
-                    <label key={g} className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-50 cursor-pointer">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {goalOptions.map(goal => (
+                    <label 
+                      key={goal} 
+                      className={`flex items-start space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        mainGoals.includes(goal) 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
                       <input
                         type="checkbox"
-                        checked={mainGoals.includes(g)}
-                        onChange={() => toggleGoal(g)}
-                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        checked={mainGoals.includes(goal)}
+                        onChange={() => toggleGoal(goal)}
+                        className="mt-0.5 w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
                       />
-                      <span>{g}</span>
+                      <span className="text-sm">{goal}</span>
                     </label>
                   ))}
                 </div>
@@ -235,7 +298,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
               {/* Monthly Amount */}
               <fieldset>
                 <legend className="block text-sm font-semibold text-gray-700 mb-2">
-                  Quel montant envisagez-vous d'investir mensuellement ?
+                  Combien envisagez-vous d'investir mensuellement ?
                 </legend>
                 <div className="flex flex-col sm:flex-row gap-4">
                   {['Moins de 50 000 FCFA', '50k - 250k FCFA', '+250k FCFA', 'Pas encore décidé'].map(o => (
@@ -248,7 +311,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
                         onChange={e => setMonthlyAmount(e.target.value)}
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
-                      <span>{o}</span>
+                      <span className="text-sm">{o}</span>
                     </label>
                   ))}
                 </div>
@@ -270,7 +333,122 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
                         onChange={e => setProfileType(e.target.value)}
                         className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                       />
-                      <span>{o}</span>
+                      <span className="text-sm">{o}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+          </Card>
+
+          {/* <-- NOUVEAU: 3. Préférences d'Apprentissage */}
+          <Card>
+            <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-5 h-5 text-purple-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Préférences d'Apprentissage</h2>
+            </div>
+            <div className="space-y-6">
+              
+              {/* <-- AJOUT: Question 1 - Sujets d'Intérêt */}
+              <fieldset>
+                <legend className="block text-sm font-semibold text-gray-700 mb-2">
+                  Quels sujets spécifiques vous intéressent le plus ? <span className="text-xs text-gray-500">(Choix multiples)</span>
+                </legend>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {topicInterests.map(topic => (
+                    <label 
+                      key={topic} 
+                      className={`flex items-start space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        selectedTopics.includes(topic) 
+                          ? 'border-purple-500 bg-purple-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTopics.includes(topic)}
+                        onChange={() => toggleTopic(topic)}
+                        className="mt-0.5 w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
+                      />
+                      <span className="text-sm">{topic}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+          </Card>
+
+          {/* <-- NOUVEAU: 4. Feedback & Amélioration */}
+          <Card>
+            <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
+              <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Megaphone className="w-5 h-5 text-orange-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Feedback & Amélioration</h2>
+            </div>
+            <div className="space-y-6">
+              
+              {/* <-- AJOUT: Question 2 - Canal de Découverte */}
+              <fieldset>
+                <legend className="block text-sm font-semibold text-gray-700 mb-2">
+                  Comment avez-vous découvert AfriBourse ?
+                </legend>
+                <div className="space-y-2">
+                  {discoveryChannels.map(channel => (
+                    <label 
+                      key={channel} 
+                      className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        discoveryChannel === channel 
+                          ? 'border-orange-500 bg-orange-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="discoveryChannel"
+                        value={channel}
+                        checked={discoveryChannel === channel}
+                        onChange={(e) => setDiscoveryChannel(e.target.value)}
+                        className="w-4 h-4 text-orange-600 focus:ring-orange-500"
+                      />
+                      <span className="text-sm">{channel}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              {/* <-- AJOUT: Question 3 - Fonctionnalité Clé */}
+              <fieldset>
+                <legend className="block text-sm font-semibold text-gray-700 mb-2">
+                  Quelle est la fonctionnalité la plus importante pour vous ?
+                </legend>
+                <div className="space-y-2">
+                  {keyFeatures.map(feature => (
+                    <label 
+                      key={feature} 
+                      className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                        keyFeature === feature 
+                          ? 'border-orange-500 bg-orange-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="keyFeature"
+                        value={feature}
+                        checked={keyFeature === feature}
+                        onChange={(e) => setKeyFeature(e.target.value)}
+                        className="w-4 h-4 text-orange-600 focus:ring-orange-500"
+                      />
+                      <span className="text-sm flex items-center">
+                        {feature === 'La qualité des formations' && <BookOpen className="w-4 h-4 mr-2 text-gray-500" />}
+                        {feature === 'La précision du simulateur' && <Target className="w-4 h-4 mr-2 text-gray-500" />}
+                        {feature === 'Les données de marché en temps réel' && <TrendingUp className="w-4 h-4 mr-2 text-gray-500" />}
+                        {feature === 'Les analyses d\'experts' && <Star className="w-4 h-4 mr-2 text-gray-500" />}
+                        {feature}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -281,7 +459,6 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
 
         {/* Save Button */}
         <div className="mt-8 text-center">
-          {/* ✅ Button remplace button manuel */}
           <Button
             variant="primary"
             size="lg"
@@ -291,6 +468,26 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
           >
             {updateProfile.isPending ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
           </Button>
+          
+          {/* <-- AJOUT: Message informatif sur la consultation des réponses */}
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-left">
+                <p className="text-sm font-semibold text-blue-900 mb-1">
+                  📊 Consultation de vos réponses
+                </p>
+                <p className="text-sm text-blue-700">
+                  Toutes vos réponses sont sauvegardées en toute sécurité dans votre profil. 
+                  Vous pouvez les consulter et les modifier à tout moment en revenant sur cette page.
+                  {/* <-- INFORMATION: Les données sont accessibles via l'API /users/me */}
+                </p>
+                <p className="text-xs text-blue-600 mt-2">
+                  💡 <strong>Pour les administrateurs :</strong> Les réponses sont accessibles via l'endpoint API <code className="bg-blue-100 px-1 py-0.5 rounded">GET /api/users/me</code>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

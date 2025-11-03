@@ -120,7 +120,7 @@ export interface Transaction {
 export function usePortfolio() {
   return useQuery({
     queryKey: ['portfolio'],
-    queryFn: () => apiFetch<Portfolio>('/portfolio/my'),
+    queryFn: () => apiFetch<Portfolio>('/portfolios/my'),
     retry: false, // Ne pas réessayer si non connecté
   });
 }
@@ -131,7 +131,7 @@ export function useCreatePortfolio() {
 
   return useMutation({
     mutationFn: (data: { name: string; initial_balance: number }) =>
-      apiFetch<Portfolio>('/portfolio/my', {
+      apiFetch<Portfolio>('/portfolios/my', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
@@ -151,8 +151,8 @@ export function useBuyStock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { stockTicker: string; quantity: number }) =>
-      apiFetch('/portfolio/my/buy', {
+    mutationFn: (data: { stockTicker: string; quantity: number; pricePerShare: number }) =>
+      apiFetch('/portfolios/my/buy', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
@@ -173,8 +173,8 @@ export function useSellStock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { stockTicker: string; quantity: number }) =>
-      apiFetch('/portfolio/my/sell', {
+    mutationFn: (data: { stockTicker: string; quantity: number; pricePerShare: number }) =>
+      apiFetch('/portfolios/my/sell', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
@@ -193,7 +193,7 @@ export function useSellStock() {
 export function useTransactions() {
   return useQuery({
     queryKey: ['transactions'],
-    queryFn: () => apiFetch<Transaction[]>('/portfolio/my/transactions'),
+    queryFn: () => apiFetch<Transaction[]>('/portfolios/my/transactions'),
   });
 }
 
