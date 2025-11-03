@@ -58,6 +58,9 @@ model UserProfile {
   is_public          Boolean   @default(false) // Statut public/privé
   bio                String?   // Petite biographie pour le profil public
   social_links       String[]  // Liens sociaux (ex: Twitter, LinkedIn)
+  topic_interests     String[]  @default([])
+  discovery_channel   String?
+  key_feature         String?
   // --- Relation 1-à-1 avec User ---
   user               User      @relation(fields: [userId], references: [id])
   userId             String    @unique @db.ObjectId 

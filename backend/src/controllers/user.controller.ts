@@ -66,8 +66,22 @@ export async function updateUserProfile(req: AuthenticatedRequest, res: Response
     // --- 1. Mettre à jour les champs du Modèle User (name, lastname, etc.) ---
     const userUpdate = await usersService.updateUser(userId, { name, lastname, telephone, address });
 
-    // --- 2. Mapper les clés camelCase du frontend vers le snake_case attendu par Prisma/service ---
+    // --- 2. Mapper les clés du frontend vers le format attendu par Prisma/service ---
     const mappedProfileFields: any = { ...profileFields };
+
+    // Si le frontend envoie "name"/"lastname", mapper vers "first_name"/"last_name" pour UserProfile
+    // Note: name/lastname sont déjà extraits et mis à jour dans User, donc on les mappe aussi pour UserProfile
+    if (name !== undefined) {
+      mappedProfileFields.first_name = name;
+    }
+    if (lastname !== undefined) {
+      mappedProfileFields.last_name = lastname;
+    }
+    // Si le frontend envoie "telephone", mapper aussi vers "phone_number" pour UserProfile
+    if (telephone !== undefined) {
+      mappedProfileFields.phone_number = telephone;
+    }
+
     const keyMap: Record<string, string> = {
       avatarUrl: 'avatar_url',
       isPublic: 'is_public',
@@ -76,6 +90,9 @@ export async function updateUserProfile(req: AuthenticatedRequest, res: Response
       mainGoals: 'main_goals',
       monthlyAmount: 'monthly_amount',
       profileType: 'profile_type',
+      topicInterests: 'topic_interests',
+      discoveryChannel: 'discovery_channel',
+      keyFeature: 'key_feature',
       socialLinks: 'social_links'
     };
     for (const [k, v] of Object.entries(keyMap)) {
