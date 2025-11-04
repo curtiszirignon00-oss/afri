@@ -81,19 +81,14 @@ export function errorHandler(error: any, req: Request, res: Response, next: Next
  * Middleware pour gérer les routes non trouvées
  */
 export function notFoundHandler (req: Request, res: Response) {
-
-  // Si c'est une requête directe vers le backend (navigateur), servir la page HTML 404
-  if (req.headers.accept && req.headers.accept.includes('text/html')) {
-    return res.status(404).sendFile(path.join(__dirname, '../html/404.html'));
-  }
-
-  // Par défaut, retourner du JSON
+  // Toujours retourner du JSON (pas de HTML)
   res.status(404).json({
     error: `Route ${req.originalUrl} not found`,
     code: "NOT_FOUND",
     timestamp: new Date().toISOString(),
     method: req.method,
     path: req.originalUrl,
+    message: "Cette route n'existe pas sur l'API AfriBourse"
   });
 };
 
