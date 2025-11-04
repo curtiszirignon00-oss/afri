@@ -5,8 +5,8 @@ generator client {
 
 // 2. On configure la base de données pour MONGODB
 datasource db {
-  provider = "postgresql"  // ← Vous utilisez PostgreSQL, pas MongoDB !
-  url      = env("DATABASE_URL")  // ← Correspond à votre variable Render
+  provider = "mongodb"
+  url      = env("DATABASE_URI") // On utilise la variable de ton .env
 }
 
 // ================================= //
