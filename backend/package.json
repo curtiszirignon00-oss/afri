@@ -13,6 +13,7 @@
     "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
     "prisma:generate": "prisma generate",
+    "prisma:clean": "rimraf node_modules/.prisma node_modules/@prisma/client && prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset",
