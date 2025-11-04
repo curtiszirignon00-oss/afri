@@ -25,6 +25,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "types": ["node"],
     "allowSyntheticDefaultImports": true
   },
   "include": [
