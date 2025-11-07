@@ -32,11 +32,11 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
   // <-- AJOUT: État pour rotation des images de fond
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
-  // Images de fond depuis backend/public/images
+  // Images de fond - servies depuis le dossier public du frontend
   const backgroundImages = [
-    'http://localhost:3000/images/brvm-growth.png',
-    'http://localhost:3000/images/financial-ratios.png',
-    'http://localhost:3000/images/sonatel-dividend.png'
+    '/images/brvm-growth.png',
+    '/images/financial-ratios.png',
+    '/images/sonatel-dividend.png'
   ];
 
   // ✅ React Query remplace useState + useEffect + fetch
@@ -54,14 +54,14 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // Données de témoignages avec avatars depuis backend/public/avatars
+  // Données de témoignages avec avatars - servies depuis le dossier public du frontend
   const testimonials = [
     {
       id: 1,
       name: "Aminata Diallo",
       role: "Investisseuse depuis 2 ans",
       country: "🇸🇳 Sénégal",
-      avatar: "http://localhost:3000/avatars/aminata.png",
+      avatar: "/avatars/aminata.png",
       rating: 5,
       comment: "AfriBourse m'a permis de comprendre la BRVM et de faire mes premiers investissements en toute confiance. Les formations sont exceptionnelles !"
     },
@@ -70,7 +70,7 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
       name: "Kwame Mensah",
       role: "Entrepreneur",
       country: "🇬🇭 Ghana",
-      avatar: "http://localhost:3000/avatars/kwame.png",
+      avatar: "/avatars/kwame.png",
       rating: 5,
       comment: "Interface intuitive, données en temps réel et analyses pertinentes. C'est l'outil qu'il manquait pour investir en Afrique de l'Ouest."
     },
@@ -79,7 +79,7 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
       name: "Fatou Koné",
       role: "Cadre bancaire",
       country: "🇨🇮 Côte d'Ivoire",
-      avatar: "http://localhost:3000/avatars/fatou.png",
+      avatar: "/avatars/fatou.png",
       rating: 5,
       comment: "Grâce à AfriBourse, j'ai diversifié mon portefeuille et augmenté mes rendements de 35% en 1 an. Je recommande vivement !"
     }
