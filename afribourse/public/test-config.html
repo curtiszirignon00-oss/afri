@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AfriBourse - Test Configuration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .info { color: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 AfriBourse - Diagnostic de Configuration</h1>
+
+    <div class="test-box">
+        <h2>📋 Variables d'environnement détectées</h2>
+        <p><strong>VITE_API_URL:</strong> <span id="vite-api-url" class="info">Chargement...</span></p>
+        <p><strong>URL actuelle:</strong> <span id="current-url" class="info"></span></p>
+        <p><strong>Environnement:</strong> <span id="env" class="info"></span></p>
+    </div>
+
+    <div class="test-box">
+        <h2>🧪 Tests API</h2>
+        <button onclick="testHealthEndpoint()">Test /api/health</button>
+        <button onclick="testHomepageEndpoint()">Test /api/homepage</button>
+        <button onclick="testRelativeUrl()">Test URL relative /homepage</button>
+        <div id="api-results" style="margin-top: 20px;"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>📊 Résultats détaillés</h2>
+        <pre id="detailed-results">Cliquez sur un bouton de test ci-dessus...</pre>
+    </div>
+
+    <script>
+        // Afficher l'URL actuelle
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('env').textContent = window.location.hostname === 'localhost' ? 'Local' : 'Production';
+
+        // Simuler la détection de VITE_API_URL (en production, ce sera compilé dans le bundle)
+        // Pour ce test, on vérifie les deux URLs possibles
+        const possibleApiUrls = [
+            'https://afribourse-api.onrender.com/api',
+            'http://localhost:3001/api',
+            window.location.origin + '/api' // URL relative
+        ];
+
+        document.getElementById('vite-api-url').textContent =
+            'Test en cours avec: ' + possibleApiUrls[0];
+
+        async function testHealthEndpoint() {
+            const resultsDiv = document.getElementById('api-results');
+            const detailedDiv = document.getElementById('detailed-results');
+
+            resultsDiv.innerHTML = '<p class="info">Test en cours...</p>';
+
+            try {
+                const url = 'https://afribourse-api.onrender.com/api/health';
+                const response = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `<p class="success">✅ Backend fonctionne!</p>`;
+                detailedDiv.textContent = JSON.stringify({
+                    url: url,
+                    status: response.status,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    data: data
+                }, null, 2);
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+                detailedDiv.textContent = JSON.stringify({
+                    error: error.message,
+                    stack: error.stack
+                }, null, 2);
+            }
+        }
+
+        async function testHomepageEndpoint() {
+            const resultsDiv = document.getElementById('api-results');
+            const detailedDiv = document.getElementById('detailed-results');
+
+            resultsDiv.innerHTML = '<p class="info">Test en cours...</p>';
+
+            try {
+                const url = 'https://afribourse-api.onrender.com/api/homepage';
+                const response = await fetch(url, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `<p class="success">✅ Endpoint /homepage fonctionne!</p>`;
+                detailedDiv.textContent = JSON.stringify({
+                    url: url,
+                    status: response.status,
+                    dataSize: JSON.stringify(data).length + ' caractères',
+                    topStocksCount: data.topStocks?.length || 0,
+                    indicesCount: data.indices?.length || 0
+                }, null, 2);
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Erreur: ${error.message}</p>`;
+                detailedDiv.textContent = JSON.stringify({
+                    error: error.message,
+                    stack: error.stack
+                }, null, 2);
+            }
+        }
+
+        async function testRelativeUrl() {
+            const resultsDiv = document.getElementById('api-results');
+            const detailedDiv = document.getElementById('detailed-results');
+
+            resultsDiv.innerHTML = '<p class="info">Test en cours...</p>';
+
+            try {
+                // Test avec une URL relative (ce qui causerait l'erreur)
+                const url = '/homepage';
+                const response = await fetch(url, {
+                    method: 'GET'
+                });
+
+                const text = await response.text();
+
+                resultsDiv.innerHTML = `<p class="error">⚠️ URL relative testée</p>`;
+                detailedDiv.textContent = JSON.stringify({
+                    url: window.location.origin + url,
+                    status: response.status,
+                    statusText: response.statusText,
+                    response: text.substring(0, 500)
+                }, null, 2);
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ Erreur (attendue): ${error.message}</p>`;
+                detailedDiv.textContent = JSON.stringify({
+                    testedUrl: window.location.origin + '/homepage',
+                    error: error.message,
+                    note: "Cette erreur est normale - elle montre que l'URL relative ne fonctionne pas"
+                }, null, 2);
+            }
+        }
+    </script>
+
+    <div class="test-box">
+        <h2>💡 Instructions</h2>
+        <ol>
+            <li>Ouvrez ce fichier sur votre site Vercel: <code>https://africbourse.com/test-config.html</code></li>
+            <li>Cliquez sur chaque bouton de test</li>
+            <li>Partagez les résultats détaillés</li>
+        </ol>
+        <p><strong>Note:</strong> Si le test avec URL relative montre "Route /homepage not found",
+        cela signifie que le frontend essaie d'appeler votre domaine au lieu du backend API.</p>
+    </div>
+</body>
+</html>
