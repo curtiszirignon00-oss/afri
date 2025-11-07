@@ -20,11 +20,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
-
-const API_BASE_URL = 'http://localhost:3000/api';
 
 // <-- AJOUT: Type pour le quiz (temporaire, à remplacer par les vrais types)
 interface QuizQuestion {
