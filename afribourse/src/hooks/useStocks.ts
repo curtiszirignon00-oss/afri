@@ -2,8 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Stock } from '../types';
 import { useDebounce } from './useDebounce';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import { API_BASE_URL } from '../config/api';
 
 interface UseStocksOptions {
   searchTerm?: string;

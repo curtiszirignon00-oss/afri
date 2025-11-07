@@ -6,12 +6,11 @@ import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useBuyStock, useSellStock } from '../hooks/useApi';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
+import { API_BASE_URL } from '../config/api';
 
 type DashboardPageProps = {
   onNavigate: (page: string, data?: any) => void;
 };
-
-const API_BASE_URL = 'http://localhost:3000/api';
 
 // <-- AJOUT: Couleurs pour le graphique d'allocation
 const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];

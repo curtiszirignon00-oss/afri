@@ -2,8 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Portfolio, Position, PortfolioHistoryPoint, Stock } from '../types';
 import toast from 'react-hot-toast';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import { API_BASE_URL } from '../config/api';
 
 interface UsePortfolioReturn {
   portfolio: Portfolio | null;

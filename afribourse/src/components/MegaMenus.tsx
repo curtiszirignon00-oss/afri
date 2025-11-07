@@ -1,5 +1,6 @@
 import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Lightbulb, Newspaper, Globe, DollarSign, Eye, Building2, MapPin } from 'lucide-react'; // Added TrendingDown
 import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../config/api';
 // import { supabase } from '../lib/supabase'; // <-- REMOVE Supabase
 
 // --- Type Definitions ---
@@ -19,8 +20,6 @@ type MarketIndex = {
   // Add other fields if needed
 };
 // --- End Types ---
-
-const API_BASE_URL = 'http://localhost:3000/api'; // Adjust if needed
 
 type MegaMenuProps = {
   onNavigate: (page: string, data?: any) => void;

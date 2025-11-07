@@ -1,8 +1,7 @@
 // src/hooks/useApi.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import { API_BASE_URL } from '../config/api';
 
 // ========================================
 // 🔧 FONCTION UTILITAIRE FETCH

@@ -2,12 +2,11 @@
 import { useState } from 'react';
 import { Mail, Lock, TrendingUp, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button, Input, Card } from './ui';
+import { API_BASE_URL } from '../config/api';
 
 type SignupPageProps = {
   onNavigate: (page: string) => void;
 };
-
-const API_BASE_URL = 'http://localhost:3000/api';
 
 export default function SignupPage({ onNavigate }: SignupPageProps) {
   const [name, setName] = useState('');
