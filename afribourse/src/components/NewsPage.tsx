@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, User, Tag, AlertTriangle, Newspaper } from 'lucide-react'; // Added Newspaper
+import { API_BASE_URL } from '../config/api';
 // import { supabase, type NewsArticle } from '../lib/supabase'; // <-- REMOVE Supabase
 
 // --- Updated Type Definition ---
@@ -20,8 +21,6 @@ type NewsArticle = {
   created_at: string | null;
 };
 // --- End Type Definition ---
-
-const API_BASE_URL = 'http://localhost:3000/api'; // Adjust if needed
 
 export default function NewsPage() {
   const [articles, setArticles] = useState<NewsArticle[]>([]); // Holds articles fetched from API

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, TrendingUp, TrendingDown, ExternalLink, Wallet, AlertTriangle, Star } from 'lucide-react';
 // import { supabase, type Stock, type StockFundamental } from '../lib/supabase'; // <-- REMOVE Supabase
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 // --- Type Definitions (Ensure these match your actual Prisma schema / API responses) ---
 import { Stock, StockFundamental, Portfolio, WatchlistItem } from '../types';
@@ -11,8 +12,6 @@ type StockDetailPageProps = {
   stock: Stock; // Stock data passed as prop
   onNavigate: (page: string, data?: any) => void;
 };
-
-const API_BASE_URL = 'http://localhost:3000/api'; // Adjust if needed
 
 export default function StockDetailPage({ stock, onNavigate }: StockDetailPageProps) {
   // If stock data wasn't passed correctly

@@ -3,12 +3,11 @@ import { Mail, Lock, TrendingUp, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 type LoginPageProps = {
   onNavigate: (page: string) => void;
 };
-
-const API_BASE_URL = 'http://localhost:3000/api';
 
 export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [email, setEmail] = useState('');
