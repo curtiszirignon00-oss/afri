@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { TrendingUp } from 'lucide-react';
 
 // Query Client
 import { queryClient } from './lib/queryClient';
@@ -102,10 +103,78 @@ function AppContent() {
 
       {showLayout && (
         <footer className="bg-gray-900 text-white mt-auto">
-          <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-sm text-gray-400">
-              &copy; {new Date().getFullYear()} AfriBourse. Tous droits réservés.
-            </p>
+          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              {/* Section AfriBourse */}
+              <div>
+                <div className="flex items-center space-x-2 mb-4">
+                  <TrendingUp className="w-8 h-8 text-blue-500" />
+                  <h3 className="text-xl font-bold">AfriBourse</h3>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Plateforme d'investissement pour la BRVM. Apprenez, simulez et investissez en toute confiance.
+                </p>
+              </div>
+
+              {/* Section Navigation */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Navigation</h4>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <button onClick={() => handleNavigate('learn')} className="text-gray-400 hover:text-white transition-colors">
+                      Apprendre
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={() => handleNavigate('markets')} className="text-gray-400 hover:text-white transition-colors">
+                      Marchés
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={() => handleNavigate('news')} className="text-gray-400 hover:text-white transition-colors">
+                      Actualités
+                    </button>
+                  </li>
+                  <li>
+                    <button onClick={() => handleNavigate('glossary')} className="text-gray-400 hover:text-white transition-colors">
+                      Glossaire
+                    </button>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Section Informations */}
+              <div>
+                <h4 className="text-lg font-semibold mb-4">Informations</h4>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      À propos
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      Contact
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      Confidentialité
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Section Copyright et Avertissement */}
+            <div className="border-t border-gray-800 pt-8 space-y-4">
+              <p className="text-center text-sm text-gray-400">
+                &copy; {new Date().getFullYear()} AfriBourse. Tous droits réservés.
+              </p>
+              <p className="text-center text-xs text-gray-500 italic">
+                Avertissement : Les investissements en bourse comportent des risques. Informez-vous avant d'investir.
+              </p>
+            </div>
           </div>
         </footer>
       )}
