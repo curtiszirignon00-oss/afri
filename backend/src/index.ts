@@ -23,6 +23,10 @@ import './jobs/scraping.job';
 import learningRoutes from "./routes/learning.routes";
 import newsRoutes from "./routes/news.routes";
 import authRoutes from './routes/auth.routes';
+import profileRoutes from './routes/profile.routes';
+import achievementRoutes from './routes/achievement.routes';
+import activityRoutes from './routes/activity.routes';
+import leaderboardRoutes from './routes/leaderboard.routes';
 
 class App {
   private app: Application | null = null;
@@ -68,6 +72,9 @@ class App {
     // Other Middlewares
     this.app?.use(compression());
     this.app?.use(cookieParser());
+    this.app?.use(cors());
+    this.app?.use(json());
+    
 
     // Rate Limiting
     this.app?.use(
@@ -121,6 +128,10 @@ class App {
     this.app?.use("/api/learning-modules", learningRoutes);
     this.app?.use("/api/news", newsRoutes);
     this.app?.use('/api/', authRoutes);
+    this.app?.use('/api/profile', profileRoutes);         // Profil social + follow
+    this.app?.use('/api/achievements', achievementRoutes); // Achievements/badges
+    this.app?.use('/api/activities', activityRoutes);      // Activités utilisateur
+    this.app?.use('/api/leaderboard', leaderboardRoutes);  // Classements
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));
