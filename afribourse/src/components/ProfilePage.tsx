@@ -1,6 +1,6 @@
 // src/components/ProfilePage.tsx - VERSION AMÉLIORÉE
 import { useState, useEffect } from 'react';
-import { User, Target, ArrowRight, Calendar, AlertTriangle, BookOpen, TrendingUp, Megaphone, Star } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
+import { User, Target, ArrowRight, Calendar, BookOpen, TrendingUp, Megaphone, Star } from 'lucide-react';
 import { useUserProfile, useUpdateProfile } from '../hooks/useApi';
 import { Button, Input, Card, LoadingSpinner, ErrorMessage } from './ui';
 
@@ -468,26 +468,6 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
           >
             {updateProfile.isPending ? 'Sauvegarde...' : 'Sauvegarder les modifications'}
           </Button>
-          
-          {/* <-- AJOUT: Message informatif sur la consultation des réponses */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-left">
-                <p className="text-sm font-semibold text-blue-900 mb-1">
-                  📊 Consultation de vos réponses
-                </p>
-                <p className="text-sm text-blue-700">
-                  Toutes vos réponses sont sauvegardées en toute sécurité dans votre profil. 
-                  Vous pouvez les consulter et les modifier à tout moment en revenant sur cette page.
-                  {/* <-- INFORMATION: Les données sont accessibles via l'API /users/me */}
-                </p>
-                <p className="text-xs text-blue-600 mt-2">
-                  💡 <strong>Pour les administrateurs :</strong> Les réponses sont accessibles via l'endpoint API <code className="bg-blue-100 px-1 py-0.5 rounded">GET /api/users/me</code>
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
