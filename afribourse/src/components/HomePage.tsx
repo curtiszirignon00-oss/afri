@@ -117,6 +117,12 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
   // <-- AJOUT: État pour l'accordéon FAQ
   const [openFaqId, setOpenFaqId] = useState<number | null>(null);
 
+  // <-- AJOUT: État pour le modal d'avis
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [hoveredStar, setHoveredStar] = useState(0);
+
   // Actualités d'exemple (sans images pour le moment - seront ajoutées plus tard)
   const exampleNews = [
     {
@@ -177,6 +183,34 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
       left: direction === 'right' ? scrollAmount : -scrollAmount,
       behavior: 'smooth'
     });
+  };
+
+  // <-- AJOUT: Fonctions pour gérer le modal d'avis
+  const handleSubmitReview = () => {
+    if (reviewRating === 0) {
+      alert('Veuillez sélectionner une note');
+      return;
+    }
+    if (reviewText.trim().length === 0) {
+      alert('Veuillez saisir votre avis');
+      return;
+    }
+
+    // TODO: Envoyer l'avis au backend
+    console.log('Avis soumis:', { rating: reviewRating, text: reviewText });
+
+    // Réinitialiser et fermer
+    setReviewRating(0);
+    setReviewText('');
+    setIsReviewModalOpen(false);
+    alert('Merci pour votre avis ! Il sera publié après validation.');
+  };
+
+  const closeReviewModal = () => {
+    setIsReviewModalOpen(false);
+    setReviewRating(0);
+    setReviewText('');
+    setHoveredStar(0);
   };
 
   // Auto-scroll carousel
@@ -524,9 +558,20 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
           <h2 className="text-3xl font-bold text-gray-900 mb-3">
             Ce que disent nos utilisateurs
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
             Rejoignez des milliers d'investisseurs qui ont transformé leur avenir financier avec AfriBourse
           </p>
+
+          {/* <-- AJOUT: Bouton "Laisser un avis" */}
+          <Button
+            variant="outline"
+            size="md"
+            onClick={() => setIsReviewModalOpen(true)}
+            className="inline-flex items-center space-x-2"
+          >
+            <Star className="w-5 h-5 text-yellow-500" />
+            <span>Laisser un avis</span>
+          </Button>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -647,6 +692,118 @@ export default function HomePage({ onNavigate, isLoggedIn }: HomePageProps) {
           </div>
         </Card>
       </section>
+
+      {/* <-- AJOUT: Modal pour laisser un avis */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative animate-fadeIn">
+            {/* Bouton fermer */}
+            <button
+              onClick={closeReviewModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Titre */}
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-4">
+                <Star className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Partagez votre expérience
+              </h3>
+              <p className="text-gray-600">
+                Votre avis nous aide à améliorer nos services
+              </p>
+            </div>
+
+            {/* Sélection des étoiles */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3 text-center">
+                Votre note
+              </label>
+              <div className="flex justify-center space-x-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewRating(star)}
+                    onMouseEnter={() => setHoveredStar(star)}
+                    onMouseLeave={() => setHoveredStar(0)}
+                    className="transition-transform hover:scale-110 focus:outline-none"
+                  >
+                    <Star
+                      className={`w-10 h-10 ${
+                        star <= (hoveredStar || reviewRating)
+                          ? 'text-yellow-400 fill-current'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              {reviewRating > 0 && (
+                <p className="text-center text-sm text-gray-600 mt-2">
+                  {reviewRating === 1 && 'Décevant'}
+                  {reviewRating === 2 && 'Peut mieux faire'}
+                  {reviewRating === 3 && 'Correct'}
+                  {reviewRating === 4 && 'Très bien'}
+                  {reviewRating === 5 && 'Excellent'}
+                </p>
+              )}
+            </div>
+
+            {/* Zone de texte */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Votre avis <span className="text-gray-500 font-normal">(max 200 caractères)</span>
+              </label>
+              <textarea
+                value={reviewText}
+                onChange={(e) => {
+                  if (e.target.value.length <= 200) {
+                    setReviewText(e.target.value);
+                  }
+                }}
+                placeholder="Partagez votre expérience avec AfriBourse..."
+                className="w-full h-32 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all resize-none"
+              />
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-xs text-gray-500">
+                  {reviewText.length}/200 caractères
+                </p>
+                {reviewText.length === 200 && (
+                  <p className="text-xs text-orange-600 font-medium">
+                    Limite atteinte
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Boutons d'action */}
+            <div className="flex space-x-4">
+              <Button
+                variant="ghost"
+                onClick={closeReviewModal}
+                className="flex-1"
+              >
+                Annuler
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSubmitReview}
+                disabled={reviewRating === 0 || reviewText.trim().length === 0}
+                className="flex-1"
+              >
+                Envoyer l'avis
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
