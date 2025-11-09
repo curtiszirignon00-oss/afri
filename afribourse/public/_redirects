@@ -1,0 +1,2 @@
+# Netlify redirects - This file will be copied to dist during build
+/*    /index.html   200
