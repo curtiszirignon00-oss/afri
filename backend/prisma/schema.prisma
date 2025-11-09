@@ -1,15 +1,16 @@
-// Configuration MongoDB pour AfriBourse - Updated 2025-11-04
-// Configuration MongoDB pour AfriBourse - Updated 2025-11-04
+// ================================================================
+// SCHEMA PRISMA AFRIBOURSE - VERSION PROFIL SOCIAL
+// Date: 2025-11-09
+// Sprint 1 - Fondations
+// ================================================================
 
-// 1. On dit à Prisma qu'on génère un client JS
 generator client {
   provider = "prisma-client-js"
 }
 
-// 2. On configure la base de données pour MONGODB
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URI") // On utilise la variable de ton .env
+  url      = env("DATABASE_URI")
 }
 
 // ================================= //
@@ -30,45 +31,333 @@ model User {
   address             String?
   role                String    @default("user")
 
-  // --- Relations ---
-  // Un User a un UserProfile (relation 1-à-1)
+  // --- Relations existantes ---
   profile             UserProfile?
-  // Un User a un Portfolio (relation 1-à-plusieurs)
   portfolios          Portfolio[]
-  // Un User a plusieurs items dans sa Watchlist
   watchlistItems      WatchlistItem[]
-  // Un User a une progression dans plusieurs cours
   learningProgress    LearningProgress[]
+  
+  // --- Nouvelles relations (profil social) ---
+  challengeProgress   UserChallengeProgress[]
 
   @@map("users")
 }
 
-// C'est ta table "user_profiles"
+// Extension massive du UserProfile pour profil social
 model UserProfile {
   id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String    @unique @db.ObjectId
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // ============= INFOS EXISTANTES =============
   first_name         String?
   last_name          String?
   phone_number       String?
   country            String?
-  experience_level   String?   
+  experience_level   String?
   investment_goals   String?
   birth_date         DateTime?
   has_invested       Boolean?
-  main_goals         String[] // Make sure this is an array if you store multiple
-  monthly_amount     String?   // <-- ADD THIS LINE
-  profile_type       String?   
-  avatar_url         String?   // URL de la photo de profil
-  is_public          Boolean   @default(false) // Statut public/privé
-  bio                String?   // Petite biographie pour le profil public
-  social_links       String[]  // Liens sociaux (ex: Twitter, LinkedIn)
-  topic_interests     String[]  @default([])
-  discovery_channel   String?
-  key_feature         String?
-  // --- Relation 1-à-1 avec User ---
-  user               User      @relation(fields: [userId], references: [id])
-  userId             String    @unique @db.ObjectId 
-
+  main_goals         String[]  @default([])
+  monthly_amount     String?
+  profile_type       String?
+  topic_interests    String[]  @default([])
+  discovery_channel  String?
+  key_feature        String?
+  
+  // ============= PROFIL SOCIAL (NOUVEAU) =============
+  // Identification & Branding
+  username           String?  // @mamadou_invest
+  bio                String?             // Max 200 caractères
+  avatar_url         String?
+  banner_url         String?
+  banner_type        String?   @default("gradient") // gradient, color, image
+  
+  // Liens sociaux
+  social_links       Json?     // { linkedin: "url", twitter: "url", instagram: "url" }
+  
+  // Visibilité globale
+  is_public          Boolean   @default(true)
+  
+  // ============= GAMIFICATION (NOUVEAU) =============
+  level              Int       @default(1)
+  total_xp           Int       @default(0)
+  current_streak     Int       @default(0)
+  longest_streak     Int       @default(0)
+  last_activity_date DateTime?
+  streak_freezes     Int       @default(5)  // Nombre de freezes disponibles
+  
+  // Classement
+  global_rank        Int?
+  country_rank       Int?
+  
+  // ============= PARAMÈTRES DE CONFIDENTIALITÉ (NOUVEAU) =============
+  // Informations personnelles
+  show_avatar        Boolean   @default(true)
+  show_bio           Boolean   @default(true)
+  show_country       Boolean   @default(true)
+  show_birth_date    Boolean   @default(false)
+  
+  // Statistiques
+  show_level         Boolean   @default(true)
+  show_xp            Boolean   @default(false)  // XP exact caché par défaut
+  show_rank          Boolean   @default(true)
+  show_streak        Boolean   @default(true)
+  
+  // Portfolio
+  show_portfolio_value Boolean @default(true)
+  show_roi           Boolean   @default(false)  // ROI exact caché par défaut
+  show_positions     Boolean   @default(true)
+  show_transactions  Boolean   @default(false)
+  
+  // Succès
+  show_achievements  Boolean   @default(true)
+  show_badges        Boolean   @default(true)
+  show_completed_modules Boolean @default(true)
+  show_quiz_scores   Boolean   @default(false)
+  
+  // Social
+  show_followers_count Boolean @default(true)
+  show_following_count Boolean @default(true)
+  show_followers_list  Boolean @default(false)
+  show_following_list  Boolean @default(true)
+  show_activity_feed   Boolean @default(true)
+  
+  // Découverte
+  appear_in_search     Boolean @default(true)
+  appear_in_suggestions Boolean @default(true)
+  allow_follow_requests Boolean @default(true)
+  
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  
+  // ============= RELATIONS SOCIALES (NOUVEAU) =============
+  achievements       UserAchievement[]
+  activities         UserActivity[]
+  followers          Follow[]          @relation("UserFollowers")
+  following          Follow[]          @relation("UserFollowing")
+  rewards            UserReward[]
+  
   @@map("user_profiles")
+  @@index([level])
+  @@index([total_xp])
+  @@index([country])
+  @@index([username])
+}
+
+// ================================= //
+// === GAMIFICATION : ACHIEVEMENTS === //
+// ================================= //
+
+model Achievement {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  code         String   @unique   // "first_trade", "module_master", "quiz_goat"
+  name         String              // "Premier Trade"
+  description  String              // "Effectue ta première transaction"
+  icon         String              // Emoji ou URL d'image
+  category     String              // formation, trading, social, engagement, special
+  rarity       String   @default("common") // common, rare, epic, legendary
+  xp_reward    Int                 // XP accordé au déblocage
+  criteria     Json                // Critères de déblocage flexibles
+  
+  // Optionnel : Conditions pour débloquer
+  required_level Int?              // Niveau minimum requis
+  is_hidden      Boolean @default(false) // Badge secret ?
+  
+  created_at   DateTime @default(now())
+  
+  // Relations
+  users        UserAchievement[]
+  
+  @@map("achievements")
+  @@index([category])
+  @@index([rarity])
+}
+
+model UserAchievement {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  achievementId  String   @db.ObjectId
+  
+  unlocked_at    DateTime @default(now())
+  is_displayed   Boolean  @default(true) // Afficher sur le profil public
+  is_notified    Boolean  @default(false) // Notification envoyée ?
+  
+  userProfile    UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  achievement    Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+  @@index([userId])
+  @@index([achievementId])
+  @@index([unlocked_at])
+}
+
+// ================================= //
+// === SOCIAL : FOLLOW SYSTEM === //
+// ================================= //
+
+model Follow {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String   @db.ObjectId  // Celui qui suit
+  followingId String   @db.ObjectId  // Celui qui est suivi
+  
+  created_at  DateTime @default(now())
+  
+  follower    UserProfile @relation("UserFollowers", fields: [followerId], references: [userId], onDelete: Cascade)
+  following   UserProfile @relation("UserFollowing", fields: [followingId], references: [userId], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@map("follows")
+  @@index([followerId])
+  @@index([followingId])
+  @@index([created_at])
+}
+
+// ================================= //
+// === ACTIVITÉS UTILISATEUR === //
+// ================================= //
+
+model UserActivity {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  
+  type        String   // badge, module, trade, follow, level_up, milestone, quiz
+  description String   // Description textuelle de l'activité
+  metadata    Json?    // Données supplémentaires (ticker, module_slug, etc.)
+  is_public   Boolean  @default(true)  // Visible par les followers ?
+  
+  created_at  DateTime @default(now())
+  
+  userProfile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  
+  @@map("user_activities")
+  @@index([userId])
+  @@index([type])
+  @@index([created_at])
+  @@index([is_public])
+}
+
+// ================================= //
+// === DÉFIS HEBDOMADAIRES === //
+// ================================= //
+
+model WeeklyChallenge {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  target      Int              // Objectif numérique (ex: 3 modules, 10 trades)
+  xp_reward   Int              // XP accordé à la complétion
+  badge_code  String?          // Code du badge à débloquer (optionnel)
+  challenge_type String        // "module", "trade", "streak", "quiz", "social"
+  
+  start_date  DateTime
+  end_date    DateTime
+  is_active   Boolean  @default(true)
+  
+  created_at  DateTime @default(now())
+  
+  // Relations
+  participants UserChallengeProgress[]
+  
+  @@map("weekly_challenges")
+  @@index([is_active])
+  @@index([start_date])
+  @@index([end_date])
+}
+
+model UserChallengeProgress {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  challengeId String   @db.ObjectId
+  
+  current     Int      @default(0)     // Progression actuelle
+  completed   Boolean  @default(false)
+  completed_at DateTime?
+  claimed     Boolean  @default(false) // Récompense récupérée ?
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, challengeId])
+  @@map("user_challenge_progress")
+  @@index([userId])
+  @@index([challengeId])
+  @@index([completed])
+}
+
+// ================================= //
+// === SYSTÈME DE RÉCOMPENSES === //
+// ================================= //
+
+model Reward {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  xp_required     Int              // XP nécessaire pour débloquer
+  reward_type     String           // virtual_cash, feature, real_stock, consultation, real_cash, masterclass, freeze, badge
+  
+  // Détails de la récompense (JSON flexible)
+  reward_data     Json             // { amount: 50000, description: "+50K FCFA", featureCode: "...", etc. }
+  
+  title           String
+  description     String
+  icon            String?          // Emoji ou URL
+  
+  is_active       Boolean  @default(true)
+  tier            Int      @default(1)  // Niveau de récompense (1-5)
+  
+  created_at      DateTime @default(now())
+  
+  // Relations
+  users           UserReward[]
+  
+  @@map("rewards")
+  @@index([xp_required])
+  @@index([reward_type])
+  @@index([is_active])
+}
+
+model UserReward {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  rewardId    String   @db.ObjectId
+  
+  unlocked_at DateTime @default(now())
+  claimed     Boolean  @default(false)  // Récompense récupérée ?
+  claimed_at  DateTime?
+  
+  // Pour certaines récompenses (consultations, actions réelles)
+  delivery_status String? // pending, processing, delivered, cancelled
+  delivery_data   Json?   // Infos de livraison (tracking, etc.)
+  
+  userProfile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  reward      Reward      @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, rewardId])
+  @@map("user_rewards")
+  @@index([userId])
+  @@index([rewardId])
+  @@index([claimed])
+}
+
+// ================================= //
+// === XP HISTORY (AUDIT) === //
+// ================================= //
+
+model XPHistory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  
+  amount      Int              // XP gagné (peut être négatif si pénalité)
+  reason      String           // "module_completed", "quiz_100", "first_trade", etc.
+  description String?          // Description détaillée
+  metadata    Json?            // Données additionnelles
+  
+  created_at  DateTime @default(now())
+  
+  @@map("xp_history")
+  @@index([userId])
+  @@index([created_at])
+  @@index([reason])
 }
 
 // ================================= //
@@ -77,7 +366,7 @@ model UserProfile {
 
 model Stock {
   id                   String    @id @default(auto()) @map("_id") @db.ObjectId
-  symbol               String    @unique // ex: "SNTS"
+  symbol               String    @unique
   company_name         String
   sector               String?
   country              String?
@@ -86,20 +375,16 @@ model Stock {
   website_url          String?
   is_active            Boolean   @default(true)
   
-  // --- Données de marché ---
   current_price        Float     @default(0)
   previous_close       Float     @default(0)
   daily_change_percent Float     @default(0)
-  volume               Float     @default(0) // On utilise Float pour gérer les grands nombres
+  volume               Float     @default(0)
   market_cap           Float     @default(0)
   
   created_at           DateTime? @default(now())
   updated_at           DateTime? @updatedAt
 
-  // --- Relations ---
-  // Une action a un historique de prix
   history              StockHistory[]
-  // Une action a des données fondamentales
   fundamentals         StockFundamental[]
 
   @@map("stocks")
@@ -114,11 +399,12 @@ model StockHistory {
   close_price  Float
   volume       Float
 
-  // --- Relation avec Stock ---
-  stock        Stock     @relation(fields: [stockId], references: [id])
+  stock        Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
   stockId      String    @db.ObjectId
 
   @@map("stock_history")
+  @@index([stockId])
+  @@index([date])
 }
 
 model StockFundamental {
@@ -134,22 +420,24 @@ model StockFundamental {
   created_at      DateTime? @default(now())
   updated_at      DateTime? @updatedAt
 
-  // --- Relation avec Stock ---
-  stock           Stock    @relation(fields: [stockId], references: [id])
+  stock           Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
   stockId         String   @db.ObjectId
 
   @@map("stock_fundamentals")
+  @@index([stockId])
+  @@index([year])
 }
 
 model MarketIndex {
   id                   String   @id @default(auto()) @map("_id") @db.ObjectId
-  index_name           String   @unique // <-- AJOUTE @unique ICI
+  index_name           String   @unique
   index_value          Float
   daily_change_percent Float
   date                 DateTime
   created_at           DateTime? @default(now())
 
   @@map("market_indices")
+  @@index([date])
 }
 
 // ================================= //
@@ -159,67 +447,63 @@ model MarketIndex {
 model Portfolio {
   id                      String    @id @default(auto()) @map("_id") @db.ObjectId
   name                    String
-  initial_balance         Float     @default(1000000) // 1 million par défaut
+  initial_balance         Float     @default(1000000)
   cash_balance            Float
   is_virtual              Boolean   @default(true)
 
   created_at              DateTime? @default(now())
   updated_at              DateTime? @updatedAt
   
-  // --- Relations ---
-  // Un portfolio appartient à un User
-  user                    User      @relation(fields: [userId], references: [id])
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                  String    @db.ObjectId
-  // Un portfolio a plusieurs positions
+  
   positions               Position[]
-  // Un portfolio a plusieurs transactions
   transactions            Transaction[]
 
   @@map("portfolios")
+  @@index([userId])
 }
 
-// C'est ta table "positions"
 model Position {
   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker        String   // ex: "SNTS"
-  quantity            Float    // Nombre d'actions
+  stock_ticker        String
+  quantity            Float
   average_buy_price   Float
   
-  // --- Relation avec Portfolio ---
-  portfolio           Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolio           Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   portfolioId         String    @db.ObjectId
 
   @@map("positions")
+  @@index([portfolioId])
 }
 
 model Transaction {
   id              String    @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker    String    // ex: "SNTS"
+  stock_ticker    String
   type            String    // "BUY" ou "SELL"
   quantity        Float
   price_per_share Float
   created_at      DateTime? @default(now())
 
-  // --- Relation avec Portfolio ---
-  portfolio       Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   portfolioId     String    @db.ObjectId
 
   @@map("transactions")
+  @@index([portfolioId])
+  @@index([created_at])
 }
 
 model WatchlistItem {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker  String    // ex: "SNTS"
+  stock_ticker  String
   created_at    DateTime? @default(now())
   
-  // --- Relation avec User ---
-  user          User      @relation(fields: [userId], references: [id])
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String    @db.ObjectId
 
   @@map("watchlist_items")
+  @@index([userId])
 }
-
-
 
 // ================================= //
 // === MODÈLES DE CONTENU === //
@@ -230,7 +514,7 @@ model NewsArticle {
   title         String
   slug          String?
   summary       String?
-  content       String?   // On stockera le HTML ici
+  content       String?
   category      String?
   author        String?
   source        String?
@@ -242,14 +526,16 @@ model NewsArticle {
   created_at    DateTime? @default(now())
 
   @@map("news_articles")
+  @@index([slug])
+  @@index([published_at])
 }
 
 model LearningModule {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   title             String
-  slug              String    @unique
+  slug              String
   description       String?
-  content           String?   // Le contenu du cours en HTML
+  content           String?
   difficulty_level  String    // "debutant", "intermediaire", "avance"
   content_type      String    // "article" ou "video"
   duration_minutes  Int?
@@ -257,51 +543,50 @@ model LearningModule {
   is_published      Boolean   @default(true)
   thumbnail_url     String?
   video_url         String?
-  audio_url         String?   // URL du fichier audio (podcast)
-  has_quiz          Boolean   @default(false) // Indique si le module a un quiz
+  audio_url         String?
+  has_quiz          Boolean   @default(false)
   created_at        DateTime? @default(now())
   updated_at        DateTime? @updatedAt
 
-  // --- Relations ---
-  // Un module peut avoir plusieurs suivis par différents utilisateurs
   progress          LearningProgress[]
-  // Un module peut avoir un quiz
   quizzes           Quiz[]
 
   @@map("learning_modules")
+  @@index([difficulty_level])
+  @@index([slug])
 }
 
 model LearningProgress {
   id                   String    @id @default(auto()) @map("_id") @db.ObjectId
   is_completed         Boolean   @default(false)
   quiz_score           Float?
-  quiz_attempts        Int       @default(0) // Nombre de tentatives au quiz
-  last_quiz_attempt_at DateTime? // Date de la dernière tentative au quiz
+  quiz_attempts        Int       @default(0)
+  last_quiz_attempt_at DateTime?
   time_spent_minutes   Float?
   last_accessed_at     DateTime? @default(now())
   completed_at         DateTime?
 
-  // --- Relations (Table "pivot") ---
-  user                 User             @relation(fields: [userId], references: [id])
+  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               String           @db.ObjectId
 
-  module               LearningModule   @relation(fields: [moduleId], references: [id])
+  module               LearningModule   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   moduleId             String           @db.ObjectId
 
   @@map("learning_progress")
   @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
 }
 
-// Modèle Quiz pour les questionnaires de fin de module
 model Quiz {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
   moduleId      String         @db.ObjectId
-  questions     Json           // Array de QuizQuestion stocké en JSON
-  passing_score Int            @default(70) // Score minimum pour réussir (en %)
+  questions     Json
+  passing_score Int            @default(70)
   created_at    DateTime?      @default(now())
 
-  // --- Relation avec LearningModule ---
-  module        LearningModule @relation(fields: [moduleId], references: [id])
+  module        LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   @@map("quizzes")
+  @@index([moduleId])
 }
