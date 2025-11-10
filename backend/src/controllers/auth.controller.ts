@@ -38,17 +38,25 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         }
 
         // 4. Générer le JWT et répondre
-        const user = newUser as any; 
+        const user = newUser as any;
         const token = signJWT({ id: user.id, email: user.email, role: user.role });
         const { password: _, ...userWithoutPassword } = user;
 
-        res.cookie("token", token, {
+        const cookieOptions = {
             httpOnly: true,
             secure: config.nodeEnv === "production",
             sameSite: config.nodeEnv === "production" ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
-        });
+            path: '/',
+        };
 
+        console.log('🍪 [REGISTER] Setting cookie with options:', JSON.stringify(cookieOptions));
+        console.log('🌍 [REGISTER] NODE_ENV:', config.nodeEnv);
+        console.log('🔐 [REGISTER] Token created for user:', user.email);
+
+        res.cookie("token", token, cookieOptions as any);
+
+        console.log('✅ [REGISTER] Cookie set, sending response');
         return res.status(201).json({ token, user: userWithoutPassword });
 
     } catch (error) {
@@ -76,17 +84,26 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         }
         
         // 3. Création du token et réponse
-        const userAsAny = user as any; 
+        const userAsAny = user as any;
         const token = signJWT({ id: userAsAny.id, email: userAsAny.email, role: userAsAny.role });
-        
+
         const {password: _, ...userWithoutPassword} = userAsAny;
 
-        res.cookie("token", token, {
+        const cookieOptions = {
             httpOnly: true,
             secure: config.nodeEnv === "production",
             sameSite: config.nodeEnv === "production" ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
-        });
+            path: '/', // Ensure cookie is available on all paths
+        };
+
+        console.log('🍪 [LOGIN] Setting cookie with options:', JSON.stringify(cookieOptions));
+        console.log('🌍 [LOGIN] NODE_ENV:', config.nodeEnv);
+        console.log('🔐 [LOGIN] Token created for user:', userAsAny.email);
+
+        res.cookie("token", token, cookieOptions as any);
+
+        console.log('✅ [LOGIN] Cookie set, sending response');
         return res.status(200).json({ token, user: userWithoutPassword });
     } catch (error) {
         next(error);
