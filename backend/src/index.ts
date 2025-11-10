@@ -72,8 +72,6 @@ class App {
     // Other Middlewares
     this.app?.use(compression());
     this.app?.use(cookieParser());
-    this.app?.use(cors());
-    this.app?.use(json());
     
 
     // Rate Limiting
