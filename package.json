@@ -1,0 +1,14 @@
+{
+  "name": "afribourse-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd backend && npm install && npm run build",
+    "start": "cd backend && npm start",
+    "build:frontend": "cd afribourse && npm install && npm run build"
+  },
+  "workspaces": [
+    "backend",
+    "afribourse"
+  ]
+}
