@@ -46,13 +46,17 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         throw new Error(data.message || data.error || 'Identifiants incorrects');
       }
 
-      // ✅ CORRECTION CRITIQUE : Appeler checkAuth() et laisser le useEffect gérer la navigation
-      console.log('🔄 Mise à jour de l\'authentification...');
-      await checkAuth(); // <-- Met à jour isLoggedIn dans le contexte
-      console.log('✅ Authentification mise à jour');
-      
+      // ✅ Connexion réussie - Redirection immédiate
       toast.success('Connexion réussie !');
-      // ❌ SUPPRESSION : Ne plus appeler onNavigate ici, le useEffect s'en charge
+
+      // Mettre à jour l'état d'authentification en arrière-plan
+      checkAuth().catch(() => {
+        // Si checkAuth échoue, ce n'est pas grave car l'utilisateur est déjà connecté
+        // Le cookie est déjà défini par le backend
+      });
+
+      // Redirection immédiate vers le dashboard
+      onNavigate('dashboard');
 
     } catch (err: any) {
       console.error("Login error:", err);
