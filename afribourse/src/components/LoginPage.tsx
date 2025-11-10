@@ -31,6 +31,9 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
     setError('');
 
     try {
+      console.log('🔑 Tentative de connexion à:', `${API_BASE_URL}/login`);
+      console.log('🌐 API_BASE_URL:', API_BASE_URL);
+
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
@@ -39,6 +42,9 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         body: JSON.stringify({ email, password }),
         credentials: 'include',
       });
+
+      console.log('📥 Response status:', response.status);
+      console.log('📥 Response headers:', response.headers);
 
       const data = await response.json();
 

@@ -43,11 +43,17 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
     }
 
     try {
+      console.log('📝 Tentative d\'inscription à:', `${API_BASE_URL}/register`);
+      console.log('🌐 API_BASE_URL:', API_BASE_URL);
+
       const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, lastname, email, password }),
+        credentials: 'include',
       });
+
+      console.log('📥 Response status:', response.status);
 
       const data = await response.json();
 
