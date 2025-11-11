@@ -92,11 +92,11 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
       <div className="w-full max-w-md">
         {/* Logo / Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-4 shadow-md">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl mb-4 shadow-md">
             <img
               src="/images/logo_afribourse.png"
               alt="AfriBourse Logo"
-              className="w-12 h-12 object-contain"
+              className="w-16 h-16 object-contain"
             />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h1>
