@@ -55,18 +55,18 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
       // ✅ Connexion réussie
       toast.success('Connexion réussie !');
 
-      // Stocker le token si on est sur mobile
+      // Stocker le token et vérifier l'authentification
       if (data.token) {
+        console.log('💾 [LOGIN] Storing token and checking auth');
         setToken(data.token);
+        // Passer le token directement à checkAuth pour éviter les problèmes de closure
+        await checkAuth(data.token);
+      } else {
+        // Sur desktop, pas de token dans la réponse, utiliser les cookies
+        await checkAuth();
       }
 
-      // Mettre à jour l'état d'authentification en arrière-plan
-      checkAuth().catch(() => {
-        // Si checkAuth échoue, ce n'est pas grave car l'utilisateur est déjà connecté
-        // Le cookie est déjà défini par le backend
-      });
-
-      // Redirection immédiate vers le dashboard
+      // Redirection vers le dashboard
       onNavigate('dashboard');
 
     } catch (err: any) {
