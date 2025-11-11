@@ -36,14 +36,16 @@ function AppContent() {
 
   const handleNavigate = (page: string, data?: any) => {
     const protectedPages: Page[] = ['dashboard', 'profile', 'transactions'];
-    
-    if (protectedPages.includes(page as Page) && !isLoggedIn) {
+
+    // Ne bloquer l'accès que si on n'est PAS en train de charger l'authentification
+    // Cela évite les race conditions après signup/login
+    if (protectedPages.includes(page as Page) && !isLoggedIn && !loading) {
       console.log('Accès protégé refusé, redirection vers login.');
       setNavigation({ page: 'login' });
     } else {
       setNavigation({ page: page as Page, data });
     }
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
