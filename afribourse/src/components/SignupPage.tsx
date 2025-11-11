@@ -19,7 +19,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const { setToken } = useAuth();
+  const { setToken, checkAuth } = useAuth();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -64,9 +64,15 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
         throw new Error(data.error || data.message || "Erreur lors de l'inscription");
       }
 
-      // Stocker le token si on est sur mobile
+      // Stocker le token et vérifier l'authentification
       if (data.token) {
+        console.log('💾 [SIGNUP] Storing token and checking auth');
         setToken(data.token);
+        // Passer le token directement à checkAuth pour éviter les problèmes de closure
+        await checkAuth(data.token);
+      } else {
+        // Sur desktop, pas de token dans la réponse, utiliser les cookies
+        await checkAuth();
       }
 
       setSuccess(true);

@@ -15,7 +15,7 @@ interface AuthContextType {
   loading: boolean;
   token: string | null;
   setToken: (token: string | null) => void;
-  checkAuth: () => Promise<void>;
+  checkAuth: (customToken?: string | null) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Fonction pour vérifier l'authentification
-  const checkAuth = async () => {
+  const checkAuth = async (customToken?: string | null) => {
     setLoading(true); // <-- AJOUT : Reset loading à chaque vérification
     try {
       const isMobile = isMobileDevice();
@@ -49,9 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         'Content-Type': 'application/json',
       };
 
+      // Utiliser customToken si fourni, sinon utiliser token du state
+      const authToken = customToken !== undefined ? customToken : token;
+
       // Sur mobile, ajouter le token dans le header Authorization
-      if (isMobile && token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      if (isMobile && authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+        console.log('🔐 [AUTH] Using token for mobile request');
       }
 
       const response = await fetch(`${API_BASE_URL}/me`, {
@@ -59,11 +63,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers,
       });
 
+      console.log('📥 [AUTH] Response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ [AUTH] User authenticated:', data.user?.email);
         setUserProfile(data.user); // <-- Met à jour le profil (le backend retourne { user: {...} })
         setIsLoggedIn(true); // <-- CRITIQUE : Met à jour isLoggedIn
       } else {
+        console.log('❌ [AUTH] Authentication failed');
         setIsLoggedIn(false);
         setUserProfile(null);
         // Si la requête échoue sur mobile, supprimer le token
@@ -73,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Erreur vérification auth:', error);
+      console.error('❌ [AUTH] Error checking auth:', error);
       setIsLoggedIn(false);
       setUserProfile(null);
     } finally {
@@ -123,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  // Vérification initiale au montage du composant
+  // Vérification initiale au montage du composant seulement
   useEffect(() => {
     checkAuth();
   }, []);
