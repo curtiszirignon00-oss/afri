@@ -41,6 +41,13 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
   const { data: profile, isLoading, error, refetch } = useUserProfile();
   const updateProfile = useUpdateProfile();
 
+  // Debug logs
+  useEffect(() => {
+    console.log('👤 [PROFILE] Loading state:', isLoading);
+    console.log('👤 [PROFILE] Error:', error);
+    console.log('👤 [PROFILE] Profile data:', profile);
+  }, [isLoading, error, profile]);
+
   // Form state - Questions existantes
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -121,10 +128,11 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
 
   // ✅ Error state
   if (error) {
+    console.error('❌ [PROFILE] Error rendering:', error);
     return (
       <ErrorMessage
         fullScreen
-        message="Impossible de charger votre profil"
+        message={`Impossible de charger votre profil: ${(error as any)?.message || 'Erreur inconnue'}`}
         onRetry={refetch}
       />
     );
