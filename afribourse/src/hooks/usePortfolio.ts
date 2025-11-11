@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Portfolio, Position, PortfolioHistoryPoint, Stock } from '../types';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../config/api';
+import { apiFetch } from './useApi';
 
 interface UsePortfolioReturn {
   portfolio: Portfolio | null;
@@ -29,50 +29,58 @@ export function usePortfolio(): UsePortfolioReturn {
   const loadPortfolio = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const [portfolioRes, historyRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/portfolios/my`, { credentials: 'include' }),
-        fetch(`${API_BASE_URL}/portfolios/my/history`, { credentials: 'include' })
+      console.log('📊 [PORTFOLIO] Loading portfolio data...');
+
+      // Utiliser apiFetch qui gère automatiquement le token sur mobile
+      const [portfolioData, historyData] = await Promise.all([
+        apiFetch<Portfolio>('/portfolios/my').catch(err => {
+          console.warn('Portfolio fetch error:', err);
+          if (err.message.includes('404')) return null; // Pas de portfolio
+          if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+            throw new Error("Non authentifié");
+          }
+          throw err;
+        }),
+        apiFetch<PortfolioHistoryPoint[]>('/portfolios/my/history').catch(err => {
+          console.warn('History fetch error:', err);
+          return [];
+        })
       ]);
 
-      // Gérer la réponse du portfolio
-      if (portfolioRes.ok) {
-        const portfolioData = await portfolioRes.json();
+      console.log('✅ [PORTFOLIO] Portfolio data loaded:', portfolioData);
+
+      if (portfolioData) {
         setPortfolio(portfolioData);
 
         // Charger les données de marché pour les positions
         if (portfolioData.positions && portfolioData.positions.length > 0) {
-          const tickers = portfolioData.positions.map((p: Position) => p.stock_ticker);
-          const stocksResponse = await fetch(`${API_BASE_URL}/stocks`);
-          
-          if (stocksResponse.ok) {
-            const allStocks: Stock[] = await stocksResponse.json();
-            const stockDataMap = allStocks.reduce((acc, stock) => {
-              acc[stock.symbol] = stock;
-              return acc;
-            }, {} as { [key: string]: Stock });
-            
-            setStocksData(stockDataMap);
-          }
+          console.log('📈 [PORTFOLIO] Loading stocks data...');
+          const allStocks = await apiFetch<Stock[]>('/stocks');
+
+          const stockDataMap = allStocks.reduce((acc, stock) => {
+            acc[stock.symbol] = stock;
+            return acc;
+          }, {} as { [key: string]: Stock });
+
+          setStocksData(stockDataMap);
+          console.log('✅ [PORTFOLIO] Stocks data loaded');
         }
-      } else if (portfolioRes.status === 404) {
-        setPortfolio(null); // Pas de portfolio
-      } else if (portfolioRes.status === 401) {
-        throw new Error("Non authentifié");
       } else {
-        throw new Error("Impossible de charger le portfolio");
+        setPortfolio(null); // Pas de portfolio
+        console.log('ℹ️ [PORTFOLIO] No portfolio found');
       }
 
       // Gérer l'historique
-      if (historyRes.ok) {
-        const historyData: PortfolioHistoryPoint[] = await historyRes.json();
+      if (historyData && historyData.length > 0) {
         historyData.sort((a, b) => a.date.localeCompare(b.date));
         setPortfolioHistory(historyData);
+        console.log('✅ [PORTFOLIO] History loaded');
       }
 
     } catch (err: any) {
-      console.error("Erreur chargement portfolio:", err);
+      console.error("❌ [PORTFOLIO] Error loading portfolio:", err);
       setError(err.message || "Erreur lors du chargement");
     } finally {
       setLoading(false);
@@ -82,24 +90,21 @@ export function usePortfolio(): UsePortfolioReturn {
   // Créer un portfolio
   const createPortfolio = useCallback(async () => {
     const toastId = toast.loading('Création du portfolio...');
-    
+
     try {
-      const response = await fetch(`${API_BASE_URL}/portfolios/my`, {
+      console.log('🆕 [PORTFOLIO] Creating portfolio...');
+
+      // Utiliser apiFetch qui gère automatiquement le token sur mobile
+      await apiFetch('/portfolios/my', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({})
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Erreur création');
-      }
-
+      console.log('✅ [PORTFOLIO] Portfolio created');
       toast.success('Portfolio créé !', { id: toastId });
       await loadPortfolio(); // Recharger après création
     } catch (err: any) {
-      console.error("Erreur création portfolio:", err);
+      console.error("❌ [PORTFOLIO] Error creating portfolio:", err);
       toast.error(`Erreur : ${err.message}`, { id: toastId });
       throw err;
     }
