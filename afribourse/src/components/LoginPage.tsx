@@ -88,7 +88,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
               <img
                 src="/images/logo_afribourse.png"
                 alt="AfriBourse Logo"
-                className="w-12 h-12 object-contain"
+                className="w-16 h-16 object-contain"
               />
               <span className="text-3xl font-bold text-gray-900">AfriBourse</span>
             </button>
