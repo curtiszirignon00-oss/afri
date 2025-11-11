@@ -24,7 +24,7 @@ const getAuthToken = (): string | null => {
   return null;
 };
 
-async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { params, ...fetchOptions } = options;
 
   // Construire l'URL avec les paramètres de requête

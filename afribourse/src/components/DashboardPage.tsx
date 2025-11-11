@@ -4,7 +4,7 @@ import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCirc
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
 import { usePortfolio } from '../hooks/usePortfolio';
-import { useBuyStock, useSellStock } from '../hooks/useApi';
+import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { API_BASE_URL } from '../config/api';
 
@@ -63,30 +63,39 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
     setError(null);
 
     try {
-      // <-- CORRECTION: Ajout des nouvelles requêtes API
-      const [profileRes, watchlistRes, transactionsRes, indicesRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/users/me`, { credentials: 'include' }),
-        fetch(`${API_BASE_URL}/watchlist/my`, { credentials: 'include' }),
-        fetch(`${API_BASE_URL}/portfolios/my/transactions`, { credentials: 'include' }), // <-- AJOUT
-        fetch(`${API_BASE_URL}/indices/latest`) // <-- CORRECTION: Route correcte
+      console.log('📊 [DASHBOARD] Loading user data...');
+
+      // Utiliser apiFetch qui ajoute automatiquement le token sur mobile
+      const [profileData, watchlistItems, transactionsData, indicesData] = await Promise.all([
+        apiFetch<any>('/users/me').catch(err => {
+          console.error('Profile fetch error:', err);
+          if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+            onNavigate('login');
+            throw err;
+          }
+          return null;
+        }),
+        apiFetch<WatchlistItem[]>('/watchlist/my').catch(err => {
+          console.warn('Watchlist fetch error:', err);
+          return [];
+        }),
+        apiFetch<Transaction[]>('/portfolios/my/transactions').catch(err => {
+          console.warn('Transactions fetch error:', err);
+          return [];
+        }),
+        apiFetch<MarketIndex[]>('/indices/latest').catch(err => {
+          console.warn('Indices fetch error:', err);
+          return [];
+        })
       ]);
 
-      if ([profileRes, watchlistRes].some(res => res.status === 401)) {
-        onNavigate('login');
-        return;
-      }
+      console.log('✅ [DASHBOARD] Data loaded successfully');
 
-      if (profileRes.ok) {
-        const profileData = await profileRes.json();
+      if (profileData) {
         setUserProfile({ ...profileData, first_name: profileData.name });
       }
 
-      let watchlistTickers: string[] = [];
-      if (watchlistRes.ok) {
-        const watchlistItems: WatchlistItem[] = await watchlistRes.json();
-        watchlistTickers = watchlistItems.map(item => item.stock_ticker);
-      }
-
+      const watchlistTickers = watchlistItems.map(item => item.stock_ticker);
       if (watchlistTickers.length > 0 && Object.keys(stocksData).length > 0) {
         const filtered = watchlistTickers
           .map(ticker => stocksData[ticker])
@@ -94,21 +103,15 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
         setWatchlistStocks(filtered);
       }
 
-      // <-- AJOUT: Charger les transactions récentes
-      if (transactionsRes.ok) {
-        const transactionsData: Transaction[] = await transactionsRes.json();
-        setRecentTransactions(transactionsData.slice(0, 5)); // Les 5 dernières
-      }
-
-      // <-- AJOUT: Charger les indices du marché
-      if (indicesRes.ok) {
-        const indicesData: MarketIndex[] = await indicesRes.json();
-        setMarketIndices(indicesData);
-      }
+      setRecentTransactions(transactionsData.slice(0, 5)); // Les 5 dernières
+      setMarketIndices(indicesData);
 
     } catch (err: any) {
-      console.error("Erreur chargement données dashboard:", err);
-      setError(err.message || "Une erreur est survenue.");
+      console.error("❌ [DASHBOARD] Error loading data:", err);
+      // Ne pas définir d'erreur si on a déjà redirigé vers login
+      if (!err.message?.includes('401')) {
+        setError(err.message || "Une erreur est survenue.");
+      }
     } finally {
       setLoading(false);
     }
