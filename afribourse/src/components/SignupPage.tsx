@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Mail, Lock, TrendingUp, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button, Input, Card } from './ui';
 import { API_BASE_URL } from '../config/api';
+import { useAuth } from '../contexts/AuthContext';
 
 type SignupPageProps = {
   onNavigate: (page: string) => void;
@@ -17,6 +18,8 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const { setToken } = useAuth();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -61,9 +64,14 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
         throw new Error(data.error || data.message || "Erreur lors de l'inscription");
       }
 
+      // Stocker le token si on est sur mobile
+      if (data.token) {
+        setToken(data.token);
+      }
+
       setSuccess(true);
       setTimeout(() => {
-        onNavigate('login');
+        onNavigate('dashboard'); // Redirection directe vers le dashboard après l'inscription
       }, 2000);
     } catch (err: any) {
       console.error('Signup error:', err);
