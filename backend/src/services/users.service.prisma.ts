@@ -1,19 +1,19 @@
 // backend/src/services/users.service.prisma.ts
 
 import prisma from "../config/prisma";
-import { User, UserProfile, Prisma } from "@prisma/client"; 
-import { createError } from "../middlewares/errorHandlers"; 
-import bcrypt from "bcryptjs"; 
+import { User, UserProfile, Prisma } from "@prisma/client";
+import { createError } from "../middlewares/errorHandlers";
+import bcrypt from "bcryptjs";
 
 // Interface pour un typage propre des données d'entrée
 export interface IUserInput {
-  name: string;
-  lastname: string;
-  email: string;
-  password: string; // Mot de passe HACHÉ
-  role: string;
-  telephone?: string | null;
-  address?: string | null;
+  name: string;
+  lastname: string;
+  email: string;
+  password: string; // Mot de passe HACHÉ
+  role: string;
+  telephone?: string | null;
+  address?: string | null;
 }
 
 // ------------------------------------------
@@ -21,49 +21,49 @@ export interface IUserInput {
 // ------------------------------------------
 
 /**
- * Crée un nouvel utilisateur (User) et son Profil (UserProfile) associé de manière atomique.
- */
+ * Crée un nouvel utilisateur (User) et son Profil (UserProfile) associé de manière atomique.
+ */
 export const createUser = async (data: IUserInput) => {
-    try {
-        const user = await prisma.user.create({
-            data: {
-                name: data.name,
-                lastname: data.lastname,
-                email: data.email,
-                password: data.password, // Mot de passe HACHÉ
-                role: data.role,
-                telephone: data.telephone,
-                address: data.address,
-                // FIX CRITIQUE: Créer le profil associé
-                profile: { 
-                    create: {
-                        profile_type: "investor", 
-                    }
-                }
-            },
-            include: { profile: true } 
-        });
+    try {
+        const user = await prisma.user.create({
+            data: {
+                name: data.name,
+                lastname: data.lastname,
+                email: data.email,
+                password: data.password, // Mot de passe HACHÉ
+                role: data.role,
+                telephone: data.telephone,
+                address: data.address,
+                // FIX CRITIQUE: Créer le profil associé
+                profile: {
+                    create: {
+                        profile_type: "investor",
+                    }
+                }
+            },
+            include: { profile: true }
+        });
         // Exclure le mot de passe de l'objet retourné
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-    } catch (error: any) {
-        console.error("Erreur lors de la création de l'utilisateur:", error);
-        // Gérer la violation de contrainte unique (Email déjà utilisé)
-        if (error.code === 'P2002') {
-            throw createError.conflict("Un utilisateur avec cet email existe déjà.");
-        }
-        throw createError.internal("Erreur de base de données lors de l'enregistrement.");
-    }
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+    } catch (error: any) {
+        console.error("Erreur lors de la création de l'utilisateur:", error);
+        // Gérer la violation de contrainte unique (Email déjà utilisé)
+        if (error.code === 'P2002') {
+            throw createError.conflict("Un utilisateur avec cet email existe déjà.");
+        }
+        throw createError.internal("Erreur de base de données lors de l'enregistrement.");
+    }
 };
 
 /**
  * Trouve l'utilisateur par email (Utilisé par le contrôleur de connexion).
  */
 export const getUserByEmail = async (email: string) => {
-    const user = await prisma.user.findUnique({
-        where: { email },
-    });
-    return user; // Retourne l'objet User (inclut le mot de passe hashé pour bcrypt.compare)
+    const user = await prisma.user.findUnique({
+        where: { email },
+    });
+    return user; // Retourne l'objet User (inclut le mot de passe hashé pour bcrypt.compare)
 };
 
 
@@ -72,89 +72,157 @@ export const getUserByEmail = async (email: string) => {
 // ------------------------------------------
 
 export const getAllUsers = async () => {
-    // Utiliser select pour exclure le mot de passe par défaut
-    const users = await prisma.user.findMany({
-        select: {
-            id: true, name: true, lastname: true, email: true, role: true, 
-            telephone: true, address: true, created_at: true, updated_at: true,
-        }
-    });
-    return users;
+    // Utiliser select pour exclure le mot de passe par défaut
+    const users = await prisma.user.findMany({
+        select: {
+            id: true, name: true, lastname: true, email: true, role: true,
+            telephone: true, address: true, created_at: true, updated_at: true,
+        }
+    });
+    return users;
 };
 
 /**
  * Trouve l'utilisateur par ID (pour /users/me - sans le mot de passe).
  */
 export const getUserById = async (id: string) => {
-    const user = await prisma.user.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            name: true,
-            lastname: true,
-            email: true,
-            role: true,
-            telephone: true,
-            address: true,
-            created_at: true,
-        }
-    });
-    return user;
+    const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            name: true,
+            lastname: true,
+            email: true,
+            role: true,
+            telephone: true,
+            address: true,
+            created_at: true,
+        }
+    });
+    return user;
 };
 
 /**
  * Récupère l'utilisateur et son profil fusionné (utilisé pour /users/me).
+ * FIX: Utilise select au lieu de include pour éviter les problèmes avec les champs null.
  */
 export const getCurrentUserProfile = async (userId: string) => {
-    try {
-        const userWithProfile = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { profile: true },
-        });
+    try {
+        const userWithProfile = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                name: true,
+                lastname: true,
+                email: true,
+                email_verified_at: true,
+                telephone: true,
+                address: true,
+                role: true,
+                // Note: On ne sélectionne PAS created_at ni updated_at qui peuvent causer des problèmes
+                profile: {
+                    select: {
+                        id: true,
+                        userId: true,
+                        first_name: true,
+                        last_name: true,
+                        phone_number: true,
+                        country: true,
+                        experience_level: true,
+                        investment_goals: true,
+                        birth_date: true,
+                        has_invested: true,
+                        main_goals: true,
+                        monthly_amount: true,
+                        profile_type: true,
+                        topic_interests: true,
+                        discovery_channel: true,
+                        key_feature: true,
+                        username: true,
+                        bio: true,
+                        avatar_url: true,
+                        banner_url: true,
+                        banner_type: true,
+                        social_links: true,
+                        is_public: true,
+                        level: true,
+                        total_xp: true,
+                        current_streak: true,
+                        longest_streak: true,
+                        last_activity_date: true,
+                        streak_freezes: true,
+                        global_rank: true,
+                        country_rank: true,
+                        show_avatar: true,
+                        show_bio: true,
+                        show_country: true,
+                        show_birth_date: true,
+                        show_level: true,
+                        show_xp: true,
+                        show_rank: true,
+                        show_streak: true,
+                        show_portfolio_value: true,
+                        show_roi: true,
+                        show_positions: true,
+                        show_transactions: true,
+                        show_achievements: true,
+                        show_badges: true,
+                        show_completed_modules: true,
+                        show_quiz_scores: true,
+                        show_followers_count: true,
+                        show_following_count: true,
+                        show_followers_list: true,
+                        show_following_list: true,
+                        show_activity_feed: true,
+                        appear_in_search: true,
+                        appear_in_suggestions: true,
+                        allow_follow_requests: true,
+                        // Note: On ne sélectionne PAS created_at ni updated_at
+                    }
+                }
+            }
+        });
 
-        if (!userWithProfile) {
-            return null;
-        }
+        if (!userWithProfile) {
+            return null;
+        }
 
-        // Exclure le mot de passe
-        const { password, ...userWithoutPassword } = userWithProfile;
-        
-        // Fusionner l'utilisateur (sans le mot de passe) et les détails du profil
-        return {
-            ...userWithoutPassword,
-            ...(userWithProfile.profile ? userWithProfile.profile : {}), 
-        };
+        // Fusionner l'utilisateur et les détails du profil
+        return {
+            ...userWithProfile,
+            ...(userWithProfile.profile ? userWithProfile.profile : {}),
+        };
 
-    } catch (error) {
-        console.error(`❌ Erreur lors de la récupération du profil pour l'utilisateur ${userId}:`, error);
-        throw error;
-    }
+    } catch (error) {
+        console.error(`❌ Erreur lors de la récupération du profil pour l'utilisateur ${userId}:`, error);
+        throw error;
+    }
 };
 
 // --- UPDATE/DELETE & UPSERT PROFILE ---
 
 export const updateUser = async (id: string, data: Partial<User>) => {
-    const user = await prisma.user.update({
-        where: { id },
-        data,
-    });
-    return user;
+    const user = await prisma.user.update({
+        where: { id },
+        data,
+    });
+    return user;
 };
 
 export const deleteUser = async (id: string) => {
-    const user = await prisma.user.delete({
-        where: { id },
-    });
-    return user;
+    const user = await prisma.user.delete({
+        where: { id },
+    });
+    return user;
 };
 
 /**
  * Met à jour ou crée le profil utilisateur (UserProfile).
  */
 export const upsertUserProfile = async (userId: string, profileData: any) => {
-    try {
+    try {
         // --- Logique de conversion des données (pour has_invested, date, goals) ---
-        let hasInvestedBoolean: boolean | undefined | null = undefined; 
+        let hasInvestedBoolean: boolean | undefined | null = undefined;
         if (typeof profileData.has_invested === 'string') {
             if (profileData.has_invested.toLowerCase() === 'oui') {
                 hasInvestedBoolean = true;
@@ -167,12 +235,12 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
             hasInvestedBoolean = null;
         }
 
-        let birthDateObject: Date | undefined | null = undefined; 
+        let birthDateObject: Date | undefined | null = undefined;
         if (profileData.birth_date && typeof profileData.birth_date === 'string') {
             try {
                 birthDateObject = new Date(profileData.birth_date);
                 if (isNaN(birthDateObject.getTime())) {
-                    birthDateObject = undefined; 
+                    birthDateObject = undefined;
                 }
             } catch (e) {
                 birthDateObject = undefined;
@@ -183,11 +251,11 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
 
         let mainGoalsArray: string[] | undefined | null = undefined;
         if (Array.isArray(profileData.main_goals)) {
-            mainGoalsArray = profileData.main_goals.length > 0 ? profileData.main_goals : []; 
+            mainGoalsArray = profileData.main_goals.length > 0 ? profileData.main_goals : [];
         } else if (profileData.main_goals === null) {
             mainGoalsArray = null;
         }
-        
+
         let isPublicBoolean: boolean | undefined | null = undefined;
         if (typeof profileData.is_public === 'boolean') {
             isPublicBoolean = profileData.is_public;
@@ -254,21 +322,21 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
                 key_feature: profileData.key_feature ?? null,
             } as Prisma.UserProfileUncheckedCreateInput),
         });
-        return profile;
-    } catch (error) {
-        console.error(`❌ Erreur upsert profile pour ${userId}:`, error);
-        throw error;
-    }
+        return profile;
+    } catch (error) {
+        console.error(`❌ Erreur upsert profile pour ${userId}:`, error);
+        throw error;
+    }
 };
 
 // Export final de l'objet
 export const usersService = {
-   getAllUsers,
-    getUserByEmail,
-    getUserById,
-    getCurrentUserProfile,
-    createUser,
-    updateUser,
-    deleteUser,
-    upsertUserProfile,
+   getAllUsers,
+    getUserByEmail,
+    getUserById,
+    getCurrentUserProfile,
+    createUser,
+    updateUser,
+    deleteUser,
+    upsertUserProfile,
 };
