@@ -6,6 +6,7 @@ import config from "../config/environnement"; // Chemin relatif corrigé
 
 // --- CONSOLIDATION : N'IMPORTER QUE LE SERVICE PRISMA ---
 import * as usersServicePrisma from "../services/users.service.prisma";
+import * as portfolioService from "../services/portfolio.service.prisma";
 // L'import vers usersServiceMongo n'est plus nécessaire
 
 // --- INSCRIPTION (REGISTER) ---
@@ -25,16 +26,31 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // 3. Créer l'utilisateur (le service gère la création du UserProfile obligatoire)
-        const newUser = await usersServicePrisma.createUser({ 
-            name, 
-            lastname, 
-            email, 
+        const newUser = await usersServicePrisma.createUser({
+            name,
+            lastname,
+            email,
             password: hashedPassword, // ENVOI DU HASH
-            role: 'user' 
-        }); 
-        
+            role: 'user'
+        });
+
         if (!newUser) {
-            return next(createError.internal("Impossible de créer l'utilisateur.")); 
+            return next(createError.internal("Impossible de créer l'utilisateur."));
+        }
+
+        // 3.5. Créer automatiquement un portfolio pour le nouvel utilisateur
+        try {
+            const user = newUser as any;
+            await portfolioService.createPortfolio(user.id, {
+                name: 'Mon Portefeuille',
+                initial_balance: 1000000, // 1,000,000 FCFA de départ pour la simulation
+                is_virtual: true,
+            });
+            console.log('✅ [REGISTER] Portfolio créé automatiquement pour:', user.email);
+        } catch (portfolioError) {
+            console.error('❌ [REGISTER] Erreur lors de la création du portfolio:', portfolioError);
+            // Ne pas bloquer l'inscription si la création du portfolio échoue
+            // L'utilisateur pourra le créer manuellement plus tard
         }
 
         // 4. Générer le JWT et répondre

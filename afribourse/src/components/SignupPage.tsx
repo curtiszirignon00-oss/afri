@@ -75,10 +75,14 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
         await checkAuth();
       }
 
+      console.log('✅ [SIGNUP] Authentication verified, redirecting to dashboard');
       setSuccess(true);
+
+      // Rediriger après un court délai pour que l'utilisateur voie le message de succès
+      // et que React ait le temps de mettre à jour l'état d'authentification
       setTimeout(() => {
-        onNavigate('dashboard'); // Redirection directe vers le dashboard après l'inscription
-      }, 2000);
+        onNavigate('dashboard');
+      }, 300);
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || "Une erreur est survenue lors de l'inscription.");
