@@ -1,6 +1,6 @@
 // src/components/SignupPage.tsx - VERSION MIGRÉE
 import { useState } from 'react';
-import { Mail, Lock, TrendingUp, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
+import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button, Input, Card } from './ui';
 import { API_BASE_URL } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -92,8 +92,12 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
       <div className="w-full max-w-md">
         {/* Logo / Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl mb-4">
-            <TrendingUp className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-4 shadow-md">
+            <img
+              src="/images/logo_afribourse.png"
+              alt="AfriBourse Logo"
+              className="w-12 h-12 object-contain"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h1>
           <p className="text-gray-600">Commencez votre aventure d'investissement</p>

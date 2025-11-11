@@ -56,7 +56,11 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 className="flex flex-col items-start"
               >
                 <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-8 h-8 text-blue-600" />
+                  <img
+                    src="/images/logo_afribourse.png"
+                    alt="AfriBourse Logo"
+                    className="w-8 h-8 object-contain"
+                  />
                   <span className="text-2xl font-bold text-gray-900">AfriBourse</span>
                 </div>
                 <span className="text-xs text-blue-600 font-semibold ml-10">INVESTIR MIEUX</span>

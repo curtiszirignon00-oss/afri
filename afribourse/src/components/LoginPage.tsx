@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Mail, Lock, TrendingUp, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
@@ -85,7 +85,11 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <button onClick={() => onNavigate('home')} className="flex items-center space-x-2">
-              <TrendingUp className="w-12 h-12 text-blue-600" />
+              <img
+                src="/images/logo_afribourse.png"
+                alt="AfriBourse Logo"
+                className="w-12 h-12 object-contain"
+              />
               <span className="text-3xl font-bold text-gray-900">AfriBourse</span>
             </button>
           </div>
