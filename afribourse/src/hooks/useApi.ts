@@ -11,9 +11,22 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
 
+// Helper pour détecter si on est sur mobile
+const isMobileDevice = (): boolean => {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+};
+
+// Helper pour récupérer le token depuis localStorage (mobile uniquement)
+const getAuthToken = (): string | null => {
+  if (isMobileDevice()) {
+    return localStorage.getItem('auth_token');
+  }
+  return null;
+};
+
 async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { params, ...fetchOptions } = options;
-  
+
   // Construire l'URL avec les paramètres de requête
   let url = `${API_BASE_URL}${endpoint}`;
   if (params) {
@@ -21,13 +34,22 @@ async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promis
     url += `?${searchParams.toString()}`;
   }
 
+  // Préparer les headers
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...fetchOptions.headers,
+  };
+
+  // Sur mobile, ajouter le token dans le header Authorization
+  const token = getAuthToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     ...fetchOptions,
-    credentials: 'include', // Toujours envoyer les cookies
-    headers: {
-      'Content-Type': 'application/json',
-      ...fetchOptions.headers,
-    },
+    credentials: 'include', // Toujours envoyer les cookies (desktop)
+    headers,
   });
 
   // Gestion des erreurs HTTP

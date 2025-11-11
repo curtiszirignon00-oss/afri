@@ -14,8 +14,8 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const { checkAuth, isLoggedIn } = useAuth(); // <-- AJOUT : récupération de isLoggedIn
+
+  const { checkAuth, isLoggedIn, setToken } = useAuth(); // <-- AJOUT : récupération de setToken
 
   // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
   useEffect(() => {
@@ -52,8 +52,13 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         throw new Error(data.message || data.error || 'Identifiants incorrects');
       }
 
-      // ✅ Connexion réussie - Redirection immédiate
+      // ✅ Connexion réussie
       toast.success('Connexion réussie !');
+
+      // Stocker le token si on est sur mobile
+      if (data.token) {
+        setToken(data.token);
+      }
 
       // Mettre à jour l'état d'authentification en arrière-plan
       checkAuth().catch(() => {
