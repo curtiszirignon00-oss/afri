@@ -24,21 +24,26 @@ export async function getUsers(req: Request, res: Response, next: NextFunction) 
 export async function getCurrentUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     // Récupère l'ID ajouté par le middleware 'auth'
-    const userId = req.user?.id; 
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: 'Non autorisé' });
     }
+
+    console.log('[getCurrentUser] Fetching profile for userId:', userId);
 
     // Le service getCurrentUserProfile retourne les données de l'utilisateur fusionnées (sans mot de passe)
     const userProfile = await usersService.getCurrentUserProfile(userId);
 
     if (!userProfile) {
-      return res.status(404).json({ message: 'Profil utilisateur non trouvé' }); 
+      return res.status(404).json({ message: 'Profil utilisateur non trouvé' });
     }
 
+    console.log('[getCurrentUser] Profile fetched successfully');
     return res.status(200).json(userProfile);
 
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[getCurrentUser] Error:', error.message);
+    console.error('[getCurrentUser] Stack:', error.stack);
     return next(error);
   }
 }
