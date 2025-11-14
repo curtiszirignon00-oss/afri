@@ -66,6 +66,10 @@ export default function LearnPage() {
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
+    // <-- AJOUT: États pour les slides
+    const [currentSlide, setCurrentSlide] = useState(1);
+    const [totalSlides, setTotalSlides] = useState(1);
+
     // <-- AJOUT: Quiz d'exemple pour le module (à remplacer par les vrais quiz de l'API)
     const getModuleQuiz = useCallback((moduleSlug: string): QuizQuestion[] => {
       // Ceci est un exemple - À REMPLACER par un appel API réel
@@ -216,6 +220,35 @@ export default function LearnPage() {
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    // <-- AJOUT: useEffect pour gérer les slides
+    useEffect(() => {
+        if (!selectedModule) return;
+
+        // Compter le nombre total de slides dans le contenu
+        const slideElements = document.querySelectorAll('.slide[data-slide]');
+        const count = slideElements.length;
+        setTotalSlides(count > 0 ? count : 1);
+
+        // Masquer tous les slides
+        slideElements.forEach(slide => {
+            (slide as HTMLElement).style.display = 'none';
+        });
+
+        // Afficher uniquement le slide actuel
+        const currentSlideElement = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
+        if (currentSlideElement) {
+            (currentSlideElement as HTMLElement).style.display = 'block';
+        }
+
+        // Scroll vers le haut lors du changement de slide
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [selectedModule, currentSlide]);
+
+    // <-- AJOUT: Reset du slide au changement de module
+    useEffect(() => {
+        setCurrentSlide(1);
+    }, [selectedModule?.slug]);
 
     // <-- AJOUT: Fonction pour démarrer le quiz
     const startQuiz = useCallback(() => {
@@ -478,16 +511,57 @@ export default function LearnPage() {
                         </div>
                     )}
 
-                    {/* Contenu du module */}
+                    {/* Contenu du module avec support des slides */}
                     <div className="px-8 py-10">
                         {selectedModule.content ? (
-                            <div className="prose prose-lg max-w-none prose-indigo prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900" 
-                                 dangerouslySetInnerHTML={{ __html: selectedModule.content }} 
-                            />
+                            <div className="module-content-wrapper">
+                                <div className="prose prose-lg max-w-none prose-indigo prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900"
+                                     dangerouslySetInnerHTML={{ __html: selectedModule.content }}
+                                />
+                            </div>
                         ) : (
                             <div className="text-center py-12">
                                 <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                                 <p className="text-gray-500 text-lg">Contenu du module en préparation...</p>
+                            </div>
+                        )}
+
+                        {/* Navigation entre les slides */}
+                        {totalSlides > 1 && (
+                            <div className="mt-8 pt-8 border-t border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <button
+                                        onClick={() => setCurrentSlide(prev => Math.max(1, prev - 1))}
+                                        disabled={currentSlide === 1}
+                                        className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                                            currentSlide === 1
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                                        }`}
+                                    >
+                                        <ArrowLeft className="w-5 h-5" />
+                                        <span>Précédent</span>
+                                    </button>
+
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-gray-600 font-medium">
+                                            Slide {currentSlide} / {totalSlides}
+                                        </span>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setCurrentSlide(prev => Math.min(totalSlides, prev + 1))}
+                                        disabled={currentSlide === totalSlides}
+                                        className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+                                            currentSlide === totalSlides
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
+                                        }`}
+                                    >
+                                        <span>Suivant</span>
+                                        <ArrowLeft className="w-5 h-5 rotate-180" />
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>

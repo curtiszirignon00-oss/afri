@@ -65,35 +65,198 @@ async function main() {
         order_index: 0,
         is_published: true,
         content: `
-            <h2>1. Bienvenue dans l'Académie : Notre Mission pour Vous</h2>
-            <p>Vous êtes ici parce que vous savez que l'épargne seule ne suffit pas. Vous avez raison. L'inflation et le temps érodent la valeur de l'argent dormant.</p>
-            <p>Notre mission chez AfriBourse est de retirer la friction, d'éliminer le jargon intimidant, et de vous prendre par la main pour transformer votre épargne en capital actif, spécifiquement sur notre marché régional, la <strong>BRVM</strong>.</p>
-            <p>Nous croyons que la connaissance est la clé de la confiance.</p>
+            <div class="bg-blue-600 text-white p-8 min-h-screen">
+                <p class="text-xl italic mb-12 text-center">"L'investissement, c'est le pont entre votre présent et votre futur."</p>
 
-            <h2>2. La Bourse, un Moteur pour Nos Économies : Le "Pourquoi" de l'Investissement</h2>
-            <p>Investir à la BRVM, ce n'est pas seulement enrichir votre compte en banque ; c'est participer activement au développement et à la richesse mieux partagée de notre région. Lorsque vous achetez des actions d'une entreprise locale, vous lui fournissez le capital nécessaire pour grandir, innover, créer des emplois et, in fine, distribuer des bénéfices à ses propriétaires – dont vous faites partie.</p>
-            <h3>L'Analogie à Retenir : Le Piroguier Prudent</h3>
-            <p>Imaginez que votre richesse est une pirogue. Le piroguier prudent ne se lance pas en mer sans vérifier la météo et sans une destination claire. Il sait que le voyage sera long et qu'il y aura des vagues (volatilité), mais il se concentre sur l'arrivée. L'investissement est un voyage : il demande de la préparation (la formation) et un cap (vos objectifs).</p>
 
-            <h2>3. Présentation du Parcours : Votre Feuille de Route vers l'Autonomie</h2>
-            <ul>
-                <li><strong>Mindset</strong> : Définir la philosophie et l'état d'esprit de l'investisseur (M0, M5).</li>
-                <li><strong>Fondations</strong> : Comprendre l'écosystème, les instruments et les acteurs (M1, M2, M3).</li>
-                <li><strong>Stratégie</strong> : Aligner le temps et l'analyse (M4, M6, M7).</li>
-                <li><strong>Action</strong> : Construire, gérer et exécuter (M8, M9, M10).</li>
-            </ul>
+                <h2 class="text-3xl font-bold mb-8">🎯 Objectif pédagogique</h2>
 
-            <h2>4. Brisons les Mythes : "Il ne faut pas être riche", "Ce n'est pas un casino"</h2>
-            <p>Le mythe selon lequel il faut être millionnaire pour commencer est faux. Sur la BRVM, vous pouvez investir avec de petites sommes régulières. <strong>Le temps est plus important que le capital de départ</strong>.</p>
-            <p>L'autre grand mythe est que la bourse est un jeu de hasard. C'est le cas si l'on <em>spécule</em> (parier sans analyse), mais pas si l'on <em>investit</em> (acheter une part d'entreprise solide avec une vision à long terme).</p>
-            <p><strong>Citation de l'Expert :</strong> Le célèbre investisseur Ben Graham a dit : <em>"The individual investor should act consistently as an investor and not as a speculator."</em> En clair : agissez comme un propriétaire qui évalue la valeur de son affaire, pas comme un parieur qui espère un coup de chance.</p>
-            
-            <h3>Les Termes à Maîtriser :</h3>
-            <ul>
-                <li><strong>BRVM</strong> : Bourse Régionale des Valeurs Mobilières, le marché financier commun des huit pays de l'UEMOA.</li>
-                <li><strong>Investisseur</strong> : Quelqu'un qui achète des actifs en espérant des rendements futurs (bénéfices, dividendes) sur le long terme.</li>
-                <li><strong>Spéculateur</strong> : Quelqu'un qui tente de prédire les mouvements de prix à court terme pour réaliser un profit rapide, souvent sans analyse fondamentale.</li>
-            </ul>
+                <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous :</p>
+
+                <ul class="space-y-3 text-lg mb-12 leading-relaxed">
+                    <li>• Adopterez le bon état d'esprit d'investisseur à long terme.</li>
+                    <li>• Comprendrez pourquoi la BRVM représente une opportunité unique pour les Africains.</li>
+                    <li>• Connaîtrez la structure complète du parcours de formation.</li>
+                    <li>• Serez capables de distinguer un investisseur d'un spéculateur.</li>
+                </ul>
+
+
+                <h2 class="text-3xl font-bold mb-8">🪶 0.1 – Bienvenue dans l'Académie : Notre mission pour vous</h2>
+
+                <p class="text-lg mb-4 leading-relaxed">Bienvenue dans l'Académie AfriBourse,</p>
+
+                <p class="text-lg mb-4 leading-relaxed">Un espace pensé pour vous — l'épargnant, l'entrepreneur, le jeune professionnel — qui souhaite faire travailler son argent plutôt que de le laisser dormir.</p>
+
+                <p class="text-lg mb-4 leading-relaxed font-semibold">💡 Constat de départ : L'épargne seule ne suffit plus.</p>
+
+                <p class="text-lg mb-4 leading-relaxed">L'inflation grignote la valeur de votre argent au fil du temps.</p>
+
+                <p class="text-lg mb-4 leading-relaxed">Notre mission est simple : transformer votre épargne en capital actif, grâce à une connaissance claire, à des outils accessibles, et à une pédagogie ancrée dans la réalité africaine.</p>
+
+                <p class="text-lg mb-3 leading-relaxed font-semibold">Chez AfriBourse, nous croyons que :</p>
+
+                <ul class="space-y-3 text-lg mb-12 leading-relaxed">
+                    <li>• La connaissance est la clé de la confiance.</li>
+                    <li>• La discipline est la clé de la réussite financière.</li>
+                    <li>• Et que chaque Africain mérite une part du développement économique de son continent.</li>
+                </ul>
+
+
+                <h2 class="text-3xl font-bold mb-8">🌍 0.2 – La Bourse, un moteur pour nos économies africaines</h2>
+
+                <p class="text-lg mb-4 leading-relaxed">Investir à la BRVM, ce n'est pas seulement chercher un rendement — c'est participer activement à la construction économique de l'Afrique de l'Ouest.</p>
+
+                <p class="text-lg mb-3 leading-relaxed">Chaque action achetée, chaque entreprise soutenue, contribue à :</p>
+
+                <ul class="space-y-3 text-lg mb-6 leading-relaxed">
+                    <li>• Financer la croissance de sociétés locales.</li>
+                    <li>• Créer des emplois et soutenir l'innovation.</li>
+                    <li>• Répartir la richesse de manière plus équitable entre citoyens et investisseurs.</li>
+                </ul>
+
+                <p class="text-lg mb-8 italic text-center leading-relaxed">💬 "Quand un Africain investit dans une entreprise africaine, il investit dans le futur de son peuple."</p>
+
+
+                <h3 class="text-2xl font-bold mb-6">⚓ L'analogie à retenir : le piroguier prudent</h3>
+
+                <p class="text-lg mb-4 leading-relaxed">Imaginez votre richesse comme une pirogue.</p>
+
+                <p class="text-lg mb-3 leading-relaxed">Le piroguier prudent ne se lance pas sans :</p>
+
+                <ul class="space-y-3 text-lg mb-6 leading-relaxed">
+                    <li>• Vérifier la météo (analyse du marché)</li>
+                    <li>• Préparer son équipage (formation)</li>
+                    <li>• Définir une destination (objectifs financiers)</li>
+                </ul>
+
+                <p class="text-lg mb-4 leading-relaxed">Sur la mer de l'investissement, les vagues représentent la volatilité.</p>
+
+                <p class="text-lg mb-4 leading-relaxed">Mais celui qui a un cap, un plan et de la patience arrive toujours au rivage.</p>
+
+                <p class="text-xl mb-12 font-bold text-center leading-relaxed">La bourse, ce n'est pas un sprint — c'est une navigation.</p>
+
+
+                <h2 class="text-3xl font-bold mb-8">🗺️ 0.3 – Présentation du parcours : votre feuille de route vers l'autonomie</h2>
+
+                <p class="text-lg mb-6 leading-relaxed">Voici comment se déroule votre voyage au sein de l'Académie AfriBourse 👇</p>
+
+                <table class="table-auto w-full text-left border-collapse border border-white my-6">
+                    <thead class="bg-blue-800">
+                        <tr>
+                            <th class="border border-white px-4 py-3 font-bold">Étape</th>
+                            <th class="border border-white px-4 py-3 font-bold">Objectif</th>
+                            <th class="border border-white px-4 py-3 font-bold">Modules concernés</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-white px-4 py-3">🧠 <strong>Mindset</strong></td>
+                            <td class="border border-white px-4 py-3">Poser les bases mentales et émotionnelles de l'investisseur</td>
+                            <td class="border border-white px-4 py-3">M0, M5</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-white px-4 py-3">⚙️ <strong>Fondations</strong></td>
+                            <td class="border border-white px-4 py-3">Comprendre les marchés, les acteurs et les instruments</td>
+                            <td class="border border-white px-4 py-3">M1, M2, M3, M4</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-white px-4 py-3">🔍 <strong>Analyse & Stratégie</strong></td>
+                            <td class="border border-white px-4 py-3">Maîtriser l'analyse fondamentale et technique</td>
+                            <td class="border border-white px-4 py-3">M6, M7, M8, M9, M10</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-white px-4 py-3">💼 <strong>Action & Gestion</strong></td>
+                            <td class="border border-white px-4 py-3">Construire, exécuter et suivre son portefeuille</td>
+                            <td class="border border-white px-4 py-3">M11 à M16</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="text-lg mb-4 font-semibold leading-relaxed">🎯 À la fin du parcours, vous serez capable de :</p>
+
+                <ul class="space-y-3 text-lg mb-12 leading-relaxed">
+                    <li>• Analyser une entreprise cotée à la BRVM,</li>
+                    <li>• Identifier le bon moment pour investir,</li>
+                    <li>• Construire un portefeuille cohérent et rentable,</li>
+                    <li>• Et investir avec confiance et méthode.</li>
+                </ul>
+
+
+                <h2 class="text-3xl font-bold mb-8">💥 0.4 – Brisons les mythes : Investisseur vs Spéculateur</h2>
+
+
+                <h3 class="text-2xl font-bold mb-6">❌ Mythe 1 : "Il faut être riche pour investir"</h3>
+
+                <p class="text-2xl mb-6 font-bold text-center leading-relaxed">FAUX.</p>
+
+                <p class="text-lg mb-4 leading-relaxed">À la BRVM, vous pouvez commencer avec de petites sommes régulières.</p>
+
+                <p class="text-lg mb-6 font-semibold leading-relaxed">Le plus important n'est pas le capital de départ, mais le temps et la constance.</p>
+
+                <p class="text-lg mb-12 italic text-center leading-relaxed">💬 "Le meilleur moment pour planter un arbre était il y a 20 ans. Le deuxième meilleur moment, c'est aujourd'hui." – Proverbe africain</p>
+
+
+                <h3 class="text-2xl font-bold mb-6">❌ Mythe 2 : "La Bourse, c'est un casino"</h3>
+
+                <p class="text-2xl mb-6 font-bold text-center leading-relaxed">NON, ce n'est pas un jeu de hasard.</p>
+
+                <p class="text-lg mb-4 leading-relaxed">La <strong>spéculation</strong> repose sur les émotions et les paris à court terme.</p>
+
+                <p class="text-lg mb-6 leading-relaxed">L'<strong>investissement</strong> repose sur l'analyse, la patience et la vision long terme.</p>
+
+                <p class="text-lg mb-4 font-semibold leading-relaxed">💡 Citation clé :</p>
+
+                <p class="text-lg mb-4 italic leading-relaxed">"The individual investor should act consistently as an investor and not as a speculator."</p>
+
+                <p class="text-base mb-6 leading-relaxed">— Benjamin Graham, mentor de Warren Buffett</p>
+
+                <p class="text-lg mb-3 font-semibold leading-relaxed">En clair :</p>
+
+                <p class="text-lg mb-3 leading-relaxed">L'<strong>investisseur</strong> achète une part d'entreprise pour en partager la réussite.</p>
+
+                <p class="text-lg mb-6 leading-relaxed">Le <strong>spéculateur</strong> parie sur une fluctuation de prix.</p>
+
+                <p class="text-xl mb-12 font-bold text-center leading-relaxed">À la BRVM, nous formons des investisseurs — pas des parieurs.</p>
+
+
+                <h2 class="text-3xl font-bold mb-8">🧩 Les termes à maîtriser</h2>
+
+                <table class="table-auto w-full text-left border-collapse border border-white my-6">
+                    <thead class="bg-blue-800">
+                        <tr>
+                            <th class="border border-white px-4 py-3 font-bold">Terme</th>
+                            <th class="border border-white px-4 py-3 font-bold">Définition simple</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border border-white px-4 py-3 font-bold">BRVM</td>
+                            <td class="border border-white px-4 py-3">Bourse Régionale des Valeurs Mobilières : le marché commun de 8 pays de l'UEMOA.</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-white px-4 py-3 font-bold">Investisseur</td>
+                            <td class="border border-white px-4 py-3">Personne qui place son argent dans des actifs pour générer un rendement à long terme.</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-white px-4 py-3 font-bold">Spéculateur</td>
+                            <td class="border border-white px-4 py-3">Personne qui achète et revend à court terme pour profiter de variations de prix.</td>
+                        </tr>
+                        <tr>
+                            <td class="border border-white px-4 py-3 font-bold">Volatilité</td>
+                            <td class="border border-white px-4 py-3">Variation (montée et descente) du prix d'un actif sur une période donnée.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+
+                <h3 class="text-2xl font-bold mb-6">🚀 Prochaine étape :</h3>
+
+                <p class="text-lg mb-4 leading-relaxed">Vous avez préparé votre esprit, compris la vision, et brisé les mythes.</p>
+
+                <p class="text-xl mb-4 font-bold leading-relaxed">👉 Passez maintenant au Module 1 : Les Fondations – Qu'est-ce que la Bourse et la BRVM ?</p>
+
+                <p class="text-base italic leading-relaxed">C'est ici que commence votre apprentissage concret du marché financier africain.</p>
+            </div>
         `,
     });
 
@@ -101,50 +264,207 @@ async function main() {
     // === M1 : LES FONDATIONS - BOURSE ET BRVM ===
     // ==============================================
     await createOrUpdateModule({
-        title: "Les Fondations - Qu'est-ce que la Bourse et la BRVM?",
+        title: "Les Fondations — Qu'est-ce que la Bourse et la BRVM ?",
         slug: 'fondations-bourse-brvm',
-        description: "Comprenez le rôle d'un marché financier et la distinction entre le marché primaire et secondaire.",
+        description: "Comprenez le rôle unique de la BRVM et distinguez clairement le marché primaire du marché secondaire.",
         difficulty_level: 'debutant',
         content_type: 'article',
         duration_minutes: 15,
         order_index: 1,
         is_published: true,
         content: `
-            <h2>1. Qu'est-ce qu'un marché financier?</h2>
-            <p>Un marché financier est simplement un lieu, physique ou virtuel, où l'argent rencontre des opportunités. Au lieu de vendre des mangues ou du pagne, on échange des <strong>titres financiers</strong> (actions, obligations). Ces titres représentent une petite part de la propriété (action) ou une dette (obligation) des grandes entreprises ou des États.</p>
-            <h3>L'Analogie à Retenir : Le Grand Marché de Quartier</h3>
-            <p>Imaginez le grand marché central de votre ville. Certains viennent vendre leurs produits directement au public (c'est le <strong>Marché Primaire</strong>), tandis que d'autres échangent des produits d'occasion entre eux (c'est le <strong>Marché Secondaire</strong>). La BRVM est ce marché qui garantit la transparence et la sécurité de ces échanges.</p>
+            <div class="space-y-8">
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8 rounded-xl">
+                    <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
+                    <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous serez capable :</p>
+                    <ul class="space-y-2 text-lg leading-relaxed">
+                        <li>• d'expliquer ce qu'est un marché financier et à quoi il sert ;</li>
+                        <li>• de comprendre le rôle unique de la BRVM dans l'économie de la zone UEMOA ;</li>
+                        <li>• de distinguer clairement le marché primaire du marché secondaire ;</li>
+                        <li>• et de comprendre pourquoi et comment une entreprise choisit d'entrer en bourse.</li>
+                    </ul>
+                </div>
 
-            <h2>2. Le rôle de la Bourse : Financer les entreprises, créer de la richesse</h2>
-            <p>La bourse régionale joue deux rôles fondamentaux pour l'UEMOA :</p>
-            <ul>
-                <li><strong>Financement</strong> : Elle permet aux entreprises (les émetteurs) de lever des capitaux nécessaires à leur expansion.</li>
-                <li><strong>Liquidité</strong> : Elle offre aux investisseurs (comme vous) la possibilité d'acheter et de vendre facilement leurs titres, transformant ainsi l'investissement en capital liquide.</li>
-            </ul>
+                <div class="border-l-4 border-blue-600 pl-6 py-4">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🧩 1.1 Qu'est-ce qu'un marché financier ?</h2>
 
-            <h2>3. Présentation de la BRVM : Notre bourse régionale</h2>
-            <p>La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est la bourse commune aux huit États membres de l'Union Économique et Monétaire Ouest Africaine (UEMOA) : Bénin, Burkina Faso, Côte d'Ivoire, Guinée-Bissau, Mali, Niger, Sénégal et Togo.</p>
-            <h3>Indices Clés :</h3>
-            <ul>
-                <li><strong>BRVM Composite</strong> : Représente l'ensemble des sociétés cotées.</li>
-                <li><strong>BRVM 10</strong> : Représente les 10 actions les plus liquides et les plus capitalisées.</li>
-            </ul>
+                    <p class="text-lg mb-4 leading-relaxed">Un marché financier est un espace — physique ou digital — où l'argent rencontre les opportunités.</p>
 
-            <h2>4. Marché primaire vs. Marché secondaire</h2>
-            <ul>
-                <li><strong>Le Marché Primaire (L'IPO)</strong> : C'est ici qu'une entreprise vend ses titres pour la première fois (lors d'une Introduction en Bourse, ou IPO). L'argent va directement à l'entreprise pour financer ses projets.</li>
-                <li><strong>Le Marché Secondaire (La Revente)</strong> : C'est le marché de la revente. Si vous achetez une action d'une société cotée aujourd'hui, vous l'achetez à un autre investisseur qui souhaite la vendre. C'est sur le Marché Secondaire que vous effectuerez la majorité de vos transactions.</li>
-            </ul>
+                    <p class="text-base mb-3 leading-relaxed">C'est là que se rencontrent :</p>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>ceux qui ont de l'argent à placer (investisseurs), et</li>
+                        <li>ceux qui ont besoin d'argent pour financer leurs projets (entreprises ou États).</li>
+                    </ul>
 
-            <h2>5. Comment et pourquoi une entreprise entre en bourse (IPO)</h2>
-            [cite_start]<p>Une entreprise fait une <strong>Introduction en Bourse (IPO)</strong> pour plusieurs raisons, toutes liées à la croissance : lever des capitaux sans s'endetter, gagner en notoriété et offrir une porte de sortie aux premiers actionnaires [cite: 80-82].</p>
-            
-            <h3>Les Termes à Maîtriser :</h3>
-            <ul>
-                <li><strong>BRVM Composite</strong> : L'indice boursier général qui suit la performance de toutes les actions cotées sur la BRVM.</li>
-                <li><strong>IPO</strong> : Introduction en Bourse, première vente des actions d'une entreprise au public (Marché Primaire).</li>
-                <li><strong>Marché Secondaire</strong> : Le marché où les titres déjà émis sont échangés entre investisseurs (votre terrain de jeu quotidien).</li>
-            </ul>
+                    <p class="text-base mb-3 leading-relaxed">Sur ces marchés, on ne vend pas des produits physiques, mais des titres financiers :</p>
+                    <ul class="list-disc ml-6 mb-6 space-y-1">
+                        <li>Les <strong>actions</strong> (parts de propriété dans une entreprise)</li>
+                        <li>Les <strong>obligations</strong> (prêts faits à une entreprise ou à un État)</li>
+                    </ul>
+
+                    <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-6 my-6">
+                        <h3 class="text-xl font-bold text-amber-900 mb-3">🪶 L'analogie à retenir : Le Grand Marché de la Ville</h3>
+                        <p class="text-base mb-3 leading-relaxed">Imaginez le grand marché central de votre ville :</p>
+                        <ul class="list-disc ml-6 mb-3 space-y-1">
+                            <li>Dans une zone, les producteurs viennent vendre leurs produits frais pour la première fois (🍍 marché primaire).</li>
+                            <li>Dans une autre zone, les commerçants revendent des produits déjà achetés (🍊 marché secondaire).</li>
+                        </ul>
+                        <p class="text-base font-semibold leading-relaxed">👉 La BRVM joue le rôle de ce grand marché financier, mais avec des règles claires, un système sécurisé, et une surveillance stricte pour protéger tous les participants.</p>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">📊 Pourquoi les marchés financiers sont essentiels</h3>
+                    <p class="text-base mb-3 leading-relaxed">Ils remplissent trois grandes fonctions :</p>
+                    <ol class="list-decimal ml-6 mb-4 space-y-2">
+                        <li><strong>Canaliser l'épargne vers l'investissement productif</strong><br/>→ Votre argent finance des projets réels : usines, routes, innovations.</li>
+                        <li><strong>Faciliter la liquidité</strong><br/>→ Vous pouvez revendre vos titres à tout moment.</li>
+                        <li><strong>Rendre l'économie plus transparente</strong><br/>→ Les entreprises cotées publient leurs résultats, ce qui permet de suivre leur performance.</li>
+                    </ol>
+                </div>
+
+                <div class="border-l-4 border-green-600 pl-6 py-4">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🏛️ 1.2 Le rôle et le fonctionnement de la BRVM</h2>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">🌍 Une bourse régionale unique au monde</h3>
+                    <p class="text-base mb-3 leading-relaxed">La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA) :</p>
+                    <p class="text-base mb-4 leading-relaxed">🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
+                    <p class="text-base mb-6 leading-relaxed">Elle a été créée en 1998, avec son siège à Abidjan (Côte d'Ivoire), et son dépositaire central, le DC/BR, à Cotonou (Bénin).</p>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">⚙️ Son fonctionnement</h3>
+                    <ul class="list-disc ml-6 mb-6 space-y-1">
+                        <li>Les entreprises qui souhaitent lever des fonds émettent des titres (actions ou obligations).</li>
+                        <li>Les investisseurs achètent et vendent ces titres via des Sociétés de Gestion et d'Intermédiation (SGI), qui sont les courtiers agréés.</li>
+                        <li>Le régulateur, le CREPMF, veille au respect des règles de transparence et de protection des investisseurs.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">📈 Les indices phares</h3>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li><strong>BRVM Composite</strong> : suit l'ensemble des sociétés cotées.</li>
+                        <li><strong>BRVM 10</strong> : regroupe les 10 entreprises les plus liquides et les plus importantes.</li>
+                    </ul>
+                    <p class="text-sm italic mb-4 leading-relaxed">Quand on dit « la BRVM a progressé de 2 % aujourd'hui », cela signifie que, globalement, les valeurs cotées ont pris de la valeur.</p>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-6">
+                        <p class="text-base font-semibold mb-2">💡 À retenir</p>
+                        <p class="text-base leading-relaxed">La BRVM permet :</p>
+                        <ul class="list-disc ml-6 mt-2 space-y-1">
+                            <li>aux entreprises de se financer localement sans dépendre uniquement des banques ;</li>
+                            <li>aux investisseurs de faire fructifier leur capital ;</li>
+                            <li>et à nos économies africaines de croître de manière inclusive et transparente.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-l-4 border-purple-600 pl-6 py-4">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🔁 1.3 Marché primaire vs marché secondaire</h2>
+                    <p class="text-base mb-4 leading-relaxed">Comprendre cette distinction est fondamental :</p>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse border-2 border-gray-300 my-4">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-bold">Type de marché</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-bold">Description</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-bold">À qui va l'argent ?</th>
+                                    <th class="border border-gray-300 px-4 py-3 text-left font-bold">Exemple concret</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-3">Marché primaire</td>
+                                    <td class="border border-gray-300 px-4 py-3">Les titres sont émis et vendus pour la première fois.</td>
+                                    <td class="border border-gray-300 px-4 py-3">Directement à l'entreprise ou à l'État.</td>
+                                    <td class="border border-gray-300 px-4 py-3">Une société comme NSIA Banque émet de nouvelles actions pour financer son expansion.</td>
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    <td class="border border-gray-300 px-4 py-3">Marché secondaire</td>
+                                    <td class="border border-gray-300 px-4 py-3">Les titres déjà émis sont échangés entre investisseurs.</td>
+                                    <td class="border border-gray-300 px-4 py-3">L'argent circule entre investisseurs, pas vers l'entreprise.</td>
+                                    <td class="border border-gray-300 px-4 py-3">Vous achetez des actions Sonatel à un autre investisseur via votre SGI.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4 my-6">
+                        <p class="text-base font-bold leading-relaxed">🎯 Votre terrain de jeu principal, en tant qu'investisseur particulier, est le marché secondaire, car c'est là que vous pourrez acheter ou revendre vos titres.</p>
+                    </div>
+                </div>
+
+                <div class="border-l-4 border-orange-600 pl-6 py-4">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🚀 1.4 Comment et pourquoi une entreprise entre en bourse (IPO)</h2>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">💰 Pourquoi entrer en bourse ?</h3>
+                    <p class="text-base mb-3 leading-relaxed">Une entreprise décide de s'introduire en bourse (faire une IPO – Initial Public Offering) pour :</p>
+                    <ol class="list-decimal ml-6 mb-6 space-y-2">
+                        <li>Lever des capitaux sans contracter de dettes bancaires.</li>
+                        <li>Améliorer sa visibilité et sa crédibilité auprès des investisseurs, partenaires et clients.</li>
+                        <li>Permettre à ses premiers actionnaires (fondateurs, fonds, salariés) de revendre une partie de leurs actions.</li>
+                        <li>Diversifier ses sources de financement et accéder à un marché de capitaux plus large.</li>
+                    </ol>
+
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">⚙️ Comment cela se passe ?</h3>
+                    <ol class="list-decimal ml-6 mb-6 space-y-2">
+                        <li>L'entreprise prépare ses états financiers et un prospectus approuvé par le CREPMF.</li>
+                        <li>Elle choisit une SGI pour la conseiller et placer ses titres.</li>
+                        <li>Les investisseurs souscrivent aux actions pendant la période d'offre publique.</li>
+                        <li>Une fois les titres émis, l'entreprise devient cotée et ses actions sont échangées sur le marché secondaire.</li>
+                    </ol>
+
+                    <div class="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 my-6">
+                        <h3 class="text-lg font-bold text-orange-900 mb-3">🎯 Exemple africain</h3>
+                        <p class="text-base mb-2 leading-relaxed">L'introduction en bourse de Orange Côte d'Ivoire (2022) a permis :</p>
+                        <ul class="list-disc ml-6 space-y-1">
+                            <li>à l'entreprise de lever plusieurs dizaines de milliards FCFA ;</li>
+                            <li>aux citoyens ivoiriens de devenir actionnaires d'un acteur majeur du pays ;</li>
+                            <li>et à la BRVM d'attirer de nouveaux investisseurs régionaux.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-gray-100 rounded-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🧠 Les termes à maîtriser</h2>
+                    <table class="min-w-full border-collapse border-2 border-gray-300">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="border border-gray-300 px-4 py-3 text-left font-bold">Terme</th>
+                                <th class="border border-gray-300 px-4 py-3 text-left font-bold">Définition</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 font-bold">BRVM</td>
+                                <td class="border border-gray-300 px-4 py-3">Bourse Régionale des Valeurs Mobilières, marché commun de l'UEMOA.</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-3 font-bold">BRVM Composite</td>
+                                <td class="border border-gray-300 px-4 py-3">Indice mesurant la performance de toutes les sociétés cotées.</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 font-bold">IPO (Initial Public Offering)</td>
+                                <td class="border border-gray-300 px-4 py-3">Introduction en bourse — première vente d'actions au public.</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-3 font-bold">Marché primaire</td>
+                                <td class="border border-gray-300 px-4 py-3">Marché où sont émis les nouveaux titres financiers.</td>
+                            </tr>
+                            <tr class="bg-white">
+                                <td class="border border-gray-300 px-4 py-3 font-bold">Marché secondaire</td>
+                                <td class="border border-gray-300 px-4 py-3">Marché où les titres déjà émis s'échangent entre investisseurs.</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="border border-gray-300 px-4 py-3 font-bold">SGI</td>
+                                <td class="border border-gray-300 px-4 py-3">Société de Gestion et d'Intermédiation, intermédiaire agréé pour acheter/vendre des titres.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-3">🧭 Prochaine étape</h3>
+                    <p class="text-base mb-3 leading-relaxed">Vous avez maintenant compris le rôle des marchés financiers et de la BRVM dans notre économie.</p>
+                    <p class="text-lg font-bold leading-relaxed">👉 Prochaine leçon : Module 2 — Les Acteurs du Jeu : Qui fait quoi sur le marché ?</p>
+                </div>
+            </div>
         `,
     });
 
