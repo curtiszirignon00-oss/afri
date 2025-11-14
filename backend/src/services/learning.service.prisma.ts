@@ -153,8 +153,24 @@ export class LearningServicePrisma {
                 return null;
             }
 
-            // Retourner le premier quiz du module
-            return module.quizzes[0];
+            const quiz = module.quizzes[0];
+            const allQuestions = quiz.questions as any[];
+
+            // Sélectionner aléatoirement 10 questions parmi toutes les questions disponibles
+            const QUESTIONS_PER_TEST = 10;
+            let selectedQuestions = allQuestions;
+
+            if (allQuestions.length > QUESTIONS_PER_TEST) {
+                // Mélanger et sélectionner 10 questions aléatoires
+                const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+                selectedQuestions = shuffled.slice(0, QUESTIONS_PER_TEST);
+            }
+
+            // Retourner le quiz avec seulement les questions sélectionnées
+            return {
+                ...quiz,
+                questions: selectedQuestions
+            };
         } catch (error) {
             console.error(`❌ Erreur lors de la récupération du quiz:`, error);
             throw error;
@@ -187,8 +203,8 @@ export class LearningServicePrisma {
                 }
             });
 
-            // Limiter à 3 tentatives avec délai de 8h après la 3ème tentative
-            const MAX_ATTEMPTS = 3;
+            // Limiter à 2 tentatives avec délai de 8h après la 2ème tentative
+            const MAX_ATTEMPTS = 2;
             const RETRY_DELAY_HOURS = 8;
 
             if (existingProgress && existingProgress.quiz_attempts >= MAX_ATTEMPTS) {
