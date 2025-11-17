@@ -36,11 +36,11 @@ interface QuizQuestion {
 
 interface QuizState {
   isActive: boolean;
-  currentQuestion: number;
-  answers: number[];
+  answers: { [questionId: string]: number }; // Map questionId -> answerIndex
   score: number | null;
   passed: boolean | null;
   showResults: boolean;
+  detailedResults?: any[]; // Résultats détaillés de l'API
 }
 
 export default function LearnPage() {
@@ -55,13 +55,12 @@ export default function LearnPage() {
     // <-- AJOUT: États pour le quiz
     const [quizState, setQuizState] = useState<QuizState>({
       isActive: false,
-      currentQuestion: 0,
-      answers: [],
+      answers: {},
       score: null,
       passed: null,
       showResults: false
     });
-    
+
     // <-- AJOUT: États pour l'audio
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
@@ -70,66 +69,31 @@ export default function LearnPage() {
     const [currentSlide, setCurrentSlide] = useState(1);
     const [totalSlides, setTotalSlides] = useState(1);
 
-    // <-- AJOUT: Quiz d'exemple pour le module (à remplacer par les vrais quiz de l'API)
-    const getModuleQuiz = useCallback((moduleSlug: string): QuizQuestion[] => {
-      // Ceci est un exemple - À REMPLACER par un appel API réel
-      return [
-        {
-          id: `${moduleSlug}-q1`,
-          question: "Qu'est-ce que la BRVM ?",
-          options: [
-            "La Banque Régionale des Valeurs Monétaires",
-            "La Bourse Régionale des Valeurs Mobilières",
-            "Le Bureau Régional des Valeurs Marchandes"
-          ],
-          correctAnswer: 1,
-          explanation: "La BRVM (Bourse Régionale des Valeurs Mobilières) est la bourse de l'UEMOA."
-        },
-        {
-          id: `${moduleSlug}-q2`,
-          question: "Quel est le pourcentage minimum pour valider ce module ?",
-          options: [
-            "50%",
-            "60%",
-            "70%"
-          ],
-          correctAnswer: 2,
-          explanation: "Un score minimum de 70% est requis pour valider le module."
-        },
-        {
-          id: `${moduleSlug}-q3`,
-          question: "Combien de tentatives avez-vous pour passer le quiz ?",
-          options: [
-            "2 tentatives",
-            "3 tentatives",
-            "Illimité"
-          ],
-          correctAnswer: 1,
-          explanation: "Vous avez 3 tentatives maximum toutes les 8 heures."
-        },
-        {
-          id: `${moduleSlug}-q4`,
-          question: "Quelle est la principale mission d'un investisseur ?",
-          options: [
-            "Spéculer à court terme",
-            "Faire croître son capital à long terme",
-            "Trader quotidiennement"
-          ],
-          correctAnswer: 1,
-          explanation: "L'investissement vise la croissance du capital sur le long terme."
-        },
-        {
-          id: `${moduleSlug}-q5`,
-          question: "Quelle diversification est recommandée pour un portefeuille ?",
-          options: [
-            "Tout investir dans une seule action",
-            "Diversifier entre 5-10 actions minimum",
-            "Investir uniquement dans des obligations"
-          ],
-          correctAnswer: 1,
-          explanation: "La diversification réduit le risque en répartissant les investissements."
+    // <-- AJOUT: États pour le quiz récupéré de l'API
+    const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+    const [quizLoading, setQuizLoading] = useState(false);
+    const [quizPassingScore, setQuizPassingScore] = useState(70);
+
+    // <-- AJOUT: Fonction pour charger le quiz depuis l'API
+    const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
+      setQuizLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
+        if (!response.ok) {
+          throw new Error('Impossible de charger le quiz');
         }
-      ];
+        const quizData = await response.json();
+
+        // Extraire les questions et le passing score
+        setQuizQuestions(quizData.questions || []);
+        setQuizPassingScore(quizData.passing_score || 70);
+      } catch (error) {
+        console.error('Erreur lors du chargement du quiz:', error);
+        toast.error('Impossible de charger le quiz');
+        setQuizQuestions([]);
+      } finally {
+        setQuizLoading(false);
+      }
     }, []);
 
     // --- Fonctions Helper ---
@@ -259,11 +223,11 @@ export default function LearnPage() {
 
       setQuizState({
         isActive: true,
-        currentQuestion: 0,
-        answers: [],
+        answers: {},
         score: null,
         passed: null,
-        showResults: false
+        showResults: false,
+        detailedResults: []
       });
 
       // Scroll vers le quiz
@@ -274,78 +238,98 @@ export default function LearnPage() {
 
     // <-- AJOUT: Fonction pour répondre à une question
     const answerQuestion = useCallback((answerIndex: number) => {
+      // Calculer l'index actuel basé sur le nombre de réponses
+      const currentIndex = Object.keys(quizState.answers).length;
+      const currentQuestionId = quizQuestions[currentIndex]?.id;
+
+      if (!currentQuestionId) {
+        console.error('ID de question manquant');
+        return;
+      }
+
       setQuizState(prev => ({
         ...prev,
-        answers: [...prev.answers, answerIndex],
-        currentQuestion: prev.currentQuestion + 1
+        answers: {
+          ...prev.answers,
+          [currentQuestionId]: answerIndex
+        }
       }));
-    }, []);
+    }, [quizQuestions, quizState.answers]);
 
-    // <-- AJOUT: Fonction pour soumettre le quiz
+    // <-- AJOUT: Fonction pour soumettre le quiz via l'API
     const submitQuiz = useCallback(async () => {
       if (!selectedModule) return;
 
-      const quiz = getModuleQuiz(selectedModule.slug);
-      let correctCount = 0;
+      const toastId = toast.loading('Validation du quiz en cours...');
 
-      // Calculer le score
-      quizState.answers.forEach((answer, index) => {
-        if (answer === quiz[index].correctAnswer) {
-          correctCount++;
+      try {
+        // Soumettre le quiz à l'API
+        const response = await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify({ answers: quizState.answers })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Erreur lors de la soumission du quiz');
         }
-      });
 
-      const scorePercentage = Math.round((correctCount / quiz.length) * 100);
-      const passed = scorePercentage >= 70;
+        const result = await response.json();
 
-      setQuizState(prev => ({
-        ...prev,
-        score: scorePercentage,
-        passed: passed,
-        showResults: true,
-        isActive: false
-      }));
+        setQuizState(prev => ({
+          ...prev,
+          score: result.score,
+          passed: result.passed,
+          showResults: true,
+          isActive: false,
+          detailedResults: result.detailedResults || []
+        }));
 
-      // Si réussi, marquer le module comme complété
-      if (passed) {
-        try {
-          await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/complete`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ quizScore: scorePercentage })
-          });
+        // Recharger la progression
+        await loadData();
 
-          await loadData();
-          toast.success(`🎉 Quiz réussi ! Score: ${scorePercentage}%`);
-        } catch (error) {
-          console.error('Erreur lors de la validation:', error);
+        // Afficher le résultat
+        if (result.passed) {
+          toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
+        } else {
+          toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
         }
-      } else {
-        toast.error(`Score insuffisant: ${scorePercentage}%. Minimum requis: 70%`);
+
+        // Scroll vers les résultats
+        setTimeout(() => {
+          document.getElementById('quiz-results')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+
+      } catch (error: any) {
+        console.error('Erreur lors de la soumission du quiz:', error);
+        toast.error(error.message || 'Erreur lors de la soumission du quiz', { id: toastId });
       }
-
-      // Scroll vers les résultats
-      setTimeout(() => {
-        document.getElementById('quiz-results')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }, [selectedModule, quizState.answers, getModuleQuiz, loadData]);
+    }, [selectedModule, quizState.answers, loadData]);
 
     // <-- AJOUT: Fonction pour rejouer le quiz
     const retryQuiz = useCallback(() => {
+      if (selectedModule) {
+        // Recharger le quiz pour avoir de nouvelles questions aléatoires
+        loadModuleQuiz(selectedModule.slug);
+      }
+
       setQuizState({
         isActive: true,
-        currentQuestion: 0,
-        answers: [],
+        answers: {},
         score: null,
         passed: null,
-        showResults: false
+        showResults: false,
+        detailedResults: []
       });
 
       setTimeout(() => {
         document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    }, []);
+    }, [selectedModule, loadModuleQuiz]);
 
     // <-- AJOUT: Fonction pour gérer le lecteur audio
     const toggleAudio = useCallback(() => {
@@ -406,12 +390,44 @@ export default function LearnPage() {
       }
     }, [isLoggedIn, loadData]);
 
+    // --- useEffect: Charger le quiz quand un module est sélectionné ---
+    useEffect(() => {
+        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4) {
+            // Charger le quiz depuis l'API pour les modules 1, 2, 3 et 4
+            loadModuleQuiz(selectedModule.slug);
+        }
+    }, [selectedModule, loadModuleQuiz]);
+
     // --- AFFICHAGE DU MODULE SÉLECTIONNÉ ---
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const quiz = getModuleQuiz(selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1; // <-- Quiz à partir du module 1
+        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4; // <-- Quiz pour les modules 1, 2, 3 et 4
+
+        // Extraire l'objectif pédagogique du contenu HTML
+        const extractPedagogicalObjective = (htmlContent: string): string | null => {
+            if (!htmlContent) return null;
+
+            // Créer un élément temporaire pour parser le HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+
+            // Chercher spécifiquement la div de l'objectif pédagogique
+            // Elle a une classe bg-gradient et contient "🎯 Objectif Pédagogique"
+            const divs = tempDiv.querySelectorAll('div');
+            for (let div of Array.from(divs)) {
+                const h2 = div.querySelector('h2');
+                if (h2 && h2.textContent?.includes('🎯 Objectif Pédagogique')) {
+                    // Vérifier que c'est une div avec un fond coloré (bg-gradient)
+                    if (div.className.includes('bg-gradient')) {
+                        return div.innerHTML;
+                    }
+                }
+            }
+            return null;
+        };
+
+        const pedagogicalObjective = extractPedagogicalObjective(selectedModule.content || '');
 
         return (
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -421,8 +437,7 @@ export default function LearnPage() {
                       setSelectedModule(null);
                       setQuizState({
                         isActive: false,
-                        currentQuestion: 0,
-                        answers: [],
+                        answers: {},
                         score: null,
                         passed: null,
                         showResults: false
@@ -438,14 +453,14 @@ export default function LearnPage() {
                     <span>Retour aux modules</span>
                 </button>
 
-                {/* <-- CORRECTION: En-tête du module amélioré */}
+                {/* <-- CORRECTION: En-tête du module amélioré et agrandi */}
                 <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-10 text-white">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-12 text-white">
                         <div className="flex items-start justify-between mb-4">
                             <span className={`px-4 py-2 rounded-full text-sm font-semibold border-2 ${getDifficultyColor(selectedModule.difficulty_level)} bg-white`}>
                                 {getDifficultyLabel(selectedModule.difficulty_level)}
                             </span>
-                            
+
                             {isCompleted && (
                                 <div className="flex items-center space-x-2 bg-green-500 px-4 py-2 rounded-full">
                                     <CheckCircle className="w-5 h-5" />
@@ -454,23 +469,17 @@ export default function LearnPage() {
                             )}
                         </div>
 
-                        <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                        <h1 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
                             {selectedModule.title}
                         </h1>
 
-                        {selectedModule.description && (
-                            <p className="text-blue-100 text-lg leading-relaxed">
-                                {selectedModule.description}
-                            </p>
-                        )}
-
                         {/* <-- AJOUT: Métadonnées du module */}
-                        <div className="flex flex-wrap items-center gap-6 mt-6 pt-6 border-t border-blue-400/30">
+                        <div className="flex flex-wrap items-center gap-6 pb-6 border-b border-blue-400/30">
                             <div className="flex items-center space-x-2">
                                 <Clock className="w-5 h-5" />
                                 <span>{selectedModule.duration_minutes || '15'} minutes</span>
                             </div>
-                            
+
                             <div className="flex items-center space-x-2">
                                 <BookOpen className="w-5 h-5" />
                                 <span>{selectedModule.content_type === 'video' ? 'Vidéo' : 'Article'}</span>
@@ -489,6 +498,20 @@ export default function LearnPage() {
                                 <span>Audio (bientôt)</span>
                             </div>
                         </div>
+
+                        {/* Objectif pédagogique extrait du contenu */}
+                        {pedagogicalObjective && (
+                            <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-xl p-6 border-2 border-white/20 shadow-lg">
+                                <div
+                                    className="text-white pedagogical-objective"
+                                    dangerouslySetInnerHTML={{ __html: pedagogicalObjective }}
+                                    style={{
+                                        fontSize: '1rem',
+                                        lineHeight: '1.75'
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* <-- AJOUT: Barre de progression si quiz déjà tenté */}
@@ -573,54 +596,67 @@ export default function LearnPage() {
                                 {!quizState.isActive && !quizState.showResults && (
                                     // Bouton pour démarrer le quiz
                                     <div className="text-center">
-                                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mb-6 shadow-lg">
-                                            <Brain className="w-10 h-10 text-white" />
-                                        </div>
-                                        <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                                            Testez vos connaissances
-                                        </h3>
-                                        <p className="text-gray-600 mb-6">
-                                            Répondez à {quiz.length} questions pour valider ce module. Score minimum requis: <strong>70%</strong>
-                                        </p>
-                                        <button
-                                            onClick={startQuiz}
-                                            className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                        >
-                                            <Brain className="w-6 h-6" />
-                                            <span>Commencer le quiz</span>
-                                        </button>
-                                        <p className="text-sm text-gray-500 mt-4">
-                                            Vous avez 3 tentatives toutes les 8 heures
-                                        </p>
+                                        {quizLoading ? (
+                                            <div className="py-12">
+                                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
+                                                <p className="text-gray-600">Chargement du quiz...</p>
+                                            </div>
+                                        ) : quizQuestions.length > 0 ? (
+                                            <>
+                                                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mb-6 shadow-lg">
+                                                    <Brain className="w-10 h-10 text-white" />
+                                                </div>
+                                                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                                                    Testez vos connaissances
+                                                </h3>
+                                                <p className="text-gray-600 mb-6">
+                                                    Répondez à {quizQuestions.length} questions pour valider ce module. Score minimum requis: <strong>{quizPassingScore}%</strong>
+                                                </p>
+                                                <button
+                                                    onClick={startQuiz}
+                                                    className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                >
+                                                    <Brain className="w-6 h-6" />
+                                                    <span>Commencer le quiz</span>
+                                                </button>
+                                                <p className="text-sm text-gray-500 mt-4">
+                                                    Vous avez 2 tentatives toutes les 8 heures
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <p className="text-gray-500">Aucun quiz disponible pour ce module.</p>
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Quiz en cours */}
-                                {quizState.isActive && quizState.currentQuestion < quiz.length && (
-                                    <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
-                                        <div className="mb-6">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <span className="text-sm font-medium text-gray-600">
-                                                    Question {quizState.currentQuestion + 1} sur {quiz.length}
-                                                </span>
-                                                <span className="text-sm font-medium text-indigo-600">
-                                                    {Math.round(((quizState.currentQuestion) / quiz.length) * 100)}% complété
-                                                </span>
+                                {(() => {
+                                    const currentIndex = Object.keys(quizState.answers).length;
+                                    return quizState.isActive && currentIndex < quizQuestions.length && (
+                                        <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
+                                            <div className="mb-6">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <span className="text-sm font-medium text-gray-600">
+                                                        Question {currentIndex + 1} sur {quizQuestions.length}
+                                                    </span>
+                                                    <span className="text-sm font-medium text-indigo-600">
+                                                        {Math.round((currentIndex / quizQuestions.length) * 100)}% complété
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${(currentIndex / quizQuestions.length) * 100}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div 
-                                                    className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                                                    style={{ width: `${((quizState.currentQuestion) / quiz.length) * 100}%` }}
-                                                />
-                                            </div>
-                                        </div>
 
-                                        <h4 className="text-xl font-bold text-gray-900 mb-6 leading-relaxed">
-                                            {quiz[quizState.currentQuestion].question}
-                                        </h4>
+                                            <h4 className="text-xl font-bold text-gray-900 mb-6 leading-relaxed">
+                                                {quizQuestions[currentIndex].question}
+                                            </h4>
 
-                                        <div className="space-y-3">
-                                            {quiz[quizState.currentQuestion].options.map((option, index) => (
+                                            <div className="space-y-3">
+                                                {quizQuestions[currentIndex].options.map((option, index) => (
                                                 <button
                                                     key={index}
                                                     onClick={() => answerQuestion(index)}
@@ -638,10 +674,12 @@ export default function LearnPage() {
                                             ))}
                                         </div>
                                     </div>
-                                )}
+                                    );
+                                })()}
 
                                 {/* Bouton soumettre quand toutes les questions sont répondues */}
-                                {quizState.isActive && quizState.currentQuestion === quiz.length && (
+                               {/*quizState.isActive && quizState.currentQuestion === quizQuestions.length && */}
+                                {quizState.isActive && Object.keys(quizState.answers).length === quizQuestions.length && (
                                     <div className="bg-white rounded-2xl shadow-xl p-8 text-center border-2 border-green-200">
                                         <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
                                         <h4 className="text-2xl font-bold text-gray-900 mb-3">
@@ -701,58 +739,89 @@ export default function LearnPage() {
                                         </div>
 
                                         {/* Détails des réponses */}
-                                        <div className="space-y-4 mb-8">
-                                            {quiz.map((question, index) => {
-                                                const userAnswer = quizState.answers[index];
-                                                const isCorrect = userAnswer === question.correctAnswer;
+                                        {quizState.detailedResults && quizState.detailedResults.length > 0 && (
+                                            <div className="space-y-4 mb-8">
+                                                {quizState.detailedResults.map((result, index) => {
+                                                    const isCorrect = result.isCorrect;
 
-                                                return (
-                                                    <div key={question.id} className={`p-5 rounded-xl border-2 ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
-                                                        <div className="flex items-start space-x-3 mb-3">
-                                                            {isCorrect ? (
-                                                                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                                                            ) : (
-                                                                <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                                                            )}
-                                                            <div className="flex-1">
-                                                                <p className="font-semibold text-gray-900 mb-2">
-                                                                    {question.question}
-                                                                </p>
-                                                                <p className="text-sm text-gray-700 mb-1">
-                                                                    <span className="font-medium">Votre réponse:</span> {question.options[userAnswer]}
-                                                                </p>
-                                                                {!isCorrect && (
-                                                                    <p className="text-sm text-gray-700 mb-2">
-                                                                        <span className="font-medium text-green-700">Bonne réponse:</span> {question.options[question.correctAnswer]}
-                                                                    </p>
+                                                    return (
+                                                        <div key={result.questionId || index} className={`p-5 rounded-xl border-2 ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
+                                                            <div className="flex items-start space-x-3 mb-3">
+                                                                {isCorrect ? (
+                                                                    <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                                                                ) : (
+                                                                    <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
                                                                 )}
-                                                                {question.explanation && (
-                                                                    <p className="text-sm text-gray-600 italic mt-2 pt-2 border-t border-gray-300">
-                                                                        💡 {question.explanation}
+                                                                <div className="flex-1">
+                                                                    <p className="font-semibold text-gray-900 mb-2">
+                                                                        {result.question}
                                                                     </p>
-                                                                )}
+                                                                    {result.explanation && (
+                                                                        <p className="text-sm text-gray-600 italic mt-2 pt-2 border-t border-gray-300">
+                                                                            💡 {result.explanation}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
 
                                         {/* Boutons d'action */}
                                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                             {!quizState.passed && (
                                                 <button
                                                     onClick={retryQuiz}
-                                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                                                    className="inline-flex items-center space-x-2 px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl"
                                                 >
-                                                    Réessayer le quiz
+                                                    <Brain className="w-5 h-5" />
+                                                    <span>Réessayer le quiz</span>
                                                 </button>
                                             )}
+
+                                            {quizState.passed && (() => {
+                                                // Trouver le prochain module
+                                                const currentOrder = selectedModule.order_index ?? 0;
+                                                const nextModule = modules.find(m => (m.order_index ?? 0) === currentOrder + 1);
+
+                                                return nextModule ? (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedModule(nextModule);
+                                                            setQuizState({
+                                                                isActive: false,
+                                                                answers: {},
+                                                                score: null,
+                                                                passed: null,
+                                                                showResults: false
+                                                            });
+                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                        }}
+                                                        className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                                                    >
+                                                        <span>Continuer vers le Module {currentOrder + 1}</span>
+                                                        <ArrowLeft className="w-5 h-5 rotate-180" />
+                                                    </button>
+                                                ) : null;
+                                            })()}
+
                                             <button
-                                                onClick={() => setSelectedModule(null)}
-                                                className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors font-medium"
+                                                onClick={() => {
+                                                    setSelectedModule(null);
+                                                    setQuizState({
+                                                        isActive: false,
+                                                        answers: {},
+                                                        score: null,
+                                                        passed: null,
+                                                        showResults: false
+                                                    });
+                                                }}
+                                                className="inline-flex items-center space-x-2 px-8 py-4 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all font-semibold shadow-lg hover:shadow-xl"
                                             >
-                                                Retour aux modules
+                                                <ArrowLeft className="w-5 h-5" />
+                                                <span>Retour aux modules</span>
                                             </button>
                                         </div>
                                     </div>

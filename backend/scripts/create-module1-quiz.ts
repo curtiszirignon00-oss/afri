@@ -47,7 +47,7 @@ async function createModule1Quiz() {
         questions: [
           {
             id: 'q1',
-            question: "Selon le module, quelle est la meilleure analogie pour décrire un marché financier?",
+            question: "quelle est la meilleure analogie pour décrire un marché financier?",
             options: [
               "Un distributeur automatique où l'on retire de l'argent.",
               "Le Grand Marché central de la ville.",
