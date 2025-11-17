@@ -191,7 +191,7 @@ export class LearningServicePrisma {
             }
 
             const quiz = module.quizzes[0];
-            const questions = quiz.questions as any[];
+            const allQuestions = quiz.questions as any[];
 
             // Vérifier les tentatives précédentes
             const existingProgress = await prisma.learningProgress.findUnique({
@@ -225,15 +225,34 @@ export class LearningServicePrisma {
                 }
             }
 
-            // Calculer le score
+            // Gérer les réponses : soit un array [0, 1, 2, ...], soit un objet { questionId: answer }
+            let answersMap: { [key: string]: number } = {};
+
+            if (Array.isArray(answers)) {
+                // Format ancien : array d'index - on suppose que c'est dans l'ordre des 10 premières questions
+                // PROBLÈME : On ne sait pas quelles questions ont été envoyées !
+                // SOLUTION TEMPORAIRE : Utiliser les IDs de question si disponibles
+                throw new Error('Format de réponses non supporté. Veuillez utiliser le format { questionId: answer }');
+            } else {
+                // Format nouveau : objet { questionId: answerIndex }
+                answersMap = answers;
+            }
+
+            // Calculer le score uniquement sur les questions répondues
             let correctCount = 0;
             const detailedResults: any[] = [];
+            const questionIds = Object.keys(answersMap);
 
-            // Gérer les réponses comme array ou objet
-            const answersArray = Array.isArray(answers) ? answers : Object.values(answers);
+            questionIds.forEach((questionId: string) => {
+                // Trouver la question dans toutes les questions
+                const question = allQuestions.find((q: any) => q.id === questionId);
 
-            questions.forEach((question: any, index: number) => {
-                const userAnswer = answersArray[index];
+                if (!question) {
+                    console.warn(`Question ${questionId} non trouvée dans le quiz`);
+                    return;
+                }
+
+                const userAnswer = answersMap[questionId];
                 const isCorrect = userAnswer === question.correct_answer;
 
                 if (isCorrect) {
@@ -250,7 +269,8 @@ export class LearningServicePrisma {
                 });
             });
 
-            const score = Math.round((correctCount / questions.length) * 100);
+            const totalQuestions = questionIds.length;
+            const score = Math.round((correctCount / totalQuestions) * 100);
             const passed = score >= quiz.passing_score;
 
             // Calculer les nouvelles tentatives
@@ -291,7 +311,7 @@ export class LearningServicePrisma {
                 passed,
                 passingScore: quiz.passing_score,
                 correctAnswers: correctCount,
-                totalQuestions: questions.length,
+                totalQuestions: totalQuestions,
                 attempts: progress.quiz_attempts,
                 attemptsRemaining: Math.max(0, MAX_ATTEMPTS - progress.quiz_attempts),
                 detailedResults

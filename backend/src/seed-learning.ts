@@ -471,170 +471,569 @@ async function main() {
     // =====================================
     // === M2 : LES ACTEURS DU JEU ===
     // =====================================
-    await createOrUpdateModule({
-        title: "Les Acteurs du Jeu - Qui fait quoi sur le marché?",
-        slug: 'acteurs-du-jeu',
-        description: "Identifiez les rôles des intervenants (SGI, AMF-UMOA, DC/BR, BCEAO) et le circuit de sécurité d'un ordre d'achat.",
-        difficulty_level: 'debutant',
-        content_type: 'article',
-        duration_minutes: 15,
-        order_index: 2,
-        is_published: true,
-        content: `
-            <h2>1. L'Investisseur : C'est Vous!</h2>
-            <p>Vous êtes un investisseur <strong>particulier</strong>, un individu qui investit avec sa propre épargne, par opposition aux investisseurs institutionnels (banques, assurances, fonds de pension).</p>
+  
+await createOrUpdateModule({
+    title: "Les Acteurs du Jeu – Qui fait quoi sur le marché ?",
+    slug: "acteurs-du-jeu", // garder ou remplacer selon ta structure
+    description:
+        "Comprenez les rôles des SGI, AMF-UMOA, DC/BR, BCEAO et des entreprises cotées, et voyez comment vos ordres circulent dans le marché.",
+    difficulty_level: "debutant",
+    content_type: "article",
+    duration_minutes: 18,
+    order_index: 2,
+    is_published: true,
+    content: `
+        <div class="space-y-8">
+            <div class="bg-gradient-to-r from-green-600 to-emerald-700 text-white p-8 rounded-xl">
+                <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
+                <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous serez capable :</p>
+                <ul class="space-y-2 text-lg leading-relaxed">
+                    <li>• d'identifier les principaux acteurs du marché financier régional ;</li>
+                    <li>• de comprendre comment vos ordres d'achat ou de vente circulent ;</li>
+                    <li>• de visualiser la chaîne de sécurité qui protège votre argent et vos titres.</li>
+                </ul>
+            </div>
 
-            <h2>2. Les SGI (Sociétés de Gestion et d'Intermédiation) : Votre courtier</h2>
-            <p>La <strong>SGI</strong> est votre porte d'entrée obligatoire vers la BRVM. Vous devez passer par elle pour acheter ou vendre des actions.</p>
-            <ul>
-                <li><strong>Rôle</strong> : Ouvrir et gérer votre compte-titres, transmettre vos ordres, et conserver votre argent.</li>
-            </ul>
-            <h3>L'Analogie à Retenir : Votre "Taxi Moto" de Confiance</h3>
-            <p>La SGI est votre chauffeur de confiance qui connaît le marché et s'assure que votre ordre est exécuté rapidement et en toute sécurité.</p>
+        <hr/>
 
-            <h2>3. Le "gendarme" du marché : L’AMF-UMOA</h2>
-            <p>L'<strong>Autorité des Marchés Financiers de l'UMOA (AMF-UMOA)</strong> est le régulateur suprême. Elle garantit l'intégrité et la transparence du marché.</p>
-            <ul>
-                <li><strong>Rôle</strong> : Surveiller, sanctionner les abus et agréer tous les intervenants (y compris les SGI et le DC/BR).</li>
-                <li><strong>Gage de Sécurité</strong> : L'AMF-UMOA assure la conformité du marché régional, y compris la mise en œuvre des exigences de <strong>Lutte contre le Blanchiment de Capitaux</strong> (LBC/FT/FP).</li>
-            </ul>
+        <h2>2.1 La BRVM : Une Bourse Unique au Monde</h2>
 
-            <h2>4. Le "notaire" du marché : Le Dépositaire Central/Banque de Règlement (DC/BR)</h2>
-            <p>Le <strong>DC/BR</strong> est le coffre-fort digital centralisé du marché UEMOA. Son rôle est essentiel :</p>
-            <ul>
-                <li><strong>Conservation des titres</strong> : Il assure la conservation scripturale (digitale) de tous les titres. Vos actions sont enregistrées en votre nom au DC/BR, et non par votre SGI.</li>
-                <li><strong>Règlement-Livraison</strong> : Il s'assure que les titres sont livrés et l'argent réglé au vendeur (et inversement).</li>
-            </ul>
-            <p><strong>La garantie fondamentale de la sécurité de votre capital investi</strong> est que le DC/BR conserve vos titres de manière centralisée et séparée des SGI.</p>
+        <p>
+            La <strong>BRVM</strong> est une bourse régionale partagée par
+            <strong>8 pays de l’UEMOA</strong> utilisant la même monnaie et la même banque centrale.
+        </p>
 
-            <h2>5. La "grande banque centrale" : Le rôle de supervision de la BCEAO</h2>
-            <p>La <strong>Banque Centrale des États de l'Afrique de l'Ouest (BCEAO)</strong> supervise le système bancaire et monétaire. Ses décisions sur les taux d'intérêt et la politique monétaire ont un impact majeur sur les marchés et sur les taux d'emprunt des entreprises cotées.</p>
-            
-            <h3>Les Termes à Maîtriser :</h3>
-            <ul>
-                <li><strong>SGI</strong> : Société de Gestion et d'Intermédiation, votre intermédiaire boursier obligatoire.</li>
-                <li><strong>AMF-UMOA</strong> : Autorité des Marchés Financiers de l'UMOA, le régulateur (le gendarme).</li>
-                <li><strong>DC/BR</strong> : Dépositaire Central/Banque de Règlement, l'entité qui conserve vos titres (le notaire).</li>
-            </ul>
-        `,
-    });
+        <p><strong>Pays membres :</strong> Bénin, Burkina Faso, Côte d’Ivoire, Guinée-Bissau, Mali, Niger, Sénégal, Togo.</p>
+
+        <ul>
+            <li><strong>Siège de la BRVM :</strong> Abidjan</li>
+            <li><strong>Siège du DC/BR :</strong> Cotonou</li>
+        </ul>
+
+        <p>
+            La BRVM permet aux entreprises de se financer auprès du public et aux investisseurs
+            d’acheter ou de revendre facilement leurs titres.
+        </p>
+
+        <hr/>
+
+        <h2>2.2 Les Trois Piliers Institutionnels du Marché</h2>
+        <p>Le marché financier régional repose sur trois institutions clés :</p>
+        <ul>
+            <li><strong>BCEAO</strong> – stabilité monétaire</li>
+            <li><strong>AMF-UMOA</strong> – régulation et protection des investisseurs</li>
+            <li><strong>DC/BR</strong> – conservation et sécurisation des titres</li>
+        </ul>
+
+        <hr/>
+
+        <h3>2.2.1 BCEAO – Le Pilier Monétaire 🏦</h3>
+        <p>
+            La <strong>BCEAO</strong> assure la stabilité monétaire de la région.
+            Elle influence fortement les marchés par :
+        </p>
+        <ul>
+            <li>la fixation des taux directeurs ;</li>
+            <li>la gestion de l’inflation ;</li>
+            <li>la supervision du système bancaire.</li>
+        </ul>
+
+        <p>
+            <strong>Impact :</strong> Une baisse des taux stimule les entreprises et les marchés.
+            Une hausse rend le crédit plus cher et peut peser sur les valorisations.
+        </p>
+
+        <hr/>
+
+        <h3>2.2.2 AMF-UMOA – Le Gendarme du Marché ⚖️</h3>
+        <p>
+            L’<strong>AMF-UMOA</strong> protège les investisseurs et veille à la transparence.
+            Elle :
+        </p>
+        <ul>
+            <li>définit les règles du marché ;</li>
+            <li>approuve les introductions en bourse ;</li>
+            <li>surveille et sanctionne les abus ;</li>
+            <li>agrée les SGI, fonds et acteurs financiers.</li>
+        </ul>
+
+        <p>
+            C’est votre <strong>bouclier réglementaire</strong>. Sans elle, la confiance s’effondrerait.
+        </p>
+
+        <hr/>
+
+        <h3>2.2.3 DC/BR – Le Notaire Digital du Marché 🔐</h3>
+        <p>
+            Le <strong>DC/BR</strong> est l’entité qui conserve les titres et sécurise les transactions.
+        </p>
+
+        <ul>
+            <li><strong>Conservation :</strong> Vos titres ne sont pas stockés chez la SGI mais chez le DC/BR.</li>
+            <li><strong>Règlement-livraison :</strong> Transfert simultané des titres et de l’argent.</li>
+            <li><strong>Banque de règlement :</strong> Gestion des flux financiers entre SGI.</li>
+        </ul>
+
+        <p>
+            <strong>Analogie :</strong> C’est le notaire digital qui garantit votre propriété financière.
+        </p>
+
+        <hr/>
+
+        <h2>2.3 L’Investisseur – C’est Vous 💼</h2>
+
+        <p>Deux grandes catégories d'investisseurs existent :</p>
+
+        <h4>1. Investisseurs particuliers</h4>
+        <p>Ils investissent leur propre épargne pour faire croître leur capital.</p>
+
+        <h4>2. Investisseurs institutionnels</h4>
+        <p>Ils gèrent des milliards pour le compte de clients ou salariés :</p>
+        <ul>
+            <li>assurances,</li>
+            <li>fonds de pension,</li>
+            <li>banques,</li>
+            <li>OPCVM.</li>
+        </ul>
+
+        <p><strong>À retenir :</strong> Même un petit investisseur contribue au financement des entreprises africaines.</p>
+
+        <hr/>
+
+        <h2>2.4 Les Sociétés Cotées – Les Champions Économiques 🏢</h2>
+
+        <p>
+            Les entreprises cotées lèvent des fonds, gagnent en transparence et impliquent les citoyens
+            dans leur croissance.
+        </p>
+
+        <p>Quelques exemples :</p>
+        <ul>
+            <li>Sonatel – Télécommunications</li>
+            <li>Ecobank CI – Banque</li>
+            <li>Nestlé CI – Agroalimentaire</li>
+            <li>Palmci – Agriculture</li>
+            <li>TotalEnergies CI – Distribution énergétique</li>
+        </ul>
+
+        <p>
+            Acheter une action = devenir <strong>copropriétaire</strong> de l’entreprise.
+        </p>
+
+        <hr/>
+
+        <h2>2.5 Les SGI – Votre Intermédiaire Officiel ⚙️</h2>
+
+        <p>La <strong>SGI</strong> joue un rôle central :</p>
+        <ul>
+            <li>ouvrir et gérer votre compte-titres ;</li>
+            <li>transmettre vos ordres à la BRVM ;</li>
+            <li>conserver vos fonds en attente d’investissement ;</li>
+            <li>vous conseiller selon votre profil.</li>
+        </ul>
+
+        <p><strong>Analogie :</strong> Votre “taxi-moto boursier”.</p>
+
+        <hr/>
+
+        <h2>2.6 Autres Acteurs Clés 🌐</h2>
+        <ul>
+            <li>SGO : gestionnaires d’OPCVM (FCP, SICAV)</li>
+            <li>Experts-comptables : certification des états financiers</li>
+            <li>Médias financiers : information et transparence</li>
+        </ul>
+
+        <hr/>
+
+        <h2>🧠 Termes à Maîtriser</h2>
+        <ul>
+            <li><strong>SGI</strong> : Intermédiaire entre vous et la BRVM</li>
+            <li><strong>AMF-UMOA</strong> : Régulateur du marché</li>
+            <li><strong>DC/BR</strong> : Conservation des titres et règlement</li>
+            <li><strong>BCEAO</strong> : Banque centrale de la région</li>
+            <li><strong>Investisseur institutionnel</strong> : Assurance, fonds, banques</li>
+            <li><strong>Société cotée</strong> : Entreprise listée à la BRVM</li>
+        </ul>
+
+        <hr/>
+
+        <h2>👉 Prochaine étape</h2>
+        <p>
+            Le <strong>Module 3</strong> vous présentera les outils de l’investisseur : actions,
+            obligations et OPCVM.
+        </p>
+    `,
+});
 
     // ==================================================
     // === M3 : LES OUTILS DE L'INVESTISSEUR ===
     // ==================================================
     await createOrUpdateModule({
-        title: "Les Outils de l'Investisseur - Actions, Obligations et OPCVM",
+       title: "Les Outils de l’Investisseur — Les Instruments Financiers de la BRVM",
         slug: 'outils-investisseur',
-        description: "Distinguez les Actions des Obligations et des OPCVM, et comprenez leur niveau de risque et de rendement.",
-        difficulty_level: 'debutant',
-        content_type: 'article',
-        duration_minutes: 15,
-        order_index: 3,
-        is_published: true,
+        description:"Découvrez les principaux instruments financiers de la BRVM : actions, obligations, OPCVM, ETF. Comprenez leur fonctionnement, leurs risques et comment les choisir en fonction de votre profil.",
+  difficulty_level: "debutant",
+  content_type: "article",
+  duration_minutes: 25,
+  order_index: 3,
+  is_published: true,
         content: `
-            <h2>1. Les Actions : Devenir propriétaire d'une part d'entreprise</h2>
-            <p>Acheter une action, c'est acquérir une fraction du capital d'une entreprise. Vous passez du statut de consommateur à celui de co-propriétaire.</p>
-            <ul>
-                <li><strong>Avantages (Rendement)</strong> : Plus-value et distribution de <strong>Dividendes</strong>.</li>
-                <li><strong>Risques</strong> : Le risque est plus élevé car vous pouvez perdre tout votre capital si l'entreprise échoue.</li>
-            </ul>
-            <h3>L'Analogie à Retenir : L'Achat d'une Petite Échoppe de Quartier</h3>
-            <p>Votre richesse est directement liée à la performance de l'affaire. Si elle réussit, vous partagez les profits (dividendes), mais vous partagez aussi les pertes (risque de baisse de l'action).</p>
+           <div class="space-y-8">
+               <div class="bg-gradient-to-r from-purple-600 to-violet-700 text-white p-8 rounded-xl">
+                   <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
+                   <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous serez capable de :</p>
+                   <ul class="space-y-2 text-lg leading-relaxed">
+                       <li>• Distinguer les actions, obligations, ETF et OPCVM.</li>
+                       <li>• Comprendre les mécanismes de rendement et de risque de chaque type d'actif.</li>
+                       <li>• Identifier les produits adaptés à votre profil d'investisseur.</li>
+                   </ul>
+               </div>
 
-            <h2>2. Les Obligations : Prêter de l'argent à une entreprise ou un État</h2>
-            <p>Une obligation est une reconnaissance de dette. Vous prêtez de l'argent à une entreprise ou à un État pour une durée déterminée.</p>
-            <ul>
-                <li><strong>Sécurité</strong> : Moins risquées que les actions car les créanciers (porteurs d'obligations) sont remboursés avant les actionnaires en cas de liquidation.</li>
-                <li><strong>Rendement</strong> : Vous recevez des paiements d'intérêts réguliers appelés <strong>coupons</strong>. Ce revenu est stable et prédéterminé.</li>
-            </ul>
-            <h3>L'Analogie à Retenir : Le Prêt à un Commerçant Sérieux</h3>
-            <p>Même si l'emprunteur devient très riche, votre rendement reste fixé par le taux d'intérêt convenu (le coupon).</p>
+           <h2>3.1 Les Actions — Devenir propriétaire d'une part d'entreprise</h2>
+<p>Une action représente une fraction du capital d’une société. En l’achetant, vous devenez actionnaire, c’est-à-dire copropriétaire de l’entreprise.</p>
 
-            <h2>3. Le Match : Actions vs. Obligations (Rendement vs. Risque)</h2>
-            <p>Le tableau comparatif ci-dessous résume le choix crucial selon votre profil :</p>
-            <table class="table-auto w-full text-left border-collapse border border-gray-300 my-4">
-                <thead class="bg-gray-100">
-                    <tr><th>Caractéristique</th><th>Actions</th><th>Obligations</th><th>OPCVM (Fonds Commun)</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Nature de l'Investissement</td><td>Propriété (Actionnaire)</td><td>Prêt (Créancier)</td><td>Panier de titres (Gestion déléguée)</td></tr>
-                    <tr><td>Revenu Potentiel</td><td>Dividendes et Plus-value (variable)</td><td>Intérêts (coupons) (stable)</td><td>Variable (selon le fonds)</td></tr>
-                    <tr><td>Niveau de Risque</td><td>Élevé (Volatilité)</td><td>Faible à Modéré (Stabilité)</td><td>Modéré (Diversification)</td></tr>
-                </tbody>
-            </table>
+<h3>💰 Sources de rendement</h3>
+<ul>
+  <li><strong>Plus-value</strong> : revendre plus cher que le prix d’achat.</li>
+  <li><strong>Dividendes</strong> : part du bénéfice distribuée annuellement.</li>
+</ul>
 
-            <h2>4. Les OPCVM (SICAV & FCP) : Le "panier garni" pour diversifier facilement</h2>
-            <p>Les <strong>Organismes de Placement Collectif en Valeurs Mobilières (OPCVM)</strong> sont des fonds qui collectent l'argent de nombreux investisseurs pour acheter un portefeuille diversifié.</p>
-            <ul>
-                <li><strong>Types</strong> : SICAV (Société d'Investissement à Capital Variable) et FCP (Fonds Commun de Placement).</li>
-                <li><strong>Avantage majeur</strong> : Ils offrent une diversification immédiate et la gestion est déléguée à des professionnels.</li>
-            </ul>
-            <h3>L'Analogie à Retenir : L'Achat d'un Panier de Fruits au Marché</h3>
-            <p>Si un fruit est gâté, les autres compensent.</p>
-            
-            <h2>5. Introduction aux ETF : Le futur de l'investissement indiciel</h2>
-            <p>Les <strong>ETF (Exchange Traded Funds)</strong> sont des OPCVM qui répliquent la performance d'un indice (comme le BRVM Composite). Ils offrent une diversification maximale à très faibles coûts et représentent l'avenir de l'investissement passif.</p>
+<h3>⚠️ Risques associés</h3>
+<ul>
+  <li>Forte volatilité possible.</li>
+  <li>Risque de faillite (actionnaires payés en dernier).</li>
+  <li>Dividendes non garantis.</li>
+</ul>
 
-            <h3>Les Termes à Maîtriser :</h3>
-            <ul>
-                <li><strong>Dividende</strong> : Part du bénéfice d'une entreprise versée aux actionnaires (revenu d'action).</li>
-                <li><strong>Coupon</strong> : Paiement d'intérêt périodique versé au détenteur d'une obligation (revenu d'obligation).</li>
-                <li><strong>OPCVM</strong> : Organisme de Placement Collectif, un fonds qui gère un portefeuille diversifié pour le compte des investisseurs.</li>
-            </ul>
-        `,
+<p><strong>Exemple BRVM :</strong> SONATEL offre historiquement des dividendes élevés ; BOA Mali propose un rendement plus stable avec moins de volatilité.</p>
+
+<p><strong>🎓 À retenir :</strong> Acheter une action, c’est parier sur la croissance future d’une entreprise.</p>
+
+<hr/>
+
+<h2>3.2 Les Obligations — Prêter à une entreprise ou à l’État</h2>
+<p>Une obligation est un titre de créance : vous prêtez de l'argent à un émetteur en échange d’intérêts fixes sur une durée définie.</p>
+
+<h3>💰 Fonctionnement</h3>
+<ul>
+  <li>Versement de coupons annuels (intérêts).</li>
+  <li>Remboursement du capital à l’échéance.</li>
+</ul>
+
+<h3>🧭 Types d'obligations à la BRVM</h3>
+<ul>
+  <li><strong>Obligations d’État</strong> : très sécurisées.</li>
+  <li><strong>Obligations d’entreprise</strong> : rendement plus élevé, risque modéré.</li>
+</ul>
+
+<h3>📊 Exemple BRVM</h3>
+<ul>
+  <li>État du Sénégal 6,5% 2028</li>
+  <li>Oragroup 5,75% 2027</li>
+</ul>
+
+<p><strong>🎓 À retenir :</strong> Une obligation est un prêt avec rendement stable et risque limité.</p>
+
+<hr/>
+
+<h2>3.3 Les OPCVM et ETF — Investissement collectif intelligent</h2>
+
+<p>Les OPCVM regroupent l’argent de plusieurs investisseurs pour constituer un portefeuille diversifié, géré par des professionnels.</p>
+
+<h3>📦 Deux familles :</h3>
+<ul>
+  <li><strong>FCP</strong> : fonds communs de placement.</li>
+  <li><strong>SICAV</strong> : sociétés d’investissement à capital variable.</li>
+</ul>
+
+<h3>🪙 Avantages</h3>
+<ul>
+  <li>Diversification immédiate.</li>
+  <li>Gestion professionnelle.</li>
+  <li>Accessibilité avec un petit capital.</li>
+</ul>
+
+<h3>📈 ETF — Fonds indiciels cotés</h3>
+<p>Les ETF répliquent un indice comme le BRVM Composite ou le BRVM 10. Encore rares dans l'UEMOA, ils représentent le futur de l'investissement passif.</p>
+
+<p><strong>🎓 À retenir :</strong> L’OPCVM est le panier diversifié, l’ETF est le panier automatisé.</p>
+
+<hr/>
+
+<h2>3.4 Dividendes, Splits et Augmentations de Capital</h2>
+
+<h3>💵 Dividendes</h3>
+<p>Part du bénéfice versée aux actionnaires. Exemple : SONATEL distribue souvent 1 500 à 2 000 FCFA par action.</p>
+
+<h3>📈 Splits</h3>
+<p>Division des actions pour les rendre plus accessibles. Exemple : 1 action à 30 000 FCFA devient 10 à 3 000 FCFA.</p>
+
+<h3>💹 Augmentation de capital</h3>
+<p>Émission de nouvelles actions pour lever des fonds. Les anciens actionnaires bénéficient d’un droit préférentiel de souscription.</p>
+
+<hr/>
+
+<h2>3.5 Risques par Type d’Actif</h2>
+
+<table>
+<thead>
+<tr>
+<th>Type d'actif</th>
+<th>Risque principal</th>
+<th>Rendement attendu</th>
+<th>Horizon conseillé</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actions</td>
+<td>Volatilité, faillite</td>
+<td>Élevé</td>
+<td>5–10 ans</td>
+</tr>
+<tr>
+<td>Obligations</td>
+<td>Taux d’intérêt, défaut</td>
+<td>Moyen</td>
+<td>2–5 ans</td>
+</tr>
+<tr>
+<td>OPCVM / ETF</td>
+<td>Marché, gestion</td>
+<td>Modéré</td>
+<td>Moyen / long terme</td>
+</tr>
+<tr>
+<td>Liquidités</td>
+<td>Inflation</td>
+<td>Faible</td>
+<td>Court terme</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>🎓 À retenir :</strong> Aucun investissement n’est sans risque. Le plus important est de choisir un risque adapté à votre profil.</p>
+
+<hr/>
+
+<h2>🧠 Atelier Pratique — “Action vs Obligation”</h2>
+<p><strong>Situation :</strong> Vous avez 1 000 000 FCFA et hésitez entre :</p>
+<ul>
+  <li>Actions SONATEL (cours 15 000 FCFA, dividende 5%)</li>
+  <li>Obligation État du Sénégal 6% sur 5 ans</li>
+</ul>
+
+<p><strong>Exercice :</strong></p>
+<ol>
+  <li>Calculez le revenu annuel attendu de chaque option.</li>
+  <li>Comparez les risques.</li>
+  <li>Choisissez selon votre profil (croissance vs stabilité).</li>
+</ol>
+
+<hr/>
+
+<h2>🧭 En Résumé</h2>
+<ul>
+  <li>Actions : propriété, potentiel élevé, risque fort.</li>
+  <li>Obligations : prêt, rendement fixe, risque modéré.</li>
+  <li>OPCVM/ETF : diversification, gestion professionnelle.</li>
+  <li>Dividendes/splits : leviers de performance.</li>
+  <li>Règle d’or : comprendre avant d’investir.</li>
+</ul>
+
+<hr/>
+
+<p>🚀 <strong>Prochaine étape :</strong> Module 4 — “Le Temps, votre meilleur allié : définir son horizon et sa stratégie d’investissement”.</p>
+`,
     });
 
     // ==================================================
     // === M4 : LE TEMPS, VOTRE MEILLEUR ALLIÉ ===
     // ==================================================
     await createOrUpdateModule({
-        title: "Le Temps, votre meilleur allié - Définir ses objectifs et son horizon",
+       title: "Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement",
         slug: 'le-temps-meilleur-allie',
-        description: "Définissez votre horizon de placement (court, moyen, long terme) et votre profil d'investisseur (prudent, équilibré, dynamique).",
-        difficulty_level: 'debutant',
-        content_type: 'article',
-        duration_minutes: 15,
-        order_index: 4,
-        is_published: true,
+        description:
+    "Découvrez les actifs financiers avancés, émergents ou innovants : immobilier coté, finance islamique, produits structurés et ETF. Comprenez leurs mécanismes, risques et potentiel dans l’UEMOA.",
+  difficulty_level: "intermediaire",
+  content_type: "article",
+  duration_minutes: 25,
+  order_index: 4,
+  is_published: true,
         content: `
-            <h2>1. Court, moyen, long terme : Définir son horizon de placement</h2>
-            <p>L'horizon de placement est la période pendant laquelle vous prévoyez de garder votre investissement.</p>
-            <ul>
-                <li><strong>Court Terme (moins de 2 ans)</strong> : Risque minimal (privilégiez les obligations ou l'épargne sécurisée).</li>
-                <li><strong>Moyen Terme (2 à 7 ans)</strong> : Risque modéré (mélange d'actions et d'obligations).</li>
-                <li><strong>Long Terme (plus de 7 ans)</strong> : Objectifs lointains (idéal pour les actions, car le temps absorbe la volatilité).</li>
-            </ul>
+            <div class="space-y-8">
+                <div class="bg-gradient-to-r from-orange-600 to-amber-700 text-white p-8 rounded-xl">
+                    <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
+                    <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous comprendrez :</p>
+                    <ul class="space-y-2 text-lg leading-relaxed">
+                        <li>• Les grandes familles d'actifs émergentes dans la région UEMOA ;</li>
+                        <li>• Comment elles diffèrent des actions et obligations classiques ;</li>
+                        <li>• Pourquoi elles représentent les tendances futures de la finance africaine.</li>
+                    </ul>
+                </div>
 
-            <h2>2. Comment le temps réduit le risque perçu</h2>
-            <p>À court terme, les marchés peuvent être erratiques (volatilité). Mais sur le long terme, les marchés boursiers régionaux et mondiaux ont toujours eu une tendance haussière. <strong>Plus votre horizon est long, moins la volatilité ponctuelle compte</strong>.</p>
-            <h3>L'Analogie à Retenir : Le Voyage en Car de Nuit</h3>
-            <p>Si vous regardez par la fenêtre, le paysage semble flou (la volatilité quotidienne). [cite_start]Mais si vous vous concentrez sur l'horloge et la destination finale (l'objectif à long terme), vous savez que, malgré les cahots, vous arriverez à bon port [cite: 197-199].</p>
-            <p><strong>Citation de l'Expert :</strong> Warren Buffett insiste sur la patience : <em>"If you aren't willing to own a stock for ten years, don't even think about owning it for ten minutes."</em></p>
+            <h2>4.1 L'Immobilier Coté : investir sans devenir propriétaire physique</h2>
 
-            <h2>3. Quel investisseur êtes-vous? Profils prudent, équilibré, dynamique</h2>
-            <p>Votre profil est défini par votre <strong>tolérance au risque</strong> (votre capacité émotionnelle et financière à accepter une perte temporaire) et votre horizon.</p>
-            <table class="table-auto w-full text-left border-collapse border border-gray-300 my-4">
-                <thead class="bg-gray-100">
-                    <tr><th>Profil</th><th>Objectif Principal</th><th>Tolérance au Risque</th><th>Allocation d'Actifs Typique (Ex.)</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>Prudent</td><td>Sécurité du capital, revenu stable.</td><td>Faible (Ne supporte pas une perte de 10%)</td><td>Majorité Obligations/OPCVM Prudent (ex: 80% Obligations)</td></tr>
-                    <tr><td>Équilibré</td><td>Croissance modérée et revenu.</td><td>Moyenne (Accepte une perte temporaire de 15%)</td><td>Mixte Actions/Obligations (ex: 50%/50%)</td></tr>
-                    <tr><td>Dynamique</td><td>Maximisation de la croissance.</td><td>Élevée (Se concentre sur le potentiel, tolère 30% de perte)</td><td>Majorité Actions (ex: 80% et plus d'Actions)</td></tr>
-                </tbody>
-            </table>
-            <p>Un investisseur de 25 ans qui économise pour sa retraite est généralement <strong>dynamique</strong>.</p>
+<h3>🏢 Qu’est-ce qu’une SCPI ?</h3>
+<p>
+Une SCPI (Société Civile de Placement Immobilier) collecte l’argent des investisseurs pour acheter et gérer un portefeuille d’immeubles (bureaux, commerces, logements…).  
+Chaque investisseur détient des parts et perçoit une partie des revenus locatifs.
+</p>
 
-            <h2>4. Construire sa stratégie selon ses buts</h2>
-            <p>Chaque objectif mérite sa propre "poche" d'investissement. Aligner votre horizon temporel avec votre allocation d'actifs est la première étape vers une stratégie d'investissement réussie.</p>
+<h3>🌍 Équivalent international : les REITs</h3>
+<p>Les REITs (Real Estate Investment Trusts) permettent d’investir dans l’immobilier coté en bourse.</p>
 
-            <h3>Les Termes à Maîtriser :</h3>
-            <ul>
-                <li><strong>Horizon de Placement</strong> : La durée pendant laquelle l'investisseur prévoit de détenir l'actif.</li>
-                <li><strong>Volatilité</strong> : L'intensité et la fréquence des variations de prix d'un titre.</li>
-                <li><strong>Tolérance au Risque</strong> : La capacité (émotionnelle et financière) à accepter des pertes sur son capital.</li>
-            </ul>
-        `,
+<h3>✅ Avantages</h3>
+<ul>
+  <li>Aucun besoin de gérer un bien soi-même.</li>
+  <li>Revenus réguliers sous forme de dividendes.</li>
+  <li>Diversification géographique et sectorielle.</li>
+</ul>
+
+<h3>⚠️ Risques</h3>
+<ul>
+  <li>Dépendance au marché immobilier.</li>
+  <li>Sensibilité aux taux d’intérêt.</li>
+</ul>
+
+<h3>🔍 Cas régional</h3>
+<p>
+Dans l’UEMOA, la SCPI est encore marginale, mais des initiatives émergent, notamment via les futurs OPCI (Organismes de Placement Collectif Immobilier).
+</p>
+
+<hr/>
+
+<h2>4.2 La Finance Islamique : une alternative éthique et en pleine croissance</h2>
+
+<h3>🕌 Principes fondamentaux</h3>
+<ol>
+  <li>Interdiction du <em>riba</em> (intérêt) : les revenus doivent venir d’une activité réelle.</li>
+  <li>Partage des profits et pertes.</li>
+  <li>Investissements dans des activités licites.</li>
+</ol>
+
+<h3>💰 Produits phares</h3>
+<ul>
+  <li><strong>Sukuk</strong> : obligations islamiques adossées à des actifs réels.</li>
+  <li><strong>Fonds islamiques</strong> : OPCVM filtrés selon la charia.</li>
+</ul>
+
+<h3>🌍 Enjeux et opportunités</h3>
+<ul>
+  <li>Plus de 3 000 milliards USD gérés dans le monde.</li>
+  <li>Forte demande en Afrique de l’Ouest.</li>
+  <li>Permet d’attirer des investisseurs en quête d’éthique.</li>
+</ul>
+
+<p><strong>💡 En résumé :</strong> La finance islamique est une approche éthique du financement, pas une alternative marginale.</p>
+
+<hr/>
+
+<h2>4.3 Introduction aux Produits Structurés : combiner rendement et protection</h2>
+
+<h3>⚙️ Définition</h3>
+<p>
+Un produit structuré combine plusieurs éléments (souvent une obligation + une option) pour offrir un rendement ciblé avec une protection partielle du capital.
+</p>
+
+<h3>📘 Exemple simple</h3>
+<p>
+"100 % du capital garanti à l’échéance + 50 % de la performance de l’indice BRVM 10 sur 3 ans."
+</p>
+
+<h3>⚠️ Attention</h3>
+<ul>
+  <li>Produits complexes, destinés aux investisseurs avertis.</li>
+  <li>Les conditions doivent être lues avec précision.</li>
+</ul>
+
+<h3>🔍 Dans la région</h3>
+<p>
+Encore rares dans l’UEMOA, mais voués à se développer avec la modernisation des marchés.
+</p>
+
+<hr/>
+
+<h2>4.4 Les ETF et Trackers : l’avenir de l’investissement passif</h2>
+
+<h3>📊 Définition</h3>
+<p>Un ETF est un fonds coté qui réplique un indice boursier.</p>
+
+<p><strong>Exemple :</strong> un ETF BRVM Composite reproduirait les performances de toutes les grandes valeurs de la BRVM.</p>
+
+<h3>💡 Pourquoi c’est révolutionnaire</h3>
+<ul>
+  <li>Frais très faibles.</li>
+  <li>Diversification automatique.</li>
+  <li>Transparence totale.</li>
+</ul>
+
+<h3>🌍 À l’international</h3>
+<p>Les ETF représentent plus de 50 % des flux d’investissement mondiaux.</p>
+
+<h3>🌍 En Afrique de l’Ouest</h3>
+<p>
+Pas encore d’ETF local, mais des projets de réplication d’indices régionaux (BRVM 10, Composite) sont envisagés.
+</p>
+
+<h3>🚀 Pourquoi s’y intéresser</h3>
+<p>
+Comprendre les ETF aujourd’hui, c’est comprendre la bourse de demain : simple, efficace, accessible.
+</p>
+
+<hr/>
+
+<h2>🧭 En résumé : les produits avancés, une ouverture vers demain</h2>
+
+<table>
+<thead>
+<tr>
+  <th>Produit</th>
+  <th>Objectif principal</th>
+  <th>Niveau de risque</th>
+  <th>Accessibilité (UEMOA)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>SCPI / Immobilier coté</td>
+  <td>Revenus stables</td>
+  <td>Modéré</td>
+  <td>En développement</td>
+</tr>
+<tr>
+  <td>Finance islamique</td>
+  <td>Investissement éthique</td>
+  <td>Modéré</td>
+  <td>Déjà existant</td>
+</tr>
+<tr>
+  <td>Produits structurés</td>
+  <td>Protection + rendement ciblé</td>
+  <td>Variable</td>
+  <td>Rare</td>
+</tr>
+<tr>
+  <td>ETF / Trackers</td>
+  <td>Répliquer un indice</td>
+  <td>Faible à modéré</td>
+  <td>En émergence</td>
+</tr>
+</tbody>
+</table>
+
+<hr/>
+
+<h2>🧠 À retenir</h2>
+<p>
+Ce module ne vise pas à vous pousser à investir immédiatement dans ces produits,  
+mais à vous préparer aux évolutions futures du marché financier africain et de la BRVM.
+</p>
+
+<hr/>
+
+<p>🔜 <strong>Prochaine étape :</strong> Module 5 — Le Temps, votre meilleur allié : définir ses objectifs et son horizon d’investissement.</p>
+`,
     });
 
     // ================================================
