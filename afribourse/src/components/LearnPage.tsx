@@ -738,34 +738,63 @@ export default function LearnPage() {
                                             )}
                                         </div>
 
-                                        {/* Détails des réponses */}
+                                        {/* Message pour consulter les détails */}
                                         {quizState.detailedResults && quizState.detailedResults.length > 0 && (
-                                            <div className="space-y-4 mb-8">
-                                                {quizState.detailedResults.map((result, index) => {
-                                                    const isCorrect = result.isCorrect;
+                                            <div className="mb-6">
+                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0">
+                                                            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="ml-3">
+                                                            <p className="text-sm font-medium text-blue-800">
+                                                                📚 Consultez vos réponses ci-dessous pour apprendre de vos erreurs et renforcer vos connaissances !
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-                                                    return (
-                                                        <div key={result.questionId || index} className={`p-5 rounded-xl border-2 ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
-                                                            <div className="flex items-start space-x-3 mb-3">
-                                                                {isCorrect ? (
-                                                                    <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                                                                ) : (
-                                                                    <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                                                                )}
-                                                                <div className="flex-1">
-                                                                    <p className="font-semibold text-gray-900 mb-2">
-                                                                        {result.question}
-                                                                    </p>
-                                                                    {result.explanation && (
-                                                                        <p className="text-sm text-gray-600 italic mt-2 pt-2 border-t border-gray-300">
-                                                                            💡 {result.explanation}
-                                                                        </p>
+                                                <h4 className="text-xl font-bold text-gray-900 mb-4">📝 Détails de vos réponses</h4>
+                                                <div className="space-y-4">
+                                                    {quizState.detailedResults.map((result, index) => {
+                                                        const isCorrect = result.isCorrect;
+
+                                                        return (
+                                                            <div key={result.questionId || index} className={`p-5 rounded-xl border-2 ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
+                                                                <div className="flex items-start space-x-3">
+                                                                    {isCorrect ? (
+                                                                        <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                                                                    ) : (
+                                                                        <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
                                                                     )}
+                                                                    <div className="flex-1">
+                                                                        <div className="flex items-center justify-between mb-2">
+                                                                            <p className="font-semibold text-gray-900">
+                                                                                Question {index + 1}
+                                                                            </p>
+                                                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                                                                                {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-gray-900 mb-3">
+                                                                            {result.question}
+                                                                        </p>
+                                                                        {result.explanation && (
+                                                                            <div className="mt-3 pt-3 border-t border-gray-300">
+                                                                                <p className="text-sm font-semibold text-gray-700 mb-1">💡 Explication :</p>
+                                                                                <p className="text-sm text-gray-600">
+                                                                                    {result.explanation}
+                                                                                </p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    );
-                                                })}
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         )}
 
