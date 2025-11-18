@@ -50,7 +50,7 @@ async function createOrUpdateModule(data: any) {
 
 async function main() {
     await connectPrismaDatabase();
-    console.log("Démarrage de l'insertion/mise à jour des 11 modules d'apprentissage...");
+    console.log("Démarrage de l'insertion/mise à jour des 16 modules d'apprentissage...");
 
     // ===================================
     // === M0 : PRÊT POUR LE DÉCOLLAGE ===
@@ -2443,7 +2443,7 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
         difficulty_level: 'avance',
         content_type: 'article',
         duration_minutes: 15,
-        order_index: 9,
+        order_index: 11,
         is_published: true,
         content: `
     <div class="space-y-8 max-w-4xl mx-auto">
@@ -2638,13 +2638,13 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
     // === M12 : L’Art de l’Architecte – Gestion Avancée du Risque===
     // ====================================================
     await createOrUpdateModule({
-        title: "L’Art de l’Architecte – Gestion Avancée du Risque",
+        title: "L'Art de l'Architecte – Gestion Avancée du Risque",
         slug: 'Architecte-du-Risque',
         description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
         difficulty_level: 'avance',
         content_type: 'article',
         duration_minutes: 15,
-        order_index: 9,
+        order_index: 12,
         is_published: true,
        content: `
     <div class="space-y-8 max-w-4xl mx-auto">
@@ -2827,7 +2827,7 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
         difficulty_level: 'intermediaire',
         content_type: 'article',
         duration_minutes: 15,
-        order_index: 9,
+        order_index: 13,
         is_published: true,
         content: `
     <div class="space-y-8 max-w-4xl mx-auto">
@@ -3007,7 +3007,7 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
         difficulty_level: 'intermediaire',
         content_type: 'article',
         duration_minutes: 15,
-        order_index: 9,
+        order_index: 14,
         is_published: true,
         content: `
     <div class="space-y-8 max-w-4xl mx-auto">
@@ -3181,13 +3181,13 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
     // === M15 : La Stratégie d’Investissement Intégrée===
     // ====================================================
     await createOrUpdateModule({
-        title: "La Stratégie d’Investissement Intégrée",
+        title: "La Stratégie d'Investissement Intégrée",
         slug: 'strat-strat',
         description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
         difficulty_level: 'intermediaire',
         content_type: 'article',
         duration_minutes: 15,
-        order_index: 9,
+        order_index: 15,
         is_published: true,
       content: `
     <div class="space-y-8 max-w-4xl mx-auto">
