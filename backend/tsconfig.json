@@ -4,6 +4,7 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": false,
     "noImplicitAny": false,
     "esModuleInterop": true,
@@ -14,6 +15,6 @@
     "allowSyntheticDefaultImports": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*", "scripts/importHistoryFromCSV.ts"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*"]
 }
