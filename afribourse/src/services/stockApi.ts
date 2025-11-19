@@ -64,6 +64,33 @@ export type StockNewsItem = {
   published_at: string;
 };
 
+export type Shareholder = {
+  id: string;
+  stock_ticker: string;
+  name: string;
+  percentage: number;
+  is_public: boolean;
+};
+
+export type AnnualFinancial = {
+  id: string;
+  stock_ticker: string;
+  year: number;
+  revenue?: number | null;
+  revenue_growth?: number | null;
+  net_income?: number | null;
+  net_income_growth?: number | null;
+  eps?: number | null;
+  pe_ratio?: number | null;
+  dividend?: number | null;
+};
+
+export type AnnualFinancialsResponse = {
+  symbol: string;
+  years: number;
+  data: AnnualFinancial[];
+};
+
 /**
  * Récupère l'historique de prix d'une action
  */
@@ -135,6 +162,40 @@ export async function fetchStockNews(
 
   if (!response.ok) {
     throw new Error(`Erreur lors de la récupération des actualités: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Récupère les actionnaires d'une action
+ */
+export async function fetchShareholders(symbol: string): Promise<Shareholder[]> {
+  const response = await fetch(`${API_BASE_URL}/stocks/${symbol}/shareholders`, {
+    credentials: 'include'
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erreur lors de la récupération des actionnaires: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Récupère les données financières annuelles d'une action
+ */
+export async function fetchAnnualFinancials(
+  symbol: string,
+  years: number = 5
+): Promise<AnnualFinancialsResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/stocks/${symbol}/financials?years=${years}`,
+    { credentials: 'include' }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Erreur lors de la récupération des données financières: ${response.statusText}`);
   }
 
   return response.json();
