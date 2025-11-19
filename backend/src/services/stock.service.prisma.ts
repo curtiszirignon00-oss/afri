@@ -184,3 +184,111 @@ export async function getTopStocks(limit: number = 6) {
     throw error;
   }
 }
+
+// ========================================
+// NOUVELLES FONCTIONS POUR STOCK DETAILS
+// ========================================
+
+/**
+ * Récupère l'historique des prix d'une action
+ * @param symbol - Le symbole de l'action (ex: SLBC)
+ * @param period - Période: '1M' | '3M' | '6M' | '1Y' | 'ALL'
+ */
+export async function getStockHistory(
+  symbol: string,
+  period: '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1Y'
+) {
+  try {
+    // Calculer la date de début selon la période
+    const now = new Date();
+    let startDate: Date;
+
+    switch (period) {
+      case '1M':
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case '3M':
+        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        break;
+      case '6M':
+        startDate = new Date(now.setMonth(now.getMonth() - 6));
+        break;
+      case '1Y':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      case 'ALL':
+        startDate = new Date(0); // Depuis l'origine
+        break;
+      default:
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+    }
+
+    const history = await prisma.stockHistory.findMany({
+      where: {
+        stock_ticker: symbol,
+        date: {
+          gte: startDate
+        }
+      },
+      orderBy: {
+        date: 'asc'
+      }
+    });
+
+    return history;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération de l'historique de ${symbol}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Récupère les données fondamentales d'une action
+ * @param symbol - Le symbole de l'action
+ */
+export async function getStockFundamentals(symbol: string) {
+  try {
+    const fundamentals = await prisma.stockFundamental.findUnique({
+      where: { stock_ticker: symbol }
+    });
+    return fundamentals;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération des fondamentaux de ${symbol}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Récupère les informations sur la compagnie
+ * @param symbol - Le symbole de l'action
+ */
+export async function getCompanyInfo(symbol: string) {
+  try {
+    const companyInfo = await prisma.companyInfo.findUnique({
+      where: { stock_ticker: symbol }
+    });
+    return companyInfo;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération des infos de ${symbol}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Récupère les actualités liées à une action
+ * @param symbol - Le symbole de l'action
+ * @param limit - Nombre d'actualités à retourner
+ */
+export async function getStockNews(symbol: string, limit: number = 10) {
+  try {
+    const news = await prisma.stockNews.findMany({
+      where: { stock_ticker: symbol },
+      orderBy: { published_at: 'desc' },
+      take: limit
+    });
+    return news;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération des news de ${symbol}:`, error);
+    throw error;
+  }
+}
