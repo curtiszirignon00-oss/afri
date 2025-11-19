@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import MarketsPageRefactored from './components/MarketsPageRefactored';
-import StockDetailPage from './components/StockDetailPage';
+import StockDetailPageEnhanced from './components/StockDetailPageEnhanced'; // 🆕 Nouvelle version améliorée
 import LearnPage from './components/LearnPage';
 import NewsPage from './components/NewsPage';
 import GlossaryPage from './components/GlossaryPage';
@@ -62,7 +62,7 @@ function AppContent() {
         return <MarketsPageRefactored onNavigate={handleNavigate} />;
       case 'stock-detail':
         return data ? (
-          <StockDetailPage stock={data} onNavigate={handleNavigate} />
+          <StockDetailPageEnhanced stock={data} onNavigate={handleNavigate} />
         ) : (
           <MarketsPageRefactored onNavigate={handleNavigate} />
         );
