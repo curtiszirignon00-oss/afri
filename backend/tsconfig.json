@@ -15,5 +15,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*", "scripts/importHistoryFromCSV.ts"]
 }

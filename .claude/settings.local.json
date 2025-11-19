@@ -4,7 +4,8 @@
       "Bash(npm install:*)",
       "Bash(curl:*)",
       "Bash(git reset:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(npx ts-node:*)"
     ],
     "deny": [],
     "ask": []
