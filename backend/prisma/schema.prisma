@@ -486,6 +486,39 @@ model StockNews {
   @@index([published_at])
 }
 
+model Shareholder {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker  String
+  name          String
+  percentage    Float
+  is_public     Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("shareholders")
+  @@index([stock_ticker])
+}
+
+model AnnualFinancials {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker          String
+  year                  Int
+  revenue               Float?   // Chiffre d'affaires
+  revenue_growth        Float?   // Croissance CA (%)
+  net_income            Float?   // Résultat net
+  net_income_growth     Float?   // Croissance RN (%)
+  eps                   Float?   // BNPA (Bénéfice Net Par Action)
+  pe_ratio              Float?   // PER
+  dividend              Float?   // Dividende par action
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  @@unique([stock_ticker, year])
+  @@map("annual_financials")
+  @@index([stock_ticker])
+  @@index([year])
+}
+
 // ================================= //
 // === MODÈLES DE SIMULATION === //
 // ================================= //
