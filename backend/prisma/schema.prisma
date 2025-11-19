@@ -391,37 +391,53 @@ model Stock {
 }
 
 model StockHistory {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  date         DateTime
-  open_price   Float
-  high_price   Float
-  low_price    Float
-  close_price  Float
-  volume       Float
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker  String
+  date          DateTime
+  open          Float
+  high          Float
+  low           Float
+  close         Float
+  volume        Int
+  created_at    DateTime @default(now())
 
-  stock        Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  stockId      String    @db.ObjectId
+  stock         Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  stockId       String   @db.ObjectId
 
+  @@unique([stock_ticker, date])
   @@map("stock_history")
   @@index([stockId])
+  @@index([stock_ticker])
   @@index([date])
 }
 
 model StockFundamental {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  year            Int
-  pe_ratio        Float?
-  dividend_yield  Float?
-  revenue         Float?
-  net_profit      Float?
-  eps             Float?
-  book_value      Float?
-  
-  created_at      DateTime? @default(now())
-  updated_at      DateTime? @updatedAt
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker        String   @unique
+  market_cap          Float?
+  pe_ratio            Float?
+  pb_ratio            Float?
+  dividend_yield      Float?
+  ex_dividend_date    DateTime?
+  roe                 Float?
+  roa                 Float?
+  profit_margin       Float?
+  debt_to_equity      Float?
+  revenue             Float?
+  net_income          Float?
+  ebitda              Float?
+  free_cash_flow      Float?
+  shares_outstanding  Float?
+  year                Int?
+  eps                 Float?
+  book_value          Float?
+  net_profit          Float?
 
-  stock           Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  stockId         String   @db.ObjectId
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  stock               Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  stockId             String    @db.ObjectId
 
   @@map("stock_fundamentals")
   @@index([stockId])
@@ -438,6 +454,36 @@ model MarketIndex {
 
   @@map("market_indices")
   @@index([date])
+}
+
+model CompanyInfo {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker    String   @unique
+  description     String?
+  website         String?
+  employees       Int?
+  founded_year    Int?
+  headquarters    String?
+  ceo             String?
+  industry        String?
+  updated_at      DateTime @updatedAt
+
+  @@map("company_info")
+}
+
+model StockNews {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker  String
+  title         String
+  summary       String?
+  source        String
+  url           String?
+  published_at  DateTime
+  created_at    DateTime @default(now())
+
+  @@map("stock_news")
+  @@index([stock_ticker])
+  @@index([published_at])
 }
 
 // ================================= //
