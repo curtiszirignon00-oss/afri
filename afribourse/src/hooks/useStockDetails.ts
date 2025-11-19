@@ -4,6 +4,8 @@ import {
   fetchStockFundamentals,
   fetchCompanyInfo,
   fetchStockNews,
+  fetchShareholders,
+  fetchAnnualFinancials,
   Period
 } from '../services/stockApi';
 
@@ -56,5 +58,31 @@ export function useStockNews(symbol: string, limit: number = 10) {
     enabled: !!symbol,
     staleTime: 2 * 60 * 1000, // 2 minutes (les news changent fréquemment)
     gcTime: 5 * 60 * 1000 // 5 minutes
+  });
+}
+
+/**
+ * Hook pour récupérer les actionnaires d'une action
+ */
+export function useShareholders(symbol: string) {
+  return useQuery({
+    queryKey: ['shareholders', symbol],
+    queryFn: () => fetchShareholders(symbol),
+    enabled: !!symbol,
+    staleTime: 24 * 60 * 60 * 1000, // 24 heures (les actionnaires changent très rarement)
+    gcTime: 7 * 24 * 60 * 60 * 1000 // 7 jours
+  });
+}
+
+/**
+ * Hook pour récupérer les données financières annuelles d'une action
+ */
+export function useAnnualFinancials(symbol: string, years: number = 5) {
+  return useQuery({
+    queryKey: ['annual-financials', symbol, years],
+    queryFn: () => fetchAnnualFinancials(symbol, years),
+    enabled: !!symbol,
+    staleTime: 24 * 60 * 60 * 1000, // 24 heures (les données annuelles changent rarement)
+    gcTime: 7 * 24 * 60 * 60 * 1000 // 7 jours
   });
 }

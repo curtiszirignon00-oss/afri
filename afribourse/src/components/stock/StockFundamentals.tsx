@@ -1,4 +1,8 @@
-import { TrendingUp, DollarSign, PieChart, Activity } from 'lucide-react';
+import { TrendingUp, DollarSign, PieChart, Activity, Users, BarChart3 } from 'lucide-react';
+import { useShareholders, useAnnualFinancials } from '../../hooks/useStockDetails';
+import { ShareholdersPieChart } from './ShareholdersPieChart';
+import { AnnualFinancialsTable } from './AnnualFinancialsTable';
+import { FinancialCharts } from './FinancialCharts';
 
 type FundamentalData = {
   stock_ticker: string;
@@ -17,14 +21,19 @@ type FundamentalData = {
   free_cash_flow?: number | null;
   shares_outstanding?: number | null;
   eps?: number | null;
+  book_value?: number | null;
 };
 
 type StockFundamentalsProps = {
   fundamentals?: FundamentalData | null;
   isLoading?: boolean;
+  symbol?: string;
 };
 
-export default function StockFundamentals({ fundamentals, isLoading = false }: StockFundamentalsProps) {
+export default function StockFundamentals({ fundamentals, isLoading = false, symbol }: StockFundamentalsProps) {
+  // Fetch shareholders and annual financials
+  const { data: shareholders, isLoading: shareholdersLoading } = useShareholders(symbol || '');
+  const { data: annualFinancials, isLoading: financialsLoading } = useAnnualFinancials(symbol || '', 5);
   const formatNumber = (num?: number | null) => {
     if (num === null || num === undefined) return 'N/A';
     return new Intl.NumberFormat('fr-FR').format(num);
@@ -200,6 +209,37 @@ export default function StockFundamentals({ fundamentals, isLoading = false }: S
           </div>
         </div>
       </section>
+
+      {/* Structure de Propriété (Actionnaires) */}
+      {shareholders && shareholders.length > 0 && (
+        <section>
+          <div className="flex items-center space-x-2 mb-4">
+            <Users className="w-5 h-5 text-indigo-600" />
+            <h3 className="text-xl font-bold text-gray-900">Actionnaires</h3>
+          </div>
+          <ShareholdersPieChart shareholders={shareholders} />
+        </section>
+      )}
+
+      {/* Historique Financier (Tableau + Graphiques) */}
+      {annualFinancials && annualFinancials.data && annualFinancials.data.length > 0 && (
+        <section>
+          <div className="flex items-center space-x-2 mb-4">
+            <BarChart3 className="w-5 h-5 text-orange-600" />
+            <h3 className="text-xl font-bold text-gray-900">Historique Financier</h3>
+          </div>
+
+          {/* Tableau */}
+          <div className="mb-6">
+            <AnnualFinancialsTable financials={annualFinancials.data} />
+          </div>
+
+          {/* Graphiques */}
+          <div>
+            <FinancialCharts financials={annualFinancials.data} />
+          </div>
+        </section>
+      )}
 
       {/* Avertissement */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-8">

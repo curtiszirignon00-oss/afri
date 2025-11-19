@@ -368,7 +368,11 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
               </div>
             )}
             {activeTab === 'fundamentals' && (
-              <StockFundamentals fundamentals={fundamentals} isLoading={fundamentalsLoading} />
+              <StockFundamentals
+                fundamentals={fundamentals}
+                isLoading={fundamentalsLoading}
+                symbol={stock.symbol}
+              />
             )}
             {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} />}
           </div>
