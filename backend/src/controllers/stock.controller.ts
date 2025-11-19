@@ -27,11 +27,79 @@ export async function getStock(req: Request, res: Response, next: NextFunction) 
   try {
     const symbol = req.params.symbol.toUpperCase();
     const stock = await stockService.getStockBySymbol(symbol);
-    
+
     if (!stock) {
         return res.status(404).json({ message: "Action non trouvée" });
     }
     return res.status(200).json(stock);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// ========================================
+// NOUVEAUX CONTRÔLEURS POUR STOCK DETAILS
+// ========================================
+
+// Pour la route: GET /api/stocks/:symbol/history?period=1Y
+export async function getStockHistory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const period = (req.query.period as '1M' | '3M' | '6M' | '1Y' | 'ALL') || '1Y';
+
+    const history = await stockService.getStockHistory(symbol, period);
+
+    return res.status(200).json({
+      symbol,
+      period,
+      data: history
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Pour la route: GET /api/stocks/:symbol/fundamentals
+export async function getStockFundamentals(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const fundamentals = await stockService.getStockFundamentals(symbol);
+
+    if (!fundamentals) {
+      return res.status(404).json({ message: "Données fondamentales non disponibles" });
+    }
+
+    return res.status(200).json(fundamentals);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Pour la route: GET /api/stocks/:symbol/company
+export async function getCompanyInfo(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const companyInfo = await stockService.getCompanyInfo(symbol);
+
+    if (!companyInfo) {
+      return res.status(404).json({ message: "Informations sur la compagnie non disponibles" });
+    }
+
+    return res.status(200).json(companyInfo);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Pour la route: GET /api/stocks/:symbol/news?limit=10
+export async function getStockNews(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const news = await stockService.getStockNews(symbol, limit);
+
+    return res.status(200).json(news);
   } catch (error) {
     return next(error);
   }
