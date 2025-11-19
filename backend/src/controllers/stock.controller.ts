@@ -104,3 +104,33 @@ export async function getStockNews(req: Request, res: Response, next: NextFuncti
     return next(error);
   }
 }
+
+// Pour la route: GET /api/stocks/:symbol/shareholders
+export async function getShareholders(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const shareholders = await stockService.getShareholders(symbol);
+
+    return res.status(200).json(shareholders);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Pour la route: GET /api/stocks/:symbol/financials?years=5
+export async function getAnnualFinancials(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const yearsBack = parseInt(req.query.years as string) || 5;
+
+    const financials = await stockService.getAnnualFinancials(symbol, yearsBack);
+
+    return res.status(200).json({
+      symbol,
+      years: financials.length,
+      data: financials
+    });
+  } catch (error) {
+    return next(error);
+  }
+}

@@ -292,3 +292,46 @@ export async function getStockNews(symbol: string, limit: number = 10) {
     throw error;
   }
 }
+
+/**
+ * Récupère les actionnaires d'une action
+ * @param symbol - Le symbole de l'action
+ */
+export async function getShareholders(symbol: string) {
+  try {
+    const shareholders = await prisma.shareholder.findMany({
+      where: { stock_ticker: symbol },
+      orderBy: { percentage: 'desc' }
+    });
+    return shareholders;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération des actionnaires de ${symbol}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Récupère les données financières annuelles d'une action
+ * @param symbol - Le symbole de l'action
+ * @param yearsBack - Nombre d'années à retourner (par défaut 5)
+ */
+export async function getAnnualFinancials(symbol: string, yearsBack: number = 5) {
+  try {
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - yearsBack + 1;
+
+    const financials = await prisma.annualFinancials.findMany({
+      where: {
+        stock_ticker: symbol,
+        year: {
+          gte: startYear
+        }
+      },
+      orderBy: { year: 'asc' }
+    });
+    return financials;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération des données financières de ${symbol}:`, error);
+    throw error;
+  }
+}

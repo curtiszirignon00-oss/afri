@@ -61,13 +61,12 @@ async function main() {
  description: "Adoptez le bon état d'esprit et comprenez pourquoi la BRVM est une opportunité unique.",
  difficulty_level: 'debutant',
  content_type: 'article',
- duration_minutes: 10,
+ duration_minutes: 5,
  order_index: 0,
  is_published: true,
  content: `
  <div class="bg-blue-600 text-white p-8 min-h-screen">
  <p class="text-xl italic mb-12 text-center">"L'investissement, c'est le pont entre votre présent et votre futur."</p>
-
 
  <h2 class="text-3xl font-bold mb-8">🎯 Objectif pédagogique</h2>
 
@@ -474,7 +473,7 @@ async function main() {
  
 await createOrUpdateModule({
  title: "Les Acteurs du Jeu – Qui fait quoi sur le marché ?",
- slug: "acteurs-du-jeu", // garder ou remplacer selon ta structure
+ slug: "acteurs-du-jeu", 
  description:
  "Comprenez les rôles des SGI, AMF-UMOA, DC/BR, BCEAO et des entreprises cotées, et voyez comment vos ordres circulent dans le marché.",
  difficulty_level: "debutant",
