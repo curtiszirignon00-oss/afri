@@ -7,7 +7,9 @@ import {
   getStockHistory,
   getStockFundamentals,
   getCompanyInfo,
-  getStockNews
+  getStockNews,
+  getShareholders,
+  getAnnualFinancials
 } from "../controllers/stock.controller";
 
 const router = Router();
@@ -22,5 +24,7 @@ router.get('/:symbol/history', getStockHistory);           // GET /api/stocks/:s
 router.get('/:symbol/fundamentals', getStockFundamentals); // GET /api/stocks/:symbol/fundamentals
 router.get('/:symbol/company', getCompanyInfo);            // GET /api/stocks/:symbol/company
 router.get('/:symbol/news', getStockNews);                 // GET /api/stocks/:symbol/news?limit=10
+router.get('/:symbol/shareholders', getShareholders);      // GET /api/stocks/:symbol/shareholders
+router.get('/:symbol/financials', getAnnualFinancials);    // GET /api/stocks/:symbol/financials?years=5
 
 export default router;
