@@ -1,26 +1,27 @@
 // src/components/LearnPage.tsx - VERSION REFONTE COMPLÈTE
 import { useEffect, useState, useCallback } from 'react';
-import { 
-  BookOpen, 
-  Clock, 
-  Award, 
-  AlertTriangle, 
-  ArrowLeft, 
+import {
+  BookOpen,
+  Clock,
+  Award,
+  AlertTriangle,
+  ArrowLeft,
   CheckCircle,
-  Lock, // <-- AJOUT: Pour les modules verrouillés
-  Unlock, // <-- AJOUT: Pour les modules déverrouillés
-  Play, // <-- AJOUT: Pour le lecteur audio
-  Pause, // <-- AJOUT: Pour pause audio
-  Volume2, // <-- AJOUT: Pour l'icône audio
-  Brain, // <-- AJOUT: Pour les quiz
-  Target, // <-- AJOUT: Pour le score
-  TrendingUp, // <-- AJOUT: Pour la progression
-  Star, // <-- AJOUT: Pour la réussite
-  XCircle // <-- AJOUT: Pour les erreurs
+  Lock,
+  Volume2,
+  Brain,
+  Target,
+  TrendingUp,
+  Star,
+  XCircle,
+  MessageSquarePlus,
+  HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
+import confetti from 'canvas-confetti';
+import { AITutor } from './AITutor';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -73,6 +74,9 @@ export default function LearnPage() {
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
     const [quizLoading, setQuizLoading] = useState(false);
     const [quizPassingScore, setQuizPassingScore] = useState(70);
+
+    // <-- AJOUT: État pour le chatbot IA
+    const [showAITutor, setShowAITutor] = useState(false);
 
     // <-- AJOUT: Fonction pour charger le quiz depuis l'API
     const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
@@ -295,6 +299,13 @@ export default function LearnPage() {
         // Afficher le résultat
         if (result.passed) {
           toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
+          // Lancer les confetti pour célébrer
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#4ADE80', '#22C55E', '#3B82F6', '#8B5CF6']
+          });
         } else {
           toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
         }
@@ -442,6 +453,7 @@ export default function LearnPage() {
                         passed: null,
                         showResults: false
                       });
+                      setShowAITutor(false);
                       if (audioElement) {
                         audioElement.pause();
                         setIsAudioPlaying(false);
@@ -859,6 +871,17 @@ export default function LearnPage() {
                         </div>
                     )}
 
+                    {/* Bouton d'aide IA dans le footer du contenu */}
+                    <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
+                        <button
+                            onClick={() => setShowAITutor(true)}
+                            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
+                        >
+                            <HelpCircle className="w-5 h-5" />
+                            Je ne comprends pas quelque chose - Demander au tuteur IA
+                        </button>
+                    </div>
+
                     {/* Footer du module */}
                     <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -888,6 +911,26 @@ export default function LearnPage() {
                         </div>
                     </div>
                 </article>
+
+                {/* Bouton flottant AI Tutor */}
+                {!showAITutor && (
+                    <button
+                        onClick={() => setShowAITutor(true)}
+                        className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
+                    >
+                        <MessageSquarePlus className="w-6 h-6" />
+                        <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            Tuteur IA
+                        </span>
+                    </button>
+                )}
+
+                {/* Composant AI Tutor */}
+                <AITutor
+                    context={selectedModule.description || selectedModule.title}
+                    isOpen={showAITutor}
+                    onClose={() => setShowAITutor(false)}
+                />
             </div>
         );
     }
