@@ -1,5 +1,8 @@
-import { Building2, Globe, MapPin, User, Users, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
+import { getAIStockAnalysis } from '../../services/geminiService';
 
 type CompanyInfo = {
   stock_ticker: string;
@@ -18,6 +21,25 @@ type StockOverviewProps = {
 };
 
 export default function StockOverview({ stock, companyInfo }: StockOverviewProps) {
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
+  useEffect(() => {
+    const fetchAIAnalysis = async () => {
+      setIsLoadingAI(true);
+      try {
+        const analysis = await getAIStockAnalysis(stock);
+        setAiAnalysis(analysis);
+      } catch (error) {
+        console.error('Erreur lors du chargement de l\'analyse IA:', error);
+        setAiAnalysis('⚠️ Impossible de charger l\'analyse IA pour le moment.');
+      } finally {
+        setIsLoadingAI(false);
+      }
+    };
+
+    fetchAIAnalysis();
+  }, [stock.id, stock.symbol]);
   const formatNumber = (num: number) => new Intl.NumberFormat('fr-FR').format(num);
 
   const formatCurrency = (num: number) => {
@@ -29,6 +51,30 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
 
   return (
     <div className="space-y-8 py-8">
+      {/* AI Analysis Card */}
+      <section>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="text-blue-600" size={20} />
+            <h3 className="text-lg font-bold text-gray-900">Analyse IA par Gemini</h3>
+            <span className="ml-auto text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+              Propulsé par Google AI
+            </span>
+          </div>
+
+          {isLoadingAI ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Génération de l'analyse...</span>
+            </div>
+          ) : (
+            <div className="prose prose-sm max-w-none text-gray-700">
+              <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Informations Clés */}
       <section>
         <h3 className="text-xl font-bold text-gray-900 mb-4">Informations Clés</h3>

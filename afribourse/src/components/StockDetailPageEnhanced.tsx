@@ -11,6 +11,7 @@ import {
   StockOverview,
   StockNews,
   StockFundamentals,
+  StockAnalysis,
   TabId
 } from './stock';
 
@@ -362,11 +363,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
 
             {/* Contenu selon l'onglet actif */}
             {activeTab === 'overview' && <StockOverview stock={stock} companyInfo={companyInfo} />}
-            {activeTab === 'analysis' && (
-              <div className="py-8 text-center text-gray-500">
-                <p>Analyse technique avancée - À venir</p>
-              </div>
-            )}
+            {activeTab === 'analysis' && <StockAnalysis />}
             {activeTab === 'fundamentals' && (
               <StockFundamentals
                 fundamentals={fundamentals}

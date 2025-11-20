@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Legend
+  ResponsiveContainer
 } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -156,15 +155,15 @@ export default function StockChart({
         </div>
 
         {/* Period selector */}
-        <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+        <div className="flex bg-gray-100 rounded-lg p-1">
           {PERIODS.map((period) => (
             <button
               key={period.value}
               onClick={() => handlePeriodChange(period.value)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                 selectedPeriod === period.value
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
               }`}
             >
               {period.label}
@@ -176,42 +175,48 @@ export default function StockChart({
       {/* Chart */}
       {data.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor={periodChange.isPositive ? "#10b981" : "#ef4444"}
+                  stopOpacity={0.15}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={periodChange.isPositive ? "#10b981" : "#ef4444"}
+                  stopOpacity={0}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
             <XAxis
               dataKey="date"
-              stroke="#6b7280"
-              tick={{ fontSize: 12 }}
-              tickLine={{ stroke: '#e5e7eb' }}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#94a3b8' }}
+              minTickGap={30}
             />
             <YAxis
-              stroke="#6b7280"
-              tick={{ fontSize: 12 }}
+              orientation="right"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#94a3b8' }}
               tickFormatter={formatPrice}
-              tickLine={{ stroke: '#e5e7eb' }}
               domain={['auto', 'auto']}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
-            <Line
+            <Area
               type="monotone"
               dataKey="close"
-              name="Prix de clôture"
-              stroke="#3b82f6"
+              stroke={periodChange.isPositive ? "#10b981" : "#ef4444"}
               strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 6 }}
+              fillOpacity={1}
+              fill="url(#colorPrice)"
+              activeDot={{ r: 6, strokeWidth: 0 }}
             />
-            <Line
-              type="monotone"
-              dataKey="open"
-              name="Prix d'ouverture"
-              stroke="#10b981"
-              strokeWidth={1}
-              strokeDasharray="5 5"
-              dot={false}
-            />
-          </LineChart>
+          </AreaChart>
         </ResponsiveContainer>
       ) : (
         <div className="flex flex-col items-center justify-center h-96 text-gray-500">
