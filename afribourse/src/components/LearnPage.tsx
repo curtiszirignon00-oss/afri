@@ -467,8 +467,11 @@ export default function LearnPage() {
 
                 {/* <-- CORRECTION: En-tête du module amélioré et agrandi */}
                 <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-12 text-white">
-                        <div className="flex items-start justify-between mb-4">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-12 text-white relative overflow-hidden">
+                        {/* Gradient Blobs décoratifs (effet moderne) */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2" />
+                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2" />
+                        <div className="relative z-10 flex items-start justify-between mb-4">
                             <span className={`px-4 py-2 rounded-full text-sm font-semibold border-2 ${getDifficultyColor(selectedModule.difficulty_level)} bg-white`}>
                                 {getDifficultyLabel(selectedModule.difficulty_level)}
                             </span>

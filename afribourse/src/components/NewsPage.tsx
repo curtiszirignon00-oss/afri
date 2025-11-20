@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Calendar, User, Tag, AlertTriangle, Newspaper } from 'lucide-react'; // Added Newspaper
+import { Calendar, Clock, ChevronRight, AlertTriangle, Newspaper } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
-// import { supabase, type NewsArticle } from '../lib/supabase'; // <-- REMOVE Supabase
 
 // --- Updated Type Definition ---
 type NewsArticle = {
@@ -10,33 +9,29 @@ type NewsArticle = {
   slug: string | null;
   summary: string | null;
   content: string | null;
-  category: string | null; // Keep category as string
+  category: string | null;
   author: string | null;
   source: string | null;
   country: string | null;
   sector: string | null;
   image_url: string | null;
   is_featured: boolean;
-  published_at: string | null; // Prisma dates can be null
+  published_at: string | null;
   created_at: string | null;
 };
 // --- End Type Definition ---
 
 export default function NewsPage() {
-  const [articles, setArticles] = useState<NewsArticle[]>([]); // Holds articles fetched from API
-  // filteredArticles state is no longer needed if filtering happens server-side
-  // const [filteredArticles, setFilteredArticles] = useState<NewsArticle[]>([]); 
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Add error state
-  const [selectedCategory, setSelectedCategory] = useState('all'); // Filter state
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   // --- UPDATED useEffect to load articles based on category ---
   useEffect(() => {
-    // Define the async function inside useEffect
     async function loadArticles() {
       setLoading(true);
       setError(null);
-      // Construct the URL with the category query parameter
       const url = `${API_BASE_URL}/news${selectedCategory !== 'all' ? `?category=${selectedCategory}` : ''}`;
 
       try {
@@ -45,184 +40,261 @@ export default function NewsPage() {
           throw new Error(`Erreur ${response.status}: Impossible de charger les actualités.`);
         }
         const data: NewsArticle[] = await response.json();
-        setArticles(data || []); // Update state with data from API (already filtered)
+        setArticles(data || []);
       } catch (err: any) {
         console.error('Error loading articles:', err);
         setError(err.message || "Une erreur est survenue.");
-        setArticles([]); // Clear articles on error
+        setArticles([]);
       } finally {
         setLoading(false);
       }
     }
 
-    loadArticles(); // Call the function
+    loadArticles();
+  }, [selectedCategory]);
 
-  }, [selectedCategory]); // Re-run effect when selectedCategory changes
-  // --- END UPDATED useEffect ---
-
-
-  // Client-side filtering is no longer needed
-  // useEffect(() => { filterArticles(); }, [articles, selectedCategory]);
-  // function filterArticles() { ... }
-
-  // --- Helper functions (Keep as they are, but check category strings) ---
-   // Format date safely
+  // --- Helper functions ---
   function formatDate(dateString: string | null): string {
-      if (!dateString) return 'Date inconnue';
-      try {
-          const date = new Date(dateString);
-          return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric', /* hour: '2-digit', minute: '2-digit' */ }); // Removed time part for brevity
-      } catch (e) {
-          return 'Date invalide';
-      }
+    if (!dateString) return 'Date inconnue';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (e) {
+      return 'Date invalide';
+    }
   }
 
-  // Map category slugs to labels
   function getCategoryLabel(category: string | null): string {
     if (!category) return 'Non classé';
     const labels: Record<string, string> = {
-      // Use the exact category strings your backend/database uses
-      'marches': 'Marchés', 
+      'marches': 'Marchés',
       'analyse': 'Analyse',
       'startup': 'Startup',
       'economie': 'Économie',
       'interview': 'Interview',
-      // Add other categories from your data
     };
-    // Capitalize if no specific label found
     return labels[category.toLowerCase()] || category.charAt(0).toUpperCase() + category.slice(1);
   }
 
-  // Map category slugs to colors
   function getCategoryColor(category: string | null): string {
-    if (!category) return 'bg-gray-100 text-gray-700';
+    if (!category) return 'bg-slate-100 text-slate-700';
     const colors: Record<string, string> = {
-      'marches': 'bg-blue-100 text-blue-700',
-      'analyse': 'bg-green-100 text-green-700',
-      'startup': 'bg-purple-100 text-purple-700',
-      'economie': 'bg-orange-100 text-orange-700',
-      'interview': 'bg-pink-100 text-pink-700',
-      // Add other categories
+      'marches': 'bg-blue-50 text-blue-600 border-blue-100',
+      'analyse': 'bg-green-50 text-green-600 border-green-100',
+      'startup': 'bg-purple-50 text-purple-600 border-purple-100',
+      'economie': 'bg-orange-50 text-orange-600 border-orange-100',
+      'interview': 'bg-pink-50 text-pink-600 border-pink-100',
     };
-    return colors[category.toLowerCase()] || 'bg-gray-100 text-gray-700';
+    return colors[category.toLowerCase()] || 'bg-slate-50 text-slate-600 border-slate-100';
   }
 
-  // Define categories for filter buttons (should match backend/database values)
-  const categories = ['all', 'marches', 'analyse', /*'startup',*/ 'economie', 'interview']; // Removed 'startup' based on previous decision
-  // --- END Helper Functions ---
+  const categories = ['all', 'marches', 'analyse', 'economie', 'interview'];
+
+  // Get featured article and list articles
+  const featuredArticle = articles.find(a => a.is_featured);
+  const listArticles = selectedCategory === 'all'
+    ? articles.filter(a => !a.is_featured)
+    : articles;
 
   // --- Loading State ---
-  if (loading && articles.length === 0) { // Show spinner only on initial load
+  if (loading && articles.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
-  // --- END Loading State ---
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8 text-center md:text-left">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Actualités & Analyses</h1>
-        <p className="text-gray-600 text-lg">
-          Suivez les dernières nouvelles des marchés financiers et de l'économie africaine.
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 animate-in fade-in duration-500">
+      {/* Header with filters */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Actualités Financières</h1>
+          <p className="text-slate-500 mt-1">L'essentiel de l'information boursière de l'UEMOA.</p>
+        </div>
 
-      {/* Category Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-8 sticky top-20 z-10"> {/* Made filters sticky */}
-        <div className="flex flex-wrap gap-2 md:gap-3">
-          {categories.map((category) => (
+        {/* Filter tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          {categories.map(cat => (
             <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg font-medium text-sm transition-colors ${
-                selectedCategory === category
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide whitespace-nowrap transition-colors ${
+                selectedCategory === cat
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
               }`}
             >
-              {category === 'all' ? 'Tout' : getCategoryLabel(category)}
+              {cat === 'all' ? 'TOUT' : getCategoryLabel(cat).toUpperCase()}
             </button>
           ))}
         </div>
       </div>
 
       {/* Loading Indicator (for filtering) */}
-       {loading && articles.length > 0 && (
-            <div className="text-center py-8">
-               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            </div>
-       )}
+      {loading && articles.length > 0 && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      )}
 
       {/* Error Display */}
       {!loading && error && (
-         <div className="text-center py-12 px-4">
-            <AlertTriangle className="w-10 h-10 mx-auto text-red-400 mb-3" />
-            <p className="text-red-600">{error}</p>
-         </div>
+        <div className="text-center py-12 px-4">
+          <AlertTriangle className="w-10 h-10 mx-auto text-red-400 mb-3" />
+          <p className="text-red-600">{error}</p>
+        </div>
       )}
 
-      {/* Article List */}
+      {/* Main Content Grid */}
       {!loading && !error && (
-        <div className="space-y-6">
-          {articles.map((article, index) => ( // Use 'articles' directly, it's filtered by API
-            <article
-              key={article.id}
-              // Special layout for first featured article? Only if needed.
-              // className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow ${ index === 0 && article.is_featured ? 'md:flex' : '' }`}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col md:flex-row" // Consistent layout
-            >
-              {/* Image Column */}
-              {article.image_url && (
-                <div className="md:w-1/3 h-48 md:h-auto flex-shrink-0 bg-gray-200">
-                    <img src={article.image_url} alt={article.title} className="w-full h-full object-cover"/>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Featured Article (2/3) */}
+          {selectedCategory === 'all' && featuredArticle && (
+            <div className="lg:col-span-2 group cursor-pointer">
+              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-md">
+                <img
+                  src={featuredArticle.image_url || '/images/default-news.jpg'}
+                  alt={featuredArticle.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
+
+                <div className="absolute bottom-0 left-0 p-8 w-full">
+                  <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider mb-3 inline-block">
+                    {getCategoryLabel(featuredArticle.category)}
+                  </span>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight group-hover:text-blue-200 transition-colors">
+                    {featuredArticle.title}
+                  </h2>
+                  <p className="text-slate-200 line-clamp-2 mb-4 max-w-2xl">
+                    {featuredArticle.summary}
+                  </p>
+                  <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {formatDate(featuredArticle.published_at)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> 5 min de lecture
+                    </span>
+                  </div>
                 </div>
-              )}
-              {/* Content Column */}
-              <div className="p-5 md:p-6 flex flex-col justify-between flex-grow">
-                  <div> {/* Top part: category, title, summary */}
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(article.category)}`}>
+              </div>
+            </div>
+          )}
+
+          {/* News List */}
+          <div className={`${selectedCategory === 'all' && featuredArticle ? 'lg:col-span-1' : 'lg:col-span-3'}`}>
+            {selectedCategory === 'all' && featuredArticle && (
+              <h3 className="font-bold text-slate-900 mb-4">Dernières dépêches</h3>
+            )}
+
+            <div className={`${selectedCategory === 'all' && featuredArticle ? 'space-y-4' : 'grid md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
+              {listArticles.map((article) => (
+                <div
+                  key={article.id}
+                  className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden ${
+                    selectedCategory === 'all' && featuredArticle ? 'p-4' : ''
+                  }`}
+                >
+                  {/* Compact layout for sidebar */}
+                  {selectedCategory === 'all' && featuredArticle ? (
+                    <div className="flex items-start gap-4">
+                      {article.image_url && (
+                        <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
+                          <img
+                            src={article.image_url}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
+                            {getCategoryLabel(article.category)}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 text-sm">
+                          {article.title}
+                        </h4>
+                        <div className="flex items-center gap-3 text-slate-400 text-[10px]">
+                          <span>{formatDate(article.published_at)}</span>
+                          <span>•</span>
+                          <span>5 min</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Card layout for grid view */
+                    <>
+                      {article.image_url && (
+                        <div className="h-40 overflow-hidden bg-slate-200">
+                          <img
+                            src={article.image_url}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      )}
+                      <div className="p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
                             {getCategoryLabel(article.category)}
                           </span>
                           {article.is_featured && (
-                            <span className="px-2.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-50 text-yellow-600 border border-yellow-100">
                               À la une
                             </span>
                           )}
-                      </div>
-                      <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
-                          {/* Optional: Wrap title in a link if articles have detail pages */}
+                        </div>
+                        <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                           {article.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">{article.summary}</p>
-                  </div>
-                   {/* Bottom part: metadata */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-auto pt-3 border-t border-gray-100">
-                      {article.author && (
-                        <div className="flex items-center space-x-1"> <User className="w-3.5 h-3.5" /> <span>{article.author}</span> </div>
-                      )}
-                      <div className="flex items-center space-x-1"> <Calendar className="w-3.5 h-3.5" /> <span>{formatDate(article.published_at)}</span> </div>
-                      {article.sector && (
-                        <div className="flex items-center space-x-1"> <Tag className="w-3.5 h-3.5" /> <span>{article.sector}</span> </div>
-                      )}
-                  </div>
-              </div>
-            </article>
-          ))}
+                        </h4>
+                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">
+                          {article.summary}
+                        </p>
+                        <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-100">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(article.published_at)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> 5 min
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+
+              {listArticles.length === 0 && (
+                <div className="py-12 text-center text-slate-400 col-span-full">
+                  Aucune actualité dans cette catégorie pour le moment.
+                </div>
+              )}
+            </div>
+
+            {selectedCategory === 'all' && featuredArticle && listArticles.length > 0 && (
+              <button className="w-full mt-6 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
+                Voir toute l'actualité <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       )}
 
       {/* No Articles Found State */}
       {!loading && !error && articles.length === 0 && (
         <div className="text-center py-16">
-           <Newspaper className="w-12 h-12 mx-auto text-gray-300 mb-4" /> {/* Use appropriate icon */}
-          <p className="text-gray-500">Aucun article trouvé {selectedCategory !== 'all' ? `dans la catégorie "${getCategoryLabel(selectedCategory)}"` : ''}.</p>
+          <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+          <p className="text-slate-500">Aucun article trouvé {selectedCategory !== 'all' ? `dans la catégorie "${getCategoryLabel(selectedCategory)}"` : ''}.</p>
         </div>
       )}
-    </div> // End Main Container
+    </div>
   );
 }
