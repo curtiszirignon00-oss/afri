@@ -270,3 +270,46 @@ export const KEY_FEATURES = [
 export type TopicInterest = typeof TOPIC_INTERESTS[number];
 export type DiscoveryChannel = typeof DISCOVERY_CHANNELS[number];
 export type KeyFeature = typeof KEY_FEATURES[number];
+
+// ========================================
+// TYPES STOCK DETAILS (Améliorations)
+// ========================================
+
+export type Signal = 'Achat' | 'Vente' | 'Neutre' | 'Achat Fort' | 'Vente Forte';
+
+export interface ChartDataPoint {
+  date: string;
+  price: number;
+}
+
+export interface TechnicalIndicator {
+  name: string;
+  value: string;
+  signal: Signal;
+}
+
+export interface FinancialYear {
+  year: string;
+  ca: number;
+  caGrowth: number | null;
+  rn: number;
+  rnGrowth: number | null;
+  bnpa: number;
+  per: number;
+  div: string;
+}
+
+export interface Shareholder {
+  name: string;
+  value: number;
+  color: string;
+}
+
+export interface StockNewsItem {
+  id: number;
+  title: string;
+  source: string;
+  date: string;
+  tag: string;
+  summary: string;
+}
