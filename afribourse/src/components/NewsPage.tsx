@@ -54,14 +54,34 @@ export default function NewsPage() {
   }, [selectedCategory]);
 
   // --- Helper functions ---
-  function formatDate(dateString: string | null): string {
+  function formatTimeAgo(dateString: string | null): string {
     if (!dateString) return 'Date inconnue';
     try {
+      const now = new Date();
       const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
+      const diffInMs = now.getTime() - date.getTime();
+      const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+
+      if (diffInHours < 1) return "moins d'une heure";
+      if (diffInHours < 24) return `${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
+
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays < 7) return `${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+
+      return date.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
     } catch (e) {
       return 'Date invalide';
     }
+  }
+
+  function calculateReadTime(content: string | null): number {
+    const wordsPerMinute = 200;
+    const words = content ? content.split(/\s+/).length : 0;
+    return Math.ceil(words / wordsPerMinute) || 3;
   }
 
   function getCategoryLabel(category: string | null): string {
@@ -174,10 +194,10 @@ export default function NewsPage() {
                   <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {formatDate(featuredArticle.published_at)}
+                      Il y a {formatTimeAgo(featuredArticle.published_at)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> 5 min de lecture
+                      <Clock className="w-3 h-3" /> {calculateReadTime(featuredArticle.content)} min de lecture
                     </span>
                   </div>
                 </div>
@@ -222,9 +242,9 @@ export default function NewsPage() {
                           {article.title}
                         </h4>
                         <div className="flex items-center gap-3 text-slate-400 text-[10px]">
-                          <span>{formatDate(article.published_at)}</span>
+                          <span>Il y a {formatTimeAgo(article.published_at)}</span>
                           <span>•</span>
-                          <span>5 min</span>
+                          <span>{calculateReadTime(article.content)} min</span>
                         </div>
                       </div>
                     </div>
@@ -260,10 +280,10 @@ export default function NewsPage() {
                         <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-100">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            {formatDate(article.published_at)}
+                            Il y a {formatTimeAgo(article.published_at)}
                           </span>
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> 5 min
+                            <Clock className="w-3 h-3" /> {calculateReadTime(article.content)} min
                           </span>
                         </div>
                       </div>
