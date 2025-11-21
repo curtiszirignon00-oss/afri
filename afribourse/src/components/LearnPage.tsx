@@ -583,17 +583,17 @@ export default function LearnPage() {
                                         className="
                                             prose prose-lg max-w-none
                                             prose-headings:text-slate-900 prose-headings:font-bold prose-headings:leading-tight
-                                            prose-h1:text-4xl prose-h1:mb-6
-                                            prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-10
-                                            prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8
-                                            prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6
-                                            prose-p:text-slate-700 prose-p:text-lg prose-p:leading-8 prose-p:mb-6
+                                            prose-h1:text-4xl prose-h1:md:text-5xl prose-h1:mb-6
+                                            prose-h2:text-3xl prose-h2:md:text-4xl prose-h2:mb-5 prose-h2:mt-10
+                                            prose-h3:text-2xl prose-h3:md:text-3xl prose-h3:mb-4 prose-h3:mt-8
+                                            prose-h4:text-xl prose-h4:md:text-2xl prose-h4:mb-3 prose-h4:mt-6 prose-h4:text-slate-800
+                                            prose-p:text-slate-800 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-6
                                             prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline
                                             prose-strong:text-slate-900 prose-strong:font-semibold
                                             prose-ul:my-6 prose-ul:space-y-3
                                             prose-ol:my-6 prose-ol:space-y-3
-                                            prose-li:text-slate-700 prose-li:text-base prose-li:leading-7
-                                            prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-slate-50 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:italic prose-blockquote:text-slate-700
+                                            prose-li:text-slate-800 prose-li:text-base prose-li:md:text-lg prose-li:leading-relaxed
+                                            prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-2xl prose-blockquote:not-italic prose-blockquote:text-slate-600
                                             prose-table:my-8 prose-table:border prose-table:border-slate-200 prose-table:rounded-xl prose-table:overflow-hidden
                                             prose-thead:bg-gradient-to-r prose-thead:from-slate-50 prose-thead:to-slate-100
                                             prose-th:px-6 prose-th:py-4 prose-th:text-left prose-th:text-sm prose-th:font-bold prose-th:text-slate-900 prose-th:uppercase prose-th:tracking-wider
