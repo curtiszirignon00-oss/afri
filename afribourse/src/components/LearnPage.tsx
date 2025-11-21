@@ -1,5 +1,5 @@
 // src/components/LearnPage.tsx - VERSION REFONTE COMPLÈTE
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   BookOpen,
   Clock,
@@ -15,7 +15,8 @@ import {
   Star,
   XCircle,
   MessageSquarePlus,
-  HelpCircle
+  HelpCircle,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -77,6 +78,10 @@ export default function LearnPage() {
 
     // <-- AJOUT: État pour le chatbot IA
     const [showAITutor, setShowAITutor] = useState(false);
+
+    // <-- AJOUT: État pour la barre de progression de lecture
+    const [readingProgress, setReadingProgress] = useState(0);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     // <-- AJOUT: Fonction pour charger le quiz depuis l'API
     const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
@@ -217,6 +222,25 @@ export default function LearnPage() {
     useEffect(() => {
         setCurrentSlide(1);
     }, [selectedModule?.slug]);
+
+    // <-- AJOUT: Effet pour tracker la progression de lecture
+    useEffect(() => {
+        if (!selectedModule) {
+            setReadingProgress(0);
+            return;
+        }
+
+        const handleScroll = () => {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const scrollTop = window.scrollY;
+            const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+            setReadingProgress(Math.min(Math.max(scrollPercent, 0), 100));
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [selectedModule]);
 
     // <-- AJOUT: Fonction pour démarrer le quiz
     const startQuiz = useCallback(() => {
@@ -441,128 +465,152 @@ export default function LearnPage() {
         const pedagogicalObjective = extractPedagogicalObjective(selectedModule.content || '');
 
         return (
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* <-- CORRECTION: Bouton retour amélioré */}
-                <button
-                    onClick={() => {
-                      setSelectedModule(null);
-                      setQuizState({
-                        isActive: false,
-                        answers: {},
-                        score: null,
-                        passed: null,
-                        showResults: false
-                      });
-                      setShowAITutor(false);
-                      if (audioElement) {
-                        audioElement.pause();
-                        setIsAudioPlaying(false);
-                      }
-                    }}
-                    className="mb-6 flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors group"
-                >
-                    <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                    <span>Retour aux modules</span>
-                </button>
+            <div className="min-h-screen bg-slate-50">
+                {/* Header immersif style slate-900 */}
+                <div className="bg-slate-900 text-white pt-8 pb-16 px-4 relative overflow-hidden">
+                    {/* Decorative blobs */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2" />
 
-                {/* <-- CORRECTION: En-tête du module amélioré et agrandi */}
-                <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-12 text-white relative overflow-hidden">
-                        {/* Gradient Blobs décoratifs (effet moderne) */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2" />
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 translate-y-1/2 -translate-x-1/2" />
-                        <div className="relative z-10 flex items-start justify-between mb-4">
-                            <span className={`px-4 py-2 rounded-full text-sm font-semibold border-2 ${getDifficultyColor(selectedModule.difficulty_level)} bg-white`}>
+                    <div className="max-w-4xl mx-auto relative z-10">
+                        {/* Breadcrumb */}
+                        <button
+                            onClick={() => {
+                              setSelectedModule(null);
+                              setQuizState({
+                                isActive: false,
+                                answers: {},
+                                score: null,
+                                passed: null,
+                                showResults: false
+                              });
+                              setShowAITutor(false);
+                              if (audioElement) {
+                                audioElement.pause();
+                                setIsAudioPlaying(false);
+                              }
+                            }}
+                            className="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors text-sm font-medium group"
+                        >
+                            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            Retour aux modules
+                        </button>
+
+                        {/* Meta info */}
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                            <span className="bg-blue-500/20 text-blue-200 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                                Module {selectedModule.order_index != null ? selectedModule.order_index + 1 : 1}
+                            </span>
+                            <span className="text-slate-400 text-sm">•</span>
+                            <span className="text-slate-400 text-sm flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                {selectedModule.duration_minutes || '15'} min
+                            </span>
+                            <span className="text-slate-400 text-sm">•</span>
+                            <span className="text-slate-400 text-sm flex items-center gap-1">
+                                <BarChart3 className="w-4 h-4" />
                                 {getDifficultyLabel(selectedModule.difficulty_level)}
                             </span>
-
+                            {hasQuiz && (
+                                <>
+                                    <span className="text-slate-400 text-sm">•</span>
+                                    <span className="text-slate-400 text-sm flex items-center gap-1">
+                                        <Brain className="w-4 h-4" />
+                                        Quiz inclus
+                                    </span>
+                                </>
+                            )}
                             {isCompleted && (
-                                <div className="flex items-center space-x-2 bg-green-500 px-4 py-2 rounded-full">
-                                    <CheckCircle className="w-5 h-5" />
-                                    <span className="font-semibold">Terminé</span>
-                                </div>
+                                <>
+                                    <span className="text-slate-400 text-sm">•</span>
+                                    <span className="text-green-400 text-sm flex items-center gap-1">
+                                        <CheckCircle className="w-4 h-4" />
+                                        Terminé
+                                    </span>
+                                </>
                             )}
                         </div>
 
-                        <h1 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+                        {/* Title & description */}
+                        <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
                             {selectedModule.title}
                         </h1>
+                        <p className="text-slate-300 text-lg leading-relaxed max-w-2xl">
+                            {selectedModule.description}
+                        </p>
+                    </div>
+                </div>
 
-                        {/* <-- AJOUT: Métadonnées du module */}
-                        <div className="flex flex-wrap items-center gap-6 pb-6 border-b border-blue-400/30">
-                            <div className="flex items-center space-x-2">
-                                <Clock className="w-5 h-5" />
-                                <span>{selectedModule.duration_minutes || '15'} minutes</span>
+                {/* Contenu principal */}
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20 pb-24">
+                    <article className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+
+                        {/* Progress bar de lecture */}
+                        <div className="sticky top-0 z-30 bg-white">
+                            <div className="h-1.5 w-full bg-slate-100">
+                                <div
+                                    className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300 ease-out"
+                                    style={{ width: `${readingProgress}%` }}
+                                />
                             </div>
+                        </div>
 
-                            <div className="flex items-center space-x-2">
-                                <BookOpen className="w-5 h-5" />
-                                <span>{selectedModule.content_type === 'video' ? 'Vidéo' : 'Article'}</span>
+                        {/* Barre de progression quiz si déjà tenté */}
+                        {moduleProgress?.quiz_score !== null && moduleProgress?.quiz_score !== undefined && (
+                            <div className="bg-slate-50 px-8 py-4 border-b border-slate-100">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-slate-700">Meilleur score au quiz</span>
+                                    <span className={`text-lg font-bold ${moduleProgress.quiz_score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {moduleProgress.quiz_score}%
+                                    </span>
+                                </div>
+                                <div className="w-full bg-slate-200 rounded-full h-2">
+                                    <div
+                                        className={`h-2 rounded-full transition-all duration-500 ${
+                                            moduleProgress.quiz_score >= 70 ? 'bg-green-500' : 'bg-red-500'
+                                        }`}
+                                        style={{ width: `${moduleProgress.quiz_score}%` }}
+                                    />
+                                </div>
                             </div>
+                        )}
 
-                            {hasQuiz && (
-                                <div className="flex items-center space-x-2">
-                                    <Brain className="w-5 h-5" />
-                                    <span>Quiz inclus</span>
+                        {/* Contenu du module avec styles améliorés */}
+                        <div className="p-6 md:p-12" ref={contentRef}>
+                            {selectedModule.content ? (
+                                <div className="module-content-wrapper">
+                                    <div
+                                        className="
+                                            prose prose-lg max-w-none
+                                            prose-headings:text-slate-900 prose-headings:font-bold prose-headings:leading-tight
+                                            prose-h1:text-4xl prose-h1:mb-6
+                                            prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-10
+                                            prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8
+                                            prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6
+                                            prose-p:text-slate-700 prose-p:text-lg prose-p:leading-8 prose-p:mb-6
+                                            prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+                                            prose-strong:text-slate-900 prose-strong:font-semibold
+                                            prose-ul:my-6 prose-ul:space-y-3
+                                            prose-ol:my-6 prose-ol:space-y-3
+                                            prose-li:text-slate-700 prose-li:text-base prose-li:leading-7
+                                            prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-slate-50 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:italic prose-blockquote:text-slate-700
+                                            prose-table:my-8 prose-table:border prose-table:border-slate-200 prose-table:rounded-xl prose-table:overflow-hidden
+                                            prose-thead:bg-gradient-to-r prose-thead:from-slate-50 prose-thead:to-slate-100
+                                            prose-th:px-6 prose-th:py-4 prose-th:text-left prose-th:text-sm prose-th:font-bold prose-th:text-slate-900 prose-th:uppercase prose-th:tracking-wider
+                                            prose-td:px-6 prose-td:py-4 prose-td:text-sm prose-td:text-slate-700
+                                            prose-tr:border-b prose-tr:border-slate-100 hover:prose-tr:bg-slate-50
+                                            prose-img:rounded-xl prose-img:shadow-md
+                                            prose-code:text-purple-600 prose-code:bg-purple-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                                        "
+                                        dangerouslySetInnerHTML={{ __html: selectedModule.content }}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+                                    <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
                                 </div>
                             )}
-
-                            {/* <-- AJOUT: Indicateur audio (même si pas encore disponible) */}
-                            <div className="flex items-center space-x-2 opacity-50 cursor-not-allowed" title="Audio bientôt disponible">
-                                <Volume2 className="w-5 h-5" />
-                                <span>Audio (bientôt)</span>
-                            </div>
-                        </div>
-
-                        {/* Objectif pédagogique extrait du contenu */}
-                        {pedagogicalObjective && (
-                            <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-xl p-6 border-2 border-white/20 shadow-lg">
-                                <div
-                                    className="text-white pedagogical-objective"
-                                    dangerouslySetInnerHTML={{ __html: pedagogicalObjective }}
-                                    style={{
-                                        fontSize: '1rem',
-                                        lineHeight: '1.75'
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* <-- AJOUT: Barre de progression si quiz déjà tenté */}
-                    {moduleProgress?.quiz_score !== null && moduleProgress?.quiz_score !== undefined && (
-                        <div className="bg-blue-50 px-8 py-4 border-b border-blue-100">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm font-medium text-gray-700">Meilleur score au quiz</span>
-                                <span className={`text-lg font-bold ${moduleProgress.quiz_score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {moduleProgress.quiz_score}%
-                                </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                    className={`h-2 rounded-full transition-all duration-500 ${
-                                        moduleProgress.quiz_score >= 70 ? 'bg-green-500' : 'bg-red-500'
-                                    }`}
-                                    style={{ width: `${moduleProgress.quiz_score}%` }}
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Contenu du module avec support des slides */}
-                    <div className="px-8 py-10">
-                        {selectedModule.content ? (
-                            <div className="module-content-wrapper">
-                                <div className="prose prose-lg max-w-none prose-indigo prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900"
-                                     dangerouslySetInnerHTML={{ __html: selectedModule.content }}
-                                />
-                            </div>
-                        ) : (
-                            <div className="text-center py-12">
-                                <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                                <p className="text-gray-500 text-lg">Contenu du module en préparation...</p>
-                            </div>
-                        )}
 
                         {/* Navigation entre les slides */}
                         {totalSlides > 1 && (
@@ -934,6 +982,7 @@ export default function LearnPage() {
                     isOpen={showAITutor}
                     onClose={() => setShowAITutor(false)}
                 />
+                </div>
             </div>
         );
     }
