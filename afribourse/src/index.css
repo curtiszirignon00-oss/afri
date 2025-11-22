@@ -10,3 +10,159 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* No scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ================================================
+   STYLES POUR LE CONTENU DES MODULES D'APPRENTISSAGE
+   ================================================ */
+
+/* Wrapper principal du module */
+.module-content-wrapper {
+  @apply space-y-8;
+}
+
+/* Chaque section H2 devient un cadre séparé */
+.module-content-wrapper h2 {
+  @apply bg-white rounded-xl border border-slate-100 shadow-sm p-6 -mx-6 mt-8 mb-6;
+  @apply text-2xl font-bold text-slate-900 flex items-center gap-3;
+}
+
+.module-content-wrapper h2::before {
+  content: attr(data-section);
+  @apply bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-base font-semibold;
+}
+
+/* Sous-sections H3 */
+.module-content-wrapper h3 {
+  @apply bg-slate-50 rounded-lg p-4 -mx-4 mt-6 mb-4;
+  @apply text-xl font-bold text-slate-800 border-l-4 border-blue-500;
+}
+
+/* Sous-sous-sections H4 */
+.module-content-wrapper h4 {
+  @apply font-bold text-lg text-slate-800 mt-6 mb-3 flex items-center gap-2;
+}
+
+.module-content-wrapper h4::before {
+  content: "•";
+  @apply text-blue-500;
+}
+
+/* Paragraphes avec meilleur espacement */
+.module-content-wrapper p {
+  @apply text-slate-600 leading-relaxed mb-4;
+}
+
+/* Listes avec style amélioré */
+.module-content-wrapper ul,
+.module-content-wrapper ol {
+  @apply bg-slate-50 rounded-lg p-6 my-6 space-y-3 border border-slate-100;
+}
+
+.module-content-wrapper li {
+  @apply text-slate-600 leading-relaxed pl-2;
+}
+
+.module-content-wrapper ul li::marker {
+  @apply text-blue-500;
+}
+
+.module-content-wrapper ol li::marker {
+  @apply text-blue-600 font-bold;
+}
+
+/* Blockquotes comme boîtes d'analogie */
+.module-content-wrapper blockquote {
+  @apply bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-xl my-6;
+  @apply text-amber-800 not-italic;
+}
+
+.module-content-wrapper blockquote p {
+  @apply text-amber-800 mb-0;
+}
+
+/* Tableaux avec style moderne */
+.module-content-wrapper table {
+  @apply w-full my-8 bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm;
+}
+
+.module-content-wrapper thead {
+  @apply bg-slate-100;
+}
+
+.module-content-wrapper th {
+  @apply p-4 text-left text-sm font-bold text-slate-700 border-b border-slate-200;
+}
+
+.module-content-wrapper td {
+  @apply p-4 text-sm text-slate-600 border-b border-slate-100;
+}
+
+.module-content-wrapper tr:nth-child(even) {
+  @apply bg-blue-50/50;
+}
+
+.module-content-wrapper tr:hover {
+  @apply bg-slate-50;
+}
+
+/* Images */
+.module-content-wrapper img {
+  @apply rounded-xl shadow-md my-8 mx-auto;
+}
+
+/* Liens */
+.module-content-wrapper a {
+  @apply text-blue-600 font-medium hover:underline;
+}
+
+/* Strong/Bold text */
+.module-content-wrapper strong {
+  @apply text-slate-900 font-semibold;
+}
+
+/* Code inline */
+.module-content-wrapper code {
+  @apply text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded text-sm;
+}
+
+/* Blocs de code */
+.module-content-wrapper pre {
+  @apply bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto my-6;
+}
+
+/* Séparateurs */
+.module-content-wrapper hr {
+  @apply my-8 border-slate-200;
+}
+
+/* Sections spéciales avec div.bg-gradient */
+.module-content-wrapper div[class*="bg-gradient"],
+.module-content-wrapper .concept-card,
+.module-content-wrapper .info-box {
+  @apply rounded-xl p-6 my-6 border;
+}
+
+/* Animation d'apparition */
+.module-content-wrapper > * {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
