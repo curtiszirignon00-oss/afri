@@ -1,0 +1,224 @@
+{
+  "header": {
+    "moduleNumber": 2,
+    "lessonNumber": 1,
+    "title": "Comprendre les Marchés Financiers & la BRVM",
+    "objectives": [
+      "d'expliquer ce qu'est un marché financier et à quoi il sert",
+      "de comprendre le rôle unique de la BRVM dans l'économie de la zone UEMOA",
+      "de distinguer clairement le marché primaire du marché secondaire",
+      "de comprendre pourquoi et comment une entreprise choisit d'entrer en bourse"
+    ]
+  },
+  "sections": [
+    {
+      "type": "section",
+      "number": "1.1",
+      "title": "Qu'est-ce qu'un marché financier ?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Un marché financier est un espace — physique ou digital — où l'argent rencontre les opportunités. C'est là que se rencontrent <strong>ceux qui ont de l'argent à placer</strong> (investisseurs) et <strong>ceux qui ont besoin d'argent</strong> pour financer leurs projets (entreprises ou États)."
+        },
+        {
+          "type": "paragraph",
+          "content": "Sur ces marchés, on ne vend pas des produits physiques, mais des titres financiers :"
+        },
+        {
+          "type": "grid-cards",
+          "content": {
+            "cards": [
+              {
+                "title": "Les Actions",
+                "description": "Parts de propriété dans une entreprise."
+              },
+              {
+                "title": "Les Obligations",
+                "description": "Prêts faits à une entreprise ou à un État."
+              }
+            ],
+            "columns": 2
+          }
+        },
+        {
+          "type": "analogy",
+          "content": {
+            "title": "Le Grand Marché de la Ville",
+            "intro": "Imaginez le grand marché central de votre ville :",
+            "zones": [
+              {
+                "emoji": "🍍",
+                "label": "Zone 1",
+                "description": "Les producteurs viennent vendre leurs produits frais pour la première fois (Marché primaire)."
+              },
+              {
+                "emoji": "🍊",
+                "label": "Zone 2",
+                "description": "Les commerçants revendent des produits déjà achetés (Marché secondaire)."
+              }
+            ],
+            "conclusion": "La BRVM joue le rôle de ce grand marché financier, mais avec des règles claires, un système sécurisé, et une surveillance stricte pour protéger tous les participants."
+          }
+        },
+        {
+          "type": "subsection",
+          "content": {
+            "title": "Pourquoi les marchés financiers sont essentiels ?",
+            "items": [
+              "<strong>Canaliser l'épargne :</strong> Votre argent finance des projets réels (usines, routes, innovations).",
+              "<strong>Faciliter la liquidité :</strong> Vous pouvez revendre vos titres à tout moment.",
+              "<strong>Transparence :</strong> Les entreprises cotées publient leurs résultats."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "number": "1.2",
+      "title": "Le rôle et le fonctionnement de la BRVM",
+      "blocks": [
+        {
+          "type": "subsection",
+          "content": {
+            "icon": "globe",
+            "title": "Une bourse régionale unique au monde",
+            "content": "La Bourse Régionale des Valeurs Mobilières (BRVM) est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA)."
+          }
+        },
+        {
+          "type": "country-badges",
+          "content": {
+            "countries": ["Bénin", "Burkina Faso", "Côte d'Ivoire", "Guinée-Bissau", "Mali", "Niger", "Sénégal", "Togo"],
+            "metadata": "Création : 1998 | Siège : Abidjan | Dépositaire Central : Cotonou"
+          }
+        },
+        {
+          "type": "grid-cards",
+          "content": {
+            "title": "Les indices phares",
+            "cards": [
+              {
+                "title": "BRVM Composite",
+                "description": "Suit l'ensemble des sociétés cotées."
+              },
+              {
+                "title": "BRVM 10",
+                "description": "Les 10 entreprises les plus actives."
+              }
+            ],
+            "columns": 2
+          }
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "number": "1.3",
+      "title": "Marché primaire vs marché secondaire",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Comprendre cette distinction est fondamental pour tout investisseur."
+        },
+        {
+          "type": "table",
+          "content": {
+            "headers": ["Type de marché", "Description", "À qui va l'argent ?", "Exemple concret"],
+            "rows": [
+              [
+                {"value": "Marché Primaire", "emphasis": true},
+                "Les titres sont émis et vendus pour la première fois.",
+                "Directement à l'entreprise ou à l'État.",
+                "NSIA Banque émet de nouvelles actions pour financer son expansion."
+              ],
+              [
+                "Marché Secondaire",
+                "Les titres déjà émis sont échangés entre investisseurs.",
+                "L'argent circule entre investisseurs, pas vers l'entreprise.",
+                "Vous achetez des actions Sonatel à un autre investisseur."
+              ]
+            ],
+            "highlightFirstRow": true
+          }
+        },
+        {
+          "type": "info-box",
+          "content": {
+            "icon": "arrow",
+            "content": "Votre terrain de jeu principal est le <strong>marché secondaire</strong>, car c'est là que vous pourrez acheter ou revendre vos titres au quotidien."
+          }
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "number": "1.4",
+      "title": "L'Introduction en Bourse (IPO)",
+      "blocks": [
+        {
+          "type": "grid-cards",
+          "content": {
+            "cards": [
+              {
+                "title": "Lever des capitaux",
+                "description": "Sans dettes bancaires"
+              },
+              {
+                "title": "Améliorer sa visibilité",
+                "description": "Et sa crédibilité"
+              },
+              {
+                "title": "Permettre la revente",
+                "description": "Aux fondateurs"
+              },
+              {
+                "title": "Diversifier",
+                "description": "Les sources de financement"
+              }
+            ],
+            "columns": 2
+          }
+        },
+        {
+          "type": "list",
+          "content": {
+            "title": "Comment cela se passe ?",
+            "items": [
+              "Préparation des états financiers.",
+              "Choix d'une SGI pour conseiller.",
+              "Période d'offre publique (Souscription).",
+              "Cotation officielle sur le marché secondaire."
+            ],
+            "ordered": true
+          }
+        },
+        {
+          "type": "info-box",
+          "content": {
+            "icon": "info",
+            "content": "<strong>Exemple :</strong> L'IPO d'Orange Côte d'Ivoire (2022) a permis de lever plusieurs dizaines de milliards FCFA et a permis aux citoyens ivoiriens de devenir actionnaires."
+          }
+        }
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "BRVM",
+      "definition": "Bourse Régionale des Valeurs Mobilières, marché commun de l'UEMOA."
+    },
+    {
+      "term": "IPO",
+      "definition": "Introduction en bourse — première vente d'actions au public."
+    },
+    {
+      "term": "SGI",
+      "definition": "Intermédiaire agréé (courtier) obligatoire pour acheter/vendre des titres."
+    },
+    {
+      "term": "BRVM Composite",
+      "definition": "Indice mesurant la performance de toutes les sociétés cotées."
+    }
+  ]
+}

@@ -18,6 +18,12 @@ export interface ModuleQuiz {
   timeLimit?: number; // Temps limite en minutes (optionnel)
 }
 
+// Type pour un bloc de contenu structuré
+export interface ContentBlock {
+  type: string;
+  content: any;
+}
+
 // Type étendu pour LearningModule avec quiz et audio
 export interface LearningModuleExtended {
   id: string;
@@ -25,6 +31,7 @@ export interface LearningModuleExtended {
   slug: string;
   description: string | null;
   content: string | null;
+  content_json: string | null; // <-- AJOUT: Contenu structuré en JSON
   difficulty_level: string;
   content_type: string;
   duration_minutes: number | null;

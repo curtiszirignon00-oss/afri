@@ -57,6 +57,7 @@
     "@types/nodemailer": "^7.0.3",
     "@types/sanitize-html": "^2.16.0",
     "@types/xlsx": "^0.0.35",
+    "jsdom": "^27.2.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },

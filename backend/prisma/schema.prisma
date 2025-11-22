@@ -615,6 +615,7 @@ model LearningModule {
   slug              String
   description       String?
   content           String?
+  content_json      String?   // Contenu structuré en JSON pour le nouveau format
   difficulty_level  String    // "debutant", "intermediaire", "avance"
   content_type      String    // "article" ou "video"
   duration_minutes  Int?

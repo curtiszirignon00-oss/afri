@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import confetti from 'canvas-confetti';
 import { AITutor } from './AITutor';
+import { ContentRenderer, ModuleContent } from './learning';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -577,7 +578,15 @@ export default function LearnPage() {
 
                         {/* Contenu du module avec styles améliorés */}
                         <div className="p-6 md:p-12" ref={contentRef}>
-                            {selectedModule.content ? (
+                            {/* Option 1: Contenu structuré JSON (nouveau format) */}
+                            {(selectedModule as any).content_json ? (
+                                <div className="space-y-8">
+                                    <ContentRenderer
+                                        moduleContent={JSON.parse((selectedModule as any).content_json) as ModuleContent}
+                                    />
+                                </div>
+                            ) : selectedModule.content ? (
+                                /* Option 2: Contenu HTML (ancien format - fallback) */
                                 <div className="module-content-wrapper">
                                     <div
                                         className="
