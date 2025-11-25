@@ -7,6 +7,7 @@ import { Stock, Portfolio, WatchlistItem } from '../types';
 // Import des nouveaux composants
 import {
   StockChart,
+  StockChartNew,
   StockTabs,
   StockOverview,
   StockNews,
@@ -14,7 +15,6 @@ import {
   StockAnalysis,
   TabId
 } from './stock';
-import LightweightChart from './stock/LightweightChart';
 import { convertToLightweightData } from '../utils/simpleLightweightAdapter';
 
 // Import des hooks
@@ -328,9 +328,11 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
               </div>
 
               {useLightweight ? (
-                <LightweightChart
+                <StockChartNew
                   symbol={stock.symbol}
                   data={lightweightData}
+                  isLoading={historyLoading}
+                  theme="light"
                 />
               ) : (
                 <StockChart

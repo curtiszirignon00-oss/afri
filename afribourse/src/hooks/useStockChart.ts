@@ -287,28 +287,29 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       volumeSeriesRef.current = null;
     }
 
-    // Créer la nouvelle série selon le type
+    // Créer la nouvelle série selon le type (API v4)
     let mainSeries: ISeriesApi<any>;
+    const chartApi = chartRef.current as any; // Cast pour API v4
+
     switch (chartType) {
       case 'candlestick':
-        mainSeries = chartRef.current.addCandlestickSeries(
+        mainSeries = chartApi.addCandlestickSeries(
           getSeriesOptions() as CandlestickSeriesPartialOptions
         );
         break;
       case 'bar':
-        mainSeries = chartRef.current.addCandlestickSeries({
-          ...getSeriesOptions(),
-          borderVisible: false,
-        } as CandlestickSeriesPartialOptions);
+        mainSeries = chartApi.addBarSeries(
+          getSeriesOptions() as CandlestickSeriesPartialOptions
+        );
         break;
       case 'line':
-        mainSeries = chartRef.current.addLineSeries(getSeriesOptions() as LineSeriesPartialOptions);
+        mainSeries = chartApi.addLineSeries(getSeriesOptions() as LineSeriesPartialOptions);
         break;
       case 'area':
-        mainSeries = chartRef.current.addAreaSeries(getSeriesOptions() as AreaSeriesPartialOptions);
+        mainSeries = chartApi.addAreaSeries(getSeriesOptions() as AreaSeriesPartialOptions);
         break;
       default:
-        mainSeries = chartRef.current.addCandlestickSeries(
+        mainSeries = chartApi.addCandlestickSeries(
           getSeriesOptions() as CandlestickSeriesPartialOptions
         );
     }
@@ -316,7 +317,7 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
     seriesRef.current = mainSeries;
 
     // Recréer la série de volume
-    const volumeSeries = chartRef.current.addHistogramSeries({
+    const volumeSeries = chartApi.addHistogramSeries({
       color: CHART_COLORS.upColor + '40',
       priceFormat: {
         type: 'volume',
