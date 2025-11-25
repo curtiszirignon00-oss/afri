@@ -323,21 +323,42 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
           <div className="lg:col-span-2">
             {/* Graphique (toujours visible) */}
             <div className="mb-8">
-              <StockChartNew
-                symbol={stock.symbol}
-                data={convertToOHLCVData(historyData?.data.map(d => ({
+              {(() => {
+                // Debug: vérifier les données avant conversion
+                const rawData = historyData?.data || [];
+                console.log('StockDetailPageEnhanced - Raw API data:', {
+                  hasData: !!historyData,
+                  dataLength: rawData.length,
+                  firstItem: rawData[0],
+                  lastItem: rawData[rawData.length - 1]
+                });
+
+                const convertedData = convertToOHLCVData(rawData.map(d => ({
                   date: d.date,
                   open: d.open,
                   high: d.high,
                   low: d.low,
                   close: d.close,
                   volume: d.volume
-                })) || [])}
-                onIntervalChange={handleIntervalChange}
-                currentInterval={selectedInterval}
-                isLoading={historyLoading}
-                theme="light"
-              />
+                })));
+
+                console.log('StockDetailPageEnhanced - Converted data:', {
+                  length: convertedData.length,
+                  first: convertedData[0],
+                  last: convertedData[convertedData.length - 1]
+                });
+
+                return (
+                  <StockChartNew
+                    symbol={stock.symbol}
+                    data={convertedData}
+                    onIntervalChange={handleIntervalChange}
+                    currentInterval={selectedInterval}
+                    isLoading={historyLoading}
+                    theme="light"
+                  />
+                );
+              })()}
             </div>
 
             {/* Indicateurs (toujours visibles) */}
