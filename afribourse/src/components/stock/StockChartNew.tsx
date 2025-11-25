@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
@@ -39,11 +39,19 @@ export default function StockChartNew({
 }: StockChartProps) {
   const [selectedInterval, setSelectedInterval] = useState<TimeInterval>(currentInterval);
   const [selectedChartType, setSelectedChartType] = useState<ChartType>('candlestick');
+  const [displayData, setDisplayData] = useState<OHLCVData[]>(data);
+
+  // Mettre à jour les données affichées seulement quand on a des données valides
+  useEffect(() => {
+    if (data && data.length > 0) {
+      setDisplayData(data);
+    }
+  }, [data]);
 
   const { chartContainerRef, isReady } = useStockChart({
     chartType: selectedChartType,
     theme,
-    data,
+    data: displayData, // Utiliser displayData au lieu de data
   });
 
   // Calculer la variation sur la période

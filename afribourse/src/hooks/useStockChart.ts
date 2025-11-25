@@ -44,7 +44,9 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
   const [isReady, setIsReady] = useState(false);
 
   // Utiliser une clé pour détecter les vrais changements de données
-  const dataKey = `${data.length}-${data[0]?.time}-${data[data.length - 1]?.time}`;
+  const dataKey = data.length > 0
+    ? `${data.length}-${data[0]?.time}-${data[data.length - 1]?.time}`
+    : 'empty';
   const prevDataKeyRef = useRef<string>('');
   const prevChartTypeRef = useRef<ChartType>(chartType);
 
@@ -261,7 +263,16 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
 
   // Mise à jour du type de graphique ET des données
   useEffect(() => {
+    console.log('useStockChart: Effect triggered', {
+      isReady,
+      hasChart: !!chartRef.current,
+      dataLength: data.length,
+      dataKey,
+      prevDataKey: prevDataKeyRef.current
+    });
+
     if (!isReady || !chartRef.current) {
+      console.log('useStockChart: Skipping - chart not ready');
       return;
     }
 
@@ -270,28 +281,40 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
     const dataChanged = prevDataKeyRef.current !== dataKey;
 
     if (!chartTypeChanged && !dataChanged) {
+      console.log('useStockChart: Skipping - no changes detected');
       return;
     }
 
-    console.log('useStockChart: Updating chart', { chartTypeChanged, dataChanged, type: chartType, dataLength: data.length });
+    console.log('useStockChart: Updating chart', {
+      chartTypeChanged,
+      dataChanged,
+      type: chartType,
+      dataLength: data.length,
+      firstDate: data[0]?.date,
+      lastDate: data[data.length - 1]?.date
+    });
 
-    // Supprimer l'ancienne série si elle existe
-    if (seriesRef.current) {
-      chartRef.current.removeSeries(seriesRef.current);
-      seriesRef.current = null;
-    }
+    try {
+      // Supprimer l'ancienne série si elle existe
+      if (seriesRef.current) {
+        console.log('useStockChart: Removing old main series');
+        chartRef.current.removeSeries(seriesRef.current);
+        seriesRef.current = null;
+      }
 
-    // Supprimer l'ancienne série de volume si elle existe
-    if (volumeSeriesRef.current) {
-      chartRef.current.removeSeries(volumeSeriesRef.current);
-      volumeSeriesRef.current = null;
-    }
+      // Supprimer l'ancienne série de volume si elle existe
+      if (volumeSeriesRef.current) {
+        console.log('useStockChart: Removing old volume series');
+        chartRef.current.removeSeries(volumeSeriesRef.current);
+        volumeSeriesRef.current = null;
+      }
 
-    // Créer la nouvelle série selon le type (API v4)
-    let mainSeries: ISeriesApi<any>;
-    const chartApi = chartRef.current as any; // Cast pour API v4
+      // Créer la nouvelle série selon le type (API v4)
+      console.log('useStockChart: Creating new series, type:', chartType);
+      let mainSeries: ISeriesApi<any>;
+      const chartApi = chartRef.current as any; // Cast pour API v4
 
-    switch (chartType) {
+      switch (chartType) {
       case 'candlestick':
         mainSeries = chartApi.addCandlestickSeries(
           getSeriesOptions() as CandlestickSeriesPartialOptions
@@ -331,20 +354,23 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
 
     volumeSeriesRef.current = volumeSeries;
 
-    // Appliquer les données
-    if (data.length > 0) {
-      console.log('useStockChart: Setting data', data.length, 'points');
-      const chartData = convertData();
-      const volumeData = convertVolumeData();
-      mainSeries.setData(chartData as any);
-      volumeSeries.setData(volumeData);
-      chartRef.current.timeScale().fitContent();
-      console.log('useStockChart: Data set successfully');
-    }
+      // Appliquer les données
+      if (data.length > 0) {
+        console.log('useStockChart: Setting data', data.length, 'points');
+        const chartData = convertData();
+        const volumeData = convertVolumeData();
+        mainSeries.setData(chartData as any);
+        volumeSeries.setData(volumeData);
+        chartRef.current.timeScale().fitContent();
+        console.log('useStockChart: Data set successfully');
+      }
 
-    // Mettre à jour les références pour le prochain rendu
-    prevChartTypeRef.current = chartType;
-    prevDataKeyRef.current = dataKey;
+      // Mettre à jour les références pour le prochain rendu
+      prevChartTypeRef.current = chartType;
+      prevDataKeyRef.current = dataKey;
+    } catch (error) {
+      console.error('useStockChart: Error updating chart:', error);
+    }
   }, [chartType, dataKey, isReady]);
 
   // Mise à jour du thème
