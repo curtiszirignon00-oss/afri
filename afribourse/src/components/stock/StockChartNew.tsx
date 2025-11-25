@@ -48,6 +48,7 @@ export default function StockChartNew({
     chartType: selectedChartType,
     theme,
     data, // Passer data directement
+    indicators: activeIndicators, // Passer les indicateurs actifs
   });
 
   // Gestion du plein écran
