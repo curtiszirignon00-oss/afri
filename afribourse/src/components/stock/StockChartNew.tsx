@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
+import { useState, useMemo, useRef } from 'react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
 
@@ -39,12 +39,41 @@ export default function StockChartNew({
 }: StockChartProps) {
   const [selectedInterval, setSelectedInterval] = useState<TimeInterval>(currentInterval);
   const [selectedChartType, setSelectedChartType] = useState<ChartType>('candlestick');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showIndicators, setShowIndicators] = useState(false);
+  const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { chartContainerRef, isReady } = useStockChart({
     chartType: selectedChartType,
     theme,
     data, // Passer data directement
   });
+
+  // Gestion du plein écran
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+
+    if (!isFullscreen) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // Toggle indicateur
+  const toggleIndicator = (indicator: string) => {
+    setActiveIndicators(prev =>
+      prev.includes(indicator)
+        ? prev.filter(i => i !== indicator)
+        : [...prev, indicator]
+    );
+  };
 
   // Calculer la variation sur la période
   const periodChange = useMemo((): PriceChange => {
@@ -118,10 +147,10 @@ export default function StockChartNew({
   }
 
   return (
-    <div className={`${containerClasses} rounded-xl shadow-sm border p-4 md:p-6`}>
+    <div ref={containerRef} className={`${containerClasses} rounded-xl shadow-sm border p-4 md:p-6 ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
       {/* Header avec sélecteurs */}
       <div className="flex flex-col space-y-4 mb-6">
-        {/* Titre et variation */}
+        {/* Titre et variation + Boutons d'action */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h3 className={`text-xl md:text-2xl font-bold ${textClasses} mb-1`}>
@@ -149,21 +178,45 @@ export default function StockChartNew({
             )}
           </div>
 
-          {/* Sélecteur d'intervalle */}
-          <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-            {TIME_INTERVALS.map((interval) => (
-              <button
-                key={interval.value}
-                onClick={() => handleIntervalChange(interval.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  selectedInterval === interval.value
-                    ? `${buttonActiveBgClasses} shadow-sm`
-                    : `${mutedTextClasses} ${buttonHoverBgClasses}`
-                }`}
-              >
-                {interval.label}
-              </button>
-            ))}
+          {/* Sélecteur d'intervalle + Boutons d'action */}
+          <div className="flex items-center gap-2">
+            <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
+              {TIME_INTERVALS.map((interval) => (
+                <button
+                  key={interval.value}
+                  onClick={() => handleIntervalChange(interval.value)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    selectedInterval === interval.value
+                      ? `${buttonActiveBgClasses} shadow-sm`
+                      : `${mutedTextClasses} ${buttonHoverBgClasses}`
+                  }`}
+                >
+                  {interval.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Bouton Indicateurs */}
+            <button
+              onClick={() => setShowIndicators(!showIndicators)}
+              className={`p-2 rounded-lg transition-all ${
+                showIndicators
+                  ? 'bg-blue-100 text-blue-600'
+                  : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses}`
+              }`}
+              title="Indicateurs techniques"
+            >
+              <Indicator className="w-4 h-4" />
+            </button>
+
+            {/* Bouton Plein écran */}
+            <button
+              onClick={toggleFullscreen}
+              className={`p-2 ${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} rounded-lg transition-all`}
+              title={isFullscreen ? 'Quitter le plein écran' : 'Plein écran'}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 
@@ -188,6 +241,44 @@ export default function StockChartNew({
             ))}
           </div>
         </div>
+
+        {/* Menu Indicateurs techniques */}
+        {showIndicators && (
+          <div className={`${containerClasses} border rounded-lg p-4 space-y-2`}>
+            <h4 className={`text-sm font-semibold ${textClasses} mb-3`}>Indicateurs Techniques</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                { id: 'ma20', label: 'MA 20', description: 'Moyenne mobile 20 périodes' },
+                { id: 'ma50', label: 'MA 50', description: 'Moyenne mobile 50 périodes' },
+                { id: 'ma200', label: 'MA 200', description: 'Moyenne mobile 200 périodes' },
+                { id: 'ema12', label: 'EMA 12', description: 'Moyenne mobile exponentielle 12' },
+                { id: 'bb', label: 'Bollinger', description: 'Bandes de Bollinger' },
+                { id: 'volume', label: 'Volume', description: 'Afficher le volume' },
+              ].map((indicator) => (
+                <button
+                  key={indicator.id}
+                  onClick={() => toggleIndicator(indicator.id)}
+                  className={`px-3 py-2 text-xs font-medium rounded-md transition-all text-left ${
+                    activeIndicators.includes(indicator.id)
+                      ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                      : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
+                  }`}
+                  title={indicator.description}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{indicator.label}</span>
+                    {activeIndicators.includes(indicator.id) && (
+                      <span className="text-blue-600">✓</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className={`text-xs ${mutedTextClasses} mt-2`}>
+              💡 Cliquez pour activer/désactiver les indicateurs
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Graphique */}
@@ -196,7 +287,11 @@ export default function StockChartNew({
           <div
             ref={chartContainerRef}
             className="w-full relative"
-            style={{ height: '500px', minHeight: '500px', backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff' }}
+            style={{
+              height: isFullscreen ? 'calc(100vh - 180px)' : '500px',
+              minHeight: isFullscreen ? 'calc(100vh - 180px)' : '500px',
+              backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff'
+            }}
           />
           {!isReady && (
             <div className="absolute inset-0 flex items-center justify-center">
