@@ -276,6 +276,12 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       return;
     }
 
+    // Ignorer les données vides - garder le graphique précédent
+    if (data.length === 0) {
+      console.log('useStockChart: Skipping - empty data, keeping previous chart');
+      return;
+    }
+
     // Ne rien faire si ni le type ni les données n'ont changé
     const chartTypeChanged = prevChartTypeRef.current !== chartType;
     const dataChanged = prevDataKeyRef.current !== dataKey;
