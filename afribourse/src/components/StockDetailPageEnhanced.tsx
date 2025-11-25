@@ -333,6 +333,29 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
                   data={lightweightData}
                   isLoading={historyLoading}
                   theme="light"
+                  onIntervalChange={(interval) => {
+                    // Mapper les intervalles TimeInterval vers Period
+                    const periodMap: Record<string, Period> = {
+                      '1D': '1D',
+                      '5D': '5D',
+                      '1M': '1M',
+                      '3M': '3M',
+                      '6M': '6M',
+                      '1Y': '1Y',
+                      'ALL': 'ALL'
+                    };
+                    setSelectedPeriod(periodMap[interval] || '1Y');
+                  }}
+                  currentInterval={
+                    // Mapper Period vers TimeInterval
+                    selectedPeriod === '1D' ? '1D' :
+                    selectedPeriod === '5D' ? '5D' :
+                    selectedPeriod === '1M' ? '1M' :
+                    selectedPeriod === '3M' ? '3M' :
+                    selectedPeriod === '6M' ? '6M' :
+                    selectedPeriod === '1Y' ? '1Y' :
+                    'ALL'
+                  }
                 />
               ) : (
                 <StockChart
