@@ -223,14 +223,23 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
-  // Préparer les données pour lightweight-charts (mémoïsées)
-  const lightweightData = React.useMemo(() => {
+  // Garder les dernières données valides pour éviter le graphique blanc
+  const [lightweightData, setLightweightData] = React.useState<any[]>([]);
+
+  // Mettre à jour les données seulement quand on a des données valides
+  React.useEffect(() => {
     console.log('StockDetailPageEnhanced: Computing lightweightData', {
       hasHistoryData: !!historyData?.data,
       dataLength: historyData?.data?.length || 0
     });
-    if (!historyData?.data) return [];
-    return convertToLightweightData(historyData.data);
+
+    if (historyData?.data && historyData.data.length > 0) {
+      const converted = convertToLightweightData(historyData.data);
+      console.log('StockDetailPageEnhanced: Setting new data:', converted.length);
+      setLightweightData(converted);
+    } else {
+      console.log('StockDetailPageEnhanced: No data, keeping previous');
+    }
   }, [historyData?.data]);
 
   return (
