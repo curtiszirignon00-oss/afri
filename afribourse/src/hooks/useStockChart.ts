@@ -43,6 +43,11 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  // Utiliser une clé pour détecter les vrais changements de données
+  const dataKey = `${data.length}-${data[0]?.time}-${data[data.length - 1]?.time}`;
+  const prevDataKeyRef = useRef<string>('');
+  const prevChartTypeRef = useRef<ChartType>(chartType);
+
   // Convertir les données OHLCV en format approprié selon le type de graphique
   const convertData = () => {
     if (!data || data.length === 0) return [];
@@ -257,11 +262,18 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
   // Mise à jour du type de graphique ET des données
   useEffect(() => {
     if (!isReady || !chartRef.current) {
-      console.log('useStockChart: Chart not ready for series update', { isReady, hasChart: !!chartRef.current });
       return;
     }
 
-    console.log('useStockChart: Updating chart, type:', chartType, 'data length:', data.length);
+    // Ne rien faire si ni le type ni les données n'ont changé
+    const chartTypeChanged = prevChartTypeRef.current !== chartType;
+    const dataChanged = prevDataKeyRef.current !== dataKey;
+
+    if (!chartTypeChanged && !dataChanged) {
+      return;
+    }
+
+    console.log('useStockChart: Updating chart', { chartTypeChanged, dataChanged, type: chartType, dataLength: data.length });
 
     // Supprimer l'ancienne série si elle existe
     if (seriesRef.current) {
@@ -323,15 +335,16 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       console.log('useStockChart: Setting data', data.length, 'points');
       const chartData = convertData();
       const volumeData = convertVolumeData();
-      console.log('useStockChart: Chart data sample:', chartData[0]);
       mainSeries.setData(chartData as any);
       volumeSeries.setData(volumeData);
       chartRef.current.timeScale().fitContent();
       console.log('useStockChart: Data set successfully');
-    } else {
-      console.log('useStockChart: No data to display');
     }
-  }, [chartType, isReady, data]);
+
+    // Mettre à jour les références pour le prochain rendu
+    prevChartTypeRef.current = chartType;
+    prevDataKeyRef.current = dataKey;
+  }, [chartType, dataKey, isReady]);
 
   // Mise à jour du thème
   useEffect(() => {
