@@ -46,17 +46,6 @@ export default function StockChartNew({
     data,
   });
 
-  // Debug logs
-  console.log('StockChartNew render:', {
-    symbol,
-    dataLength: data.length,
-    isReady,
-    isLoading,
-    selectedChartType,
-    firstDataPoint: data[0],
-    lastDataPoint: data[data.length - 1]
-  });
-
   // Calculer la variation sur la période
   const periodChange = useMemo((): PriceChange => {
     if (!data || data.length < 2) {
