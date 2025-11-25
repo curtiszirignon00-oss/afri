@@ -13,6 +13,7 @@ export interface APIStockData {
 }
 
 export interface LightweightChartData {
+  date: string; // date ISO string
   time: number; // timestamp en secondes
   open: number;
   high: number;
@@ -45,6 +46,7 @@ export function convertToLightweightData(apiData: APIStockData[]): LightweightCh
 
   const result = apiData
     .map(item => ({
+      date: item.date,
       time: dateToTimestamp(item.date),
       open: item.open,
       high: item.high,
