@@ -44,13 +44,9 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
-  const [lightweightPeriod, setLightweightPeriod] = useState<Period>('1Y'); // Période séparée pour TradingView
-  const [useLightweight, setUseLightweight] = useState(false); // Switcher entre les graphiques
 
   // Hooks React Query pour charger les données
-  // Utiliser la période appropriée selon le graphique actif
-  const activePeriod = useLightweight ? lightweightPeriod : selectedPeriod;
-  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, activePeriod);
+  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, selectedPeriod);
   const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock.symbol);
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock.symbol);
   const { data: newsData, isLoading: newsLoading } = useStockNews(stock.symbol, 10);
@@ -311,64 +307,37 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne principale */}
           <div className="lg:col-span-2">
-            {/* Graphique (toujours visible) */}
+            {/* Graphique TradingView */}
             <div className="mb-8">
-              {/* Bouton pour switcher */}
-              <div className="mb-4 flex justify-end">
-                <button
-                  onClick={() => {
-                    console.log('StockDetailPageEnhanced: Toggling chart type', {
-                      from: useLightweight ? 'lightweight' : 'recharts',
-                      to: !useLightweight ? 'lightweight' : 'recharts',
-                      dataAvailable: lightweightData.length > 0
-                    });
-                    setUseLightweight(!useLightweight);
-                  }}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                >
-                  {useLightweight ? '📊 Graphique Simple' : '🚀 Graphique TradingView'}
-                </button>
-              </div>
-
-              {useLightweight ? (
-                <StockChartNew
-                  symbol={stock.symbol}
-                  data={lightweightData}
-                  isLoading={historyLoading}
-                  theme="light"
-                  onIntervalChange={(interval) => {
-                    // Mapper les intervalles TimeInterval vers Period
-                    const periodMap: Record<string, Period> = {
-                      '1D': '1D',
-                      '5D': '5D',
-                      '1M': '1M',
-                      '3M': '3M',
-                      '6M': '6M',
-                      '1Y': '1Y',
-                      'ALL': 'ALL'
-                    };
-                    setLightweightPeriod(periodMap[interval] || '1Y'); // Utiliser lightweightPeriod
-                  }}
-                  currentInterval={
-                    // Mapper Period vers TimeInterval
-                    lightweightPeriod === '1D' ? '1D' :
-                    lightweightPeriod === '5D' ? '5D' :
-                    lightweightPeriod === '1M' ? '1M' :
-                    lightweightPeriod === '3M' ? '3M' :
-                    lightweightPeriod === '6M' ? '6M' :
-                    lightweightPeriod === '1Y' ? '1Y' :
-                    'ALL'
-                  }
-                />
-              ) : (
-                <StockChart
-                  symbol={stock.symbol}
-                  data={historyData?.data || []}
-                  onPeriodChange={setSelectedPeriod}
-                  currentPeriod={selectedPeriod}
-                  isLoading={historyLoading}
-                />
-              )}
+              <StockChartNew
+                symbol={stock.symbol}
+                data={lightweightData}
+                isLoading={historyLoading}
+                theme="light"
+                onIntervalChange={(interval) => {
+                  // Mapper les intervalles TimeInterval vers Period
+                  const periodMap: Record<string, Period> = {
+                    '1D': '1D',
+                    '5D': '5D',
+                    '1M': '1M',
+                    '3M': '3M',
+                    '6M': '6M',
+                    '1Y': '1Y',
+                    'ALL': 'ALL'
+                  };
+                  setSelectedPeriod(periodMap[interval] || '1Y');
+                }}
+                currentInterval={
+                  // Mapper Period vers TimeInterval
+                  selectedPeriod === '1D' ? '1D' :
+                  selectedPeriod === '5D' ? '5D' :
+                  selectedPeriod === '1M' ? '1M' :
+                  selectedPeriod === '3M' ? '3M' :
+                  selectedPeriod === '6M' ? '6M' :
+                  selectedPeriod === '1Y' ? '1Y' :
+                  'ALL'
+                }
+              />
             </div>
 
             {/* Indicateurs (toujours visibles) */}
