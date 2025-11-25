@@ -53,7 +53,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.10.0",
+    "@types/node": "^24.10.1",
     "@types/nodemailer": "^7.0.3",
     "@types/sanitize-html": "^2.16.0",
     "@types/xlsx": "^0.0.35",
