@@ -5,8 +5,8 @@ import { API_BASE_URL } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
 
 // Import des nouveaux composants
+import StockChartNew from './stock/StockChartNew';
 import {
-  StockChart,
   StockTabs,
   StockOverview,
   StockNews,
@@ -14,6 +14,8 @@ import {
   StockAnalysis,
   TabId
 } from './stock';
+import { convertToOHLCVData } from '../utils/chartDataAdapter';
+import type { TimeInterval } from '../types/chart.types';
 
 // Import des hooks
 import {
@@ -42,6 +44,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
+  const [selectedInterval, setSelectedInterval] = useState<TimeInterval>('1Y');
 
   // Hooks React Query pour charger les données
   const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, selectedPeriod);
@@ -221,6 +224,29 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
+  // Convertir TimeInterval en Period pour l'API
+  const mapIntervalToPeriod = (interval: TimeInterval): Period => {
+    const mapping: Record<TimeInterval, Period> = {
+      '1D': '1M',
+      '5D': '1M',
+      '1M': '1M',
+      '3M': '3M',
+      '6M': '6M',
+      '1Y': '1Y',
+      'ALL': 'ALL',
+    };
+    return mapping[interval];
+  };
+
+  // Handler pour le changement d'intervalle
+  const handleIntervalChange = (interval: TimeInterval) => {
+    setSelectedInterval(interval);
+    const newPeriod = mapIntervalToPeriod(interval);
+    if (newPeriod !== selectedPeriod) {
+      setSelectedPeriod(newPeriod);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* En-tête */}
@@ -297,19 +323,20 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
           <div className="lg:col-span-2">
             {/* Graphique (toujours visible) */}
             <div className="mb-8">
-              <StockChart
+              <StockChartNew
                 symbol={stock.symbol}
-                data={historyData?.data.map(d => ({
+                data={convertToOHLCVData(historyData?.data.map(d => ({
                   date: d.date,
                   open: d.open,
                   high: d.high,
                   low: d.low,
                   close: d.close,
                   volume: d.volume
-                })) || []}
-                onPeriodChange={setSelectedPeriod}
-                currentPeriod={selectedPeriod}
+                })) || [])}
+                onIntervalChange={handleIntervalChange}
+                currentInterval={selectedInterval}
                 isLoading={historyLoading}
+                theme="light"
               />
             </div>
 

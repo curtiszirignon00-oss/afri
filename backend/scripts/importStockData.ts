@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
 import { existsSync, readFileSync } from 'fs';
@@ -1211,7 +1212,9 @@ async function main() {
 }
 
 // Run if called directly
-if (require.main === module) {
+// Check if this file is being run directly (works with both CommonJS and ES modules)
+const isMainModule = typeof require !== 'undefined' && require.main === module;
+if (isMainModule) {
   main()
     .then(() => {
       console.log('✅ All imports completed');
