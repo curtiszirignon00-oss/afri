@@ -44,10 +44,13 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
+  const [lightweightPeriod, setLightweightPeriod] = useState<Period>('1Y'); // Période séparée pour TradingView
   const [useLightweight, setUseLightweight] = useState(false); // Switcher entre les graphiques
 
   // Hooks React Query pour charger les données
-  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, selectedPeriod);
+  // Utiliser la période appropriée selon le graphique actif
+  const activePeriod = useLightweight ? lightweightPeriod : selectedPeriod;
+  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, activePeriod);
   const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock.symbol);
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock.symbol);
   const { data: newsData, isLoading: newsLoading } = useStockNews(stock.symbol, 10);
@@ -344,16 +347,16 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
                       '1Y': '1Y',
                       'ALL': 'ALL'
                     };
-                    setSelectedPeriod(periodMap[interval] || '1Y');
+                    setLightweightPeriod(periodMap[interval] || '1Y'); // Utiliser lightweightPeriod
                   }}
                   currentInterval={
                     // Mapper Period vers TimeInterval
-                    selectedPeriod === '1D' ? '1D' :
-                    selectedPeriod === '5D' ? '5D' :
-                    selectedPeriod === '1M' ? '1M' :
-                    selectedPeriod === '3M' ? '3M' :
-                    selectedPeriod === '6M' ? '6M' :
-                    selectedPeriod === '1Y' ? '1Y' :
+                    lightweightPeriod === '1D' ? '1D' :
+                    lightweightPeriod === '5D' ? '5D' :
+                    lightweightPeriod === '1M' ? '1M' :
+                    lightweightPeriod === '3M' ? '3M' :
+                    lightweightPeriod === '6M' ? '6M' :
+                    lightweightPeriod === '1Y' ? '1Y' :
                     'ALL'
                   }
                 />
