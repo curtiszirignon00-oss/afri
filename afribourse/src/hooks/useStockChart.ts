@@ -19,11 +19,13 @@ import type {
   HistogramData,
   ChartColors,
 } from '../types/chart.types';
+import { calculateSMA, calculateEMA, calculateBollingerBands } from '../utils/indicators';
 
 interface UseStockChartProps {
   chartType: ChartType;
   theme: 'light' | 'dark';
   data: OHLCVData[];
+  indicators?: string[]; // Liste des indicateurs actifs
 }
 
 // Couleurs AfriBourse (constante hors du hook)
@@ -36,11 +38,21 @@ const CHART_COLORS: ChartColors = {
   borderDownColor: '#ef4444',
 };
 
-export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) => {
+export const useStockChart = ({ chartType, theme, data, indicators }: UseStockChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<any> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
+
+  // Refs pour les indicateurs techniques
+  const ma20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const ma50SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const ma200SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const ema12SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const bbUpperSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const bbMiddleSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const bbLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
   const [isReady, setIsReady] = useState(false);
 
   // Utiliser une clé pour détecter les vrais changements de données
@@ -122,14 +134,14 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       crosshair: {
         mode: CrosshairMode.Normal,
         vertLine: {
-          width: 1,
+          width: 1 as const,
           color: isDark ? '#6b7280' : '#94a3b8',
-          style: 3,
+          style: 3 as const,
         },
         horzLine: {
-          width: 1,
+          width: 1 as const,
           color: isDark ? '#6b7280' : '#94a3b8',
-          style: 3,
+          style: 3 as const,
         },
       },
       rightPriceScale: {
@@ -390,6 +402,156 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       seriesRef.current.applyOptions(getSeriesOptions());
     }
   }, [theme, isReady]);
+
+  // Gestion des indicateurs techniques
+  useEffect(() => {
+    if (!isReady || !chartRef.current || !data || data.length === 0) {
+      console.log('useStockChart: Skipping indicators - chart not ready or no data');
+      return;
+    }
+
+    console.log('useStockChart: Managing indicators', indicators);
+    const chartApi = chartRef.current as any;
+    const chartData = data.map(d => ({ time: d.time, close: d.close }));
+
+    // MA20 - Moyenne Mobile 20 périodes
+    if (indicators?.includes('ma20')) {
+      if (!ma20SeriesRef.current) {
+        console.log('useStockChart: Adding MA20 indicator');
+        const ma20Series = chartApi.addLineSeries({
+          color: '#2962FF',
+          lineWidth: 2,
+          title: 'MA 20',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const ma20Data = calculateSMA(chartData, 20);
+        ma20Series.setData(ma20Data);
+        ma20SeriesRef.current = ma20Series;
+      }
+    } else if (ma20SeriesRef.current) {
+      console.log('useStockChart: Removing MA20 indicator');
+      chartRef.current.removeSeries(ma20SeriesRef.current);
+      ma20SeriesRef.current = null;
+    }
+
+    // MA50 - Moyenne Mobile 50 périodes
+    if (indicators?.includes('ma50')) {
+      if (!ma50SeriesRef.current) {
+        console.log('useStockChart: Adding MA50 indicator');
+        const ma50Series = chartApi.addLineSeries({
+          color: '#F23645',
+          lineWidth: 2,
+          title: 'MA 50',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const ma50Data = calculateSMA(chartData, 50);
+        ma50Series.setData(ma50Data);
+        ma50SeriesRef.current = ma50Series;
+      }
+    } else if (ma50SeriesRef.current) {
+      console.log('useStockChart: Removing MA50 indicator');
+      chartRef.current.removeSeries(ma50SeriesRef.current);
+      ma50SeriesRef.current = null;
+    }
+
+    // MA200 - Moyenne Mobile 200 périodes
+    if (indicators?.includes('ma200')) {
+      if (!ma200SeriesRef.current) {
+        console.log('useStockChart: Adding MA200 indicator');
+        const ma200Series = chartApi.addLineSeries({
+          color: '#9C27B0',
+          lineWidth: 2,
+          title: 'MA 200',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const ma200Data = calculateSMA(chartData, 200);
+        ma200Series.setData(ma200Data);
+        ma200SeriesRef.current = ma200Series;
+      }
+    } else if (ma200SeriesRef.current) {
+      console.log('useStockChart: Removing MA200 indicator');
+      chartRef.current.removeSeries(ma200SeriesRef.current);
+      ma200SeriesRef.current = null;
+    }
+
+    // EMA12 - Moyenne Mobile Exponentielle 12 périodes
+    if (indicators?.includes('ema12')) {
+      if (!ema12SeriesRef.current) {
+        console.log('useStockChart: Adding EMA12 indicator');
+        const ema12Series = chartApi.addLineSeries({
+          color: '#FF6D00',
+          lineWidth: 2,
+          title: 'EMA 12',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        const ema12Data = calculateEMA(chartData, 12);
+        ema12Series.setData(ema12Data);
+        ema12SeriesRef.current = ema12Series;
+      }
+    } else if (ema12SeriesRef.current) {
+      console.log('useStockChart: Removing EMA12 indicator');
+      chartRef.current.removeSeries(ema12SeriesRef.current);
+      ema12SeriesRef.current = null;
+    }
+
+    // Bollinger Bands - 3 lignes (supérieure, moyenne, inférieure)
+    if (indicators?.includes('bb')) {
+      if (!bbUpperSeriesRef.current) {
+        console.log('useStockChart: Adding Bollinger Bands');
+        const bbData = calculateBollingerBands(chartData, 20, 2);
+
+        const bbUpperSeries = chartApi.addLineSeries({
+          color: '#787B86',
+          lineWidth: 1,
+          lineStyle: 2, // dashed
+          title: 'BB Upper',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        bbUpperSeries.setData(bbData.upper);
+        bbUpperSeriesRef.current = bbUpperSeries;
+
+        const bbMiddleSeries = chartApi.addLineSeries({
+          color: '#787B86',
+          lineWidth: 1,
+          title: 'BB Middle',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        bbMiddleSeries.setData(bbData.middle);
+        bbMiddleSeriesRef.current = bbMiddleSeries;
+
+        const bbLowerSeries = chartApi.addLineSeries({
+          color: '#787B86',
+          lineWidth: 1,
+          lineStyle: 2, // dashed
+          title: 'BB Lower',
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+        bbLowerSeries.setData(bbData.lower);
+        bbLowerSeriesRef.current = bbLowerSeries;
+      }
+    } else {
+      if (bbUpperSeriesRef.current) {
+        console.log('useStockChart: Removing Bollinger Bands');
+        chartRef.current.removeSeries(bbUpperSeriesRef.current);
+        bbUpperSeriesRef.current = null;
+      }
+      if (bbMiddleSeriesRef.current) {
+        chartRef.current.removeSeries(bbMiddleSeriesRef.current);
+        bbMiddleSeriesRef.current = null;
+      }
+      if (bbLowerSeriesRef.current) {
+        chartRef.current.removeSeries(bbLowerSeriesRef.current);
+        bbLowerSeriesRef.current = null;
+      }
+    }
+  }, [indicators, isReady, data.length]);
 
   return {
     chartContainerRef,
