@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
 
 // Import des nouveaux composants
-import StockChartNew from './stock/StockChartNew';
 import {
+  StockChart,
   StockTabs,
   StockOverview,
   StockNews,
@@ -14,8 +14,8 @@ import {
   StockAnalysis,
   TabId
 } from './stock';
-import { convertToOHLCVData } from '../utils/chartDataAdapter';
-import type { TimeInterval } from '../types/chart.types';
+import LightweightChart from './stock/LightweightChart';
+import { convertToLightweightData } from '../utils/simpleLightweightAdapter';
 
 // Import des hooks
 import {
@@ -44,7 +44,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
-  const [selectedInterval, setSelectedInterval] = useState<TimeInterval>('1Y');
+  const [useLightweight, setUseLightweight] = useState(false); // Switcher entre les graphiques
 
   // Hooks React Query pour charger les données
   const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, selectedPeriod);
@@ -224,28 +224,15 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
-  // Convertir TimeInterval en Period pour l'API
-  const mapIntervalToPeriod = (interval: TimeInterval): Period => {
-    const mapping: Record<TimeInterval, Period> = {
-      '1D': '1M',
-      '5D': '1M',
-      '1M': '1M',
-      '3M': '3M',
-      '6M': '6M',
-      '1Y': '1Y',
-      'ALL': 'ALL',
-    };
-    return mapping[interval];
-  };
-
-  // Handler pour le changement d'intervalle
-  const handleIntervalChange = (interval: TimeInterval) => {
-    setSelectedInterval(interval);
-    const newPeriod = mapIntervalToPeriod(interval);
-    if (newPeriod !== selectedPeriod) {
-      setSelectedPeriod(newPeriod);
-    }
-  };
+  // Préparer les données pour lightweight-charts (mémoïsées)
+  const lightweightData = React.useMemo(() => {
+    console.log('StockDetailPageEnhanced: Computing lightweightData', {
+      hasHistoryData: !!historyData?.data,
+      dataLength: historyData?.data?.length || 0
+    });
+    if (!historyData?.data) return [];
+    return convertToLightweightData(historyData.data);
+  }, [historyData?.data]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -323,21 +310,37 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
           <div className="lg:col-span-2">
             {/* Graphique (toujours visible) */}
             <div className="mb-8">
-              <StockChartNew
-                symbol={stock.symbol}
-                data={convertToOHLCVData(historyData?.data.map(d => ({
-                  date: d.date,
-                  open: d.open,
-                  high: d.high,
-                  low: d.low,
-                  close: d.close,
-                  volume: d.volume
-                })) || [])}
-                onIntervalChange={handleIntervalChange}
-                currentInterval={selectedInterval}
-                isLoading={historyLoading}
-                theme="light"
-              />
+              {/* Bouton pour switcher */}
+              <div className="mb-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    console.log('StockDetailPageEnhanced: Toggling chart type', {
+                      from: useLightweight ? 'lightweight' : 'recharts',
+                      to: !useLightweight ? 'lightweight' : 'recharts',
+                      dataAvailable: lightweightData.length > 0
+                    });
+                    setUseLightweight(!useLightweight);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                >
+                  {useLightweight ? '📊 Graphique Simple' : '🚀 Graphique TradingView'}
+                </button>
+              </div>
+
+              {useLightweight ? (
+                <LightweightChart
+                  symbol={stock.symbol}
+                  data={lightweightData}
+                />
+              ) : (
+                <StockChart
+                  symbol={stock.symbol}
+                  data={historyData?.data || []}
+                  onPeriodChange={setSelectedPeriod}
+                  currentPeriod={selectedPeriod}
+                  isLoading={historyLoading}
+                />
+              )}
             </div>
 
             {/* Indicateurs (toujours visibles) */}
