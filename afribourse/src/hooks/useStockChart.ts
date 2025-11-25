@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   createChart,
   IChartApi,
@@ -44,7 +44,7 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
   const [isReady, setIsReady] = useState(false);
 
   // Convertir les données OHLCV en format approprié selon le type de graphique
-  const convertData = useCallback(() => {
+  const convertData = () => {
     if (!data || data.length === 0) return [];
 
     switch (chartType) {
@@ -77,10 +77,10 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       default:
         return [];
     }
-  }, [data, chartType]);
+  };
 
   // Convertir les données de volume
-  const convertVolumeData = useCallback((): HistogramData[] => {
+  const convertVolumeData = (): HistogramData[] => {
     if (!data || data.length === 0) return [];
 
     return data.map((d, index) => ({
@@ -91,7 +91,7 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
           ? CHART_COLORS.upColor + '40' // 40 = opacité 25%
           : CHART_COLORS.downColor + '40',
     }));
-  }, [data]);
+  };
 
   // Configuration du graphique
   const getChartOptions = () => {
@@ -254,14 +254,14 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
     };
   }, []); // Ne se réinitialise jamais
 
-  // Mise à jour du type de graphique
+  // Mise à jour du type de graphique ET des données
   useEffect(() => {
     if (!isReady || !chartRef.current) {
       console.log('useStockChart: Chart not ready for series update', { isReady, hasChart: !!chartRef.current });
       return;
     }
 
-    console.log('useStockChart: Updating chart type to', chartType);
+    console.log('useStockChart: Updating chart, type:', chartType, 'data length:', data.length);
 
     // Supprimer l'ancienne série si elle existe
     if (seriesRef.current) {
@@ -318,12 +318,12 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
 
     volumeSeriesRef.current = volumeSeries;
 
-    // Réappliquer les données
+    // Appliquer les données
     if (data.length > 0) {
-      console.log('useStockChart: Setting data after chart type change', data.length, 'points');
+      console.log('useStockChart: Setting data', data.length, 'points');
       const chartData = convertData();
       const volumeData = convertVolumeData();
-      console.log('useStockChart: Chart data sample:', chartData[0], 'volume sample:', volumeData[0]);
+      console.log('useStockChart: Chart data sample:', chartData[0]);
       mainSeries.setData(chartData as any);
       volumeSeries.setData(volumeData);
       chartRef.current.timeScale().fitContent();
@@ -331,42 +331,7 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
     } else {
       console.log('useStockChart: No data to display');
     }
-  }, [chartType, isReady, data, convertData, convertVolumeData]);
-
-  // Mise à jour des données
-  useEffect(() => {
-    if (!isReady || !seriesRef.current || !volumeSeriesRef.current) {
-      console.log('useStockChart: Data update skipped - not ready', { isReady, hasSeries: !!seriesRef.current, hasVolume: !!volumeSeriesRef.current });
-      return;
-    }
-
-    if (data.length === 0) {
-      console.log('useStockChart: Clearing data - empty dataset');
-      // Effacer les données si le tableau est vide
-      seriesRef.current.setData([]);
-      volumeSeriesRef.current.setData([]);
-      return;
-    }
-
-    try {
-      console.log('useStockChart: Updating data', data.length, 'points');
-      const chartData = convertData();
-      const volumeData = convertVolumeData();
-
-      console.log('useStockChart: Data update - chart data:', chartData.length, 'volume data:', volumeData.length);
-
-      seriesRef.current.setData(chartData as any);
-      volumeSeriesRef.current.setData(volumeData);
-
-      // Ajuster la vue pour afficher toutes les données
-      if (chartRef.current) {
-        chartRef.current.timeScale().fitContent();
-      }
-      console.log('useStockChart: Data update complete');
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour des données du graphique:', error);
-    }
-  }, [data, isReady, convertData, convertVolumeData]);
+  }, [chartType, isReady, data]);
 
   // Mise à jour du thème
   useEffect(() => {
