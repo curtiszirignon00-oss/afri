@@ -223,23 +223,10 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
-  // Garder les dernières données valides pour éviter le graphique blanc
-  const [lightweightData, setLightweightData] = React.useState<any[]>([]);
-
-  // Mettre à jour les données seulement quand on a des données valides
-  React.useEffect(() => {
-    console.log('StockDetailPageEnhanced: Computing lightweightData', {
-      hasHistoryData: !!historyData?.data,
-      dataLength: historyData?.data?.length || 0
-    });
-
-    if (historyData?.data && historyData.data.length > 0) {
-      const converted = convertToLightweightData(historyData.data);
-      console.log('StockDetailPageEnhanced: Setting new data:', converted.length);
-      setLightweightData(converted);
-    } else {
-      console.log('StockDetailPageEnhanced: No data, keeping previous');
-    }
+  // Préparer les données pour lightweight-charts (mémoïsées)
+  const lightweightData = React.useMemo(() => {
+    if (!historyData?.data || historyData.data.length === 0) return [];
+    return convertToLightweightData(historyData.data);
   }, [historyData?.data]);
 
   return (
@@ -318,35 +305,43 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
           <div className="lg:col-span-2">
             {/* Graphique TradingView */}
             <div className="mb-8">
-              <StockChartNew
-                symbol={stock.symbol}
-                data={lightweightData}
-                isLoading={historyLoading}
-                theme="light"
-                onIntervalChange={(interval) => {
-                  // Mapper les intervalles TimeInterval vers Period
-                  const periodMap: Record<string, Period> = {
-                    '1D': '1D',
-                    '5D': '5D',
-                    '1M': '1M',
-                    '3M': '3M',
-                    '6M': '6M',
-                    '1Y': '1Y',
-                    'ALL': 'ALL'
-                  };
-                  setSelectedPeriod(periodMap[interval] || '1Y');
-                }}
-                currentInterval={
-                  // Mapper Period vers TimeInterval
-                  selectedPeriod === '1D' ? '1D' :
-                  selectedPeriod === '5D' ? '5D' :
-                  selectedPeriod === '1M' ? '1M' :
-                  selectedPeriod === '3M' ? '3M' :
-                  selectedPeriod === '6M' ? '6M' :
-                  selectedPeriod === '1Y' ? '1Y' :
-                  'ALL'
-                }
-              />
+              {lightweightData.length > 0 ? (
+                <StockChartNew
+                  symbol={stock.symbol}
+                  data={lightweightData}
+                  isLoading={false}
+                  theme="light"
+                  onIntervalChange={(interval) => {
+                    // Mapper les intervalles TimeInterval vers Period
+                    const periodMap: Record<string, Period> = {
+                      '1D': '1D',
+                      '5D': '5D',
+                      '1M': '1M',
+                      '3M': '3M',
+                      '6M': '6M',
+                      '1Y': '1Y',
+                      'ALL': 'ALL'
+                    };
+                    setSelectedPeriod(periodMap[interval] || '1Y');
+                  }}
+                  currentInterval={
+                    // Mapper Period vers TimeInterval
+                    selectedPeriod === '1D' ? '1D' :
+                    selectedPeriod === '5D' ? '5D' :
+                    selectedPeriod === '1M' ? '1M' :
+                    selectedPeriod === '3M' ? '3M' :
+                    selectedPeriod === '6M' ? '6M' :
+                    selectedPeriod === '1Y' ? '1Y' :
+                    'ALL'
+                  }
+                />
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex justify-center items-center h-96">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Indicateurs (toujours visibles) */}
