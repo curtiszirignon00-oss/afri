@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
-import { existsSync } from 'fs';
-import { resolve } from 'path';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 
 const prisma = new PrismaClient();
 
@@ -504,8 +504,8 @@ async function importBOABFData() {
     freefloat: 29.10, // En %
     marketCap: 161_920_000_000, // 161 920 M FCFA
     pe_ratio: 7.22, // Latest PER from 2024
-    beta: null, // Information non fournie
-    rsi: null, // Information non fournie
+    beta: undefined, // Information non fournie
+    rsi: undefined, // Information non fournie
     // Financial data from 2024 (latest)
     revenue: 57_490_000_000, // Produit Net Bancaire (PNB) 2024 - 57 490 M FCFA
     revenueGrowth: -5.09,
@@ -620,14 +620,587 @@ async function importStockData(
   console.log(`\n✅ Import completed successfully for ${ticker}!\n`);
 }
 
+// Assurez-vous que les interfaces sont définies ailleurs dans votre code
+// export interface FundamentalData { ... }
+// export declare function importHistoryFromExcel(excelPath: string, ticker: string): Promise<void>;
+// export declare function importFundamentals(data: FundamentalData): Promise<void>;
+
+async function importBICICIData() {
+  console.log('\n🚀 Starting import for BICICI (Banque Internationale pour le Commerce et l\'Industrie de la Côte d\'Ivoire)\n');
+
+  const ticker = 'BICICI';
+  // Vous devrez ajuster ce chemin d'accès à l'emplacement réel de votre fichier BICICI.xlsx
+  const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\Bicici\\BICICI.xlsx'; 
+
+  // 1. Import historical data from Excel
+  await importHistoryFromExcel(excelPath, ticker);
+
+  // 2. Import fundamental data
+  const fundamentalData: FundamentalData = {
+    ticker: 'BICICI',
+    companyName: 'BANQUE INTERNATIONALE POUR LE COMMERCE ET L\'INDUSTRIE DE CÔTE D\'IVOIRE',
+    description:
+      "La Banque internationale pour le commerce et l'industrie de la Côte d'Ivoire, abrégée en BICICI, est une filiale du groupe français BNP Paribas. Elle est une banque générale, de gros et de détail, qui offre aux entreprises et aux particuliers du secteur formel tout un ensemble de crédits à court et moyen terme. L'activité s'organise essentiellement autour de 3 pôles : banque de détail ; banque de financement et d'investissement. À fin 2017, le groupe gère 549 milliards FCFA d'encours de dépôts et 440 milliards FCFA d'encours de crédits. La commercialisation des produits et services est assurée au travers d'un réseau de 43 agences implantées en Côte d'Ivoire.",
+    phone: '(+225) 20 20 16 05',
+    fax: '(+225) 20 20 17 00',
+    address:
+      "BANQUE INTERNATIONALE POUR LE COMMERCE ET L'INDUSTRIE DE CÔTE D'IVOIRE 01 ABIDJAN",
+    ceo: 'Mamady DIAKITE', // Directeur Général
+    president: 'Ahmed CISSE', // Président du conseil d'administration
+    numberOfShares: 16_666_670,
+    freefloat: 32.51, // En %
+    marketCap: 333_333_000_000, // 333 333 M FCFA
+    pe_ratio: 12.71, // Latest PER from 2024
+    beta: undefined, // Information non fournie
+    rsi: undefined, // Information non fournie
+    // Financial data from 2024 (latest)
+    revenue: 68_063_000_000, // Produit Net Bancaire (PNB) 2024 - 68 063 M FCFA
+    revenueGrowth: 22.62,
+    netIncome: 26_226_000_000, // Résultat net (RN) 2024 - 26 226 M FCFA
+    netIncomeGrowth: 57.08,
+    bnpa: 1574.00, // BNPA 2024
+    dividend: 830.72, // Expected dividend 2024
+
+    // Shareholders data
+    shareholders: [
+      {
+        name: 'IPS-CNPS',
+        percentage: 21.54,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'BNI',
+        percentage: 21.09,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'BRANDON & MCAIN CAPITAL',
+        percentage: 19.11,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'BRVM (DIVERS PORTEURS)',
+        percentage: 12.95,
+        is_public: true, // Correspond au flottant
+      },
+      {
+        name: 'CAISSE DES DEPÔTS ET DE CONSIGNATION',
+        percentage: 12.65,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'IPS-CGRAE',
+        percentage: 12.65,
+        is_public: false, // Supposition : institutionnel
+      },
+    ],
+
+    // Annual financials data (2020-2024)
+    annualFinancials: [
+      {
+        year: 2020,
+        revenue: 45_315_000_000, // PNB
+        revenue_growth: undefined,
+        net_income: 4_672_000_000,
+        net_income_growth: undefined,
+        eps: 280.32, // BNPA
+        pe_ratio: 71.35,
+        dividend: 50.00,
+      },
+      {
+        year: 2021,
+        revenue: 44_167_000_000,
+        revenue_growth: -2.53,
+        net_income: 9_603_000_000,
+        net_income_growth: 105.54,
+        eps: 576.18,
+        pe_ratio: 34.71,
+        dividend: 518.40,
+      },
+      {
+        year: 2022,
+        revenue: 47_275_000_000,
+        revenue_growth: 7.04,
+        net_income: 12_391_000_000,
+        net_income_growth: 29.03,
+        eps: 743.46,
+        pe_ratio: 26.90,
+        dividend: 401.80,
+      },
+      {
+        year: 2023,
+        revenue: 55_508_000_000,
+        revenue_growth: 17.42,
+        net_income: 16_696_000_000,
+        net_income_growth: 34.74,
+        eps: 1002.00,
+        pe_ratio: 19.96,
+        dividend: 540.90,
+      },
+      {
+        year: 2024,
+        revenue: 68_063_000_000,
+        revenue_growth: 22.62,
+        net_income: 26_226_000_000,
+        net_income_growth: 57.08,
+        eps: 1574.00,
+        pe_ratio: 12.71,
+        dividend: 830.72,
+      },
+    ],
+  };
+
+  await importFundamentals(fundamentalData);
+
+  console.log('\n✅ Import completed successfully for BICICI!\n');
+}
+
+
+
+/**
+ * Import data for BICB (BIIC - Banque Internationale pour l'Industrie et le Commerce)
+ */
+async function importBICBData() {
+  console.log('\n🚀 Starting import for BICB (BIIC - Banque Internationale pour l\'Industrie et le Commerce)\n');
+
+  const ticker = 'BICB';
+  const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\bicb\\bicb.xlsx';
+
+  // 1. Import historical data from Excel
+  await importHistoryFromExcel(excelPath, ticker);
+
+  // 2. Import fundamental data
+  const fundamentalData: FundamentalData = {
+    ticker: 'BICB',
+    companyName: 'BIIC - Banque Internationale pour l\'Industrie et le Commerce',
+    description:
+      "La société : Issue de la fusion réussie, en 2020, entre la Banque Africaine de l'Industrie et du Commerce (BAIC) et la Banque Internationale du Bénin pour l'Économie (BIBE), la Banque Internationale pour l'Industrie et le Commerce (BIIC) s'est rapidement imposée comme l'un des acteurs majeurs du secteur bancaire au Bénin. Dotée d'un capital de 82,514 milliards de FCFA, la BIIC se distingue par sa solidité, son esprit d'innovation et sa volonté affirmée d'accompagner les ambitions de ses clients tout en contribuant activement au développement de l'économie nationale.",
+    phone: '+2290121312200',
+    fax: undefined,
+    address:
+      'Boulevard St Michel, Cotonou (Bénin), Littoral Département 01 BP 7744 Cotonou',
+    website: undefined,
+    ceo: 'Arsène M. DANSOU',
+    president: 'DAHOUN B. Dieudonné',
+    numberOfShares: 57_759_800,
+    freefloat: 33.00,
+    marketCap: 288_799_000_000,
+    pe_ratio: 9.52,
+    beta: undefined,
+    rsi: undefined,
+    revenue: 45_207_000_000,
+    revenueGrowth: 15.34,
+    netIncome: 30_341_000_000,
+    netIncomeGrowth: 11.26,
+    bnpa: 525.29,
+    dividend: 254.50,
+
+    shareholders: [
+      {
+        name: 'GRAND PUBLIC',
+        percentage: 33.00,
+        is_public: true,
+      },
+      {
+        name: 'CAISSE DES DEPOTS ET CONSIGNATIONS DU BENIN',
+        percentage: 32.00,
+        is_public: false,
+      },
+      {
+        name: 'ETAT DU BENIN',
+        percentage: 18.26,
+        is_public: false,
+      },
+      {
+        name: 'PORT AUTONOME DE COTONOU',
+        percentage: 3.40,
+        is_public: false,
+      },
+    ],
+
+    annualFinancials: [
+      {
+        year: 2021,
+        revenue: 14_898_000_000,
+        revenue_growth: undefined,
+        net_income: 5_776_000_000,
+        net_income_growth: undefined,
+        eps: 100.00,
+        pe_ratio: 50.00,
+        dividend: undefined,
+      },
+      {
+        year: 2022,
+        revenue: 24_209_000_000,
+        revenue_growth: 62.50,
+        net_income: 10_705_000_000,
+        net_income_growth: 85.34,
+        eps: 185.00,
+        pe_ratio: 27.03,
+        dividend: undefined,
+      },
+      {
+        year: 2023,
+        revenue: 39_196_000_000,
+        revenue_growth: 61.91,
+        net_income: 27_270_000_000,
+        net_income_growth: 154.74,
+        eps: 472.00,
+        pe_ratio: 10.59,
+        dividend: undefined,
+      },
+      {
+        year: 2024,
+        revenue: 45_207_000_000,
+        revenue_growth: 15.34,
+        net_income: 30_341_000_000,
+        net_income_growth: 11.26,
+        eps: 525.29,
+        pe_ratio: 9.52,
+        dividend: 254.50,
+      },
+    ],
+  };
+
+  await importFundamentals(fundamentalData);
+
+  console.log('\n✅ Import completed successfully for BICB!\n');
+}
+
+/**
+ * Parse and import all stocks from consolidated text file
+ */
+async function importAllStocksFromConsolidatedFile(filePath: string) {
+  console.log('\n🚀 Starting import from consolidated file...\n');
+  console.log(`📂 Reading file: ${filePath}\n`);
+
+  const fileContent = readFileSync(filePath, 'utf-8');
+  const lines = fileContent.split('\n');
+
+  let currentStock: any = null;
+  let lineIndex = 0;
+  let importedCount = 0;
+  let skippedCount = 0;
+
+  const parsePercentage = (str: string): number => {
+    return parseFloat(str.replace('%', '').replace(',', '.').trim());
+  };
+
+  const parseNumber = (str: string): number => {
+    return parseFloat(str.replace(/\s/g, '').replace(',', '.'));
+  };
+
+  while (lineIndex < lines.length) {
+    const line = lines[lineIndex].trim();
+
+    // Check if line is a ticker (4-5 uppercase letters at start of line)
+    if (line && /^[A-Z]{4,6}$/.test(line) && lineIndex < lines.length - 10) {
+      // Save previous stock if exists
+      if (currentStock && currentStock.ticker) {
+        try {
+          console.log(`\n📊 Processing ${currentStock.ticker}...`);
+
+          // Find Excel file
+          const excelPath = findExcelFile(currentStock.ticker);
+          if (excelPath) {
+            await importHistoryFromExcel(excelPath, currentStock.ticker);
+          } else {
+            console.log(`⚠️  No Excel file found for ${currentStock.ticker}`);
+          }
+
+          // Import fundamentals
+          await importFundamentals(currentStock);
+          importedCount++;
+        } catch (error) {
+          console.error(`❌ Error importing ${currentStock.ticker}:`, error);
+          skippedCount++;
+        }
+      }
+
+      // Start new stock
+      currentStock = {
+        ticker: line,
+        companyName: '',
+        description: '',
+        phone: undefined,
+        fax: undefined,
+        address: undefined,
+        website: undefined,
+        ceo: undefined,
+        president: undefined,
+        numberOfShares: undefined,
+        freefloat: undefined,
+        marketCap: undefined,
+        pe_ratio: undefined,
+        beta: undefined,
+        rsi: undefined,
+        revenue: undefined,
+        revenueGrowth: undefined,
+        netIncome: undefined,
+        netIncomeGrowth: undefined,
+        bnpa: undefined,
+        dividend: undefined,
+        shareholders: [],
+        annualFinancials: []
+      };
+
+      lineIndex++;
+      continue;
+    }
+
+    if (!currentStock) {
+      lineIndex++;
+      continue;
+    }
+
+    // Parse description
+    if (line.startsWith('La société :')) {
+      currentStock.description = line.replace('La société :', '').trim();
+      lineIndex++;
+      continue;
+    }
+
+    // Parse phone
+    if (line.startsWith('Téléphone :')) {
+      currentStock.phone = line.replace('Téléphone :', '').trim() || undefined;
+      lineIndex++;
+      continue;
+    }
+
+    // Parse fax
+    if (line.startsWith('Fax :')) {
+      const fax = line.replace('Fax :', '').trim();
+      currentStock.fax = fax || undefined;
+      lineIndex++;
+      continue;
+    }
+
+    // Parse address
+    if (line.startsWith('Adresse :')) {
+      currentStock.address = line.replace('Adresse :', '').trim() || undefined;
+      lineIndex++;
+      continue;
+    }
+
+    // Parse dirigeants
+    if (line.startsWith('Dirigeants :')) {
+      const dirigeants = line.replace('Dirigeants :', '').trim();
+      // Extract CEO and President
+      if (dirigeants.includes('DG :') || dirigeants.includes('Directeur Général')) {
+        const dgMatch = dirigeants.match(/(?:DG|Directeur Général)[:\s]+([^,\n]+)/i);
+        if (dgMatch) currentStock.ceo = dgMatch[1].trim();
+      }
+      if (dirigeants.includes('PCA :') || dirigeants.includes('Président')) {
+        const pcaMatch = dirigeants.match(/(?:PCA|Président(?:\sdu\sConseil\sd'Administration)?)[:\s]+([^,\n]+)/i);
+        if (pcaMatch) currentStock.president = pcaMatch[1].trim();
+      }
+      lineIndex++;
+      continue;
+    }
+
+    // Parse number of shares
+    if (line.startsWith('Nombre de titres :')) {
+      const shares = line.replace('Nombre de titres :', '').trim();
+      currentStock.numberOfShares = parseNumber(shares);
+      lineIndex++;
+      continue;
+    }
+
+    // Parse freefloat
+    if (line.startsWith('Flottant :')) {
+      const ff = line.replace('Flottant :', '').trim();
+      currentStock.freefloat = parsePercentage(ff);
+      lineIndex++;
+      continue;
+    }
+
+    // Parse market cap
+    if (line.startsWith('Valorisation de la société :')) {
+      const val = line.replace('Valorisation de la société :', '').replace('MFCFA', '').trim();
+      currentStock.marketCap = parseNumber(val) * 1_000_000;
+      lineIndex++;
+      continue;
+    }
+
+    // Parse shareholders
+    if (line === 'Principaux actionnaires') {
+      lineIndex++;
+      // Skip empty lines
+      while (lineIndex < lines.length && !lines[lineIndex].trim()) lineIndex++;
+
+      // Read shareholders until we hit financial data or another section
+      while (lineIndex < lines.length) {
+        const shLine = lines[lineIndex].trim();
+        if (!shLine || shLine.startsWith('Les chiffres') || shLine.startsWith('Volume') || /^\d{4}/.test(shLine)) {
+          break;
+        }
+
+        // Parse shareholder line (format: "NAME\tPERCENTAGE")
+        if (shLine.includes('\t') || shLine.includes('%')) {
+          const parts = shLine.split(/\t|%/);
+          if (parts.length >= 2) {
+            const name = parts[0].trim();
+            const percentage = parsePercentage(parts[1]);
+            if (name && !isNaN(percentage)) {
+              currentStock.shareholders.push({
+                name,
+                percentage,
+                is_public: name.toUpperCase().includes('PUBLIC') || name.toUpperCase().includes('BRVM')
+              });
+            }
+          }
+        }
+        lineIndex++;
+      }
+      continue;
+    }
+
+    // Parse annual financials table
+    if (line.startsWith('Les chiffres sont en millions de FCFA')) {
+      lineIndex++;
+
+      // Read years line
+      const yearsLine = lines[lineIndex]?.trim();
+      if (!yearsLine) {
+        lineIndex++;
+        continue;
+      }
+
+      const years = yearsLine.split(/\t+/).filter((y: string) => /^\d{4}$/.test(y.trim())).map((y: string) => parseInt(y.trim()));
+      lineIndex++;
+
+      // Read financial rows
+      const financialData: any = {};
+      const rowNames = [
+        'Chiffre d\'affaires', 'Produit Net Bancaire', 'Croissance CA', 'Croissance du PNB',
+        'Résultat net', 'Croissance RN', 'BNPA', 'PER', 'Dividende'
+      ];
+
+      while (lineIndex < lines.length) {
+        const rowLine = lines[lineIndex].trim();
+        if (!rowLine || rowLine.startsWith('Volume') || rowLine.startsWith('Beta') || /^[A-Z]{4,6}$/.test(rowLine)) {
+          break;
+        }
+
+        // Check if line starts with a known row name
+        const matchedRow = rowNames.find(name => rowLine.startsWith(name));
+        if (matchedRow) {
+          const values = rowLine.replace(matchedRow, '').trim().split(/\t+/);
+          financialData[matchedRow] = values;
+        }
+
+        lineIndex++;
+      }
+
+      // Convert to annualFinancials array
+      years.forEach((year: number, idx: number) => {
+        const revenue = financialData['Chiffre d\'affaires']?.[idx] || financialData['Produit Net Bancaire']?.[idx];
+        const revenueGrowth = financialData['Croissance CA']?.[idx] || financialData['Croissance du PNB']?.[idx];
+        const netIncome = financialData['Résultat net']?.[idx];
+        const netIncomeGrowth = financialData['Croissance RN']?.[idx];
+        const eps = financialData['BNPA']?.[idx];
+        const per = financialData['PER']?.[idx];
+        const dividend = financialData['Dividende']?.[idx];
+
+        if (revenue && revenue !== '-') {
+          currentStock.annualFinancials.push({
+            year,
+            revenue: parseNumber(revenue) * 1_000_000,
+            revenue_growth: revenueGrowth && revenueGrowth !== '-' ? parsePercentage(revenueGrowth) : undefined,
+            net_income: netIncome && netIncome !== '-' ? parseNumber(netIncome) * 1_000_000 : undefined,
+            net_income_growth: netIncomeGrowth && netIncomeGrowth !== '-' ? parsePercentage(netIncomeGrowth) : undefined,
+            eps: eps && eps !== '-' ? parseNumber(eps) : undefined,
+            pe_ratio: per && per !== '-' ? parseNumber(per) : undefined,
+            dividend: dividend && dividend !== '-' ? parseNumber(dividend) : undefined
+          });
+        }
+      });
+
+      // Set latest year data
+      if (currentStock.annualFinancials.length > 0) {
+        const latest = currentStock.annualFinancials[currentStock.annualFinancials.length - 1];
+        currentStock.revenue = latest.revenue;
+        currentStock.revenueGrowth = latest.revenue_growth;
+        currentStock.netIncome = latest.net_income;
+        currentStock.netIncomeGrowth = latest.net_income_growth;
+        currentStock.bnpa = latest.eps;
+        currentStock.pe_ratio = latest.pe_ratio;
+        currentStock.dividend = latest.dividend;
+      }
+
+      continue;
+    }
+
+    // Parse Beta
+    if (line.startsWith('Beta')) {
+      const beta = line.split(/\s+/)[2];
+      if (beta) currentStock.beta = parseNumber(beta);
+      lineIndex++;
+      continue;
+    }
+
+    // Parse RSI
+    if (line.startsWith('RSI')) {
+      const rsi = line.split(/\s+/)[1];
+      if (rsi) currentStock.rsi = parseNumber(rsi);
+      lineIndex++;
+      continue;
+    }
+
+    lineIndex++;
+  }
+
+  // Import last stock
+  if (currentStock && currentStock.ticker) {
+    try {
+      console.log(`\n📊 Processing ${currentStock.ticker}...`);
+
+      const excelPath = findExcelFile(currentStock.ticker);
+      if (excelPath) {
+        await importHistoryFromExcel(excelPath, currentStock.ticker);
+      } else {
+        console.log(`⚠️  No Excel file found for ${currentStock.ticker}`);
+      }
+
+      await importFundamentals(currentStock);
+      importedCount++;
+    } catch (error) {
+      console.error(`❌ Error importing ${currentStock.ticker}:`, error);
+      skippedCount++;
+    }
+  }
+
+  console.log(`\n\n✅ Import completed!`);
+  console.log(`   📈 Successfully imported: ${importedCount} stocks`);
+  console.log(`   ⚠️  Skipped: ${skippedCount} stocks\n`);
+}
+
+/**
+ * Helper function to find Excel file for a given ticker
+ */
+function findExcelFile(ticker: string): string | null {
+  const baseDir = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm';
+  const possiblePaths = [
+    join(baseDir, ticker.toLowerCase(), `${ticker.toLowerCase()}.xlsx`),
+    join(baseDir, ticker, `${ticker}.xlsx`),
+    join(baseDir, ticker.toUpperCase(), `${ticker.toUpperCase()}.xlsx`),
+  ];
+
+  for (const filePath of possiblePaths) {
+    if (existsSync(filePath)) {
+      return filePath;
+    }
+  }
+
+  return null;
+}
+
 // Main execution
 async function main() {
   try {
-    // Import ABJC data
-    await importABJCData();
-
-    // You can add more stocks here
-    // await importStockData('TICKER', 'path/to/excel.xlsx', fundamentalData);
+    // Import all stocks from consolidated file
+    const consolidatedFilePath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\ALL action.txt';
+    await importAllStocksFromConsolidatedFile(consolidatedFilePath);
 
   } catch (error) {
     console.error('❌ Error during import:', error);
@@ -651,4 +1224,4 @@ if (require.main === module) {
 }
 
 // Export functions for use in other scripts
-export { importHistoryFromExcel, importFundamentals, importStockData };
+export { importHistoryFromExcel, importFundamentals, importStockData, importBICBData };
