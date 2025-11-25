@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   createChart,
   IChartApi,
@@ -26,6 +26,16 @@ interface UseStockChartProps {
   data: OHLCVData[];
 }
 
+// Couleurs AfriBourse (constante hors du hook)
+const CHART_COLORS: ChartColors = {
+  upColor: '#10b981', // vert pour hausse
+  downColor: '#ef4444', // rouge pour baisse
+  wickUpColor: '#10b981',
+  wickDownColor: '#ef4444',
+  borderUpColor: '#10b981',
+  borderDownColor: '#ef4444',
+};
+
 export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -33,18 +43,10 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Couleurs AfriBourse
-  const colors: ChartColors = {
-    upColor: '#10b981', // vert pour hausse
-    downColor: '#ef4444', // rouge pour baisse
-    wickUpColor: '#10b981',
-    wickDownColor: '#ef4444',
-    borderUpColor: '#10b981',
-    borderDownColor: '#ef4444',
-  };
-
   // Convertir les données OHLCV en format approprié selon le type de graphique
-  const convertData = () => {
+  const convertData = useCallback(() => {
+    if (!data || data.length === 0) return [];
+
     switch (chartType) {
       case 'candlestick':
         return data.map((d): CandlestickData => ({
@@ -75,19 +77,21 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       default:
         return [];
     }
-  };
+  }, [data, chartType]);
 
   // Convertir les données de volume
-  const convertVolumeData = (): HistogramData[] => {
+  const convertVolumeData = useCallback((): HistogramData[] => {
+    if (!data || data.length === 0) return [];
+
     return data.map((d, index) => ({
       time: d.time,
       value: d.volume,
       color:
         index > 0 && d.close >= data[index - 1].close
-          ? colors.upColor + '40' // 40 = opacité 25%
-          : colors.downColor + '40',
+          ? CHART_COLORS.upColor + '40' // 40 = opacité 25%
+          : CHART_COLORS.downColor + '40',
     }));
-  };
+  }, [data]);
 
   // Configuration du graphique
   const getChartOptions = () => {
@@ -172,17 +176,17 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       case 'candlestick':
       case 'bar':
         return {
-          upColor: colors.upColor,
-          downColor: colors.downColor,
-          wickUpColor: colors.wickUpColor,
-          wickDownColor: colors.wickDownColor,
-          borderUpColor: colors.borderUpColor,
-          borderDownColor: colors.borderDownColor,
+          upColor: CHART_COLORS.upColor,
+          downColor: CHART_COLORS.downColor,
+          wickUpColor: CHART_COLORS.wickUpColor,
+          wickDownColor: CHART_COLORS.wickDownColor,
+          borderUpColor: CHART_COLORS.borderUpColor,
+          borderDownColor: CHART_COLORS.borderDownColor,
           borderVisible: true,
         } as CandlestickSeriesPartialOptions;
       case 'line':
         return {
-          color: colors.upColor,
+          color: CHART_COLORS.upColor,
           lineWidth: 2,
           crosshairMarkerVisible: true,
           crosshairMarkerRadius: 6,
@@ -191,9 +195,9 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
         } as LineSeriesPartialOptions;
       case 'area':
         return {
-          topColor: colors.upColor + '40',
-          bottomColor: colors.upColor + '00',
-          lineColor: colors.upColor,
+          topColor: CHART_COLORS.upColor + '40',
+          bottomColor: CHART_COLORS.upColor + '00',
+          lineColor: CHART_COLORS.upColor,
           lineWidth: 2,
           crosshairMarkerVisible: true,
           crosshairMarkerRadius: 6,
@@ -205,9 +209,14 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
     }
   };
 
-  // Initialisation du graphique
+  // Initialisation du graphique (uniquement à la première création)
   useEffect(() => {
-    if (!chartContainerRef.current) return;
+    if (!chartContainerRef.current) {
+      console.log('useStockChart: chartContainerRef not ready');
+      return;
+    }
+
+    console.log('useStockChart: Initializing chart');
 
     // Créer le graphique
     const chart = createChart(chartContainerRef.current, {
@@ -217,49 +226,7 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
     });
 
     chartRef.current = chart;
-
-    // Créer la série principale selon le type
-    let mainSeries: ISeriesApi<any>;
-    switch (chartType) {
-      case 'candlestick':
-        mainSeries = chart.addCandlestickSeries(
-          getSeriesOptions() as CandlestickSeriesPartialOptions
-        );
-        break;
-      case 'bar':
-        mainSeries = chart.addCandlestickSeries({
-          ...getSeriesOptions(),
-          borderVisible: false,
-        } as CandlestickSeriesPartialOptions);
-        break;
-      case 'line':
-        mainSeries = chart.addLineSeries(getSeriesOptions() as LineSeriesPartialOptions);
-        break;
-      case 'area':
-        mainSeries = chart.addAreaSeries(getSeriesOptions() as AreaSeriesPartialOptions);
-        break;
-      default:
-        mainSeries = chart.addCandlestickSeries(
-          getSeriesOptions() as CandlestickSeriesPartialOptions
-        );
-    }
-
-    seriesRef.current = mainSeries;
-
-    // Ajouter la série de volume
-    const volumeSeries = chart.addHistogramSeries({
-      color: colors.upColor + '40',
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: 'volume',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
-    } as HistogramSeriesPartialOptions);
-
-    volumeSeriesRef.current = volumeSeries;
+    console.log('useStockChart: Chart created');
 
     // Gestionnaire de redimensionnement
     const handleResize = () => {
@@ -272,6 +239,7 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
 
     window.addEventListener('resize', handleResize);
     setIsReady(true);
+    console.log('useStockChart: Chart ready');
 
     // Cleanup
     return () => {
@@ -279,25 +247,126 @@ export const useStockChart = ({ chartType, theme, data }: UseStockChartProps) =>
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
+        seriesRef.current = null;
+        volumeSeriesRef.current = null;
       }
+      setIsReady(false);
     };
-  }, [chartType, theme]);
+  }, []); // Ne se réinitialise jamais
+
+  // Mise à jour du type de graphique
+  useEffect(() => {
+    if (!isReady || !chartRef.current) {
+      console.log('useStockChart: Chart not ready for series update', { isReady, hasChart: !!chartRef.current });
+      return;
+    }
+
+    console.log('useStockChart: Updating chart type to', chartType);
+
+    // Supprimer l'ancienne série si elle existe
+    if (seriesRef.current) {
+      chartRef.current.removeSeries(seriesRef.current);
+      seriesRef.current = null;
+    }
+
+    // Supprimer l'ancienne série de volume si elle existe
+    if (volumeSeriesRef.current) {
+      chartRef.current.removeSeries(volumeSeriesRef.current);
+      volumeSeriesRef.current = null;
+    }
+
+    // Créer la nouvelle série selon le type
+    let mainSeries: ISeriesApi<any>;
+    switch (chartType) {
+      case 'candlestick':
+        mainSeries = chartRef.current.addCandlestickSeries(
+          getSeriesOptions() as CandlestickSeriesPartialOptions
+        );
+        break;
+      case 'bar':
+        mainSeries = chartRef.current.addCandlestickSeries({
+          ...getSeriesOptions(),
+          borderVisible: false,
+        } as CandlestickSeriesPartialOptions);
+        break;
+      case 'line':
+        mainSeries = chartRef.current.addLineSeries(getSeriesOptions() as LineSeriesPartialOptions);
+        break;
+      case 'area':
+        mainSeries = chartRef.current.addAreaSeries(getSeriesOptions() as AreaSeriesPartialOptions);
+        break;
+      default:
+        mainSeries = chartRef.current.addCandlestickSeries(
+          getSeriesOptions() as CandlestickSeriesPartialOptions
+        );
+    }
+
+    seriesRef.current = mainSeries;
+
+    // Recréer la série de volume
+    const volumeSeries = chartRef.current.addHistogramSeries({
+      color: CHART_COLORS.upColor + '40',
+      priceFormat: {
+        type: 'volume',
+      },
+      priceScaleId: 'volume',
+      scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+      },
+    } as HistogramSeriesPartialOptions);
+
+    volumeSeriesRef.current = volumeSeries;
+
+    // Réappliquer les données
+    if (data.length > 0) {
+      console.log('useStockChart: Setting data after chart type change', data.length, 'points');
+      const chartData = convertData();
+      const volumeData = convertVolumeData();
+      console.log('useStockChart: Chart data sample:', chartData[0], 'volume sample:', volumeData[0]);
+      mainSeries.setData(chartData as any);
+      volumeSeries.setData(volumeData);
+      chartRef.current.timeScale().fitContent();
+      console.log('useStockChart: Data set successfully');
+    } else {
+      console.log('useStockChart: No data to display');
+    }
+  }, [chartType, isReady, data, convertData, convertVolumeData]);
 
   // Mise à jour des données
   useEffect(() => {
-    if (!isReady || !seriesRef.current || !volumeSeriesRef.current || data.length === 0) return;
-
-    const chartData = convertData();
-    const volumeData = convertVolumeData();
-
-    seriesRef.current.setData(chartData as any);
-    volumeSeriesRef.current.setData(volumeData);
-
-    // Ajuster la vue pour afficher toutes les données
-    if (chartRef.current) {
-      chartRef.current.timeScale().fitContent();
+    if (!isReady || !seriesRef.current || !volumeSeriesRef.current) {
+      console.log('useStockChart: Data update skipped - not ready', { isReady, hasSeries: !!seriesRef.current, hasVolume: !!volumeSeriesRef.current });
+      return;
     }
-  }, [data, isReady, chartType]);
+
+    if (data.length === 0) {
+      console.log('useStockChart: Clearing data - empty dataset');
+      // Effacer les données si le tableau est vide
+      seriesRef.current.setData([]);
+      volumeSeriesRef.current.setData([]);
+      return;
+    }
+
+    try {
+      console.log('useStockChart: Updating data', data.length, 'points');
+      const chartData = convertData();
+      const volumeData = convertVolumeData();
+
+      console.log('useStockChart: Data update - chart data:', chartData.length, 'volume data:', volumeData.length);
+
+      seriesRef.current.setData(chartData as any);
+      volumeSeriesRef.current.setData(volumeData);
+
+      // Ajuster la vue pour afficher toutes les données
+      if (chartRef.current) {
+        chartRef.current.timeScale().fitContent();
+      }
+      console.log('useStockChart: Data update complete');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des données du graphique:', error);
+    }
+  }, [data, isReady, convertData, convertVolumeData]);
 
   // Mise à jour du thème
   useEffect(() => {

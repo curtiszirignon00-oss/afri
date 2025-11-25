@@ -46,6 +46,17 @@ export default function StockChartNew({
     data,
   });
 
+  // Debug logs
+  console.log('StockChartNew render:', {
+    symbol,
+    dataLength: data.length,
+    isReady,
+    isLoading,
+    selectedChartType,
+    firstDataPoint: data[0],
+    lastDataPoint: data[data.length - 1]
+  });
+
   // Calculer la variation sur la période
   const periodChange = useMemo((): PriceChange => {
     if (!data || data.length < 2) {
@@ -192,11 +203,18 @@ export default function StockChartNew({
 
       {/* Graphique */}
       {data.length > 0 ? (
-        <div
-          ref={chartContainerRef}
-          className="w-full h-[500px] relative"
-          style={{ minHeight: '500px' }}
-        />
+        <div>
+          <div
+            ref={chartContainerRef}
+            className="w-full relative"
+            style={{ height: '500px', minHeight: '500px', backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff' }}
+          />
+          {!isReady && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            </div>
+          )}
+        </div>
       ) : (
         <div className={`flex flex-col items-center justify-center h-96 ${mutedTextClasses}`}>
           <svg
