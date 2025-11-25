@@ -493,174 +493,298 @@ await createOrUpdateModule({
  </ul>
  </div>
 
- <hr/>
+ <div class="border-l-4 border-blue-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">🏛️ 2.1 La BRVM : Une Bourse Unique au Monde</h2>
 
- <h2>2.1 La BRVM : Une Bourse Unique au Monde</h2>
-
- <p>
- La <strong>BRVM</strong> est une bourse régionale partagée par
- <strong>8 pays de l’UEMOA</strong> utilisant la même monnaie et la même banque centrale.
+ <p class="text-lg mb-4 leading-relaxed">
+ La <strong>BRVM (Bourse Régionale des Valeurs Mobilières)</strong> est une bourse régionale partagée par
+ <strong>8 pays de l'UEMOA</strong> utilisant la même monnaie (le franc CFA) et la même banque centrale (la BCEAO).
  </p>
 
- <p><strong>Pays membres :</strong> Bénin, Burkina Faso, Côte d’Ivoire, Guinée-Bissau, Mali, Niger, Sénégal, Togo.</p>
+ <p class="text-base mb-3 leading-relaxed"><strong>Pays membres :</strong></p>
+ <p class="text-base mb-4 leading-relaxed">🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
 
- <ul>
- <li><strong>Siège de la BRVM :</strong> Abidjan</li>
- <li><strong>Siège du DC/BR :</strong> Cotonou</li>
+ <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-6">
+ <p class="text-base mb-2 leading-relaxed"><strong>🏢 Architecture géographique :</strong></p>
+ <ul class="list-disc ml-6 space-y-1">
+ <li><strong>Siège de la BRVM :</strong> Abidjan (Côte d'Ivoire) — Où se déroulent les échanges</li>
+ <li><strong>Siège du DC/BR :</strong> Cotonou (Bénin) — Où sont conservés vos titres</li>
+ </ul>
+ </div>
+
+ <p class="text-base mb-4 leading-relaxed">
+ La BRVM joue un double rôle essentiel :
+ </p>
+ <ul class="list-disc ml-6 mb-6 space-y-2">
+ <li><strong>Pour les entreprises :</strong> Elle leur permet de lever des fonds auprès du grand public, sans dépendre uniquement des banques.</li>
+ <li><strong>Pour les investisseurs :</strong> Elle offre un accès sécurisé et réglementé pour acheter ou revendre facilement des titres financiers.</li>
  </ul>
 
- <p>
- La BRVM permet aux entreprises de se financer auprès du public et aux investisseurs
- d’acheter ou de revendre facilement leurs titres.
+ <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-6 my-6">
+ <h3 class="text-xl font-bold text-amber-900 mb-3">🪶 L'analogie à retenir : Le Grand Marché Régional</h3>
+ <p class="text-base mb-3 leading-relaxed">Imaginez un grand marché couvrant 8 villes, avec une seule monnaie, un seul système de sécurité et des règles communes.</p>
+ <p class="text-base mb-2 leading-relaxed">Vous pouvez vendre vos produits dans n'importe quelle ville et acheter depuis n'importe où.</p>
+ <p class="text-base font-semibold leading-relaxed">👉 C'est exactement ce que fait la BRVM pour les entreprises et les investisseurs de l'Afrique de l'Ouest.</p>
+ </div>
+ </div>
+
+ <div class="border-l-4 border-green-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ 2.2 Les Trois Piliers Institutionnels du Marché</h2>
+ <p class="text-lg mb-4 leading-relaxed">Le marché financier régional repose sur <strong>trois institutions clés</strong> qui travaillent ensemble pour assurer la sécurité, la transparence et la stabilité :</p>
+
+ <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4 mb-6">
+ <ul class="space-y-2 text-base">
+ <li><strong>🏦 BCEAO</strong> — Assure la stabilité monétaire de la région</li>
+ <li><strong>⚖️ AMF-UMOA</strong> — Régule le marché et protège les investisseurs</li>
+ <li><strong>🔐 DC/BR</strong> — Conserve vos titres et sécurise les transactions</li>
+ </ul>
+ </div>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🏦 2.2.1 BCEAO – Le Pilier Monétaire</h3>
+ <p class="text-base mb-3 leading-relaxed">
+ La <strong>BCEAO (Banque Centrale des États de l'Afrique de l'Ouest)</strong> assure la stabilité monétaire de la région UEMOA.
  </p>
-
- <hr/>
-
- <h2>2.2 Les Trois Piliers Institutionnels du Marché</h2>
- <p>Le marché financier régional repose sur trois institutions clés :</p>
- <ul>
- <li><strong>BCEAO</strong> – stabilité monétaire</li>
- <li><strong>AMF-UMOA</strong> – régulation et protection des investisseurs</li>
- <li><strong>DC/BR</strong> – conservation et sécurisation des titres</li>
+ <p class="text-base mb-3 leading-relaxed">Elle influence fortement les marchés financiers à travers :</p>
+ <ul class="list-disc ml-6 mb-4 space-y-2">
+ <li><strong>La fixation des taux directeurs</strong> — Détermine le coût de l'argent dans l'économie</li>
+ <li><strong>La gestion de l'inflation</strong> — Protège le pouvoir d'achat de la monnaie</li>
+ <li><strong>La supervision du système bancaire</strong> — Garantit la solidité des banques</li>
  </ul>
 
- <hr/>
+ <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-4">
+ <p class="text-base mb-2 font-semibold">💡 Impact sur vos investissements :</p>
+ <ul class="list-disc ml-6 space-y-1 text-sm">
+ <li><strong>Baisse des taux :</strong> Stimule les entreprises (crédit moins cher) et peut faire monter les actions.</li>
+ <li><strong>Hausse des taux :</strong> Rend le crédit plus cher, ce qui peut peser sur les valorisations boursières.</li>
+ </ul>
+ </div>
 
- <h3>2.2.1 BCEAO – Le Pilier Monétaire 🏦</h3>
- <p>
- La <strong>BCEAO</strong> assure la stabilité monétaire de la région.
- Elle influence fortement les marchés par :
+ <h3 class="text-xl font-bold text-gray-900 mb-3">⚖️ 2.2.2 AMF-UMOA – Le Gendarme du Marché</h3>
+ <p class="text-base mb-3 leading-relaxed">
+ L'<strong>AMF-UMOA (Autorité des Marchés Financiers de l'UMOA)</strong> protège les investisseurs et veille à la transparence du marché.
  </p>
- <ul>
- <li>la fixation des taux directeurs ;</li>
- <li>la gestion de l’inflation ;</li>
- <li>la supervision du système bancaire.</li>
+ <p class="text-base mb-3 leading-relaxed">Ses missions principales :</p>
+ <ul class="list-disc ml-6 mb-4 space-y-2">
+ <li><strong>Définir les règles du jeu</strong> — Fixe les normes que tous les acteurs doivent respecter</li>
+ <li><strong>Approuver les introductions en bourse</strong> — Valide que les entreprises respectent les critères de transparence</li>
+ <li><strong>Surveiller et sanctionner les abus</strong> — Détecte les manipulations de marché et les délits d'initiés</li>
+ <li><strong>Agréer les acteurs financiers</strong> — SGI, fonds, conseillers doivent obtenir une licence</li>
  </ul>
 
- <p>
- <strong>Impact :</strong> Une baisse des taux stimule les entreprises et les marchés.
- Une hausse rend le crédit plus cher et peut peser sur les valorisations.
+ <p class="text-base mb-4 font-semibold leading-relaxed">
+ 👉 C'est votre <strong>bouclier réglementaire</strong>. Sans l'AMF-UMOA, la confiance dans le marché s'effondrerait.
  </p>
 
- <hr/>
-
- <h3>2.2.2 AMF-UMOA – Le Gendarme du Marché ⚖️</h3>
- <p>
- L’<strong>AMF-UMOA</strong> protège les investisseurs et veille à la transparence.
- Elle :
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🔐 2.2.3 DC/BR – Le Notaire Digital du Marché</h3>
+ <p class="text-base mb-3 leading-relaxed">
+ Le <strong>DC/BR (Dépositaire Central/Banque de Règlement)</strong> est l'entité qui conserve vos titres et sécurise toutes les transactions financières.
  </p>
- <ul>
- <li>définit les règles du marché ;</li>
- <li>approuve les introductions en bourse ;</li>
- <li>surveille et sanctionne les abus ;</li>
- <li>agrée les SGI, fonds et acteurs financiers.</li>
+
+ <p class="text-base mb-3 leading-relaxed">Ses trois fonctions clés :</p>
+ <ul class="list-disc ml-6 mb-4 space-y-2">
+ <li><strong>Conservation des titres :</strong> Vos actions et obligations ne sont PAS stockées chez votre SGI, mais bien au DC/BR, dans un coffre-fort numérique ultra-sécurisé.</li>
+ <li><strong>Règlement-livraison :</strong> Garantit le transfert simultané des titres ET de l'argent lors d'une transaction (principe "Delivery versus Payment").</li>
+ <li><strong>Banque de règlement :</strong> Gère les flux financiers entre toutes les SGI pour assurer la fluidité du marché.</li>
  </ul>
 
- <p>
- C’est votre <strong>bouclier réglementaire</strong>. Sans elle, la confiance s’effondrerait.
- </p>
+ <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-6 my-6">
+ <h3 class="text-lg font-bold text-purple-900 mb-3">🪶 L'analogie à retenir : Le Notaire Digital</h3>
+ <p class="text-base mb-2 leading-relaxed">Quand vous achetez une maison, c'est le notaire qui conserve les titres de propriété et garantit que l'argent et la propriété changent de main en toute sécurité.</p>
+ <p class="text-base font-semibold leading-relaxed">👉 Le DC/BR joue exactement ce rôle pour vos titres financiers.</p>
+ </div>
+ </div>
 
- <hr/>
+ <div class="border-l-4 border-indigo-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">💼 2.3 L'Investisseur – C'est Vous</h2>
 
- <h3>2.2.3 DC/BR – Le Notaire Digital du Marché 🔐</h3>
- <p>
- Le <strong>DC/BR</strong> est l’entité qui conserve les titres et sécurise les transactions.
- </p>
+ <p class="text-lg mb-4 leading-relaxed">Les investisseurs sont ceux qui apportent les fonds sur le marché. Il en existe deux grandes catégories :</p>
 
- <ul>
- <li><strong>Conservation :</strong> Vos titres ne sont pas stockés chez la SGI mais chez le DC/BR.</li>
- <li><strong>Règlement-livraison :</strong> Transfert simultané des titres et de l’argent.</li>
- <li><strong>Banque de règlement :</strong> Gestion des flux financiers entre SGI.</li>
+ <h3 class="text-xl font-bold text-gray-900 mb-3">👤 1. Investisseurs particuliers (personnes physiques)</h3>
+ <p class="text-base mb-3 leading-relaxed">Ce sont des individus comme vous et moi qui investissent leur propre épargne pour :</p>
+ <ul class="list-disc ml-6 mb-4 space-y-1">
+ <li>Faire croître leur capital sur le long terme</li>
+ <li>Préparer leur retraite</li>
+ <li>Financer des projets futurs (éducation des enfants, achat immobilier, etc.)</li>
+ <li>Générer des revenus passifs grâce aux dividendes</li>
  </ul>
 
- <p>
- <strong>Analogie :</strong> C’est le notaire digital qui garantit votre propriété financière.
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🏢 2. Investisseurs institutionnels</h3>
+ <p class="text-base mb-3 leading-relaxed">Ce sont des organisations qui gèrent des milliards de FCFA pour le compte de leurs clients ou de leurs salariés :</p>
+ <ul class="list-disc ml-6 mb-6 space-y-2">
+ <li><strong>Compagnies d'assurance</strong> — Gèrent les primes collectées</li>
+ <li><strong>Fonds de pension</strong> — Préparent les retraites des salariés</li>
+ <li><strong>Banques</strong> — Investissent une partie de leurs fonds propres</li>
+ <li><strong>OPCVM (fonds d'investissement)</strong> — Regroupent l'épargne de milliers d'investisseurs</li>
+ </ul>
+
+ <div class="bg-green-50 border-l-4 border-green-600 p-4 my-6">
+ <p class="text-base font-semibold mb-2">💡 À retenir</p>
+ <p class="text-base leading-relaxed">Même si vous débutez avec un petit capital, vous jouez un rôle essentiel : vous contribuez au financement des entreprises africaines et participez au développement économique de votre continent.</p>
+ </div>
+ </div>
+
+ <div class="border-l-4 border-orange-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">🏢 2.4 Les Sociétés Cotées – Les Champions Économiques</h2>
+
+ <p class="text-base mb-4 leading-relaxed">
+ Les <strong>entreprises cotées</strong> sont les sociétés qui ont choisi d'ouvrir leur capital au public en émettant des actions ou des obligations sur la BRVM.
  </p>
 
- <hr/>
-
- <h2>2.3 L’Investisseur – C’est Vous 💼</h2>
-
- <p>Deux grandes catégories d'investisseurs existent :</p>
-
- <h4>1. Investisseurs particuliers</h4>
- <p>Ils investissent leur propre épargne pour faire croître leur capital.</p>
-
- <h4>2. Investisseurs institutionnels</h4>
- <p>Ils gèrent des milliards pour le compte de clients ou salariés :</p>
- <ul>
- <li>assurances,</li>
- <li>fonds de pension,</li>
- <li>banques,</li>
- <li>OPCVM.</li>
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🎯 Pourquoi les entreprises se cotent-elles ?</h3>
+ <ul class="list-disc ml-6 mb-6 space-y-2">
+ <li><strong>Lever des fonds</strong> pour financer leur croissance sans s'endetter auprès des banques</li>
+ <li><strong>Gagner en transparence</strong> et en crédibilité auprès de leurs partenaires et clients</li>
+ <li><strong>Impliquer les citoyens</strong> dans leur croissance et partager les bénéfices via les dividendes</li>
+ <li><strong>Améliorer leur gouvernance</strong> grâce aux exigences réglementaires strictes</li>
  </ul>
 
- <p><strong>À retenir :</strong> Même un petit investisseur contribue au financement des entreprises africaines.</p>
+ <h3 class="text-xl font-bold text-gray-900 mb-3">📊 Quelques exemples de champions de la BRVM :</h3>
+ <div class="overflow-x-auto">
+ <table class="min-w-full border-collapse border-2 border-gray-300 my-4">
+ <thead class="bg-gray-100">
+ <tr>
+ <th class="border border-gray-300 px-4 py-3 text-left font-bold">Entreprise</th>
+ <th class="border border-gray-300 px-4 py-3 text-left font-bold">Secteur</th>
+ <th class="border border-gray-300 px-4 py-3 text-left font-bold">Pourquoi c'est intéressant</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td class="border border-gray-300 px-4 py-3 font-semibold">Sonatel</td>
+ <td class="border border-gray-300 px-4 py-3">Télécommunications</td>
+ <td class="border border-gray-300 px-4 py-3">Leader des télécoms au Sénégal, dividendes réguliers</td>
+ </tr>
+ <tr class="bg-gray-50">
+ <td class="border border-gray-300 px-4 py-3 font-semibold">Ecobank CI</td>
+ <td class="border border-gray-300 px-4 py-3">Banque</td>
+ <td class="border border-gray-300 px-4 py-3">Réseau panafricain, forte présence régionale</td>
+ </tr>
+ <tr>
+ <td class="border border-gray-300 px-4 py-3 font-semibold">Nestlé CI</td>
+ <td class="border border-gray-300 px-4 py-3">Agroalimentaire</td>
+ <td class="border border-gray-300 px-4 py-3">Marque mondiale, produits de consommation courante</td>
+ </tr>
+ <tr class="bg-gray-50">
+ <td class="border border-gray-300 px-4 py-3 font-semibold">Palmci</td>
+ <td class="border border-gray-300 px-4 py-3">Agriculture</td>
+ <td class="border border-gray-300 px-4 py-3">Production d'huile de palme, secteur stratégique</td>
+ </tr>
+ <tr>
+ <td class="border border-gray-300 px-4 py-3 font-semibold">TotalEnergies CI</td>
+ <td class="border border-gray-300 px-4 py-3">Énergie</td>
+ <td class="border border-gray-300 px-4 py-3">Distribution de carburant, valeur défensive</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
 
- <hr/>
+ <div class="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 my-6">
+ <p class="text-base font-bold mb-2 leading-relaxed">💡 Principe fondamental :</p>
+ <p class="text-lg font-semibold leading-relaxed">Acheter une action = devenir <strong>copropriétaire</strong> de l'entreprise.</p>
+ <p class="text-base mt-2 leading-relaxed">Vous partagez ses profits (dividendes) et sa croissance (plus-value).</p>
+ </div>
+ </div>
 
- <h2>2.4 Les Sociétés Cotées – Les Champions Économiques 🏢</h2>
+ <div class="border-l-4 border-purple-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ 2.5 Les SGI – Votre Intermédiaire Officiel</h2>
 
- <p>
- Les entreprises cotées lèvent des fonds, gagnent en transparence et impliquent les citoyens
- dans leur croissance.
+ <p class="text-base mb-4 leading-relaxed">
+ Les <strong>SGI (Sociétés de Gestion et d'Intermédiation)</strong> sont les courtiers agréés qui vous permettent d'accéder au marché boursier. Vous ne pouvez PAS acheter ou vendre des titres directement à la BRVM — vous devez obligatoirement passer par une SGI.
  </p>
 
- <p>Quelques exemples :</p>
- <ul>
- <li>Sonatel – Télécommunications</li>
- <li>Ecobank CI – Banque</li>
- <li>Nestlé CI – Agroalimentaire</li>
- <li>Palmci – Agriculture</li>
- <li>TotalEnergies CI – Distribution énergétique</li>
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🔑 Rôles clés d'une SGI :</h3>
+ <ul class="list-disc ml-6 mb-6 space-y-2">
+ <li><strong>Ouvrir et gérer votre compte-titres</strong> — Votre "compte bancaire" pour les actions et obligations</li>
+ <li><strong>Transmettre vos ordres à la BRVM</strong> — Achats et ventes que vous souhaitez effectuer</li>
+ <li><strong>Conserver vos fonds en attente d'investissement</strong> — Sécurisation de votre cash avant allocation</li>
+ <li><strong>Vous conseiller selon votre profil</strong> — Recommandations personnalisées basées sur vos objectifs</li>
+ <li><strong>Assurer le suivi administratif</strong> — Dividendes, relevés de compte, fiscalité</li>
  </ul>
 
- <p>
- Acheter une action = devenir <strong>copropriétaire</strong> de l’entreprise.
+ <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-6 my-6">
+ <h3 class="text-xl font-bold text-amber-900 mb-3">🪶 L'analogie à retenir : Le Taxi-Moto Boursier</h3>
+ <p class="text-base mb-3 leading-relaxed">Vous voulez aller au marché central (la BRVM), mais vous ne pouvez pas y aller à pied.</p>
+ <p class="text-base mb-2 leading-relaxed">Vous prenez un taxi-moto (la SGI) qui connaît les routes, les raccourcis et les règles de circulation.</p>
+ <p class="text-base font-semibold leading-relaxed">👉 La SGI est votre véhicule pour naviguer sur le marché en toute sécurité.</p>
+ </div>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">📋 Comment choisir une SGI ?</h3>
+ <p class="text-base mb-3 leading-relaxed">Critères à considérer :</p>
+ <ol class="list-decimal ml-6 mb-4 space-y-2">
+ <li><strong>Frais et commissions</strong> — Comparez les tarifs (frais de courtage, frais de garde, etc.)</li>
+ <li><strong>Qualité du service client</strong> — Réactivité, disponibilité, accompagnement</li>
+ <li><strong>Outils et plateformes</strong> — Interface en ligne, application mobile, facilité d'utilisation</li>
+ <li><strong>Réputation et ancienneté</strong> — Solidité financière et expérience sur le marché</li>
+ <li><strong>Accessibilité géographique</strong> — Présence dans votre ville ou pays</li>
+ </ol>
+ </div>
+
+ <div class="border-l-4 border-pink-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">🌐 2.6 Autres Acteurs Clés de l'Écosystème</h2>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">📊 SGO (Sociétés de Gestion d'OPCVM)</h3>
+ <p class="text-base mb-4 leading-relaxed">
+ Les SGO gèrent des fonds d'investissement collectifs (FCP, SICAV) qui permettent aux petits investisseurs d'accéder à des portefeuilles diversifiés gérés par des professionnels.
  </p>
 
- <hr/>
-
- <h2>2.5 Les SGI – Votre Intermédiaire Officiel ⚙️</h2>
-
- <p>La <strong>SGI</strong> joue un rôle central :</p>
- <ul>
- <li>ouvrir et gérer votre compte-titres ;</li>
- <li>transmettre vos ordres à la BRVM ;</li>
- <li>conserver vos fonds en attente d’investissement ;</li>
- <li>vous conseiller selon votre profil.</li>
- </ul>
-
- <p><strong>Analogie :</strong> Votre “taxi-moto boursier”.</p>
-
- <hr/>
-
- <h2>2.6 Autres Acteurs Clés 🌐</h2>
- <ul>
- <li>SGO : gestionnaires d’OPCVM (FCP, SICAV)</li>
- <li>Experts-comptables : certification des états financiers</li>
- <li>Médias financiers : information et transparence</li>
- </ul>
-
- <hr/>
-
- <h2>🧠 Termes à Maîtriser</h2>
- <ul>
- <li><strong>SGI</strong> : Intermédiaire entre vous et la BRVM</li>
- <li><strong>AMF-UMOA</strong> : Régulateur du marché</li>
- <li><strong>DC/BR</strong> : Conservation des titres et règlement</li>
- <li><strong>BCEAO</strong> : Banque centrale de la région</li>
- <li><strong>Investisseur institutionnel</strong> : Assurance, fonds, banques</li>
- <li><strong>Société cotée</strong> : Entreprise listée à la BRVM</li>
- </ul>
-
- <hr/>
-
- <h2>👉 Prochaine étape</h2>
- <p>
- Le <strong>Module 3</strong> vous présentera les outils de l’investisseur : actions,
- obligations et OPCVM.
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🧾 Experts-comptables et commissaires aux comptes</h3>
+ <p class="text-base mb-4 leading-relaxed">
+ Ils certifient les états financiers des entreprises cotées, garantissant ainsi la fiabilité des informations publiées. Sans leur validation, impossible de publier des résultats.
  </p>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">📰 Médias financiers et analystes</h3>
+ <p class="text-base mb-6 leading-relaxed">
+ Ils diffusent l'information financière, analysent les entreprises et contribuent à la transparence du marché. Exemples : AfriBourse (😉), Financial Afrik, Investir au Cameroun, etc.
+ </p>
+ </div>
+
+ <div class="bg-gray-100 rounded-xl p-6">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">🧠 Termes à Maîtriser</h2>
+ <table class="min-w-full border-collapse border-2 border-gray-300">
+ <thead class="bg-gray-200">
+ <tr>
+ <th class="border border-gray-300 px-4 py-3 text-left font-bold">Terme</th>
+ <th class="border border-gray-300 px-4 py-3 text-left font-bold">Définition</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr class="bg-white">
+ <td class="border border-gray-300 px-4 py-3 font-bold">SGI</td>
+ <td class="border border-gray-300 px-4 py-3">Société de Gestion et d'Intermédiation — Votre courtier pour accéder à la BRVM.</td>
+ </tr>
+ <tr class="bg-gray-50">
+ <td class="border border-gray-300 px-4 py-3 font-bold">AMF-UMOA</td>
+ <td class="border border-gray-300 px-4 py-3">Autorité des Marchés Financiers — Régulateur qui protège les investisseurs.</td>
+ </tr>
+ <tr class="bg-white">
+ <td class="border border-gray-300 px-4 py-3 font-bold">DC/BR</td>
+ <td class="border border-gray-300 px-4 py-3">Dépositaire Central / Banque de Règlement — Conservation des titres et sécurisation des transactions.</td>
+ </tr>
+ <tr class="bg-gray-50">
+ <td class="border border-gray-300 px-4 py-3 font-bold">BCEAO</td>
+ <td class="border border-gray-300 px-4 py-3">Banque Centrale des États de l'Afrique de l'Ouest — Pilier de la stabilité monétaire.</td>
+ </tr>
+ <tr class="bg-white">
+ <td class="border border-gray-300 px-4 py-3 font-bold">Investisseur institutionnel</td>
+ <td class="border border-gray-300 px-4 py-3">Organisation qui gère de gros volumes (assurance, fonds de pension, banques).</td>
+ </tr>
+ <tr class="bg-gray-50">
+ <td class="border border-gray-300 px-4 py-3 font-bold">Société cotée</td>
+ <td class="border border-gray-300 px-4 py-3">Entreprise dont les titres sont listés et échangés sur la BRVM.</td>
+ </tr>
+ <tr class="bg-white">
+ <td class="border border-gray-300 px-4 py-3 font-bold">SGO</td>
+ <td class="border border-gray-300 px-4 py-3">Société de Gestion d'OPCVM — Gestionnaire de fonds collectifs (FCP, SICAV).</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+
+ <div class="bg-gradient-to-r from-green-600 to-emerald-700 text-white p-6 rounded-xl">
+ <h3 class="text-xl font-bold mb-3">🧭 Prochaine étape</h3>
+ <p class="text-base mb-3 leading-relaxed">Vous comprenez maintenant qui sont les acteurs du marché et comment ils travaillent ensemble pour assurer la sécurité et la transparence.</p>
+ <p class="text-lg font-bold leading-relaxed">👉 Prochaine leçon : Module 3 — Les Outils de l'Investisseur : Actions, Obligations et OPCVM</p>
+ </div>
  `,
 });
 
