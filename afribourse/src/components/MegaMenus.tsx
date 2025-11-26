@@ -1,4 +1,6 @@
 import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Lightbulb, Newspaper, Globe, DollarSign, Eye, Building2, MapPin } from 'lucide-react'; // Added TrendingDown
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/api';
 // import { supabase } from '../lib/supabase'; // <-- REMOVE Supabase
@@ -21,12 +23,11 @@ type MarketIndex = {
 };
 // --- End Types ---
 
-type MegaMenuProps = {
-  onNavigate: (page: string, data?: any) => void;
-};
+type MegaMenuProps = {};
 
 // --- LearnMegaMenu (No changes needed, it's static) ---
-export function LearnMegaMenu({ onNavigate }: MegaMenuProps) {
+export function LearnMegaMenu() {
+  const navigate = useNavigate();
   return (
     <div className="absolute left-0 top-full w-screen max-w-full bg-white shadow-xl border-t border-gray-200 z-40"> {/* Added max-w-full */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -36,14 +37,14 @@ export function LearnMegaMenu({ onNavigate }: MegaMenuProps) {
              <div className="space-y-4">
                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Parcours</h3>
                {/* Beginner */}
-               <button onClick={() => onNavigate('learn', { difficulty: 'debutant' })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors"><GraduationCap className="w-6 h-6 text-green-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Débutant</h4> <p className="text-sm text-gray-600">Les bases de la BRVM.</p> </div> </button>
+               <button onClick={() => navigate('/learn', { state: { difficulty: 'debutant' } })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors"><GraduationCap className="w-6 h-6 text-green-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Débutant</h4> <p className="text-sm text-gray-600">Les bases de la BRVM.</p> </div> </button>
                {/* Intermediate */}
-               <button onClick={() => onNavigate('learn', { difficulty: 'intermediaire' })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors"><BarChart3 className="w-6 h-6 text-yellow-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Intermédiaire</h4> <p className="text-sm text-gray-600">Approfondir.</p> </div> </button>
+               <button onClick={() => navigate('/learn', { state: { difficulty: 'intermediaire' } })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors"><BarChart3 className="w-6 h-6 text-yellow-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Intermédiaire</h4> <p className="text-sm text-gray-600">Approfondir.</p> </div> </button>
                {/* Advanced */}
-               <button onClick={() => onNavigate('learn', { difficulty: 'avance' })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors"><TrendingUp className="w-6 h-6 text-red-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Avancé</h4> <p className="text-sm text-gray-600">Maîtriser.</p> </div> </button>
+               <button onClick={() => navigate('/learn', { state: { difficulty: 'avance' } })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors"><TrendingUp className="w-6 h-6 text-red-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Avancé</h4> <p className="text-sm text-gray-600">Maîtriser.</p> </div> </button>
              </div>
              {/* Column 2 & 3: Promotion */}
-             <div className="md:col-span-2"> <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 h-full flex flex-col justify-between"> <div> <div className="inline-block px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium mb-4">Populaire</div> <h3 className="text-2xl font-bold text-gray-900 mb-4">Commencez votre voyage</h3> <p className="text-gray-700 mb-6">Rejoignez des milliers d'investisseurs...</p> </div> <div className="flex items-center space-x-4"> <button onClick={() => onNavigate('learn')} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">Démarrer</button> <div className="flex items-center space-x-2 text-sm text-gray-600"><BookOpen className="w-5 h-5" /><span>15+ modules gratuits</span></div> </div> </div> </div>
+             <div className="md:col-span-2"> <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 h-full flex flex-col justify-between"> <div> <div className="inline-block px-3 py-1 bg-blue-600 text-white rounded-full text-sm font-medium mb-4">Populaire</div> <h3 className="text-2xl font-bold text-gray-900 mb-4">Commencez votre voyage</h3> <p className="text-gray-700 mb-6">Rejoignez des milliers d'investisseurs...</p> </div> <div className="flex items-center space-x-4"> <button onClick={() => navigate('/learn')} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">Démarrer</button> <div className="flex items-center space-x-2 text-sm text-gray-600"><BookOpen className="w-5 h-5" /><span>15+ modules gratuits</span></div> </div> </div> </div>
          </div>
       </div>
     </div>
@@ -52,7 +53,8 @@ export function LearnMegaMenu({ onNavigate }: MegaMenuProps) {
 // --- END LearnMegaMenu ---
 
 // --- UPDATED NewsMegaMenu ---
-export function NewsMegaMenu({ onNavigate }: MegaMenuProps) {
+export function NewsMegaMenu() {
+  const navigate = useNavigate();
   const [latestArticle, setLatestArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -87,11 +89,11 @@ export function NewsMegaMenu({ onNavigate }: MegaMenuProps) {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Catégories</h3>
             {/* Markets */}
-            <button onClick={() => onNavigate('news', { category: 'marches' })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><TrendingUp className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Marchés</h4> <p className="text-sm text-gray-600">Tendances BRVM.</p> </div> </button>
+            <button onClick={() => navigate('/news', { state: { category: 'marches' }})} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><TrendingUp className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Marchés</h4> <p className="text-sm text-gray-600">Tendances BRVM.</p> </div> </button>
             {/* Startups (Remove if you removed startups) */}
-            {/* <button onClick={() => onNavigate('news', { category: 'startups' })} className="..."> ... Startups ... </button> */}
+            {/* <button onClick={() => navigate('/news', { state: { category: 'startups' })} className="..."> ... Startups ... </button> */}
             {/* Economy */}
-            <button onClick={() => onNavigate('news', { category: 'economie' })} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors"><Globe className="w-6 h-6 text-orange-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Économie</h4> <p className="text-sm text-gray-600">Actus UEMOA.</p> </div> </button>
+            <button onClick={() => navigate('/news', { state: { category: 'economie' }})} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors"><Globe className="w-6 h-6 text-orange-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Économie</h4> <p className="text-sm text-gray-600">Actus UEMOA.</p> </div> </button>
           </div>
           {/* Column 2 & 3: Latest Article */}
           <div className="md:col-span-2">
@@ -100,7 +102,7 @@ export function NewsMegaMenu({ onNavigate }: MegaMenuProps) {
             ) : latestArticle ? (
               <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 h-full flex flex-col justify-between">
                 <div> <div className="flex items-center space-x-2 mb-4"> <Newspaper className="w-5 h-5 text-orange-600" /> <span className="text-sm font-medium text-orange-600 uppercase">Dernière actualité</span> </div> <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{latestArticle.title}</h3> <p className="text-sm text-gray-700 line-clamp-3">{latestArticle.summary || 'Lire la suite pour plus de détails.'}</p> </div>
-                <button onClick={() => onNavigate('news')} /* Pass article ID/slug if needed */ className="mt-6 px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold self-start text-sm">Lire la suite</button>
+                <button onClick={() => navigate('/news')} /* Pass article ID/slug if needed */ className="mt-6 px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold self-start text-sm">Lire la suite</button>
               </div>
             ) : (
                 <div className="bg-gray-100 rounded-xl p-6 h-full flex flex-col items-center justify-center text-center min-h-[150px]"> <Newspaper className="w-8 h-8 text-gray-400 mb-2"/> <p className="text-sm text-gray-500">Aucune actualité récente trouvée.</p> </div>
@@ -114,7 +116,8 @@ export function NewsMegaMenu({ onNavigate }: MegaMenuProps) {
 // --- END UPDATED NewsMegaMenu ---
 
 // --- UPDATED MarketsMegaMenu ---
-export function MarketsMegaMenu({ onNavigate }: MegaMenuProps) {
+export function MarketsMegaMenu() {
+  const navigate = useNavigate();
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -155,11 +158,11 @@ export function MarketsMegaMenu({ onNavigate }: MegaMenuProps) {
            <div className="space-y-4">
              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Navigation</h3>
              {/* All Stocks */}
-             <button onClick={() => onNavigate('markets')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><BarChart3 className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Actions</h4> <p className="text-sm text-gray-600">Toutes les valeurs.</p> </div> </button>
+             <button onClick={() => navigate('/markets')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><BarChart3 className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Actions</h4> <p className="text-sm text-gray-600">Toutes les valeurs.</p> </div> </button>
              {/* Screener */}
-             <button onClick={() => onNavigate('markets')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors"><TrendingUp className="w-6 h-6 text-green-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Screener</h4> <p className="text-sm text-gray-600">Filtrer & Trier.</p> </div> </button>
+             <button onClick={() => navigate('/markets')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors"><TrendingUp className="w-6 h-6 text-green-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Screener</h4> <p className="text-sm text-gray-600">Filtrer & Trier.</p> </div> </button>
              {/* Obligations (Link might go elsewhere) */}
-             {/* <button onClick={() => onNavigate('bonds')} className="..."> ... Obligations ... </button> */}
+             {/* <button onClick={() => navigate('/bonds')} className="..."> ... Obligations ... </button> */}
            </div>
            {/* Column 2 & 3: Indices */}
            <div className="md:col-span-2">
@@ -185,7 +188,7 @@ export function MarketsMegaMenu({ onNavigate }: MegaMenuProps) {
                ) : (
                     <p className="text-sm text-gray-500 text-center py-4">Impossible de charger les indices.</p>
                )}
-               <button onClick={() => onNavigate('markets')} className="mt-6 w-full px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-sm">Voir toutes les cotations</button>
+               <button onClick={() => navigate('/markets')} className="mt-6 w-full px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-sm">Voir toutes les cotations</button>
              </div>
            </div>
         </div>
@@ -197,27 +200,26 @@ export function MarketsMegaMenu({ onNavigate }: MegaMenuProps) {
 
 
 // --- StartupsMegaMenu (Can be removed if you removed startups) ---
-// export function StartupsMegaMenu({ onNavigate }: MegaMenuProps) { ... }
+// export function StartupsMegaMenu({ navigate }: MegaMenuProps) { ... }
 
 
 // --- PortfolioMegaMenu (No changes needed, it's static) ---
-export function PortfolioMegaMenu({ onNavigate }: MegaMenuProps) {
-    // Check login status (passed from Header or using context)
-    // const isLoggedIn = ...;
-    const isLoggedIn = false; // Placeholder - Replace with actual login status check
+export function PortfolioMegaMenu() {
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
 
-    return (
+  return (
      <div className="absolute left-0 top-full w-screen max-w-full bg-white shadow-xl border-t border-gray-200 z-40">
        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
          <div className="grid md:grid-cols-3 gap-8">
              {/* Links */}
              <div className="space-y-4">
                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Mes Outils</h3>
-               <button onClick={() => onNavigate(isLoggedIn ? 'dashboard' : 'login')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><BarChart3 className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Mon Portefeuille</h4> <p className="text-sm text-gray-600">Suivi simulation.</p> </div> </button>
-               <button onClick={() => onNavigate(isLoggedIn ? 'dashboard' : 'login')} /* Point to watchlist section? */ className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors"><Eye className="w-6 h-6 text-green-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Ma Watchlist</h4> <p className="text-sm text-gray-600">Actions suivies.</p> </div> </button>
+               <button onClick={() => navigate(isLoggedIn ? 'dashboard' : 'login')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><BarChart3 className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Mon Portefeuille</h4> <p className="text-sm text-gray-600">Suivi simulation.</p> </div> </button>
+               <button onClick={() => navigate(isLoggedIn ? 'dashboard' : 'login')} /* Point to watchlist section? */ className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors"><Eye className="w-6 h-6 text-green-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Ma Watchlist</h4> <p className="text-sm text-gray-600">Actions suivies.</p> </div> </button>
              </div>
              {/* Promotion */}
-             <div className="md:col-span-2"> <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 h-full flex flex-col justify-between"> <div> <h3 className="text-2xl font-bold text-gray-900 mb-4">Suivez vos simulations</h3> <p className="text-gray-700 mb-6">Créez votre portefeuille virtuel gratuit...</p> </div> <button onClick={() => onNavigate(isLoggedIn ? 'dashboard' : 'login')} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold self-start">{isLoggedIn ? 'Accéder au Dashboard' : 'Connectez-vous'}</button> </div> </div>
+             <div className="md:col-span-2"> <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 h-full flex flex-col justify-between"> <div> <h3 className="text-2xl font-bold text-gray-900 mb-4">Suivez vos simulations</h3> <p className="text-gray-700 mb-6">Créez votre portefeuille virtuel gratuit...</p> </div> <button onClick={() => navigate(isLoggedIn ? 'dashboard' : 'login')} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold self-start">{isLoggedIn ? 'Accéder au Dashboard' : 'Connectez-vous'}</button> </div> </div>
          </div>
        </div>
      </div>
@@ -225,4 +227,4 @@ export function PortfolioMegaMenu({ onNavigate }: MegaMenuProps) {
 }
 
 // --- SGIMegaMenu (Can be removed if you removed SGI focus) ---
-// export function SGIMegaMenu({ onNavigate }: MegaMenuProps) { ... }
+// export function SGIMegaMenu({ navigate }: MegaMenuProps) { ... }

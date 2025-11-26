@@ -4,9 +4,8 @@ import { User, Target, ArrowRight, Calendar, BookOpen, TrendingUp, Megaphone, St
 import { useUserProfile, useUpdateProfile } from '../hooks/useApi';
 import { Button, Input, Card, LoadingSpinner, ErrorMessage } from './ui';
 
-type ProfilePageProps = {
-  onNavigate: (page: string) => void;
-};
+import { useNavigate } from 'react-router-dom';
+type ProfilePageProps = {};
 
 const countries = ['Bénin', 'Burkina Faso', 'Côte d\'Ivoire', 'Guinée-Bissau', 'Mali', 'Niger', 'Sénégal', 'Togo', 'Autre'];
 const goalOptions = ['Apprendre les bases', 'Préparer ma retraite/un projet', 'Générer un revenu complémentaire', 'Suivre l\'actualité', 'Curiosité'];
@@ -36,7 +35,8 @@ const keyFeatures = [
   'Les analyses d\'experts'
 ];
 
-export default function ProfilePage({ onNavigate }: ProfilePageProps) {
+export default function ProfilePage() {
+  const navigate = useNavigate();
   // ✅ React Query hooks
   const { data: profile, isLoading, error, refetch } = useUserProfile();
   const updateProfile = useUpdateProfile();
@@ -115,7 +115,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
         discovery_channel: discoveryChannel || null,
         key_feature: keyFeature || null,
       } as any);
-      setTimeout(() => onNavigate('dashboard'), 1000);
+      setTimeout(() => navigate('/dashboard'), 1000);
     } catch (err) {
       console.error('Erreur sauvegarde profil:', err);
     }
@@ -143,7 +143,7 @@ export default function ProfilePage({ onNavigate }: ProfilePageProps) {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Back Button */}
         <div className="flex justify-end mb-6">
-          <Button variant="ghost" onClick={() => onNavigate('dashboard')}>
+          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             Retour Dashboard
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>

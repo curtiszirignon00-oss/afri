@@ -5,11 +5,11 @@ import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, typ
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 
-type MarketsPageRefactoredProps = {
-  onNavigate: (page: string, data?: any) => void;
-};
+import { useNavigate } from 'react-router-dom';
+type MarketsPageRefactoredProps = {};
 
-export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefactoredProps) {
+export default function MarketsPageRefactored() {
+  const navigate = useNavigate();
   // États locaux pour les filtres
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('all');
@@ -223,7 +223,7 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                       {/* Info action */}
                       <td
                         className="px-6 py-4"
-                        onClick={() => onNavigate('stock-detail', stock)}
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         <div>
                           <div className="font-bold text-gray-900">{stock.symbol}</div>
@@ -242,7 +242,7 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                       {/* Prix */}
                       <td
                         className="px-6 py-4 text-right font-semibold"
-                        onClick={() => onNavigate('stock-detail', stock)}
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.current_price)} F
                       </td>
@@ -250,7 +250,7 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                       {/* Variation */}
                       <td
                         className="px-6 py-4 text-right"
-                        onClick={() => onNavigate('stock-detail', stock)}
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         <span
                           className={`font-semibold ${
@@ -267,7 +267,7 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                       {/* Volume */}
                       <td
                         className="px-6 py-4 text-right text-gray-600"
-                        onClick={() => onNavigate('stock-detail', stock)}
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.volume)}
                       </td>
@@ -275,7 +275,7 @@ export default function MarketsPageRefactored({ onNavigate }: MarketsPageRefacto
                       {/* Cap. Boursière */}
                       <td
                         className="px-6 py-4 text-right text-gray-600"
-                        onClick={() => onNavigate('stock-detail', stock)}
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.market_cap / 1000000)} M
                       </td>

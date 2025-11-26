@@ -1,21 +1,22 @@
-// src/AppRefactored.tsx
-import { useState } from 'react';
+// src/App.tsx
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TrendingUp } from 'lucide-react';
+import { useEffect } from 'react';
 
 // Query Client
 import { queryClient } from './lib/queryClient';
 
 // Context
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Components
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import MarketsPageRefactored from './components/MarketsPageRefactored';
-import StockDetailPageEnhanced from './components/StockDetailPageEnhanced'; // 🆕 Nouvelle version améliorée
+import StockDetailPageEnhanced from './components/StockDetailPageEnhanced';
 import LearnPage from './components/LearnPage';
 import NewsPage from './components/NewsPage';
 import GlossaryPage from './components/GlossaryPage';
@@ -24,84 +25,69 @@ import LoginPage from './components/LoginPage';
 import ProfilePage from './components/ProfilePage';
 import DashboardPage from './components/DashboardPage';
 import TransactionsPage from './components/TransactionsPage';
-import { LoadingSpinner } from './components/ui';
+import ProtectedRoute from './components/ProtectedRoute';
 
-// Types
-import { Page, Navigation } from './types';
+// Composant pour gérer le scroll automatique lors du changement de route
+function ScrollToTop() {
+  const location = useLocation();
 
-// --- Composant principal avec la logique de navigation ---
-function AppContent() {
-  const [navigation, setNavigation] = useState<Navigation>({ page: 'home' });
-  const { isLoggedIn, loading } = useAuth();
-
-  const handleNavigate = (page: string, data?: any) => {
-    const protectedPages: Page[] = ['dashboard', 'profile', 'transactions'];
-
-    // Ne bloquer l'accès que si on n'est PAS en train de charger l'authentification
-    // Cela évite les race conditions après signup/login
-    if (protectedPages.includes(page as Page) && !isLoggedIn && !loading) {
-      console.log('Accès protégé refusé, redirection vers login.');
-      setNavigation({ page: 'login' });
-    } else {
-      setNavigation({ page: page as Page, data });
-    }
-
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, [location.pathname]);
 
-  // Affiche un spinner pendant la vérification de l'authentification
-  if (loading) {
-    return <LoadingSpinner fullScreen text="Chargement..." />;
-  }
+  return null;
+}
 
-  // --- Rendu conditionnel des pages ---
-  const renderPage = () => {
-    const { page, data } = navigation;
-
-    switch (page) {
-      case 'home':
-        return <HomePage onNavigate={handleNavigate} isLoggedIn={isLoggedIn} />;
-      case 'markets':
-        return <MarketsPageRefactored onNavigate={handleNavigate} />;
-      case 'stock-detail':
-        return data ? (
-          <StockDetailPageEnhanced stock={data} onNavigate={handleNavigate} />
-        ) : (
-          <MarketsPageRefactored onNavigate={handleNavigate} />
-        );
-      case 'news':
-        return <NewsPage />;
-      case 'learn':
-        return <LearnPage />;
-      case 'glossary':
-        return <GlossaryPage />;
-      case 'signup':
-        return <SignupPage onNavigate={handleNavigate} />;
-      case 'login':
-        return <LoginPage onNavigate={handleNavigate} />;
-      case 'dashboard':
-        return <DashboardPage onNavigate={handleNavigate} />;
-      case 'profile':
-        return <ProfilePage onNavigate={handleNavigate} />;
-      case 'transactions':
-        return <TransactionsPage onNavigate={handleNavigate} />;
-      default:
-        return <HomePage onNavigate={handleNavigate} isLoggedIn={isLoggedIn} />;
-    }
-  };
+// Composant Layout pour le Header et Footer
+function Layout() {
+  const location = useLocation();
 
   // Détermine si le Header/Footer doit être affiché
-  const showLayout = !['signup', 'login', 'profile'].includes(navigation.page);
+  const showLayout = !['/signup', '/login', '/profile'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Toaster position="top-center" />
+      <ScrollToTop />
 
-      {showLayout && (
-        <Header currentPage={navigation.page} onNavigate={handleNavigate} />
-      )}
+      {showLayout && <Header />}
 
-      <main className="flex-grow">{renderPage()}</main>
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/markets" element={<MarketsPageRefactored />} />
+          <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/learn" element={<LearnPage />} />
+          <Route path="/glossary" element={<GlossaryPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/transactions"
+            element={
+              <ProtectedRoute>
+                <TransactionsPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </main>
 
       {showLayout && (
         <footer className="bg-gray-900 text-white mt-auto">
@@ -123,24 +109,24 @@ function AppContent() {
                 <h4 className="text-lg font-semibold mb-4">Navigation</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <button onClick={() => handleNavigate('learn')} className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/learn" className="text-gray-400 hover:text-white transition-colors">
                       Apprendre
-                    </button>
+                    </a>
                   </li>
                   <li>
-                    <button onClick={() => handleNavigate('markets')} className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/markets" className="text-gray-400 hover:text-white transition-colors">
                       Marchés
-                    </button>
+                    </a>
                   </li>
                   <li>
-                    <button onClick={() => handleNavigate('news')} className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/news" className="text-gray-400 hover:text-white transition-colors">
                       Actualités
-                    </button>
+                    </a>
                   </li>
                   <li>
-                    <button onClick={() => handleNavigate('glossary')} className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/glossary" className="text-gray-400 hover:text-white transition-colors">
                       Glossaire
-                    </button>
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -185,11 +171,13 @@ function AppContent() {
 }
 
 // --- Composant racine avec tous les Providers ---
-function AppRefactored() {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent />
+        <BrowserRouter>
+          <Layout />
+        </BrowserRouter>
       </AuthProvider>
       {/* DevTools React Query (visible uniquement en développement) */}
       <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
@@ -197,4 +185,4 @@ function AppRefactored() {
   );
 }
 
-export default AppRefactored;
+export default App;

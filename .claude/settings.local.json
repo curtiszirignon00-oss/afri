@@ -9,7 +9,12 @@
       "Bash(npm run build:*)",
       "Bash(npm run clean:*)",
       "Bash(test:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(npx eslint:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

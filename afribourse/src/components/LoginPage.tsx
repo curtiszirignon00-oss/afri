@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
@@ -6,10 +7,10 @@ import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 
 type LoginPageProps = {
-  onNavigate: (page: string) => void;
 };
 
-export default function LoginPage({ onNavigate }: LoginPageProps) {
+export default function LoginPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,9 +22,9 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
   useEffect(() => {
     if (isLoggedIn) {
       console.log('✅ Utilisateur déjà connecté, redirection vers dashboard');
-      onNavigate('dashboard');
+      navigate('/dashboard');
     }
-  }, [isLoggedIn, onNavigate]);
+  }, [isLoggedIn, navigate]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -67,7 +68,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
       }
 
       // Redirection vers le dashboard
-      onNavigate('dashboard');
+      navigate('/dashboard');
 
     } catch (err: any) {
       console.error("Login error:", err);
@@ -84,7 +85,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         {/* --- Header --- */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <button onClick={() => onNavigate('home')} className="flex items-center space-x-2">
+            <button onClick={() => navigate('/')} className="flex items-center space-x-2">
               <img
                 src="/images/logo_afribourse.png"
                 alt="AfriBourse Logo"
@@ -178,7 +179,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
             <p className="text-sm text-gray-600">
               Vous n'avez pas de compte?{' '}
               <button
-                onClick={() => onNavigate('signup')}
+                onClick={() => navigate('/signup')}
                 className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
               >
                 Créer un compte
@@ -190,7 +191,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
         {/* Link back to Home */}
         <div className="text-center mt-8">
           <button
-            onClick={() => onNavigate('home')}
+            onClick={() => navigate('/')}
             className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
             ← Retour à l'accueil
