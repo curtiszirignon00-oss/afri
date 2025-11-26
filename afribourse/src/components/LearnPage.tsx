@@ -587,35 +587,10 @@ export default function LearnPage() {
                                 </div>
                             ) : selectedModule.content ? (
                                 /* Option 2: Contenu HTML (ancien format - fallback) */
-                                <div className="module-content-wrapper">
-                                    <div
-                                        className="
-                                            prose prose-lg max-w-none
-                                            prose-headings:text-slate-900 prose-headings:font-bold prose-headings:leading-tight
-                                            prose-h1:text-4xl prose-h1:md:text-5xl prose-h1:mb-6
-                                            prose-h2:text-3xl prose-h2:md:text-4xl prose-h2:mb-5 prose-h2:mt-10
-                                            prose-h3:text-2xl prose-h3:md:text-3xl prose-h3:mb-4 prose-h3:mt-8
-                                            prose-h4:text-xl prose-h4:md:text-2xl prose-h4:mb-3 prose-h4:mt-6 prose-h4:text-slate-800
-                                            prose-p:text-slate-600 prose-p:text-base prose-p:md:text-lg prose-p:leading-relaxed prose-p:mb-6
-                                            prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline
-                                            prose-strong:text-slate-900 prose-strong:font-semibold
-                                            prose-ul:my-6 prose-ul:space-y-3 prose-ul:list-disc prose-ul:pl-6
-                                            prose-ol:my-6 prose-ol:space-y-3 prose-ol:list-decimal prose-ol:pl-6
-                                            prose-li:text-slate-600 prose-li:text-base prose-li:leading-relaxed prose-li:marker:text-blue-500
-                                            prose-blockquote:border-l-4 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-xl prose-blockquote:not-italic prose-blockquote:text-amber-800
-                                            prose-table:my-8 prose-table:w-full prose-table:border-collapse
-                                            prose-thead:bg-slate-100
-                                            prose-th:p-3 prose-th:border prose-th:border-slate-200 prose-th:text-left prose-th:text-sm prose-th:font-bold prose-th:text-slate-700
-                                            prose-td:p-3 prose-td:border prose-td:border-slate-200 prose-td:text-sm prose-td:text-slate-600
-                                            prose-tr:even:bg-blue-50/50
-                                            prose-img:rounded-xl prose-img:shadow-md prose-img:my-8
-                                            prose-code:text-purple-600 prose-code:bg-purple-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-                                            prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:rounded-xl prose-pre:p-4 prose-pre:overflow-x-auto
-                                            [&_.bg-gradient-to-r]:rounded-xl [&_.bg-gradient-to-r]:p-6 [&_.bg-gradient-to-r]:my-6 [&_.bg-gradient-to-r]:border
-                                        "
-                                        dangerouslySetInnerHTML={{ __html: selectedModule.content }}
-                                    />
-                                </div>
+                                <div
+                                    className="module-content-wrapper"
+                                    dangerouslySetInnerHTML={{ __html: selectedModule.content }}
+                                />
                             ) : (
                                 <div className="text-center py-12">
                                     <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
