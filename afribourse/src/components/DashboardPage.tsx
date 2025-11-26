@@ -1,6 +1,7 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
 import { useEffect, useState } from 'react';
 import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
+import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
 import { usePortfolio } from '../hooks/usePortfolio';
@@ -8,9 +9,7 @@ import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { API_BASE_URL } from '../config/api';
 
-type DashboardPageProps = {
-  onNavigate: (page: string, data?: any) => void;
-};
+type DashboardPageProps = {};
 
 // <-- AJOUT: Couleurs pour le graphique d'allocation
 const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
@@ -18,7 +17,8 @@ const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'
 // <-- AJOUT: Type pour les filtres de temps du graphique
 type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
 
-export default function DashboardPage({ onNavigate }: DashboardPageProps) {
+export default function DashboardPage() {
+  const navigate = useNavigate();
   // ✅ React Query: Hook personnalisé pour le portfolio
   const { 
     portfolio, 
@@ -70,7 +70,7 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
         apiFetch<any>('/users/me').catch(err => {
           console.error('Profile fetch error:', err);
           if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-            onNavigate('login');
+            navigate('/login');
             throw err;
           }
           return null;
@@ -315,7 +315,7 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
           <div className="flex items-center space-x-4">
             <Button
               variant="secondary"
-              onClick={() => onNavigate('profile')}
+              onClick={() => navigate('/profile')}
             >
               <Settings className="w-5 h-5 mr-2" />
               Mon Profil
@@ -562,7 +562,7 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
                   <Button 
                     variant="primary" 
                     size="sm" 
-                    onClick={() => onNavigate('markets')}
+                    onClick={() => navigate('/markets')}
                     className="mt-4"
                   >
                     Explorer le Marché
@@ -581,7 +581,7 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => onNavigate('transactions')}
+                  onClick={() => navigate('/transactions')}
                 >
                   Voir Tout
                   <ExternalLink className="w-4 h-4 ml-2" />
@@ -785,7 +785,7 @@ export default function DashboardPage({ onNavigate }: DashboardPageProps) {
                   <Button 
                     variant="primary" 
                     size="sm" 
-                    onClick={() => onNavigate('markets')}
+                    onClick={() => navigate('/markets')}
                   >
                     Ajouter des Actions
                   </Button>

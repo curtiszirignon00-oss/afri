@@ -21,11 +21,14 @@ import {
 } from 'lucide-react';
 import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
-import { useAuth } from '../contexts/AuthContext';
 
-export default function HomePage() {
+type HomePageProps = {
+
+  isLoggedIn: boolean;
+};
+
+export default function HomePage({ isLoggedIn }: HomePageProps) {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
   const newsContainerRef = useRef<HTMLDivElement>(null);
   
   // <-- AJOUT: État pour rotation des images de fond
@@ -408,9 +411,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-3xl font-bold text-gray-900">Top Performances</h2>
-              <p className="text-gray-600 mt-1">Les actions qui se démarquent aujourd'hui</p>
+              <p className="text-gray-600 mt-1">Les actions qui se démarquent aujourd'hui</p> {/* <-- AJOUT: Sous-titre */}
             </div>
-            <Button variant="ghost" onClick={() => navigate('/markets')}>
+            <Button variant="ghost" onClick(() => navigate('/markets')}>
               Voir le marché
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>

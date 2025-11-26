@@ -1,6 +1,7 @@
 import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu } from './MegaMenus';
 import { Settings } from 'lucide-react';
 
@@ -11,16 +12,16 @@ const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
   markets: MarketsMegaMenu,
 };
 
-type HeaderProps = {
-  currentPage: string;
-  onNavigate: (page: string) => void;
-};
-
-export default function Header({ currentPage, onNavigate }: HeaderProps) {
+export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  
+
+  // ✅ Hooks React Router
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPage = location.pathname.replace('/', '') || 'home';
+
   // ✅ Utilisation du hook useAuth
   const { isLoggedIn, logout, loading } = useAuth();
 
@@ -28,7 +29,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
   const handleLogout = async () => {
     await logout();
     setAccountMenuOpen(false);
-    onNavigate('home');
+    navigate('/');
   };
 
   const navigation = [
@@ -52,7 +53,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
             {/* Logo */}
             <div className="flex items-center">
               <button
-                onClick={() => { onNavigate('home'); setActiveMegaMenu(null); }}
+                onClick={() => { navigate('/'); setActiveMegaMenu(null); }}
                 className="flex flex-col items-start"
               >
                 <div className="flex items-center space-x-2">
@@ -86,7 +87,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                     tabIndex={-1}
                   >
                     <button
-                      onClick={() => { onNavigate(item.id); setActiveMegaMenu(null); }}
+                      onClick={() => { navigate(`/${item.id}`); setActiveMegaMenu(null); }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
                         currentPage === item.id || activeMegaMenu === item.id
                           ? 'bg-blue-50 text-blue-700'
@@ -119,7 +120,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                     </button>
                   ) : (
                     <button
-                      onClick={() => onNavigate('login')}
+                      onClick={() => navigate('/login')}
                       className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
                     >
                       <User className="w-5 h-5" />
@@ -134,17 +135,17 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                       onMouseLeave={() => setAccountMenuOpen(false)}
                     >
                       <button
-                        onClick={() => { onNavigate('dashboard'); setAccountMenuOpen(false); }}
+                        onClick={() => { navigate('/dashboard'); setAccountMenuOpen(false); }}
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <LayoutDashboard className="w-4 h-4" />
                         <span>Tableau de bord</span>
                       </button>
-                      
+
                       <div className="border-t border-gray-100 my-1"></div>
-                      
+
                       <button
-                        onClick={() => { onNavigate('profile'); setAccountMenuOpen(false); }}
+                        onClick={() => { navigate('/profile'); setAccountMenuOpen(false); }}
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <Settings className="w-4 h-4" />
@@ -190,7 +191,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   <button
                     key={item.id}
                     onClick={() => {
-                      onNavigate(item.id);
+                      navigate(`/${item.id}`);
                       setMobileMenuOpen(false);
                     }}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
@@ -210,7 +211,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                 <>
                   <button
                     onClick={() => {
-                      onNavigate(isLoggedIn ? 'dashboard' : 'login');
+                      navigate(isLoggedIn ? '/dashboard' : '/login');
                       setMobileMenuOpen(false);
                     }}
                     className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
@@ -223,7 +224,7 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                     <>
                       <button
                         onClick={() => {
-                          onNavigate('profile');
+                          navigate('/profile');
                           setMobileMenuOpen(false);
                         }}
                         className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
@@ -252,10 +253,6 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
       {ActiveMegaMenuComponent && (
         <div onMouseLeave={() => setActiveMegaMenu(null)}>
           <ActiveMegaMenuComponent
-            onNavigate={(page: string) => {
-              onNavigate(page);
-              setActiveMegaMenu(null);
-            }}
           />
         </div>
       )}
