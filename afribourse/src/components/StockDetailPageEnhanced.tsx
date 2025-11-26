@@ -54,13 +54,19 @@ export default function StockDetailPageEnhanced() {
   useEffect(() => {
     async function loadStock() {
       if (!stock && symbol) {
+        setLoading(true);
         try {
           const stockData = await apiFetch<Stock>(`/stocks/${symbol}`);
           setStock(stockData);
         } catch (err) {
           console.error("Erreur chargement stock:", err);
           setError("Impossible de charger les informations de l'action");
+        } finally {
+          setLoading(false);
         }
+      } else {
+        // Si le stock est déjà dans le state, on n'est plus en loading
+        setLoading(false);
       }
     }
     loadStock();
@@ -167,6 +173,8 @@ export default function StockDetailPageEnhanced() {
 
   // Handler pour l'achat
   async function handleBuy() {
+    if (!stock) return;
+
     if (!portfolio) {
       return toast.error("Connectez-vous et créez un portefeuille pour acheter.");
     }
@@ -212,10 +220,12 @@ export default function StockDetailPageEnhanced() {
     return new Intl.NumberFormat('fr-FR').format(num);
   }
 
-  const totalCost = quantity * stock.current_price;
+  const totalCost = stock ? quantity * stock.current_price : 0;
 
   // Calcul des sentiments et signaux (gardé de l'ancienne version)
   function calculateMarketSentiment(): { score: number; label: string; color: string } {
+    if (!stock) return { score: 0, label: 'Neutre', color: 'yellow' };
+
     const changePercent = stock.daily_change_percent ?? 0;
     const volumeScore = (stock.volume ?? 0) > 30000 ? 1 : 0.5;
     const priceScore = changePercent >= 2 ? 2 : changePercent >= 0 ? 1 : changePercent >= -2 ? 0 : -1;
@@ -229,6 +239,8 @@ export default function StockDetailPageEnhanced() {
   }
 
   function calculateTechnicalSignal(): { label: string; color: string; description: string } {
+    if (!stock) return { label: 'Neutre', color: 'yellow', description: 'Pas de données' };
+
     const changePercent = stock.daily_change_percent ?? 0;
     const priceVsPrevious = (stock.previous_close ?? 0) > 0 ? stock.current_price / stock.previous_close : 1;
 
@@ -339,10 +351,12 @@ export default function StockDetailPageEnhanced() {
                     const periodMap: Record<string, Period> = {
                       '1D': '1D',
                       '5D': '5D',
+                      '1W': '1W',
                       '1M': '1M',
                       '3M': '3M',
                       '6M': '6M',
                       '1Y': '1Y',
+                      '5Y': '5Y',
                       'ALL': 'ALL'
                     };
                     setSelectedPeriod(periodMap[interval] || '1Y');
@@ -351,10 +365,12 @@ export default function StockDetailPageEnhanced() {
                     // Mapper Period vers TimeInterval
                     selectedPeriod === '1D' ? '1D' :
                     selectedPeriod === '5D' ? '5D' :
+                    selectedPeriod === '1W' ? '1W' :
                     selectedPeriod === '1M' ? '1M' :
                     selectedPeriod === '3M' ? '3M' :
                     selectedPeriod === '6M' ? '6M' :
                     selectedPeriod === '1Y' ? '1Y' :
+                    selectedPeriod === '5Y' ? '5Y' :
                     'ALL'
                   }
                 />
