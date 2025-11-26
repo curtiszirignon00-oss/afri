@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star } from 'lucide-react';
+import { apiFetch } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
@@ -26,12 +28,15 @@ import {
 } from '../hooks/useStockDetails';
 import { Period } from '../services/stockApi';
 
-type StockDetailPageEnhancedProps = {
-  stock: Stock;
-  onNavigate: (page: string, data?: any) => void;
-};
+type StockDetailPageEnhancedProps = {};
 
-export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDetailPageEnhancedProps) {
+export default function StockDetailPageEnhanced() {
+  const { symbol } = useParams<{ symbol: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Récupérer le stock depuis le state ou depuis l'API
+  const [stock, setStock] = useState<Stock | null>(location.state as Stock || null);
   // État local
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -45,17 +50,33 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
 
-  // Hooks React Query pour charger les données
-  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock.symbol, selectedPeriod);
-  const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock.symbol);
-  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock.symbol);
-  const { data: newsData, isLoading: newsLoading } = useStockNews(stock.symbol, 10);
+  // Charger le stock depuis l'API si non disponible dans state
+  useEffect(() => {
+    async function loadStock() {
+      if (!stock && symbol) {
+        try {
+          const stockData = await apiFetch<Stock>(`/stocks/${symbol}`);
+          setStock(stockData);
+        } catch (err) {
+          console.error("Erreur chargement stock:", err);
+          setError("Impossible de charger les informations de l'action");
+        }
+      }
+    }
+    loadStock();
+  }, [symbol, stock]);
 
-  // Vérification de l'existence du stock
-  if (!stock) {
+  // Hooks React Query pour charger les données
+  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock?.symbol || symbol || '', selectedPeriod);
+  const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock?.symbol || symbol || '');
+  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock?.symbol || symbol || '');
+  const { data: newsData, isLoading: newsLoading } = useStockNews(stock?.symbol || symbol || '', 10);
+
+  // Afficher un loader si le stock est en cours de chargement
+  if (loading || !stock) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-        <p className="text-red-600">Stock non trouvé</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -89,7 +110,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
         // Watchlist
         if (watchlistRes.ok) {
           const watchlistItems: WatchlistItem[] = await watchlistRes.json();
-          const found = watchlistItems.some(item => item.stock_ticker === stock.symbol);
+          const found = watchlistItems.some(item => item.stock_ticker === (stock?.symbol || symbol));
           setIsInWatchlist(found);
         } else {
           setIsInWatchlist(false);
@@ -102,10 +123,12 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
       }
     }
     loadData();
-  }, [stock.symbol]);
+  }, [stock?.symbol, symbol]);
 
   // Handler pour le toggle watchlist
   async function handleToggleWatchlist() {
+    if (!stock) return;
+
     setIsTogglingWatchlist(true);
     setError(null);
     const currentStatus = isInWatchlist;
@@ -175,7 +198,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
       }
 
       toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi !`, { id: toastId });
-      setTimeout(() => onNavigate('dashboard'), 1500);
+      setTimeout(() => navigate('/dashboard'), 1500);
     } catch (error: any) {
       console.error("Erreur achat:", error);
       toast.error(`Erreur : ${error.message}`, { id: toastId });
@@ -236,7 +259,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Bouton retour */}
           <button
-            onClick={() => onNavigate('markets')}
+            onClick={() => navigate('/markets')}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -421,7 +444,7 @@ export default function StockDetailPageEnhanced({ stock, onNavigate }: StockDeta
                 </div>
               ) : (
                 <div className="text-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                  <button onClick={() => onNavigate('login')} className="text-blue-600 font-semibold hover:underline">
+                  <button onClick={() => navigate('/login')} className="text-blue-600 font-semibold hover:underline">
                     Connectez-vous
                   </button>{' '}
                   pour simuler.

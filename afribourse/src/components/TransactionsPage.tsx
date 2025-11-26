@@ -3,11 +3,11 @@ import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useTransactions } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 
-type TransactionsPageProps = {
-  onNavigate: (page: string) => void;
-};
+import { useNavigate } from 'react-router-dom';
+type TransactionsPageProps = {};
 
-export default function TransactionsPage({ onNavigate }: TransactionsPageProps) {
+export default function TransactionsPage() {
+  const navigate = useNavigate();
   // ✅ React Query: Hook pour récupérer les transactions
   const { data: transactions = [], isLoading, error, refetch } = useTransactions();
 
@@ -53,7 +53,7 @@ export default function TransactionsPage({ onNavigate }: TransactionsPageProps) 
             <p className="text-gray-600">Consultez toutes vos opérations d'achat et de vente</p>
           </div>
           {/* ✅ Button remplace button manuel */}
-          <Button variant="secondary" onClick={() => onNavigate('dashboard')}>
+          <Button variant="secondary" onClick={() => navigate('/dashboard')}>
             Retour au Dashboard
           </Button>
         </div>
@@ -120,7 +120,7 @@ export default function TransactionsPage({ onNavigate }: TransactionsPageProps) 
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune transaction</h3>
             <p className="text-gray-600 mb-6">Vous n'avez pas encore effectué de transaction.</p>
-            <Button variant="primary" onClick={() => onNavigate('markets')}>
+            <Button variant="primary" onClick={() => navigate('/markets')}>
               Explorer les marchés
             </Button>
           </Card>

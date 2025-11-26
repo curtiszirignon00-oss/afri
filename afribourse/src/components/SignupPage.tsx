@@ -5,11 +5,11 @@ import { Button, Input, Card } from './ui';
 import { API_BASE_URL } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 
-type SignupPageProps = {
-  onNavigate: (page: string) => void;
-};
+import { useNavigate } from 'react-router-dom';
+type SignupPageProps = {};
 
-export default function SignupPage({ onNavigate }: SignupPageProps) {
+export default function SignupPage() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
@@ -81,7 +81,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
       // Rediriger après un court délai pour que l'utilisateur voie le message de succès
       // et que React ait le temps de mettre à jour l'état d'authentification
       setTimeout(() => {
-        onNavigate('dashboard');
+        navigate('/dashboard');
       }, 300);
     } catch (err: any) {
       console.error('Signup error:', err);
@@ -202,7 +202,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
           <div className="mt-6 text-center text-sm text-gray-600">
             Déjà un compte ?{' '}
             <button
-              onClick={() => onNavigate('login')}
+              onClick={() => navigate('/login')}
               className="text-indigo-600 font-semibold hover:underline"
               disabled={loading}
             >
@@ -213,7 +213,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
 
         {/* Retour à l'accueil */}
         <div className="mt-6 text-center">
-          <Button variant="ghost" onClick={() => onNavigate('home')} disabled={loading}>
+          <Button variant="ghost" onClick={() => navigate('/')} disabled={loading}>
             Retour à l'accueil
           </Button>
         </div>
