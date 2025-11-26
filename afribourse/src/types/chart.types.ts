@@ -1,7 +1,7 @@
 // Types pour les données de marché et les graphiques
 export type ChartType = 'candlestick' | 'line' | 'area' | 'bar';
 
-export type TimeInterval = '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
+export type TimeInterval = '1D' | '5D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'ALL';
 
 export interface OHLCVData {
   date: string;

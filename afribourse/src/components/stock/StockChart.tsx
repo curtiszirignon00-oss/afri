@@ -9,8 +9,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-
-type Period = '1M' | '3M' | '6M' | '1Y' | 'ALL';
+import { Period } from '../../services/stockApi';
 
 type StockChartData = {
   date: string;

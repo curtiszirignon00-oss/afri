@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config/api';
 
-export type Period = '1M' | '3M' | '6M' | '1Y' | 'ALL';
+export type Period = '1D' | '5D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'ALL';
 
 export type StockHistoryData = {
   id: string;
