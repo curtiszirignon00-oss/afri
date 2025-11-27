@@ -50,6 +50,12 @@ export default function StockDetailPageEnhanced() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
 
+  // Hooks React Query pour charger les données - DOIVENT être appelés avant tout early return
+  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock?.symbol || symbol || '', selectedPeriod);
+  const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock?.symbol || symbol || '');
+  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock?.symbol || symbol || '');
+  const { data: newsData, isLoading: newsLoading } = useStockNews(stock?.symbol || symbol || '', 10);
+
   // Charger le stock depuis l'API si non disponible dans state
   useEffect(() => {
     async function loadStock() {
@@ -69,28 +75,21 @@ export default function StockDetailPageEnhanced() {
         setLoading(false);
       }
     }
-    loadStock();
+
+    // Appeler la fonction async sans retourner la promesse
+    void loadStock();
   }, [symbol, stock]);
-
-  // Hooks React Query pour charger les données
-  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock?.symbol || symbol || '', selectedPeriod);
-  const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock?.symbol || symbol || '');
-  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock?.symbol || symbol || '');
-  const { data: newsData, isLoading: newsLoading } = useStockNews(stock?.symbol || symbol || '', 10);
-
-  // Afficher un loader si le stock est en cours de chargement
-  if (loading || !stock) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   // Charger portfolio et watchlist status
   useEffect(() => {
+    // S'assurer qu'on a un stock avant de charger
+    if (!stock) return;
+
+    // Capturer la valeur de stock pour éviter les problèmes de null check
+    const currentStock = stock;
+
     async function loadData() {
-      setLoading(true);
+      // Ne pas remettre loading à true ici, sinon on affiche le spinner
       setError(null);
       try {
         const [portfolioRes, watchlistRes] = await Promise.all([
@@ -116,7 +115,7 @@ export default function StockDetailPageEnhanced() {
         // Watchlist
         if (watchlistRes.ok) {
           const watchlistItems: WatchlistItem[] = await watchlistRes.json();
-          const found = watchlistItems.some(item => item.stock_ticker === (stock?.symbol || symbol));
+          const found = watchlistItems.some(item => item.stock_ticker === currentStock.symbol);
           setIsInWatchlist(found);
         } else {
           setIsInWatchlist(false);
@@ -124,12 +123,45 @@ export default function StockDetailPageEnhanced() {
       } catch (err: any) {
         console.error("Erreur chargement données:", err);
         setError("Impossible de charger certaines informations.");
-      } finally {
-        setLoading(false);
       }
     }
-    loadData();
-  }, [stock?.symbol, symbol]);
+
+    // Appeler la fonction async sans retourner la promesse
+    void loadData();
+  }, [stock?.symbol, symbol, stock]);
+
+  // Préparer les données pour lightweight-charts (mémoïsées) - AVANT les early returns
+  const lightweightData = React.useMemo(() => {
+    if (!historyData?.data || historyData.data.length === 0) return [];
+    return convertToLightweightData(historyData.data);
+  }, [historyData?.data]);
+
+  // Afficher un loader si le stock est en cours de chargement
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Afficher une erreur si le stock n'a pas pu être chargé
+  if (!stock) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-700 font-semibold mb-2">Action introuvable</p>
+          <p className="text-red-600">Impossible de charger les informations de l'action {symbol}</p>
+          <button
+            onClick={() => window.history.back()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retour
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Handler pour le toggle watchlist
   async function handleToggleWatchlist() {
@@ -258,12 +290,6 @@ export default function StockDetailPageEnhanced() {
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
-  // Préparer les données pour lightweight-charts (mémoïsées)
-  const lightweightData = React.useMemo(() => {
-    if (!historyData?.data || historyData.data.length === 0) return [];
-    return convertToLightweightData(historyData.data);
-  }, [historyData?.data]);
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* En-tête */}
@@ -340,7 +366,13 @@ export default function StockDetailPageEnhanced() {
           <div className="lg:col-span-2">
             {/* Graphique TradingView */}
             <div className="mb-8">
-              {lightweightData.length > 0 ? (
+              {historyLoading ? (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <div className="flex justify-center items-center h-96">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                </div>
+              ) : lightweightData.length > 0 ? (
                 <StockChartNew
                   symbol={stock.symbol}
                   data={lightweightData}
@@ -376,8 +408,14 @@ export default function StockDetailPageEnhanced() {
                 />
               ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex justify-center items-center h-96">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <div className="flex flex-col justify-center items-center h-96 text-gray-500">
+                    <svg className="w-16 h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p className="text-lg font-medium mb-2">Données de graphique indisponibles</p>
+                    <p className="text-sm text-center max-w-md">
+                      Les données historiques pour cette action ne sont pas disponibles pour le moment.
+                    </p>
                   </div>
                 </div>
               )}
