@@ -14,7 +14,9 @@
       "Bash(cat:*)",
       "Bash(npx eslint:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout 8 bash -c \"while ! curl -s http://localhost:3001 > /dev/null 2>&1; do sleep 0.5; done && echo ''Backend démarré!''\":*)"
     ],
     "deny": [],
     "ask": []
