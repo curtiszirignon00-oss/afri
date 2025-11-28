@@ -1,6 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  safelist: [
+    // Couleurs de fond
+    {
+      pattern: /bg-(blue|indigo|purple|pink|red|orange|amber|yellow|green|emerald|cyan|gray)-(50|100|200|300|400|500|600|700|800|900)/,
+    },
+    // Bordures
+    {
+      pattern: /border-(blue|indigo|purple|pink|red|orange|amber|yellow|green|emerald|cyan|gray|white)-(50|100|200|300|400|500|600|700|800|900)/,
+    },
+    // Texte
+    {
+      pattern: /text-(blue|indigo|purple|pink|red|orange|amber|yellow|green|emerald|cyan|gray|white)-(50|100|200|300|400|500|600|700|800|900)/,
+    },
+    // Classes communes pour les modules
+    'border-l-4',
+    'rounded-r-xl',
+    'rounded-xl',
+    'rounded-lg',
+    'shadow-sm',
+    'shadow-md',
+    'shadow-lg',
+    'min-h-screen',
+  ],
   theme: {
     extend: {
       fontFamily: {
