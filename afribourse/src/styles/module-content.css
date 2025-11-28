@@ -1,0 +1,423 @@
+/* ========================================
+   STYLES POUR LE CONTENU DES MODULES
+   ======================================== */
+
+/* Container principal du module */
+.module-content {
+  line-height: 1.8;
+  color: #1f2937;
+}
+
+/* ========================================
+   TITRES
+   ======================================== */
+.module-content h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.module-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1.25rem;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.module-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.module-content h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+/* ========================================
+   PARAGRAPHES
+   ======================================== */
+.module-content p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: #374151;
+}
+
+.module-content p.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75;
+}
+
+.module-content p.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+.module-content p.italic {
+  font-style: italic;
+}
+
+.module-content p.text-center {
+  text-align: center;
+}
+
+/* ========================================
+   LISTES
+   ======================================== */
+.module-content ul {
+  list-style-type: none;
+  margin-bottom: 1.5rem;
+  padding-left: 0;
+}
+
+.module-content ul li {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.8;
+}
+
+.module-content ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.module-content ol {
+  list-style-type: decimal;
+  margin-bottom: 1.5rem;
+  padding-left: 2rem;
+}
+
+.module-content ol li {
+  margin-bottom: 0.75rem;
+  line-height: 1.8;
+}
+
+/* Listes avec espacement */
+.module-content ul.space-y-3 li {
+  margin-bottom: 0.75rem;
+}
+
+.module-content ul.space-y-4 li {
+  margin-bottom: 1rem;
+}
+
+/* ========================================
+   TABLEAUX
+   ======================================== */
+.module-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  background: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.module-content table thead {
+  background-color: #f3f4f6;
+}
+
+.module-content table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  color: #111827;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.module-content table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.module-content table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.module-content table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Tableaux avec bordures */
+.module-content table.border {
+  border: 1px solid #e5e7eb;
+}
+
+.module-content table.border th,
+.module-content table.border td {
+  border: 1px solid #e5e7eb;
+}
+
+/* ========================================
+   DIVS COLORÉES (BG-COLORS)
+   ======================================== */
+
+/* Div Bleue */
+.module-content div[class*="bg-blue"] {
+  background-color: #dbeafe !important;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.module-content div.bg-blue-600 {
+  background-color: #2563eb !important;
+  color: white !important;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.module-content div.bg-blue-600 h2,
+.module-content div.bg-blue-600 h3,
+.module-content div.bg-blue-600 p,
+.module-content div.bg-blue-600 li {
+  color: white !important;
+}
+
+.module-content div.bg-blue-50 {
+  background-color: #eff6ff !important;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #3b82f6;
+}
+
+/* Div Verte */
+.module-content div[class*="bg-green"] {
+  background-color: #d1fae5 !important;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #10b981;
+}
+
+/* Div Jaune/Amber */
+.module-content div[class*="bg-amber"],
+.module-content div[class*="bg-yellow"] {
+  background-color: #fef3c7 !important;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #f59e0b;
+}
+
+/* Div Rouge */
+.module-content div[class*="bg-red"] {
+  background-color: #fee2e2 !important;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #ef4444;
+}
+
+/* Div Slate/Grise */
+.module-content div[class*="bg-slate"],
+.module-content div[class*="bg-gray"] {
+  background-color: #f1f5f9 !important;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+/* ========================================
+   CITATIONS (BLOCKQUOTE)
+   ======================================== */
+.module-content blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #6b7280;
+  background-color: #f9fafb;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+}
+
+/* ========================================
+   CODE
+   ======================================== */
+.module-content code {
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #dc2626;
+}
+
+.module-content pre {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.module-content pre code {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* ========================================
+   LIENS
+   ======================================== */
+.module-content a {
+  color: #3b82f6;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.module-content a:hover {
+  color: #2563eb;
+}
+
+/* ========================================
+   IMAGES
+   ======================================== */
+.module-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   CLASSES UTILITAIRES TAILWIND
+   ======================================== */
+
+/* Marges */
+.module-content .mb-2 { margin-bottom: 0.5rem; }
+.module-content .mb-3 { margin-bottom: 0.75rem; }
+.module-content .mb-4 { margin-bottom: 1rem; }
+.module-content .mb-6 { margin-bottom: 1.5rem; }
+.module-content .mb-8 { margin-bottom: 2rem; }
+.module-content .mb-12 { margin-bottom: 3rem; }
+
+.module-content .mt-3 { margin-top: 0.75rem; }
+.module-content .mt-4 { margin-top: 1rem; }
+.module-content .mt-6 { margin-top: 1.5rem; }
+.module-content .mt-8 { margin-top: 2rem; }
+
+/* Padding */
+.module-content .p-4 { padding: 1rem; }
+.module-content .p-6 { padding: 1.5rem; }
+.module-content .p-8 { padding: 2rem; }
+
+.module-content .px-4 { padding-left: 1rem; padding-right: 1rem; }
+.module-content .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+.module-content .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.module-content .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+
+/* Typographie */
+.module-content .font-bold { font-weight: 700; }
+.module-content .font-semibold { font-weight: 600; }
+.module-content .font-medium { font-weight: 500; }
+
+.module-content .leading-relaxed { line-height: 1.625; }
+.module-content .leading-loose { line-height: 2; }
+
+/* Couleurs de texte */
+.module-content .text-blue-600 { color: #2563eb; }
+.module-content .text-blue-700 { color: #1d4ed8; }
+.module-content .text-blue-800 { color: #1e40af; }
+.module-content .text-blue-900 { color: #1e3a8a; }
+
+.module-content .text-green-600 { color: #16a34a; }
+.module-content .text-green-700 { color: #15803d; }
+
+.module-content .text-gray-600 { color: #4b5563; }
+.module-content .text-gray-700 { color: #374151; }
+.module-content .text-gray-800 { color: #1f2937; }
+.module-content .text-gray-900 { color: #111827; }
+
+.module-content .text-white { color: #ffffff; }
+
+/* Bordures */
+.module-content .border { border: 1px solid #e5e7eb; }
+.module-content .border-2 { border-width: 2px; }
+.module-content .border-4 { border-width: 4px; }
+
+.module-content .border-blue-200 { border-color: #bfdbfe; }
+.module-content .border-gray-200 { border-color: #e5e7eb; }
+
+.module-content .rounded { border-radius: 0.25rem; }
+.module-content .rounded-lg { border-radius: 0.5rem; }
+.module-content .rounded-xl { border-radius: 0.75rem; }
+
+/* Espacement entre éléments */
+.module-content .space-y-2 > * + * { margin-top: 0.5rem; }
+.module-content .space-y-3 > * + * { margin-top: 0.75rem; }
+.module-content .space-y-4 > * + * { margin-top: 1rem; }
+.module-content .space-y-6 > * + * { margin-top: 1.5rem; }
+
+/* Overflow pour les tableaux */
+.module-content .overflow-x-auto {
+  overflow-x: auto;
+}
+
+/* Min height pour les écrans */
+.module-content .min-h-screen {
+  min-height: 100vh;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+  .module-content h1 {
+    font-size: 2rem;
+  }
+
+  .module-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .module-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .module-content table {
+    font-size: 0.875rem;
+  }
+
+  .module-content table th,
+  .module-content table td {
+    padding: 0.75rem;
+  }
+}
+
+/* ========================================
+   CLASSES SPÉCIALES POUR LE MODULE
+   ======================================== */
+
+/* Style pour les divs avec classes combinées */
+.module-content div.text-white p,
+.module-content div.text-white ul,
+.module-content div.text-white li {
+  color: white !important;
+}
+
+/* Pour les divs avec padding et min-height */
+.module-content div.p-8.min-h-screen {
+  padding: 2rem;
+  min-height: auto; /* On évite le full screen dans le contenu */
+}
