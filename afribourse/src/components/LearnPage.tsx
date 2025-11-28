@@ -1,4 +1,4 @@
-// src/components/LearnPage.tsx - VERSION REFONTE COMPLÈTE
+// src/components/LearnPage.tsx - VERSION CORRIGÉE
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   BookOpen,
@@ -23,12 +23,10 @@ import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import confetti from 'canvas-confetti';
 import { AITutor } from './AITutor';
-import { ContentRenderer, ModuleContent } from './learning';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
 
-// <-- AJOUT: Type pour le quiz (temporaire, à remplacer par les vrais types)
 interface QuizQuestion {
   id: string;
   question: string;
@@ -39,11 +37,11 @@ interface QuizQuestion {
 
 interface QuizState {
   isActive: boolean;
-  answers: { [questionId: string]: number }; // Map questionId -> answerIndex
+  answers: { [questionId: string]: number };
   score: number | null;
   passed: boolean | null;
   showResults: boolean;
-  detailedResults?: any[]; // Résultats détaillés de l'API
+  detailedResults?: any[];
 }
 
 export default function LearnPage() {
@@ -55,7 +53,6 @@ export default function LearnPage() {
     const [error, setError] = useState<string | null>(null);
     const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
     
-    // <-- AJOUT: États pour le quiz
     const [quizState, setQuizState] = useState<QuizState>({
       isActive: false,
       answers: {},
@@ -64,47 +61,20 @@ export default function LearnPage() {
       showResults: false
     });
 
-    // <-- AJOUT: États pour l'audio
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
-    // <-- AJOUT: États pour les slides
     const [currentSlide, setCurrentSlide] = useState(1);
     const [totalSlides, setTotalSlides] = useState(1);
 
-    // <-- AJOUT: États pour le quiz récupéré de l'API
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
     const [quizLoading, setQuizLoading] = useState(false);
     const [quizPassingScore, setQuizPassingScore] = useState(70);
 
-    // <-- AJOUT: État pour le chatbot IA
     const [showAITutor, setShowAITutor] = useState(false);
 
-    // <-- AJOUT: État pour la barre de progression de lecture
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
-
-    // <-- AJOUT: Fonction pour charger le quiz depuis l'API
-    const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
-      setQuizLoading(true);
-      try {
-        const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
-        if (!response.ok) {
-          throw new Error('Impossible de charger le quiz');
-        }
-        const quizData = await response.json();
-
-        // Extraire les questions et le passing score
-        setQuizQuestions(quizData.questions || []);
-        setQuizPassingScore(quizData.passing_score || 70);
-      } catch (error) {
-        console.error('Erreur lors du chargement du quiz:', error);
-        toast.error('Impossible de charger le quiz');
-        setQuizQuestions([]);
-      } finally {
-        setQuizLoading(false);
-      }
-    }, []);
 
     // --- Fonctions Helper ---
     const getDifficultyColor = (level: string): string => {
@@ -129,22 +99,17 @@ export default function LearnPage() {
         return progress.some(p => p.module.slug === moduleSlug && p.is_completed);
     }, [progress]);
 
-    // <-- AJOUT: Fonction pour vérifier si un module est déverrouillé
     const isModuleUnlocked = useCallback((module: LearningModule): boolean => {
-      // Module 0 et 1 sont toujours déverrouillés
       if (!module.order_index || module.order_index <= 1) {
         return true;
       }
 
-      // Trouver le module précédent
       const previousModule = modules.find(m => m.order_index === (module.order_index! - 1));
-      if (!previousModule) return true; // Si pas de module précédent, déverrouiller
+      if (!previousModule) return true;
 
-      // Vérifier si le module précédent est complété
       return isModuleCompleted(previousModule.slug);
     }, [modules, isModuleCompleted]);
 
-    // <-- AJOUT: Fonction pour obtenir le module précédent non complété
     const getPreviousIncompleteModule = useCallback((module: LearningModule): LearningModule | null => {
       if (!module.order_index || module.order_index <= 1) return null;
 
@@ -153,6 +118,26 @@ export default function LearnPage() {
 
       return isModuleCompleted(previousModule.slug) ? null : previousModule;
     }, [modules, isModuleCompleted]);
+
+    const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
+      setQuizLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
+        if (!response.ok) {
+          throw new Error('Impossible de charger le quiz');
+        }
+        const quizData = await response.json();
+
+        setQuizQuestions(quizData.questions || []);
+        setQuizPassingScore(quizData.passing_score || 70);
+      } catch (error) {
+        console.error('Erreur lors du chargement du quiz:', error);
+        toast.error('Impossible de charger le quiz');
+        setQuizQuestions([]);
+      } finally {
+        setQuizLoading(false);
+      }
+    }, []);
 
     // --- Logique de Chargement (Modules + Progression) ---
     const loadData = useCallback(async () => {
@@ -195,36 +180,29 @@ export default function LearnPage() {
         loadData();
     }, [loadData]);
 
-    // <-- AJOUT: useEffect pour gérer les slides
     useEffect(() => {
         if (!selectedModule) return;
 
-        // Compter le nombre total de slides dans le contenu
         const slideElements = document.querySelectorAll('.slide[data-slide]');
         const count = slideElements.length;
         setTotalSlides(count > 0 ? count : 1);
 
-        // Masquer tous les slides
         slideElements.forEach(slide => {
             (slide as HTMLElement).style.display = 'none';
         });
 
-        // Afficher uniquement le slide actuel
         const currentSlideElement = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
         if (currentSlideElement) {
             (currentSlideElement as HTMLElement).style.display = 'block';
         }
 
-        // Scroll vers le haut lors du changement de slide
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [selectedModule, currentSlide]);
 
-    // <-- AJOUT: Reset du slide au changement de module
     useEffect(() => {
         setCurrentSlide(1);
     }, [selectedModule?.slug]);
 
-    // <-- AJOUT: Effet pour tracker la progression de lecture
     useEffect(() => {
         if (!selectedModule) {
             setReadingProgress(0);
@@ -243,7 +221,6 @@ export default function LearnPage() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [selectedModule]);
 
-    // <-- AJOUT: Fonction pour démarrer le quiz
     const startQuiz = useCallback(() => {
       if (!isLoggedIn) {
         toast.error("Connectez-vous pour passer le quiz.");
@@ -259,15 +236,12 @@ export default function LearnPage() {
         detailedResults: []
       });
 
-      // Scroll vers le quiz
       setTimeout(() => {
         document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }, [isLoggedIn]);
 
-    // <-- AJOUT: Fonction pour répondre à une question
     const answerQuestion = useCallback((answerIndex: number) => {
-      // Calculer l'index actuel basé sur le nombre de réponses
       const currentIndex = Object.keys(quizState.answers).length;
       const currentQuestionId = quizQuestions[currentIndex]?.id;
 
@@ -285,14 +259,12 @@ export default function LearnPage() {
       }));
     }, [quizQuestions, quizState.answers]);
 
-    // <-- AJOUT: Fonction pour soumettre le quiz via l'API
     const submitQuiz = useCallback(async () => {
       if (!selectedModule) return;
 
       const toastId = toast.loading('Validation du quiz en cours...');
 
       try {
-        // Soumettre le quiz à l'API
         const response = await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
           method: 'POST',
           headers: {
@@ -318,13 +290,10 @@ export default function LearnPage() {
           detailedResults: result.detailedResults || []
         }));
 
-        // Recharger la progression
         await loadData();
 
-        // Afficher le résultat
         if (result.passed) {
           toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
-          // Lancer les confetti pour célébrer
           confetti({
             particleCount: 150,
             spread: 70,
@@ -335,7 +304,6 @@ export default function LearnPage() {
           toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
         }
 
-        // Scroll vers les résultats
         setTimeout(() => {
           document.getElementById('quiz-results')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
@@ -346,10 +314,8 @@ export default function LearnPage() {
       }
     }, [selectedModule, quizState.answers, loadData]);
 
-    // <-- AJOUT: Fonction pour rejouer le quiz
     const retryQuiz = useCallback(() => {
       if (selectedModule) {
-        // Recharger le quiz pour avoir de nouvelles questions aléatoires
         loadModuleQuiz(selectedModule.slug);
       }
 
@@ -367,10 +333,8 @@ export default function LearnPage() {
       }, 100);
     }, [selectedModule, loadModuleQuiz]);
 
-    // <-- AJOUT: Fonction pour gérer le lecteur audio
     const toggleAudio = useCallback(() => {
       if (!audioElement) {
-        // Créer un élément audio (exemple - à remplacer par la vraie URL)
         const audio = new Audio('/audio/example-module.mp3');
         audio.onended = () => setIsAudioPlaying(false);
         audio.onpause = () => setIsAudioPlaying(false);
@@ -387,7 +351,6 @@ export default function LearnPage() {
       }
     }, [audioElement, isAudioPlaying]);
 
-    // Cleanup audio on unmount
     useEffect(() => {
       return () => {
         if (audioElement) {
@@ -397,7 +360,6 @@ export default function LearnPage() {
       };
     }, [audioElement]);
 
-    // --- Fonction de Marquage comme Complété (conservée pour compatibilité) ---
     const handleMarkAsCompleted = useCallback(async (moduleSlug: string) => {
       if (!isLoggedIn) {
         toast.error("Connectez-vous pour marquer un module comme terminé.");
@@ -426,10 +388,8 @@ export default function LearnPage() {
       }
     }, [isLoggedIn, loadData]);
 
-    // --- useEffect: Charger le quiz quand un module est sélectionné ---
     useEffect(() => {
         if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4) {
-            // Charger le quiz depuis l'API pour les modules 1, 2, 3 et 4
             loadModuleQuiz(selectedModule.slug);
         }
     }, [selectedModule, loadModuleQuiz]);
@@ -438,43 +398,16 @@ export default function LearnPage() {
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4; // <-- Quiz pour les modules 1, 2, 3 et 4
-
-        // Extraire l'objectif pédagogique du contenu HTML
-        const extractPedagogicalObjective = (htmlContent: string): string | null => {
-            if (!htmlContent) return null;
-
-            // Créer un élément temporaire pour parser le HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-
-            // Chercher spécifiquement la div de l'objectif pédagogique
-            // Elle a une classe bg-gradient et contient "🎯 Objectif Pédagogique"
-            const divs = tempDiv.querySelectorAll('div');
-            for (let div of Array.from(divs)) {
-                const h2 = div.querySelector('h2');
-                if (h2 && h2.textContent?.includes('🎯 Objectif Pédagogique')) {
-                    // Vérifier que c'est une div avec un fond coloré (bg-gradient)
-                    if (div.className.includes('bg-gradient')) {
-                        return div.innerHTML;
-                    }
-                }
-            }
-            return null;
-        };
-
-        const pedagogicalObjective = extractPedagogicalObjective(selectedModule.content || '');
+        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4;
 
         return (
             <div className="min-h-screen bg-slate-50">
-                {/* Header immersif style slate-900 */}
+                {/* Header immersif */}
                 <div className="bg-slate-900 text-white pt-8 pb-16 px-4 relative overflow-hidden">
-                    {/* Decorative blobs */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2" />
 
                     <div className="max-w-4xl mx-auto relative z-10">
-                        {/* Breadcrumb */}
                         <button
                             onClick={() => {
                               setSelectedModule(null);
@@ -497,10 +430,9 @@ export default function LearnPage() {
                             Retour aux modules
                         </button>
 
-                        {/* Meta info */}
                         <div className="flex flex-wrap items-center gap-3 mb-4">
                             <span className="bg-blue-500/20 text-blue-200 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
-                                Module {selectedModule.order_index != null ? selectedModule.order_index + 1 : 1}
+                                Module {selectedModule.order_index ?? 0}
                             </span>
                             <span className="text-slate-400 text-sm">•</span>
                             <span className="text-slate-400 text-sm flex items-center gap-1">
@@ -532,7 +464,6 @@ export default function LearnPage() {
                             )}
                         </div>
 
-                        {/* Title & description */}
                         <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
                             {selectedModule.title}
                         </h1>
@@ -556,7 +487,7 @@ export default function LearnPage() {
                             </div>
                         </div>
 
-                        {/* Barre de progression quiz si déjà tenté */}
+                        {/* Barre de progression quiz */}
                         {moduleProgress?.quiz_score !== null && moduleProgress?.quiz_score !== undefined && (
                             <div className="bg-slate-50 px-8 py-4 border-b border-slate-100">
                                 <div className="flex items-center justify-between mb-2">
@@ -576,19 +507,11 @@ export default function LearnPage() {
                             </div>
                         )}
 
-                        {/* Contenu du module avec styles améliorés */}
-                        <div className="p-6 md:p-12" ref={contentRef}>
-                            {/* Option 1: Contenu structuré JSON (nouveau format) */}
-                            {(selectedModule as any).content_json ? (
-                                <div className="space-y-8">
-                                    <ContentRenderer
-                                        moduleContent={JSON.parse((selectedModule as any).content_json) as ModuleContent}
-                                    />
-                                </div>
-                            ) : selectedModule.content ? (
-                                /* Option 2: Contenu HTML (ancien format - fallback) */
+                        {/* Contenu du module - CORRECTION ICI */}
+                        <div className="p-6 md:p-12 prose prose-lg max-w-none" ref={contentRef}>
+                            {selectedModule.content ? (
                                 <div
-                                    className="module-content-wrapper"
+                                    className="module-content"
                                     dangerouslySetInnerHTML={{ __html: selectedModule.content }}
                                 />
                             ) : (
@@ -597,377 +520,335 @@ export default function LearnPage() {
                                     <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
                                 </div>
                             )}
+                        </div>
 
-                        {/* Navigation entre les slides */}
-                        {totalSlides > 1 && (
-                            <div className="mt-8 pt-8 border-t border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    <button
-                                        onClick={() => setCurrentSlide(prev => Math.max(1, prev - 1))}
-                                        disabled={currentSlide === 1}
-                                        className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                                            currentSlide === 1
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
-                                        }`}
-                                    >
-                                        <ArrowLeft className="w-5 h-5" />
-                                        <span>Précédent</span>
-                                    </button>
+                        {/* Section Quiz */}
+                        {hasQuiz && !isCompleted && (
+                            <div className="px-8 py-10 bg-gradient-to-br from-indigo-50 to-purple-50 border-t-4 border-indigo-500">
+                                <div className="max-w-3xl mx-auto">
+                                    {!quizState.isActive && !quizState.showResults && (
+                                        <div className="text-center">
+                                            {quizLoading ? (
+                                                <div className="py-12">
+                                                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
+                                                    <p className="text-gray-600">Chargement du quiz...</p>
+                                                </div>
+                                            ) : quizQuestions.length > 0 ? (
+                                                <>
+                                                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mb-6 shadow-lg">
+                                                        <Brain className="w-10 h-10 text-white" />
+                                                    </div>
+                                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                                                        Testez vos connaissances
+                                                    </h3>
+                                                    <p className="text-gray-600 mb-6">
+                                                        Répondez à {quizQuestions.length} questions pour valider ce module. Score minimum requis: <strong>{quizPassingScore}%</strong>
+                                                    </p>
+                                                    <button
+                                                        onClick={startQuiz}
+                                                        className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                    >
+                                                        <Brain className="w-6 h-6" />
+                                                        <span>Commencer le quiz</span>
+                                                    </button>
+                                                    <p className="text-sm text-gray-500 mt-4">
+                                                        Vous avez 2 tentatives toutes les 8 heures
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="text-gray-500">Aucun quiz disponible pour ce module.</p>
+                                            )}
+                                        </div>
+                                    )}
 
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-gray-600 font-medium">
-                                            Slide {currentSlide} / {totalSlides}
-                                        </span>
-                                    </div>
+                                    {/* Quiz en cours */}
+                                    {(() => {
+                                        const currentIndex = Object.keys(quizState.answers).length;
+                                        return quizState.isActive && currentIndex < quizQuestions.length && (
+                                            <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
+                                                <div className="mb-6">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <span className="text-sm font-medium text-gray-600">
+                                                            Question {currentIndex + 1} sur {quizQuestions.length}
+                                                        </span>
+                                                        <span className="text-sm font-medium text-indigo-600">
+                                                            {Math.round((currentIndex / quizQuestions.length) * 100)}% complété
+                                                        </span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                                        <div
+                                                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                                                            style={{ width: `${(currentIndex / quizQuestions.length) * 100}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
 
-                                    <button
-                                        onClick={() => setCurrentSlide(prev => Math.min(totalSlides, prev + 1))}
-                                        disabled={currentSlide === totalSlides}
-                                        className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                                            currentSlide === totalSlides
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg'
-                                        }`}
-                                    >
-                                        <span>Suivant</span>
-                                        <ArrowLeft className="w-5 h-5 rotate-180" />
-                                    </button>
+                                                <h4 className="text-xl font-bold text-gray-900 mb-6 leading-relaxed">
+                                                    {quizQuestions[currentIndex].question}
+                                                </h4>
+
+                                                <div className="space-y-3">
+                                                    {quizQuestions[currentIndex].options.map((option, index) => (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => answerQuestion(index)}
+                                                        className="w-full text-left p-5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                                                    >
+                                                        <div className="flex items-center space-x-4">
+                                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center font-bold text-gray-600 group-hover:text-indigo-600 transition-colors">
+                                                                {String.fromCharCode(65 + index)}
+                                                            </div>
+                                                            <span className="text-gray-700 group-hover:text-gray-900 font-medium">
+                                                                {option}
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        );
+                                    })()}
+
+                                    {/* Bouton soumettre */}
+                                    {quizState.isActive && Object.keys(quizState.answers).length === quizQuestions.length && (
+                                        <div className="bg-white rounded-2xl shadow-xl p-8 text-center border-2 border-green-200">
+                                            <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
+                                            <h4 className="text-2xl font-bold text-gray-900 mb-3">
+                                                Quiz terminé !
+                                            </h4>
+                                            <p className="text-gray-600 mb-6">
+                                                Vous avez répondu à toutes les questions. Cliquez ci-dessous pour voir votre score.
+                                            </p>
+                                            <button
+                                                onClick={submitQuiz}
+                                                className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold text-lg shadow-lg"
+                                            >
+                                                <Target className="w-6 h-6" />
+                                                <span>Voir mon score</span>
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Résultats du quiz */}
+                                    {quizState.showResults && quizState.score !== null && (
+                                        <div id="quiz-results" className={`bg-white rounded-2xl shadow-xl p-8 border-4 ${quizState.passed ? 'border-green-500' : 'border-red-500'}`}>
+                                            <div className="text-center mb-8">
+                                                {quizState.passed ? (
+                                                    <>
+                                                        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full mb-6 shadow-xl">
+                                                            <Star className="w-12 h-12 text-white" />
+                                                        </div>
+                                                        <h3 className="text-3xl font-bold text-green-600 mb-3">
+                                                            Félicitations ! 🎉
+                                                        </h3>
+                                                        <p className="text-gray-700 text-lg mb-4">
+                                                            Vous avez réussi le quiz avec un score de
+                                                        </p>
+                                                        <div className="text-6xl font-extrabold text-green-600 mb-6">
+                                                            {quizState.score}%
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-red-400 to-pink-500 rounded-full mb-6 shadow-xl">
+                                                            <XCircle className="w-12 h-12 text-white" />
+                                                        </div>
+                                                        <h3 className="text-3xl font-bold text-red-600 mb-3">
+                                                            Score insuffisant
+                                                        </h3>
+                                                        <p className="text-gray-700 text-lg mb-4">
+                                                            Votre score :
+                                                        </p>
+                                                        <div className="text-6xl font-extrabold text-red-600 mb-2">
+                                                            {quizState.score}%
+                                                        </div>
+                                                        <p className="text-gray-600">
+                                                            Minimum requis: <strong>70%</strong>
+                                                        </p>
+                                                    </>
+                                                )}
+                                            </div>
+
+                                            {/* Détails des réponses */}
+                                            {quizState.detailedResults && quizState.detailedResults.length > 0 && (
+                                                <div className="mb-6">
+                                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                                                        <div className="flex items-center">
+                                                            <div className="flex-shrink-0">
+                                                                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="ml-3">
+                                                                <p className="text-sm font-medium text-blue-800">
+                                                                    📚 Consultez vos réponses ci-dessous pour apprendre de vos erreurs !
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <h4 className="text-xl font-bold text-gray-900 mb-4">📝 Détails de vos réponses</h4>
+                                                    <div className="space-y-4">
+                                                        {quizState.detailedResults.map((result, index) => {
+                                                            const isCorrect = result.isCorrect;
+
+                                                            return (
+                                                                <div key={result.questionId || index} className={`p-5 rounded-xl border-2 ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
+                                                                    <div className="flex items-start space-x-3">
+                                                                        {isCorrect ? (
+                                                                            <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                                                                        ) : (
+                                                                            <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                                                                        )}
+                                                                        <div className="flex-1">
+                                                                            <div className="flex items-center justify-between mb-2">
+                                                                                <p className="font-semibold text-gray-900">
+                                                                                    Question {index + 1}
+                                                                                </p>
+                                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                                                                                    {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <p className="text-gray-900 mb-3">
+                                                                                {result.question}
+                                                                            </p>
+                                                                            {result.explanation && (
+                                                                                <div className="mt-3 pt-3 border-t border-gray-300">
+                                                                                    <p className="text-sm font-semibold text-gray-700 mb-1">💡 Explication :</p>
+                                                                                    <p className="text-sm text-gray-600">
+                                                                                        {result.explanation}
+                                                                                    </p>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Boutons d'action */}
+                                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                                {!quizState.passed && (
+                                                    <button
+                                                        onClick={retryQuiz}
+                                                        className="inline-flex items-center space-x-2 px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+                                                    >
+                                                        <Brain className="w-5 h-5" />
+                                                        <span>Réessayer le quiz</span>
+                                                    </button>
+                                                )}
+
+                                                {quizState.passed && (() => {
+                                                    const currentOrder = selectedModule.order_index ?? 0;
+                                                    const nextModule = modules.find(m => (m.order_index ?? 0) === currentOrder + 1);
+
+                                                    return nextModule ? (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedModule(nextModule);
+                                                                setQuizState({
+                                                                    isActive: false,
+                                                                    answers: {},
+                                                                    score: null,
+                                                                    passed: null,
+                                                                    showResults: false
+                                                                });
+                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                            }}
+                                                            className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                                                        >
+                                                            <span>Continuer vers le Module {currentOrder + 1}</span>
+                                                            <ArrowLeft className="w-5 h-5 rotate-180" />
+                                                        </button>
+                                                    ) : null;
+                                                })()}
+
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedModule(null);
+                                                        setQuizState({
+                                                            isActive: false,
+                                                            answers: {},
+                                                            score: null,
+                                                            passed: null,
+                                                            showResults: false
+                                                        });
+                                                    }}
+                                                    className="inline-flex items-center space-x-2 px-8 py-4 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+                                                >
+                                                    <ArrowLeft className="w-5 h-5" />
+                                                    <span>Retour aux modules</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
-                    </div>
 
-                    {/* <-- AJOUT: Section Quiz */}
-                    {hasQuiz && !isCompleted && (
-                        <div className="px-8 py-10 bg-gradient-to-br from-indigo-50 to-purple-50 border-t-4 border-indigo-500">
-                            <div className="max-w-3xl mx-auto">
-                                {!quizState.isActive && !quizState.showResults && (
-                                    // Bouton pour démarrer le quiz
-                                    <div className="text-center">
-                                        {quizLoading ? (
-                                            <div className="py-12">
-                                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
-                                                <p className="text-gray-600">Chargement du quiz...</p>
-                                            </div>
-                                        ) : quizQuestions.length > 0 ? (
-                                            <>
-                                                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mb-6 shadow-lg">
-                                                    <Brain className="w-10 h-10 text-white" />
-                                                </div>
-                                                <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                                                    Testez vos connaissances
-                                                </h3>
-                                                <p className="text-gray-600 mb-6">
-                                                    Répondez à {quizQuestions.length} questions pour valider ce module. Score minimum requis: <strong>{quizPassingScore}%</strong>
-                                                </p>
-                                                <button
-                                                    onClick={startQuiz}
-                                                    className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                                >
-                                                    <Brain className="w-6 h-6" />
-                                                    <span>Commencer le quiz</span>
-                                                </button>
-                                                <p className="text-sm text-gray-500 mt-4">
-                                                    Vous avez 2 tentatives toutes les 8 heures
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <p className="text-gray-500">Aucun quiz disponible pour ce module.</p>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Quiz en cours */}
-                                {(() => {
-                                    const currentIndex = Object.keys(quizState.answers).length;
-                                    return quizState.isActive && currentIndex < quizQuestions.length && (
-                                        <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
-                                            <div className="mb-6">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <span className="text-sm font-medium text-gray-600">
-                                                        Question {currentIndex + 1} sur {quizQuestions.length}
-                                                    </span>
-                                                    <span className="text-sm font-medium text-indigo-600">
-                                                        {Math.round((currentIndex / quizQuestions.length) * 100)}% complété
-                                                    </span>
-                                                </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                                    <div
-                                                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                                                        style={{ width: `${(currentIndex / quizQuestions.length) * 100}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <h4 className="text-xl font-bold text-gray-900 mb-6 leading-relaxed">
-                                                {quizQuestions[currentIndex].question}
-                                            </h4>
-
-                                            <div className="space-y-3">
-                                                {quizQuestions[currentIndex].options.map((option, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => answerQuestion(index)}
-                                                    className="w-full text-left p-5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
-                                                >
-                                                    <div className="flex items-center space-x-4">
-                                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center font-bold text-gray-600 group-hover:text-indigo-600 transition-colors">
-                                                            {String.fromCharCode(65 + index)}
-                                                        </div>
-                                                        <span className="text-gray-700 group-hover:text-gray-900 font-medium">
-                                                            {option}
-                                                        </span>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    );
-                                })()}
-
-                                {/* Bouton soumettre quand toutes les questions sont répondues */}
-                               {/*quizState.isActive && quizState.currentQuestion === quizQuestions.length && */}
-                                {quizState.isActive && Object.keys(quizState.answers).length === quizQuestions.length && (
-                                    <div className="bg-white rounded-2xl shadow-xl p-8 text-center border-2 border-green-200">
-                                        <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
-                                        <h4 className="text-2xl font-bold text-gray-900 mb-3">
-                                            Quiz terminé !
-                                        </h4>
-                                        <p className="text-gray-600 mb-6">
-                                            Vous avez répondu à toutes les questions. Cliquez ci-dessous pour voir votre score.
-                                        </p>
-                                        <button
-                                            onClick={submitQuiz}
-                                            className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold text-lg shadow-lg"
-                                        >
-                                            <Target className="w-6 h-6" />
-                                            <span>Voir mon score</span>
-                                        </button>
-                                    </div>
-                                )}
-
-                                {/* Résultats du quiz */}
-                                {quizState.showResults && quizState.score !== null && (
-                                    <div id="quiz-results" className={`bg-white rounded-2xl shadow-xl p-8 border-4 ${quizState.passed ? 'border-green-500' : 'border-red-500'}`}>
-                                        <div className="text-center mb-8">
-                                            {quizState.passed ? (
-                                                <>
-                                                    <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full mb-6 shadow-xl">
-                                                        <Star className="w-12 h-12 text-white" />
-                                                    </div>
-                                                    <h3 className="text-3xl font-bold text-green-600 mb-3">
-                                                        Félicitations ! 🎉
-                                                    </h3>
-                                                    <p className="text-gray-700 text-lg mb-4">
-                                                        Vous avez réussi le quiz avec un score de
-                                                    </p>
-                                                    <div className="text-6xl font-extrabold text-green-600 mb-6">
-                                                        {quizState.score}%
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-red-400 to-pink-500 rounded-full mb-6 shadow-xl">
-                                                        <XCircle className="w-12 h-12 text-white" />
-                                                    </div>
-                                                    <h3 className="text-3xl font-bold text-red-600 mb-3">
-                                                        Score insuffisant
-                                                    </h3>
-                                                    <p className="text-gray-700 text-lg mb-4">
-                                                        Votre score :
-                                                    </p>
-                                                    <div className="text-6xl font-extrabold text-red-600 mb-2">
-                                                        {quizState.score}%
-                                                    </div>
-                                                    <p className="text-gray-600">
-                                                        Minimum requis: <strong>70%</strong>
-                                                    </p>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        {/* Message pour consulter les détails */}
-                                        {quizState.detailedResults && quizState.detailedResults.length > 0 && (
-                                            <div className="mb-6">
-                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
-                                                    <div className="flex items-center">
-                                                        <div className="flex-shrink-0">
-                                                            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                        </div>
-                                                        <div className="ml-3">
-                                                            <p className="text-sm font-medium text-blue-800">
-                                                                📚 Consultez vos réponses ci-dessous pour apprendre de vos erreurs et renforcer vos connaissances !
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <h4 className="text-xl font-bold text-gray-900 mb-4">📝 Détails de vos réponses</h4>
-                                                <div className="space-y-4">
-                                                    {quizState.detailedResults.map((result, index) => {
-                                                        const isCorrect = result.isCorrect;
-
-                                                        return (
-                                                            <div key={result.questionId || index} className={`p-5 rounded-xl border-2 ${isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}`}>
-                                                                <div className="flex items-start space-x-3">
-                                                                    {isCorrect ? (
-                                                                        <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-                                                                    ) : (
-                                                                        <XCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                                                                    )}
-                                                                    <div className="flex-1">
-                                                                        <div className="flex items-center justify-between mb-2">
-                                                                            <p className="font-semibold text-gray-900">
-                                                                                Question {index + 1}
-                                                                            </p>
-                                                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                                                                                {isCorrect ? '✓ Correct' : '✗ Incorrect'}
-                                                                            </span>
-                                                                        </div>
-                                                                        <p className="text-gray-900 mb-3">
-                                                                            {result.question}
-                                                                        </p>
-                                                                        {result.explanation && (
-                                                                            <div className="mt-3 pt-3 border-t border-gray-300">
-                                                                                <p className="text-sm font-semibold text-gray-700 mb-1">💡 Explication :</p>
-                                                                                <p className="text-sm text-gray-600">
-                                                                                    {result.explanation}
-                                                                                </p>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Boutons d'action */}
-                                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                            {!quizState.passed && (
-                                                <button
-                                                    onClick={retryQuiz}
-                                                    className="inline-flex items-center space-x-2 px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl"
-                                                >
-                                                    <Brain className="w-5 h-5" />
-                                                    <span>Réessayer le quiz</span>
-                                                </button>
-                                            )}
-
-                                            {quizState.passed && (() => {
-                                                // Trouver le prochain module
-                                                const currentOrder = selectedModule.order_index ?? 0;
-                                                const nextModule = modules.find(m => (m.order_index ?? 0) === currentOrder + 1);
-
-                                                return nextModule ? (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedModule(nextModule);
-                                                            setQuizState({
-                                                                isActive: false,
-                                                                answers: {},
-                                                                score: null,
-                                                                passed: null,
-                                                                showResults: false
-                                                            });
-                                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                        }}
-                                                        className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
-                                                    >
-                                                        <span>Continuer vers le Module {currentOrder + 1}</span>
-                                                        <ArrowLeft className="w-5 h-5 rotate-180" />
-                                                    </button>
-                                                ) : null;
-                                            })()}
-
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedModule(null);
-                                                    setQuizState({
-                                                        isActive: false,
-                                                        answers: {},
-                                                        score: null,
-                                                        passed: null,
-                                                        showResults: false
-                                                    });
-                                                }}
-                                                className="inline-flex items-center space-x-2 px-8 py-4 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all font-semibold shadow-lg hover:shadow-xl"
-                                            >
-                                                <ArrowLeft className="w-5 h-5" />
-                                                <span>Retour aux modules</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Bouton d'aide IA dans le footer du contenu */}
-                    <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
-                        <button
-                            onClick={() => setShowAITutor(true)}
-                            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
-                        >
-                            <HelpCircle className="w-5 h-5" />
-                            Je ne comprends pas quelque chose - Demander au tuteur IA
-                        </button>
-                    </div>
-
-                    {/* Footer du module */}
-                    <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                            {!hasQuiz && !isCompleted && (
-                                <button
-                                    onClick={() => handleMarkAsCompleted(selectedModule.slug)}
-                                    className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium w-full sm:w-auto flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
-                                >
-                                    <Award className="w-5 h-5" />
-                                    <span>Marquer comme complété</span>
-                                </button>
-                            )}
-
-                            {isCompleted && (
-                                <div className="flex items-center space-x-2 text-green-600">
-                                    <CheckCircle className="w-5 h-5" />
-                                    <span className="font-medium">Module validé !</span>
-                                </div>
-                            )}
-
-                            <button 
-                                onClick={() => setSelectedModule(null)} 
-                                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium w-full sm:w-auto shadow-md hover:shadow-lg"
+                        {/* Bouton d'aide IA */}
+                        <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
+                            <button
+                                onClick={() => setShowAITutor(true)}
+                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
                             >
-                                Continuer l'apprentissage
+                                <HelpCircle className="w-5 h-5" />
+                                Je ne comprends pas quelque chose - Demander au tuteur IA
                             </button>
                         </div>
-                    </div>
-                </article>
 
-                {/* Bouton flottant AI Tutor */}
-                {!showAITutor && (
-                    <button
-                        onClick={() => setShowAITutor(true)}
-                        className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
-                    >
-                        <MessageSquarePlus className="w-6 h-6" />
-                        <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                            Tuteur IA
-                        </span>
-                    </button>
-                )}
+                        {/* Footer du module */}
+                        <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                {!hasQuiz && !isCompleted && (
+                                    <button
+                                        onClick={() => handleMarkAsCompleted(selectedModule.slug)}
+                                        className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium w-full sm:w-auto flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+                                    >
+                                        <Award className="w-5 h-5" />
+                                        <span>Marquer comme complété</span>
+                                    </button>
+                                )}
 
-                {/* Composant AI Tutor */}
-                <AITutor
-                    context={selectedModule.description || selectedModule.title}
-                    isOpen={showAITutor}
-                    onClose={() => setShowAITutor(false)}
-                />
+                                {isCompleted && (
+                                    <div className="flex items-center space-x-2 text-green-600">
+                                        <CheckCircle className="w-5 h-5" />
+                                        <span className="font-medium">Module validé !</span>
+                                    </div>
+                                )}
+
+                                <button 
+                                    onClick={() => setSelectedModule(null)} 
+                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium w-full sm:w-auto shadow-md hover:shadow-lg"
+                                >
+                                    Continuer l'apprentissage
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    {/* Bouton flottant AI Tutor */}
+                    {!showAITutor && (
+                        <button
+                            onClick={() => setShowAITutor(true)}
+                            className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
+                        >
+                            <MessageSquarePlus className="w-6 h-6" />
+                            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                Tuteur IA
+                            </span>
+                        </button>
+                    )}
+
+                    {/* Composant AI Tutor */}
+                    <AITutor
+                        context={selectedModule.description || selectedModule.title}
+                        isOpen={showAITutor}
+                        onClose={() => setShowAITutor(false)}
+                    />
                 </div>
             </div>
         );
@@ -980,18 +861,16 @@ export default function LearnPage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            {/* <-- CORRECTION: En-tête amélioré */}
             <div className="mb-12">
                 <div className="text-center max-w-3xl mx-auto mb-8">
                     <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
                         Académie de l'Investissement
                     </h1>
                     <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
-                        Apprenez à investir intelligemment avec nos modules interactifs. Quiz,  contenu progressif et audio pour une expérience d'apprentissage complète.
+                        Apprenez à investir intelligemment avec nos modules interactifs. Quiz, contenu progressif et audio pour une expérience d'apprentissage complète.
                     </p>
                 </div>
 
-                {/* <-- AJOUT: Barre de progression globale */}
                 {isLoggedIn && (
                     <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6 mb-8">
                         <div className="flex items-center justify-between mb-4">
@@ -1034,7 +913,7 @@ export default function LearnPage() {
                 )}
             </div>
 
-            {/* <-- CORRECTION: Filtres de difficulté améliorés */}
+            {/* Filtres */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-10 sticky top-20 z-10">
                 <div className="flex flex-wrap gap-3">
                     {['all', 'debutant', 'intermediaire', 'avance'].map((difficulty) => (
@@ -1053,7 +932,6 @@ export default function LearnPage() {
                 </div>
             </div>
 
-            {/* Loading */}
             {loading && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh]">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mb-4"></div>
@@ -1061,7 +939,6 @@ export default function LearnPage() {
                 </div>
             )}
 
-            {/* Error */}
             {!loading && error && (
                 <div className="text-center py-16 px-4">
                     <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-6">
@@ -1078,7 +955,6 @@ export default function LearnPage() {
                 </div>
             )}
 
-            {/* <-- CORRECTION: Grille de modules améliorée */}
             {!loading && !error && (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {modules.map((module, index) => {
@@ -1106,7 +982,6 @@ export default function LearnPage() {
                                         : 'border-gray-200 opacity-60 cursor-not-allowed'
                                 }`}
                             >
-                                {/* <-- AJOUT: Overlay de verrouillage */}
                                 {!isUnlocked && (
                                     <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] flex items-center justify-center z-10">
                                         <div className="bg-white rounded-full p-4 shadow-xl">
@@ -1115,7 +990,6 @@ export default function LearnPage() {
                                     </div>
                                 )}
 
-                                {/* Badge de statut en haut */}
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg shadow-md">
                                         {module.order_index ?? index + 1}
@@ -1142,7 +1016,6 @@ export default function LearnPage() {
                                     </div>
                                 </div>
 
-                                {/* Contenu de la carte */}
                                 <div className="flex flex-col flex-grow mb-4">
                                     <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
                                         {module.title}
@@ -1154,7 +1027,6 @@ export default function LearnPage() {
                                     )}
                                 </div>
 
-                                {/* Footer de la carte */}
                                 <div className="pt-4 border-t-2 border-gray-100 space-y-3">
                                     <div className="flex items-center justify-between text-xs text-gray-600">
                                         <div className="flex items-center space-x-1.5">
@@ -1169,7 +1041,6 @@ export default function LearnPage() {
                                         </div>
                                     </div>
 
-                                    {/* <-- AJOUT: Indicateurs quiz et audio */}
                                     <div className="flex items-center gap-2 flex-wrap">
                                         {hasQuiz && (
                                             <div className="flex items-center space-x-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold">
@@ -1185,7 +1056,6 @@ export default function LearnPage() {
                                     </div>
                                 </div>
 
-                                {/* Message pour les modules verrouillés */}
                                 {!isUnlocked && previousModule && (
                                     <div className="mt-3 pt-3 border-t-2 border-gray-200">
                                         <p className="text-xs text-gray-600 font-medium">
@@ -1199,7 +1069,6 @@ export default function LearnPage() {
                 </div>
             )}
 
-            {/* No modules found */}
             {!loading && !error && modules.length === 0 && (
                 <div className="text-center py-20">
                     <BookOpen className="w-20 h-20 mx-auto text-gray-300 mb-6" />
