@@ -3,7 +3,6 @@
    ============================================ */
 
 .module-content {
-  @apply text-gray-800 leading-relaxed;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
   line-height: 1.8;
 }
@@ -54,32 +53,20 @@
   @apply text-lg md:text-xl font-semibold text-gray-800 mb-3 mt-6;
 }
 
-/* Supprimer les icônes emoji des titres dans le rendu */
-.module-content h2:first-line,
-.module-content h3:first-line {
-  @apply block;
-}
-
 /* ============================================
    ANALOGIES (Encadré Jaune)
    ============================================ */
 
-.module-content .analogy-box,
-.module-content div[class*="bg-amber"],
-.module-content div[class*="bg-yellow"] {
+.module-content .analogy-box {
   @apply bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
 .module-content .analogy-box h3,
-.module-content .analogy-box h4,
-.module-content div[class*="bg-amber"] h3,
-.module-content div[class*="bg-yellow"] h3 {
+.module-content .analogy-box h4 {
   @apply text-lg font-bold text-amber-900 mb-3 flex items-center gap-2;
 }
 
-.module-content .analogy-box p,
-.module-content div[class*="bg-amber"] p,
-.module-content div[class*="bg-yellow"] p {
+.module-content .analogy-box p {
   @apply text-gray-800 mb-3;
 }
 
@@ -87,22 +74,16 @@
    EXEMPLES (Encadré Violet)
    ============================================ */
 
-.module-content .example-box,
-.module-content div[class*="bg-purple"],
-.module-content div[class*="bg-violet"] {
+.module-content .example-box {
   @apply bg-gradient-to-br from-purple-50 to-pink-50 border-l-4 border-purple-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
 .module-content .example-box h3,
-.module-content .example-box h4,
-.module-content div[class*="bg-purple"] h3,
-.module-content div[class*="bg-violet"] h3 {
+.module-content .example-box h4 {
   @apply text-lg font-bold text-purple-900 mb-3;
 }
 
-.module-content .example-box p,
-.module-content div[class*="bg-purple"] p,
-.module-content div[class*="bg-violet"] p {
+.module-content .example-box p {
   @apply text-gray-800 mb-3;
 }
 
@@ -110,40 +91,28 @@
    POINTS CLÉS / À RETENIR (Encadré Vert)
    ============================================ */
 
-.module-content .key-points-box,
-.module-content div[class*="bg-green"],
-.module-content div[class*="bg-emerald"] {
+.module-content .key-points-box {
   @apply bg-gradient-to-br from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
 .module-content .key-points-box h3,
-.module-content .key-points-box h4,
-.module-content div[class*="bg-green"] h3,
-.module-content div[class*="bg-emerald"] h3 {
+.module-content .key-points-box h4 {
   @apply text-lg font-bold text-green-900 mb-3 flex items-center gap-2;
 }
 
-.module-content .key-points-box p,
-.module-content div[class*="bg-green"] p,
-.module-content div[class*="bg-emerald"] p {
+.module-content .key-points-box p {
   @apply text-gray-800 mb-3;
 }
 
-.module-content .key-points-box ul,
-.module-content div[class*="bg-green"] ul,
-.module-content div[class*="bg-emerald"] ul {
+.module-content .key-points-box ul {
   @apply space-y-2 ml-0 list-none;
 }
 
-.module-content .key-points-box li,
-.module-content div[class*="bg-green"] li,
-.module-content div[class*="bg-emerald"] li {
+.module-content .key-points-box li {
   @apply flex items-start gap-3 text-gray-800;
 }
 
-.module-content .key-points-box li:before,
-.module-content div[class*="bg-green"] li:before,
-.module-content div[class*="bg-emerald"] li:before {
+.module-content .key-points-box li:before {
   content: "→";
   @apply text-green-600 font-bold flex-shrink-0;
 }
@@ -152,13 +121,11 @@
    AVERTISSEMENTS (Encadré Rouge)
    ============================================ */
 
-.module-content .warning-box,
-.module-content div[class*="bg-red"] {
+.module-content .warning-box {
   @apply bg-gradient-to-br from-red-50 to-pink-50 border-l-4 border-red-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
-.module-content .warning-box h3,
-.module-content div[class*="bg-red"] h3 {
+.module-content .warning-box h3 {
   @apply text-lg font-bold text-red-900 mb-3 flex items-center gap-2;
 }
 

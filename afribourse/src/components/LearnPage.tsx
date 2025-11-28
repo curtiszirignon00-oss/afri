@@ -508,14 +508,14 @@ export default function LearnPage() {
                         )}
 
                         {/* Contenu du module - CORRECTION ICI */}
-                        <div className="p-6 md:p-12" ref={contentRef}>
+                        <div ref={contentRef}>
                             {selectedModule.content ? (
                                 <div
                                     className="module-content"
                                     dangerouslySetInnerHTML={{ __html: selectedModule.content }}
                                 />
                             ) : (
-                                <div className="text-center py-12">
+                                <div className="text-center py-12 px-6">
                                     <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
                                     <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
                                 </div>
