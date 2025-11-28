@@ -508,7 +508,7 @@ export default function LearnPage() {
                         )}
 
                         {/* Contenu du module - CORRECTION ICI */}
-                        <div className="p-6 md:p-12 prose prose-lg max-w-none" ref={contentRef}>
+                        <div className="p-6 md:p-12" ref={contentRef}>
                             {selectedModule.content ? (
                                 <div
                                     className="module-content"

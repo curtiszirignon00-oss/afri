@@ -1,52 +1,27 @@
 /* ============================================
-   STYLES PROFESSIONNELS POUR LES MODULES
-   Design inspiré des captures d'écran
+   STYLES MODULES AFRIBOURSE
    ============================================ */
 
 .module-content {
   @apply text-gray-800 leading-relaxed;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-  line-height: 1.75;
+  line-height: 1.8;
 }
 
 /* ============================================
-   SECTIONS PRINCIPALES
-   ============================================ */
-
-/* Section avec numérotation (1.1, 1.2, etc.) */
-.module-content .section-header {
-  @apply flex items-start gap-4 mb-6 mt-10;
-}
-
-.module-content .section-number {
-  @apply text-2xl font-bold text-gray-400 flex-shrink-0;
-}
-
-.module-content .section-title {
-  @apply text-2xl md:text-3xl font-bold text-gray-900 leading-tight;
-}
-
-/* ============================================
-   OBJECTIF PÉDAGOGIQUE (Encadré bleu)
+   OBJECTIF PÉDAGOGIQUE
    ============================================ */
 
 .module-content .pedagogical-objective {
-  @apply bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-8 my-8 shadow-sm;
+  @apply bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-r-xl p-8 my-8 shadow-sm;
 }
 
-.module-content .pedagogical-objective .objective-header {
-  @apply flex items-center gap-3 mb-6;
+.module-content .pedagogical-objective h2,
+.module-content .pedagogical-objective h3 {
+  @apply text-xl font-bold text-blue-900 mb-4 flex items-center gap-3;
 }
 
-.module-content .pedagogical-objective .objective-icon {
-  @apply w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl flex-shrink-0;
-}
-
-.module-content .pedagogical-objective .objective-title {
-  @apply text-xl font-bold text-gray-900;
-}
-
-.module-content .pedagogical-objective .objective-intro {
+.module-content .pedagogical-objective p {
   @apply text-gray-700 mb-4 font-medium;
 }
 
@@ -64,185 +39,135 @@
 }
 
 /* ============================================
-   ANALOGIES (Encadré jaune/ambre)
+   SECTIONS PRINCIPALES
    ============================================ */
 
-.module-content .analogy-box {
-  @apply bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-r-2xl p-6 my-6 shadow-sm;
+.module-content > div > h2 {
+  @apply text-2xl md:text-3xl font-bold text-gray-900 mb-6 mt-10 pb-3 border-b-2 border-gray-200;
 }
 
-.module-content .analogy-box .analogy-header {
-  @apply flex items-center gap-3 mb-4;
+.module-content > div > h3 {
+  @apply text-xl md:text-2xl font-bold text-gray-800 mb-4 mt-8;
 }
 
-.module-content .analogy-box .analogy-icon {
-  @apply text-2xl;
+.module-content > div > h4 {
+  @apply text-lg md:text-xl font-semibold text-gray-800 mb-3 mt-6;
 }
 
-.module-content .analogy-box .analogy-title {
-  @apply text-lg font-bold text-amber-900;
-}
-
-.module-content .analogy-box .analogy-content {
-  @apply text-gray-800 space-y-3;
-}
-
-.module-content .analogy-box ul {
-  @apply mt-3 space-y-2 ml-6;
-}
-
-.module-content .analogy-box li {
-  @apply flex items-start gap-2;
-}
-
-.module-content .analogy-box li:before {
-  content: "🔸";
-  @apply flex-shrink-0;
+/* Supprimer les icônes emoji des titres dans le rendu */
+.module-content h2:first-line,
+.module-content h3:first-line {
+  @apply block;
 }
 
 /* ============================================
-   EXEMPLES (Encadré violet/mauve)
+   ANALOGIES (Encadré Jaune)
    ============================================ */
 
-.module-content .example-box {
-  @apply bg-gradient-to-br from-purple-50 to-pink-50 border-l-4 border-purple-500 rounded-r-2xl p-6 my-6 shadow-sm;
+.module-content .analogy-box,
+.module-content div[class*="bg-amber"],
+.module-content div[class*="bg-yellow"] {
+  @apply bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
-.module-content .example-box .example-header {
-  @apply font-bold text-purple-900 mb-2;
+.module-content .analogy-box h3,
+.module-content .analogy-box h4,
+.module-content div[class*="bg-amber"] h3,
+.module-content div[class*="bg-yellow"] h3 {
+  @apply text-lg font-bold text-amber-900 mb-3 flex items-center gap-2;
 }
 
-.module-content .example-box .example-content {
-  @apply text-gray-800 leading-relaxed;
+.module-content .analogy-box p,
+.module-content div[class*="bg-amber"] p,
+.module-content div[class*="bg-yellow"] p {
+  @apply text-gray-800 mb-3;
 }
 
 /* ============================================
-   POINTS CLÉS / À RETENIR
+   EXEMPLES (Encadré Violet)
    ============================================ */
 
-.module-content .key-points-box {
-  @apply bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl p-6 my-6 shadow-sm;
+.module-content .example-box,
+.module-content div[class*="bg-purple"],
+.module-content div[class*="bg-violet"] {
+  @apply bg-gradient-to-br from-purple-50 to-pink-50 border-l-4 border-purple-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
-.module-content .key-points-box .key-points-header {
-  @apply flex items-center gap-3 mb-4;
+.module-content .example-box h3,
+.module-content .example-box h4,
+.module-content div[class*="bg-purple"] h3,
+.module-content div[class*="bg-violet"] h3 {
+  @apply text-lg font-bold text-purple-900 mb-3;
 }
 
-.module-content .key-points-box .key-points-icon {
-  @apply text-2xl;
+.module-content .example-box p,
+.module-content div[class*="bg-purple"] p,
+.module-content div[class*="bg-violet"] p {
+  @apply text-gray-800 mb-3;
 }
 
-.module-content .key-points-box .key-points-title {
-  @apply text-lg font-bold text-green-900;
+/* ============================================
+   POINTS CLÉS / À RETENIR (Encadré Vert)
+   ============================================ */
+
+.module-content .key-points-box,
+.module-content div[class*="bg-green"],
+.module-content div[class*="bg-emerald"] {
+  @apply bg-gradient-to-br from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
-.module-content .key-points-box ul {
-  @apply space-y-3 ml-0 list-none;
+.module-content .key-points-box h3,
+.module-content .key-points-box h4,
+.module-content div[class*="bg-green"] h3,
+.module-content div[class*="bg-emerald"] h3 {
+  @apply text-lg font-bold text-green-900 mb-3 flex items-center gap-2;
 }
 
-.module-content .key-points-box li {
+.module-content .key-points-box p,
+.module-content div[class*="bg-green"] p,
+.module-content div[class*="bg-emerald"] p {
+  @apply text-gray-800 mb-3;
+}
+
+.module-content .key-points-box ul,
+.module-content div[class*="bg-green"] ul,
+.module-content div[class*="bg-emerald"] ul {
+  @apply space-y-2 ml-0 list-none;
+}
+
+.module-content .key-points-box li,
+.module-content div[class*="bg-green"] li,
+.module-content div[class*="bg-emerald"] li {
   @apply flex items-start gap-3 text-gray-800;
 }
 
-.module-content .key-points-box li:before {
+.module-content .key-points-box li:before,
+.module-content div[class*="bg-green"] li:before,
+.module-content div[class*="bg-emerald"] li:before {
   content: "→";
   @apply text-green-600 font-bold flex-shrink-0;
 }
 
 /* ============================================
-   AVERTISSEMENT / ATTENTION
+   AVERTISSEMENTS (Encadré Rouge)
    ============================================ */
 
-.module-content .warning-box {
-  @apply bg-gradient-to-br from-red-50 to-pink-50 border-l-4 border-red-500 rounded-r-2xl p-6 my-6 shadow-sm;
+.module-content .warning-box,
+.module-content div[class*="bg-red"] {
+  @apply bg-gradient-to-br from-red-50 to-pink-50 border-l-4 border-red-500 rounded-r-xl p-6 my-6 shadow-sm;
 }
 
-.module-content .warning-box .warning-header {
-  @apply flex items-center gap-3 mb-3;
-}
-
-.module-content .warning-box .warning-icon {
-  @apply text-red-600 text-xl;
-}
-
-.module-content .warning-box .warning-title {
-  @apply font-bold text-red-900;
-}
-
-.module-content .warning-box .warning-content {
-  @apply text-gray-800;
+.module-content .warning-box h3,
+.module-content div[class*="bg-red"] h3 {
+  @apply text-lg font-bold text-red-900 mb-3 flex items-center gap-2;
 }
 
 /* ============================================
-   SUBSECTIONS (avec icônes)
-   ============================================ */
-
-.module-content .subsection {
-  @apply mb-8 mt-6;
-}
-
-.module-content .subsection-header {
-  @apply flex items-center gap-3 mb-4;
-}
-
-.module-content .subsection-icon {
-  @apply w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-xl flex-shrink-0;
-}
-
-.module-content .subsection-title {
-  @apply text-xl font-bold text-gray-900;
-}
-
-.module-content .subsection-content {
-  @apply text-gray-700 leading-relaxed;
-}
-
-/* ============================================
-   CARTES D'INFORMATION (2 colonnes)
-   ============================================ */
-
-.module-content .info-cards {
-  @apply grid md:grid-cols-2 gap-6 my-8;
-}
-
-.module-content .info-card {
-  @apply bg-white border-2 border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow;
-}
-
-.module-content .info-card .card-title {
-  @apply text-lg font-bold text-gray-900 mb-3;
-}
-
-.module-content .info-card .card-content {
-  @apply text-gray-700 text-sm leading-relaxed;
-}
-
-/* ============================================
-   LISTES AMÉLIORÉES
-   ============================================ */
-
-.module-content .checklist {
-  @apply space-y-3 my-6;
-}
-
-.module-content .checklist-item {
-  @apply flex items-start gap-3 p-3 bg-gray-50 rounded-lg;
-}
-
-.module-content .checklist-item .check-icon {
-  @apply text-green-600 text-xl flex-shrink-0 mt-0.5;
-}
-
-.module-content .checklist-item .check-text {
-  @apply text-gray-800;
-}
-
-/* ============================================
-   TABLEAUX PROFESSIONNELS
+   TABLEAUX
    ============================================ */
 
 .module-content table {
-  @apply w-full border-collapse my-8 shadow-sm rounded-lg overflow-hidden;
+  @apply w-full border-collapse my-8 shadow-md rounded-lg overflow-hidden;
 }
 
 .module-content thead {
@@ -254,7 +179,7 @@
 }
 
 .module-content td {
-  @apply px-6 py-4 border-b border-gray-200;
+  @apply px-6 py-4 border-b border-gray-200 text-gray-700;
 }
 
 .module-content tbody tr {
@@ -270,139 +195,7 @@
 }
 
 /* ============================================
-   ÉTAPES / PROCESSUS (Numérotées)
-   ============================================ */
-
-.module-content .steps-container {
-  @apply space-y-6 my-8;
-}
-
-.module-content .step-item {
-  @apply flex items-start gap-4;
-}
-
-.module-content .step-number {
-  @apply w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 text-lg shadow-md;
-}
-
-.module-content .step-content {
-  @apply flex-1;
-}
-
-.module-content .step-title {
-  @apply font-bold text-gray-900 mb-2;
-}
-
-.module-content .step-description {
-  @apply text-gray-700 leading-relaxed;
-}
-
-/* ============================================
-   BADGES ET TAGS
-   ============================================ */
-
-.module-content .badge {
-  @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold;
-}
-
-.module-content .badge-primary {
-  @apply bg-blue-100 text-blue-800 border border-blue-300;
-}
-
-.module-content .badge-success {
-  @apply bg-green-100 text-green-800 border border-green-300;
-}
-
-.module-content .badge-warning {
-  @apply bg-yellow-100 text-yellow-800 border border-yellow-300;
-}
-
-.module-content .badge-danger {
-  @apply bg-red-100 text-red-800 border border-red-300;
-}
-
-/* ============================================
-   CITATIONS / QUOTES
-   ============================================ */
-
-.module-content blockquote {
-  @apply border-l-4 border-blue-500 pl-6 py-4 my-6 italic text-gray-700 bg-blue-50 rounded-r-lg;
-}
-
-.module-content blockquote p {
-  @apply mb-2;
-}
-
-.module-content blockquote cite {
-  @apply text-sm text-gray-600 not-italic block mt-2;
-}
-
-/* ============================================
-   IMAGES ET MÉDIAS
-   ============================================ */
-
-.module-content .image-container {
-  @apply my-8 rounded-xl overflow-hidden shadow-lg;
-}
-
-.module-content img {
-  @apply w-full h-auto rounded-lg shadow-md;
-}
-
-.module-content .image-caption {
-  @apply text-sm text-gray-600 text-center mt-2 italic;
-}
-
-/* ============================================
-   SÉPARATEURS
-   ============================================ */
-
-.module-content hr {
-  @apply my-8 border-t-2 border-gray-200;
-}
-
-.module-content .section-divider {
-  @apply my-12 border-t-4 border-blue-600 w-24 mx-auto;
-}
-
-/* ============================================
-   TITRES HIÉRARCHIQUES
-   ============================================ */
-
-.module-content h1 {
-  @apply text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 mt-8 leading-tight;
-}
-
-.module-content h2 {
-  @apply text-2xl md:text-3xl font-bold text-gray-900 mb-5 mt-8 leading-tight;
-}
-
-.module-content h3 {
-  @apply text-xl md:text-2xl font-bold text-gray-800 mb-4 mt-6;
-}
-
-.module-content h4 {
-  @apply text-lg md:text-xl font-semibold text-gray-800 mb-3 mt-5;
-}
-
-/* ============================================
-   PARAGRAPHES ET TEXTE
-   ============================================ */
-
-.module-content p {
-  @apply text-base md:text-lg text-gray-700 mb-4 leading-relaxed;
-}
-
-.module-content strong {
-  @apply font-bold text-gray-900;
-}
-
-.module-content em {
-  @apply italic text-gray-800;
-}
-
-/* ============================================
-   LISTES STANDARDS
+   LISTES
    ============================================ */
 
 .module-content ul {
@@ -418,7 +211,39 @@
 }
 
 /* ============================================
-   CODE ET FORMULES
+   PARAGRAPHES
+   ============================================ */
+
+.module-content p {
+  @apply text-base md:text-lg text-gray-700 mb-4 leading-relaxed;
+}
+
+.module-content strong {
+  @apply font-bold text-gray-900;
+}
+
+.module-content em {
+  @apply italic text-gray-800;
+}
+
+/* ============================================
+   IMAGES
+   ============================================ */
+
+.module-content img {
+  @apply w-full h-auto rounded-lg shadow-md my-6;
+}
+
+/* ============================================
+   LIENS
+   ============================================ */
+
+.module-content a {
+  @apply text-blue-600 hover:text-blue-800 underline transition-colors;
+}
+
+/* ============================================
+   CODE
    ============================================ */
 
 .module-content code {
@@ -434,11 +259,11 @@
 }
 
 /* ============================================
-   LIENS
+   BLOCKQUOTES
    ============================================ */
 
-.module-content a {
-  @apply text-blue-600 hover:text-blue-800 underline transition-colors font-medium;
+.module-content blockquote {
+  @apply border-l-4 border-blue-500 pl-6 py-4 my-6 italic text-gray-700 bg-blue-50 rounded-r-lg;
 }
 
 /* ============================================
@@ -446,24 +271,12 @@
    ============================================ */
 
 @media (max-width: 768px) {
-  .module-content .section-header {
-    @apply flex-col gap-2;
-  }
-
-  .module-content .section-number {
-    @apply text-xl;
-  }
-
-  .module-content .section-title {
-    @apply text-xl;
-  }
-
-  .module-content .pedagogical-objective {
-    @apply p-6;
-  }
-
-  .module-content .info-cards {
-    @apply grid-cols-1;
+  .module-content .pedagogical-objective,
+  .module-content .analogy-box,
+  .module-content .example-box,
+  .module-content .key-points-box,
+  .module-content .warning-box {
+    @apply p-4;
   }
 
   .module-content th,
@@ -473,36 +286,13 @@
 }
 
 /* ============================================
-   ANIMATIONS
+   ESPACEMENT
    ============================================ */
 
-.module-content .fade-in {
-  animation: fadeIn 0.5s ease-in;
+.module-content > * + * {
+  @apply mt-6;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-
-@media print {
-  .module-content {
-    @apply text-black;
-  }
-
-  .module-content .pedagogical-objective,
-  .module-content .analogy-box,
-  .module-content .example-box {
-    @apply border-2 border-gray-400;
-  }
+.module-content > div + div {
+  @apply mt-8;
 }
