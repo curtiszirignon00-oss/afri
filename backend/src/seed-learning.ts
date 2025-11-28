@@ -65,197 +65,203 @@ async function main() {
  order_index: 0,
  is_published: true,
  content: `
- <div class="bg-blue-600 text-white p-8 min-h-screen">
- <p class="text-xl italic mb-12 text-center">"L'investissement, c'est le pont entre votre présent et votre futur."</p>
+ <p class="text-xl italic mb-12 text-center text-gray-700">"L'investissement, c'est le pont entre votre présent et votre futur."</p>
 
- <h2 class="text-3xl font-bold mb-8">🎯 Objectif pédagogique</h2>
-
- <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous :</p>
-
- <ul class="space-y-3 text-lg mb-12 leading-relaxed">
- <li>• Adopterez le bon état d'esprit d'investisseur à long terme.</li>
- <li>• Comprendrez pourquoi la BRVM représente une opportunité unique pour les Africains.</li>
- <li>• Connaîtrez la structure complète du parcours de formation.</li>
- <li>• Serez capables de distinguer un investisseur d'un spéculateur.</li>
+ <div class="pedagogical-objective">
+ <h2>🎯 Objectif pédagogique</h2>
+ <p>À la fin de ce module, vous :</p>
+ <ul>
+ <li>Adopterez le bon état d'esprit d'investisseur à long terme.</li>
+ <li>Comprendrez pourquoi la BRVM représente une opportunité unique pour les Africains.</li>
+ <li>Connaîtrez la structure complète du parcours de formation.</li>
+ <li>Serez capables de distinguer un investisseur d'un spéculateur.</li>
  </ul>
-
-
- <h2 class="text-3xl font-bold mb-8">🪶 0.1 – Bienvenue dans l'Académie : Notre mission pour vous</h2>
-
- <p class="text-lg mb-4 leading-relaxed">Bienvenue dans l'Académie AfriBourse,</p>
-
- <p class="text-lg mb-4 leading-relaxed">Un espace pensé pour vous — l'épargnant, l'entrepreneur, le jeune professionnel — qui souhaite faire travailler son argent plutôt que de le laisser dormir.</p>
-
- <p class="text-lg mb-4 leading-relaxed font-semibold">💡 Constat de départ : L'épargne seule ne suffit plus.</p>
-
- <p class="text-lg mb-4 leading-relaxed">L'inflation grignote la valeur de votre argent au fil du temps.</p>
-
- <p class="text-lg mb-4 leading-relaxed">Notre mission est simple : transformer votre épargne en capital actif, grâce à une connaissance claire, à des outils accessibles, et à une pédagogie ancrée dans la réalité africaine.</p>
-
- <p class="text-lg mb-3 leading-relaxed font-semibold">Chez AfriBourse, nous croyons que :</p>
-
- <ul class="space-y-3 text-lg mb-12 leading-relaxed">
- <li>• La connaissance est la clé de la confiance.</li>
- <li>• La discipline est la clé de la réussite financière.</li>
- <li>• Et que chaque Africain mérite une part du développement économique de son continent.</li>
- </ul>
-
-
- <h2 class="text-3xl font-bold mb-8">🌍 0.2 – La Bourse, un moteur pour nos économies africaines</h2>
-
- <p class="text-lg mb-4 leading-relaxed">Investir à la BRVM, ce n'est pas seulement chercher un rendement — c'est participer activement à la construction économique de l'Afrique de l'Ouest.</p>
-
- <p class="text-lg mb-3 leading-relaxed">Chaque action achetée, chaque entreprise soutenue, contribue à :</p>
-
- <ul class="space-y-3 text-lg mb-6 leading-relaxed">
- <li>• Financer la croissance de sociétés locales.</li>
- <li>• Créer des emplois et soutenir l'innovation.</li>
- <li>• Répartir la richesse de manière plus équitable entre citoyens et investisseurs.</li>
- </ul>
-
- <p class="text-lg mb-8 italic text-center leading-relaxed">💬 "Quand un Africain investit dans une entreprise africaine, il investit dans le futur de son peuple."</p>
-
-
- <h3 class="text-2xl font-bold mb-6">⚓ L'analogie à retenir : le piroguier prudent</h3>
-
- <p class="text-lg mb-4 leading-relaxed">Imaginez votre richesse comme une pirogue.</p>
-
- <p class="text-lg mb-3 leading-relaxed">Le piroguier prudent ne se lance pas sans :</p>
-
- <ul class="space-y-3 text-lg mb-6 leading-relaxed">
- <li>• Vérifier la météo (analyse du marché)</li>
- <li>• Préparer son équipage (formation)</li>
- <li>• Définir une destination (objectifs financiers)</li>
- </ul>
-
- <p class="text-lg mb-4 leading-relaxed">Sur la mer de l'investissement, les vagues représentent la volatilité.</p>
-
- <p class="text-lg mb-4 leading-relaxed">Mais celui qui a un cap, un plan et de la patience arrive toujours au rivage.</p>
-
- <p class="text-xl mb-12 font-bold text-center leading-relaxed">La bourse, ce n'est pas un sprint — c'est une navigation.</p>
-
-
- <h2 class="text-3xl font-bold mb-8">🗺️ 0.3 – Présentation du parcours : votre feuille de route vers l'autonomie</h2>
-
- <p class="text-lg mb-6 leading-relaxed">Voici comment se déroule votre voyage au sein de l'Académie AfriBourse 👇</p>
-
- <table class="table-auto w-full text-left border-collapse border border-white my-6">
- <thead class="bg-blue-800">
- <tr>
- <th class="border border-white px-4 py-3 font-bold">Étape</th>
- <th class="border border-white px-4 py-3 font-bold">Objectif</th>
- <th class="border border-white px-4 py-3 font-bold">Modules concernés</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td class="border border-white px-4 py-3">🧠 <strong>Mindset</strong></td>
- <td class="border border-white px-4 py-3">Poser les bases mentales et émotionnelles de l'investisseur</td>
- <td class="border border-white px-4 py-3">M0, M5</td>
- </tr>
- <tr>
- <td class="border border-white px-4 py-3">⚙️ <strong>Fondations</strong></td>
- <td class="border border-white px-4 py-3">Comprendre les marchés, les acteurs et les instruments</td>
- <td class="border border-white px-4 py-3">M1, M2, M3, M4</td>
- </tr>
- <tr>
- <td class="border border-white px-4 py-3">🔍 <strong>Analyse & Stratégie</strong></td>
- <td class="border border-white px-4 py-3">Maîtriser l'analyse fondamentale et technique</td>
- <td class="border border-white px-4 py-3">M6, M7, M8, M9, M10</td>
- </tr>
- <tr>
- <td class="border border-white px-4 py-3">💼 <strong>Action & Gestion</strong></td>
- <td class="border border-white px-4 py-3">Construire, exécuter et suivre son portefeuille</td>
- <td class="border border-white px-4 py-3">M11 à M16</td>
- </tr>
- </tbody>
- </table>
-
- <p class="text-lg mb-4 font-semibold leading-relaxed">🎯 À la fin du parcours, vous serez capable de :</p>
-
- <ul class="space-y-3 text-lg mb-12 leading-relaxed">
- <li>• Analyser une entreprise cotée à la BRVM,</li>
- <li>• Identifier le bon moment pour investir,</li>
- <li>• Construire un portefeuille cohérent et rentable,</li>
- <li>• Et investir avec confiance et méthode.</li>
- </ul>
-
-
- <h2 class="text-3xl font-bold mb-8">💥 0.4 – Brisons les mythes : Investisseur vs Spéculateur</h2>
-
-
- <h3 class="text-2xl font-bold mb-6">❌ Mythe 1 : "Il faut être riche pour investir"</h3>
-
- <p class="text-2xl mb-6 font-bold text-center leading-relaxed">FAUX.</p>
-
- <p class="text-lg mb-4 leading-relaxed">À la BRVM, vous pouvez commencer avec de petites sommes régulières.</p>
-
- <p class="text-lg mb-6 font-semibold leading-relaxed">Le plus important n'est pas le capital de départ, mais le temps et la constance.</p>
-
- <p class="text-lg mb-12 italic text-center leading-relaxed">💬 "Le meilleur moment pour planter un arbre était il y a 20 ans. Le deuxième meilleur moment, c'est aujourd'hui." – Proverbe africain</p>
-
-
- <h3 class="text-2xl font-bold mb-6">❌ Mythe 2 : "La Bourse, c'est un casino"</h3>
-
- <p class="text-2xl mb-6 font-bold text-center leading-relaxed">NON, ce n'est pas un jeu de hasard.</p>
-
- <p class="text-lg mb-4 leading-relaxed">La <strong>spéculation</strong> repose sur les émotions et les paris à court terme.</p>
-
- <p class="text-lg mb-6 leading-relaxed">L'<strong>investissement</strong> repose sur l'analyse, la patience et la vision long terme.</p>
-
- <p class="text-lg mb-4 font-semibold leading-relaxed">💡 Citation clé :</p>
-
- <p class="text-lg mb-4 italic leading-relaxed">"The individual investor should act consistently as an investor and not as a speculator."</p>
-
- <p class="text-base mb-6 leading-relaxed">— Benjamin Graham, mentor de Warren Buffett</p>
-
- <p class="text-lg mb-3 font-semibold leading-relaxed">En clair :</p>
-
- <p class="text-lg mb-3 leading-relaxed">L'<strong>investisseur</strong> achète une part d'entreprise pour en partager la réussite.</p>
-
- <p class="text-lg mb-6 leading-relaxed">Le <strong>spéculateur</strong> parie sur une fluctuation de prix.</p>
-
- <p class="text-xl mb-12 font-bold text-center leading-relaxed">À la BRVM, nous formons des investisseurs — pas des parieurs.</p>
-
-
- <h2 class="text-3xl font-bold mb-8">🧩 Les termes à maîtriser</h2>
-
- <table class="table-auto w-full text-left border-collapse border border-white my-6">
- <thead class="bg-blue-800">
- <tr>
- <th class="border border-white px-4 py-3 font-bold">Terme</th>
- <th class="border border-white px-4 py-3 font-bold">Définition simple</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td class="border border-white px-4 py-3 font-bold">BRVM</td>
- <td class="border border-white px-4 py-3">Bourse Régionale des Valeurs Mobilières : le marché commun de 8 pays de l'UEMOA.</td>
- </tr>
- <tr>
- <td class="border border-white px-4 py-3 font-bold">Investisseur</td>
- <td class="border border-white px-4 py-3">Personne qui place son argent dans des actifs pour générer un rendement à long terme.</td>
- </tr>
- <tr>
- <td class="border border-white px-4 py-3 font-bold">Spéculateur</td>
- <td class="border border-white px-4 py-3">Personne qui achète et revend à court terme pour profiter de variations de prix.</td>
- </tr>
- <tr>
- <td class="border border-white px-4 py-3 font-bold">Volatilité</td>
- <td class="border border-white px-4 py-3">Variation (montée et descente) du prix d'un actif sur une période donnée.</td>
- </tr>
- </tbody>
- </table>
-
-
- <h3 class="text-2xl font-bold mb-6">🚀 Prochaine étape :</h3>
-
- <p class="text-lg mb-4 leading-relaxed">Vous avez préparé votre esprit, compris la vision, et brisé les mythes.</p>
-
- <p class="text-xl mb-4 font-bold leading-relaxed">👉 Passez maintenant au Module 1 : Les Fondations – Qu'est-ce que la Bourse et la BRVM ?</p>
-
- <p class="text-base italic leading-relaxed">C'est ici que commence votre apprentissage concret du marché financier africain.</p>
  </div>
+
+
+ <h2>🪶 0.1 – Bienvenue dans l'Académie : Notre mission pour vous</h2>
+
+ <p>Bienvenue dans l'Académie AfriBourse,</p>
+
+ <p>Un espace pensé pour vous — l'épargnant, l'entrepreneur, le jeune professionnel — qui souhaite faire travailler son argent plutôt que de le laisser dormir.</p>
+
+ <div class="warning-box">
+ <h3>💡 Constat de départ : L'épargne seule ne suffit plus</h3>
+ <p>L'inflation grignote la valeur de votre argent au fil du temps.</p>
+ </div>
+
+ <p>Notre mission est simple : transformer votre épargne en capital actif, grâce à une connaissance claire, à des outils accessibles, et à une pédagogie ancrée dans la réalité africaine.</p>
+
+ <div class="key-points-box">
+ <h3>💎 Chez AfriBourse, nous croyons que :</h3>
+ <ul>
+ <li>La connaissance est la clé de la confiance.</li>
+ <li>La discipline est la clé de la réussite financière.</li>
+ <li>Chaque Africain mérite une part du développement économique de son continent.</li>
+ </ul>
+ </div>
+
+
+ <h2>🌍 0.2 – La Bourse, un moteur pour nos économies africaines</h2>
+
+ <p>Investir à la BRVM, ce n'est pas seulement chercher un rendement — c'est participer activement à la construction économique de l'Afrique de l'Ouest.</p>
+
+ <p>Chaque action achetée, chaque entreprise soutenue, contribue à :</p>
+
+ <ul>
+ <li>Financer la croissance de sociétés locales.</li>
+ <li>Créer des emplois et soutenir l'innovation.</li>
+ <li>Répartir la richesse de manière plus équitable entre citoyens et investisseurs.</li>
+ </ul>
+
+ <blockquote>💬 "Quand un Africain investit dans une entreprise africaine, il investit dans le futur de son peuple."</blockquote>
+
+
+ <div class="analogy-box">
+ <h3>⚓ L'analogie à retenir : le piroguier prudent</h3>
+
+ <p>Imaginez votre richesse comme une pirogue.</p>
+
+ <p>Le piroguier prudent ne se lance pas sans :</p>
+
+ <ul>
+ <li>Vérifier la météo (analyse du marché)</li>
+ <li>Préparer son équipage (formation)</li>
+ <li>Définir une destination (objectifs financiers)</li>
+ </ul>
+
+ <p>Sur la mer de l'investissement, les vagues représentent la volatilité.</p>
+
+ <p>Mais celui qui a un cap, un plan et de la patience arrive toujours au rivage.</p>
+
+ <p><strong>La bourse, ce n'est pas un sprint — c'est une navigation.</strong></p>
+ </div>
+
+
+ <h2>🗺️ 0.3 – Présentation du parcours : votre feuille de route vers l'autonomie</h2>
+
+ <p>Voici comment se déroule votre voyage au sein de l'Académie AfriBourse 👇</p>
+
+ <table>
+ <thead>
+ <tr>
+ <th>Étape</th>
+ <th>Objectif</th>
+ <th>Modules concernés</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td>🧠 <strong>Mindset</strong></td>
+ <td>Poser les bases mentales et émotionnelles de l'investisseur</td>
+ <td>M0, M5</td>
+ </tr>
+ <tr>
+ <td>⚙️ <strong>Fondations</strong></td>
+ <td>Comprendre les marchés, les acteurs et les instruments</td>
+ <td>M1, M2, M3, M4</td>
+ </tr>
+ <tr>
+ <td>🔍 <strong>Analyse & Stratégie</strong></td>
+ <td>Maîtriser l'analyse fondamentale et technique</td>
+ <td>M6, M7, M8, M9, M10</td>
+ </tr>
+ <tr>
+ <td>💼 <strong>Action & Gestion</strong></td>
+ <td>Construire, exécuter et suivre son portefeuille</td>
+ <td>M11 à M16</td>
+ </tr>
+ </tbody>
+ </table>
+
+ <div class="key-points-box">
+ <h3>🎯 À la fin du parcours, vous serez capable de :</h3>
+ <ul>
+ <li>Analyser une entreprise cotée à la BRVM</li>
+ <li>Identifier le bon moment pour investir</li>
+ <li>Construire un portefeuille cohérent et rentable</li>
+ <li>Investir avec confiance et méthode</li>
+ </ul>
+ </div>
+
+
+ <h2>💥 0.4 – Brisons les mythes : Investisseur vs Spéculateur</h2>
+
+
+ <div class="example-box">
+ <h3>❌ Mythe 1 : "Il faut être riche pour investir"</h3>
+
+ <p><strong>FAUX.</strong></p>
+
+ <p>À la BRVM, vous pouvez commencer avec de petites sommes régulières.</p>
+
+ <p><strong>Le plus important n'est pas le capital de départ, mais le temps et la constance.</strong></p>
+
+ <blockquote>💬 "Le meilleur moment pour planter un arbre était il y a 20 ans. Le deuxième meilleur moment, c'est aujourd'hui." – Proverbe africain</blockquote>
+ </div>
+
+
+ <div class="example-box">
+ <h3>❌ Mythe 2 : "La Bourse, c'est un casino"</h3>
+
+ <p><strong>NON, ce n'est pas un jeu de hasard.</strong></p>
+
+ <p>La <strong>spéculation</strong> repose sur les émotions et les paris à court terme.</p>
+
+ <p>L'<strong>investissement</strong> repose sur l'analyse, la patience et la vision long terme.</p>
+
+ <blockquote>
+ 💡 "The individual investor should act consistently as an investor and not as a speculator."
+ <br>— Benjamin Graham, mentor de Warren Buffett
+ </blockquote>
+
+ <p><strong>En clair :</strong></p>
+
+ <p>L'<strong>investisseur</strong> achète une part d'entreprise pour en partager la réussite.</p>
+
+ <p>Le <strong>spéculateur</strong> parie sur une fluctuation de prix.</p>
+
+ <p><strong>À la BRVM, nous formons des investisseurs — pas des parieurs.</strong></p>
+ </div>
+
+
+ <h2>🧩 Les termes à maîtriser</h2>
+
+ <table>
+ <thead>
+ <tr>
+ <th>Terme</th>
+ <th>Définition simple</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td><strong>BRVM</strong></td>
+ <td>Bourse Régionale des Valeurs Mobilières : le marché commun de 8 pays de l'UEMOA.</td>
+ </tr>
+ <tr>
+ <td><strong>Investisseur</strong></td>
+ <td>Personne qui place son argent dans des actifs pour générer un rendement à long terme.</td>
+ </tr>
+ <tr>
+ <td><strong>Spéculateur</strong></td>
+ <td>Personne qui achète et revend à court terme pour profiter de variations de prix.</td>
+ </tr>
+ <tr>
+ <td><strong>Volatilité</strong></td>
+ <td>Variation (montée et descente) du prix d'un actif sur une période donnée.</td>
+ </tr>
+ </tbody>
+ </table>
+
+
+ <h3>🚀 Prochaine étape :</h3>
+
+ <p>Vous avez préparé votre esprit, compris la vision, et brisé les mythes.</p>
+
+ <p><strong>👉 Passez maintenant au Module 1 : Les Fondations – Qu'est-ce que la Bourse et la BRVM ?</strong></p>
+
+ <p><em>C'est ici que commence votre apprentissage concret du marché financier africain.</em></p>
  `,
  });
 
