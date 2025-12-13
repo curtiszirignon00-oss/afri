@@ -14,6 +14,8 @@ export interface IUserInput {
   role: string;
   telephone?: string | null;
   address?: string | null;
+  email_confirmation_token?: string | null;
+  email_confirmation_expires?: Date | null;
 }
 
 // ------------------------------------------
@@ -34,6 +36,8 @@ export const createUser = async (data: IUserInput) => {
                 role: data.role,
                 telephone: data.telephone,
                 address: data.address,
+                email_confirmation_token: data.email_confirmation_token,
+                email_confirmation_expires: data.email_confirmation_expires,
                 // FIX CRITIQUE: Créer le profil associé
                 profile: {
                     create: {
@@ -64,6 +68,49 @@ export const getUserByEmail = async (email: string) => {
         where: { email },
     });
     return user; // Retourne l'objet User (inclut le mot de passe hashé pour bcrypt.compare)
+};
+
+/**
+ * Trouve l'utilisateur par token de confirmation.
+ */
+export const getUserByConfirmationToken = async (token: string) => {
+    const user = await prisma.user.findFirst({
+        where: { email_confirmation_token: token },
+    });
+    return user;
+};
+
+/**
+ * Confirme l'email d'un utilisateur.
+ */
+export const confirmUserEmail = async (userId: string) => {
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            email_verified_at: new Date(),
+            email_confirmation_token: null,
+            email_confirmation_expires: null,
+        },
+    });
+    return user;
+};
+
+/**
+ * Met à jour le token de confirmation d'un utilisateur.
+ */
+export const updateConfirmationToken = async (
+    userId: string,
+    token: string,
+    expiresAt: Date
+) => {
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            email_confirmation_token: token,
+            email_confirmation_expires: expiresAt,
+        },
+    });
+    return user;
 };
 
 
