@@ -64,25 +64,14 @@ export default function SignupPage() {
         throw new Error(data.error || data.message || "Erreur lors de l'inscription");
       }
 
-      // Stocker le token et vérifier l'authentification
-      if (data.token) {
-        console.log('💾 [SIGNUP] Storing token and checking auth');
-        setToken(data.token);
-        // Passer le token directement à checkAuth pour éviter les problèmes de closure
-        await checkAuth(data.token);
-      } else {
-        // Sur desktop, pas de token dans la réponse, utiliser les cookies
-        await checkAuth();
-      }
-
-      console.log('✅ [SIGNUP] Authentication verified, redirecting to dashboard');
+      // ✅ Inscription réussie - Email de confirmation envoyé
+      console.log('✅ [SIGNUP] Registration successful, email sent');
       setSuccess(true);
 
-      // Rediriger après un court délai pour que l'utilisateur voie le message de succès
-      // et que React ait le temps de mettre à jour l'état d'authentification
+      // Rediriger vers la page de vérification d'email
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 300);
+        navigate('/verifier-email', { state: { email } });
+      }, 1000);
     } catch (err: any) {
       console.error('Signup error:', err);
       setError(err.message || "Une erreur est survenue lors de l'inscription.");
