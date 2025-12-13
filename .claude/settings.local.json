@@ -21,7 +21,11 @@
       "Bash(node test-smtp.js:*)",
       "Bash(timeout 3 bash:*)",
       "Bash(powershell -Command \"Stop-Process -Id 93120 -Force\")",
-      "Bash(powershell -Command \"Get-Process | Where-Object {$_Path -like ''*node*''} | Select-Object Id, Name, Path | Format-Table\")"
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_Path -like ''*node*''} | Select-Object Id, Name, Path | Format-Table\")",
+      "Bash(powershell -Command \"Stop-Process -Id 25912 -Force\")",
+      "Bash(timeout 8 bash:*)",
+      "Bash(powershell:*)",
+      "Bash(timeout 5 bash:*)"
     ],
     "deny": [],
     "ask": []
