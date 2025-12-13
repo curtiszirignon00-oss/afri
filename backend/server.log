@@ -319,3 +319,23 @@ Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
   port: 3001
 }
 [31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `ts-node src/index.ts src/index.ts`[39m
+[dotenv@17.2.3] injecting env (21) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+🗂  Middlewares initialisés
+🛣  Routes initialisés
+⭕ Gestion d'erreurs initialisés
+✅ Base de données connectée
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3001
+}
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
