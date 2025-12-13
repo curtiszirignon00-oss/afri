@@ -113,6 +113,49 @@ export const updateConfirmationToken = async (
     return user;
 };
 
+/**
+ * Met à jour le token de réinitialisation de mot de passe.
+ */
+export const updatePasswordResetToken = async (
+    userId: string,
+    resetToken: string,
+    expiresAt: Date
+) => {
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            password_reset_token: resetToken,
+            password_reset_expires: expiresAt,
+        },
+    });
+    return user;
+};
+
+/**
+ * Récupère un utilisateur par son token de réinitialisation.
+ */
+export const getUserByResetToken = async (token: string) => {
+    const user = await prisma.user.findFirst({
+        where: { password_reset_token: token },
+    });
+    return user;
+};
+
+/**
+ * Réinitialise le mot de passe d'un utilisateur.
+ */
+export const resetUserPassword = async (userId: string, hashedPassword: string) => {
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            password: hashedPassword,
+            password_reset_token: null,
+            password_reset_expires: null,
+        },
+    });
+    return user;
+};
+
 
 // ------------------------------------------
 // --- LECTURE & MISE À JOUR (Profil/Gestion) ---

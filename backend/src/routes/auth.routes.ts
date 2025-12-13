@@ -7,7 +7,9 @@ import {
     getMe,
     register,
     confirmEmail,
-    resendConfirmationEmail
+    resendConfirmationEmail,
+    requestPasswordReset,
+    resetPassword
 } from "../controllers/auth.controller";
 import { auth } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validate.util";
@@ -32,5 +34,11 @@ router.get('/confirm-email', confirmEmail);
 
 // Route pour renvoyer l'email de confirmation
 router.post('/resend-confirmation', resendConfirmationEmail);
+
+// Route pour demander la réinitialisation du mot de passe
+router.post('/request-password-reset', requestPasswordReset);
+
+// Route pour réinitialiser le mot de passe
+router.post('/reset-password', resetPassword);
 
 export default router;

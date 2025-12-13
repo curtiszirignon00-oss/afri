@@ -26,6 +26,8 @@ model User {
   email_verified_at   DateTime?
   email_confirmation_token String?
   email_confirmation_expires DateTime?
+  password_reset_token String?
+  password_reset_expires DateTime?
   remember_token      String?
   created_at          DateTime? @default(now())
   updated_at          DateTime? @updatedAt
