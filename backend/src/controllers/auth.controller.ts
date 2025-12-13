@@ -4,7 +4,7 @@ import { signJWT } from "../utils";
 import { createError } from "../middlewares/errorHandlers";
 import config from "../config/environnement"; // Chemin relatif corrigé
 import { generateConfirmationToken, getTokenExpirationDate, isTokenExpired } from "../utils/token.utils";
-import { sendConfirmationEmail } from "../services/email.service";
+import { sendConfirmationEmail, sendPasswordResetEmail } from "../services/email.service";
 
 // --- CONSOLIDATION : N'IMPORTER QUE LE SERVICE PRISMA ---
 import * as usersServicePrisma from "../services/users.service.prisma";
@@ -270,6 +270,99 @@ export async function resendConfirmationEmail(req: Request, res: Response, next:
         return res.status(200).json({
             message: "Un nouvel email de confirmation a été envoyé à votre adresse.",
             emailSent: true,
+        });
+    } catch (error) {
+        next(error);
+        return;
+    }
+}
+
+// --- DEMANDER LA RÉINITIALISATION DU MOT DE PASSE ---
+export async function requestPasswordReset(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return next(createError.badRequest("L'adresse email est requise"));
+        }
+
+        // 1. Trouver l'utilisateur
+        const user = await usersServicePrisma.getUserByEmail(email);
+
+        if (!user) {
+            // Pour des raisons de sécurité, on ne révèle pas si l'email existe ou non
+            return res.status(200).json({
+                message: "Si cette adresse email existe dans notre système, un email de réinitialisation a été envoyé.",
+            });
+        }
+
+        // 2. Générer un token de réinitialisation (expire dans 1 heure)
+        const resetToken = generateConfirmationToken();
+        const tokenExpiration = getTokenExpirationDate(1); // 1 heure
+
+        // 3. Mettre à jour le token dans la base de données
+        await usersServicePrisma.updatePasswordResetToken(user.id, resetToken, tokenExpiration);
+
+        // 4. Envoyer l'email de réinitialisation
+        try {
+            await sendPasswordResetEmail({
+                email: user.email,
+                name: user.name,
+                resetToken,
+            });
+            console.log(`✅ [PASSWORD_RESET] Email de réinitialisation envoyé à ${user.email}`);
+        } catch (emailError) {
+            console.error('❌ [PASSWORD_RESET] Erreur lors de l\'envoi de l\'email:', emailError);
+            return next(createError.internal("Échec de l'envoi de l'email de réinitialisation"));
+        }
+
+        return res.status(200).json({
+            message: "Si cette adresse email existe dans notre système, un email de réinitialisation a été envoyé.",
+            emailSent: true,
+        });
+    } catch (error) {
+        next(error);
+        return;
+    }
+}
+
+// --- RÉINITIALISER LE MOT DE PASSE ---
+export async function resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return next(createError.badRequest("Le token et le nouveau mot de passe sont requis"));
+        }
+
+        // 1. Validation du mot de passe
+        if (newPassword.length < 8) {
+            return next(createError.badRequest("Le mot de passe doit contenir au moins 8 caractères"));
+        }
+
+        // 2. Trouver l'utilisateur par token
+        const user = await usersServicePrisma.getUserByResetToken(token);
+
+        if (!user) {
+            return next(createError.badRequest("Token de réinitialisation invalide ou expiré"));
+        }
+
+        // 3. Vérifier que le token n'a pas expiré
+        if (!user.password_reset_expires || isTokenExpired(user.password_reset_expires)) {
+            return next(createError.badRequest("Le token de réinitialisation a expiré. Veuillez demander un nouveau lien."));
+        }
+
+        // 4. Hasher le nouveau mot de passe
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // 5. Mettre à jour le mot de passe et supprimer le token
+        await usersServicePrisma.resetUserPassword(user.id, hashedPassword);
+
+        console.log(`✅ [PASSWORD_RESET] Mot de passe réinitialisé pour l'utilisateur: ${user.email}`);
+
+        return res.status(200).json({
+            message: "Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter.",
+            success: true,
         });
     } catch (error) {
         next(error);

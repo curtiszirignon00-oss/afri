@@ -29,6 +29,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ConfirmEmailPage from './components/ConfirmEmailPage';
 import ResendConfirmationPage from './components/ResendConfirmationPage';
 import VerifyEmailPage from './components/VerifyEmailPage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
+import ResetPasswordPage from './components/ResetPasswordPage';
 
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
@@ -46,7 +48,7 @@ function Layout() {
   const location = useLocation();
 
   // Détermine si le Header/Footer doit être affiché
-  const showLayout = !['/signup', '/login', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email'].includes(location.pathname);
+  const showLayout = !['/signup', '/login', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -68,6 +70,8 @@ function Layout() {
           <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />
           <Route path="/renvoyer-confirmation" element={<ResendConfirmationPage />} />
           <Route path="/verifier-email" element={<VerifyEmailPage />} />
+          <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
+          <Route path="/reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
           <Route
             path="/dashboard"
             element={
