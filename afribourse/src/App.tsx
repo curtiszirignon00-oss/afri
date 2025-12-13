@@ -26,6 +26,9 @@ import ProfilePage from './components/ProfilePage';
 import DashboardPage from './components/DashboardPage';
 import TransactionsPage from './components/TransactionsPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ConfirmEmailPage from './components/ConfirmEmailPage';
+import ResendConfirmationPage from './components/ResendConfirmationPage';
+import VerifyEmailPage from './components/VerifyEmailPage';
 
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
@@ -43,7 +46,7 @@ function Layout() {
   const location = useLocation();
 
   // Détermine si le Header/Footer doit être affiché
-  const showLayout = !['/signup', '/login', '/profile'].includes(location.pathname);
+  const showLayout = !['/signup', '/login', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -62,6 +65,9 @@ function Layout() {
           <Route path="/glossary" element={<GlossaryPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />
+          <Route path="/renvoyer-confirmation" element={<ResendConfirmationPage />} />
+          <Route path="/verifier-email" element={<VerifyEmailPage />} />
           <Route
             path="/dashboard"
             element={

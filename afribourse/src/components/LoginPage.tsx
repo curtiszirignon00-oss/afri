@@ -72,8 +72,20 @@ export default function LoginPage() {
 
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || 'Une erreur est survenue lors de la connexion.');
-      toast.error(err.message || 'Erreur de connexion');
+      const errorMessage = err.message || 'Une erreur est survenue lors de la connexion.';
+
+      // Vérifier si l'erreur est due à un email non vérifié
+      if (errorMessage.includes('confirmer votre adresse email') ||
+          errorMessage.includes('email non vérifié') ||
+          errorMessage.includes('Veuillez confirmer')) {
+        toast.error('Votre email n\'est pas encore vérifié');
+        // Rediriger vers la page de renvoi de confirmation avec l'email
+        navigate('/renvoyer-confirmation', { state: { email } });
+        return;
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

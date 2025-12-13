@@ -51,11 +51,18 @@ export async function sendConfirmationEmail({
           text-align: center;
           margin-bottom: 30px;
         }
-        .logo {
+        .logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .logo-text {
           font-size: 32px;
           font-weight: bold;
-          color: #2563eb;
-          margin-bottom: 10px;
+          color: #f97316;
+          margin: 0;
         }
         h1 {
           color: #1f2937;
@@ -69,7 +76,7 @@ export async function sendConfirmationEmail({
         .button {
           display: inline-block;
           padding: 15px 30px;
-          background-color: #2563eb;
+          background-color: #f97316;
           color: #ffffff !important;
           text-decoration: none;
           border-radius: 8px;
@@ -78,7 +85,7 @@ export async function sendConfirmationEmail({
           text-align: center;
         }
         .button:hover {
-          background-color: #1d4ed8;
+          background-color: #ea580c;
         }
         .footer {
           margin-top: 30px;
@@ -104,7 +111,13 @@ export async function sendConfirmationEmail({
     <body>
       <div class="container">
         <div class="header">
-          <div class="logo">📈 AfriBourse</div>
+          <div class="logo-container">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2 class="logo-text">AfriBourse</h2>
+          </div>
         </div>
 
         <h1>Bienvenue ${name} !</h1>
@@ -118,7 +131,7 @@ export async function sendConfirmationEmail({
         </div>
 
         <p>Ou copiez et collez ce lien dans votre navigateur :</p>
-        <p style="word-break: break-all; color: #2563eb;">${confirmationUrl}</p>
+        <p style="word-break: break-all; color: #f97316;">${confirmationUrl}</p>
 
         <div class="warning">
           <p><strong>⏰ Ce lien expire dans 24 heures</strong></p>

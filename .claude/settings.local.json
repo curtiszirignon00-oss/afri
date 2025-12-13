@@ -18,7 +18,10 @@
       "Bash(npm run dev:*)",
       "Bash(timeout 8 bash -c \"while ! curl -s http://localhost:3001 > /dev/null 2>&1; do sleep 0.5; done && echo ''Backend démarré!''\":*)",
       "Bash(npx prisma generate)",
-      "Bash(node test-smtp.js:*)"
+      "Bash(node test-smtp.js:*)",
+      "Bash(timeout 3 bash:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 93120 -Force\")",
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_Path -like ''*node*''} | Select-Object Id, Name, Path | Format-Table\")"
     ],
     "deny": [],
     "ask": []
