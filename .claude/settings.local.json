@@ -16,7 +16,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout 8 bash -c \"while ! curl -s http://localhost:3001 > /dev/null 2>&1; do sleep 0.5; done && echo ''Backend démarré!''\":*)"
+      "Bash(timeout 8 bash -c \"while ! curl -s http://localhost:3001 > /dev/null 2>&1; do sleep 0.5; done && echo ''Backend démarré!''\":*)",
+      "Bash(npx prisma generate)",
+      "Bash(node test-smtp.js:*)"
     ],
     "deny": [],
     "ask": []
