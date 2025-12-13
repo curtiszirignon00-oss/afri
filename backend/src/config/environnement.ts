@@ -8,7 +8,12 @@ interface IConfig {
     host: number | string,
 
     apiKey: string,
-    
+
+    app: {
+      frontendUrl: string,
+      backendUrl: string,
+    },
+
     database: {
       uri: string,
     },
@@ -31,6 +36,8 @@ interface IConfig {
       port: number | undefined,
       user: string | undefined,
       pass: string | undefined,
+      from: string | undefined,
+      fromName: string | undefined,
     },
     
     rateLimit: {
@@ -66,9 +73,14 @@ const config : IConfig = {
 
   apiKey: getEnvVar('API_KEY', 'default-api-key-change-in-production'),
 
+  app: {
+    frontendUrl: getEnvVar('FRONTEND_URL', 'http://localhost:5173'),
+    backendUrl: getEnvVar('BACKEND_URL', 'http://localhost:3001'),
+  },
+
   /** Configuration de la base de données
    * Adapter le nom
-   * 
+   *
    */
   database: {
     uri: getEnvVar('DATABASE_URI', 'mysql://root:@localhost:3306/yourdbname'),
@@ -92,6 +104,8 @@ const config : IConfig = {
     port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : undefined,
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
+    from: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER,
+    fromName: process.env.SMTP_FROM_NAME || 'AfriBourse',
   },
   
   rateLimit: {
