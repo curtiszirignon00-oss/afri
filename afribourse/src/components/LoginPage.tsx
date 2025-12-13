@@ -160,8 +160,12 @@ export default function LoginPage() {
                   Se souvenir de moi
                 </label>
               </div>
-              <button type="button" className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                Mot de passe oublié?
+              <button
+                type="button"
+                onClick={() => navigate('/mot-de-passe-oublie')}
+                className="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
+              >
+                Mot de passe oublié ?
               </button>
             </div>
 
@@ -174,17 +178,6 @@ export default function LoginPage() {
             )}
 
             {/* Submit Button */}
-            {/* Forgot Password Link */}
-            <div className="flex justify-end mb-4">
-              <button
-                type="button"
-                onClick={() => navigate('/mot-de-passe-oublie')}
-                className="text-sm text-orange-600 hover:text-orange-700 font-medium transition-colors"
-              >
-                Mot de passe oublié ?
-              </button>
-            </div>
-
             <Button
               type="submit"
               variant="primary"
