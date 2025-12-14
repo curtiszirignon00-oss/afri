@@ -187,6 +187,9 @@ export async function sendPasswordResetEmail({
 }: SendPasswordResetParams): Promise<void> {
   const resetUrl = `${config.app.frontendUrl}/reinitialiser-mot-de-passe?token=${resetToken}`;
 
+  // Handle null or undefined names for old accounts
+  const displayName = name || 'Utilisateur';
+
   const html = `
     <!DOCTYPE html>
     <html lang="fr">
@@ -296,7 +299,7 @@ export async function sendPasswordResetEmail({
 
         <h1>Réinitialisation de votre mot de passe</h1>
 
-        <p>Bonjour ${name},</p>
+        <p>Bonjour ${displayName},</p>
 
         <p>Vous avez demandé à réinitialiser votre mot de passe sur AfriBourse. Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe :</p>
 
@@ -329,7 +332,7 @@ export async function sendPasswordResetEmail({
   const text = `
     Réinitialisation de votre mot de passe - AfriBourse
 
-    Bonjour ${name},
+    Bonjour ${displayName},
 
     Vous avez demandé à réinitialiser votre mot de passe sur AfriBourse.
 
