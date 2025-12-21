@@ -272,7 +272,7 @@ export default function HomePage() {
             {/* <-- AJOUT: Badge "Nouvelle plateforme" */}
             <div className="inline-flex items-center space-x-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-200 px-6 py-2 rounded-full text-sm font-semibold mb-6 animate-pulse">
               <Award className="w-4 h-4" />
-              <span>Plateforme #1 d'investissement en Afrique de l'Ouest</span>
+              <span>Plateforme #1 pour maîtriser la Bourse en Afrique de l'Ouest.</span>
             </div>
 
             {/* <-- CORRECTION: Titre amélioré et slogan plus impactant */}
