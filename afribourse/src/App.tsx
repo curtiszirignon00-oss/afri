@@ -110,7 +110,7 @@ function Layout() {
                   <h3 className="text-xl font-bold">AfriBourse</h3>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  Plateforme d'investissement pour la BRVM. Apprenez, simulez et investissez en toute confiance.
+                 Apprenez, simulez et investissez en toute confiance.
                 </p>
               </div>
 
@@ -170,7 +170,7 @@ function Layout() {
                 &copy; {new Date().getFullYear()} AfriBourse. Tous droits réservés.
               </p>
               <p className="text-center text-xs text-gray-500 italic">
-                Avertissement : Les investissements en bourse comportent des risques. Informez-vous avant d'investir.
+                Avertissement : AfriBourse est une plateforme d'éducation financière indépendante et n'est pas une Société de Gestion et d'Intermédiation (SGI). Les investissements simulés ne constituent pas des transactions réelles.
               </p>
             </div>
           </div>
