@@ -674,3 +674,22 @@ model Quiz {
   @@map("quizzes")
   @@index([moduleId])
 }
+
+// ================================= //
+// === MODÈLE FORMULAIRE CONTACT === //
+// ================================= //
+
+model ContactMessage {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  email      String
+  subject    String
+  message    String
+  status     String    @default("unread") // unread, read, responded
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("contact_messages")
+  @@index([status])
+  @@index([created_at])
+}

@@ -25,7 +25,9 @@
       "Bash(powershell -Command \"Stop-Process -Id 25912 -Force\")",
       "Bash(timeout 8 bash:*)",
       "Bash(powershell:*)",
-      "Bash(timeout 5 bash:*)"
+      "Bash(timeout 5 bash:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma db push:*)"
     ],
     "deny": [],
     "ask": []

@@ -357,7 +357,7 @@ export async function sendPasswordResetEmail({
 /**
  * Fonction générique d'envoi d'email
  */
-async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<void> {
+export async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<void> {
   try {
     await transporter.sendMail({
       from: `"${config.email.fromName}" <${config.email.from}>`,
@@ -376,4 +376,5 @@ async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
+  sendEmail,
 };
