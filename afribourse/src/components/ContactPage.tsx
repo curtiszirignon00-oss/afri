@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, MessageSquare, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Mail, MessageSquare, Phone, MapPin, Send, CheckCircle, Twitter, Linkedin, Instagram } from 'lucide-react';
 
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -167,8 +167,8 @@ const ContactPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Email</h3>
-                    <p className="text-gray-600 mt-1">contact@afribourse.com</p>
-                    <p className="text-gray-600">support@afribourse.com</p>
+                    <p className="text-gray-600 mt-1">contact@africbourse.com</p>
+                    <p className="text-gray-600">support@africbourse.com</p>
                   </div>
                 </div>
 
@@ -180,7 +180,7 @@ const ContactPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Téléphone</h3>
-                    <p className="text-gray-600 mt-1">+225 XX XX XX XX XX</p>
+                    <p className="text-gray-600 mt-1">+225 07 03 12 45 06</p>
                     <p className="text-sm text-gray-500">Lundi - Vendredi, 8h00 - 18h00 GMT</p>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ const ContactPage: React.FC = () => {
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Adresse</h3>
                     <p className="text-gray-600 mt-1">Abidjan, Côte d'Ivoire</p>
-                    <p className="text-gray-600">Plateau, Avenue Lamblin</p>
+                    <p className="text-gray-600">Cocody, Angré</p>
                   </div>
                 </div>
 
@@ -206,10 +206,34 @@ const ContactPage: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-semibold text-gray-900">Réseaux sociaux</h3>
-                    <div className="mt-2 space-x-4">
-                      <a href="#" className="text-blue-600 hover:text-blue-700">Twitter</a>
-                      <a href="#" className="text-blue-600 hover:text-blue-700">LinkedIn</a>
-                      <a href="#" className="text-blue-600 hover:text-blue-700">Facebook</a>
+                    <div className="mt-3 flex flex-col space-y-2">
+                      <a
+                        href="https://x.com/AfriBourseStart"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                      >
+                        <Twitter className="h-4 w-4" />
+                        <span>Twitter (X)</span>
+                      </a>
+                      <a
+                        href="https://www.linkedin.com/company/108049903/admin/dashboard/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                        <span>LinkedIn</span>
+                      </a>
+                      <a
+                        href="https://www.instagram.com/afribourse_startup/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-700 hover:text-pink-600 transition-colors"
+                      >
+                        <Instagram className="h-4 w-4" />
+                        <span>Instagram</span>
+                      </a>
                     </div>
                   </div>
                 </div>
