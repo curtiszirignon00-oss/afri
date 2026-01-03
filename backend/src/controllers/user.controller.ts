@@ -13,10 +13,20 @@ interface AuthenticatedRequest extends Request {
 export async function getUsers(req: Request, res: Response, next: NextFunction) {
   try {
     // Le service retourne désormais les utilisateurs SANS mot de passe
-    const users = await usersService.getAllUsers(); 
-    return res.status(200).json(users); 
+    const users = await usersService.getAllUsers();
+    return res.status(200).json(users);
   } catch (error) {
-    return next(error); 
+    return next(error);
+  }
+}
+
+// Contrôleur pour GET /api/users/count
+export async function getUserCount(req: Request, res: Response, next: NextFunction) {
+  try {
+    const count = await usersService.getUserCount();
+    return res.status(200).json({ count });
+  } catch (error) {
+    return next(error);
   }
 }
 

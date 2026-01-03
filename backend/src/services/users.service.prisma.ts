@@ -173,6 +173,14 @@ export const getAllUsers = async () => {
 };
 
 /**
+ * Compte le nombre total d'utilisateurs inscrits
+ */
+export const getUserCount = async () => {
+    const count = await prisma.user.count();
+    return count;
+};
+
+/**
  * Trouve l'utilisateur par ID (pour /users/me - sans le mot de passe).
  */
 export const getUserById = async (id: string) => {
