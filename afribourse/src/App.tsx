@@ -31,6 +31,9 @@ import ResendConfirmationPage from './components/ResendConfirmationPage';
 import VerifyEmailPage from './components/VerifyEmailPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import ResetPasswordPage from './components/ResetPasswordPage';
+import AboutPage from './components/AboutPage';
+import ContactPage from './components/ContactPage';
+import PrivacyPage from './components/PrivacyPage';
 
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
@@ -65,6 +68,9 @@ function Layout() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/glossary" element={<GlossaryPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />
@@ -146,17 +152,17 @@ function Layout() {
                 <h4 className="text-lg font-semibold mb-4">Informations</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/about" className="text-gray-400 hover:text-white transition-colors">
                       À propos
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
                       Contact
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">
                       Confidentialité
                     </a>
                   </li>
