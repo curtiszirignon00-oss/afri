@@ -34,6 +34,7 @@ import ResetPasswordPage from './components/ResetPasswordPage';
 import AboutPage from './components/AboutPage';
 import ContactPage from './components/ContactPage';
 import PrivacyPage from './components/PrivacyPage';
+import HelpCenterPage from './components/HelpCenterPage';
 
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
@@ -71,6 +72,7 @@ function Layout() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/help" element={<HelpCenterPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />

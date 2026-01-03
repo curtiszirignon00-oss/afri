@@ -1,15 +1,28 @@
-import React, { useState } from 'react';
-import { Mail, MessageSquare, Phone, MapPin, Send, CheckCircle, Twitter, Linkedin, Instagram } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, MessageSquare, Phone, MapPin, Send, CheckCircle, Twitter, Linkedin, Instagram, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
+import { useLocation } from 'react-router-dom';
 
 const ContactPage: React.FC = () => {
+  const location = useLocation();
+  const prefilledMessage = (location.state as { prefilledMessage?: string })?.prefilledMessage || '';
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: prefilledMessage
   });
+
+  useEffect(() => {
+    if (prefilledMessage) {
+      setFormData(prev => ({ ...prev, message: prefilledMessage, subject: 'Question depuis le Centre d\'Aide' }));
+    }
+  }, [prefilledMessage]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -19,16 +32,28 @@ const ContactPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simuler l'envoi du formulaire
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Envoyer le message au backend
+      const response = await axios.post(`${API_BASE_URL}/contact`, formData);
 
-    setIsSubmitted(true);
-    setIsSubmitting(false);
-    setFormData({ name: '', email: '', subject: '', message: '' });
+      if (response.status === 201) {
+        setIsSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
 
-    // Réinitialiser le message de succès après 5 secondes
-    setTimeout(() => setIsSubmitted(false), 5000);
+        // Réinitialiser le message de succès après 5 secondes
+        setTimeout(() => setIsSubmitted(false), 5000);
+      }
+    } catch (err: any) {
+      console.error('Erreur lors de l\'envoi du message:', err);
+      setError(
+        err.response?.data?.message ||
+        'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -56,8 +81,18 @@ const ContactPage: React.FC = () => {
                 <div>
                   <h3 className="text-green-800 font-semibold">Message envoyé avec succès !</h3>
                   <p className="text-green-700 text-sm mt-1">
-                    Nous vous répondrons dans les plus brefs délais.
+                    Nous vous répondrons dans les plus brefs délais. Vous allez également recevoir un email de confirmation.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
+                <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5" />
+                <div>
+                  <h3 className="text-red-800 font-semibold">Erreur</h3>
+                  <p className="text-red-700 text-sm mt-1">{error}</p>
                 </div>
               </div>
             )}

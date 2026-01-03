@@ -662,7 +662,7 @@ export default function HomePage() {
         {/* CTA après FAQ */}
         <div className="text-center mt-8">
           <p className="text-gray-600 mb-4">Vous avez d'autres questions ?</p>
-          <Button variant="outline" onClick={() => navigate('/learn')}>
+          <Button variant="outline" onClick={() => navigate('/help')}>
             Consulter notre centre d'aide
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
