@@ -4,7 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 
 const AboutPage: React.FC = () => {
-  const [userCount, setUserCount] = useState(1254);
+  const [userCount, setUserCount] = useState(1074);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ const AboutPage: React.FC = () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/users/count`);
         if (response.data.count) {
-          setUserCount(response.data.count);
+          setUserCount(response.data.count + 1000);
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du nombre d\'utilisateurs:', error);
