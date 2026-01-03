@@ -312,47 +312,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* === Section Statistiques AMÉLIORÉE === */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* <-- CORRECTION: Design modernisé avec dégradés et animations */}
-          <Card variant="elevated" padding="lg" hoverable className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center space-x-4">
-              <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Investisseurs actifs</p>
-                <p className="text-3xl font-bold text-gray-900">10,000+</p> {/* <-- AJOUT: Statistique demandée */}
-              </div>
-            </div>
-          </Card>
-
-          <Card variant="elevated" padding="lg" hoverable className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center space-x-4">
-              <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full shadow-lg">
-                <BookOpen className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Modules d'apprentissage</p>
-                <p className="text-3xl font-bold text-gray-900">50+</p> {/* <-- AJOUT: Statistique demandée */}
-              </div>
-            </div>
-          </Card>
-
-          <Card variant="elevated" padding="lg" hoverable className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 transform hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center space-x-4">
-              <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full shadow-lg">
-                <Target className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Actifs Analysés</p>
-                <p className="text-3xl font-bold text-gray-900">200+</p> {/* <-- AJOUT: Statistique demandée */}
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
 
       {/* === Section Académie (inchangée) === */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
