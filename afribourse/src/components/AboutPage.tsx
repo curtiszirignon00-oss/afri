@@ -1,7 +1,30 @@
-import React from 'react';
-import { Users, Target, Award, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Users, Target, Award, TrendingUp, User, Linkedin, Globe, BookOpen, Wallet } from 'lucide-react';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 const AboutPage: React.FC = () => {
+  const [userCount, setUserCount] = useState(1254);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/users/count`);
+        if (response.data.count) {
+          setUserCount(response.data.count);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du nombre d\'utilisateurs:', error);
+        // Garder la valeur par défaut en cas d'erreur
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+
+    fetchUserCount();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Hero Section */}
@@ -14,19 +37,149 @@ const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mission Section */}
+      {/* Notre Histoire */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Notre Mission</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Notre Histoire : Transformer le potentiel en opportunité</h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-4">
-            AfriBourse a pour mission de démocratiser l'accès à l'éducation financière et aux marchés boursiers en Afrique.
-            Nous croyons que chacun devrait avoir la possibilité de comprendre et de participer aux marchés financiers,
-            en particulier à la Bourse Régionale des Valeurs Mobilières (BRVM).
+            Pendant trop longtemps, le monde de la finance africaine est resté un domaine mystérieux, perçu comme réservé
+            à une élite ou aux institutions internationales. Pourtant, au cœur de notre économie, la BRVM (Bourse Régionale
+            des Valeurs Mobilières) regorge d'opportunités pour construire un patrimoine et soutenir la croissance de nos
+            entreprises locales.
           </p>
+          <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            Le constat était simple : <strong>Beaucoup d'Africains souhaitent investir, mais la peur de perdre de l'argent
+            et le manque de formation concrète freinent leurs ambitions.</strong>
+          </p>
+
+          <h3 className="text-2xl font-bold text-blue-600 mb-4">La naissance d'AfriBourse</h3>
+          <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            AfriBourse est née de la volonté de briser ces barrières. Nous avons imaginé un pont entre le désir d'apprendre
+            et la réalité du marché. Nous avons bâti une plateforme où l'excellence technique se met au service de la simplicité.
+          </p>
+
+          <h3 className="text-2xl font-bold text-blue-600 mb-4">Ce qui nous anime</h3>
+          <p className="text-lg text-gray-700 leading-relaxed mb-4">
+            Nous ne nous contentons pas de donner des cours. Nous créons un environnement sécurisé où chaque utilisateur peut :
+          </p>
+          <div className="space-y-4 mb-6">
+            <div className="bg-blue-50 border-l-4 border-blue-600 p-4">
+              <h4 className="font-bold text-gray-900 mb-2">Comprendre sans risque</h4>
+              <p className="text-gray-700">
+                Grâce à notre simulateur de portefeuille, vous apprenez à dompter les fluctuations du marché sans
+                engager un seul franc CFA réel.
+              </p>
+            </div>
+            <div className="bg-green-50 border-l-4 border-green-600 p-4">
+              <h4 className="font-bold text-gray-900 mb-2">Décider avec précision</h4>
+              <p className="text-gray-700">
+                En utilisant des données réelles et des modèles d'analyse robustes, nous transformons la complexité
+                des chiffres en décisions claires.
+              </p>
+            </div>
+            <div className="bg-purple-50 border-l-4 border-purple-600 p-4">
+              <h4 className="font-bold text-gray-900 mb-2">Devenir acteur</h4>
+              <p className="text-gray-700">
+                Nous croyons fermement que l'éducation financière est la clé de la souveraineté économique individuelle
+                et collective en Afrique.
+              </p>
+            </div>
+          </div>
+
+          <h3 className="text-2xl font-bold text-blue-600 mb-4">Notre Vision</h3>
           <p className="text-lg text-gray-700 leading-relaxed">
-            Notre plateforme combine apprentissage théorique, pratique en environnement simulé et accès aux données
-            en temps réel pour vous permettre de développer vos compétences en investissement sans risque financier.
+            Faire de chaque citoyen de l'UEMOA un investisseur averti, capable de bâtir son avenir financier avec
+            confiance et sérénité. Que vous fassiez vos premiers pas ou que vous cherchiez à affiner vos stratégies,
+            AfriBourse est votre partenaire de confiance pour naviguer sur les marchés financiers.
           </p>
+        </div>
+
+        {/* Chiffres Clés Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-2xl p-8 md:p-12 mb-16">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">Nos Chiffres Clés</h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Utilisateurs inscrits */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">
+                {isLoadingStats ? (
+                  <span className="animate-pulse">...</span>
+                ) : (
+                  `+${userCount.toLocaleString('fr-FR')}`
+                )}
+              </div>
+              <p className="text-blue-100 font-medium">Utilisateurs déjà inscrits</p>
+            </div>
+
+            {/* Modules de formation */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+                <BookOpen className="h-8 w-8 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">16</div>
+              <p className="text-blue-100 font-medium">Modules de formation</p>
+            </div>
+
+            {/* Montant investi (virtuel) */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+                <Wallet className="h-8 w-8 text-white" />
+              </div>
+              <div className="text-3xl md:text-4xl font-bold text-white mb-2">1,25 Mds</div>
+              <p className="text-blue-100 font-medium">FCFA virtuels investis</p>
+            </div>
+
+            {/* Pays représentés */}
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+                <Globe className="h-8 w-8 text-white" />
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-white mb-2">8</div>
+              <p className="text-blue-100 font-medium">Pays de l'UEMOA</p>
+            </div>
+          </div>
+
+          {/* Top 3 des pays */}
+          <div className="mt-10 pt-8 border-t border-white/20">
+            <h3 className="text-xl font-semibold text-white mb-6 text-center">Top 3 des pays représentés</h3>
+            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {/* Côte d'Ivoire */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-semibold">🇨🇮 Côte d'Ivoire</span>
+                  <span className="text-white font-bold">44%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div className="bg-white rounded-full h-2" style={{ width: '44%' }}></div>
+                </div>
+              </div>
+
+              {/* Sénégal */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-semibold">🇸🇳 Sénégal</span>
+                  <span className="text-white font-bold">32%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div className="bg-white rounded-full h-2" style={{ width: '32%' }}></div>
+                </div>
+              </div>
+
+              {/* Bénin */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-semibold">🇧🇯 Bénin</span>
+                  <span className="text-white font-bold">13%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div className="bg-white rounded-full h-2" style={{ width: '13%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Values Section */}
@@ -119,7 +272,7 @@ const AboutPage: React.FC = () => {
         </div>
 
         {/* About BRVM Section */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-lg p-8">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-lg p-8 mb-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-6">La BRVM</h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-4">
             La Bourse Régionale des Valeurs Mobilières (BRVM) est le marché boursier de l'Union Économique et
@@ -131,6 +284,41 @@ const AboutPage: React.FC = () => {
             en vous offrant les outils nécessaires pour comprendre son fonctionnement et développer
             vos stratégies d'investissement.
           </p>
+        </div>
+
+        {/* Notre Équipe Section */}
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Notre Équipe</h2>
+
+          <div className="flex justify-center">
+            <div className="max-w-sm">
+              <div className="bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg overflow-hidden shadow-md mb-6">
+                {/* Espace pour la photo */}
+                <div className="aspect-square flex items-center justify-center bg-gradient-to-br from-blue-200 to-indigo-200">
+                  <User className="h-32 w-32 text-blue-600 opacity-50" />
+                </div>
+              </div>
+
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Curtis Zirignon</h3>
+                <p className="text-blue-600 font-semibold mb-4">Co-fondateur / CEO / Actuaire</p>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  Spécialiste en modélisation financière, Curtis veille à ce que nos outils d'analyse et de
+                  simulation reflètent avec précision la réalité mathématique des marchés pour une expérience
+                  d'apprentissage rigoureuse.
+                </p>
+                <a
+                  href="https://www.linkedin.com/in/curtis-zirignon-097424202/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm"
+                >
+                  <Linkedin className="h-4 w-4" />
+                  <span>Voir le profil LinkedIn</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
