@@ -338,9 +338,9 @@ const PrivacyPage: React.FC = () => {
             Pour toute question concernant cette politique de confidentialité ou vos données personnelles :
           </p>
           <div className="space-y-2">
-            <p>📧 Email : <a href="mailto:privacy@afribourse.com" className="underline font-semibold">privacy@afribourse.com</a></p>
+            <p>📧 Email : <a href="mailto:privacy@afribourse.com" className="underline font-semibold">contact@africbourse.com</a></p>
             <p>📝 Formulaire : <a href="/contact" className="underline font-semibold">Page de contact</a></p>
-            <p>📍 Adresse : Abidjan, Côte d'Ivoire - Plateau, Avenue Lamblin</p>
+            <p>📍 Adresse : Abidjan, Côte d'Ivoire </p>
           </div>
         </div>
       </div>
