@@ -358,18 +358,41 @@ export async function sendPasswordResetEmail({
  * Fonction générique d'envoi d'email
  */
 export async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<void> {
+  console.log(`📧 [EMAIL] Tentative d'envoi d'email:`);
+  console.log(`   → Destinataire: ${to}`);
+  console.log(`   → Sujet: ${subject}`);
+  console.log(`   → Expéditeur: "${config.email.fromName}" <${config.email.from}>`);
+  console.log(`   → Serveur SMTP: ${config.email.host}:${config.email.port}`);
+
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"${config.email.fromName}" <${config.email.from}>`,
       to,
       subject,
       html,
       text: text || '',
     });
-    console.log(`📧 Email envoyé avec succès à ${to} depuis ${config.email.from}`);
-  } catch (error) {
-    console.error(`❌ Erreur lors de l'envoi de l'email à ${to}:`, error);
-    throw new Error('Échec de l\'envoi de l\'email');
+
+    console.log(`✅ [EMAIL] Email envoyé avec succès!`);
+    console.log(`   → Message ID: ${info.messageId}`);
+    console.log(`   → Response: ${info.response}`);
+    console.log(`   → Accepted: ${info.accepted?.join(', ') || 'N/A'}`);
+    console.log(`   → Rejected: ${info.rejected?.join(', ') || 'Aucun'}`);
+  } catch (error: any) {
+    console.error(`❌ [EMAIL] ÉCHEC de l'envoi de l'email à ${to}`);
+    console.error(`   → Type d'erreur: ${error.name || 'Unknown'}`);
+    console.error(`   → Message: ${error.message || 'Aucun message'}`);
+    console.error(`   → Code: ${error.code || 'N/A'}`);
+    console.error(`   → Command: ${error.command || 'N/A'}`);
+
+    if (error.response) {
+      console.error(`   → SMTP Response: ${error.response}`);
+    }
+
+    // Log complet de l'erreur pour le debugging
+    console.error(`   → Stack trace:`, error.stack);
+
+    throw new Error(`Échec de l'envoi de l'email: ${error.message || 'Erreur inconnue'}`);
   }
 }
 
