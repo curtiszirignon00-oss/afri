@@ -47,17 +47,28 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         }
 
         // 5. Envoyer l'email de confirmation
+        console.log(`📧 [REGISTER] Préparation de l'envoi de l'email de confirmation pour ${email}`);
+        console.log(`   → Token: ${confirmationToken.substring(0, 10)}...`);
+        console.log(`   → Expire le: ${tokenExpiration.toISOString()}`);
+
+        let emailSent = false;
+        let emailError: any = null;
+
         try {
             await sendConfirmationEmail({
                 email,
                 name,
                 confirmationToken,
             });
-            console.log(`✅ [REGISTER] Email de confirmation envoyé à ${email}`);
-        } catch (emailError) {
-            console.error('❌ [REGISTER] Erreur lors de l\'envoi de l\'email de confirmation:', emailError);
+            emailSent = true;
+            console.log(`✅ [REGISTER] Email de confirmation envoyé avec succès à ${email}`);
+        } catch (error) {
+            emailError = error;
+            emailSent = false;
+            console.error('❌ [REGISTER] ÉCHEC de l\'envoi de l\'email de confirmation!');
+            console.error('   → Erreur:', error);
             // On ne bloque pas l'inscription, mais on informe l'utilisateur
-            // L'utilisateur pourra renvoyer l'email plus tard
+            // L'utilisateur pourra renvoyer l'email plus tard via /api/resend-confirmation
         }
 
         // 6. Créer automatiquement un portfolio pour le nouvel utilisateur
@@ -80,10 +91,18 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         const { password: _, email_confirmation_token: __, email_confirmation_expires: ___, ...userWithoutSensitiveData } = user;
 
         console.log('✅ [REGISTER] Utilisateur créé avec succès:', user.email);
+        console.log(`   → Email envoyé: ${emailSent ? 'OUI ✅' : 'NON ❌'}`);
+
+        // Message personnalisé selon si l'email a été envoyé ou non
+        const message = emailSent
+            ? "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception."
+            : "Inscription réussie ! Cependant, nous n'avons pas pu envoyer l'email de confirmation. Vous pouvez demander un nouveau lien via le bouton 'Renvoyer l'email'.";
+
         return res.status(201).json({
-            message: "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception.",
+            message,
             user: userWithoutSensitiveData,
-            emailSent: true,
+            emailSent,
+            emailError: emailError ? emailError.message : null,
         });
 
     } catch (error) {
