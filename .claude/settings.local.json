@@ -65,7 +65,8 @@
       "Bash(npm run import-sdcc-history:*)",
       "Bash(npm run verify-sdcc:*)",
       "Bash(xargs cat:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(timeout /t 5)"
     ],
     "deny": [],
     "ask": []
