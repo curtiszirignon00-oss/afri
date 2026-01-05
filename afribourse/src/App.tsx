@@ -36,6 +36,9 @@ import ContactPage from './components/ContactPage';
 import PrivacyPage from './components/PrivacyPage';
 import HelpCenterPage from './components/HelpCenterPage';
 
+// Hooks
+import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
+
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
   const location = useLocation();
@@ -50,6 +53,9 @@ function ScrollToTop() {
 // Composant Layout pour le Header et Footer
 function Layout() {
   const location = useLocation();
+
+  // Initialiser Google Analytics pour tracker toutes les pages
+  useGoogleAnalytics();
 
   // Détermine si le Header/Footer doit être affiché
   const showLayout = !['/signup', '/login', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
