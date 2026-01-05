@@ -27,6 +27,8 @@ export interface IUserInput {
  */
 export const createUser = async (data: IUserInput) => {
     try {
+        // SIMPLIFIÉ: Ne plus créer automatiquement UserProfile
+        // Le profil social n'est plus nécessaire pour l'inscription
         const user = await prisma.user.create({
             data: {
                 name: data.name,
@@ -38,14 +40,7 @@ export const createUser = async (data: IUserInput) => {
                 address: data.address,
                 email_confirmation_token: data.email_confirmation_token,
                 email_confirmation_expires: data.email_confirmation_expires,
-                // FIX CRITIQUE: Créer le profil associé
-                profile: {
-                    create: {
-                        profile_type: "investor",
-                    }
-                }
             },
-            include: { profile: true }
         });
         // Exclure le mot de passe de l'objet retourné
         const { password, ...userWithoutPassword } = user;
