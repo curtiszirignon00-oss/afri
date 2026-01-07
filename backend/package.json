@@ -41,6 +41,7 @@
     "verify-sicc": "ts-node src/scripts/verify-sicc-data.ts",
     "verify-neic": "ts-node src/scripts/verify-neic-data.ts",
     "verify-sdcc": "ts-node src/scripts/verify-sdcc-data.ts",
+    "export-users": "ts-node src/scripts/export-users-to-excel-direct.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",

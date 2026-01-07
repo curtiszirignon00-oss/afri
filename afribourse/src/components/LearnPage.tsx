@@ -47,6 +47,7 @@ interface QuizState {
 export default function LearnPage() {
     const { isLoggedIn } = useAuth();
     const [modules, setModules] = useState<LearningModule[]>([]);
+    const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
     const [progress, setProgress] = useState<LearningProgress[]>([]);
     const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
     const [loading, setLoading] = useState(true);
@@ -104,20 +105,22 @@ export default function LearnPage() {
         return true;
       }
 
-      const previousModule = modules.find(m => m.order_index === (module.order_index! - 1));
+      // Utiliser allModules au lieu de modules pour trouver le module précédent
+      const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
       if (!previousModule) return true;
 
       return isModuleCompleted(previousModule.slug);
-    }, [modules, isModuleCompleted]);
+    }, [allModules, isModuleCompleted]);
 
     const getPreviousIncompleteModule = useCallback((module: LearningModule): LearningModule | null => {
       if (!module.order_index || module.order_index <= 1) return null;
 
-      const previousModule = modules.find(m => m.order_index === (module.order_index! - 1));
+      // Utiliser allModules au lieu de modules pour trouver le module précédent
+      const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
       if (!previousModule) return null;
 
       return isModuleCompleted(previousModule.slug) ? null : previousModule;
-    }, [modules, isModuleCompleted]);
+    }, [allModules, isModuleCompleted]);
 
     const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
       setQuizLoading(true);
@@ -144,11 +147,11 @@ export default function LearnPage() {
         setLoading(true);
         setError(null);
 
-        const moduleUrl = `${API_BASE_URL}/learning-modules${selectedDifficulty !== 'all' ? `?difficulty=${selectedDifficulty}` : ''}`;
+        const allModulesUrl = `${API_BASE_URL}/learning-modules`; // Charger TOUS les modules
         const progressUrl = `${API_BASE_URL}/learning-modules/progress`;
 
         try {
-            const modulesPromise = fetch(moduleUrl).then(res => {
+            const allModulesPromise = fetch(allModulesUrl).then(res => {
                 if (!res.ok) throw new Error(`Erreur ${res.status}: Impossible de charger les modules.`);
                 return res.json();
             });
@@ -161,15 +164,24 @@ export default function LearnPage() {
                 return res.json();
             });
 
-            const [modulesData, progressData] = await Promise.all([modulesPromise, progressPromise]);
+            const [allModulesData, progressData] = await Promise.all([allModulesPromise, progressPromise]);
 
-            setModules(modulesData || []);
+            // Stocker tous les modules pour la vérification de déverrouillage
+            setAllModules(allModulesData || []);
+
+            // Filtrer les modules pour l'affichage selon la difficulté sélectionnée
+            const filteredModules = selectedDifficulty === 'all'
+                ? allModulesData
+                : (allModulesData || []).filter((m: LearningModule) => m.difficulty_level === selectedDifficulty);
+
+            setModules(filteredModules || []);
             setProgress(progressData || []);
 
         } catch (err: any) {
             console.error('Erreur chargement données:', err);
             setError(err.message || "Une erreur est survenue.");
             setModules([]);
+            setAllModules([]);
             setProgress([]);
         } finally {
             setLoading(false);
