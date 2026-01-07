@@ -293,6 +293,7 @@ export default function LearnPage() {
 
         const result = await response.json();
 
+        // Afficher les résultats d'abord
         setQuizState(prev => ({
           ...prev,
           score: result.score,
@@ -301,8 +302,6 @@ export default function LearnPage() {
           isActive: false,
           detailedResults: result.detailedResults || []
         }));
-
-        await loadData();
 
         if (result.passed) {
           toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
@@ -316,9 +315,14 @@ export default function LearnPage() {
           toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
         }
 
+        // Scroller vers les résultats pour que l'utilisateur puisse les voir
         setTimeout(() => {
           document.getElementById('quiz-results')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
+
+        // Recharger les données en arrière-plan SANS perturber l'affichage des résultats
+        // Cela met à jour la progression de l'utilisateur
+        loadData();
 
       } catch (error: any) {
         console.error('Erreur lors de la soumission du quiz:', error);
@@ -402,6 +406,15 @@ export default function LearnPage() {
 
     useEffect(() => {
         if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4) {
+            // Réinitialiser l'état du quiz quand on ouvre un nouveau module
+            setQuizState({
+                isActive: false,
+                answers: {},
+                score: null,
+                passed: null,
+                showResults: false,
+                detailedResults: []
+            });
             loadModuleQuiz(selectedModule.slug);
         }
     }, [selectedModule, loadModuleQuiz]);
@@ -760,6 +773,7 @@ export default function LearnPage() {
                                                     return nextModule ? (
                                                         <button
                                                             onClick={() => {
+                                                                // Réinitialiser le quiz seulement après que l'utilisateur a décidé de continuer
                                                                 setSelectedModule(nextModule);
                                                                 setQuizState({
                                                                     isActive: false,
@@ -772,7 +786,7 @@ export default function LearnPage() {
                                                             }}
                                                             className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                                                         >
-                                                            <span>Continuer vers le Module {currentOrder + 1}</span>
+                                                            <span>Passer au Module suivant</span>
                                                             <ArrowLeft className="w-5 h-5 rotate-180" />
                                                         </button>
                                                     ) : null;
@@ -780,6 +794,7 @@ export default function LearnPage() {
 
                                                 <button
                                                     onClick={() => {
+                                                        // Réinitialiser le quiz seulement après que l'utilisateur a décidé de retourner
                                                         setSelectedModule(null);
                                                         setQuizState({
                                                             isActive: false,
