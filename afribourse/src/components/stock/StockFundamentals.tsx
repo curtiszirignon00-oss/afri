@@ -224,9 +224,11 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
       {/* Historique Financier (Tableau + Graphiques) */}
       {annualFinancials && annualFinancials.data && annualFinancials.data.length > 0 && (
         <section>
-          <div className="flex items-center space-x-2 mb-4">
-            <BarChart3 className="w-5 h-5 text-orange-600" />
-            <h3 className="text-xl font-bold text-gray-900">Historique Financier</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-5 h-5 text-orange-600" />
+              <h3 className="text-xl font-bold text-gray-900">Historique Financier</h3>
+            </div>
           </div>
 
           {/* Tableau */}

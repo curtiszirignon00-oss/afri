@@ -1,4 +1,5 @@
-export { default as StockChart } from './StockChart';
+// export { default as StockChart } from './StockChart'; // Fichier supprimé
+export { default as StockChart } from './StockChartNew'; // Utiliser StockChartNew comme StockChart
 export { default as StockChartNew } from './StockChartNew';
 export { default as StockTabs } from './StockTabs';
 export { default as StockOverview } from './StockOverview';
