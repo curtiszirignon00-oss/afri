@@ -37,6 +37,7 @@ import PrivacyPage from './components/PrivacyPage';
 import HelpCenterPage from './components/HelpCenterPage';
 import SubscriptionPage from './components/SubscriptionPage';
 import AdminSubscriptionStats from './components/AdminSubscriptionStats';
+import CheckoutPage from './components/CheckoutPage';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -82,6 +83,14 @@ function Layout() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
           <Route path="/subscriptions" element={<SubscriptionPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />
