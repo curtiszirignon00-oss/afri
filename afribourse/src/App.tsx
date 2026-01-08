@@ -35,6 +35,8 @@ import AboutPage from './components/AboutPage';
 import ContactPage from './components/ContactPage';
 import PrivacyPage from './components/PrivacyPage';
 import HelpCenterPage from './components/HelpCenterPage';
+import SubscriptionPage from './components/SubscriptionPage';
+import AdminSubscriptionStats from './components/AdminSubscriptionStats';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -79,6 +81,7 @@ function Layout() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
+          <Route path="/subscriptions" element={<SubscriptionPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />
@@ -107,6 +110,14 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <TransactionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/subscription-stats"
+            element={
+              <ProtectedRoute>
+                <AdminSubscriptionStats />
               </ProtectedRoute>
             }
           />
