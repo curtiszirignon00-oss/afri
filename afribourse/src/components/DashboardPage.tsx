@@ -58,6 +58,13 @@ export default function DashboardPage() {
     loadUserData();
   }, [stocksData]);
 
+  // Valider les calculs quand le portfolio ou les données des stocks changent
+  useEffect(() => {
+    if (portfolio && Object.keys(stocksData).length > 0 && portfolioHistory.length > 0) {
+      validateCalculations();
+    }
+  }, [portfolio, stocksData, portfolioHistory]);
+
   async function loadUserData() {
     setLoading(true);
     setError(null);
@@ -205,26 +212,133 @@ export default function DashboardPage() {
     return portfolioHistory.filter(point => new Date(point.date) >= startDate);
   }
 
-  // <-- AJOUT: Calculer la performance du jour
+  // <-- AJOUT: Calculer la performance du jour (amélioré)
   function calculateDailyPerformance(): { value: number; percent: number } {
     if (portfolioHistory.length < 2) return { value: 0, percent: 0 };
-    
+
     const today = portfolioHistory[portfolioHistory.length - 1];
-    const yesterday = portfolioHistory[portfolioHistory.length - 2];
-    
-    const dailyChange = today.value - yesterday.value;
-    const dailyChangePercent = yesterday.value > 0 ? (dailyChange / yesterday.value) * 100 : 0;
-    
+
+    // Chercher le point d'hier (ou le dernier point avant aujourd'hui)
+    const todayDate = new Date(today.date);
+    const yesterdayDate = new Date(todayDate);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+
+    // Trouver le point le plus proche d'hier (en remontant dans le temps)
+    let previousPoint = portfolioHistory[portfolioHistory.length - 2];
+    for (let i = portfolioHistory.length - 2; i >= 0; i--) {
+      const pointDate = new Date(portfolioHistory[i].date);
+      if (pointDate < todayDate) {
+        previousPoint = portfolioHistory[i];
+        break;
+      }
+    }
+
+    const dailyChange = today.value - previousPoint.value;
+    const dailyChangePercent = previousPoint.value > 0
+      ? (dailyChange / previousPoint.value) * 100
+      : 0;
+
     return { value: dailyChange, percent: dailyChangePercent };
+  }
+
+  // <-- AJOUT: Calculer la meilleure et la pire performance journalière
+  function getBestWorstPerformance(): {
+    best: { date: string; value: number; percent: number } | null;
+    worst: { date: string; value: number; percent: number } | null;
+  } {
+    if (portfolioHistory.length < 2) {
+      return { best: null, worst: null };
+    }
+
+    const dailyChanges: { date: string; value: number; percent: number }[] = [];
+
+    for (let i = 1; i < portfolioHistory.length; i++) {
+      const today = portfolioHistory[i];
+      const yesterday = portfolioHistory[i - 1];
+      const change = today.value - yesterday.value;
+      const percent = yesterday.value > 0 ? (change / yesterday.value) * 100 : 0;
+
+      dailyChanges.push({
+        date: today.date,
+        value: change,
+        percent: percent
+      });
+    }
+
+    if (dailyChanges.length === 0) {
+      return { best: null, worst: null };
+    }
+
+    const best = dailyChanges.reduce((max, curr) =>
+      curr.percent > max.percent ? curr : max
+    );
+    const worst = dailyChanges.reduce((min, curr) =>
+      curr.percent < min.percent ? curr : min
+    );
+
+    return { best, worst };
+  }
+
+  // <-- AJOUT: Valider la cohérence des calculs (pour debug)
+  function validateCalculations() {
+    if (!portfolio) return;
+
+    const totalValue = calculateTotalValue();
+    const stocksValue = portfolio.positions.reduce((acc, pos) => {
+      const stock = stocksData[pos.stock_ticker];
+      return stock ? acc + (pos.quantity * stock.current_price) : acc;
+    }, 0);
+    const cashBalance = portfolio.cash_balance;
+
+    // Vérification 1 : Valeur totale = liquidités + valeur actions
+    const calculatedTotal = cashBalance + stocksValue;
+    if (Math.abs(calculatedTotal - totalValue) > 0.01) {
+      console.warn('⚠️ Incohérence: Valeur totale', {
+        totalValue,
+        calculatedTotal,
+        difference: calculatedTotal - totalValue
+      });
+    }
+
+    // Vérification 2 : Allocation totale = 100%
+    const allocationData = getAllocationData();
+    const totalAllocation = allocationData.reduce((sum, item) => sum + item.percent, 0);
+    if (Math.abs(totalAllocation - 100) > 0.01) {
+      console.warn('⚠️ Incohérence: Allocation totale', {
+        totalAllocation,
+        expected: 100,
+        difference: totalAllocation - 100
+      });
+    }
+
+    // Vérification 3 : Gain/Perte = Valeur actuelle - Solde initial
+    const initialBalance = portfolio.initial_balance || 0;
+    const totalGainLoss = totalValue - initialBalance;
+    const calculatedGainLoss = cashBalance + stocksValue - initialBalance;
+    if (Math.abs(totalGainLoss - calculatedGainLoss) > 0.01) {
+      console.warn('⚠️ Incohérence: Gain/Perte', {
+        totalGainLoss,
+        calculatedGainLoss,
+        difference: totalGainLoss - calculatedGainLoss
+      });
+    }
+
+    console.log('✅ Validation des calculs:', {
+      totalValue,
+      cashBalance,
+      stocksValue,
+      totalAllocation: totalAllocation.toFixed(2) + '%',
+      totalGainLoss
+    });
   }
 
   // <-- AJOUT: Préparer les données pour le graphique d'allocation
   function getAllocationData() {
     if (!portfolio) return [];
-    
+
     const totalValue = calculateTotalValue();
     const data: { name: string; value: number; percent: number }[] = [];
-    
+
     // Ajouter les positions
     portfolio.positions.forEach(position => {
       const stock = stocksData[position.stock_ticker];
