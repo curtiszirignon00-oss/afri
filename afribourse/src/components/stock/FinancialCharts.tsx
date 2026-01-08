@@ -40,7 +40,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
       title: 'Évolution du Chiffre d\'Affaires',
       dataKey: 'revenue',
       color: '#3b82f6',
-      type: 'line' as const,
+      type: 'bar' as const,
       formatter: formatMillions,
       unit: ' FCFA'
     },
