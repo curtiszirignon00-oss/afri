@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import confetti from 'canvas-confetti';
 import { AITutor } from './AITutor';
+import PremiumPaywall from './PremiumPaywall';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -73,6 +74,7 @@ export default function LearnPage() {
     const [quizPassingScore, setQuizPassingScore] = useState(70);
 
     const [showAITutor, setShowAITutor] = useState(false);
+    const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
 
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -819,7 +821,7 @@ export default function LearnPage() {
                         {/* Bouton d'aide IA */}
                         <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
                             <button
-                                onClick={() => setShowAITutor(true)}
+                                onClick={() => setShowPremiumPaywall(true)}
                                 className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
                             >
                                 <HelpCircle className="w-5 h-5" />
@@ -860,7 +862,7 @@ export default function LearnPage() {
                     {/* Bouton flottant AI Tutor */}
                     {!showAITutor && (
                         <button
-                            onClick={() => setShowAITutor(true)}
+                            onClick={() => setShowPremiumPaywall(true)}
                             className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
                         >
                             <MessageSquarePlus className="w-6 h-6" />
@@ -870,11 +872,19 @@ export default function LearnPage() {
                         </button>
                     )}
 
-                    {/* Composant AI Tutor */}
-                    <AITutor
+                    {/* Composant AI Tutor - Désactivé, remplacé par paywall */}
+                    {/* <AITutor
                         context={selectedModule.description || selectedModule.title}
                         isOpen={showAITutor}
                         onClose={() => setShowAITutor(false)}
+                    /> */}
+
+                    {/* Paywall Premium pour Coach IA */}
+                    <PremiumPaywall
+                        isOpen={showPremiumPaywall}
+                        onClose={() => setShowPremiumPaywall(false)}
+                        feature="Poser vos questions au Coach IA. Passez à Investisseur+ et apprenez plus vite"
+                        plan="investisseur-plus"
                     />
                 </div>
             </div>

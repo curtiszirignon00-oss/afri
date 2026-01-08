@@ -28,6 +28,7 @@ import achievementRoutes from './routes/achievement.routes';
 import activityRoutes from './routes/activity.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
 import contactRoutes from './routes/contact.routes';
+import subscriptionRoutes from './routes/subscription.routes';
 
 class App {
   private app: Application | null = null;
@@ -132,6 +133,7 @@ class App {
     this.app?.use('/api/activities', activityRoutes);      // Activités utilisateur
     this.app?.use('/api/leaderboard', leaderboardRoutes);  // Classements
     this.app?.use('/api/contact', contactRoutes);          // Formulaire de contact
+    this.app?.use('/api/subscriptions', subscriptionRoutes); // Tracking abonnements
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

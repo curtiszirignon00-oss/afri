@@ -152,6 +152,14 @@ export default function Header() {
                         <span>Mon Profil</span>
                       </button>
 
+                      <button
+                        onClick={() => { navigate('/subscriptions'); setAccountMenuOpen(false); }}
+                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                        <span>Abonnements</span>
+                      </button>
+
                       <div className="border-t border-gray-100 my-1"></div>
                       
                       <button
