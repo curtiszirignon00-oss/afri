@@ -40,6 +40,7 @@ import SubscriptionPage from './components/SubscriptionPage';
 import AdminSubscriptionStats from './components/AdminSubscriptionStats';
 import CheckoutPage from './components/CheckoutPage';
 import AdminDashboard from './components/AdminDashboard';
+import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -137,6 +138,14 @@ function Layout() {
             element={
               <AdminRoute>
                 <AdminSubscriptionStats />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <AdminRoute>
+                <AdminAnalyticsDashboard />
               </AdminRoute>
             }
           />
