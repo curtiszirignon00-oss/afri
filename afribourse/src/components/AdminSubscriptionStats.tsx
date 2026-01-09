@@ -53,19 +53,32 @@ export default function AdminSubscriptionStats() {
 
   const fetchStats = async () => {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      // Ajouter le token si disponible (pour mobile)
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/subscriptions/stats`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+        method: 'GET',
+        headers,
+        credentials: 'include', // Important: envoie les cookies
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la récupération des statistiques');
+        const errorText = await response.text();
+        console.error('Erreur API:', errorText);
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
       setStats(result.data);
     } catch (err) {
+      console.error('Erreur complète:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setLoading(false);
