@@ -934,20 +934,61 @@ export default function DashboardPage() {
                 />
               </div>
 
-              {stocksData[selectedPosition.stock_ticker] && (
-                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Prix actuel:</span>
-                    <span className="font-semibold">{formatNumber(stocksData[selectedPosition.stock_ticker].current_price)} F</span>
+              {stocksData[selectedPosition.stock_ticker] && (() => {
+                const currentPrice = stocksData[selectedPosition.stock_ticker].current_price;
+                const averageBuyPrice = selectedPosition.average_buy_price;
+                const unitGainLoss = currentPrice - averageBuyPrice;
+                const totalGainLoss = unitGainLoss * sellQuantity;
+                const gainLossPercent = ((unitGainLoss / averageBuyPrice) * 100);
+                const isProfit = totalGainLoss >= 0;
+
+                return (
+                  <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                    {/* Prix et PRU */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Prix de Revient Unitaire (P.R.U.):</span>
+                        <span className="font-semibold">{formatNumber(averageBuyPrice)} F</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Prix actuel:</span>
+                        <span className="font-semibold">{formatNumber(currentPrice)} F</span>
+                      </div>
+                    </div>
+
+                    {/* Séparateur */}
+                    <div className="border-t border-gray-200 pt-3">
+                      {/* Plus-value/Perte */}
+                      <div className={`rounded-lg p-3 ${isProfit ? 'bg-green-50' : 'bg-red-50'}`}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium text-gray-700">
+                            {isProfit ? 'Plus-value' : 'Perte'}
+                          </span>
+                          <span className={`text-lg font-bold ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+                            {isProfit ? '+' : ''}{formatNumber(totalGainLoss)} F
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Variation:</span>
+                          <span className={`font-semibold ${isProfit ? 'text-green-600' : 'text-red-600'}`}>
+                            {isProfit ? '+' : ''}{gainLossPercent.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Total à recevoir */}
+                    <div className="border-t border-gray-200 pt-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-700">Total à recevoir:</span>
+                        <span className="text-lg font-bold text-blue-600">
+                          {formatNumber(sellQuantity * currentPrice)} F
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total à recevoir:</span>
-                    <span className="font-bold text-green-600">
-                      {formatNumber(sellQuantity * stocksData[selectedPosition.stock_ticker].current_price)} F
-                    </span>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               <div className="flex space-x-3">
                 <Button variant="secondary" onClick={() => setSellModalOpen(false)} className="flex-1">
