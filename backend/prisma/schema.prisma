@@ -40,7 +40,12 @@ model User {
   portfolios          Portfolio[]
   watchlistItems      WatchlistItem[]
   learningProgress    LearningProgress[]
-  
+
+  // --- Analytics & Tracking ---
+  pageViews           PageView[]
+  actionTracking      UserActionTracking[]
+  featureUsage        FeatureUsage[]
+
   // --- Nouvelles relations (profil social) ---
   challengeProgress   UserChallengeProgress[]
   subscriptionIntents SubscriptionIntent[]
@@ -714,5 +719,89 @@ model SubscriptionIntent {
   @@map("subscription_intents")
   @@index([userId])
   @@index([planId])
+  @@index([created_at])
+}
+
+// ================================= //
+// === ANALYTICS & TRACKING === //
+// ================================= //
+
+// Pages visitées par les utilisateurs
+model PageView {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String?  @db.ObjectId  // null si non connecté
+  sessionId   String   // ID de session pour regrouper les vues
+
+  page_path   String   // /dashboard, /stocks/SIVC, etc.
+  page_title  String?  // Titre de la page
+  referrer    String?  // Page précédente
+
+  // Timing
+  duration    Int?     // Temps passé sur la page (en secondes)
+  created_at  DateTime @default(now())
+
+  // Device & Browser info
+  user_agent  String?
+  device_type String?  // mobile, tablet, desktop
+  browser     String?
+  os          String?
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("page_views")
+  @@index([userId])
+  @@index([sessionId])
+  @@index([page_path])
+  @@index([created_at])
+}
+
+// Actions spécifiques des utilisateurs
+model UserActionTracking {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  sessionId   String   // ID de session
+
+  action_type String   // search_stock, add_to_watchlist, create_portfolio, simulate_trade, view_chart, use_ai_coach, etc.
+  action_name String   // Nom lisible de l'action
+
+  // Contexte de l'action
+  page_path   String?  // Où l'action a été effectuée
+  metadata    Json?    // Données supplémentaires (ticker, montant, etc.)
+
+  created_at  DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_action_tracking")
+  @@index([userId])
+  @@index([action_type])
+  @@index([created_at])
+  @@index([sessionId])
+}
+
+// Utilisation des fonctionnalités premium/paywall
+model FeatureUsage {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+
+  feature_name  String   // "Coach IA", "Analyse Technique", "Simulateur Avancé", etc.
+  feature_type  String   // "free", "premium", "pro"
+
+  // Status
+  access_granted Boolean  // true si l'utilisateur a accès, false si bloqué par paywall
+  blocked_by_paywall Boolean @default(false)
+
+  // Contexte
+  page_path     String?
+  metadata      Json?
+
+  created_at    DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("feature_usage")
+  @@index([userId])
+  @@index([feature_name])
+  @@index([blocked_by_paywall])
   @@index([created_at])
 }
