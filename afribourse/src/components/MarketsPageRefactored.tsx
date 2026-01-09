@@ -1,15 +1,17 @@
 // src/components/MarketsPageRefactored.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, Star } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, type StockFilters } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
+import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 import { useNavigate } from 'react-router-dom';
 type MarketsPageRefactoredProps = {};
 
 export default function MarketsPageRefactored() {
   const navigate = useNavigate();
+  const { trackAction } = useAnalytics();
   // États locaux pour les filtres
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('all');
@@ -33,6 +35,20 @@ export default function MarketsPageRefactored() {
 
   // Set des tickers dans la watchlist
   const watchlistTickers = new Set(watchlist.map(item => item.stock_ticker));
+
+  // Track les recherches
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      trackAction(ACTION_TYPES.SEARCH_STOCK, 'Recherche d\'action', { query: debouncedSearchTerm });
+    }
+  }, [debouncedSearchTerm]);
+
+  // Track les filtres par secteur
+  useEffect(() => {
+    if (selectedSector !== 'all') {
+      trackAction(ACTION_TYPES.FILTER_STOCKS, 'Filtre par secteur', { sector: selectedSector });
+    }
+  }, [selectedSector]);
 
   // Liste des secteurs BRVM
   const sectors = [
@@ -74,12 +90,14 @@ export default function MarketsPageRefactored() {
   // Gestion de la watchlist
   const handleToggleWatchlist = async (stockTicker: string) => {
     const isInWatchlist = watchlistTickers.has(stockTicker);
-    
+
     try {
       if (isInWatchlist) {
         await removeFromWatchlist.mutateAsync(stockTicker);
+        trackAction(ACTION_TYPES.REMOVE_FROM_WATCHLIST, 'Retrait de la watchlist', { ticker: stockTicker });
       } else {
         await addToWatchlist.mutateAsync(stockTicker);
+        trackAction(ACTION_TYPES.ADD_TO_WATCHLIST, 'Ajout à la watchlist', { ticker: stockTicker });
       }
     } catch (error) {
       console.error('Erreur watchlist:', error);

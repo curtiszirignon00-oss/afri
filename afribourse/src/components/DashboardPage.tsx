@@ -8,6 +8,7 @@ import { usePortfolio } from '../hooks/usePortfolio';
 import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { API_BASE_URL } from '../config/api';
+import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 type DashboardPageProps = {};
 
@@ -20,10 +21,10 @@ type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
 export default function DashboardPage() {
   const navigate = useNavigate();
   // ✅ React Query: Hook personnalisé pour le portfolio
-  const { 
-    portfolio, 
-    stocksData, 
-    portfolioHistory, 
+  const {
+    portfolio,
+    stocksData,
+    portfolioHistory,
     loading: portfolioLoading,
     error: portfolioError,
     refetch: reloadPortfolio,
@@ -34,6 +35,9 @@ export default function DashboardPage() {
   // ✅ React Query: Hooks pour achat/vente
   const buyStock = useBuyStock();
   const sellStock = useSellStock();
+
+  // ✅ Analytics: Hook pour tracker les actions
+  const { trackAction } = useAnalytics();
 
   // États locaux
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -137,6 +141,18 @@ export default function DashboardPage() {
         pricePerShare: stockMarketData.current_price
       });
 
+      // Track la vente
+      trackAction(
+        ACTION_TYPES.SIMULATE_SELL,
+        'Simulation de vente',
+        {
+          ticker: selectedPosition.stock_ticker,
+          quantity: sellQuantity,
+          price: stockMarketData.current_price,
+          totalValue: sellQuantity * stockMarketData.current_price
+        }
+      );
+
       setSellModalOpen(false);
       await reloadPortfolio();
       await loadUserData(); // <-- AJOUT: Recharger les transactions
@@ -155,6 +171,18 @@ export default function DashboardPage() {
         quantity: buyQuantity,
         pricePerShare: selectedStockToBuy.current_price
       });
+
+      // Track l'achat
+      trackAction(
+        ACTION_TYPES.SIMULATE_BUY,
+        "Simulation d'achat",
+        {
+          ticker: selectedStockToBuy.symbol,
+          quantity: buyQuantity,
+          price: selectedStockToBuy.current_price,
+          totalValue: buyQuantity * selectedStockToBuy.current_price
+        }
+      );
 
       setBuyModalOpen(false);
       await reloadPortfolio();
