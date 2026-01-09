@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Users,
   TrendingUp,
@@ -13,6 +14,8 @@ import {
   Calendar,
   DollarSign,
   BarChart3,
+  Eye,
+  MousePointerClick,
 } from 'lucide-react';
 
 interface UserStats {
@@ -64,6 +67,13 @@ interface TopUser {
   transactionCount: number;
 }
 
+interface AnalyticsOverview {
+  totalPageViews: number;
+  totalActions: number;
+  totalFeatureUses: number;
+  uniqueActiveUsers: number;
+}
+
 interface PlatformStats {
   users: UserStats;
   portfolios: PortfolioStats;
@@ -72,13 +82,19 @@ interface PlatformStats {
   topUsers: TopUser[];
 }
 
+interface AnalyticsData {
+  overview: AnalyticsOverview;
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStats();
+    fetchAnalytics();
   }, []);
 
   const fetchStats = async () => {
@@ -114,6 +130,36 @@ export default function AdminDashboard() {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/analytics/stats?days=7`,
+        {
+          method: 'GET',
+          headers,
+          credentials: 'include',
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnalytics(result.data);
+      }
+    } catch (err) {
+      console.error('Erreur analytics:', err);
+      // Ne pas bloquer le dashboard si les analytics échouent
     }
   };
 
@@ -161,6 +207,67 @@ export default function AdminDashboard() {
             Vue d'ensemble complète de la plateforme AfriBourse
           </p>
         </div>
+
+        {/* Analytics Section - Quick Overview */}
+        {analytics && (
+          <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Analytics (7 derniers jours)
+                </h2>
+                <p className="text-blue-100 text-sm">
+                  Comportement et engagement des utilisateurs
+                </p>
+              </div>
+              <Link
+                to="/admin/analytics"
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Voir détails
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Eye className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm">Pages vues</span>
+                </div>
+                <p className="text-3xl font-bold text-white">
+                  {formatNumber(analytics.overview.totalPageViews)}
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <MousePointerClick className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm">Actions</span>
+                </div>
+                <p className="text-3xl font-bold text-white">
+                  {formatNumber(analytics.overview.totalActions)}
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Activity className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm">Utilisations</span>
+                </div>
+                <p className="text-3xl font-bold text-white">
+                  {formatNumber(analytics.overview.totalFeatureUses)}
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-5 h-5 text-blue-200" />
+                  <span className="text-blue-100 text-sm">Actifs uniques</span>
+                </div>
+                <p className="text-3xl font-bold text-white">
+                  {formatNumber(analytics.overview.uniqueActiveUsers)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
