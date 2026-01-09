@@ -1,6 +1,8 @@
 import { Check, Zap, Crown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useEffect } from 'react';
+import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 interface PlanFeature {
   text: string;
@@ -24,6 +26,15 @@ interface Plan {
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const { userProfile } = useAuth();
+  const { trackAction } = useAnalytics();
+
+  // Track la visite de la page pricing
+  useEffect(() => {
+    trackAction(ACTION_TYPES.VIEW_PRICING, 'Visite de la page pricing', {
+      userLoggedIn: !!userProfile,
+      userEmail: userProfile?.email || 'anonymous'
+    });
+  }, [trackAction, userProfile]);
 
   const plans: Plan[] = [
     {
@@ -104,6 +115,14 @@ export default function SubscriptionPage() {
     }
 
     if (planId === 'essentiel') return;
+
+    // Track le clic sur le bouton d'abonnement
+    trackAction(ACTION_TYPES.START_CHECKOUT, 'Début du processus d\'abonnement', {
+      planId,
+      planName,
+      price,
+      userEmail: userProfile.email
+    });
 
     // Rediriger vers la page de paiement avec les informations du plan
     navigate('/checkout', {

@@ -24,6 +24,7 @@ import { API_BASE_URL } from '../config/api';
 import confetti from 'canvas-confetti';
 import { AITutor } from './AITutor';
 import PremiumPaywall from './PremiumPaywall';
+import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -47,6 +48,7 @@ interface QuizState {
 
 export default function LearnPage() {
     const { isLoggedIn } = useAuth();
+    const { trackAction } = useAnalytics();
     const [modules, setModules] = useState<LearningModule[]>([]);
     const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
     const [progress, setProgress] = useState<LearningProgress[]>([]);
@@ -241,6 +243,15 @@ export default function LearnPage() {
         return;
       }
 
+      // Track le début du quiz
+      if (selectedModule) {
+        trackAction(ACTION_TYPES.TAKE_QUIZ, 'Début du quiz', {
+          moduleSlug: selectedModule.slug,
+          moduleTitle: selectedModule.title,
+          moduleLevel: selectedModule.difficulty_level
+        });
+      }
+
       setQuizState({
         isActive: true,
         answers: {},
@@ -253,7 +264,7 @@ export default function LearnPage() {
       setTimeout(() => {
         document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    }, [isLoggedIn]);
+    }, [isLoggedIn, selectedModule, trackAction]);
 
     const answerQuestion = useCallback((answerIndex: number) => {
       const currentIndex = Object.keys(quizState.answers).length;
@@ -397,6 +408,15 @@ export default function LearnPage() {
           throw new Error(`Erreur ${response.status}: Impossible de marquer comme complété.`);
         }
 
+        // Track la complétion du module
+        if (selectedModule) {
+          trackAction(ACTION_TYPES.COMPLETE_MODULE, 'Module complété', {
+            moduleSlug: selectedModule.slug,
+            moduleTitle: selectedModule.title,
+            moduleLevel: selectedModule.difficulty_level
+          });
+        }
+
         await loadData();
         toast.success('Module terminé avec succès ! 🎉', { id: toastId });
 
@@ -404,7 +424,7 @@ export default function LearnPage() {
         console.error('Erreur complétion:', err);
         toast.error("Erreur lors du marquage du module.", { id: toastId });
       }
-    }, [isLoggedIn, loadData]);
+    }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
     useEffect(() => {
         if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4) {
@@ -1008,6 +1028,14 @@ export default function LearnPage() {
                                     toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
                                     return;
                                   }
+
+                                  // Track l'ouverture du module
+                                  trackAction(ACTION_TYPES.START_MODULE, 'Ouverture de module', {
+                                    moduleSlug: module.slug,
+                                    moduleTitle: module.title,
+                                    moduleLevel: module.difficulty_level
+                                  });
+
                                   setSelectedModule(module);
                                 }}
                                 disabled={!isUnlocked}
