@@ -16,11 +16,20 @@ const isMobileDevice = (): boolean => {
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 };
 
-// Helper pour récupérer le token depuis localStorage (mobile uniquement)
+// Helper pour récupérer le token depuis localStorage
 const getAuthToken = (): string | null => {
-  if (isMobileDevice()) {
-    return localStorage.getItem('auth_token');
+  // Essayer d'abord 'auth_token', puis 'token' comme fallback
+  const authToken = localStorage.getItem('auth_token');
+  if (authToken) {
+    return authToken;
   }
+
+  // Fallback pour compatibilité
+  const token = localStorage.getItem('token');
+  if (token) {
+    return token;
+  }
+
   return null;
 };
 
@@ -40,10 +49,11 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     ...fetchOptions.headers,
   };
 
-  // Sur mobile, ajouter le token dans le header Authorization
+  // Ajouter le token dans le header Authorization s'il existe
   const token = getAuthToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    console.log('🔐 [API] Using auth token for request to', endpoint);
   }
 
   const response = await fetch(url, {
