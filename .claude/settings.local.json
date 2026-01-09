@@ -74,7 +74,10 @@
       "Bash(cmd //c taskkill //PID 320096 //F)",
       "Bash(timeout:*)",
       "Bash(cmd //c \"taskkill //IM node.exe //F 2>nul || echo No processes\")",
-      "Bash(cmd //c taskkill //PID 310424 //F)"
+      "Bash(cmd //c taskkill //PID 310424 //F)",
+      "Bash(cmd /c \"taskkill /F /PID 186408\")",
+      "Bash(Stop-Process -Id 186408 -Force)",
+      "Bash(powershell -Command \"Stop-Process -Id 186408 -Force\")"
     ],
     "deny": [],
     "ask": []
