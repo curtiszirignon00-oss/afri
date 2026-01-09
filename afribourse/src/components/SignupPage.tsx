@@ -3,8 +3,6 @@ import { useState } from 'react';
 import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button, Input, Card } from './ui';
 import { API_BASE_URL } from '../config/api';
-import { useAuth } from '../contexts/AuthContext';
-
 import { useNavigate } from 'react-router-dom';
 type SignupPageProps = {};
 
@@ -18,8 +16,6 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  const { setToken, checkAuth } = useAuth();
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();

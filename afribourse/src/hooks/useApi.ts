@@ -44,9 +44,9 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
   }
 
   // Préparer les headers
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...fetchOptions.headers,
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
   // Ajouter le token dans le header Authorization s'il existe

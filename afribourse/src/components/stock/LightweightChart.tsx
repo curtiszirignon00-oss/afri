@@ -75,10 +75,6 @@ export default function LightweightChart({ data, symbol }: LightweightChartProps
         type: 'volume',
       },
       priceScaleId: '',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
     });
 
     chartRef.current = chart;
