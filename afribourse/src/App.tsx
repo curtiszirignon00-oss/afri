@@ -38,6 +38,7 @@ import HelpCenterPage from './components/HelpCenterPage';
 import SubscriptionPage from './components/SubscriptionPage';
 import AdminSubscriptionStats from './components/AdminSubscriptionStats';
 import CheckoutPage from './components/CheckoutPage';
+import AdminDashboard from './components/AdminDashboard';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -119,6 +120,14 @@ function Layout() {
             element={
               <ProtectedRoute>
                 <TransactionsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
