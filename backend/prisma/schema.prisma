@@ -43,6 +43,7 @@ model User {
   
   // --- Nouvelles relations (profil social) ---
   challengeProgress   UserChallengeProgress[]
+  subscriptionIntents SubscriptionIntent[]
 
   @@map("users")
 }
@@ -691,5 +692,27 @@ model ContactMessage {
 
   @@map("contact_messages")
   @@index([status])
+  @@index([created_at])
+}
+
+// ================================= //
+// === MODÈLE TRACKING ABONNEMENTS === //
+// ================================= //
+
+model SubscriptionIntent {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  planId     String    // "investisseur-plus" ou "pro"
+  planName   String    // "Investisseur+" ou "Pro"
+  price      String    // "9 900 XOF" ou "300 000 XOF"
+  feature    String?   // Fonctionnalité qui a déclenché l'intention (ex: "Coach IA")
+  source     String?   // "paywall" ou "subscriptions_page"
+  created_at DateTime  @default(now())
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String    @db.ObjectId
+
+  @@map("subscription_intents")
+  @@index([userId])
+  @@index([planId])
   @@index([created_at])
 }
