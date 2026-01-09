@@ -83,34 +83,33 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
     // 4. STATISTIQUES INTENTIONS D'ABONNEMENT
     const totalIntents = await prisma.subscriptionIntent.count();
 
-    const intentsByPlan = await prisma.subscriptionIntent.groupBy({
-      by: ['planId'],
-      _count: {
-        id: true,
-      },
-    });
-
-    const uniqueInterestedUsers = await prisma.subscriptionIntent.findMany({
+    // Récupérer tous les intents pour calculer manuellement
+    const allIntents = await prisma.subscriptionIntent.findMany({
       select: {
+        planId: true,
         userId: true,
       },
-      distinct: ['userId'],
     });
 
-    const intentsByPaymentMethod = await prisma.subscriptionIntent.groupBy({
-      by: ['paymentMethod'],
-      _count: {
-        id: true,
-      },
-      where: {
-        paymentMethod: {
-          not: null,
-        },
-      },
+    // Calculer les stats manuellement
+    const intentsByPlanMap = new Map<string, number>();
+    const uniqueUserIds = new Set<string>();
+
+    allIntents.forEach((intent) => {
+      // Count par plan
+      intentsByPlanMap.set(intent.planId, (intentsByPlanMap.get(intent.planId) || 0) + 1);
+
+      // Utilisateurs uniques
+      uniqueUserIds.add(intent.userId);
     });
+
+    const intentsByPlan = Array.from(intentsByPlanMap.entries()).map(([planId, count]) => ({
+      planId,
+      count,
+    }));
 
     // Taux de conversion
-    const conversionRate = totalUsers > 0 ? (uniqueInterestedUsers.length / totalUsers) * 100 : 0;
+    const conversionRate = totalUsers > 0 ? (uniqueUserIds.size / totalUsers) * 100 : 0;
 
     return res.status(200).json({
       success: true,
@@ -136,16 +135,10 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
         },
         subscriptions: {
           totalIntents,
-          uniqueUsers: uniqueInterestedUsers.length,
+          uniqueUsers: uniqueUserIds.size,
           conversionRate: parseFloat(conversionRate.toFixed(2)),
-          byPlan: intentsByPlan.map((item) => ({
-            planId: item.planId,
-            count: item._count.id,
-          })),
-          byPaymentMethod: intentsByPaymentMethod.map((item) => ({
-            method: item.paymentMethod,
-            count: item._count.id,
-          })),
+          byPlan: intentsByPlan,
+          byPaymentMethod: [], // Payment method not tracked yet
         },
         topUsers: [],
       },
