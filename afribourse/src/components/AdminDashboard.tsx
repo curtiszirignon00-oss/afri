@@ -27,9 +27,9 @@ interface UserStats {
     name: string;
     lastname: string;
     email: string;
-    emailConfirmed: boolean;
+    email_verified_at: string | null;
     role: string;
-    createdAt: string;
+    created_at: string | null;
   }[];
 }
 
@@ -59,7 +59,7 @@ interface TopUser {
     name: string;
     lastname: string;
     email: string;
-    createdAt: string;
+    created_at: string | null;
   };
   transactionCount: number;
 }
@@ -459,9 +459,9 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(item.user.createdAt).toLocaleDateString(
+                      {item.user.created_at ? new Date(item.user.created_at).toLocaleDateString(
                         'fr-FR'
-                      )}
+                      ) : '-'}
                     </td>
                   </tr>
                 ))}
@@ -511,7 +511,7 @@ export default function AdminDashboard() {
                       {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {user.emailConfirmed ? (
+                      {user.email_verified_at ? (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                           <UserCheck className="w-3 h-3 mr-1" />
                           Confirmé
@@ -535,12 +535,12 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(user.createdAt).toLocaleDateString('fr-FR', {
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR', {
                         day: '2-digit',
                         month: 'short',
                         hour: '2-digit',
                         minute: '2-digit',
-                      })}
+                      }) : '-'}
                     </td>
                   </tr>
                 ))}
