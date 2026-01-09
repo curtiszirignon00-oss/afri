@@ -7,6 +7,7 @@ interface UserProfile {
   email: string;
   name: string | null;
   lastname: string | null;
+  role?: string;
 }
 
 interface AuthContextType {

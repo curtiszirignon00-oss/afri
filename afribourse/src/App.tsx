@@ -26,6 +26,7 @@ import ProfilePage from './components/ProfilePage';
 import DashboardPage from './components/DashboardPage';
 import TransactionsPage from './components/TransactionsPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import ConfirmEmailPage from './components/ConfirmEmailPage';
 import ResendConfirmationPage from './components/ResendConfirmationPage';
 import VerifyEmailPage from './components/VerifyEmailPage';
@@ -126,17 +127,17 @@ function Layout() {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route
             path="/admin/subscription-stats"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminSubscriptionStats />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
         </Routes>
