@@ -14,7 +14,7 @@ interface PaymentMethod {
 export default function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -80,7 +80,7 @@ export default function CheckoutPage() {
   ];
 
   const handlePayment = async () => {
-    if (!selectedMethod || !user) return;
+    if (!selectedMethod || !userProfile) return;
 
     setIsProcessing(true);
 
@@ -96,7 +96,7 @@ export default function CheckoutPage() {
           planId,
           planName,
           price,
-          userId: user.id,
+          userId: userProfile.id,
           feature: `Checkout - ${selectedMethod}`,
           source: source || 'checkout',
           paymentMethod: selectedMethod,
