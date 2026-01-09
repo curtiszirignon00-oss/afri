@@ -24,9 +24,16 @@ interface DecodedToken extends jwt.JwtPayload {
 
 export const getUserFromToken = async (req: Request) => {
     try {
-        const isMobile = isUserOnMobile(req)
-        const token = isMobile ? req.headers['authorization']?.split(' ')[1] : req.cookies.token
+        // Essayer d'abord le header Authorization (mobile et desktop)
+        let token = req.headers['authorization']?.split(' ')[1];
+
+        // Si pas de token dans le header, essayer le cookie (desktop)
+        if (!token) {
+            token = req.cookies.token;
+        }
+
         if(!token) throw createError.badRequest("Le token n'existe pas.")
+
         const decoded = jwt.verify(token, config.jwt.secret);
         if (typeof decoded === "string" || !decoded) {
             throw createError.badRequest("Le token est invalide.");
