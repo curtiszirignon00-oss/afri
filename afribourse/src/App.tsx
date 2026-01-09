@@ -44,6 +44,7 @@ import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
+import { usePageTracking } from './hooks/useAnalytics';
 
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
@@ -62,6 +63,9 @@ function Layout() {
 
   // Initialiser Google Analytics pour tracker toutes les pages
   useGoogleAnalytics();
+
+  // Initialiser le tracking automatique des pages
+  usePageTracking();
 
   // Détermine si le Header/Footer doit être affiché
   const showLayout = !['/signup', '/login', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
