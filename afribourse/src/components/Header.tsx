@@ -23,7 +23,7 @@ export default function Header() {
   const currentPage = location.pathname.replace('/', '') || 'home';
 
   // ✅ Utilisation du hook useAuth
-  const { isLoggedIn, logout, loading } = useAuth();
+  const { isLoggedIn, logout, loading, userProfile } = useAuth();
 
   // ✅ Fonction de déconnexion simplifiée
   const handleLogout = async () => {
@@ -160,16 +160,20 @@ export default function Header() {
                         <span>Abonnements</span>
                       </button>
 
-                      <div className="border-t border-gray-100 my-1"></div>
+                      {/* Admin Links - Only visible for admin users */}
+                      {userProfile?.role === 'admin' && (
+                        <>
+                          <div className="border-t border-gray-100 my-1"></div>
 
-                      {/* Admin Links */}
-                      <button
-                        onClick={() => { navigate('/admin/dashboard'); setAccountMenuOpen(false); }}
-                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        <span>Admin Dashboard</span>
-                      </button>
+                          <button
+                            onClick={() => { navigate('/admin/dashboard'); setAccountMenuOpen(false); }}
+                            className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
+                          >
+                            <BarChart3 className="w-4 h-4" />
+                            <span>Admin Dashboard</span>
+                          </button>
+                        </>
+                      )}
 
                       <div className="border-t border-gray-100 my-1"></div>
 
