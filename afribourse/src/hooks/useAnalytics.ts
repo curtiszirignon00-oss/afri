@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { analytics, ACTION_TYPES } from '../services/analytics';
 
+// Ré-exporter ACTION_TYPES pour l'utiliser dans les composants
+export { ACTION_TYPES };
+
 /**
  * Hook pour tracker automatiquement les pages visitées
  */
