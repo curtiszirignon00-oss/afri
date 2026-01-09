@@ -93,7 +93,7 @@ export default function AdminDashboard() {
       }
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/admin/platform-stats`,
+        `${import.meta.env.VITE_API_URL}/admin/platform-stats`,
         {
           method: 'GET',
           headers,

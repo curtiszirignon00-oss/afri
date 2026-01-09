@@ -30,6 +30,7 @@ import leaderboardRoutes from './routes/leaderboard.routes';
 import contactRoutes from './routes/contact.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import adminRoutes from './routes/admin.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 class App {
   private app: Application | null = null;
@@ -136,6 +137,7 @@ class App {
     this.app?.use('/api/contact', contactRoutes);          // Formulaire de contact
     this.app?.use('/api/subscriptions', subscriptionRoutes); // Tracking abonnements
     this.app?.use('/api/admin', adminRoutes);              // Admin dashboard
+    this.app?.use('/api/analytics', analyticsRoutes);       // Analytics tracking
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));
