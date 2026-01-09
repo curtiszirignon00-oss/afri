@@ -68,7 +68,13 @@
       "Bash(npx tsx:*)",
       "Bash(timeout /t 5)",
       "Bash(npx prisma:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(timeout 5 tail:*)",
+      "Bash(cmd //c taskkill //PID 302436 //F)",
+      "Bash(cmd //c taskkill //PID 320096 //F)",
+      "Bash(timeout:*)",
+      "Bash(cmd //c \"taskkill //IM node.exe //F 2>nul || echo No processes\")",
+      "Bash(cmd //c taskkill //PID 310424 //F)"
     ],
     "deny": [],
     "ask": []
