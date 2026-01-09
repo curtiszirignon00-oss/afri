@@ -1,4 +1,4 @@
-import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard } from 'lucide-react';
+import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -171,6 +171,14 @@ export default function Header() {
                           >
                             <BarChart3 className="w-4 h-4" />
                             <span>Admin Dashboard</span>
+                          </button>
+
+                          <button
+                            onClick={() => { navigate('/admin/analytics'); setAccountMenuOpen(false); }}
+                            className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
+                          >
+                            <Activity className="w-4 h-4" />
+                            <span>Analytics</span>
                           </button>
                         </>
                       )}
