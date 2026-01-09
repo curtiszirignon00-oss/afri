@@ -23,7 +23,7 @@ interface Plan {
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
 
   const plans: Plan[] = [
     {
@@ -98,7 +98,7 @@ export default function SubscriptionPage() {
   ];
 
   const handleSubscribe = (planId: string, planName: string, price: string) => {
-    if (!user) {
+    if (!userProfile) {
       navigate('/login', { state: { from: '/subscriptions' } });
       return;
     }
