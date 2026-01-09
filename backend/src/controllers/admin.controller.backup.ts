@@ -121,7 +121,7 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
 
     const recentTransactions = await prisma.transaction.count({
       where: {
-        date: {
+        created_at: {
           gte: thirtyDaysAgo,
         },
       },

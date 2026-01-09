@@ -12,7 +12,7 @@ interface PremiumPaywallProps {
 
 export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'investisseur-plus' }: PremiumPaywallProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { userProfile } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -51,7 +51,7 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
   const Icon = planDetails.icon;
 
   const handleUpgrade = async () => {
-    if (!user) {
+    if (!userProfile) {
       navigate('/login', { state: { from: '/subscriptions' } });
       return;
     }
@@ -70,7 +70,7 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
           planId: plan,
           planName: planDetails.name,
           price: planDetails.price,
-          userId: user.id,
+          userId: userProfile.id,
           feature: feature,
           source: 'paywall',
         }),
