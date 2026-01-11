@@ -31,6 +31,7 @@ import contactRoutes from './routes/contact.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import adminRoutes from './routes/admin.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import priceAlertRoutes from './routes/price-alert.routes';
 
 class App {
   private app: Application | null = null;
@@ -138,6 +139,7 @@ class App {
     this.app?.use('/api/subscriptions', subscriptionRoutes); // Tracking abonnements
     this.app?.use('/api/admin', adminRoutes);              // Admin dashboard
     this.app?.use('/api/analytics', analyticsRoutes);       // Analytics tracking
+    this.app?.use('/api/price-alerts', priceAlertRoutes);   // Price alerts
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

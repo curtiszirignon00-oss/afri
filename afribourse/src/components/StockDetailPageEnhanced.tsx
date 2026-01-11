@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
+import PriceAlertModal from './price-alerts/PriceAlertModal';
+import PriceAlertList from './price-alerts/PriceAlertList';
 
 // Import des nouveaux composants
 import {
@@ -45,6 +47,7 @@ export default function StockDetailPageEnhanced() {
   const [isBuying, setIsBuying] = useState(false);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [isTogglingWatchlist, setIsTogglingWatchlist] = useState(false);
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
@@ -321,6 +324,7 @@ export default function StockDetailPageEnhanced() {
                   className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${
                     isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
+                  title={isInWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
                 >
                   {isTogglingWatchlist ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
@@ -331,6 +335,14 @@ export default function StockDetailPageEnhanced() {
                       }`}
                     />
                   )}
+                </button>
+                {/* Price Alert Button */}
+                <button
+                  onClick={() => setIsAlertModalOpen(true)}
+                  className="p-2 rounded-full hover:bg-orange-100 transition-colors"
+                  title="Créer une alerte de prix"
+                >
+                  <Bell className="w-5 h-5 text-gray-400 hover:text-orange-600" />
                 </button>
               </div>
               <h2 className="text-xl text-gray-700">{stock.company_name}</h2>
@@ -560,9 +572,27 @@ export default function StockDetailPageEnhanced() {
                 )}
               </button>
             </div>
+
+            {/* Price Alerts List */}
+            <div className="mt-6">
+              <PriceAlertList
+                stockTicker={stock.symbol}
+                currentPrice={stock.current_price}
+                companyName={stock.company_name}
+              />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Price Alert Modal */}
+      <PriceAlertModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        stockTicker={stock.symbol}
+        currentPrice={stock.current_price}
+        companyName={stock.company_name}
+      />
     </div>
   );
 }

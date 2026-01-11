@@ -200,3 +200,129 @@ export async function fetchAnnualFinancials(
 
   return response.json();
 }
+
+// ========================================
+// PRICE ALERTS API
+// ========================================
+
+import {
+  PriceAlert,
+  PriceAlertNotification,
+  CreatePriceAlertPayload,
+  UpdatePriceAlertPayload
+} from '../types';
+
+/**
+ * Récupère toutes les alertes de l'utilisateur ou celles d'un ticker spécifique
+ */
+export async function fetchPriceAlerts(stockTicker?: string): Promise<PriceAlert[]> {
+  const url = stockTicker
+    ? `${API_BASE_URL}/price-alerts?stockTicker=${stockTicker}`
+    : `${API_BASE_URL}/price-alerts`;
+
+  const response = await fetch(url, {
+    credentials: 'include'
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erreur lors de la récupération des alertes: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Crée une nouvelle alerte de prix
+ */
+export async function createPriceAlert(payload: CreatePriceAlertPayload): Promise<PriceAlert> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || `Erreur lors de la création de l'alerte: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Met à jour une alerte de prix existante
+ */
+export async function updatePriceAlert(
+  alertId: string,
+  payload: UpdatePriceAlertPayload
+): Promise<PriceAlert> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || `Erreur lors de la mise à jour de l'alerte: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Active ou désactive une alerte de prix
+ */
+export async function togglePriceAlert(alertId: string, isActive: boolean): Promise<PriceAlert> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}/toggle`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ isActive })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || `Erreur lors du changement de statut de l'alerte: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Supprime une alerte de prix
+ */
+export async function deletePriceAlert(alertId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || `Erreur lors de la suppression de l'alerte: ${response.statusText}`);
+  }
+}
+
+/**
+ * Récupère l'historique des notifications d'une alerte
+ */
+export async function fetchAlertNotifications(alertId: string): Promise<PriceAlertNotification[]> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}/notifications`, {
+    credentials: 'include'
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erreur lors de la récupération de l'historique: ${response.statusText}`);
+  }
+
+  return response.json();
+}

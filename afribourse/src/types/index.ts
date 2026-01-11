@@ -106,6 +106,52 @@ export interface PortfolioHistoryPoint {
 }
 
 // ========================================
+// TYPES PRICE ALERTS
+// ========================================
+
+export interface PriceAlert {
+  id: string;
+  userId: string;
+  stock_ticker: string;
+  alert_type: 'ABOVE' | 'BELOW';
+  target_price: number;
+  is_active: boolean;
+  is_notified: boolean;
+  triggered_at: string | null;
+  triggered_price: number | null;
+  notify_email: boolean;
+  notify_in_app: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PriceAlertNotification {
+  id: string;
+  priceAlertId: string;
+  triggered_price: number;
+  notification_method: 'EMAIL' | 'IN_APP' | 'BOTH';
+  email_sent: boolean;
+  email_sent_at: string | null;
+  created_at: string;
+}
+
+export interface CreatePriceAlertPayload {
+  stockTicker: string;
+  alertType: 'ABOVE' | 'BELOW';
+  targetPrice: number;
+  notifyEmail?: boolean;
+  notifyInApp?: boolean;
+  subscriptionTier?: 'free' | 'premium' | 'pro';
+}
+
+export interface UpdatePriceAlertPayload {
+  targetPrice?: number;
+  alertType?: 'ABOVE' | 'BELOW';
+  notifyEmail?: boolean;
+  notifyInApp?: boolean;
+}
+
+// ========================================
 // TYPES CONTENU (NEWS & LEARNING)
 // ========================================
 

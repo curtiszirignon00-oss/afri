@@ -49,6 +49,7 @@ model User {
   // --- Nouvelles relations (profil social) ---
   challengeProgress   UserChallengeProgress[]
   subscriptionIntents SubscriptionIntent[]
+  priceAlerts         PriceAlert[]
 
   @@map("users")
 }
@@ -719,6 +720,61 @@ model SubscriptionIntent {
   @@map("subscription_intents")
   @@index([userId])
   @@index([planId])
+  @@index([created_at])
+}
+
+// ================================= //
+// === PRICE ALERTS SYSTEM === //
+// ================================= //
+
+model PriceAlert {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String    @db.ObjectId
+  stock_ticker        String
+
+  // Type d'alerte
+  alert_type          String    // "ABOVE" (au-dessus) ou "BELOW" (en-dessous)
+  target_price        Float     // Prix cible
+
+  // Status
+  is_active           Boolean   @default(true)
+  is_notified         Boolean   @default(false)  // Alerte déclenchée ?
+  triggered_at        DateTime?
+  triggered_price     Float?    // Prix au moment du déclenchement
+
+  // Notifications
+  notify_email        Boolean   @default(true)
+  notify_in_app       Boolean   @default(true)
+
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications       PriceAlertNotification[]
+
+  @@map("price_alerts")
+  @@index([userId])
+  @@index([stock_ticker])
+  @@index([is_active])
+  @@index([is_notified])
+}
+
+model PriceAlertNotification {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  priceAlertId        String    @db.ObjectId
+
+  triggered_price     Float
+  notification_method String    // "EMAIL", "IN_APP", "BOTH"
+  email_sent          Boolean   @default(false)
+  email_sent_at       DateTime?
+
+  created_at          DateTime  @default(now())
+
+  priceAlert          PriceAlert @relation(fields: [priceAlertId], references: [id], onDelete: Cascade)
+
+  @@map("price_alert_notifications")
+  @@index([priceAlertId])
   @@index([created_at])
 }
 
