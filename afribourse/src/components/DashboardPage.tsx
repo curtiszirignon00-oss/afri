@@ -9,6 +9,7 @@ import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { API_BASE_URL } from '../config/api';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+import DashboardPriceAlerts from './price-alerts/DashboardPriceAlerts';
 
 type DashboardPageProps = {};
 
@@ -774,6 +775,9 @@ export default function DashboardPage() {
                 </div>
               )}
             </Card>
+
+            {/* <-- AJOUT: Alertes de Prix */}
+            <DashboardPriceAlerts />
           </div>
 
           {/* Right Column */}
