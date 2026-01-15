@@ -168,6 +168,9 @@ export async function getUserStats(userId: string) {
  */
 export async function updateProfileSocial(userId: string, data: any) {
   try {
+    console.log('📝 [SERVICE] updateProfileSocial called with userId:', userId);
+    console.log('📝 [SERVICE] data received:', JSON.stringify(data));
+
     const updateData: any = {};
 
     // Champs autorisés à la mise à jour
@@ -179,8 +182,11 @@ export async function updateProfileSocial(userId: string, data: any) {
     if (data.banner_type !== undefined) updateData.banner_type = data.banner_type;
     if (data.social_links !== undefined) updateData.social_links = data.social_links;
 
+    console.log('📝 [SERVICE] updateData prepared:', JSON.stringify(updateData));
+
     // Si aucune donnée à mettre à jour, retourner le profil existant
     if (Object.keys(updateData).length === 0) {
+      console.log('📝 [SERVICE] No data to update, fetching existing profile');
       const existingProfile = await prisma.userProfile.findUnique({
         where: { userId }
       });
@@ -188,6 +194,7 @@ export async function updateProfileSocial(userId: string, data: any) {
     }
 
     // Utiliser upsert pour créer le profil s'il n'existe pas
+    console.log('📝 [SERVICE] Performing upsert...');
     const updatedProfile = await prisma.userProfile.upsert({
       where: { userId },
       update: updateData,
@@ -197,13 +204,16 @@ export async function updateProfileSocial(userId: string, data: any) {
       }
     });
 
+    console.log('✅ [SERVICE] Profile updated successfully:', updatedProfile.id);
     return updatedProfile;
 
   } catch (error: any) {
+    console.error('❌ [SERVICE] Error in updateProfileSocial:', error.message);
+    console.error('❌ [SERVICE] Error code:', error.code);
+    console.error('❌ [SERVICE] Full error:', error);
     if (error.code === 'P2002') {
       throw new Error('Ce nom d\'utilisateur est déjà pris');
     }
-    console.error('❌ Erreur updateProfileSocial:', error);
     throw error;
   }
 }
