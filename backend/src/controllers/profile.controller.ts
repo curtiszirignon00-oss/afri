@@ -88,7 +88,11 @@ export async function getMyStats(req: Request, res: Response, next: NextFunction
 export async function updateMyProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
+    console.log('📝 [UPDATE PROFILE] userId:', userId);
+    console.log('📝 [UPDATE PROFILE] body:', JSON.stringify(req.body));
+
     if (!userId) {
+      console.log('❌ [UPDATE PROFILE] No userId found');
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
@@ -108,18 +112,21 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
       return res.status(400).json({ message: 'La bio ne peut pas dépasser 200 caractères' });
     }
 
+    console.log('📝 [UPDATE PROFILE] Calling service...');
     const updatedProfile = await profileService.updateProfileSocial(userId, updateData);
-    return res.status(200).json(updatedProfile);
+    console.log('✅ [UPDATE PROFILE] Success:', updatedProfile?.id);
+    return res.status(200).json({ success: true, data: updatedProfile });
 
   } catch (error: any) {
-    console.error('❌ Erreur updateMyProfile:', error);
-    if (error.message.includes('nom d\'utilisateur')) {
+    console.error('❌ Erreur updateMyProfile:', error.message);
+    console.error('❌ Stack:', error.stack);
+    if (error.message?.includes('nom d\'utilisateur')) {
       return res.status(400).json({ message: error.message });
     }
-    if (error.message.includes('Profil non trouvé')) {
+    if (error.message?.includes('Profil non trouvé')) {
       return res.status(404).json({ message: error.message });
     }
-    return res.status(500).json({ message: 'Erreur lors de la mise à jour du profil' });
+    return res.status(500).json({ message: error.message || 'Erreur lors de la mise à jour du profil' });
   }
 }
 
