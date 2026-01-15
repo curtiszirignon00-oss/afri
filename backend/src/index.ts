@@ -34,6 +34,7 @@ import analyticsRoutes from './routes/analytics.routes';
 import priceAlertRoutes from './routes/price-alert.routes';
 import socialRoutes from './routes/social.routes';
 import investorProfileRoutes from './routes/investor-profile.routes';
+import uploadRoutes from './routes/upload.routes';
 
 class App {
   private app: Application | null = null;
@@ -144,6 +145,7 @@ class App {
     this.app?.use('/api/price-alerts', priceAlertRoutes);   // Price alerts
     this.app?.use('/api/social', socialRoutes);              // Social features (posts, likes, comments)
     this.app?.use('/api/investor-profile', investorProfileRoutes); // Investor DNA & onboarding
+    this.app?.use('/api/upload', uploadRoutes);                    // File uploads (avatar, banner, posts)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

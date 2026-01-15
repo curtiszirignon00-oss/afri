@@ -15,6 +15,9 @@ router.get('/following/:userId', socialController.getFollowing);
 router.get('/feed', auth, socialController.getFeed);
 router.get('/posts/:userId', socialController.getUserPosts);
 router.post('/posts', auth, socialController.createPost);
+router.get('/post/:postId', auth, socialController.getPost);
+router.put('/post/:postId', auth, socialController.updatePost);
+router.delete('/post/:postId', auth, socialController.deletePost);
 
 // ============= LIKE ROUTES =============
 router.post('/posts/:postId/like', auth, socialController.likePost);

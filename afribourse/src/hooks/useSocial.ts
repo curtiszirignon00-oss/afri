@@ -186,3 +186,53 @@ export function usePostComments(postId: string, page: number = 1) {
         },
     });
 }
+
+/**
+ * Update a post
+ */
+export function useUpdatePost() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ postId, data }: { postId: string; data: Partial<CreatePostData> }) => {
+            const response = await apiClient.put(`/social/post/${postId}`, data);
+            return response.data.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['feed'] });
+            queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+        },
+    });
+}
+
+/**
+ * Delete a post
+ */
+export function useDeletePost() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (postId: string) => {
+            const response = await apiClient.delete(`/social/post/${postId}`);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['feed'] });
+            queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+        },
+    });
+}
+
+/**
+ * Get a single post
+ */
+export function usePost(postId: string) {
+    return useQuery({
+        queryKey: ['post', postId],
+        queryFn: async () => {
+            const response = await apiClient.get(`/social/post/${postId}`);
+            return response.data.data;
+        },
+        enabled: !!postId,
+    });
+}

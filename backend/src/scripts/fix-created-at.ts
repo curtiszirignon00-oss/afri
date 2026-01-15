@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour corriger les created_at null dans la table users
 import prisma from '../config/prisma';
 
