@@ -1,11 +1,9 @@
 // src/pages/CommunityPage.tsx
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Users, TrendingUp, MessageCircle, Loader2, RefreshCw } from 'lucide-react';
+import { Users, Globe, MessageCircle, Loader2, RefreshCw } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
-import PostComposer from '../components/profile/PostComposer';
-import { useAuth } from '../contexts/AuthContext';
 
 interface CommunityPost {
     id: string;
@@ -36,7 +34,6 @@ interface CommunityPost {
 }
 
 export default function CommunityPage() {
-    const { isAuthenticated } = useAuth();
     const [page, setPage] = useState(1);
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
@@ -73,8 +70,8 @@ export default function CommunityPage() {
                             <span>{total} publications</span>
                         </div>
                         <div className="flex items-center gap-2 text-blue-100">
-                            <TrendingUp className="w-5 h-5" />
-                            <span>Posts publics</span>
+                            <Globe className="w-5 h-5" />
+                            <span>Posts publics et partages</span>
                         </div>
                     </div>
                 </div>
@@ -82,12 +79,6 @@ export default function CommunityPage() {
 
             {/* Main Content */}
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Post Composer (only for authenticated users) */}
-                {isAuthenticated && (
-                    <div className="mb-6">
-                        <PostComposer onSuccess={() => refetch()} />
-                    </div>
-                )}
 
                 {/* Refresh Button */}
                 <div className="flex justify-between items-center mb-6">
@@ -133,17 +124,9 @@ export default function CommunityPage() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                             Aucune publication pour le moment
                         </h3>
-                        <p className="text-gray-600 mb-6">
-                            Soyez le premier a partager votre analyse ou opinion avec la communaute !
+                        <p className="text-gray-600">
+                            Les publications des comptes publics et les posts partages apparaitront ici.
                         </p>
-                        {!isAuthenticated && (
-                            <a
-                                href="/login"
-                                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                            >
-                                Se connecter pour publier
-                            </a>
-                        )}
                     </div>
                 )}
 
@@ -179,31 +162,6 @@ export default function CommunityPage() {
                     </div>
                 )}
 
-                {/* CTA for non-authenticated users */}
-                {!isAuthenticated && posts.length > 0 && (
-                    <div className="mt-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-center text-white">
-                        <h3 className="text-xl font-bold mb-2">
-                            Rejoignez la communaute !
-                        </h3>
-                        <p className="text-blue-100 mb-4">
-                            Connectez-vous pour partager vos analyses, liker et commenter les publications.
-                        </p>
-                        <div className="flex gap-4 justify-center">
-                            <a
-                                href="/login"
-                                className="px-6 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 font-medium"
-                            >
-                                Se connecter
-                            </a>
-                            <a
-                                href="/signup"
-                                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400 font-medium"
-                            >
-                                Creer un compte
-                            </a>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

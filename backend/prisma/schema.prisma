@@ -91,6 +91,10 @@ model User {
   postLikes       PostLike[]
   investorProfile InvestorProfile?
 
+  // --- Notifications ---
+  notifications      Notification[]  @relation
+  actedNotifications Notification[]  @relation("NotificationActor")
+
   // Statistiques dénormalisées
   posts_count Int @default(0)
 
@@ -1093,4 +1097,47 @@ model Comment {
   @@index([parent_id])
   @@index([created_at])
   @@map("comments")
+}
+
+// ============= NOTIFICATIONS =============
+enum NotificationType {
+  NEW_POST       // Un utilisateur que vous suivez a posté
+  NEW_FOLLOWER   // Quelqu'un vous suit
+  POST_LIKE      // Quelqu'un a aimé votre post
+  POST_COMMENT   // Quelqu'un a commenté votre post
+  COMMENT_REPLY  // Quelqu'un a répondu à votre commentaire
+  MENTION        // Vous avez été mentionné
+  ACHIEVEMENT    // Vous avez débloqué un badge
+  LEVEL_UP       // Vous avez gagné un niveau
+}
+
+model Notification {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id   String @db.ObjectId // Destinataire de la notification
+
+  type      NotificationType
+  title     String
+  message   String
+
+  // Références optionnelles
+  actor_id  String? @db.ObjectId // L'utilisateur qui a déclenché la notif
+  post_id   String? @db.ObjectId // Post concerné (si applicable)
+
+  // Données supplémentaires (JSON)
+  metadata  Json?
+
+  // État
+  is_read   Boolean @default(false)
+  read_at   DateTime?
+
+  created_at DateTime @default(now())
+
+  // Relations
+  user  User  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  actor User? @relation("NotificationActor", fields: [actor_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([user_id, is_read])
+  @@index([created_at])
+  @@map("notifications")
 }
