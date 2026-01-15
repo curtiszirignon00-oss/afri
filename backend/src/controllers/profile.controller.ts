@@ -116,7 +116,10 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
     if (error.message.includes('nom d\'utilisateur')) {
       return res.status(400).json({ message: error.message });
     }
-    return next(error);
+    if (error.message.includes('Profil non trouvé')) {
+      return res.status(404).json({ message: error.message });
+    }
+    return res.status(500).json({ message: 'Erreur lors de la mise à jour du profil' });
   }
 }
 
