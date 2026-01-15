@@ -11,11 +11,11 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 export default function ProfilePage() {
     const { userId } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { userProfile } = useAuth();
     const { data: investorProfile, isLoading, error } = useInvestorProfile();
 
     // Déterminer si c'est le profil de l'utilisateur connecté
-    const isOwnProfile = !userId || userId === user?.id;
+    const isOwnProfile = !userId || userId === userProfile?.id;
 
     if (isLoading) {
         return (
@@ -46,29 +46,29 @@ export default function ProfilePage() {
 
     // Créer un objet profile compatible avec les composants
     const profileData = {
-        id: userId || user?.id || 'current-user',
-        name: user?.name || 'Utilisateur',
-        lastname: user?.lastname || '',
-        email: user?.email || 'user@africbourse.com',
-        created_at: user?.created_at || new Date().toISOString(),
+        id: userId || userProfile?.id || 'current-user',
+        name: userProfile?.name || 'Utilisateur',
+        lastname: userProfile?.lastname || '',
+        email: userProfile?.email || 'user@africbourse.com',
+        created_at: investorProfile?.created_at || new Date().toISOString(),
         investorProfile: investorProfile,
         stats: {
-            followers_count: 0,
-            following_count: 0,
-            posts_count: 0,
+            followers_count: investorProfile?.followers_count || 0,
+            following_count: investorProfile?.following_count || 0,
+            posts_count: investorProfile?.posts_count || 0,
             portfolios_count: 0,
         },
         profile: {
-            username: investorProfile?.username || user?.email?.split('@')[0] || 'user',
-            bio: investorProfile?.bio || 'Investisseur sur Africbourse',
-            avatar_url: user?.avatar_url || null,
-            banner_url: user?.banner_url || null,
+            username: investorProfile?.username || userProfile?.email?.split('@')[0] || 'user',
+            bio: investorProfile?.bio || '',
+            avatar_url: investorProfile?.avatar_url || null,
+            banner_url: investorProfile?.banner_url || null,
             country: investorProfile?.country || null,
-            verified_investor: false,
+            verified_investor: investorProfile?.verified_investor || false,
             social_links: investorProfile?.social_links || null,
-            followers_count: 0,
-            following_count: 0,
-            posts_count: 0,
+            followers_count: investorProfile?.followers_count || 0,
+            following_count: investorProfile?.following_count || 0,
+            posts_count: investorProfile?.posts_count || 0,
         },
     };
 
