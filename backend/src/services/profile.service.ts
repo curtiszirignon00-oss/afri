@@ -173,14 +173,28 @@ export async function updateProfileSocial(userId: string, data: any) {
     // Champs autorisés à la mise à jour
     if (data.username !== undefined) updateData.username = data.username;
     if (data.bio !== undefined) updateData.bio = data.bio;
+    if (data.country !== undefined) updateData.country = data.country;
     if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
     if (data.banner_url !== undefined) updateData.banner_url = data.banner_url;
     if (data.banner_type !== undefined) updateData.banner_type = data.banner_type;
     if (data.social_links !== undefined) updateData.social_links = data.social_links;
 
-    const updatedProfile = await prisma.userProfile.update({
+    // Si aucune donnée à mettre à jour, retourner le profil existant
+    if (Object.keys(updateData).length === 0) {
+      const existingProfile = await prisma.userProfile.findUnique({
+        where: { userId }
+      });
+      return existingProfile;
+    }
+
+    // Utiliser upsert pour créer le profil s'il n'existe pas
+    const updatedProfile = await prisma.userProfile.upsert({
       where: { userId },
-      data: updateData
+      update: updateData,
+      create: {
+        userId,
+        ...updateData
+      }
     });
 
     return updatedProfile;

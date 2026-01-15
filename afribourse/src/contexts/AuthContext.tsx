@@ -34,11 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(() => {
-    // Initialiser le token depuis localStorage si on est sur mobile
-    if (isMobileDevice()) {
-      return localStorage.getItem('auth_token');
-    }
-    return null;
+    // Initialiser le token depuis localStorage (tous les appareils)
+    return localStorage.getItem('auth_token');
   });
 
   // Fonction pour vérifier l'authentification
@@ -121,14 +118,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Sauvegarder le token dans localStorage quand il change (mobile uniquement)
+  // Sauvegarder le token dans localStorage quand il change (tous les appareils)
   useEffect(() => {
-    if (isMobileDevice()) {
-      if (token) {
-        localStorage.setItem('auth_token', token);
-      } else {
-        localStorage.removeItem('auth_token');
-      }
+    if (token) {
+      localStorage.setItem('auth_token', token);
+    } else {
+      localStorage.removeItem('auth_token');
     }
   }, [token]);
 
