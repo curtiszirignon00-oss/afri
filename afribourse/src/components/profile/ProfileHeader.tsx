@@ -1,8 +1,9 @@
 // src/components/profile/ProfileHeader.tsx
-import { Camera, MapPin, Link as LinkIcon, Calendar, CheckCircle, Loader2 } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Camera, MapPin, Link as LinkIcon, Calendar, CheckCircle, Loader2, Edit2, Linkedin, Twitter, Instagram, Facebook, Globe } from 'lucide-react';
 import FollowButton from './FollowButton';
+import EditProfileModal from './EditProfileModal';
 import { useUploadAvatar, useUploadBanner } from '../../hooks/useUpload';
-import { useRef } from 'react';
 
 interface ProfileHeaderProps {
     profile: any;
@@ -12,6 +13,7 @@ interface ProfileHeaderProps {
 export default function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderProps) {
     const avatarInputRef = useRef<HTMLInputElement>(null);
     const bannerInputRef = useRef<HTMLInputElement>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
 
     const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadAvatar();
     const { mutate: uploadBanner, isPending: isUploadingBanner } = useUploadBanner();
@@ -126,7 +128,15 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     )}
                                 </div>
 
-                                {!isOwnProfile && (
+                                {isOwnProfile ? (
+                                    <button
+                                        onClick={() => setShowEditModal(true)}
+                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                                    >
+                                        <Edit2 className="w-4 h-4" />
+                                        Modifier le profil
+                                    </button>
+                                ) : (
                                     <FollowButton userId={profile.id} />
                                 )}
                             </div>
@@ -146,22 +156,72 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                         {profile.profile.country}
                                     </div>
                                 )}
-                                {profile.profile?.social_links?.linkedin && (
-                                    <a
-                                        href={profile.profile.social_links.linkedin}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-1 hover:text-blue-600"
-                                    >
-                                        <LinkIcon className="w-4 h-4" />
-                                        LinkedIn
-                                    </a>
-                                )}
                                 <div className="flex items-center gap-1">
                                     <Calendar className="w-4 h-4" />
                                     Membre depuis {new Date(profile.joined_at || profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                                 </div>
                             </div>
+
+                            {/* Social Links */}
+                            {profile.profile?.social_links && (
+                                <div className="mt-3 flex flex-wrap items-center gap-3">
+                                    {profile.profile.social_links.linkedin && (
+                                        <a
+                                            href={profile.profile.social_links.linkedin}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                                            title="LinkedIn"
+                                        >
+                                            <Linkedin className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.profile.social_links.twitter && (
+                                        <a
+                                            href={profile.profile.social_links.twitter}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                            title="Twitter/X"
+                                        >
+                                            <Twitter className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.profile.social_links.instagram && (
+                                        <a
+                                            href={profile.profile.social_links.instagram}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200 transition-colors"
+                                            title="Instagram"
+                                        >
+                                            <Instagram className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.profile.social_links.facebook && (
+                                        <a
+                                            href={profile.profile.social_links.facebook}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                                            title="Facebook"
+                                        >
+                                            <Facebook className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                    {profile.profile.social_links.website && (
+                                        <a
+                                            href={profile.profile.social_links.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                                            title="Site web"
+                                        >
+                                            <Globe className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Stats */}
                             <div className="mt-4 flex gap-6 text-sm">
@@ -182,6 +242,13 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                     </div>
                 </div>
             </div>
+
+            {/* Edit Profile Modal */}
+            <EditProfileModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                profile={profile}
+            />
         </div>
     );
 }
