@@ -200,7 +200,25 @@ export async function updateProfileSocial(userId: string, data: any) {
       update: updateData,
       create: {
         userId,
-        ...updateData
+        username: updateData.username || null,
+        bio: updateData.bio || null,
+        country: updateData.country || null,
+        avatar_url: updateData.avatar_url || null,
+        banner_url: updateData.banner_url || null,
+        banner_type: updateData.banner_type || 'gradient',
+        social_links: updateData.social_links || null,
+        // Valeurs par défaut requises
+        is_public: true,
+        level: 1,
+        total_xp: 0,
+        current_streak: 0,
+        longest_streak: 0,
+        streak_freezes: 5,
+        followers_count: 0,
+        following_count: 0,
+        posts_count: 0,
+        reputation_score: 0,
+        verified_investor: false,
       }
     });
 
