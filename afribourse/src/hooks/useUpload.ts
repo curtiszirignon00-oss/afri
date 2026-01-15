@@ -172,6 +172,57 @@ export function useDeleteImage() {
 }
 
 // ========================================
+// UPDATE PROFILE
+// ========================================
+
+export interface ProfileUpdateData {
+    username?: string;
+    bio?: string;
+    country?: string;
+    social_links?: {
+        linkedin?: string;
+        twitter?: string;
+        website?: string;
+        instagram?: string;
+        facebook?: string;
+    };
+}
+
+export function useUpdateProfile() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: ProfileUpdateData) => {
+            const token = getAuthToken();
+            const response = await fetch(`${API_BASE_URL}/profile/me`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erreur lors de la mise à jour');
+            }
+
+            return response.json();
+        },
+        onSuccess: () => {
+            toast.success('Profil mis à jour !');
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || 'Erreur lors de la mise à jour du profil');
+        }
+    });
+}
+
+// ========================================
 // HELPERS
 // ========================================
 
