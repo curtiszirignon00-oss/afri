@@ -22,7 +22,7 @@ const postTypeConfig: Record<string, { label: string; color: string; icon: any }
 };
 
 export default function PostCard({ post }: PostCardProps) {
-    const { user } = useAuth();
+    const { userProfile } = useAuth();
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(false); // TODO: Check if user liked
     const [showMenu, setShowMenu] = useState(false);
@@ -36,7 +36,7 @@ export default function PostCard({ post }: PostCardProps) {
     const deleteMutation = useDeletePost();
     const updateMutation = useUpdatePost();
 
-    const isOwner = user?.id === post.author_id || user?.id === post.author?.id;
+    const isOwner = userProfile?.id === post.author_id || userProfile?.id === post.author?.id;
 
     const typeConfig = postTypeConfig[post.type] || postTypeConfig.OPINION;
     const TypeIcon = typeConfig.icon;

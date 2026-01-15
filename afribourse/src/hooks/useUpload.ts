@@ -36,8 +36,9 @@ export function useUploadAvatar() {
             const token = getAuthToken();
             const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
                 body: formData
             });
@@ -77,8 +78,9 @@ export function useUploadBanner() {
             const token = getAuthToken();
             const response = await fetch(`${API_BASE_URL}/upload/banner`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
                 body: formData
             });
@@ -117,8 +119,9 @@ export function useUploadPostImages() {
             const token = getAuthToken();
             const response = await fetch(`${API_BASE_URL}/upload/post-images`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
                 body: formData
             });
@@ -148,8 +151,9 @@ export function useDeleteImage() {
             const token = getAuthToken();
             const response = await fetch(`${API_BASE_URL}/upload/${type}/${filename}`, {
                 method: 'DELETE',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 }
             });
 
@@ -196,8 +200,9 @@ export function useUpdateProfile() {
             const token = getAuthToken();
             const response = await fetch(`${API_BASE_URL}/profile/me`, {
                 method: 'PUT',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    ...(token && { 'Authorization': `Bearer ${token}` }),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)
