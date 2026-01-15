@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/src/scripts/restore-modules.ts
 /**
  * Script pour restaurer les modules à partir d'une ancienne version Git

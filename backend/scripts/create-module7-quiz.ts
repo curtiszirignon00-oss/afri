@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module7-quiz.ts
 // Script pour créer le quiz du Module 7 - Analyse Fondamentale
 

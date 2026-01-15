@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-quiz.ts
 // Script pour créer un quiz pour un module d'apprentissage
 

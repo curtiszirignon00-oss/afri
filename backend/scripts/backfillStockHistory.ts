@@ -2,6 +2,8 @@
 // Script pour remplir l'historique avec les données actuelles
 // Utile pour avoir un graphique même sans historique réel
 
+/// <reference types="node" />
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

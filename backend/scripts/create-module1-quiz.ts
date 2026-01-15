@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module1-quiz.ts
 // Script pour créer le quiz du Module 1 - Les Fondations de la Bourse et de la BRVM
 

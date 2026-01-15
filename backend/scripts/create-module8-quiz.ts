@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module8-quiz.ts
 // Script pour créer le quiz du Module 8 - L'Art de la Diversification et la Gestion du Risque
 

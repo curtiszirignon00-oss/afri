@@ -4,10 +4,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as profileService from '../services/profile.service';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
-
 // =====================================
 // PROFIL PUBLIC
 // =====================================
@@ -19,7 +15,7 @@ interface AuthenticatedRequest extends Request {
 export async function getPublicProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const { userId } = req.params;
-    const viewerId = (req as AuthenticatedRequest).user?.id;
+    const viewerId = req.user?.id;
 
     const profile = await profileService.getPublicProfile(userId, viewerId);
 
@@ -39,7 +35,7 @@ export async function getPublicProfile(req: Request, res: Response, next: NextFu
  * GET /api/profile/me
  * Récupère le profil complet de l'utilisateur connecté
  */
-export async function getMyProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -65,7 +61,7 @@ export async function getMyProfile(req: AuthenticatedRequest, res: Response, nex
  * GET /api/profile/me/stats
  * Récupère les statistiques de l'utilisateur connecté
  */
-export async function getMyStats(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyStats(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -89,7 +85,7 @@ export async function getMyStats(req: AuthenticatedRequest, res: Response, next:
  * PUT /api/profile/me
  * Met à jour le profil social de l'utilisateur
  */
-export async function updateMyProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function updateMyProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -128,7 +124,7 @@ export async function updateMyProfile(req: AuthenticatedRequest, res: Response, 
  * PATCH /api/profile/me/privacy
  * Met à jour les paramètres de confidentialité
  */
-export async function updateMyPrivacy(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function updateMyPrivacy(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -154,7 +150,7 @@ export async function updateMyPrivacy(req: AuthenticatedRequest, res: Response, 
  * POST /api/profile/:userId/follow
  * Suivre un utilisateur
  */
-export async function followUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function followUser(req: Request, res: Response, next: NextFunction) {
   try {
     const followerId = req.user?.id;
     if (!followerId) {
@@ -182,7 +178,7 @@ export async function followUser(req: AuthenticatedRequest, res: Response, next:
  * DELETE /api/profile/:userId/unfollow
  * Ne plus suivre un utilisateur
  */
-export async function unfollowUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function unfollowUser(req: Request, res: Response, next: NextFunction) {
   try {
     const followerId = req.user?.id;
     if (!followerId) {
@@ -210,7 +206,7 @@ export async function unfollowUser(req: AuthenticatedRequest, res: Response, nex
 export async function getFollowers(req: Request, res: Response, next: NextFunction) {
   try {
     const { userId } = req.params;
-    const viewerId = (req as AuthenticatedRequest).user?.id;
+    const viewerId = req.user?.id;
 
     const followers = await profileService.getFollowers(userId, viewerId);
     return res.status(200).json(followers);
@@ -231,7 +227,7 @@ export async function getFollowers(req: Request, res: Response, next: NextFuncti
 export async function getFollowing(req: Request, res: Response, next: NextFunction) {
   try {
     const { userId } = req.params;
-    const viewerId = (req as AuthenticatedRequest).user?.id;
+    const viewerId = req.user?.id;
 
     const following = await profileService.getFollowing(userId, viewerId);
     return res.status(200).json(following);
@@ -249,7 +245,7 @@ export async function getFollowing(req: Request, res: Response, next: NextFuncti
  * GET /api/profile/suggestions
  * Obtenir des suggestions d'amis
  */
-export async function getSuggestions(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getSuggestions(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

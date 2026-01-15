@@ -3,14 +3,9 @@
 import { Request, Response, NextFunction } from 'express';
 import * as portfolioService from '../services/portfolio.service.prisma';
 
-// Interface for authenticated requests
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
-
 // --- Get/Create Portfolio ---
 
-export async function getMyPortfolio(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyPortfolio(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -28,7 +23,7 @@ export async function getMyPortfolio(req: AuthenticatedRequest, res: Response, n
   }
 }
 
-export async function createMyPortfolio(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function createMyPortfolio(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -51,7 +46,7 @@ export async function createMyPortfolio(req: AuthenticatedRequest, res: Response
 
 // --- Buy/Sell Actions ---
 
-export async function buyStock(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function buyStock(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -76,7 +71,7 @@ export async function buyStock(req: AuthenticatedRequest, res: Response, next: N
   }
 }
 
-export async function sellStock(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function sellStock(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -107,7 +102,7 @@ export async function sellStock(req: AuthenticatedRequest, res: Response, next: 
 // Add this function to portfolio.controller.ts
 
 // Controller for GET /api/portfolios/my/history
-export async function getPortfolioHistory(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getPortfolioHistory(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -121,7 +116,7 @@ export async function getPortfolioHistory(req: AuthenticatedRequest, res: Respon
     return next(error);
   }
 }
-export async function getPortfolioTransactions(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getPortfolioTransactions(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

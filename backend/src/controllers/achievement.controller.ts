@@ -4,10 +4,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as achievementService from '../services/achievement.service';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
-
 // =====================================
 // RÉCUPÉRATION ACHIEVEMENTS
 // =====================================
@@ -31,7 +27,7 @@ export async function getAllAchievements(req: Request, res: Response, next: Next
  * GET /api/achievements/me
  * Récupère les achievements de l'utilisateur connecté
  */
-export async function getMyAchievements(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyAchievements(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -51,7 +47,7 @@ export async function getMyAchievements(req: AuthenticatedRequest, res: Response
  * GET /api/achievements/me/progress
  * Récupère tous les achievements avec leur statut de déblocage
  */
-export async function getMyAchievementsProgress(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyAchievementsProgress(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -94,7 +90,7 @@ export async function getUserAchievements(req: Request, res: Response, next: Nex
  * Vérifie et débloque les achievements de l'utilisateur
  * (Appelé après une action importante)
  */
-export async function checkMyAchievements(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function checkMyAchievements(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -114,7 +110,7 @@ export async function checkMyAchievements(req: AuthenticatedRequest, res: Respon
  * POST /api/achievements/check/:category
  * Vérifie les achievements d'une catégorie spécifique
  */
-export async function checkCategoryAchievements(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function checkCategoryAchievements(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

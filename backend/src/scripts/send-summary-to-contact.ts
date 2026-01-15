@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour envoyer un résumé de portefeuille à contact@africbourse.com
 // Utilise des données réelles si disponibles, sinon des données de test
 import { getPortfolioStatsForUser } from '../services/portfolio-summary.service';

@@ -19,30 +19,9 @@ import {
 const router = Router();
 
 // =====================================
-// ROUTES PUBLIQUES
-// =====================================
-
-/**
- * GET /api/profile/:userId
- * Récupère le profil public d'un utilisateur
- * Public (mais filtré selon confidentialité)
- */
-router.get('/:userId', getPublicProfile);
-
-/**
- * GET /api/profile/:userId/followers
- * Liste des abonnés (selon confidentialité)
- */
-router.get('/:userId/followers', getFollowers);
-
-/**
- * GET /api/profile/:userId/following
- * Liste des abonnements (selon confidentialité)
- */
-router.get('/:userId/following', getFollowing);
-
-// =====================================
 // ROUTES PROTÉGÉES (Authentification requise)
+// IMPORTANT: Ces routes doivent être AVANT /:userId pour éviter
+// que "me" soit interprété comme un userId
 // =====================================
 
 /**
@@ -72,6 +51,29 @@ router.put('/me', auth, updateMyProfile);
  * Protégé
  */
 router.patch('/me/privacy', auth, updateMyPrivacy);
+
+// =====================================
+// ROUTES PUBLIQUES
+// =====================================
+
+/**
+ * GET /api/profile/:userId
+ * Récupère le profil public d'un utilisateur
+ * Public (mais filtré selon confidentialité)
+ */
+router.get('/:userId', getPublicProfile);
+
+/**
+ * GET /api/profile/:userId/followers
+ * Liste des abonnés (selon confidentialité)
+ */
+router.get('/:userId/followers', getFollowers);
+
+/**
+ * GET /api/profile/:userId/following
+ * Liste des abonnements (selon confidentialité)
+ */
+router.get('/:userId/following', getFollowing);
 
 /**
  * POST /api/profile/:userId/follow

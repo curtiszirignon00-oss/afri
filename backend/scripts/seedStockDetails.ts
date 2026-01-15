@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/seedStockDetails.ts
 // Script pour insérer des données de test pour la page Stock Details
 
