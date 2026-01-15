@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module14-quiz.ts
 // Script pour créer le quiz du Module 14 - Contexte Économique – Sentir le Pouls du Marché UEMOA
 

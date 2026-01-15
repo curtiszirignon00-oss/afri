@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module2-quiz.ts
 // Script pour créer le quiz du Module 2 - Les Acteurs du Jeu
 

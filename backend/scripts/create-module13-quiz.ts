@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module13-quiz.ts
 // Script pour créer le quiz du Module 13 - Outils, Actualités et Fiscalité
 

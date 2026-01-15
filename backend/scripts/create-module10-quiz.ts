@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module10-quiz.ts
 // Script pour créer le quiz du Module 10 - L’Art du Timing – Analyse Technique
 

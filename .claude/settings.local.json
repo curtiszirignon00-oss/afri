@@ -77,7 +77,8 @@
       "Bash(cmd //c taskkill //PID 310424 //F)",
       "Bash(cmd /c \"taskkill /F /PID 186408\")",
       "Bash(Stop-Process -Id 186408 -Force)",
-      "Bash(powershell -Command \"Stop-Process -Id 186408 -Force\")"
+      "Bash(powershell -Command \"Stop-Process -Id 186408 -Force\")",
+      "Bash(start \"c:\\\\Users\\\\HP\\\\OneDrive\\\\Desktop\\\\afri\\\\backend\\\\preview-price-alert-email.html\")"
     ],
     "deny": [],
     "ask": []

@@ -3,13 +3,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as priceAlertService from '../services/price-alert.service.prisma';
 
-// Interface for authenticated requests
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
-
 // GET /api/price-alerts - Récupérer toutes les alertes de l'utilisateur
-export async function getUserAlerts(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getUserAlerts(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -32,7 +27,7 @@ export async function getUserAlerts(req: AuthenticatedRequest, res: Response, ne
 }
 
 // POST /api/price-alerts - Créer une nouvelle alerte
-export async function createAlert(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function createAlert(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -75,7 +70,7 @@ export async function createAlert(req: AuthenticatedRequest, res: Response, next
 }
 
 // PUT /api/price-alerts/:id - Mettre à jour une alerte
-export async function updateAlert(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function updateAlert(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -106,7 +101,7 @@ export async function updateAlert(req: AuthenticatedRequest, res: Response, next
 }
 
 // PATCH /api/price-alerts/:id/toggle - Activer/Désactiver une alerte
-export async function toggleAlert(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function toggleAlert(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -135,7 +130,7 @@ export async function toggleAlert(req: AuthenticatedRequest, res: Response, next
 }
 
 // DELETE /api/price-alerts/:id - Supprimer une alerte
-export async function deleteAlert(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function deleteAlert(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -159,7 +154,7 @@ export async function deleteAlert(req: AuthenticatedRequest, res: Response, next
 }
 
 // GET /api/price-alerts/:id/notifications - Récupérer l'historique des notifications
-export async function getAlertNotifications(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getAlertNotifications(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

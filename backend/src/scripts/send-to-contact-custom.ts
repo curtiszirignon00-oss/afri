@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour envoyer un résumé de portefeuille à contact@africbourse.com avec nom personnalisé
 import { sendPortfolioSummaryEmail } from '../services/email.service';
 import prisma from '../config/prisma';

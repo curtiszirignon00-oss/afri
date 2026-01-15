@@ -335,3 +335,24 @@ export async function getAnnualFinancials(symbol: string, yearsBack: number = 5)
     throw error;
   }
 }
+export async function getHistoryForComparison(symbols: string[], period: number) {
+  try {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - period);
+    const history = await prisma.stockHistory.findMany({
+      where: { stock_ticker: { in: symbols }, date: { gte: startDate } },
+      orderBy: { date: 'asc' },
+      select: { stock_ticker: true, date: true, close: true }
+    });
+    const groupedByDate: Record<string, any> = {};
+    history.forEach(record => {
+      const dateKey = record.date.toISOString().split('T')[0];
+      if (!groupedByDate[dateKey]) groupedByDate[dateKey] = { date: dateKey };
+      groupedByDate[dateKey][record.stock_ticker] = record.close;
+    });
+    return Object.values(groupedByDate).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  } catch (error) {
+    console.error('Erreur historique:', error);
+    throw error;
+}
+}

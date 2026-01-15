@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module5-quiz.ts
 // Script pour créer le quiz du Module 5 - Le Temps, Votre Meilleur Allié
 

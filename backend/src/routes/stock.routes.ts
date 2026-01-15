@@ -9,13 +9,15 @@ import {
   getCompanyInfo,
   getStockNews,
   getShareholders,
-  getAnnualFinancials
+  getAnnualFinancials,
+  getComparisonHistory
 } from "../controllers/stock.controller";
 
 const router = Router();
 
-router.get('/', getStocks);       // Route pour lister toutes les actions
-router.get('/:symbol', getStock); // Route pour voir une action par son symbole
+router.get('/', getStocks);                      // Route pour lister toutes les actions
+router.get('/comparison-history', getComparisonHistory); // Route pour historique de comparaison
+router.get('/:symbol', getStock);                // Route pour voir une action par son symbole
 
 // ========================================
 // NOUVELLES ROUTES POUR STOCK DETAILS

@@ -590,8 +590,8 @@ export default function DashboardPage() {
                       tick={{ fontSize: 12 }}
                       tickFormatter={(value) => `${(value / 1000)}k`}
                     />
-                    <Tooltip 
-                      formatter={(value: number) => [`${formatNumber(value)} FCFA`, 'Valeur']}
+                    <Tooltip
+                      formatter={(value: number | undefined) => [`${formatNumber(value ?? 0)} FCFA`, 'Valeur']}
                       labelStyle={{ color: '#374151' }}
                       contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
                     />
@@ -807,8 +807,8 @@ export default function DashboardPage() {
                           <Cell key={`cell-${index}`} fill={ALLOCATION_COLORS[index % ALLOCATION_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        formatter={(value: number) => `${formatNumber(value)} FCFA`}
+                      <Tooltip
+                        formatter={(value: number | undefined) => `${formatNumber(value ?? 0)} FCFA`}
                         contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
                       />
                     </PieChart>
