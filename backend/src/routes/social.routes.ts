@@ -12,6 +12,7 @@ router.get('/followers/:userId', socialController.getFollowers);
 router.get('/following/:userId', socialController.getFollowing);
 
 // ============= POST ROUTES =============
+router.get('/community', socialController.getPublicPosts); // Public community feed (no auth required)
 router.get('/feed', auth, socialController.getFeed);
 router.get('/posts/:userId', socialController.getUserPosts);
 router.post('/posts', auth, socialController.createPost);

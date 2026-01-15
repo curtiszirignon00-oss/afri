@@ -37,14 +37,41 @@ export interface OnboardingDto {
 // ============= SERVICES =============
 
 /**
- * Get investor profile
+ * Get investor profile (merged with UserProfile social data)
  */
 export async function getInvestorProfile(userId: string) {
-    const profile = await prisma.investorProfile.findUnique({
-        where: { user_id: userId },
-    });
+    // Récupérer les deux profils en parallèle
+    const [investorProfile, userProfile] = await Promise.all([
+        prisma.investorProfile.findUnique({
+            where: { user_id: userId },
+        }),
+        prisma.userProfile.findUnique({
+            where: { userId: userId },
+        }),
+    ]);
 
-    return profile;
+    // Fusionner les données (UserProfile contient les infos sociales)
+    return {
+        ...investorProfile,
+        // Données sociales depuis UserProfile
+        username: userProfile?.username || null,
+        bio: userProfile?.bio || null,
+        avatar_url: userProfile?.avatar_url || null,
+        banner_url: userProfile?.banner_url || null,
+        banner_type: userProfile?.banner_type || 'gradient',
+        country: userProfile?.country || investorProfile?.favorite_sectors?.[0] || null,
+        social_links: userProfile?.social_links || null,
+        verified_investor: userProfile?.verified_investor || false,
+        // Stats sociales
+        followers_count: userProfile?.followers_count || 0,
+        following_count: userProfile?.following_count || 0,
+        posts_count: userProfile?.posts_count || 0,
+        level: userProfile?.level || 1,
+        total_xp: userProfile?.total_xp || 0,
+        current_streak: userProfile?.current_streak || 0,
+        // Timestamp
+        created_at: investorProfile?.created_at || userProfile?.created_at,
+    };
 }
 
 /**
