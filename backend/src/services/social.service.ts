@@ -465,6 +465,143 @@ export async function getUserPosts(
 }
 
 /**
+ * Update a post
+ */
+export async function updatePost(postId: string, authorId: string, updateData: Partial<CreatePostDto>) {
+    // Check if post exists and belongs to user
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+    });
+
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    if (post.author_id !== authorId) {
+        throw new Error('You can only edit your own posts');
+    }
+
+    const updatedPost = await prisma.post.update({
+        where: { id: postId },
+        data: {
+            ...updateData,
+            updated_at: new Date(),
+        },
+        include: {
+            author: {
+                include: {
+                    profile: {
+                        select: {
+                            username: true,
+                            avatar_url: true,
+                            verified_investor: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    return updatedPost;
+}
+
+/**
+ * Delete a post
+ */
+export async function deletePost(postId: string, authorId: string) {
+    // Check if post exists and belongs to user
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+    });
+
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    if (post.author_id !== authorId) {
+        throw new Error('You can only delete your own posts');
+    }
+
+    // Delete associated likes and comments first
+    await prisma.postLike.deleteMany({
+        where: { post_id: postId },
+    });
+
+    await prisma.comment.deleteMany({
+        where: { post_id: postId },
+    });
+
+    // Delete the post
+    await prisma.post.delete({
+        where: { id: postId },
+    });
+
+    // Decrement user posts count
+    await prisma.user.update({
+        where: { id: authorId },
+        data: { posts_count: { decrement: 1 } },
+    });
+
+    await prisma.userProfile.update({
+        where: { userId: authorId },
+        data: { posts_count: { decrement: 1 } },
+    });
+
+    return { success: true };
+}
+
+/**
+ * Get a single post by ID
+ */
+export async function getPostById(postId: string, viewerId?: string) {
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+            author: {
+                include: {
+                    profile: {
+                        select: {
+                            username: true,
+                            avatar_url: true,
+                            verified_investor: true,
+                        },
+                    },
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                    comments: true,
+                },
+            },
+        },
+    });
+
+    if (!post) {
+        throw new Error('Post not found');
+    }
+
+    // Check if viewer has liked this post
+    let hasLiked = false;
+    if (viewerId) {
+        const like = await prisma.postLike.findUnique({
+            where: {
+                post_id_user_id: {
+                    post_id: postId,
+                    user_id: viewerId,
+                },
+            },
+        });
+        hasLiked = !!like;
+    }
+
+    return {
+        ...post,
+        hasLiked,
+    };
+}
+
+/**
  * Get post comments
  */
 export async function getPostComments(postId: string, page: number = 1, limit: number = 20) {
