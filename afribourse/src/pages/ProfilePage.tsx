@@ -1,15 +1,21 @@
 // src/pages/ProfilePage.tsx
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useInvestorProfile } from '../hooks/useOnboarding';
+import { useAuth } from '../contexts/AuthContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import InvestorDNA from '../components/profile/InvestorDNA';
 import SocialStats from '../components/profile/SocialStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 
 export default function ProfilePage() {
     const { userId } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const { data: investorProfile, isLoading, error } = useInvestorProfile();
+
+    // Déterminer si c'est le profil de l'utilisateur connecté
+    const isOwnProfile = !userId || userId === user?.id;
 
     if (isLoading) {
         return (
@@ -39,11 +45,12 @@ export default function ProfilePage() {
     }
 
     // Créer un objet profile compatible avec les composants
-    const mockProfile = {
-        id: userId || 'current-user',
-        name: 'Utilisateur',
-        lastname: 'Africbourse',
-        email: 'user@africbourse.com',
+    const profileData = {
+        id: userId || user?.id || 'current-user',
+        name: user?.name || 'Utilisateur',
+        lastname: user?.lastname || '',
+        email: user?.email || 'user@africbourse.com',
+        created_at: user?.created_at || new Date().toISOString(),
         investorProfile: investorProfile,
         stats: {
             followers_count: 0,
@@ -52,10 +59,13 @@ export default function ProfilePage() {
             portfolios_count: 0,
         },
         profile: {
-            username: 'user',
-            bio: 'Investisseur sur Africbourse',
-            avatar_url: null,
+            username: investorProfile?.username || user?.email?.split('@')[0] || 'user',
+            bio: investorProfile?.bio || 'Investisseur sur Africbourse',
+            avatar_url: user?.avatar_url || null,
+            banner_url: user?.banner_url || null,
+            country: investorProfile?.country || null,
             verified_investor: false,
+            social_links: investorProfile?.social_links || null,
             followers_count: 0,
             following_count: 0,
             posts_count: 0,
@@ -64,20 +74,33 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Bouton Retour */}
+            <div className="bg-white border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        <span className="font-medium">Retour</span>
+                    </button>
+                </div>
+            </div>
+
             {/* Profile Header */}
-            <ProfileHeader profile={mockProfile} />
+            <ProfileHeader profile={profileData} isOwnProfile={isOwnProfile} />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Investor DNA & Stats */}
                     <div className="lg:col-span-1 space-y-6">
-                        <InvestorDNA profile={mockProfile} />
-                        <SocialStats profile={mockProfile} />
+                        <InvestorDNA profile={profileData} />
+                        <SocialStats profile={profileData} />
                     </div>
 
                     {/* Right Column - Activity Feed */}
                     <div className="lg:col-span-2">
-                        <ActivityFeed userId={mockProfile.id} />
+                        <ActivityFeed userId={profileData.id} />
                     </div>
                 </div>
             </div>
