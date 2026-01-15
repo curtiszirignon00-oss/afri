@@ -16,6 +16,13 @@
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "types": ["node"]
   },
+  "ts-node": {
+    "files": true,
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
   "include": ["src/**/*", "src/types/**/*.d.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*", "**/*.backup.ts"]
 }
