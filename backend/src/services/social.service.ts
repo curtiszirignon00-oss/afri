@@ -1,6 +1,7 @@
 // src/services/social.service.ts
 import { prisma } from '../config/database';
 import type { PostType, VisibilityLevel } from '@prisma/client';
+import * as notificationService from './notification.service';
 
 // ============= TYPES =============
 
@@ -60,6 +61,16 @@ export async function followUser(followerId: string, followingId: string) {
             data: { followers_count: { increment: 1 } },
         }),
     ]);
+
+    // Notify the user being followed
+    const follower = await prisma.user.findUnique({
+        where: { id: followerId },
+        select: { name: true, lastname: true },
+    });
+    if (follower) {
+        notificationService.notifyNewFollower(followerId, `${follower.name} ${follower.lastname}`, followingId)
+            .catch(err => console.error('Error notifying new follower:', err));
+    }
 
     return follow;
 }
@@ -251,6 +262,13 @@ export async function createPost(authorId: string, postData: CreatePostDto) {
         where: { userId: authorId },
         data: { posts_count: { increment: 1 } },
     });
+
+    // Notify followers about the new post (only for public posts)
+    if (!visibility || visibility === 'PUBLIC') {
+        const authorName = `${post.author.name} ${post.author.lastname}`;
+        notificationService.notifyFollowersOfNewPost(authorId, authorName, post.id, title)
+            .catch(err => console.error('Error notifying followers:', err));
+    }
 
     return post;
 }
