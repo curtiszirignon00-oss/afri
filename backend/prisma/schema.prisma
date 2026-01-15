@@ -549,9 +549,34 @@ model Portfolio {
   
   positions               Position[]
   transactions            Transaction[]
+  snapshots               PortfolioSnapshot[]
 
   @@map("portfolios")
   @@index([userId])
+}
+
+model PortfolioSnapshot {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  portfolio           Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId         String    @db.ObjectId
+
+  // Valeurs au moment du snapshot
+  total_value         Float     // Valeur totale (liquidités + positions)
+  cash_balance        Float     // Liquidités
+  invested_value      Float     // Montant investi
+  positions_value     Float     // Valeur actuelle des positions
+  gain_loss           Float     // Gain/Perte total
+  gain_loss_percent   Float     // Pourcentage de gain/perte
+  positions_count     Int       // Nombre de positions
+
+  // Métadonnées
+  snapshot_type       String    // "bi_weekly_summary", "manual", etc.
+  created_at          DateTime  @default(now())
+
+  @@map("portfolio_snapshots")
+  @@index([portfolioId])
+  @@index([created_at])
+  @@index([snapshot_type])
 }
 
 model Position {

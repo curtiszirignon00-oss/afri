@@ -10,12 +10,13 @@ import {
   createPriceAlertNotification
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
+import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
 import prisma from '../config/prisma';
 
-// Tâche cron pour exécuter le scraping toutes les 2 heures
+// Tâche cron pour exécuter le scraping toutes les heures
 
-cron.schedule('0 */2 * * *', async () => { // Exécute toutes les 2 heures
-    console.log('🔄 Tâche de scraping exécutée toutes les 2 heures');
+cron.schedule('0 * * * *', async () => { // Exécute toutes les heures
+    console.log('🔄 Tâche de scraping exécutée toutes les heures');
 
     try {
         const stocks = await scrapeStock();
@@ -130,3 +131,53 @@ async function checkPriceAlerts() {
         console.error('❌ Erreur lors de la vérification des alertes de prix:', error);
     }
 }
+
+// Tâche cron pour envoyer les résumés de portefeuille bi-hebdomadaires
+// S'exécute tous les vendredis à 18h00, toutes les 2 semaines
+// Commence le vendredi 16 janvier 2026
+let lastPortfolioSummaryDate: Date | null = null;
+
+cron.schedule('0 18 * * 5', async () => { // Tous les vendredis à 18h
+    try {
+        const now = new Date();
+
+        // Date de démarrage : vendredi 16 janvier 2026
+        const startDate = new Date('2026-01-16T18:00:00');
+
+        // Vérifier si on est après la date de démarrage
+        if (now < startDate) {
+            console.log(`ℹ️  Envoi des résumés démarrera le ${startDate.toLocaleDateString('fr-FR')} à 18h`);
+            return;
+        }
+
+        // Calculer le nombre de jours depuis le démarrage
+        const daysSinceStart = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const weeksSinceStart = Math.floor(daysSinceStart / 7);
+
+        // Envoyer seulement toutes les 2 semaines (semaines paires depuis le démarrage)
+        const shouldSend = weeksSinceStart % 2 === 0;
+
+        // Vérifier qu'on n'a pas déjà envoyé aujourd'hui
+        const alreadySentToday = lastPortfolioSummaryDate &&
+            lastPortfolioSummaryDate.toDateString() === now.toDateString();
+
+        if (shouldSend && !alreadySentToday) {
+            console.log('📊 Envoi des résumés bi-hebdomadaires de portefeuille...');
+            console.log(`   → Date: ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`);
+            console.log(`   → Semaine ${weeksSinceStart + 1} depuis le démarrage`);
+
+            await sendBiweeklyPortfolioSummaries();
+            lastPortfolioSummaryDate = now;
+
+            console.log('✅ Résumés de portefeuille envoyés avec succès');
+            console.log(`   → Prochain envoi dans 2 semaines`);
+        } else if (!shouldSend) {
+            console.log('ℹ️  Pas d\'envoi de résumé cette semaine (cycle bi-hebdomadaire)');
+            console.log(`   → Prochain envoi le vendredi suivant`);
+        } else if (alreadySentToday) {
+            console.log('ℹ️  Résumés déjà envoyés aujourd\'hui');
+        }
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'envoi des résumés de portefeuille:', error);
+    }
+});
