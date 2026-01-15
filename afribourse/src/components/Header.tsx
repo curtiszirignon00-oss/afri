@@ -1,4 +1,4 @@
-import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity } from 'lucide-react';
+import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -36,6 +36,7 @@ export default function Header() {
     { name: 'Apprendre', id: 'learn', icon: BookOpen, hasMegaMenu: true },
     { name: 'Marchés', id: 'markets', icon: BarChart3, hasMegaMenu: true },
     { name: 'Actualités', id: 'news', icon: TrendingUp, hasMegaMenu: true },
+    { name: 'Communauté', id: 'community', icon: Users, hasMegaMenu: false },
   ];
 
   const ActiveMegaMenuComponent = activeMegaMenu ? MEGA_MENU_COMPONENTS[activeMegaMenu] : null;

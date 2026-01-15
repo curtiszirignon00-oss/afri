@@ -625,6 +625,76 @@ export async function getPostById(postId: string, viewerId?: string) {
 }
 
 /**
+ * Get public posts for community feed (no auth required)
+ */
+export async function getPublicPosts(page: number = 1, limit: number = 10, viewerId?: string) {
+    const skip = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+        prisma.post.findMany({
+            where: {
+                visibility: 'PUBLIC',
+                is_hidden: false,
+            },
+            skip,
+            take: limit,
+            orderBy: { created_at: 'desc' },
+            include: {
+                author: {
+                    include: {
+                        profile: {
+                            select: {
+                                username: true,
+                                avatar_url: true,
+                                verified_investor: true,
+                                level: true,
+                                country: true,
+                            },
+                        },
+                    },
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    },
+                },
+            },
+        }),
+        prisma.post.count({
+            where: {
+                visibility: 'PUBLIC',
+                is_hidden: false,
+            },
+        }),
+    ]);
+
+    // Check if viewer has liked posts
+    let postsWithLikeStatus = posts;
+    if (viewerId) {
+        const likedPostIds = await prisma.postLike.findMany({
+            where: {
+                user_id: viewerId,
+                post_id: { in: posts.map(p => p.id) },
+            },
+            select: { post_id: true },
+        });
+        const likedSet = new Set(likedPostIds.map(l => l.post_id));
+        postsWithLikeStatus = posts.map(post => ({
+            ...post,
+            hasLiked: likedSet.has(post.id),
+        }));
+    }
+
+    return {
+        data: postsWithLikeStatus,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+    };
+}
+
+/**
  * Get post comments
  */
 export async function getPostComments(postId: string, page: number = 1, limit: number = 20) {
