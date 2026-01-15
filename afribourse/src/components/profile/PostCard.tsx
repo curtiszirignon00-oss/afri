@@ -1,12 +1,12 @@
 // src/components/profile/PostCard.tsx
 import { useState } from 'react';
-import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, CheckCircle, MoreHorizontal, Edit2, Trash2, X, Loader2 } from 'lucide-react';
-import { useLikePost, useUnlikePost, useDeletePost, useUpdatePost } from '../../hooks/useSocial';
-import type { CreatePostData } from '../../hooks/useSocial';
+import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, CheckCircle, MoreHorizontal, Edit2, Trash2, X, Loader2, UserPlus, UserCheck } from 'lucide-react';
+import { useLikePost, useUnlikePost, useDeletePost, useUpdatePost, useFollowUser, useUnfollowUser } from '../../hooks/useSocial';
 import CommentSection from './CommentSection';
 import { Card } from '../ui';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface PostCardProps {
     post: any;
@@ -22,9 +22,11 @@ const postTypeConfig: Record<string, { label: string; color: string; icon: any }
 };
 
 export default function PostCard({ post }: PostCardProps) {
-    const { userProfile } = useAuth();
+    const { userProfile, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
     const [showComments, setShowComments] = useState(false);
-    const [isLiked, setIsLiked] = useState(false); // TODO: Check if user liked
+    const [isLiked, setIsLiked] = useState(post.hasLiked || false);
+    const [isFollowing, setIsFollowing] = useState(false); // TODO: Get from API
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
@@ -35,8 +37,37 @@ export default function PostCard({ post }: PostCardProps) {
     const unlikeMutation = useUnlikePost();
     const deleteMutation = useDeletePost();
     const updateMutation = useUpdatePost();
+    const followMutation = useFollowUser();
+    const unfollowMutation = useUnfollowUser();
 
-    const isOwner = userProfile?.id === post.author_id || userProfile?.id === post.author?.id;
+    const authorId = post.author_id || post.author?.id;
+    const isOwner = userProfile?.id === authorId;
+    const isFollowLoading = followMutation.isPending || unfollowMutation.isPending;
+
+    const handleFollow = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+        if (isFollowing) {
+            unfollowMutation.mutate(authorId, {
+                onSuccess: () => {
+                    setIsFollowing(false);
+                    toast.success('Vous ne suivez plus cet utilisateur');
+                },
+                onError: () => toast.error('Erreur'),
+            });
+        } else {
+            followMutation.mutate(authorId, {
+                onSuccess: () => {
+                    setIsFollowing(true);
+                    toast.success('Vous suivez maintenant cet utilisateur');
+                },
+                onError: () => toast.error('Erreur'),
+            });
+        }
+    };
 
     const typeConfig = postTypeConfig[post.type] || postTypeConfig.OPINION;
     const TypeIcon = typeConfig.icon;
@@ -147,12 +178,41 @@ export default function PostCard({ post }: PostCardProps) {
                     )}
                 </div>
                 <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-900">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                            onClick={() => navigate(`/profile/${authorId}`)}
+                            className="font-semibold text-gray-900 hover:text-blue-600 hover:underline"
+                        >
                             {post.author.name} {post.author.lastname}
-                        </span>
+                        </button>
                         {post.author.profile?.verified_investor && (
                             <CheckCircle className="w-4 h-4 text-blue-600" />
+                        )}
+                        {/* Follow Button - only show if not owner */}
+                        {!isOwner && (
+                            <button
+                                onClick={handleFollow}
+                                disabled={isFollowLoading}
+                                className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full font-medium transition-all ${
+                                    isFollowing
+                                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                } disabled:opacity-50`}
+                            >
+                                {isFollowLoading ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : isFollowing ? (
+                                    <>
+                                        <UserCheck className="w-3 h-3" />
+                                        <span>Suivi</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserPlus className="w-3 h-3" />
+                                        <span>Suivre</span>
+                                    </>
+                                )}
+                            </button>
                         )}
                         <span className={`px-2 py-0.5 bg-${typeConfig.color}-100 text-${typeConfig.color}-700 text-xs rounded-full flex items-center gap-1`}>
                             <TypeIcon className="w-3 h-3" />
