@@ -88,12 +88,22 @@ export interface Stock {
   volume: number;
   market_cap: number;
   logo_url?: string | null;
+  fundamentals?: Array<{
+    pe_ratio?: number | null;
+    dividend_yield?: number | null;
+  }>;
 }
 
 export interface StockFilters {
   search?: string;
   sector?: string;
-  sort?: 'name' | 'change' | 'price' | 'volume';
+  sort?: 'name' | 'change' | 'price' | 'volume' | 'pe' | 'dividend';
+  minMarketCap?: string;
+  maxMarketCap?: string;
+  minPE?: string;
+  maxPE?: string;
+  minDividend?: string;
+  maxDividend?: string;
 }
 
 // Hook pour récupérer la liste des actions

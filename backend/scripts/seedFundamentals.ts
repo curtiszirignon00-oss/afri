@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/seedFundamentals.ts
 // Import manuel des données fondamentales
 // À mettre à jour trimestriellement/semestriellement

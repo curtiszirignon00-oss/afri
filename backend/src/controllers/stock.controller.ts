@@ -11,6 +11,13 @@ export async function getStocks(req: Request, res: Response, next: NextFunction)
         searchTerm: req.query.search as string | undefined,
         sector: req.query.sector as string | undefined,
         sortBy: req.query.sort as string | undefined,
+        // New multi-criteria filters
+        minMarketCap: req.query.minMarketCap ? parseFloat(req.query.minMarketCap as string) : undefined,
+        maxMarketCap: req.query.maxMarketCap ? parseFloat(req.query.maxMarketCap as string) : undefined,
+        minPE: req.query.minPE ? parseFloat(req.query.minPE as string) : undefined,
+        maxPE: req.query.maxPE ? parseFloat(req.query.maxPE as string) : undefined,
+        minDividend: req.query.minDividend ? parseFloat(req.query.minDividend as string) : undefined,
+        maxDividend: req.query.maxDividend ? parseFloat(req.query.maxDividend as string) : undefined,
     };
 
     const stocks = await stockService.getAllStocks(filters);
@@ -130,6 +137,18 @@ export async function getAnnualFinancials(req: Request, res: Response, next: Nex
       years: financials.length,
       data: financials
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+export async function getComparisonHistory(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbols = (req.query.symbols as string)?.split(',');
+    const period = parseInt(req.query.period as string) || 30;
+    if (!symbols || symbols.length === 0) return res.status(400).json({ success: false, message: 'Symbols required' });
+    if (![7, 30, 90].includes(period)) return res.status(400).json({ success: false, message: 'Period must be 7, 30, or 90' });
+    const history = await stockService.getHistoryForComparison(symbols, period);
+    return res.status(200).json({ success: true, data: history });
   } catch (error) {
     return next(error);
   }

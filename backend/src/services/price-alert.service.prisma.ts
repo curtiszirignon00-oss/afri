@@ -3,6 +3,16 @@
 import prisma from '../config/prisma';
 import { PriceAlert, PriceAlertNotification } from '@prisma/client';
 
+// Type pour les alertes avec la relation user
+export type PriceAlertWithUser = PriceAlert & {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    lastname: string | null;
+  };
+};
+
 // Limites d'alertes selon l'abonnement
 const ALERT_LIMITS = {
   free: 3,
@@ -48,7 +58,7 @@ export async function getUserPriceAlertsByTicker(userId: string, stockTicker: st
 }
 
 // Récupérer toutes les alertes actives (pour le cron job)
-export async function getActiveAlerts(): Promise<PriceAlert[]> {
+export async function getActiveAlerts(): Promise<PriceAlertWithUser[]> {
   try {
     const alerts = await prisma.priceAlert.findMany({
       where: {

@@ -1,13 +1,8 @@
 // backend/src/controllers/user.controller.ts
 
 import { Response, Request, NextFunction } from "express";
-import * as usersService from "../services/users.service.prisma"; 
+import * as usersService from "../services/users.service.prisma";
 import { createError } from "../middlewares/errorHandlers";
-
-// FIX 1: Définir l'interface manquante
-interface AuthenticatedRequest extends Request {
-  user?: { id: string }; 
-}
 
 // 1. Contrôleur pour GET /api/users
 export async function getUsers(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +26,7 @@ export async function getUserCount(req: Request, res: Response, next: NextFuncti
 }
 
 // 2. Contrôleur pour GET /api/users/me (Récupérer l'utilisateur courant et son profil)
-export async function getCurrentUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getCurrentUser(req: Request, res: Response, next: NextFunction) {
   try {
     // Récupère l'ID ajouté par le middleware 'auth'
     const userId = req.user?.id;
@@ -59,7 +54,7 @@ export async function getCurrentUser(req: AuthenticatedRequest, res: Response, n
 }
 
 // 3. Contrôleur pour PUT/PATCH /api/users/profile (Mise à jour du profil)
-export async function updateUserProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function updateUserProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

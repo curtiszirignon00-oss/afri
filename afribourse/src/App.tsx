@@ -16,13 +16,14 @@ import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import MarketsPageRefactored from './components/MarketsPageRefactored';
+import OnboardingFlow from './components/onboarding/OnboardingFlow';
+import ProfilePage from './pages/ProfilePage';
 import StockDetailPageEnhanced from './components/StockDetailPageEnhanced';
 import LearnPage from './components/LearnPage';
 import NewsPage from './components/NewsPage';
 import GlossaryPage from './components/GlossaryPage';
 import SignupPage from './components/SignupPage';
 import LoginPage from './components/LoginPage';
-import ProfilePage from './components/ProfilePage';
 import DashboardPage from './components/DashboardPage';
 import TransactionsPage from './components/TransactionsPage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -46,6 +47,11 @@ import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
 import { usePageTracking } from './hooks/useAnalytics';
 
+// Debug utilities (only in development)
+if (process.env.NODE_ENV === 'development') {
+  import('./utils/testOnboarding');
+}
+
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
   const location = useLocation();
@@ -68,7 +74,7 @@ function Layout() {
   usePageTracking();
 
   // Détermine si le Header/Footer doit être affiché
-  const showLayout = !['/signup', '/login', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
+  const showLayout = !['/signup', '/login', '/onboarding', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -79,6 +85,7 @@ function Layout() {
 
       <main className="flex-grow">
         <Routes>
+          {/* Routes publiques */}
           <Route path="/" element={<HomePage />} />
           <Route path="/markets" element={<MarketsPageRefactored />} />
           <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
@@ -90,14 +97,30 @@ function Layout() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
           <Route path="/subscriptions" element={<SubscriptionPage />} />
+
+          {/* Onboarding - Protégé mais ne vérifie PAS le statut d'onboarding (évite la boucle) */}
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute requireOnboarding={false}>
+                <OnboardingFlow />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Profil public (avec userId optionnel) - Accessible sans onboarding */}
+          <Route path="/profile/:userId?" element={<ProfilePage />} />
+
+          {/* Checkout - Protégé avec vérification onboarding */}
           <Route
             path="/checkout"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireOnboarding={true}>
                 <CheckoutPage />
               </ProtectedRoute>
             }
           />
+          {/* Routes d'authentification */}
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/confirmer-inscription" element={<ConfirmEmailPage />} />
@@ -105,26 +128,32 @@ function Layout() {
           <Route path="/verifier-email" element={<VerifyEmailPage />} />
           <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
+
+          {/* Dashboard - Protégé avec vérification onboarding */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireOnboarding={true}>
                 <DashboardPage />
               </ProtectedRoute>
             }
           />
+
+          {/* Mon Profil - Protégé avec vérification onboarding */}
           <Route
             path="/profile"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireOnboarding={true}>
                 <ProfilePage />
               </ProtectedRoute>
             }
           />
+
+          {/* Transactions - Protégé avec vérification onboarding */}
           <Route
             path="/transactions"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requireOnboarding={true}>
                 <TransactionsPage />
               </ProtectedRoute>
             }
@@ -167,7 +196,7 @@ function Layout() {
                   <h3 className="text-xl font-bold">AfriBourse</h3>
                 </div>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                 Apprenez, simulez et investissez en toute confiance.
+                  Apprenez, simulez et investissez en toute confiance.
                 </p>
               </div>
 

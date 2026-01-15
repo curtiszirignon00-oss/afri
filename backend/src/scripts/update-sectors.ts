@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/src/scripts/update-sectors.ts
 
 import { connectPrismaDatabase, disconnectPrismaDatabase } from '../config/database.prisma';

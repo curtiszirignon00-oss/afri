@@ -3,13 +3,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as watchlistService from '../services/watchlist.service.prisma';
 
-// Interface for authenticated requests
-interface AuthenticatedRequest extends Request {
-  user?: { id: string }; 
-}
-
 // Controller for GET /api/watchlist/my
-export async function getMyWatchlist(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyWatchlist(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -27,7 +22,7 @@ export async function getMyWatchlist(req: AuthenticatedRequest, res: Response, n
 }
 
 // Controller for POST /api/watchlist/my
-export async function addItemToMyWatchlist(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function addItemToMyWatchlist(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -48,7 +43,7 @@ export async function addItemToMyWatchlist(req: AuthenticatedRequest, res: Respo
 }
 
 // Controller for DELETE /api/watchlist/my/:ticker
-export async function removeItemFromMyWatchlist(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function removeItemFromMyWatchlist(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

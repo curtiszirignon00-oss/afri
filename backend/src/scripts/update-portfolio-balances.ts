@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour mettre à jour les soldes des portfolios à 1,000,000 FCFA
 import prisma from "../config/prisma";
 

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module4-quiz.ts
 // Script pour créer le quiz du Module 4 - Produits Avancés
 

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module12-quiz.ts
 // Script pour créer le quiz du Module 12 - Gestion Avancée du Risque et Stratégie d’Allocation
 

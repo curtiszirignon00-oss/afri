@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour envoyer un résumé de portefeuille avec des vraies données calculées
 import { getPortfolioStatsForUser } from '../services/portfolio-summary.service';
 import { sendPortfolioSummaryEmail } from '../services/email.service';

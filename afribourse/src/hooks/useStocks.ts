@@ -8,6 +8,12 @@ interface UseStocksOptions {
   searchTerm?: string;
   sector?: string;
   sortBy?: 'name' | 'change' | 'price' | 'volume';
+  minMarketCap?: number;
+  maxMarketCap?: number;
+  minPE?: number;
+  maxPE?: number;
+  minDividend?: number;
+  maxDividend?: number;
 }
 
 interface UseStocksReturn {
@@ -21,8 +27,8 @@ interface UseStocksReturn {
  * Hook pour charger et filtrer les actions
  */
 export function useStocks(options: UseStocksOptions = {}): UseStocksReturn {
-  const { searchTerm = '', sector = 'all', sortBy = 'name' } = options;
-  
+  const { searchTerm = '', sector = 'all', sortBy = 'name', minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend } = options;
+
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +47,14 @@ export function useStocks(options: UseStocksOptions = {}): UseStocksReturn {
       if (sector !== 'all') params.append('sector', sector);
       params.append('sort', sortBy);
 
+      // Add new filter parameters
+      if (minMarketCap !== undefined) params.append('minMarketCap', minMarketCap.toString());
+      if (maxMarketCap !== undefined) params.append('maxMarketCap', maxMarketCap.toString());
+      if (minPE !== undefined) params.append('minPE', minPE.toString());
+      if (maxPE !== undefined) params.append('maxPE', maxPE.toString());
+      if (minDividend !== undefined) params.append('minDividend', minDividend.toString());
+      if (maxDividend !== undefined) params.append('maxDividend', maxDividend.toString());
+
       const response = await fetch(`${API_BASE_URL}/stocks?${params.toString()}`);
 
       if (!response.ok) {
@@ -57,7 +71,7 @@ export function useStocks(options: UseStocksOptions = {}): UseStocksReturn {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, sector, sortBy]);
+  }, [debouncedSearch, sector, sortBy, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend]);
 
   useEffect(() => {
     loadStocks();

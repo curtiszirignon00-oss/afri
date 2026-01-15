@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module15-quiz.ts
 // Script pour créer le quiz du Module 15 - La Stratégie d'Investissement Intégrée
 

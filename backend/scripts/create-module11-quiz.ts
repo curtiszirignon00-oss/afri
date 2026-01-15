@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module11-quiz.ts
 // Script pour créer le quiz du Module 11 - Maîtrise du Risque et Gestion de Portefeuille
 

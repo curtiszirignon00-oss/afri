@@ -32,6 +32,8 @@ import subscriptionRoutes from './routes/subscription.routes';
 import adminRoutes from './routes/admin.routes';
 import analyticsRoutes from './routes/analytics.routes';
 import priceAlertRoutes from './routes/price-alert.routes';
+import socialRoutes from './routes/social.routes';
+import investorProfileRoutes from './routes/investor-profile.routes';
 
 class App {
   private app: Application | null = null;
@@ -77,7 +79,7 @@ class App {
     // Other Middlewares
     this.app?.use(compression());
     this.app?.use(cookieParser());
-    
+
 
     // Rate Limiting
     this.app?.use(
@@ -140,6 +142,8 @@ class App {
     this.app?.use('/api/admin', adminRoutes);              // Admin dashboard
     this.app?.use('/api/analytics', analyticsRoutes);       // Analytics tracking
     this.app?.use('/api/price-alerts', priceAlertRoutes);   // Price alerts
+    this.app?.use('/api/social', socialRoutes);              // Social features (posts, likes, comments)
+    this.app?.use('/api/investor-profile', investorProfileRoutes); // Investor DNA & onboarding
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

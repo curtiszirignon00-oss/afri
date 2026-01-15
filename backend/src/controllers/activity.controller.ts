@@ -4,10 +4,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as activityService from '../services/activity.service';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
-
 // =====================================
 // ACTIVITÉS
 // =====================================
@@ -16,7 +12,7 @@ interface AuthenticatedRequest extends Request {
  * GET /api/activities/me
  * Récupère mes activités
  */
-export async function getMyActivities(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getMyActivities(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -38,7 +34,7 @@ export async function getMyActivities(req: AuthenticatedRequest, res: Response, 
  * GET /api/activities/feed
  * Fil d'actualités des amis
  */
-export async function getActivityFeed(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getActivityFeed(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {
@@ -100,7 +96,7 @@ export async function getCountryLeaderboard(req: Request, res: Response, next: N
  * GET /api/leaderboard/friends
  * Classement des amis
  */
-export async function getFriendsLeaderboard(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export async function getFriendsLeaderboard(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     if (!userId) {

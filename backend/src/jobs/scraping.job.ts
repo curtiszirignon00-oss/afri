@@ -4,10 +4,10 @@ import { saveIndices } from '../services/index.service.prisma';
 import { saveStocks } from '../services/stock.service.prisma';
 import { saveCurrentDayHistory } from '../services/stockHistory.service'; // 🆕 Service pour historique
 import {
-  getActiveAlerts,
-  shouldTriggerAlert,
-  markAlertAsTriggered,
-  createPriceAlertNotification
+    getActiveAlerts,
+    shouldTriggerAlert,
+    markAlertAsTriggered,
+    createPriceAlertNotification
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
 import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';

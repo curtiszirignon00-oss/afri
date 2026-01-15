@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module9-quiz.ts
 // Script pour créer le quiz du Module 9 - L'Analyse Extra-Financière
 

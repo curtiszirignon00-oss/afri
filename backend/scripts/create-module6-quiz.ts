@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/create-module6-quiz.ts
 // Script pour créer le quiz du Module 6 - Le Mental du Gagnant
 

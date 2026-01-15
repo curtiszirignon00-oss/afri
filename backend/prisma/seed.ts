@@ -2,6 +2,8 @@
 // Script de seed pour peupler la base de données avec les achievements et rewards
 // Usage: npx tsx prisma/seed.ts
 
+/// <reference types="node" />
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();

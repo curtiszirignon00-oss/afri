@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour envoyer un récapitulatif de portefeuille à contact@africbourse.com
 import { sendPortfolioSummaryEmail } from '../services/email.service';
 

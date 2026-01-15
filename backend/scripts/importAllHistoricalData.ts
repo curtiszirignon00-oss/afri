@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { PrismaClient } from '@prisma/client';
 import * as XLSX from 'xlsx';
 import { existsSync, readFileSync } from 'fs';

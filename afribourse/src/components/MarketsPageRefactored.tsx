@@ -1,10 +1,12 @@
 // src/components/MarketsPageRefactored.tsx
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, Star } from 'lucide-react';
-import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, type StockFilters } from '../hooks/useApi';
+import { Search, Filter, Star, Info, PlusCircle, CheckCircle } from 'lucide-react';
+import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, type StockFilters, type Stock } from '../hooks/useApi';
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+import StockComparison from './markets/StockComparison';
+import toast from 'react-hot-toast';
 
 import { useNavigate } from 'react-router-dom';
 type MarketsPageRefactoredProps = {};
@@ -15,7 +17,20 @@ export default function MarketsPageRefactored() {
   // États locaux pour les filtres
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('all');
-  const [sortBy, setSortBy] = useState<'name' | 'change' | 'price' | 'volume'>('change');
+  const [sortBy, setSortBy] = useState<'name' | 'change' | 'price' | 'volume' | 'pe' | 'dividend'>('change');
+
+  // Advanced filters
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [minMarketCap, setMinMarketCap] = useState<number | undefined>(undefined);
+  const [maxMarketCap, setMaxMarketCap] = useState<number | undefined>(undefined);
+  const [minPE, setMinPE] = useState<number | undefined>(undefined);
+  const [maxPE, setMaxPE] = useState<number | undefined>(undefined);
+  const [minDividend, setMinDividend] = useState<number | undefined>(undefined);
+  const [maxDividend, setMaxDividend] = useState<number | undefined>(undefined);
+
+  // Stock comparison
+  const [comparisonStocks, setComparisonStocks] = useState<Stock[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
 
   // Debounce du terme de recherche
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -25,7 +40,13 @@ export default function MarketsPageRefactored() {
     ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
     ...(selectedSector !== 'all' && { sector: selectedSector }),
     sort: sortBy,
-  }), [debouncedSearchTerm, selectedSector, sortBy]);
+    ...(minMarketCap !== undefined && { minMarketCap: minMarketCap.toString() }),
+    ...(maxMarketCap !== undefined && { maxMarketCap: maxMarketCap.toString() }),
+    ...(minPE !== undefined && { minPE: minPE.toString() }),
+    ...(maxPE !== undefined && { maxPE: maxPE.toString() }),
+    ...(minDividend !== undefined && { minDividend: minDividend.toString() }),
+    ...(maxDividend !== undefined && { maxDividend: maxDividend.toString() }),
+  }), [debouncedSearchTerm, selectedSector, sortBy, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend]);
 
   // Hooks React Query
   const { data: stocks = [], isLoading, error, refetch } = useStocks(filters);
@@ -70,10 +91,67 @@ export default function MarketsPageRefactored() {
     }).format(num);
   };
 
+  // Count active filters
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedSector !== 'all') count++;
+    if (minMarketCap !== undefined) count++;
+    if (maxMarketCap !== undefined) count++;
+    if (minPE !== undefined) count++;
+    if (maxPE !== undefined) count++;
+    if (minDividend !== undefined) count++;
+    if (maxDividend !== undefined) count++;
+    return count;
+  }, [selectedSector, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend]);
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedSector('all');
+    setMinMarketCap(undefined);
+    setMaxMarketCap(undefined);
+    setMinPE(undefined);
+    setMaxPE(undefined);
+    setMinDividend(undefined);
+    setMaxDividend(undefined);
+  };
+
+  // Comparison functions
+  const addToComparison = (stock: Stock) => {
+    if (comparisonStocks.length >= 4) {
+      toast.error('Maximum 4 actions pour la comparaison');
+      return;
+    }
+    if (comparisonStocks.find(s => s.id === stock.id)) {
+      toast.error('Cette action est déjà dans la comparaison');
+      return;
+    }
+    setComparisonStocks([...comparisonStocks, stock]);
+    setShowComparison(true);
+    toast.success(`${stock.symbol} ajouté à la comparaison`);
+  };
+
+  const removeFromComparison = (stockId: string) => {
+    const newStocks = comparisonStocks.filter(s => s.id !== stockId);
+    setComparisonStocks(newStocks);
+    if (newStocks.length === 0) {
+      setShowComparison(false);
+    }
+  };
+
+  const closeComparison = () => {
+    setComparisonStocks([]);
+    setShowComparison(false);
+  };
+
+  const isInComparison = (stock: Stock) => {
+    return comparisonStocks.some(s => s.id === stock.id);
+  };
+
   // <-- AJOUT : Fonction pour obtenir la couleur du badge selon le secteur
   const getSectorColor = (sector: string | null) => {
     if (!sector) return 'bg-gray-100 text-gray-700';
-    
+
     const colors: Record<string, string> = {
       'Consommation de Base': 'bg-green-100 text-green-700',
       'Consommation Discrétionnaire': 'bg-purple-100 text-purple-700',
@@ -83,9 +161,26 @@ export default function MarketsPageRefactored() {
       'Services Publics': 'bg-teal-100 text-teal-700',
       'Télécommunications': 'bg-pink-100 text-pink-700',
     };
-    
+
     return colors[sector] || 'bg-gray-100 text-gray-700';
   };
+
+  // Load comparison from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const compareIds = params.get('compare');
+
+    if (compareIds && stocks.length > 0) {
+      const ids = compareIds.split(',');
+      const stocksToCompare = stocks.filter(s => ids.includes(s.id));
+
+      if (stocksToCompare.length > 0) {
+        setComparisonStocks(stocksToCompare);
+        setShowComparison(true);
+        toast.success(`${stocksToCompare.length} action(s) chargée(s) pour comparaison`);
+      }
+    }
+  }, [stocks]);
 
   // Gestion de la watchlist
   const handleToggleWatchlist = async (stockTicker: string) => {
@@ -174,9 +269,129 @@ export default function MarketsPageRefactored() {
               <option value="change">Variation (%)</option>
               <option value="price">Prix</option>
               <option value="volume">Volume</option>
+              <option value="pe">P/E Ratio</option>
+              <option value="dividend">Dividende (%)</option>
             </select>
           </div>
+
+          {/* Advanced Filters Toggle */}
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              variant="outline"
+              className="relative"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filtres avancés
+              {activeFiltersCount > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500 text-white rounded-full">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </Button>
+            {activeFiltersCount > 0 && (
+              <Button
+                onClick={resetFilters}
+                variant="ghost"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Réinitialiser
+              </Button>
+            )}
+          </div>
         </Card>
+
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <Card className="mb-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtres avancés</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Market Cap Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Capitalisation boursière (FCFA)
+                  </label>
+                  <div className="space-y-2">
+                    <Input
+                      type="number"
+                      placeholder="Min (ex: 1000000)"
+                      value={minMarketCap ?? ''}
+                      onChange={(e) => setMinMarketCap(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max (ex: 100000000)"
+                      value={maxMarketCap ?? ''}
+                      onChange={(e) => setMaxMarketCap(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Ex: 1M = 1000000, 1Mrd = 1000000000
+                  </p>
+                </div>
+
+                {/* P/E Ratio Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ratio P/E (Price to Earnings)
+                  </label>
+                  <div className="space-y-2">
+                    <Input
+                      type="number"
+                      placeholder="Min (ex: 5)"
+                      value={minPE ?? ''}
+                      onChange={(e) => setMinPE(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max (ex: 20)"
+                      value={maxPE ?? ''}
+                      onChange={(e) => setMaxPE(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Valeurs typiques: 10-20
+                  </p>
+                </div>
+
+                {/* Dividend Yield Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Rendement du dividende (%)
+                  </label>
+                  <div className="space-y-2">
+                    <Input
+                      type="number"
+                      placeholder="Min (ex: 2)"
+                      value={minDividend ?? ''}
+                      onChange={(e) => setMinDividend(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max (ex: 10)"
+                      value={maxDividend ?? ''}
+                      onChange={(e) => setMaxDividend(e.target.value ? parseFloat(e.target.value) : undefined)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Valeurs typiques: 2-10%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Stock Comparison Section */}
+        {showComparison && (
+          <StockComparison
+            stocks={comparisonStocks}
+            onRemove={removeFromComparison}
+            onClose={closeComparison}
+          />
+        )}
 
         {/* Tableau des actions */}
         <Card padding="none">
@@ -193,6 +408,9 @@ export default function MarketsPageRefactored() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Comparer
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Watchlist
                     </th>
@@ -205,11 +423,37 @@ export default function MarketsPageRefactored() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Variation
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="hidden md:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Volume
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="hidden lg:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Cap. Boursière
+                    </th>
+                    <th className="hidden xl:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div className="flex items-center justify-end gap-1 group relative">
+                        <span>P/E Ratio</span>
+                        <div className="relative">
+                          <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                          <div className="invisible group-hover:visible absolute right-0 top-6 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
+                            <div className="font-semibold mb-1">Price to Earnings Ratio</div>
+                            <div className="text-gray-300">Ratio cours/bénéfice. Un P/E bas peut indiquer une action sous-évaluée. Typiquement entre 10-20.</div>
+                            <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </th>
+                    <th className="hidden xl:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div className="flex items-center justify-end gap-1 group relative">
+                        <span>Dividende (%)</span>
+                        <div className="relative">
+                          <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                          <div className="invisible group-hover:visible absolute right-0 top-6 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
+                            <div className="font-semibold mb-1">Rendement du Dividende</div>
+                            <div className="text-gray-300">Pourcentage du prix de l'action versé en dividendes annuels. Un rendement élevé (5-10%) est attractif pour les investisseurs.</div>
+                            <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                          </div>
+                        </div>
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -217,8 +461,30 @@ export default function MarketsPageRefactored() {
                   {stocks.map((stock) => (
                     <tr
                       key={stock.id}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
                     >
+                      {/* Compare Button */}
+                      <td className="hidden sm:table-cell px-6 py-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isInComparison(stock)) {
+                              removeFromComparison(stock.id);
+                            } else {
+                              addToComparison(stock);
+                            }
+                          }}
+                          className="text-gray-400 hover:text-blue-600 transition-colors"
+                          title={isInComparison(stock) ? "Retirer de la comparaison" : "Ajouter à la comparaison"}
+                        >
+                          {isInComparison(stock) ? (
+                            <CheckCircle className="w-5 h-5 text-blue-600" />
+                          ) : (
+                            <PlusCircle className="w-5 h-5" />
+                          )}
+                        </button>
+                      </td>
+
                       {/* Watchlist Star */}
                       <td className="px-6 py-4">
                         <button
@@ -229,11 +495,10 @@ export default function MarketsPageRefactored() {
                           className="p-1 hover:scale-110 transition-transform"
                         >
                           <Star
-                            className={`w-5 h-5 ${
-                              watchlistTickers.has(stock.symbol)
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
+                            className={`w-5 h-5 ${watchlistTickers.has(stock.symbol)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-gray-300'
+                              }`}
                           />
                         </button>
                       </td>
@@ -271,11 +536,10 @@ export default function MarketsPageRefactored() {
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         <span
-                          className={`font-semibold ${
-                            stock.daily_change_percent >= 0
-                              ? 'text-green-600'
-                              : 'text-red-600'
-                          }`}
+                          className={`font-semibold ${stock.daily_change_percent >= 0
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                            }`}
                         >
                           {stock.daily_change_percent >= 0 ? '+' : ''}
                           {stock.daily_change_percent.toFixed(2)}%
@@ -284,7 +548,7 @@ export default function MarketsPageRefactored() {
 
                       {/* Volume */}
                       <td
-                        className="px-6 py-4 text-right text-gray-600"
+                        className="hidden md:table-cell px-6 py-4 text-right text-gray-600"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.volume)}
@@ -292,10 +556,30 @@ export default function MarketsPageRefactored() {
 
                       {/* Cap. Boursière */}
                       <td
-                        className="px-6 py-4 text-right text-gray-600"
+                        className="hidden lg:table-cell px-6 py-4 text-right text-gray-600"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.market_cap / 1000000)} M
+                      </td>
+
+                      {/* P/E Ratio */}
+                      <td
+                        className="hidden xl:table-cell px-6 py-4 text-right text-gray-600"
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                      >
+                        {stock.fundamentals && stock.fundamentals.length > 0 && stock.fundamentals[0].pe_ratio
+                          ? formatNumber(stock.fundamentals[0].pe_ratio, 2)
+                          : '-'}
+                      </td>
+
+                      {/* Dividend Yield */}
+                      <td
+                        className="hidden xl:table-cell px-6 py-4 text-right text-gray-600"
+                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                      >
+                        {stock.fundamentals && stock.fundamentals.length > 0 && stock.fundamentals[0].dividend_yield
+                          ? `${formatNumber(stock.fundamentals[0].dividend_yield, 2)}%`
+                          : '-'}
                       </td>
                     </tr>
                   ))}

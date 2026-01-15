@@ -14,146 +14,198 @@ datasource db {
 }
 
 // ================================= //
+// === ENUMS PROFIL SOCIAL ========= //
+// ================================= //
+
+enum RiskProfile {
+  CONSERVATIVE // Conservateur - Préfère la sécurité
+  MODERATE // Modéré - Équilibre risque/rendement
+  BALANCED // Équilibré - Diversification
+  GROWTH // Croissance - Accepte plus de risque
+  AGGRESSIVE // Agressif - Recherche rendements élevés
+}
+
+enum InvestmentHorizon {
+  SHORT_TERM // Court terme (< 1 an)
+  MEDIUM_TERM // Moyen terme (1-5 ans)
+  LONG_TERM // Long terme (5-10 ans)
+  VERY_LONG_TERM // Très long terme (> 10 ans)
+}
+
+enum VisibilityLevel {
+  PUBLIC // Visible par tous
+  FOLLOWERS // Visible par followers uniquement
+  PRIVATE // Privé (seulement moi)
+}
+
+enum PostType {
+  ANALYSIS // Analyse boursière
+  TRANSACTION // Transaction (achat/vente)
+  OPINION // Opinion/Conseil
+  QUESTION // Question à la communauté
+  ACHIEVEMENT // Accomplissement/Milestone
+  ARTICLE // Article de fond
+}
+
+// ================================= //
 // === MODÈLES UTILISATEUR & AUTH === //
 // ================================= //
 
 model User {
-  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-  name                String
-  lastname            String
-  email               String    @unique
-  password            String
-  email_verified_at   DateTime?
-  email_confirmation_token String?
+  id                         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name                       String
+  lastname                   String
+  email                      String    @unique
+  password                   String
+  email_verified_at          DateTime?
+  email_confirmation_token   String?
   email_confirmation_expires DateTime?
-  password_reset_token String?
-  password_reset_expires DateTime?
-  remember_token      String?
-  created_at          DateTime? @default(now())
-  updated_at          DateTime? @updatedAt
-  telephone           String?
-  address             String?
-  role                String    @default("user")
+  password_reset_token       String?
+  password_reset_expires     DateTime?
+  remember_token             String?
+  created_at                 DateTime? @default(now())
+  updated_at                 DateTime? @updatedAt
+  telephone                  String?
+  address                    String?
+  role                       String    @default("user")
 
   // --- Relations existantes ---
-  profile             UserProfile?
-  portfolios          Portfolio[]
-  watchlistItems      WatchlistItem[]
-  learningProgress    LearningProgress[]
+  profile          UserProfile?
+  portfolios       Portfolio[]
+  watchlistItems   WatchlistItem[]
+  learningProgress LearningProgress[]
 
   // --- Analytics & Tracking ---
-  pageViews           PageView[]
-  actionTracking      UserActionTracking[]
-  featureUsage        FeatureUsage[]
+  pageViews      PageView[]
+  actionTracking UserActionTracking[]
+  featureUsage   FeatureUsage[]
 
   // --- Nouvelles relations (profil social) ---
   challengeProgress   UserChallengeProgress[]
   subscriptionIntents SubscriptionIntent[]
   priceAlerts         PriceAlert[]
 
+  // --- Relations sociales (posts & interactions) ---
+  posts           Post[]
+  comments        Comment[]
+  postLikes       PostLike[]
+  investorProfile InvestorProfile?
+
+  // Statistiques dénormalisées
+  posts_count Int @default(0)
+
   @@map("users")
 }
 
 // Extension massive du UserProfile pour profil social
 model UserProfile {
-  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId             String    @unique @db.ObjectId
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // ============= INFOS EXISTANTES =============
-  first_name         String?
-  last_name          String?
-  phone_number       String?
-  country            String?
-  experience_level   String?
-  investment_goals   String?
-  birth_date         DateTime?
-  has_invested       Boolean?
-  main_goals         String[]  @default([])
-  monthly_amount     String?
-  profile_type       String?
-  topic_interests    String[]  @default([])
-  discovery_channel  String?
-  key_feature        String?
-  
+  first_name        String?
+  last_name         String?
+  phone_number      String?
+  country           String?
+  experience_level  String?
+  investment_goals  String?
+  birth_date        DateTime?
+  has_invested      Boolean?
+  main_goals        String[]  @default([])
+  monthly_amount    String?
+  profile_type      String?
+  topic_interests   String[]  @default([])
+  discovery_channel String?
+  key_feature       String?
+
   // ============= PROFIL SOCIAL (NOUVEAU) =============
   // Identification & Branding
-  username           String?  // @mamadou_invest
-  bio                String?             // Max 200 caractères
-  avatar_url         String?
-  banner_url         String?
-  banner_type        String?   @default("gradient") // gradient, color, image
-  
+  username    String? // @mamadou_invest
+  bio         String? // Max 200 caractères
+  avatar_url  String?
+  banner_url  String?
+  banner_type String? @default("gradient") // gradient, color, image
+
   // Liens sociaux
-  social_links       Json?     // { linkedin: "url", twitter: "url", instagram: "url" }
-  
+  social_links Json? // { linkedin: "url", twitter: "url", instagram: "url" }
+
   // Visibilité globale
-  is_public          Boolean   @default(true)
-  
+  is_public Boolean @default(true)
+
   // ============= GAMIFICATION (NOUVEAU) =============
   level              Int       @default(1)
   total_xp           Int       @default(0)
   current_streak     Int       @default(0)
   longest_streak     Int       @default(0)
   last_activity_date DateTime?
-  streak_freezes     Int       @default(5)  // Nombre de freezes disponibles
-  
+  streak_freezes     Int       @default(5) // Nombre de freezes disponibles
+
   // Classement
-  global_rank        Int?
-  country_rank       Int?
-  
+  global_rank  Int?
+  country_rank Int?
+
   // ============= PARAMÈTRES DE CONFIDENTIALITÉ (NOUVEAU) =============
   // Informations personnelles
-  show_avatar        Boolean   @default(true)
-  show_bio           Boolean   @default(true)
-  show_country       Boolean   @default(true)
-  show_birth_date    Boolean   @default(false)
-  
+  show_avatar     Boolean @default(true)
+  show_bio        Boolean @default(true)
+  show_country    Boolean @default(true)
+  show_birth_date Boolean @default(false)
+
   // Statistiques
-  show_level         Boolean   @default(true)
-  show_xp            Boolean   @default(false)  // XP exact caché par défaut
-  show_rank          Boolean   @default(true)
-  show_streak        Boolean   @default(true)
-  
+  show_level  Boolean @default(true)
+  show_xp     Boolean @default(false) // XP exact caché par défaut
+  show_rank   Boolean @default(true)
+  show_streak Boolean @default(true)
+
   // Portfolio
   show_portfolio_value Boolean @default(true)
-  show_roi           Boolean   @default(false)  // ROI exact caché par défaut
-  show_positions     Boolean   @default(true)
-  show_transactions  Boolean   @default(false)
-  
+  show_roi             Boolean @default(false) // ROI exact caché par défaut
+  show_positions       Boolean @default(true)
+  show_transactions    Boolean @default(false)
+
   // Succès
-  show_achievements  Boolean   @default(true)
-  show_badges        Boolean   @default(true)
+  show_achievements      Boolean @default(true)
+  show_badges            Boolean @default(true)
   show_completed_modules Boolean @default(true)
-  show_quiz_scores   Boolean   @default(false)
-  
+  show_quiz_scores       Boolean @default(false)
+
   // Social
   show_followers_count Boolean @default(true)
   show_following_count Boolean @default(true)
   show_followers_list  Boolean @default(false)
   show_following_list  Boolean @default(true)
   show_activity_feed   Boolean @default(true)
-  
+
   // Découverte
-  appear_in_search     Boolean @default(true)
+  appear_in_search      Boolean @default(true)
   appear_in_suggestions Boolean @default(true)
   allow_follow_requests Boolean @default(true)
-  
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
-  
+
+  // ============= STATISTIQUES SOCIALES (DÉNORMALISÉES) =============
+  followers_count Int @default(0)
+  following_count Int @default(0)
+  posts_count     Int @default(0)
+
+  // ============= RÉPUTATION =============
+  reputation_score  Int     @default(0) // Calculé selon activité
+  verified_investor Boolean @default(false) // Badge vérifié
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
   // ============= RELATIONS SOCIALES (NOUVEAU) =============
-  achievements       UserAchievement[]
-  activities         UserActivity[]
-  followers          Follow[]          @relation("UserFollowers")
-  following          Follow[]          @relation("UserFollowing")
-  rewards            UserReward[]
-  
-  @@map("user_profiles")
+  achievements UserAchievement[]
+  activities   UserActivity[]
+  followers    Follow[]          @relation("UserFollowers")
+  following    Follow[]          @relation("UserFollowing")
+  rewards      UserReward[]
+
   @@index([level])
   @@index([total_xp])
   @@index([country])
   @@index([username])
+  @@map("user_profiles")
 }
 
 // ================================= //
@@ -161,47 +213,47 @@ model UserProfile {
 // ================================= //
 
 model Achievement {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  code         String   @unique   // "first_trade", "module_master", "quiz_goat"
-  name         String              // "Premier Trade"
-  description  String              // "Effectue ta première transaction"
-  icon         String              // Emoji ou URL d'image
-  category     String              // formation, trading, social, engagement, special
-  rarity       String   @default("common") // common, rare, epic, legendary
-  xp_reward    Int                 // XP accordé au déblocage
-  criteria     Json                // Critères de déblocage flexibles
-  
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  code        String @unique // "first_trade", "module_master", "quiz_goat"
+  name        String // "Premier Trade"
+  description String // "Effectue ta première transaction"
+  icon        String // Emoji ou URL d'image
+  category    String // formation, trading, social, engagement, special
+  rarity      String @default("common") // common, rare, epic, legendary
+  xp_reward   Int // XP accordé au déblocage
+  criteria    Json // Critères de déblocage flexibles
+
   // Optionnel : Conditions pour débloquer
-  required_level Int?              // Niveau minimum requis
+  required_level Int? // Niveau minimum requis
   is_hidden      Boolean @default(false) // Badge secret ?
-  
-  created_at   DateTime @default(now())
-  
+
+  created_at DateTime @default(now())
+
   // Relations
-  users        UserAchievement[]
-  
-  @@map("achievements")
+  users UserAchievement[]
+
   @@index([category])
   @@index([rarity])
+  @@map("achievements")
 }
 
 model UserAchievement {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String   @db.ObjectId
-  achievementId  String   @db.ObjectId
-  
-  unlocked_at    DateTime @default(now())
-  is_displayed   Boolean  @default(true) // Afficher sur le profil public
-  is_notified    Boolean  @default(false) // Notification envoyée ?
-  
-  userProfile    UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  achievement    Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String @db.ObjectId
+  achievementId String @db.ObjectId
+
+  unlocked_at  DateTime @default(now())
+  is_displayed Boolean  @default(true) // Afficher sur le profil public
+  is_notified  Boolean  @default(false) // Notification envoyée ?
+
+  userProfile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
   @@unique([userId, achievementId])
-  @@map("user_achievements")
   @@index([userId])
   @@index([achievementId])
   @@index([unlocked_at])
+  @@map("user_achievements")
 }
 
 // ================================= //
@@ -209,20 +261,20 @@ model UserAchievement {
 // ================================= //
 
 model Follow {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  followerId  String   @db.ObjectId  // Celui qui suit
-  followingId String   @db.ObjectId  // Celui qui est suivi
-  
-  created_at  DateTime @default(now())
-  
-  follower    UserProfile @relation("UserFollowers", fields: [followerId], references: [userId], onDelete: Cascade)
-  following   UserProfile @relation("UserFollowing", fields: [followingId], references: [userId], onDelete: Cascade)
-  
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  followerId  String @db.ObjectId // Celui qui suit
+  followingId String @db.ObjectId // Celui qui est suivi
+
+  created_at DateTime @default(now())
+
+  follower  UserProfile @relation("UserFollowers", fields: [followerId], references: [userId], onDelete: Cascade)
+  following UserProfile @relation("UserFollowing", fields: [followingId], references: [userId], onDelete: Cascade)
+
   @@unique([followerId, followingId])
-  @@map("follows")
   @@index([followerId])
   @@index([followingId])
   @@index([created_at])
+  @@map("follows")
 }
 
 // ================================= //
@@ -230,23 +282,23 @@ model Follow {
 // ================================= //
 
 model UserActivity {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  
-  type        String   // badge, module, trade, follow, level_up, milestone, quiz
-  description String   // Description textuelle de l'activité
-  metadata    Json?    // Données supplémentaires (ticker, module_slug, etc.)
-  is_public   Boolean  @default(true)  // Visible par les followers ?
-  
-  created_at  DateTime @default(now())
-  
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+
+  type        String // badge, module, trade, follow, level_up, milestone, quiz
+  description String // Description textuelle de l'activité
+  metadata    Json? // Données supplémentaires (ticker, module_slug, etc.)
+  is_public   Boolean @default(true) // Visible par les followers ?
+
+  created_at DateTime @default(now())
+
   userProfile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  
-  @@map("user_activities")
+
   @@index([userId])
   @@index([type])
   @@index([created_at])
   @@index([is_public])
+  @@map("user_activities")
 }
 
 // ================================= //
@@ -254,47 +306,47 @@ model UserActivity {
 // ================================= //
 
 model WeeklyChallenge {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  target      Int              // Objectif numérique (ex: 3 modules, 10 trades)
-  xp_reward   Int              // XP accordé à la complétion
-  badge_code  String?          // Code du badge à débloquer (optionnel)
-  challenge_type String        // "module", "trade", "streak", "quiz", "social"
-  
-  start_date  DateTime
-  end_date    DateTime
-  is_active   Boolean  @default(true)
-  
-  created_at  DateTime @default(now())
-  
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  target         Int // Objectif numérique (ex: 3 modules, 10 trades)
+  xp_reward      Int // XP accordé à la complétion
+  badge_code     String? // Code du badge à débloquer (optionnel)
+  challenge_type String // "module", "trade", "streak", "quiz", "social"
+
+  start_date DateTime
+  end_date   DateTime
+  is_active  Boolean  @default(true)
+
+  created_at DateTime @default(now())
+
   // Relations
   participants UserChallengeProgress[]
-  
-  @@map("weekly_challenges")
+
   @@index([is_active])
   @@index([start_date])
   @@index([end_date])
+  @@map("weekly_challenges")
 }
 
 model UserChallengeProgress {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  challengeId String   @db.ObjectId
-  
-  current     Int      @default(0)     // Progression actuelle
-  completed   Boolean  @default(false)
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String @db.ObjectId
+  challengeId String @db.ObjectId
+
+  current      Int       @default(0) // Progression actuelle
+  completed    Boolean   @default(false)
   completed_at DateTime?
-  claimed     Boolean  @default(false) // Récompense récupérée ?
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  challenge   WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  
+  claimed      Boolean   @default(false) // Récompense récupérée ?
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
   @@unique([userId, challengeId])
-  @@map("user_challenge_progress")
   @@index([userId])
   @@index([challengeId])
   @@index([completed])
+  @@map("user_challenge_progress")
 }
 
 // ================================= //
@@ -302,52 +354,52 @@ model UserChallengeProgress {
 // ================================= //
 
 model Reward {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  xp_required     Int              // XP nécessaire pour débloquer
-  reward_type     String           // virtual_cash, feature, real_stock, consultation, real_cash, masterclass, freeze, badge
-  
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  xp_required Int // XP nécessaire pour débloquer
+  reward_type String // virtual_cash, feature, real_stock, consultation, real_cash, masterclass, freeze, badge
+
   // Détails de la récompense (JSON flexible)
-  reward_data     Json             // { amount: 50000, description: "+50K FCFA", featureCode: "...", etc. }
-  
-  title           String
-  description     String
-  icon            String?          // Emoji ou URL
-  
-  is_active       Boolean  @default(true)
-  tier            Int      @default(1)  // Niveau de récompense (1-5)
-  
-  created_at      DateTime @default(now())
-  
+  reward_data Json // { amount: 50000, description: "+50K FCFA", featureCode: "...", etc. }
+
+  title       String
+  description String
+  icon        String? // Emoji ou URL
+
+  is_active Boolean @default(true)
+  tier      Int     @default(1) // Niveau de récompense (1-5)
+
+  created_at DateTime @default(now())
+
   // Relations
-  users           UserReward[]
-  
-  @@map("rewards")
+  users UserReward[]
+
   @@index([xp_required])
   @@index([reward_type])
   @@index([is_active])
+  @@map("rewards")
 }
 
 model UserReward {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  rewardId    String   @db.ObjectId
-  
-  unlocked_at DateTime @default(now())
-  claimed     Boolean  @default(false)  // Récompense récupérée ?
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  rewardId String @db.ObjectId
+
+  unlocked_at DateTime  @default(now())
+  claimed     Boolean   @default(false) // Récompense récupérée ?
   claimed_at  DateTime?
-  
+
   // Pour certaines récompenses (consultations, actions réelles)
   delivery_status String? // pending, processing, delivered, cancelled
-  delivery_data   Json?   // Infos de livraison (tracking, etc.)
-  
+  delivery_data   Json? // Infos de livraison (tracking, etc.)
+
   userProfile UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
   reward      Reward      @relation(fields: [rewardId], references: [id], onDelete: Cascade)
-  
+
   @@unique([userId, rewardId])
-  @@map("user_rewards")
   @@index([userId])
   @@index([rewardId])
   @@index([claimed])
+  @@map("user_rewards")
 }
 
 // ================================= //
@@ -355,20 +407,20 @@ model UserReward {
 // ================================= //
 
 model XPHistory {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  
-  amount      Int              // XP gagné (peut être négatif si pénalité)
-  reason      String           // "module_completed", "quiz_100", "first_trade", etc.
-  description String?          // Description détaillée
-  metadata    Json?            // Données additionnelles
-  
-  created_at  DateTime @default(now())
-  
-  @@map("xp_history")
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+
+  amount      Int // XP gagné (peut être négatif si pénalité)
+  reason      String // "module_completed", "quiz_100", "first_trade", etc.
+  description String? // Description détaillée
+  metadata    Json? // Données additionnelles
+
+  created_at DateTime @default(now())
+
   @@index([userId])
   @@index([created_at])
   @@index([reason])
+  @@map("xp_history")
 }
 
 // ================================= //
@@ -376,158 +428,158 @@ model XPHistory {
 // ================================= //
 
 model Stock {
-  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
-  symbol               String    @unique
-  company_name         String
-  sector               String?
-  country              String?
-  description          String?
-  logo_url             String?
-  website_url          String?
-  is_active            Boolean   @default(true)
-  
-  current_price        Float     @default(0)
-  previous_close       Float     @default(0)
-  daily_change_percent Float     @default(0)
-  volume               Float     @default(0)
-  market_cap           Float     @default(0)
-  
-  created_at           DateTime? @default(now())
-  updated_at           DateTime? @updatedAt
+  id           String  @id @default(auto()) @map("_id") @db.ObjectId
+  symbol       String  @unique
+  company_name String
+  sector       String?
+  country      String?
+  description  String?
+  logo_url     String?
+  website_url  String?
+  is_active    Boolean @default(true)
 
-  history              StockHistory[]
-  fundamentals         StockFundamental[]
+  current_price        Float @default(0)
+  previous_close       Float @default(0)
+  daily_change_percent Float @default(0)
+  volume               Float @default(0)
+  market_cap           Float @default(0)
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  history      StockHistory[]
+  fundamentals StockFundamental[]
 
   @@map("stocks")
 }
 
 model StockHistory {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker  String
-  date          DateTime
-  open          Float
-  high          Float
-  low           Float
-  close         Float
-  volume        Int
-  created_at    DateTime @default(now())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  date         DateTime
+  open         Float
+  high         Float
+  low          Float
+  close        Float
+  volume       Int
+  created_at   DateTime @default(now())
 
-  stock         Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  stockId       String   @db.ObjectId
+  stock   Stock  @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  stockId String @db.ObjectId
 
   @@unique([stock_ticker, date])
-  @@map("stock_history")
   @@index([stockId])
   @@index([stock_ticker])
   @@index([date])
+  @@map("stock_history")
 }
 
 model StockFundamental {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker        String   @unique
-  market_cap          Float?
-  pe_ratio            Float?
-  pb_ratio            Float?
-  dividend_yield      Float?
-  ex_dividend_date    DateTime?
-  roe                 Float?
-  roa                 Float?
-  profit_margin       Float?
-  debt_to_equity      Float?
-  revenue             Float?
-  net_income          Float?
-  ebitda              Float?
-  free_cash_flow      Float?
-  shares_outstanding  Float?
-  year                Int?
-  eps                 Float?
-  book_value          Float?
-  net_profit          Float?
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker       String    @unique
+  market_cap         Float?
+  pe_ratio           Float?
+  pb_ratio           Float?
+  dividend_yield     Float?
+  ex_dividend_date   DateTime?
+  roe                Float?
+  roa                Float?
+  profit_margin      Float?
+  debt_to_equity     Float?
+  revenue            Float?
+  net_income         Float?
+  ebitda             Float?
+  free_cash_flow     Float?
+  shares_outstanding Float?
+  year               Int?
+  eps                Float?
+  book_value         Float?
+  net_profit         Float?
 
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  stock               Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
-  stockId             String    @db.ObjectId
+  stock   Stock  @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  stockId String @db.ObjectId
 
-  @@map("stock_fundamentals")
   @@index([stockId])
   @@index([year])
+  @@map("stock_fundamentals")
 }
 
 model MarketIndex {
-  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
-  index_name           String   @unique
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  index_name           String    @unique
   index_value          Float
   daily_change_percent Float
   date                 DateTime
   created_at           DateTime? @default(now())
 
-  @@map("market_indices")
   @@index([date])
+  @@map("market_indices")
 }
 
 model CompanyInfo {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker    String   @unique
-  description     String?
-  website         String?
-  employees       Int?
-  founded_year    Int?
-  headquarters    String?
-  ceo             String?
-  industry        String?
-  updated_at      DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String   @unique
+  description  String?
+  website      String?
+  employees    Int?
+  founded_year Int?
+  headquarters String?
+  ceo          String?
+  industry     String?
+  updated_at   DateTime @updatedAt
 
   @@map("company_info")
 }
 
 model StockNews {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker  String
-  title         String
-  summary       String?
-  source        String
-  url           String?
-  published_at  DateTime
-  created_at    DateTime @default(now())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  title        String
+  summary      String?
+  source       String
+  url          String?
+  published_at DateTime
+  created_at   DateTime @default(now())
 
-  @@map("stock_news")
   @@index([stock_ticker])
   @@index([published_at])
+  @@map("stock_news")
 }
 
 model Shareholder {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker  String
-  name          String
-  percentage    Float
-  is_public     Boolean  @default(false)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  name         String
+  percentage   Float
+  is_public    Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
-  @@map("shareholders")
   @@index([stock_ticker])
+  @@map("shareholders")
 }
 
 model AnnualFinancials {
-  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker          String
-  year                  Int
-  revenue               Float?   // Chiffre d'affaires
-  revenue_growth        Float?   // Croissance CA (%)
-  net_income            Float?   // Résultat net
-  net_income_growth     Float?   // Croissance RN (%)
-  eps                   Float?   // BNPA (Bénéfice Net Par Action)
-  pe_ratio              Float?   // PER
-  dividend              Float?   // Dividende par action
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker      String
+  year              Int
+  revenue           Float? // Chiffre d'affaires
+  revenue_growth    Float? // Croissance CA (%)
+  net_income        Float? // Résultat net
+  net_income_growth Float? // Croissance RN (%)
+  eps               Float? // BNPA (Bénéfice Net Par Action)
+  pe_ratio          Float? // PER
+  dividend          Float? // Dividende par action
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   @@unique([stock_ticker, year])
-  @@map("annual_financials")
   @@index([stock_ticker])
   @@index([year])
+  @@map("annual_financials")
 }
 
 // ================================= //
@@ -535,89 +587,89 @@ model AnnualFinancials {
 // ================================= //
 
 model Portfolio {
-  id                      String    @id @default(auto()) @map("_id") @db.ObjectId
-  name                    String
-  initial_balance         Float     @default(1000000)
-  cash_balance            Float
-  is_virtual              Boolean   @default(true)
+  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  initial_balance Float   @default(1000000)
+  cash_balance    Float
+  is_virtual      Boolean @default(true)
 
-  created_at              DateTime? @default(now())
-  updated_at              DateTime? @updatedAt
-  
-  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                  String    @db.ObjectId
-  
-  positions               Position[]
-  transactions            Transaction[]
-  snapshots               PortfolioSnapshot[]
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
 
-  @@map("portfolios")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.ObjectId
+
+  positions    Position[]
+  transactions Transaction[]
+  snapshots    PortfolioSnapshot[]
+
   @@index([userId])
+  @@map("portfolios")
 }
 
 model PortfolioSnapshot {
-  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-  portfolio           Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  portfolioId         String    @db.ObjectId
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId String    @db.ObjectId
 
   // Valeurs au moment du snapshot
-  total_value         Float     // Valeur totale (liquidités + positions)
-  cash_balance        Float     // Liquidités
-  invested_value      Float     // Montant investi
-  positions_value     Float     // Valeur actuelle des positions
-  gain_loss           Float     // Gain/Perte total
-  gain_loss_percent   Float     // Pourcentage de gain/perte
-  positions_count     Int       // Nombre de positions
+  total_value       Float // Valeur totale (liquidités + positions)
+  cash_balance      Float // Liquidités
+  invested_value    Float // Montant investi
+  positions_value   Float // Valeur actuelle des positions
+  gain_loss         Float // Gain/Perte total
+  gain_loss_percent Float // Pourcentage de gain/perte
+  positions_count   Int // Nombre de positions
 
   // Métadonnées
-  snapshot_type       String    // "bi_weekly_summary", "manual", etc.
-  created_at          DateTime  @default(now())
+  snapshot_type String // "bi_weekly_summary", "manual", etc.
+  created_at    DateTime @default(now())
 
-  @@map("portfolio_snapshots")
   @@index([portfolioId])
   @@index([created_at])
   @@index([snapshot_type])
+  @@map("portfolio_snapshots")
 }
 
 model Position {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker        String
-  quantity            Float
-  average_buy_price   Float
-  
-  portfolio           Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  portfolioId         String    @db.ObjectId
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker      String
+  quantity          Float
+  average_buy_price Float
 
-  @@map("positions")
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId String    @db.ObjectId
+
   @@index([portfolioId])
+  @@map("positions")
 }
 
 model Transaction {
   id              String    @id @default(auto()) @map("_id") @db.ObjectId
   stock_ticker    String
-  type            String    // "BUY" ou "SELL"
+  type            String // "BUY" ou "SELL"
   quantity        Float
   price_per_share Float
   created_at      DateTime? @default(now())
 
-  portfolio       Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  portfolioId     String    @db.ObjectId
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId String    @db.ObjectId
 
-  @@map("transactions")
   @@index([portfolioId])
   @@index([created_at])
+  @@map("transactions")
 }
 
 model WatchlistItem {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  stock_ticker  String
-  created_at    DateTime? @default(now())
-  
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String    @db.ObjectId
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  created_at   DateTime? @default(now())
 
-  @@map("watchlist_items")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.ObjectId
+
   @@index([userId])
+  @@map("watchlist_items")
 }
 
 // ================================= //
@@ -625,51 +677,51 @@ model WatchlistItem {
 // ================================= //
 
 model NewsArticle {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  title         String
-  slug          String?
-  summary       String?
-  content       String?
-  category      String?
-  author        String?
-  source        String?
-  country       String?
-  sector        String?
-  image_url     String?
-  is_featured   Boolean   @default(false)
-  published_at  DateTime? @default(now())
-  created_at    DateTime? @default(now())
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  slug         String?
+  summary      String?
+  content      String?
+  category     String?
+  author       String?
+  source       String?
+  country      String?
+  sector       String?
+  image_url    String?
+  is_featured  Boolean   @default(false)
+  published_at DateTime? @default(now())
+  created_at   DateTime? @default(now())
 
-  @@map("news_articles")
   @@index([slug])
   @@index([published_at])
+  @@map("news_articles")
 }
 
 model LearningModule {
-  id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  title             String
-  slug              String
-  description       String?
-  content           String?
-  content_json      String?   // Contenu structuré en JSON pour le nouveau format
-  difficulty_level  String    // "debutant", "intermediaire", "avance"
-  content_type      String    // "article" ou "video"
-  duration_minutes  Int?
-  order_index       Int?
-  is_published      Boolean   @default(true)
-  thumbnail_url     String?
-  video_url         String?
-  audio_url         String?
-  has_quiz          Boolean   @default(false)
-  created_at        DateTime? @default(now())
-  updated_at        DateTime? @updatedAt
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  slug             String
+  description      String?
+  content          String?
+  content_json     String? // Contenu structuré en JSON pour le nouveau format
+  difficulty_level String // "debutant", "intermediaire", "avance"
+  content_type     String // "article" ou "video"
+  duration_minutes Int?
+  order_index      Int?
+  is_published     Boolean   @default(true)
+  thumbnail_url    String?
+  video_url        String?
+  audio_url        String?
+  has_quiz         Boolean   @default(false)
+  created_at       DateTime? @default(now())
+  updated_at       DateTime? @updatedAt
 
-  progress          LearningProgress[]
-  quizzes           Quiz[]
+  progress LearningProgress[]
+  quizzes  Quiz[]
 
-  @@map("learning_modules")
   @@index([difficulty_level])
   @@index([slug])
+  @@map("learning_modules")
 }
 
 model LearningProgress {
@@ -682,29 +734,29 @@ model LearningProgress {
   last_accessed_at     DateTime? @default(now())
   completed_at         DateTime?
 
-  user                 User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId               String           @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.ObjectId
 
-  module               LearningModule   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId             String           @db.ObjectId
+  module   LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId String         @db.ObjectId
 
-  @@map("learning_progress")
   @@unique([userId, moduleId])
   @@index([userId])
   @@index([moduleId])
+  @@map("learning_progress")
 }
 
 model Quiz {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  moduleId      String         @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  moduleId      String    @db.ObjectId
   questions     Json
-  passing_score Int            @default(70)
-  created_at    DateTime?      @default(now())
+  passing_score Int       @default(70)
+  created_at    DateTime? @default(now())
 
-  module        LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module LearningModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
-  @@map("quizzes")
   @@index([moduleId])
+  @@map("quizzes")
 }
 
 // ================================= //
@@ -721,9 +773,9 @@ model ContactMessage {
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
 
-  @@map("contact_messages")
   @@index([status])
   @@index([created_at])
+  @@map("contact_messages")
 }
 
 // ================================= //
@@ -731,21 +783,21 @@ model ContactMessage {
 // ================================= //
 
 model SubscriptionIntent {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  planId     String    // "investisseur-plus" ou "pro"
-  planName   String    // "Investisseur+" ou "Pro"
-  price      String    // "9 900 XOF" ou "300 000 XOF"
-  feature    String?   // Fonctionnalité qui a déclenché l'intention (ex: "Coach IA")
-  source     String?   // "paywall" ou "subscriptions_page"
-  created_at DateTime  @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  planId     String // "investisseur-plus" ou "pro"
+  planName   String // "Investisseur+" ou "Pro"
+  price      String // "9 900 XOF" ou "300 000 XOF"
+  feature    String? // Fonctionnalité qui a déclenché l'intention (ex: "Coach IA")
+  source     String? // "paywall" ou "subscriptions_page"
+  created_at DateTime @default(now())
 
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String    @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.ObjectId
 
-  @@map("subscription_intents")
   @@index([userId])
   @@index([planId])
   @@index([created_at])
+  @@map("subscription_intents")
 }
 
 // ================================= //
@@ -753,54 +805,54 @@ model SubscriptionIntent {
 // ================================= //
 
 model PriceAlert {
-  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId              String    @db.ObjectId
-  stock_ticker        String
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String @db.ObjectId
+  stock_ticker String
 
   // Type d'alerte
-  alert_type          String    // "ABOVE" (au-dessus) ou "BELOW" (en-dessous)
-  target_price        Float     // Prix cible
+  alert_type   String // "ABOVE" (au-dessus) ou "BELOW" (en-dessous)
+  target_price Float // Prix cible
 
   // Status
-  is_active           Boolean   @default(true)
-  is_notified         Boolean   @default(false)  // Alerte déclenchée ?
-  triggered_at        DateTime?
-  triggered_price     Float?    // Prix au moment du déclenchement
+  is_active       Boolean   @default(true)
+  is_notified     Boolean   @default(false) // Alerte déclenchée ?
+  triggered_at    DateTime?
+  triggered_price Float? // Prix au moment du déclenchement
 
   // Notifications
-  notify_email        Boolean   @default(true)
-  notify_in_app       Boolean   @default(true)
+  notify_email  Boolean @default(true)
+  notify_in_app Boolean @default(true)
 
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // Relations
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notifications       PriceAlertNotification[]
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications PriceAlertNotification[]
 
-  @@map("price_alerts")
   @@index([userId])
   @@index([stock_ticker])
   @@index([is_active])
   @@index([is_notified])
+  @@map("price_alerts")
 }
 
 model PriceAlertNotification {
-  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-  priceAlertId        String    @db.ObjectId
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  priceAlertId String @db.ObjectId
 
   triggered_price     Float
-  notification_method String    // "EMAIL", "IN_APP", "BOTH"
+  notification_method String // "EMAIL", "IN_APP", "BOTH"
   email_sent          Boolean   @default(false)
   email_sent_at       DateTime?
 
-  created_at          DateTime  @default(now())
+  created_at DateTime @default(now())
 
-  priceAlert          PriceAlert @relation(fields: [priceAlertId], references: [id], onDelete: Cascade)
+  priceAlert PriceAlert @relation(fields: [priceAlertId], references: [id], onDelete: Cascade)
 
-  @@map("price_alert_notifications")
   @@index([priceAlertId])
   @@index([created_at])
+  @@map("price_alert_notifications")
 }
 
 // ================================= //
@@ -809,80 +861,231 @@ model PriceAlertNotification {
 
 // Pages visitées par les utilisateurs
 model PageView {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String?  @db.ObjectId  // null si non connecté
-  sessionId   String   // ID de session pour regrouper les vues
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String? @db.ObjectId // null si non connecté
+  sessionId String // ID de session pour regrouper les vues
 
-  page_path   String   // /dashboard, /stocks/SIVC, etc.
-  page_title  String?  // Titre de la page
-  referrer    String?  // Page précédente
+  page_path  String // /dashboard, /stocks/SIVC, etc.
+  page_title String? // Titre de la page
+  referrer   String? // Page précédente
 
   // Timing
-  duration    Int?     // Temps passé sur la page (en secondes)
-  created_at  DateTime @default(now())
+  duration   Int? // Temps passé sur la page (en secondes)
+  created_at DateTime @default(now())
 
   // Device & Browser info
   user_agent  String?
-  device_type String?  // mobile, tablet, desktop
+  device_type String? // mobile, tablet, desktop
   browser     String?
   os          String?
 
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("page_views")
   @@index([userId])
   @@index([sessionId])
   @@index([page_path])
   @@index([created_at])
+  @@map("page_views")
 }
 
 // Actions spécifiques des utilisateurs
 model UserActionTracking {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  sessionId   String   // ID de session
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String @db.ObjectId
+  sessionId String // ID de session
 
-  action_type String   // search_stock, add_to_watchlist, create_portfolio, simulate_trade, view_chart, use_ai_coach, etc.
-  action_name String   // Nom lisible de l'action
+  action_type String // search_stock, add_to_watchlist, create_portfolio, simulate_trade, view_chart, use_ai_coach, etc.
+  action_name String // Nom lisible de l'action
 
   // Contexte de l'action
-  page_path   String?  // Où l'action a été effectuée
-  metadata    Json?    // Données supplémentaires (ticker, montant, etc.)
+  page_path String? // Où l'action a été effectuée
+  metadata  Json? // Données supplémentaires (ticker, montant, etc.)
 
-  created_at  DateTime @default(now())
+  created_at DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("user_action_tracking")
   @@index([userId])
   @@index([action_type])
   @@index([created_at])
   @@index([sessionId])
+  @@map("user_action_tracking")
 }
 
 // Utilisation des fonctionnalités premium/paywall
 model FeatureUsage {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
 
-  feature_name  String   // "Coach IA", "Analyse Technique", "Simulateur Avancé", etc.
-  feature_type  String   // "free", "premium", "pro"
+  feature_name String // "Coach IA", "Analyse Technique", "Simulateur Avancé", etc.
+  feature_type String // "free", "premium", "pro"
 
   // Status
-  access_granted Boolean  // true si l'utilisateur a accès, false si bloqué par paywall
+  access_granted     Boolean // true si l'utilisateur a accès, false si bloqué par paywall
   blocked_by_paywall Boolean @default(false)
 
   // Contexte
-  page_path     String?
-  metadata      Json?
+  page_path String?
+  metadata  Json?
 
-  created_at    DateTime @default(now())
+  created_at DateTime @default(now())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("feature_usage")
   @@index([userId])
   @@index([feature_name])
   @@index([blocked_by_paywall])
   @@index([created_at])
+  @@map("feature_usage")
+}
+
+// ================================= //
+// === ADN INVESTISSEUR ============ //
+// ================================= //
+
+model InvestorProfile {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id String @unique @db.ObjectId
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // ============= RÉSULTATS QUESTIONNAIRE =============
+  onboarding_completed Boolean   @default(false)
+  onboarding_date      DateTime?
+  quiz_score           Int?
+
+  // ============= ADN INVESTISSEUR =============
+  risk_profile       RiskProfile?
+  investment_horizon InvestmentHorizon?
+  favorite_sectors   String[]           @default([])
+  investment_style   String?
+
+  // Préférences détaillées
+  monthly_investment Float?
+  investment_goals   String[] @default([])
+  experience_level   String?
+
+  // Stratégie
+  preferred_analysis String[] @default([])
+  trading_frequency  String?
+
+  // ============= CONFIDENTIALITÉ =============
+  portfolio_visibility VisibilityLevel @default(FOLLOWERS)
+  show_performance     Boolean         @default(false)
+  show_transactions    Boolean         @default(false)
+  show_holdings        Boolean         @default(true)
+
+  // ============= PRÉFÉRENCES COMMUNICATION =============
+  email_notifications Boolean @default(true)
+  push_notifications  Boolean @default(true)
+  weekly_digest       Boolean @default(true)
+  market_alerts       Boolean @default(true)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([risk_profile])
+  @@index([investment_horizon])
+  @@map("investor_profiles")
+}
+
+// ================================= //
+// === POSTS SOCIAUX =============== //
+// ================================= //
+
+model Post {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  author_id String @db.ObjectId
+  author    User   @relation(fields: [author_id], references: [id], onDelete: Cascade)
+
+  // Contenu
+  type    PostType @default(OPINION)
+  content String   @db.String
+  title   String?
+
+  // Contexte boursier
+  stock_symbol String?
+  stock_price  Float?
+  stock_change Float?
+
+  // Médias
+  images    String[] @default([])
+  video_url String?
+
+  // Métadonnées
+  tags            String[] @default([])
+  mentioned_users String[] @default([])
+
+  // Engagement (dénormalisé pour performance)
+  likes_count    Int @default(0)
+  comments_count Int @default(0)
+  shares_count   Int @default(0)
+  views_count    Int @default(0)
+
+  // Visibilité
+  visibility  VisibilityLevel @default(PUBLIC)
+  is_pinned   Boolean         @default(false)
+  is_featured Boolean         @default(false)
+
+  // Modération
+  is_reported Boolean @default(false)
+  is_hidden   Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  likes    PostLike[]
+  comments Comment[]
+
+  @@index([author_id])
+  @@index([created_at])
+  @@index([stock_symbol])
+  @@index([type])
+  @@index([visibility])
+  @@map("posts")
+}
+
+model PostLike {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  post_id    String   @db.ObjectId
+  user_id    String   @db.ObjectId
+  created_at DateTime @default(now())
+
+  post Post @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([post_id, user_id])
+  @@index([post_id])
+  @@index([user_id])
+  @@map("post_likes")
+}
+
+model Comment {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  post_id   String  @db.ObjectId
+  author_id String  @db.ObjectId
+  parent_id String? @db.ObjectId
+
+  content String @db.String
+
+  // Engagement
+  likes_count Int @default(0)
+
+  // Modération
+  is_reported Boolean @default(false)
+  is_hidden   Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  post    Post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([post_id])
+  @@index([author_id])
+  @@index([parent_id])
+  @@index([created_at])
+  @@map("comments")
 }
