@@ -198,10 +198,33 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
  * Create a post
  */
 export async function createPost(authorId: string, postData: CreatePostDto) {
+    // Extract only valid fields to avoid passing null values for non-nullable fields
+    const {
+        type,
+        content,
+        title,
+        stock_symbol,
+        stock_price,
+        stock_change,
+        images,
+        video_url,
+        tags,
+        visibility,
+    } = postData;
+
     const post = await prisma.post.create({
         data: {
             author_id: authorId,
-            ...postData,
+            type,
+            content,
+            ...(title && { title }),
+            ...(stock_symbol && { stock_symbol }),
+            ...(stock_price !== undefined && { stock_price }),
+            ...(stock_change !== undefined && { stock_change }),
+            ...(images && images.length > 0 && { images }),
+            ...(video_url && { video_url }),
+            ...(tags && tags.length > 0 && { tags }),
+            ...(visibility && { visibility }),
         },
         include: {
             author: {
