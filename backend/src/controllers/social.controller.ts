@@ -225,3 +225,19 @@ export async function getPost(req: AuthRequest, res: Response) {
         res.status(400).json({ error: error.message });
     }
 }
+
+/**
+ * Get public posts for community feed
+ */
+export async function getPublicPosts(req: AuthRequest, res: Response) {
+    try {
+        const viewerId = req.user?.id; // Optional - for like status
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+
+        const result = await socialService.getPublicPosts(page, limit, viewerId);
+        res.status(200).json({ success: true, ...result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
