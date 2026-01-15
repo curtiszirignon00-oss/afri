@@ -181,3 +181,47 @@ export async function getPostComments(req: Request, res: Response) {
         res.status(400).json({ error: error.message });
     }
 }
+
+export async function updatePost(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const post = await socialService.updatePost(postId, userId, req.body);
+        res.status(200).json({ success: true, data: post });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function deletePost(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        await socialService.deletePost(postId, userId);
+        res.status(200).json({ success: true, message: 'Post deleted successfully' });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function getPost(req: AuthRequest, res: Response) {
+    try {
+        const { postId } = req.params;
+        const viewerId = req.user?.id;
+
+        const post = await socialService.getPostById(postId, viewerId);
+        res.status(200).json({ success: true, data: post });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}

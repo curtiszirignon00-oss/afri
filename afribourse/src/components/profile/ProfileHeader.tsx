@@ -1,21 +1,77 @@
 // src/components/profile/ProfileHeader.tsx
-import { Camera, MapPin, Link as LinkIcon, Calendar, CheckCircle } from 'lucide-react';
+import { Camera, MapPin, Link as LinkIcon, Calendar, CheckCircle, Loader2 } from 'lucide-react';
 import FollowButton from './FollowButton';
+import { useUploadAvatar, useUploadBanner } from '../../hooks/useUpload';
+import { useRef } from 'react';
 
 interface ProfileHeaderProps {
     profile: any;
+    isOwnProfile?: boolean;
 }
 
-export default function ProfileHeader({ profile }: ProfileHeaderProps) {
-    const isOwnProfile = true; // TODO: Check if current user
+export default function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderProps) {
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+    const bannerInputRef = useRef<HTMLInputElement>(null);
+
+    const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadAvatar();
+    const { mutate: uploadBanner, isPending: isUploadingBanner } = useUploadBanner();
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            uploadAvatar(file);
+        }
+    };
+
+    const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            uploadBanner(file);
+        }
+    };
+
+    // Déterminer l'image de bannière
+    const bannerStyle = profile.profile?.banner_url
+        ? { backgroundImage: `url(${profile.profile.banner_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+        : {};
 
     return (
         <div className="bg-white border-b border-gray-200">
+            {/* Hidden file inputs */}
+            <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+            />
+            <input
+                ref={bannerInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleBannerChange}
+                className="hidden"
+            />
+
             {/* Banner */}
-            <div className="h-48 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 relative">
+            <div
+                className={`h-48 relative ${!profile.profile?.banner_url ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500' : ''}`}
+                style={bannerStyle}
+            >
                 {isOwnProfile && (
-                    <button className="absolute bottom-4 right-4 p-2 bg-white rounded-lg shadow-lg hover:bg-gray-50">
-                        <Camera className="w-5 h-5 text-gray-700" />
+                    <button
+                        onClick={() => bannerInputRef.current?.click()}
+                        disabled={isUploadingBanner}
+                        className="absolute bottom-4 right-4 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                        {isUploadingBanner ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Camera className="w-4 h-4 text-gray-700" />
+                        )}
+                        <span className="text-sm font-medium">
+                            {isUploadingBanner ? 'Upload...' : 'Modifier'}
+                        </span>
                     </button>
                 )}
             </div>
@@ -25,7 +81,7 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                     {/* Avatar */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
                         <div className="relative">
-                            <div className="w-32 h-32 rounded-full border-4 border-white bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
+                            <div className="w-32 h-32 rounded-full border-4 border-white bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white text-4xl font-bold shadow-xl overflow-hidden">
                                 {profile.profile?.avatar_url ? (
                                     <img
                                         src={profile.profile.avatar_url}
@@ -33,12 +89,20 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                                         className="w-full h-full rounded-full object-cover"
                                     />
                                 ) : (
-                                    `${profile.name?.[0]}${profile.lastname?.[0]}`
+                                    `${profile.name?.[0] || ''}${profile.lastname?.[0] || ''}`
                                 )}
                             </div>
                             {isOwnProfile && (
-                                <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
-                                    <Camera className="w-4 h-4 text-gray-700" />
+                                <button
+                                    onClick={() => avatarInputRef.current?.click()}
+                                    disabled={isUploadingAvatar}
+                                    className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isUploadingAvatar ? (
+                                        <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
+                                    ) : (
+                                        <Camera className="w-4 h-4 text-gray-700" />
+                                    )}
                                 </button>
                             )}
                         </div>
