@@ -110,9 +110,19 @@ export async function saveStocks(stocksData: StockData[]) {
   }
 }
 
-export async function getAllStocks(filters: { searchTerm?: string, sector?: string, sortBy?: string }) {
+export async function getAllStocks(filters: {
+  searchTerm?: string,
+  sector?: string,
+  sortBy?: string,
+  minMarketCap?: number,
+  maxMarketCap?: number,
+  minPE?: number,
+  maxPE?: number,
+  minDividend?: number,
+  maxDividend?: number
+}) {
   try {
-    const { searchTerm, sector, sortBy } = filters;
+    const { searchTerm, sector, sortBy, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend } = filters;
 
     // Build WHERE clause dynamically
     const whereClause: Prisma.StockWhereInput = {
@@ -128,29 +138,101 @@ export async function getAllStocks(filters: { searchTerm?: string, sector?: stri
       whereClause.sector = sector;
     }
 
-    // Build ORDER BY clause dynamically
-    let orderByClause: Prisma.StockOrderByWithRelationInput = {};
-    switch (sortBy) {
-      case 'change':
-        orderByClause = { daily_change_percent: 'desc' };
-        break;
-      case 'price':
-        orderByClause = { current_price: 'desc' };
-        break;
-      case 'volume':
-        orderByClause = { volume: 'desc' };
-        break;
-      case 'name':
-      default:
-        orderByClause = { company_name: 'asc' };
-        break;
+    // Market cap filters
+    if (minMarketCap !== undefined) {
+      whereClause.market_cap = { ...whereClause.market_cap as any, gte: minMarketCap };
+    }
+    if (maxMarketCap !== undefined) {
+      whereClause.market_cap = { ...whereClause.market_cap as any, lte: maxMarketCap };
     }
 
+    // Fetch stocks with fundamentals and annual financials
     const stocks = await prisma.stock.findMany({
       where: whereClause,
-      orderBy: orderByClause,
+      include: {
+        fundamentals: {
+          take: 1,
+          orderBy: { year: 'desc' }
+        },
+        annualFinancials: {
+          orderBy: { year: 'desc' },
+          take: 1
+        }
+      }
     });
-    return stocks;
+
+    // Calculate P/E ratio and dividend yield for each stock
+    const stocksWithCalculations = stocks.map(stock => {
+      // Get latest BNPA (EPS) from annual financials or fundamentals
+      const latestFinancial = stock.annualFinancials[0];
+      const bnpa = latestFinancial?.eps || stock.fundamentals[0]?.eps || null;
+
+      // Calculate P/E Ratio: Current Price / BNPA
+      const pe_ratio = bnpa && bnpa > 0 ? stock.current_price / bnpa : null;
+
+      // Get latest dividend from annual financials
+      const latestDividend = latestFinancial?.dividend || null;
+
+      // Calculate Dividend Yield: (Dividend / Current Price) * 100
+      const dividend_yield = latestDividend && stock.current_price > 0
+        ? (latestDividend / stock.current_price) * 100
+        : null;
+
+      return {
+        ...stock,
+        pe_ratio,
+        dividend_yield
+      };
+    });
+
+    // Apply P/E and dividend filters
+    let filteredStocks = stocksWithCalculations;
+
+    if (minPE !== undefined) {
+      filteredStocks = filteredStocks.filter(s => s.pe_ratio !== null && s.pe_ratio >= minPE);
+    }
+    if (maxPE !== undefined) {
+      filteredStocks = filteredStocks.filter(s => s.pe_ratio !== null && s.pe_ratio <= maxPE);
+    }
+    if (minDividend !== undefined) {
+      filteredStocks = filteredStocks.filter(s => s.dividend_yield !== null && s.dividend_yield >= minDividend);
+    }
+    if (maxDividend !== undefined) {
+      filteredStocks = filteredStocks.filter(s => s.dividend_yield !== null && s.dividend_yield <= maxDividend);
+    }
+
+    // Sort by P/E or dividend if requested
+    if (sortBy === 'pe') {
+      filteredStocks.sort((a, b) => {
+        if (a.pe_ratio === null) return 1;
+        if (b.pe_ratio === null) return -1;
+        return a.pe_ratio - b.pe_ratio;
+      });
+    } else if (sortBy === 'dividend') {
+      filteredStocks.sort((a, b) => {
+        if (a.dividend_yield === null) return 1;
+        if (b.dividend_yield === null) return -1;
+        return b.dividend_yield - a.dividend_yield; // Descending order for dividend
+      });
+    } else {
+      // Apply original sorting
+      switch (sortBy) {
+        case 'change':
+          filteredStocks.sort((a, b) => b.daily_change_percent - a.daily_change_percent);
+          break;
+        case 'price':
+          filteredStocks.sort((a, b) => b.current_price - a.current_price);
+          break;
+        case 'volume':
+          filteredStocks.sort((a, b) => b.volume - a.volume);
+          break;
+        case 'name':
+          filteredStocks.sort((a, b) => a.company_name.localeCompare(b.company_name));
+          break;
+      }
+    }
+
+    return filteredStocks;
   } catch (error) {
     console.error('❌ Erreur lors de la récupération Prisma des actions:', error);
     throw error;
@@ -158,15 +240,15 @@ export async function getAllStocks(filters: { searchTerm?: string, sector?: stri
 }
 
 export async function getStockBySymbol(symbol: string) {
-    try {
-        const stock = await prisma.stock.findUnique({
-            where: { symbol },
-        });
-        return stock;
-    } catch (error) {
-        console.error(`❌ Erreur lors de la récupération de ${symbol}:`, error);
-        throw error;
-    }
+  try {
+    const stock = await prisma.stock.findUnique({
+      where: { symbol },
+    });
+    return stock;
+  } catch (error) {
+    console.error(`❌ Erreur lors de la récupération de ${symbol}:`, error);
+    throw error;
+  }
 }
 
 export async function getTopStocks(limit: number = 6) {
@@ -354,5 +436,5 @@ export async function getHistoryForComparison(symbols: string[], period: number)
   } catch (error) {
     console.error('Erreur historique:', error);
     throw error;
-}
+  }
 }
