@@ -42,22 +42,38 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        const updateData: ProfileUpdateData = {
-            ...(formData.username && { username: formData.username }),
-            ...(formData.bio !== undefined && { bio: formData.bio }),
-            ...(formData.country && { country: formData.country }),
-            social_links: {
-                ...(formData.linkedin && { linkedin: formData.linkedin }),
-                ...(formData.twitter && { twitter: formData.twitter }),
-                ...(formData.website && { website: formData.website }),
-                ...(formData.instagram && { instagram: formData.instagram }),
-                ...(formData.facebook && { facebook: formData.facebook }),
-            },
-        };
+        // Construire social_links seulement si au moins un champ est rempli
+        const socialLinks: Record<string, string> = {};
+        if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
+        if (formData.twitter) socialLinks.twitter = formData.twitter;
+        if (formData.website) socialLinks.website = formData.website;
+        if (formData.instagram) socialLinks.instagram = formData.instagram;
+        if (formData.facebook) socialLinks.facebook = formData.facebook;
+
+        const updateData: ProfileUpdateData = {};
+
+        // N'envoyer que les champs qui ont une valeur
+        if (formData.username.trim()) {
+            updateData.username = formData.username.trim();
+        }
+        // Toujours envoyer bio (peut être vide)
+        updateData.bio = formData.bio;
+        if (formData.country) {
+            updateData.country = formData.country;
+        }
+        if (Object.keys(socialLinks).length > 0) {
+            updateData.social_links = socialLinks;
+        }
+
+        console.log('📝 [EDIT MODAL] Sending update data:', updateData);
 
         updateProfile(updateData, {
             onSuccess: () => {
+                console.log('✅ [EDIT MODAL] Profile updated successfully');
                 onClose();
+            },
+            onError: (error) => {
+                console.error('❌ [EDIT MODAL] Update failed:', error);
             },
         });
     };

@@ -191,8 +191,8 @@ model UserProfile {
   reputation_score  Int     @default(0) // Calculé selon activité
   verified_investor Boolean @default(false) // Badge vérifié
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
 
   // ============= RELATIONS SOCIALES (NOUVEAU) =============
   achievements UserAchievement[]
