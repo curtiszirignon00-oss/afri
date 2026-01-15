@@ -567,9 +567,7 @@ export default function MarketsPageRefactored() {
                         className="hidden xl:table-cell px-6 py-4 text-right text-gray-600"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
-                        {stock.fundamentals && stock.fundamentals.length > 0 && stock.fundamentals[0].pe_ratio
-                          ? formatNumber(stock.fundamentals[0].pe_ratio, 2)
-                          : '-'}
+                        {stock.pe_ratio ? formatNumber(stock.pe_ratio, 2) : '-'}
                       </td>
 
                       {/* Dividend Yield */}
@@ -577,9 +575,7 @@ export default function MarketsPageRefactored() {
                         className="hidden xl:table-cell px-6 py-4 text-right text-gray-600"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
-                        {stock.fundamentals && stock.fundamentals.length > 0 && stock.fundamentals[0].dividend_yield
-                          ? `${formatNumber(stock.fundamentals[0].dividend_yield, 2)}%`
-                          : '-'}
+                        {stock.dividend_yield ? `${formatNumber(stock.dividend_yield, 2)}%` : '-'}
                       </td>
                     </tr>
                   ))}
