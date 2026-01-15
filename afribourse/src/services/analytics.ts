@@ -46,7 +46,7 @@ const getOS = (): string => {
 };
 
 class AnalyticsService {
-  private baseUrl = import.meta.env.VITE_API_URL;
+  private baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   private sessionId = getSessionId();
   private currentPageViewId: string | null = null;
   private pageStartTime: number | null = null;
