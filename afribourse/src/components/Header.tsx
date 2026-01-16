@@ -1,9 +1,9 @@
-import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity, Users } from 'lucide-react';
+import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu } from './MegaMenus';
-import { Settings } from 'lucide-react';
+import NotificationDropdown from './notifications/NotificationDropdown';
 
 // --- MegaMenu Mapping ---
 const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
@@ -107,7 +107,14 @@ export default function Header() {
 
             {/* Action Buttons (Login/Signup/Account/Logout) */}
             <div className="flex items-center space-x-4">
-              
+
+              {/* Notification Bell - Only for logged in users */}
+              {!loading && isLoggedIn && (
+                <div className="hidden lg:block">
+                  <NotificationDropdown />
+                </div>
+              )}
+
               {/* Desktop Account/Login Button */}
               {!loading && (
                 <div className="hidden lg:relative lg:flex items-center">
@@ -241,6 +248,13 @@ export default function Header() {
               {/* Mobile Account Actions */}
               {!loading && (
                 <>
+                  {/* Mobile Notifications - Only for logged in users */}
+                  {isLoggedIn && (
+                    <div className="flex justify-center py-2">
+                      <NotificationDropdown />
+                    </div>
+                  )}
+
                   <button
                     onClick={() => {
                       navigate(isLoggedIn ? '/dashboard' : '/login');
@@ -264,7 +278,7 @@ export default function Header() {
                         <Settings className="w-5 h-5" />
                         <span>Mon Profil</span>
                       </button>
-                      
+
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center justify-center space-x-2 px-4 py-3 border border-red-400 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-semibold mt-2"
