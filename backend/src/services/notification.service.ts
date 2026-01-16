@@ -268,3 +268,173 @@ export async function notifyPriceAlert(
         },
     });
 }
+
+// ============= COMMUNITY NOTIFICATIONS =============
+
+/**
+ * Notify community owner/admins about a join request
+ */
+export async function notifyCommunityJoinRequest(
+    communityId: string,
+    communityName: string,
+    requesterId: string,
+    requesterName: string
+) {
+    // Get community admins and owner
+    const admins = await prisma.communityMember.findMany({
+        where: {
+            community_id: communityId,
+            role: { in: ['OWNER', 'ADMIN'] },
+        },
+        select: { user_id: true },
+    });
+
+    if (admins.length === 0) return;
+
+    const notifications = admins.map(admin => ({
+        user_id: admin.user_id,
+        type: 'JOIN_REQUEST' as NotificationType,
+        title: 'Demande d\'adhesion',
+        message: `${requesterName} souhaite rejoindre ${communityName}`,
+        actor_id: requesterId,
+        metadata: { communityId, communityName },
+        is_read: false,
+        created_at: new Date(),
+    }));
+
+    await prisma.notification.createMany({ data: notifications });
+    return notifications.length;
+}
+
+/**
+ * Notify user that their join request was approved
+ */
+export async function notifyJoinRequestApproved(
+    userId: string,
+    communityId: string,
+    communityName: string,
+    communitySlug: string
+) {
+    return createNotification({
+        userId,
+        type: 'JOIN_APPROVED',
+        title: 'Demande acceptee',
+        message: `Votre demande pour rejoindre ${communityName} a ete acceptee`,
+        metadata: { communityId, communityName, communitySlug },
+    });
+}
+
+/**
+ * Notify user that their join request was rejected
+ */
+export async function notifyJoinRequestRejected(
+    userId: string,
+    communityId: string,
+    communityName: string,
+    reason?: string
+) {
+    return createNotification({
+        userId,
+        type: 'JOIN_REJECTED',
+        title: 'Demande refusee',
+        message: reason
+            ? `Votre demande pour rejoindre ${communityName} a ete refusee: ${reason}`
+            : `Votre demande pour rejoindre ${communityName} a ete refusee`,
+        metadata: { communityId, communityName, reason },
+    });
+}
+
+/**
+ * Notify community owner about a new member
+ */
+export async function notifyCommunityNewMember(
+    communityId: string,
+    communityName: string,
+    newMemberId: string,
+    newMemberName: string
+) {
+    // Get community owner
+    const owner = await prisma.communityMember.findFirst({
+        where: {
+            community_id: communityId,
+            role: 'OWNER',
+        },
+        select: { user_id: true },
+    });
+
+    if (!owner || owner.user_id === newMemberId) return;
+
+    return createNotification({
+        userId: owner.user_id,
+        type: 'COMMUNITY_JOIN',
+        title: 'Nouveau membre',
+        message: `${newMemberName} a rejoint ${communityName}`,
+        actorId: newMemberId,
+        metadata: { communityId, communityName },
+    });
+}
+
+/**
+ * Notify community members about a new post
+ */
+export async function notifyCommunityNewPost(
+    communityId: string,
+    communityName: string,
+    communitySlug: string,
+    postId: string,
+    authorId: string,
+    authorName: string,
+    postTitle?: string
+) {
+    // Get all community members except the author
+    const members = await prisma.communityMember.findMany({
+        where: {
+            community_id: communityId,
+            user_id: { not: authorId },
+        },
+        select: { user_id: true },
+    });
+
+    if (members.length === 0) return;
+
+    const title = 'Nouveau post dans la communaute';
+    const message = postTitle
+        ? `${authorName} a publie "${postTitle}" dans ${communityName}`
+        : `${authorName} a publie dans ${communityName}`;
+
+    const notifications = members.map(member => ({
+        user_id: member.user_id,
+        type: 'COMMUNITY_POST' as NotificationType,
+        title,
+        message,
+        actor_id: authorId,
+        post_id: postId,
+        metadata: { communityId, communityName, communitySlug },
+        is_read: false,
+        created_at: new Date(),
+    }));
+
+    await prisma.notification.createMany({ data: notifications });
+    return notifications.length;
+}
+
+/**
+ * Notify user about community invitation
+ */
+export async function notifyCommunityInvite(
+    userId: string,
+    communityId: string,
+    communityName: string,
+    communitySlug: string,
+    inviterId: string,
+    inviterName: string
+) {
+    return createNotification({
+        userId,
+        type: 'COMMUNITY_INVITE',
+        title: 'Invitation',
+        message: `${inviterName} vous invite a rejoindre ${communityName}`,
+        actorId: inviterId,
+        metadata: { communityId, communityName, communitySlug },
+    });
+}

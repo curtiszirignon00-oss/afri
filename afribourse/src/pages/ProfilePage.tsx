@@ -1,5 +1,5 @@
 // src/pages/ProfilePage.tsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useInvestorProfile, useSyncSocialStats } from '../hooks/useOnboarding';
@@ -8,7 +8,8 @@ import ProfileHeader from '../components/profile/ProfileHeader';
 import InvestorDNA from '../components/profile/InvestorDNA';
 import SocialStats from '../components/profile/SocialStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import CreateCommunityModal from '../components/community/CreateCommunityModal';
+import { Loader2, ArrowLeft, Users, Plus } from 'lucide-react';
 
 export default function ProfilePage() {
     const { userId } = useParams();
@@ -17,6 +18,7 @@ export default function ProfilePage() {
     const { userProfile } = useAuth();
     const { data: investorProfile, isLoading, error } = useInvestorProfile();
     const { mutate: syncStats } = useSyncSocialStats();
+    const [showCreateCommunityModal, setShowCreateCommunityModal] = useState(false);
 
     // Synchroniser les stats au chargement de la page profil (propre profil uniquement)
     const isOwnProfile = !userId || userId === userProfile?.id;
@@ -111,6 +113,34 @@ export default function ProfilePage() {
                     <div className="lg:col-span-1 space-y-6">
                         <InvestorDNA profile={profileData} />
                         <SocialStats profile={profileData} />
+
+                        {/* Create Community Button - Only for own profile */}
+                        {isOwnProfile && (
+                            <div className="bg-white rounded-2xl shadow-sm p-6">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                                        <Users className="w-5 h-5 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900">Communautes</h3>
+                                        <p className="text-sm text-gray-500">Creez votre propre communaute</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowCreateCommunityModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    Creer une communaute
+                                </button>
+                                <button
+                                    onClick={() => navigate('/communities')}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-3 text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors text-sm font-medium"
+                                >
+                                    Voir toutes les communautes
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column - Activity Feed */}
@@ -119,6 +149,11 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </div>
+
+            {/* Create Community Modal */}
+            {showCreateCommunityModal && (
+                <CreateCommunityModal onClose={() => setShowCreateCommunityModal(false)} />
+            )}
         </div>
     );
 }
