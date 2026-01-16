@@ -26,7 +26,7 @@ export default function PostCard({ post }: PostCardProps) {
     const navigate = useNavigate();
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(post.hasLiked || false);
-    const [isFollowing, setIsFollowing] = useState(false); // TODO: Get from API
+    const [isFollowing, setIsFollowing] = useState(post.isFollowingAuthor || false);
     const [showMenu, setShowMenu] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
