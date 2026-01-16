@@ -11,6 +11,7 @@ import {
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
 import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
+import { sendWeeklyLearningSummaries } from '../services/learning-summary.service';
 import prisma from '../config/prisma';
 
 // Tâche cron pour exécuter le scraping toutes les heures
@@ -179,5 +180,22 @@ cron.schedule('0 18 * * 5', async () => { // Tous les vendredis à 18h
         }
     } catch (error) {
         console.error('❌ Erreur lors de l\'envoi des résumés de portefeuille:', error);
+    }
+});
+
+// Tâche cron pour envoyer les résumés d'apprentissage hebdomadaires
+// S'exécute tous les samedis à 10h00 UTC
+cron.schedule('0 10 * * 6', async () => { // Tous les samedis à 10h UTC
+    try {
+        const now = new Date();
+        console.log('📚 Envoi des résumés hebdomadaires d\'apprentissage...');
+        console.log(`   → Date: ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')} (UTC: ${now.toUTCString()})`);
+
+        await sendWeeklyLearningSummaries();
+
+        console.log('✅ Résumés d\'apprentissage envoyés avec succès');
+        console.log(`   → Prochain envoi: samedi prochain à 10h UTC`);
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'envoi des résumés d\'apprentissage:', error);
     }
 });

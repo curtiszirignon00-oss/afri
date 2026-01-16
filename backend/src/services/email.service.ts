@@ -1011,10 +1011,519 @@ export async function sendPortfolioSummaryEmail({
   });
 }
 
+/**
+ * Envoie un email de résumé hebdomadaire d'apprentissage
+ */
+interface SendLearningSummaryEmailParams {
+  email: string;
+  name: string;
+  learningStats: {
+    totalModulesCompleted: number;
+    totalModulesAvailable: number;
+    completionPercent: number;
+    totalTimeSpentMinutes: number;
+    averageQuizScore: number;
+    weeklyModulesCompleted: number;
+    weeklyQuizzesTaken: number;
+    weeklyTimeSpentMinutes: number;
+    weeklyXpEarned: number;
+    currentStreak: number;
+    currentLevel: number;
+    totalXp: number;
+    recentCompletedModules: Array<{
+      title: string;
+      slug: string;
+      quizScore?: number;
+      completedAt: Date;
+    }>;
+    suggestedModules: Array<{
+      title: string;
+      slug: string;
+      difficulty: string;
+      durationMinutes?: number;
+    }>;
+    recentAchievements: Array<{
+      name: string;
+      description: string;
+      unlockedAt: Date;
+    }>;
+    period: string;
+    isReminder?: boolean;
+  };
+}
+
+export async function sendLearningSummaryEmail({
+  email,
+  name,
+  learningStats,
+}: SendLearningSummaryEmailParams): Promise<void> {
+  const displayName = name || 'Apprenant';
+  const isReminder = learningStats.isReminder || false;
+
+  // Formatage du temps
+  const formatTime = (minutes: number): string => {
+    if (minutes < 60) return `${Math.round(minutes)} min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  };
+
+  // Traduire le niveau de difficulté
+  const translateDifficulty = (difficulty: string): string => {
+    const map: Record<string, string> = {
+      debutant: 'Débutant',
+      intermediaire: 'Intermédiaire',
+      avance: 'Avancé',
+    };
+    return map[difficulty] || difficulty;
+  };
+
+  // Message de motivation basé sur la progression
+  const getMotivationMessage = (): string => {
+    if (isReminder) {
+      return "Vous n'avez pas étudié cette semaine. Reprenez votre apprentissage pour maintenir votre streak !";
+    }
+    if (learningStats.weeklyModulesCompleted >= 5) {
+      return "Incroyable performance ! Vous êtes une machine d'apprentissage !";
+    }
+    if (learningStats.weeklyModulesCompleted >= 3) {
+      return "Excellent travail cette semaine ! Continuez sur cette lancée !";
+    }
+    if (learningStats.weeklyModulesCompleted >= 1) {
+      return "Bon progrès ! Chaque module vous rapproche de vos objectifs.";
+    }
+    if (learningStats.weeklyQuizzesTaken > 0) {
+      return "Beau travail sur les quiz ! Pensez à compléter plus de modules.";
+    }
+    return "Continuez votre apprentissage pour devenir un investisseur averti !";
+  };
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Résumé d'Apprentissage - AfriBourse</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 10px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .logo-text {
+          font-size: 32px;
+          font-weight: bold;
+          color: #f97316;
+          margin: 0;
+        }
+        h1 {
+          color: #1f2937;
+          font-size: 24px;
+          margin-bottom: 10px;
+        }
+        .period {
+          color: #6b7280;
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
+        .highlight-box {
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+          color: white;
+          padding: 30px;
+          border-radius: 12px;
+          margin: 30px 0;
+          text-align: center;
+        }
+        .highlight-box.reminder {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        .highlight-box h2 {
+          margin: 0 0 10px 0;
+          font-size: 16px;
+          opacity: 0.9;
+          font-weight: normal;
+        }
+        .highlight-box .value {
+          font-size: 48px;
+          font-weight: bold;
+          margin: 10px 0;
+        }
+        .highlight-box .subtitle {
+          font-size: 14px;
+          opacity: 0.9;
+        }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 15px;
+          margin: 30px 0;
+        }
+        .stat-card {
+          background-color: #f9fafb;
+          padding: 15px;
+          border-radius: 8px;
+          border: 1px solid #e5e7eb;
+          text-align: center;
+        }
+        .stat-card h3 {
+          color: #6b7280;
+          font-size: 11px;
+          margin: 0 0 5px 0;
+          text-transform: uppercase;
+          font-weight: 600;
+        }
+        .stat-card .value {
+          color: #1f2937;
+          font-size: 20px;
+          font-weight: bold;
+          margin: 0;
+        }
+        .stat-card .value.purple {
+          color: #8b5cf6;
+        }
+        .stat-card .value.green {
+          color: #10b981;
+        }
+        .stat-card .value.orange {
+          color: #f97316;
+        }
+        .progress-section {
+          margin: 30px 0;
+        }
+        .progress-bar-container {
+          background-color: #e5e7eb;
+          border-radius: 10px;
+          height: 20px;
+          overflow: hidden;
+          margin: 10px 0;
+        }
+        .progress-bar {
+          background: linear-gradient(90deg, #8b5cf6 0%, #6d28d9 100%);
+          height: 100%;
+          border-radius: 10px;
+          transition: width 0.3s ease;
+        }
+        .progress-text {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          color: #6b7280;
+        }
+        .modules-section {
+          margin: 30px 0;
+        }
+        .modules-section h3 {
+          color: #1f2937;
+          font-size: 18px;
+          margin-bottom: 15px;
+        }
+        .module-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 15px;
+          margin-bottom: 10px;
+          border-radius: 8px;
+          background-color: #f9fafb;
+          border-left: 4px solid #10b981;
+        }
+        .module-item.suggested {
+          border-left-color: #3b82f6;
+        }
+        .module-name {
+          font-weight: 600;
+          color: #1f2937;
+        }
+        .module-meta {
+          font-size: 12px;
+          color: #6b7280;
+        }
+        .module-score {
+          font-weight: 700;
+          font-size: 16px;
+          color: #10b981;
+        }
+        .badge-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 15px;
+          margin: 5px;
+          border-radius: 20px;
+          background-color: #fef3c7;
+          border: 1px solid #f59e0b;
+        }
+        .badge-icon {
+          font-size: 18px;
+        }
+        .badge-name {
+          font-weight: 600;
+          color: #92400e;
+          font-size: 14px;
+        }
+        .button {
+          display: inline-block;
+          padding: 15px 30px;
+          background-color: #8b5cf6;
+          color: #ffffff !important;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .button:hover {
+          background-color: #7c3aed;
+        }
+        .footer {
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #e5e7eb;
+          font-size: 12px;
+          color: #6b7280;
+          text-align: center;
+        }
+        .motivation-box {
+          background-color: #eff6ff;
+          border-left: 4px solid #3b82f6;
+          padding: 15px;
+          margin: 20px 0;
+          border-radius: 4px;
+        }
+        .motivation-box p {
+          margin: 0;
+          color: #1e40af;
+          font-size: 14px;
+        }
+        .streak-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+          color: white;
+          padding: 8px 15px;
+          border-radius: 20px;
+          font-weight: 600;
+          font-size: 14px;
+        }
+        .level-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+          color: white;
+          padding: 8px 15px;
+          border-radius: 20px;
+          font-weight: 600;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-container">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2 class="logo-text">AfriBourse</h2>
+          </div>
+        </div>
+
+        <h1>${isReminder ? '⏰ Rappel d\'Apprentissage' : '📚 Résumé de votre Apprentissage'}</h1>
+        <p class="period">${learningStats.period}</p>
+
+        <p>Bonjour ${displayName},</p>
+
+        <p>${isReminder ? 'Voici où vous en êtes dans votre parcours d\'apprentissage.' : 'Voici le résumé de votre progression cette semaine.'}</p>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <span class="level-badge">🎓 Niveau ${learningStats.currentLevel}</span>
+          ${learningStats.currentStreak > 0 ? `<span class="streak-badge">🔥 ${learningStats.currentStreak} jours de streak</span>` : ''}
+        </div>
+
+        <div class="highlight-box${isReminder ? ' reminder' : ''}">
+          <h2>${isReminder ? 'Modules cette semaine' : 'Modules complétés cette semaine'}</h2>
+          <div class="value">${learningStats.weeklyModulesCompleted}</div>
+          <div class="subtitle">+${learningStats.weeklyXpEarned.toLocaleString('fr-FR')} XP gagnés</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Quiz passés</h3>
+            <p class="value purple">${learningStats.weeklyQuizzesTaken}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Temps d'étude</h3>
+            <p class="value green">${formatTime(learningStats.weeklyTimeSpentMinutes)}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Score moyen</h3>
+            <p class="value orange">${learningStats.averageQuizScore > 0 ? Math.round(learningStats.averageQuizScore) + '%' : '-'}</p>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <h3>📊 Progression Globale</h3>
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: ${Math.min(learningStats.completionPercent, 100)}%;"></div>
+          </div>
+          <div class="progress-text">
+            <span>${learningStats.totalModulesCompleted} modules complétés</span>
+            <span>${Math.round(learningStats.completionPercent)}% du parcours</span>
+          </div>
+          <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+            Total XP: ${learningStats.totalXp.toLocaleString('fr-FR')} • Temps total: ${formatTime(learningStats.totalTimeSpentMinutes)}
+          </p>
+        </div>
+
+        ${learningStats.recentCompletedModules.length > 0 ? `
+        <div class="modules-section">
+          <h3>✅ Modules Complétés Cette Semaine</h3>
+          ${learningStats.recentCompletedModules.map(m => `
+            <div class="module-item">
+              <div>
+                <div class="module-name">${m.title}</div>
+                <div class="module-meta">Complété le ${new Date(m.completedAt).toLocaleDateString('fr-FR')}</div>
+              </div>
+              ${m.quizScore !== undefined ? `<span class="module-score">${Math.round(m.quizScore)}%</span>` : ''}
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        ${learningStats.recentAchievements.length > 0 ? `
+        <div class="modules-section">
+          <h3>🏆 Badges Débloqués</h3>
+          <div style="text-align: center;">
+            ${learningStats.recentAchievements.map(a => `
+              <div class="badge-item">
+                <span class="badge-icon">🏅</span>
+                <span class="badge-name">${a.name}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        ${learningStats.suggestedModules.length > 0 ? `
+        <div class="modules-section">
+          <h3>📖 Prochains Modules Suggérés</h3>
+          ${learningStats.suggestedModules.map(m => `
+            <div class="module-item suggested">
+              <div>
+                <div class="module-name">${m.title}</div>
+                <div class="module-meta">${translateDifficulty(m.difficulty)}${m.durationMinutes ? ` • ${m.durationMinutes} min` : ''}</div>
+              </div>
+              <a href="${config.app.frontendUrl}/formation/${m.slug}" style="color: #3b82f6; text-decoration: none; font-weight: 600;">Commencer →</a>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        <div class="motivation-box">
+          <p><strong>💪 ${getMotivationMessage()}</strong></p>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px;">
+          Continuez votre apprentissage :
+        </p>
+
+        <div style="text-align: center;">
+          <a href="${config.app.frontendUrl}/formation" class="button">Accéder à la Formation</a>
+        </div>
+
+        <div class="footer">
+          <p>Cet email a été envoyé par AfriBourse - Résumé hebdomadaire</p>
+          <p>Vous recevez cet email car vous avez commencé un parcours d'apprentissage sur AfriBourse.</p>
+          <p>Questions ? Contactez-nous à contact@africbourse.com</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+    Résumé d'Apprentissage - AfriBourse
+    ${learningStats.period}
+
+    Bonjour ${displayName},
+
+    ${isReminder ? 'Voici où vous en êtes dans votre parcours d\'apprentissage.' : 'Voici le résumé de votre progression cette semaine.'}
+
+    🎓 Niveau ${learningStats.currentLevel} | 🔥 Streak: ${learningStats.currentStreak} jours
+
+    📚 CETTE SEMAINE:
+    → Modules complétés: ${learningStats.weeklyModulesCompleted}
+    → Quiz passés: ${learningStats.weeklyQuizzesTaken}
+    → Temps d'étude: ${formatTime(learningStats.weeklyTimeSpentMinutes)}
+    → XP gagnés: +${learningStats.weeklyXpEarned}
+
+    📊 PROGRESSION GLOBALE:
+    → ${learningStats.totalModulesCompleted}/${learningStats.totalModulesAvailable} modules (${Math.round(learningStats.completionPercent)}%)
+    → Score moyen: ${learningStats.averageQuizScore > 0 ? Math.round(learningStats.averageQuizScore) + '%' : '-'}
+    → Total XP: ${learningStats.totalXp}
+
+    ${learningStats.recentCompletedModules.length > 0 ? `
+    ✅ MODULES COMPLÉTÉS:
+    ${learningStats.recentCompletedModules.map(m => `   ${m.title}${m.quizScore ? ` (${Math.round(m.quizScore)}%)` : ''}`).join('\n')}
+    ` : ''}
+
+    ${learningStats.recentAchievements.length > 0 ? `
+    🏆 BADGES DÉBLOQUÉS:
+    ${learningStats.recentAchievements.map(a => `   ${a.name}`).join('\n')}
+    ` : ''}
+
+    ${learningStats.suggestedModules.length > 0 ? `
+    📖 PROCHAINS MODULES:
+    ${learningStats.suggestedModules.map(m => `   ${m.title} (${translateDifficulty(m.difficulty)})`).join('\n')}
+    ` : ''}
+
+    💪 ${getMotivationMessage()}
+
+    Continuez votre apprentissage: ${config.app.frontendUrl}/formation
+
+    AfriBourse - Votre plateforme d'apprentissage boursier
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: isReminder
+      ? `⏰ Rappel: Reprenez votre apprentissage sur AfriBourse`
+      : `📚 Votre semaine d'apprentissage - ${learningStats.weeklyModulesCompleted} module(s) complété(s)`,
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
   sendPriceAlertEmail,
   sendPortfolioSummaryEmail,
+  sendLearningSummaryEmail,
   sendEmail,
 };
