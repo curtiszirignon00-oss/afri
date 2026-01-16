@@ -199,6 +199,7 @@ export function usePostComments(postId: string, page: number = 1) {
             const response = await apiClient.get(`/social/posts/${postId}/comments?page=${page}`);
             return response.data;
         },
+        enabled: !!postId,
     });
 }
 

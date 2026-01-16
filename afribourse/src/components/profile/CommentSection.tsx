@@ -1,7 +1,8 @@
 // src/components/profile/CommentSection.tsx
 import { useState } from 'react';
-import { Send, CheckCircle } from 'lucide-react';
+import { Send, CheckCircle, Loader2 } from 'lucide-react';
 import { usePostComments, useCommentPost } from '../../hooks/useSocial';
+import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 interface CommentSectionProps {
@@ -9,13 +10,18 @@ interface CommentSectionProps {
 }
 
 export default function CommentSection({ postId }: CommentSectionProps) {
+    const { userProfile, isLoggedIn } = useAuth();
     const [commentText, setCommentText] = useState('');
     const [replyTo, setReplyTo] = useState<string | null>(null);
-    const { data: comments, isLoading } = usePostComments(postId);
+    const { data: comments, isLoading, error } = usePostComments(postId);
     const { mutate: addComment, isPending } = useCommentPost();
 
     const handleSubmit = (parentId?: string) => {
         if (!commentText.trim()) return;
+        if (!isLoggedIn) {
+            toast.error('Connectez-vous pour commenter');
+            return;
+        }
 
         addComment(
             { postId, content: commentText.trim(), parentId },
@@ -33,40 +39,75 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     };
 
     if (isLoading) {
-        return <div className="text-center py-4 text-gray-600">Chargement...</div>;
+        return (
+            <div className="flex items-center justify-center py-4 text-gray-600">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                Chargement des commentaires...
+            </div>
+        );
     }
+
+    if (error) {
+        return (
+            <div className="text-center py-4 text-red-500">
+                Erreur lors du chargement des commentaires
+            </div>
+        );
+    }
+
+    const userInitials = userProfile
+        ? `${userProfile.name?.[0] || ''}${userProfile.lastname?.[0] || ''}`
+        : 'U';
 
     return (
         <div className="space-y-4">
             {/* Comment Input */}
             <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                    U
+                    {userInitials}
                 </div>
                 <div className="flex-1">
                     <textarea
-                        placeholder="Ajouter un commentaire..."
+                        placeholder={isLoggedIn ? "Ajouter un commentaire..." : "Connectez-vous pour commenter"}
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         rows={2}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                        disabled={!isLoggedIn}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
                     <div className="flex justify-end mt-2">
                         <button
                             onClick={() => handleSubmit(replyTo || undefined)}
-                            disabled={isPending || !commentText.trim()}
+                            disabled={isPending || !commentText.trim() || !isLoggedIn}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
                         >
-                            <Send className="w-4 h-4" />
+                            {isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Send className="w-4 h-4" />
+                            )}
                             Commenter
                         </button>
                     </div>
                 </div>
             </div>
 
+            {/* Reply indicator */}
+            {replyTo && (
+                <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                    <span>Répondre au commentaire</span>
+                    <button
+                        onClick={() => setReplyTo(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+
             {/* Comments List */}
             <div className="space-y-4">
-                {comments?.data.map((comment: any) => (
+                {comments?.data?.map((comment: any) => (
                     <div key={comment.id} className="flex gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
                             {comment.author.name?.[0]}{comment.author.lastname?.[0]}
@@ -111,18 +152,20 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                                 </div>
                             )}
 
-                            <button
-                                onClick={() => setReplyTo(comment.id)}
-                                className="text-xs text-blue-600 hover:text-blue-700 mt-2"
-                            >
-                                Répondre
-                            </button>
+                            {isLoggedIn && (
+                                <button
+                                    onClick={() => setReplyTo(comment.id)}
+                                    className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                                >
+                                    Répondre
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
             </div>
 
-            {comments?.data.length === 0 && (
+            {(!comments?.data || comments.data.length === 0) && (
                 <p className="text-center text-gray-500 text-sm py-4">
                     Aucun commentaire. Soyez le premier à commenter !
                 </p>
