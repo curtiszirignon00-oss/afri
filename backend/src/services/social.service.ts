@@ -782,57 +782,46 @@ export async function getPublicPosts(page: number = 1, limit: number = 10, viewe
 export async function getPostComments(postId: string, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit;
 
-    const [comments, total] = await Promise.all([
-        prisma.comment.findMany({
-            where: {
-                post_id: postId,
-                parent_id: null, // Only top-level comments
-                is_hidden: false,
-            },
-            skip,
-            take: limit,
-            orderBy: { created_at: 'desc' },
-            include: {
-                author: {
-                    include: {
-                        profile: {
-                            select: {
-                                username: true,
-                                avatar_url: true,
-                                verified_investor: true,
-                            },
+    // Get all comments for this post first
+    const allComments = await prisma.comment.findMany({
+        where: {
+            post_id: postId,
+            is_hidden: false,
+        },
+        orderBy: { created_at: 'desc' },
+        include: {
+            author: {
+                include: {
+                    profile: {
+                        select: {
+                            username: true,
+                            avatar_url: true,
+                            verified_investor: true,
                         },
                     },
                 },
-                replies: {
-                    include: {
-                        author: {
-                            include: {
-                                profile: {
-                                    select: {
-                                        username: true,
-                                        avatar_url: true,
-                                        verified_investor: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                    orderBy: { created_at: 'asc' },
-                },
             },
-        }),
-        prisma.comment.count({
-            where: {
-                post_id: postId,
-                parent_id: null,
-                is_hidden: false,
-            },
-        }),
-    ]);
+        },
+    });
+
+    // Separate top-level comments and replies
+    const topLevelComments = allComments.filter(c => !c.parent_id);
+    const replies = allComments.filter(c => c.parent_id);
+
+    // Attach replies to their parent comments
+    const commentsWithReplies = topLevelComments.map(comment => ({
+        ...comment,
+        replies: replies.filter(r => r.parent_id === comment.id).sort(
+            (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        ),
+    }));
+
+    // Paginate
+    const paginatedComments = commentsWithReplies.slice(skip, skip + limit);
+    const total = topLevelComments.length;
 
     return {
-        data: comments,
+        data: paginatedComments,
         total,
         page,
         totalPages: Math.ceil(total / limit),
