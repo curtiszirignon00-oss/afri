@@ -50,15 +50,17 @@ export async function followUser(followerId: string, followingId: string) {
         },
     });
 
-    // Update counters
+    // Update counters - use upsert in case UserProfile doesn't exist yet
     await Promise.all([
-        prisma.userProfile.update({
+        prisma.userProfile.upsert({
             where: { userId: followerId },
-            data: { following_count: { increment: 1 } },
+            update: { following_count: { increment: 1 } },
+            create: { userId: followerId, following_count: 1, followers_count: 0, posts_count: 0 },
         }),
-        prisma.userProfile.update({
+        prisma.userProfile.upsert({
             where: { userId: followingId },
-            data: { followers_count: { increment: 1 } },
+            update: { followers_count: { increment: 1 } },
+            create: { userId: followingId, followers_count: 1, following_count: 0, posts_count: 0 },
         }),
     ]);
 
@@ -88,15 +90,17 @@ export async function unfollowUser(followerId: string, followingId: string) {
         },
     });
 
-    // Update counters
+    // Update counters - use upsert to handle edge cases
     await Promise.all([
-        prisma.userProfile.update({
+        prisma.userProfile.upsert({
             where: { userId: followerId },
-            data: { following_count: { decrement: 1 } },
+            update: { following_count: { decrement: 1 } },
+            create: { userId: followerId, following_count: 0, followers_count: 0, posts_count: 0 },
         }),
-        prisma.userProfile.update({
+        prisma.userProfile.upsert({
             where: { userId: followingId },
-            data: { followers_count: { decrement: 1 } },
+            update: { followers_count: { decrement: 1 } },
+            create: { userId: followingId, followers_count: 0, following_count: 0, posts_count: 0 },
         }),
     ]);
 
@@ -687,9 +691,10 @@ export async function getPublicPosts(page: number = 1, limit: number = 10, viewe
         }),
     ]);
 
-    // Check if viewer has liked posts
-    let postsWithLikeStatus = posts;
+    // Check if viewer has liked posts and is following authors
+    let postsWithStatus: any[] = posts;
     if (viewerId) {
+        // Get liked posts
         const likedPostIds = await prisma.postLike.findMany({
             where: {
                 user_id: viewerId,
@@ -698,14 +703,27 @@ export async function getPublicPosts(page: number = 1, limit: number = 10, viewe
             select: { post_id: true },
         });
         const likedSet = new Set(likedPostIds.map(l => l.post_id));
-        postsWithLikeStatus = posts.map(post => ({
+
+        // Get followed authors
+        const authorIds = [...new Set(posts.map(p => p.author_id))];
+        const followedAuthors = await prisma.follow.findMany({
+            where: {
+                followerId: viewerId,
+                followingId: { in: authorIds },
+            },
+            select: { followingId: true },
+        });
+        const followedSet = new Set(followedAuthors.map(f => f.followingId));
+
+        postsWithStatus = posts.map(post => ({
             ...post,
             hasLiked: likedSet.has(post.id),
+            isFollowingAuthor: followedSet.has(post.author_id),
         }));
     }
 
     return {
-        data: postsWithLikeStatus,
+        data: postsWithStatus,
         total,
         page,
         totalPages: Math.ceil(total / limit),
