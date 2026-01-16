@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { getUserFromToken } from "../utils";
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
     user?: any;
 }
+
+// Export alias for backwards compatibility
+export type AuthRequest = AuthenticatedRequest;
 
 export async function auth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
@@ -40,5 +43,23 @@ export async function admin(req: AuthenticatedRequest, res: Response, next: Next
         return;
     } catch (error) {
         return res.status(401).json({ message: "Unauthorized" });
+    }
+}
+
+/**
+ * Optional auth middleware - extracts user if authenticated but doesn't block unauthenticated requests
+ */
+export async function optionalAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+        const {user} = await getUserFromToken(req);
+        if (user) {
+            req.user = user;
+        }
+        next();
+        return;
+    } catch (error) {
+        // Continue without authentication
+        next();
+        return;
     }
 }
