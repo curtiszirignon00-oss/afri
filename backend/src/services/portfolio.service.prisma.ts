@@ -397,3 +397,96 @@ export async function getTransactionsByPortfolioId(portfolioId: string): Promise
     throw error;
   }
 }
+
+/**
+ * Get portfolio summary for profile display
+ */
+export async function getPortfolioSummary(userId: string) {
+  try {
+    const portfolio = await prisma.portfolio.findFirst({
+      where: { userId: userId },
+      include: {
+        positions: {
+          include: {
+            stock: {
+              select: {
+                ticker: true,
+                name: true,
+                current_price: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!portfolio) {
+      return null;
+    }
+
+    // Calculate positions value
+    let positionsValue = 0;
+    const positionsDetails: Array<{
+      ticker: string;
+      name: string;
+      quantity: number;
+      avgPrice: number;
+      currentPrice: number;
+      value: number;
+      gainLoss: number;
+      gainLossPercent: number;
+    }> = [];
+
+    for (const position of portfolio.positions) {
+      const currentPrice = position.stock?.current_price || position.average_price;
+      const positionValue = position.quantity * currentPrice;
+      const costBasis = position.quantity * position.average_price;
+      const positionGainLoss = positionValue - costBasis;
+      const positionGainLossPercent = costBasis > 0 ? ((positionValue - costBasis) / costBasis) * 100 : 0;
+
+      positionsValue += positionValue;
+
+      positionsDetails.push({
+        ticker: position.stockTicker,
+        name: position.stock?.name || position.stockTicker,
+        quantity: position.quantity,
+        avgPrice: position.average_price,
+        currentPrice: currentPrice,
+        value: positionValue,
+        gainLoss: positionGainLoss,
+        gainLossPercent: positionGainLossPercent,
+      });
+    }
+
+    const totalValue = portfolio.cash_balance + positionsValue;
+    const investedValue = portfolio.initial_balance - portfolio.cash_balance;
+    const totalGainLoss = totalValue - portfolio.initial_balance;
+    const totalGainLossPercent = portfolio.initial_balance > 0
+      ? ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100
+      : 0;
+
+    return {
+      id: portfolio.id,
+      name: portfolio.name,
+      totalValue,
+      cashBalance: portfolio.cash_balance,
+      positionsValue,
+      investedValue,
+      initialBalance: portfolio.initial_balance,
+      gainLoss: totalGainLoss,
+      gainLossPercent: totalGainLossPercent,
+      positionsCount: portfolio.positions.length,
+      topPerformers: positionsDetails
+        .filter(p => p.gainLossPercent > 0)
+        .sort((a, b) => b.gainLossPercent - a.gainLossPercent)
+        .slice(0, 3),
+      topLosers: positionsDetails
+        .filter(p => p.gainLossPercent < 0)
+        .sort((a, b) => a.gainLossPercent - b.gainLossPercent)
+        .slice(0, 3),
+    };
+  } catch (error) {
+    console.error(`Error getting portfolio summary for user ${userId}:`, error);
+    throw error;
+  }
+}

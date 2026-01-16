@@ -1,12 +1,14 @@
 // src/pages/ProfilePage.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useInvestorProfile, useSyncSocialStats } from '../hooks/useOnboarding';
 import { useAuth } from '../contexts/AuthContext';
+import { apiClient } from '../lib/api-client';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import InvestorDNA from '../components/profile/InvestorDNA';
 import SocialStats from '../components/profile/SocialStats';
+import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 import { Loader2, ArrowLeft, Users, Plus } from 'lucide-react';
@@ -22,6 +24,34 @@ export default function ProfilePage() {
 
     // Synchroniser les stats au chargement de la page profil (propre profil uniquement)
     const isOwnProfile = !userId || userId === userProfile?.id;
+
+    // Fetch portfolio data (only for own profile or if public)
+    const { data: portfolioData } = useQuery({
+        queryKey: ['portfolio-summary', userId || userProfile?.id],
+        queryFn: async () => {
+            try {
+                const response = await apiClient.get('/simulator/portfolio/summary');
+                return response.data.data;
+            } catch {
+                return null;
+            }
+        },
+        enabled: isOwnProfile && !!userProfile?.id,
+    });
+
+    // Fetch learning progress
+    const { data: learningData } = useQuery({
+        queryKey: ['learning-progress', userId || userProfile?.id],
+        queryFn: async () => {
+            try {
+                const response = await apiClient.get('/learning/progress/summary');
+                return response.data.data;
+            } catch {
+                return null;
+            }
+        },
+        enabled: isOwnProfile && !!userProfile?.id,
+    });
 
     useEffect(() => {
         if (isOwnProfile && !isLoading && investorProfile) {
@@ -111,6 +141,23 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Investor DNA & Stats */}
                     <div className="lg:col-span-1 space-y-6">
+                        {/* Progression Stats (XP, Level, Streak, Portfolio) */}
+                        <ProfileStats
+                            profile={profileData}
+                            isOwnProfile={isOwnProfile}
+                            portfolioData={portfolioData ? {
+                                totalValue: portfolioData.totalValue || portfolioData.total_value || 0,
+                                gainLoss: portfolioData.gainLoss || portfolioData.gain_loss || 0,
+                                gainLossPercent: portfolioData.gainLossPercent || portfolioData.gain_loss_percent || 0,
+                            } : null}
+                            learningProgress={learningData ? {
+                                completedModules: learningData.completedModules || learningData.completed_modules || 0,
+                                totalModules: learningData.totalModules || learningData.total_modules || 10,
+                                completedQuizzes: learningData.completedQuizzes || learningData.completed_quizzes || 0,
+                                averageScore: learningData.averageScore || learningData.average_score || 0,
+                            } : null}
+                        />
+
                         <InvestorDNA profile={profileData} />
                         <SocialStats profile={profileData} />
 
