@@ -19,7 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 
 export default function CommunitiesPage() {
-    const { isAuthenticated } = useAuth();
+    const { isLoggedIn } = useAuth();
     const [activeTab, setActiveTab] = useState<'discover' | 'my'>('discover');
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
@@ -83,7 +83,7 @@ export default function CommunitiesPage() {
                                 </p>
                             </div>
                         </div>
-                        {isAuthenticated && (
+                        {isLoggedIn && (
                             <button
                                 onClick={() => setShowCreateModal(true)}
                                 className="flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-colors"
@@ -110,7 +110,7 @@ export default function CommunitiesPage() {
                     >
                         Decouvrir
                     </button>
-                    {isAuthenticated && (
+                    {isLoggedIn && (
                         <button
                             onClick={() => { setActiveTab('my'); setPage(1); }}
                             className={`px-6 py-3 rounded-xl font-medium transition-colors ${

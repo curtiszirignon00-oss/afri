@@ -41,7 +41,7 @@ const POST_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function CommunityPostCard({ post, communityId, canModerate }: Props) {
-    const { isAuthenticated, user } = useAuth();
+    const { isLoggedIn, userProfile } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(post.hasLiked || false);
@@ -52,11 +52,11 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
     const deletePost = useDeleteCommunityPost();
     const togglePin = useTogglePinPost();
 
-    const isOwner = user?.id === post.author_id;
+    const isOwner = userProfile?.id === post.author_id;
     const canDelete = isOwner || canModerate;
 
     const handleLike = async () => {
-        if (!isAuthenticated) {
+        if (!isLoggedIn) {
             toast.error('Connectez-vous pour aimer ce post');
             return;
         }

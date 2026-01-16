@@ -35,7 +35,7 @@ import CommunitySettingsModal from '../components/community/CommunitySettingsMod
 
 export default function CommunityDetailPage() {
     const { slug } = useParams<{ slug: string }>();
-    const { isAuthenticated, user } = useAuth();
+    const { isLoggedIn, userProfile } = useAuth();
     const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'members'>('posts');
     const [postsPage, setPostsPage] = useState(1);
     const [showMembersModal, setShowMembersModal] = useState(false);
@@ -188,7 +188,7 @@ export default function CommunityDetailPage() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
-                            {isAuthenticated && !community.isMember && !community.hasPendingRequest && (
+                            {isLoggedIn && !community.isMember && !community.hasPendingRequest && (
                                 <button
                                     onClick={handleJoin}
                                     disabled={joinCommunity.isPending}
