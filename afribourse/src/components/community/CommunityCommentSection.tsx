@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function CommunityCommentSection({ postId }: Props) {
-    const { isAuthenticated } = useAuth();
+    const { isLoggedIn } = useAuth();
     const [content, setContent] = useState('');
     const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
     const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
@@ -55,7 +55,7 @@ export default function CommunityCommentSection({ postId }: Props) {
     return (
         <div className="border-t">
             {/* Comment Input */}
-            {isAuthenticated && (
+            {isLoggedIn && (
                 <form onSubmit={handleSubmit} className="p-4 border-b">
                     {replyTo && (
                         <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
@@ -149,7 +149,7 @@ export default function CommunityCommentSection({ postId }: Props) {
                                                 locale: fr,
                                             })}
                                         </span>
-                                        {isAuthenticated && (
+                                        {isLoggedIn && (
                                             <button
                                                 onClick={() =>
                                                     setReplyTo({
