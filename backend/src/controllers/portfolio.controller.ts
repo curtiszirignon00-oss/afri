@@ -3,6 +3,26 @@
 import { Request, Response, NextFunction } from 'express';
 import * as portfolioService from '../services/portfolio.service.prisma';
 
+// --- Portfolio Summary for Profile ---
+
+export async function getPortfolioSummary(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorise' });
+    }
+
+    const summary = await portfolioService.getPortfolioSummary(userId);
+    if (!summary) {
+      return res.status(404).json({ success: false, message: 'Portefeuille non trouve' });
+    }
+
+    return res.status(200).json({ success: true, data: summary });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 // --- Get/Create Portfolio ---
 
 export async function getMyPortfolio(req: Request, res: Response, next: NextFunction) {
