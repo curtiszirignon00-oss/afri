@@ -83,6 +83,18 @@ export function useUpdatePrivacySettings() {
 }
 
 /**
+ * Sync social stats (recalculate followers, following, posts counts)
+ */
+export function useSyncSocialStats() {
+    return useMutation({
+        mutationFn: async () => {
+            const response = await apiClient.post('/investor-profile/sync-stats');
+            return response.data.data;
+        },
+    });
+}
+
+/**
  * Hook for managing onboarding redirection logic
  * Redirects user to onboarding if they haven't completed their investor DNA
  *

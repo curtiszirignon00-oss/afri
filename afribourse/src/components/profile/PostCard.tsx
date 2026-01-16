@@ -312,23 +312,32 @@ export default function PostCard({ post }: PostCardProps) {
                 </div>
             ) : (
                 <>
-                    {/* Title */}
-                    {post.title && (
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {post.title}
-                        </h3>
-                    )}
+                    {/* Clickable Post Content */}
+                    <div
+                        onClick={() => setShowComments(true)}
+                        className="cursor-pointer hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+                    >
+                        {/* Title */}
+                        {post.title && (
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                {post.title}
+                            </h3>
+                        )}
 
-                    {/* Content */}
-                    <div className="text-gray-700 mb-4 whitespace-pre-wrap">
-                        {post.content}
+                        {/* Content */}
+                        <div className="text-gray-700 mb-4 whitespace-pre-wrap">
+                            {post.content}
+                        </div>
                     </div>
                 </>
             )}
 
-            {/* Stock Info */}
+            {/* Stock Info - Clickable */}
             {post.stock_symbol && (
-                <div className="mb-4 p-4 bg-gray-50 rounded-lg flex items-center justify-between">
+                <div
+                    onClick={() => setShowComments(true)}
+                    className="mb-4 p-4 bg-gray-50 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                >
                     <div>
                         <span className="font-semibold text-gray-900">{post.stock_symbol}</span>
                         {post.stock_price && (
@@ -350,15 +359,18 @@ export default function PostCard({ post }: PostCardProps) {
                 </div>
             )}
 
-            {/* Images */}
+            {/* Images - Clickable */}
             {post.images && post.images.length > 0 && (
-                <div className="mb-4 grid grid-cols-2 gap-2">
+                <div
+                    onClick={() => setShowComments(true)}
+                    className="mb-4 grid grid-cols-2 gap-2 cursor-pointer"
+                >
                     {post.images.map((img: string, idx: number) => (
                         <img
                             key={idx}
                             src={img}
                             alt={`Post image ${idx + 1}`}
-                            className="rounded-lg w-full h-48 object-cover"
+                            className="rounded-lg w-full h-48 object-cover hover:opacity-90 transition-opacity"
                         />
                     ))}
                 </div>

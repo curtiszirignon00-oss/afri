@@ -41,7 +41,7 @@ export interface OnboardingDto {
  */
 export async function getInvestorProfile(userId: string) {
     // Récupérer les deux profils en parallèle
-    const [investorProfile, userProfile] = await Promise.all([
+    const [investorProfile, existingUserProfile] = await Promise.all([
         prisma.investorProfile.findUnique({
             where: { user_id: userId },
         }),
@@ -49,6 +49,26 @@ export async function getInvestorProfile(userId: string) {
             where: { userId: userId },
         }),
     ]);
+
+    // Créer UserProfile s'il n'existe pas (pour les utilisateurs existants)
+    let userProfile = existingUserProfile;
+    if (!userProfile) {
+        // Compter les vrais followers, following et posts depuis la DB
+        const [followersCount, followingCount, postsCount] = await Promise.all([
+            prisma.follow.count({ where: { followingId: userId } }),
+            prisma.follow.count({ where: { followerId: userId } }),
+            prisma.post.count({ where: { author_id: userId, is_hidden: false } }),
+        ]);
+
+        userProfile = await prisma.userProfile.create({
+            data: {
+                userId: userId,
+                followers_count: followersCount,
+                following_count: followingCount,
+                posts_count: postsCount,
+            },
+        });
+    }
 
     // Fusionner les données (UserProfile contient les infos sociales)
     return {
@@ -140,4 +160,33 @@ export async function completeOnboarding(userId: string, answers: OnboardingDto)
     });
 
     return investorProfile;
+}
+
+/**
+ * Sync social stats (recalculate from actual data)
+ */
+export async function syncSocialStats(userId: string) {
+    // Compter les vrais followers, following et posts depuis la DB
+    const [followersCount, followingCount, postsCount] = await Promise.all([
+        prisma.follow.count({ where: { followingId: userId } }),
+        prisma.follow.count({ where: { followerId: userId } }),
+        prisma.post.count({ where: { author_id: userId, is_hidden: false } }),
+    ]);
+
+    const userProfile = await prisma.userProfile.upsert({
+        where: { userId: userId },
+        update: {
+            followers_count: followersCount,
+            following_count: followingCount,
+            posts_count: postsCount,
+        },
+        create: {
+            userId: userId,
+            followers_count: followersCount,
+            following_count: followingCount,
+            posts_count: postsCount,
+        },
+    });
+
+    return userProfile;
 }

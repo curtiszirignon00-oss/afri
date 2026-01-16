@@ -18,4 +18,7 @@ router.put('/privacy', auth, investorProfileController.updatePrivacySettings);
 router.get('/onboarding/status', auth, investorProfileController.checkOnboardingStatus);
 router.post('/onboarding/complete', auth, investorProfileController.completeOnboarding);
 
+// Sync social stats
+router.post('/sync-stats', auth, investorProfileController.syncSocialStats);
+
 export default router;
