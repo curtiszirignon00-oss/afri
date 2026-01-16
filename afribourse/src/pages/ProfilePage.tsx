@@ -1,6 +1,8 @@
 // src/pages/ProfilePage.tsx
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useInvestorProfile } from '../hooks/useOnboarding';
+import { useQueryClient } from '@tanstack/react-query';
+import { useInvestorProfile, useSyncSocialStats } from '../hooks/useOnboarding';
 import { useAuth } from '../contexts/AuthContext';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import InvestorDNA from '../components/profile/InvestorDNA';
@@ -11,11 +13,24 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 export default function ProfilePage() {
     const { userId } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { userProfile } = useAuth();
     const { data: investorProfile, isLoading, error } = useInvestorProfile();
+    const { mutate: syncStats } = useSyncSocialStats();
 
-    // Déterminer si c'est le profil de l'utilisateur connecté
+    // Synchroniser les stats au chargement de la page profil (propre profil uniquement)
     const isOwnProfile = !userId || userId === userProfile?.id;
+
+    useEffect(() => {
+        if (isOwnProfile && !isLoading && investorProfile) {
+            // Sync stats en arrière-plan et rafraîchir le profil
+            syncStats(undefined, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
+                },
+            });
+        }
+    }, [isOwnProfile, isLoading]);
 
     if (isLoading) {
         return (

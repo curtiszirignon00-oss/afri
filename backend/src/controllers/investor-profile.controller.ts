@@ -100,3 +100,28 @@ export async function completeOnboarding(req: AuthRequest, res: Response) {
         res.status(400).json({ error: error.message });
     }
 }
+
+/**
+ * Sync social stats (recalculate followers, following, posts counts)
+ */
+export async function syncSocialStats(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const userProfile = await investorProfileService.syncSocialStats(userId);
+        res.status(200).json({
+            success: true,
+            data: {
+                followers_count: userProfile.followers_count,
+                following_count: userProfile.following_count,
+                posts_count: userProfile.posts_count,
+            }
+        });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
