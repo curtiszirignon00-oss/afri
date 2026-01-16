@@ -36,7 +36,7 @@ export default function StockDetailPageEnhanced() {
   const { symbol } = useParams<{ symbol: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Récupérer le stock depuis le state ou depuis l'API
   const [stock, setStock] = useState<Stock | null>(location.state as Stock || null);
   // État local
@@ -293,46 +293,50 @@ export default function StockDetailPageEnhanced() {
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
+  // État pour afficher/cacher le panneau d'ordre sur mobile
+  const [showMobileOrder, setShowMobileOrder] = useState(false);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
       {/* En-tête */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Bouton retour */}
           <button
             onClick={() => navigate('/markets')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Retour aux marchés</span>
+            <span className="text-sm sm:text-base">Retour aux marchés</span>
           </button>
 
           {/* Informations de l'action */}
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            <div className="flex-1">
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{stock.symbol}</h1>
+          <div className="flex flex-col gap-4 sm:gap-6">
+            {/* Ligne 1: Symbole + Boutons */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{stock.symbol}</h1>
                 {stock.sector && (
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                  <span className="hidden sm:inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                     {stock.sector}
                   </span>
                 )}
+              </div>
+              <div className="flex items-center space-x-1 sm:space-x-2">
                 {/* Watchlist Button */}
                 <button
                   onClick={handleToggleWatchlist}
                   disabled={isTogglingWatchlist}
-                  className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${
-                    isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   title={isInWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
                 >
                   {isTogglingWatchlist ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
                   ) : (
                     <Star
-                      className={`w-5 h-5 ${
-                        isInWatchlist ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400 hover:text-yellow-500'
-                      }`}
+                      className={`w-5 h-5 ${isInWatchlist ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400 hover:text-yellow-500'
+                        }`}
                     />
                   )}
                 </button>
@@ -345,23 +349,35 @@ export default function StockDetailPageEnhanced() {
                   <Bell className="w-5 h-5 text-gray-400 hover:text-orange-600" />
                 </button>
               </div>
-              <h2 className="text-xl text-gray-700">{stock.company_name}</h2>
             </div>
 
-            {/* Prix actuel */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 min-w-[280px]">
-              <p className="text-sm text-gray-600 mb-2">Prix actuel</p>
-              <p className="text-4xl font-bold text-gray-900 mb-4">{formatNumber(stock.current_price)} FCFA</p>
-              <div
-                className={`inline-flex items-center space-x-2 px-4 py-2 rounded-lg text-lg font-semibold ${
-                  stock.daily_change_percent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                }`}
-              >
-                {stock.daily_change_percent >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                <span>
-                  {stock.daily_change_percent >= 0 ? '+' : ''}
-                  {stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+            {/* Ligne 2: Nom complet + Secteur mobile */}
+            <div>
+              <h2 className="text-lg sm:text-xl text-gray-700">{stock.company_name}</h2>
+              {stock.sector && (
+                <span className="sm:hidden inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  {stock.sector}
                 </span>
+              )}
+            </div>
+
+            {/* Ligne 3: Prix actuel - Format mobile optimisé */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Prix actuel</p>
+                  <p className="text-2xl sm:text-4xl font-bold text-gray-900">{formatNumber(stock.current_price)} <span className="text-base sm:text-xl">FCFA</span></p>
+                </div>
+                <div
+                  className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-lg font-semibold ${stock.daily_change_percent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
+                >
+                  {stock.daily_change_percent >= 0 ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  <span>
+                    {stock.daily_change_percent >= 0 ? '+' : ''}
+                    {stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -372,16 +388,16 @@ export default function StockDetailPageEnhanced() {
       <StockTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Contenu principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Colonne principale */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             {/* Graphique TradingView */}
-            <div className="mb-8">
+            <div>
               {historyLoading ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex justify-center items-center h-96">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                  <div className="flex justify-center items-center h-64 sm:h-96">
+                    <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
                   </div>
                 </div>
               ) : lightweightData.length > 0 ? (
@@ -391,7 +407,6 @@ export default function StockDetailPageEnhanced() {
                   isLoading={false}
                   theme="light"
                   onIntervalChange={(interval) => {
-                    // Mapper les intervalles TimeInterval vers Period
                     const periodMap: Record<string, Period> = {
                       '1D': '1D',
                       '5D': '5D',
@@ -406,26 +421,25 @@ export default function StockDetailPageEnhanced() {
                     setSelectedPeriod(periodMap[interval] || '1Y');
                   }}
                   currentInterval={
-                    // Mapper Period vers TimeInterval
                     selectedPeriod === '1D' ? '1D' :
-                    selectedPeriod === '5D' ? '5D' :
-                    selectedPeriod === '1W' ? '1W' :
-                    selectedPeriod === '1M' ? '1M' :
-                    selectedPeriod === '3M' ? '3M' :
-                    selectedPeriod === '6M' ? '6M' :
-                    selectedPeriod === '1Y' ? '1Y' :
-                    selectedPeriod === '5Y' ? '5Y' :
-                    'ALL'
+                      selectedPeriod === '5D' ? '5D' :
+                        selectedPeriod === '1W' ? '1W' :
+                          selectedPeriod === '1M' ? '1M' :
+                            selectedPeriod === '3M' ? '3M' :
+                              selectedPeriod === '6M' ? '6M' :
+                                selectedPeriod === '1Y' ? '1Y' :
+                                  selectedPeriod === '5Y' ? '5Y' :
+                                    'ALL'
                   }
                 />
               ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex flex-col justify-center items-center h-96 text-gray-500">
-                    <svg className="w-16 h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                  <div className="flex flex-col justify-center items-center h-64 sm:h-96 text-gray-500">
+                    <svg className="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    <p className="text-lg font-medium mb-2">Données de graphique indisponibles</p>
-                    <p className="text-sm text-center max-w-md">
+                    <p className="text-base sm:text-lg font-medium mb-2">Données de graphique indisponibles</p>
+                    <p className="text-xs sm:text-sm text-center max-w-md px-4">
                       Les données historiques pour cette action ne sont pas disponibles pour le moment.
                     </p>
                   </div>
@@ -434,48 +448,46 @@ export default function StockDetailPageEnhanced() {
             </div>
 
             {/* Indicateurs (toujours visibles) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8 mb-8">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">Indicateurs de Décision</h3>
-              <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Indicateurs de Décision</h3>
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">Sentiment du Marché</h4>
+                  <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Sentiment du Marché</h4>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      sentiment.color === 'green'
+                    className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${sentiment.color === 'green'
                         ? 'bg-green-100 text-green-800'
                         : sentiment.color === 'lime'
-                        ? 'bg-lime-100 text-lime-800'
-                        : sentiment.color === 'yellow'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : sentiment.color === 'orange'
-                        ? 'bg-orange-100 text-orange-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
+                          ? 'bg-lime-100 text-lime-800'
+                          : sentiment.color === 'yellow'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : sentiment.color === 'orange'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-red-100 text-red-800'
+                      }`}
                   >
                     {sentiment.label}
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">Signal Technique</h4>
+                  <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Signal Technique</h4>
                   <span
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold inline-block ${
-                      technicalSignal.color === 'green'
+                    className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold inline-block ${technicalSignal.color === 'green'
                         ? 'bg-green-100 text-green-800'
                         : technicalSignal.color === 'lime'
-                        ? 'bg-lime-100 text-lime-800'
-                        : technicalSignal.color === 'yellow'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : technicalSignal.color === 'orange'
-                        ? 'bg-orange-100 text-orange-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
+                          ? 'bg-lime-100 text-lime-800'
+                          : technicalSignal.color === 'yellow'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : technicalSignal.color === 'orange'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-red-100 text-red-800'
+                      }`}
                   >
                     {technicalSignal.label}
                   </span>
-                  <p className="text-xs text-gray-600 mt-2">{technicalSignal.description}</p>
+                  <p className="text-xs text-gray-600 mt-1 sm:mt-2 hidden sm:block">{technicalSignal.description}</p>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-6 border-t border-gray-100 pt-3">
+              <p className="text-xs text-gray-500 mt-4 sm:mt-6 border-t border-gray-100 pt-3">
                 <strong>Note :</strong> Ces indicateurs sont générés automatiquement et ne constituent pas un conseil en
                 investissement.
               </p>
@@ -494,8 +506,8 @@ export default function StockDetailPageEnhanced() {
             {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} />}
           </div>
 
-          {/* Colonne latérale - Panel d'ordre */}
-          <div className="lg:col-span-1">
+          {/* Colonne latérale - Panel d'ordre (DESKTOP ONLY) */}
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
               <h3 className="text-xl font-bold text-gray-900">Ordre de Simulation</h3>
 
@@ -585,6 +597,150 @@ export default function StockDetailPageEnhanced() {
         </div>
       </div>
 
+      {/* ===== MOBILE: Fixed Bottom Bar ===== */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-500">Prix actuel</p>
+            <p className="text-lg font-bold text-gray-900">{formatNumber(stock.current_price)} F</p>
+          </div>
+          <button
+            onClick={() => setShowMobileOrder(true)}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+          >
+            {portfolio ? 'Acheter' : 'Se connecter'}
+          </button>
+        </div>
+      </div>
+
+      {/* ===== MOBILE: Order Modal ===== */}
+      {showMobileOrder && (
+        <div className="lg:hidden fixed inset-0 z-50 flex items-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowMobileOrder(false)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative w-full bg-white rounded-t-2xl p-6 pb-8 max-h-[80vh] overflow-y-auto animate-slide-up">
+            {/* Handle */}
+            <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
+
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Ordre de Simulation</h3>
+
+            {/* Cash balance */}
+            {portfolio ? (
+              <div className="flex justify-between items-center bg-gray-50 rounded-lg p-3 mb-4">
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <Wallet className="w-5 h-5 text-gray-400" />
+                  <span>Liquidités</span>
+                </div>
+                <span className="font-semibold text-gray-800">{formatNumber(portfolio.cash_balance)} FCFA</span>
+              </div>
+            ) : (
+              <div className="text-center text-sm text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <button
+                  onClick={() => {
+                    setShowMobileOrder(false);
+                    navigate('/login');
+                  }}
+                  className="text-blue-600 font-semibold hover:underline"
+                >
+                  Connectez-vous
+                </button>{' '}
+                pour simuler des achats.
+              </div>
+            )}
+
+            {portfolio && (
+              <>
+                {/* Quantité */}
+                <div className="mb-4">
+                  <label htmlFor="quantity-mobile" className="block text-sm font-medium text-gray-700 mb-2">
+                    Quantité
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-12 h-12 flex items-center justify-center border border-gray-300 rounded-lg text-xl font-bold text-gray-600 hover:bg-gray-50"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      id="quantity-mobile"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      min="1"
+                      step="1"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg font-semibold"
+                    />
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-12 h-12 flex items-center justify-center border border-gray-300 rounded-lg text-xl font-bold text-gray-600 hover:bg-gray-50"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Récapitulatif */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Prix / action</span>
+                    <span className="font-medium text-gray-800">{formatNumber(stock.current_price)} FCFA</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">Quantité</span>
+                    <span className="font-medium text-gray-800">{quantity}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-2 mt-2">
+                    <span className="text-gray-900">Total</span>
+                    <span className="text-blue-600">{formatNumber(totalCost)} FCFA</span>
+                  </div>
+                </div>
+
+                {/* Avertissement fonds insuffisants */}
+                {totalCost > portfolio.cash_balance && (
+                  <p className="text-red-600 text-sm text-center mb-4 bg-red-50 p-2 rounded-lg">
+                    ⚠️ Fonds insuffisants pour cet ordre.
+                  </p>
+                )}
+
+                {/* Erreur inline */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-2 text-sm mb-4">
+                    <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <p className="text-red-800">{error}</p>
+                  </div>
+                )}
+
+                {/* Boutons action */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowMobileOrder(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleBuy();
+                      setShowMobileOrder(false);
+                    }}
+                    disabled={totalCost > portfolio.cash_balance || isBuying}
+                    className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isBuying ? 'Achat...' : 'Confirmer'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Price Alert Modal */}
       <PriceAlertModal
         isOpen={isAlertModalOpen}
@@ -596,3 +752,4 @@ export default function StockDetailPageEnhanced() {
     </div>
   );
 }
+

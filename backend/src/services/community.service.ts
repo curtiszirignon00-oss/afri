@@ -219,9 +219,15 @@ export async function deleteCommunity(communityId: string, userId: string) {
  * Get community by ID or slug
  */
 export async function getCommunity(idOrSlug: string, viewerId?: string) {
+    // Check if idOrSlug is a valid MongoDB ObjectID (24 hex characters)
+    const isValidObjectId = /^[a-fA-F0-9]{24}$/.test(idOrSlug);
+
     const community = await prisma.community.findFirst({
         where: {
-            OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+            ...(isValidObjectId
+                ? { OR: [{ id: idOrSlug }, { slug: idOrSlug }] }
+                : { slug: idOrSlug }
+            ),
             is_active: true,
         },
         include: {
@@ -1018,6 +1024,21 @@ export async function createCommunityPost(communityId: string, authorId: string,
         where: { id: communityId },
         data: { posts_count: { increment: 1 } },
     });
+
+    // Notify community members about new post (only if approved)
+    if (!requireApproval && post.community) {
+        notificationService
+            .notifyCommunityNewPost(
+                communityId,
+                post.community.name,
+                post.community.slug,
+                post.id,
+                authorId,
+                `${post.author.name} ${post.author.lastname}`,
+                postData.title
+            )
+            .catch((err) => console.error('Error notifying community post:', err));
+    }
 
     return post;
 }

@@ -48,6 +48,52 @@ enum PostType {
 }
 
 // ================================= //
+// === ENUMS MODERATION ============ //
+// ================================= //
+
+enum ReportReason {
+  SPAM // Contenu spam
+  HARASSMENT // Harcèlement
+  HATE_SPEECH // Discours haineux
+  MISINFORMATION // Fausse information
+  INAPPROPRIATE // Contenu inapproprié
+  SCAM // Arnaque/Fraude
+  COPYRIGHT // Violation de droits d'auteur
+  OTHER // Autre raison
+}
+
+enum ReportStatus {
+  PENDING // En attente de traitement
+  REVIEWED // En cours d'examen
+  RESOLVED // Traité
+  DISMISSED // Rejeté
+}
+
+enum ModerationAction {
+  CONTENT_HIDDEN // Contenu masqué
+  CONTENT_DELETED // Contenu supprimé
+  USER_WARNED // Utilisateur averti
+  USER_MUTED // Utilisateur muté
+  USER_BANNED // Utilisateur banni
+  BAN_LIFTED // Ban levé
+  REPORT_DISMISSED // Signalement rejeté
+  KEYWORD_BLOCKED // Mot-clé bloqué
+}
+
+enum BanType {
+  TEMPORARY // Bannissement temporaire
+  PERMANENT // Bannissement permanent
+}
+
+enum ContentType {
+  POST // Post utilisateur
+  COMMENT // Commentaire
+  COMMUNITY_POST // Post communauté
+  COMMUNITY_COMMENT // Commentaire communauté
+  USER // Profil utilisateur
+}
+
+// ================================= //
 // === MODÈLES UTILISATEUR & AUTH === //
 // ================================= //
 
@@ -106,6 +152,14 @@ model User {
 
   // Statistiques dénormalisées
   posts_count Int @default(0)
+
+  // --- Modération ---
+  reportsSubmitted   Report[]         @relation("ReportReporter")
+  reportsProcessed   Report[]         @relation("ReportProcessor")
+  moderationLogs     ModerationLog[]
+  bans               UserBan[]        @relation("UserBans")
+  bansIssued         UserBan[]        @relation("BannedByUser")
+  bansLifted         UserBan[]        @relation("BanLiftedBy")
 
   @@map("users")
 }
@@ -1378,4 +1432,106 @@ model Notification {
   @@index([user_id, is_read])
   @@index([created_at])
   @@map("notifications")
+}
+
+// ================================= //
+// === MODÉRATION AVANCÉE ========== //
+// ================================= //
+
+model Report {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  reporter_id  String @db.ObjectId
+
+  // Contenu signalé
+  content_type ContentType
+  content_id   String      @db.ObjectId
+
+  // Détails du signalement
+  reason       ReportReason
+  description  String?
+
+  // Traitement
+  status       ReportStatus @default(PENDING)
+  processed_by String?      @db.ObjectId
+  processed_at DateTime?
+  resolution   String?
+
+  created_at DateTime @default(now())
+
+  reporter  User  @relation("ReportReporter", fields: [reporter_id], references: [id], onDelete: Cascade)
+  processor User? @relation("ReportProcessor", fields: [processed_by], references: [id], onDelete: SetNull)
+
+  @@index([reporter_id])
+  @@index([content_type, content_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("reports")
+}
+
+model BannedKeyword {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  keyword   String  @unique // Mot ou expression bannie (lowercase)
+  severity  Int     @default(1) // 1=warn, 2=block, 3=auto-ban
+  category  String? // spam, hate, scam, etc.
+  is_regex  Boolean @default(false)
+  is_active Boolean @default(true)
+
+  added_by   String   @db.ObjectId
+  created_at DateTime @default(now())
+
+  @@index([severity])
+  @@index([is_active])
+  @@map("banned_keywords")
+}
+
+model ModerationLog {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  moderator_id String @db.ObjectId
+
+  action      ModerationAction
+  target_type ContentType
+  target_id   String           @db.ObjectId
+
+  reason   String?
+  metadata Json?
+
+  created_at DateTime @default(now())
+
+  moderator User @relation(fields: [moderator_id], references: [id], onDelete: Cascade)
+
+  @@index([moderator_id])
+  @@index([action])
+  @@index([target_type])
+  @@index([created_at])
+  @@map("moderation_logs")
+}
+
+model UserBan {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  user_id   String @db.ObjectId
+  banned_by String @db.ObjectId
+
+  ban_type BanType
+  reason   String
+
+  // Durée (pour bans temporaires)
+  starts_at DateTime  @default(now())
+  ends_at   DateTime? // null = permanent
+
+  // Levée de ban
+  is_active   Boolean   @default(true)
+  lifted_by   String?   @db.ObjectId
+  lifted_at   DateTime?
+  lift_reason String?
+
+  created_at DateTime @default(now())
+
+  user   User  @relation("UserBans", fields: [user_id], references: [id], onDelete: Cascade)
+  banner User  @relation("BannedByUser", fields: [banned_by], references: [id], onDelete: Cascade)
+  lifter User? @relation("BanLiftedBy", fields: [lifted_by], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([is_active])
+  @@index([ends_at])
+  @@map("user_bans")
 }
