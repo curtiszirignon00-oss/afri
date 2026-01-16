@@ -1,0 +1,541 @@
+// src/pages/CommunityDetailPage.tsx
+import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import {
+    Users,
+    MessageSquare,
+    Settings,
+    Globe,
+    Lock,
+    Shield,
+    Crown,
+    CheckCircle,
+    Loader2,
+    ArrowLeft,
+    UserPlus,
+    LogOut,
+    Clock,
+    AlertCircle,
+} from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import {
+    useCommunity,
+    useCommunityPosts,
+    useJoinCommunity,
+    useLeaveCommunity,
+    useCommunityMembers,
+    COMMUNITY_CATEGORIES,
+    type CommunityPost,
+} from '../hooks/useCommunity';
+import { useAuth } from '../contexts/AuthContext';
+import CommunityPostCard from '../components/community/CommunityPostCard';
+import CommunityPostComposer from '../components/community/CommunityPostComposer';
+import CommunityMembersModal from '../components/community/CommunityMembersModal';
+import CommunitySettingsModal from '../components/community/CommunitySettingsModal';
+
+export default function CommunityDetailPage() {
+    const { slug } = useParams<{ slug: string }>();
+    const { isAuthenticated, user } = useAuth();
+    const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'members'>('posts');
+    const [postsPage, setPostsPage] = useState(1);
+    const [showMembersModal, setShowMembersModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+    const { data: community, isLoading, error } = useCommunity(slug || '');
+    const { data: postsData, isLoading: postsLoading } = useCommunityPosts(community?.id || '', postsPage);
+    const { data: membersData } = useCommunityMembers(community?.id || '', 1);
+
+    const joinCommunity = useJoinCommunity();
+    const leaveCommunity = useLeaveCommunity();
+
+    const posts = postsData?.data || [];
+    const totalPostsPages = postsData?.totalPages || 1;
+    const members = membersData?.data || [];
+
+    const handleJoin = async () => {
+        if (!community) return;
+
+        try {
+            const result = await joinCommunity.mutateAsync(community.id);
+            if (result.status === 'pending') {
+                toast.success('Votre demande a ete envoyee. En attente d\'approbation.');
+            } else {
+                toast.success('Vous avez rejoint la communaute!');
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || 'Erreur lors de l\'adhesion');
+        }
+    };
+
+    const handleLeave = async () => {
+        if (!community) return;
+
+        if (!confirm('Etes-vous sur de vouloir quitter cette communaute?')) return;
+
+        try {
+            await leaveCommunity.mutateAsync(community.id);
+            toast.success('Vous avez quitte la communaute');
+        } catch (error: any) {
+            toast.error(error.response?.data?.error || 'Erreur lors du depart');
+        }
+    };
+
+    const getVisibilityIcon = (visibility: string) => {
+        switch (visibility) {
+            case 'PUBLIC':
+                return <Globe className="w-4 h-4 text-green-500" />;
+            case 'PRIVATE':
+                return <Lock className="w-4 h-4 text-yellow-500" />;
+            case 'SECRET':
+                return <Shield className="w-4 h-4 text-red-500" />;
+            default:
+                return <Globe className="w-4 h-4" />;
+        }
+    };
+
+    const canManage = community?.memberRole === 'OWNER' || community?.memberRole === 'ADMIN';
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
+
+    if (error || !community) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Communaute non trouvee</h2>
+                    <Link to="/communities" className="text-indigo-600 hover:underline">
+                        Retour aux communautes
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Header / Banner */}
+            <div className="relative">
+                <div className="h-48 bg-gradient-to-r from-indigo-600 to-purple-600">
+                    {community.banner_url && (
+                        <img
+                            src={community.banner_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                        />
+                    )}
+                </div>
+
+                {/* Back button */}
+                <Link
+                    to="/communities"
+                    className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-black/30 text-white rounded-lg hover:bg-black/50 transition-colors"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Retour
+                </Link>
+
+                {/* Community Info Overlay */}
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="relative -mt-16 flex flex-col sm:flex-row items-start sm:items-end gap-4">
+                        {/* Avatar */}
+                        <div className="w-32 h-32 bg-white rounded-2xl shadow-lg flex items-center justify-center overflow-hidden">
+                            {community.avatar_url ? (
+                                <img
+                                    src={community.avatar_url}
+                                    alt={community.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <Users className="w-16 h-16 text-indigo-600" />
+                            )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1 pb-4">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h1 className="text-2xl font-bold text-gray-900">{community.name}</h1>
+                                {community.is_verified && (
+                                    <CheckCircle className="w-5 h-5 text-blue-500" />
+                                )}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-1">
+                                    {getVisibilityIcon(community.visibility)}
+                                    <span>
+                                        {community.visibility === 'PUBLIC'
+                                            ? 'Publique'
+                                            : community.visibility === 'PRIVATE'
+                                            ? 'Privee'
+                                            : 'Secrete'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Users className="w-4 h-4" />
+                                    <span>{community.members_count} membres</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <MessageSquare className="w-4 h-4" />
+                                    <span>{community.posts_count} posts</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                            {isAuthenticated && !community.isMember && !community.hasPendingRequest && (
+                                <button
+                                    onClick={handleJoin}
+                                    disabled={joinCommunity.isPending}
+                                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                                >
+                                    {joinCommunity.isPending ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <UserPlus className="w-4 h-4" />
+                                    )}
+                                    Rejoindre
+                                </button>
+                            )}
+
+                            {community.hasPendingRequest && (
+                                <span className="flex items-center gap-2 px-6 py-3 bg-yellow-100 text-yellow-700 rounded-xl">
+                                    <Clock className="w-4 h-4" />
+                                    Demande en attente
+                                </span>
+                            )}
+
+                            {community.isMember && community.memberRole !== 'OWNER' && (
+                                <button
+                                    onClick={handleLeave}
+                                    disabled={leaveCommunity.isPending}
+                                    className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                                >
+                                    {leaveCommunity.isPending ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <LogOut className="w-4 h-4" />
+                                    )}
+                                    Quitter
+                                </button>
+                            )}
+
+                            {canManage && (
+                                <button
+                                    onClick={() => setShowSettingsModal(true)}
+                                    className="p-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="border-b bg-white sticky top-0 z-10">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex gap-8">
+                        <button
+                            onClick={() => setActiveTab('posts')}
+                            className={`py-4 border-b-2 font-medium transition-colors ${
+                                activeTab === 'posts'
+                                    ? 'border-indigo-600 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Publications
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('about')}
+                            className={`py-4 border-b-2 font-medium transition-colors ${
+                                activeTab === 'about'
+                                    ? 'border-indigo-600 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            A propos
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('members')}
+                            className={`py-4 border-b-2 font-medium transition-colors ${
+                                activeTab === 'members'
+                                    ? 'border-indigo-600 text-indigo-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            Membres
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Posts Tab */}
+                {activeTab === 'posts' && (
+                    <div className="max-w-2xl mx-auto">
+                        {/* Post Composer */}
+                        {community.isMember && (
+                            <div className="mb-6">
+                                <CommunityPostComposer communityId={community.id} />
+                            </div>
+                        )}
+
+                        {/* Posts Loading */}
+                        {postsLoading && (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                            </div>
+                        )}
+
+                        {/* Posts Empty */}
+                        {!postsLoading && posts.length === 0 && (
+                            <div className="bg-white rounded-xl p-12 text-center">
+                                <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    Aucune publication
+                                </h3>
+                                <p className="text-gray-600">
+                                    {community.isMember
+                                        ? 'Soyez le premier a publier dans cette communaute!'
+                                        : 'Rejoignez la communaute pour voir et publier des contenus.'}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Posts List */}
+                        {!postsLoading && posts.length > 0 && (
+                            <div className="space-y-6">
+                                {posts.map((post: CommunityPost) => (
+                                    <CommunityPostCard
+                                        key={post.id}
+                                        post={post}
+                                        communityId={community.id}
+                                        canModerate={canManage}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Posts Pagination */}
+                        {totalPostsPages > 1 && (
+                            <div className="flex justify-center gap-2 mt-8">
+                                <button
+                                    onClick={() => setPostsPage((p) => Math.max(1, p - 1))}
+                                    disabled={postsPage === 1}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    Precedent
+                                </button>
+                                <span className="px-4 py-2 text-gray-600">
+                                    Page {postsPage} sur {totalPostsPages}
+                                </span>
+                                <button
+                                    onClick={() => setPostsPage((p) => Math.min(totalPostsPages, p + 1))}
+                                    disabled={postsPage === totalPostsPages}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    Suivant
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* About Tab */}
+                {activeTab === 'about' && (
+                    <div className="max-w-2xl mx-auto space-y-6">
+                        {/* Description */}
+                        {community.description && (
+                            <div className="bg-white rounded-xl p-6">
+                                <h3 className="font-semibold text-gray-900 mb-3">Description</h3>
+                                <p className="text-gray-600 whitespace-pre-wrap">{community.description}</p>
+                            </div>
+                        )}
+
+                        {/* Category */}
+                        {community.category && (
+                            <div className="bg-white rounded-xl p-6">
+                                <h3 className="font-semibold text-gray-900 mb-3">Categorie</h3>
+                                <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full">
+                                    {COMMUNITY_CATEGORIES.find((c) => c.value === community.category)?.label ||
+                                        community.category}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Tags */}
+                        {community.tags && community.tags.length > 0 && (
+                            <div className="bg-white rounded-xl p-6">
+                                <h3 className="font-semibold text-gray-900 mb-3">Tags</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {community.tags.map((tag) => (
+                                        <span
+                                            key={tag}
+                                            className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Rules */}
+                        {community.rules && community.rules.length > 0 && (
+                            <div className="bg-white rounded-xl p-6">
+                                <h3 className="font-semibold text-gray-900 mb-4">Regles de la communaute</h3>
+                                <div className="space-y-4">
+                                    {community.rules.map((rule, index) => (
+                                        <div key={index} className="flex gap-3">
+                                            <span className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0">
+                                                {index + 1}
+                                            </span>
+                                            <div>
+                                                <p className="font-medium text-gray-900">{rule.title}</p>
+                                                <p className="text-sm text-gray-600">{rule.description}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Creator */}
+                        <div className="bg-white rounded-xl p-6">
+                            <h3 className="font-semibold text-gray-900 mb-3">Creee par</h3>
+                            <Link
+                                to={`/profile/${community.creator.id}`}
+                                className="flex items-center gap-3 hover:bg-gray-50 p-2 rounded-lg -m-2"
+                            >
+                                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+                                    {community.creator.profile?.avatar_url ? (
+                                        <img
+                                            src={community.creator.profile.avatar_url}
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <Users className="w-5 h-5 text-gray-400" />
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-900">
+                                        {community.creator.name} {community.creator.lastname}
+                                    </p>
+                                    {community.creator.profile?.username && (
+                                        <p className="text-sm text-gray-500">@{community.creator.profile.username}</p>
+                                    )}
+                                </div>
+                                <Crown className="w-5 h-5 text-yellow-500 ml-auto" />
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {/* Members Tab */}
+                {activeTab === 'members' && (
+                    <div className="max-w-2xl mx-auto">
+                        <div className="bg-white rounded-xl overflow-hidden">
+                            <div className="p-4 border-b flex items-center justify-between">
+                                <h3 className="font-semibold text-gray-900">
+                                    {community.members_count} membres
+                                </h3>
+                                {canManage && (
+                                    <button
+                                        onClick={() => setShowMembersModal(true)}
+                                        className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                                    >
+                                        Gerer les membres
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="divide-y">
+                                {members.slice(0, 10).map((member) => (
+                                    <Link
+                                        key={member.id}
+                                        to={`/profile/${member.user.id}`}
+                                        className="flex items-center gap-3 p-4 hover:bg-gray-50"
+                                    >
+                                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+                                            {member.user.profile?.avatar_url ? (
+                                                <img
+                                                    src={member.user.profile.avatar_url}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <Users className="w-5 h-5 text-gray-400" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-900">
+                                                {member.user.name} {member.user.lastname}
+                                            </p>
+                                            {member.user.profile?.username && (
+                                                <p className="text-sm text-gray-500">
+                                                    @{member.user.profile.username}
+                                                </p>
+                                            )}
+                                        </div>
+                                        {member.role === 'OWNER' && (
+                                            <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                                                <Crown className="w-3 h-3" />
+                                                Proprietaire
+                                            </span>
+                                        )}
+                                        {member.role === 'ADMIN' && (
+                                            <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                                                <Shield className="w-3 h-3" />
+                                                Admin
+                                            </span>
+                                        )}
+                                        {member.role === 'MODERATOR' && (
+                                            <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                                                <Shield className="w-3 h-3" />
+                                                Modo
+                                            </span>
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+
+                            {community.members_count > 10 && (
+                                <button
+                                    onClick={() => setShowMembersModal(true)}
+                                    className="w-full p-4 text-center text-indigo-600 hover:bg-gray-50 font-medium"
+                                >
+                                    Voir tous les membres
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Modals */}
+            {showMembersModal && (
+                <CommunityMembersModal
+                    communityId={community.id}
+                    canManage={canManage}
+                    onClose={() => setShowMembersModal(false)}
+                />
+            )}
+
+            {showSettingsModal && (
+                <CommunitySettingsModal
+                    community={community}
+                    onClose={() => setShowSettingsModal(false)}
+                />
+            )}
+        </div>
+    );
+}
