@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
-import CommunityPostCard from '../components/community/CommunityPostCard';
+import PostCard from '../components/profile/PostCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useCommunities } from '../hooks/useCommunity';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
@@ -257,7 +257,7 @@ export default function CommunityPage() {
                         {!isLoading && posts.length > 0 && (
                             <div className="space-y-6">
                                 {posts.map((post) => (
-                                    <CommunityPostCard key={post.id} post={post as any} communityId="" />
+                                    <PostCard key={post.id} post={post} />
                                 ))}
                             </div>
                         )}
