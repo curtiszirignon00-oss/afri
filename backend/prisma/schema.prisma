@@ -1109,6 +1109,7 @@ enum NotificationType {
   MENTION        // Vous avez été mentionné
   ACHIEVEMENT    // Vous avez débloqué un badge
   LEVEL_UP       // Vous avez gagné un niveau
+  PRICE_ALERT    // Alerte de prix déclenchée
 }
 
 model Notification {

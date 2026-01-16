@@ -304,10 +304,20 @@ export async function likePost(userId: string, postId: string) {
     });
 
     // Increment likes count
-    await prisma.post.update({
+    const post = await prisma.post.update({
         where: { id: postId },
         data: { likes_count: { increment: 1 } },
     });
+
+    // Notify post author about the like
+    const liker = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, lastname: true },
+    });
+    if (liker && post.author_id !== userId) {
+        notificationService.notifyPostLike(userId, `${liker.name} ${liker.lastname}`, postId, post.author_id)
+            .catch(err => console.error('Error notifying post like:', err));
+    }
 
     return like;
 }
@@ -361,10 +371,38 @@ export async function commentPost(userId: string, postId: string, content: strin
     });
 
     // Increment comments count
-    await prisma.post.update({
+    const post = await prisma.post.update({
         where: { id: postId },
         data: { comments_count: { increment: 1 } },
     });
+
+    // Notify post author about the comment
+    const commenter = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, lastname: true },
+    });
+    if (commenter && post.author_id !== userId) {
+        notificationService.notifyPostComment(userId, `${commenter.name} ${commenter.lastname}`, postId, post.author_id)
+            .catch(err => console.error('Error notifying post comment:', err));
+    }
+
+    // If this is a reply to another comment, notify the parent comment author
+    if (parentId) {
+        const parentComment = await prisma.comment.findUnique({
+            where: { id: parentId },
+            select: { author_id: true },
+        });
+        if (parentComment && parentComment.author_id !== userId && commenter) {
+            notificationService.createNotification({
+                userId: parentComment.author_id,
+                type: 'COMMENT_REPLY',
+                title: 'Nouvelle réponse',
+                message: `${commenter.name} ${commenter.lastname} a répondu à votre commentaire`,
+                actorId: userId,
+                postId: postId,
+            }).catch(err => console.error('Error notifying comment reply:', err));
+        }
+    }
 
     return comment;
 }
