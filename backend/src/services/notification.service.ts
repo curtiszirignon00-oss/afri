@@ -240,3 +240,31 @@ export async function deleteOldNotifications(daysOld: number = 30) {
         },
     });
 }
+
+/**
+ * Notify user about a price alert being triggered
+ */
+export async function notifyPriceAlert(
+    userId: string,
+    stockSymbol: string,
+    stockName: string,
+    currentPrice: number,
+    targetPrice: number,
+    alertType: 'ABOVE' | 'BELOW'
+) {
+    const direction = alertType === 'ABOVE' ? 'au-dessus de' : 'en-dessous de';
+
+    return createNotification({
+        userId,
+        type: 'PRICE_ALERT',
+        title: `Alerte ${stockSymbol}`,
+        message: `${stockName} est maintenant ${direction} ${targetPrice} FCFA (${currentPrice} FCFA)`,
+        metadata: {
+            stockSymbol,
+            stockName,
+            currentPrice,
+            targetPrice,
+            alertType,
+        },
+    });
+}

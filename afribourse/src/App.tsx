@@ -43,6 +43,7 @@ import AdminSubscriptionStats from './components/AdminSubscriptionStats';
 import CheckoutPage from './components/CheckoutPage';
 import AdminDashboard from './components/AdminDashboard';
 import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
+import NotificationsPage from './pages/NotificationsPage';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -157,6 +158,16 @@ function Layout() {
             element={
               <ProtectedRoute requireOnboarding={true}>
                 <TransactionsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Notifications - Protégé */}
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute requireOnboarding={true}>
+                <NotificationsPage />
               </ProtectedRoute>
             }
           />
