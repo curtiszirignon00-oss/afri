@@ -54,10 +54,11 @@ export default function StockDetailPageEnhanced() {
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
 
   // Hooks React Query pour charger les données - DOIVENT être appelés avant tout early return
-  const { data: historyData, isLoading: historyLoading } = useStockHistory(stock?.symbol || symbol || '', selectedPeriod);
-  const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(stock?.symbol || symbol || '');
-  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(stock?.symbol || symbol || '');
-  const { data: newsData, isLoading: newsLoading } = useStockNews(stock?.symbol || symbol || '', 10);
+  // IMPORTANT: Toujours utiliser symbol (du paramètre URL) pour éviter les violations des règles des hooks
+  const { data: historyData, isLoading: historyLoading } = useStockHistory(symbol || '', selectedPeriod);
+  const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(symbol || '');
+  const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(symbol || '');
+  const { data: newsData, isLoading: newsLoading } = useStockNews(symbol || '', 10);
 
   // Charger le stock depuis l'API si non disponible dans state
   useEffect(() => {
@@ -455,14 +456,14 @@ export default function StockDetailPageEnhanced() {
                   <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Sentiment du Marché</h4>
                   <span
                     className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${sentiment.color === 'green'
-                        ? 'bg-green-100 text-green-800'
-                        : sentiment.color === 'lime'
-                          ? 'bg-lime-100 text-lime-800'
-                          : sentiment.color === 'yellow'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : sentiment.color === 'orange'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : sentiment.color === 'lime'
+                        ? 'bg-lime-100 text-lime-800'
+                        : sentiment.color === 'yellow'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : sentiment.color === 'orange'
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-red-100 text-red-800'
                       }`}
                   >
                     {sentiment.label}
@@ -472,14 +473,14 @@ export default function StockDetailPageEnhanced() {
                   <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Signal Technique</h4>
                   <span
                     className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold inline-block ${technicalSignal.color === 'green'
-                        ? 'bg-green-100 text-green-800'
-                        : technicalSignal.color === 'lime'
-                          ? 'bg-lime-100 text-lime-800'
-                          : technicalSignal.color === 'yellow'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : technicalSignal.color === 'orange'
-                              ? 'bg-orange-100 text-orange-800'
-                              : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : technicalSignal.color === 'lime'
+                        ? 'bg-lime-100 text-lime-800'
+                        : technicalSignal.color === 'yellow'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : technicalSignal.color === 'orange'
+                            ? 'bg-orange-100 text-orange-800'
+                            : 'bg-red-100 text-red-800'
                       }`}
                   >
                     {technicalSignal.label}
