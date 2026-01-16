@@ -22,7 +22,7 @@ const postTypeConfig: Record<string, { label: string; color: string; icon: any }
 };
 
 export default function PostCard({ post }: PostCardProps) {
-    const { userProfile, isAuthenticated } = useAuth();
+    const { userProfile, isLoggedIn } = useAuth();
     const navigate = useNavigate();
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(post.hasLiked || false);
@@ -46,7 +46,7 @@ export default function PostCard({ post }: PostCardProps) {
 
     const handleFollow = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!isAuthenticated) {
+        if (!isLoggedIn) {
             navigate('/login');
             return;
         }

@@ -262,9 +262,10 @@ export async function createPost(authorId: string, postData: CreatePostDto) {
         data: { posts_count: { increment: 1 } },
     });
 
-    await prisma.userProfile.update({
+    await prisma.userProfile.upsert({
         where: { userId: authorId },
-        data: { posts_count: { increment: 1 } },
+        update: { posts_count: { increment: 1 } },
+        create: { userId: authorId, posts_count: 1, followers_count: 0, following_count: 0 },
     });
 
     // Notify followers about the new post (only for public posts)
@@ -591,9 +592,10 @@ export async function deletePost(postId: string, authorId: string) {
         data: { posts_count: { decrement: 1 } },
     });
 
-    await prisma.userProfile.update({
+    await prisma.userProfile.upsert({
         where: { userId: authorId },
-        data: { posts_count: { decrement: 1 } },
+        update: { posts_count: { decrement: 1 } },
+        create: { userId: authorId, posts_count: 0, followers_count: 0, following_count: 0 },
     });
 
     return { success: true };
