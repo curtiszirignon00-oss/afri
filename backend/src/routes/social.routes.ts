@@ -1,6 +1,6 @@
 // src/routes/social.routes.ts
 import { Router } from 'express';
-import { auth } from '../middlewares/auth.middleware';
+import { auth, optionalAuth } from '../middlewares/auth.middleware';
 import * as socialController from '../controllers/social.controller';
 
 const router = Router();
@@ -12,7 +12,7 @@ router.get('/followers/:userId', socialController.getFollowers);
 router.get('/following/:userId', socialController.getFollowing);
 
 // ============= POST ROUTES =============
-router.get('/community', socialController.getPublicPosts); // Public community feed (no auth required)
+router.get('/community', optionalAuth, socialController.getPublicPosts); // Public community feed with optional auth for follow status
 router.get('/feed', auth, socialController.getFeed);
 router.get('/posts/:userId', socialController.getUserPosts);
 router.post('/posts', auth, socialController.createPost);
