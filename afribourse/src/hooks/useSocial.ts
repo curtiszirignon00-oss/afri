@@ -32,6 +32,7 @@ export function useFollowUser() {
             queryClient.invalidateQueries({ queryKey: ['community-posts'] });
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
@@ -53,6 +54,7 @@ export function useUnfollowUser() {
             queryClient.invalidateQueries({ queryKey: ['community-posts'] });
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
@@ -97,6 +99,8 @@ export function useCreatePost() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
@@ -148,8 +152,13 @@ export function useCommentPost() {
             const response = await apiClient.post(`/social/posts/${postId}/comments`, { content, parentId });
             return response.data.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['comments'] });
+        onSuccess: (_data, variables) => {
+            // Invalidate all comments queries for this post
+            queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] });
+            // Also invalidate post lists to update comment counts
+            queryClient.invalidateQueries({ queryKey: ['feed'] });
+            queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
         },
     });
 }
@@ -207,6 +216,7 @@ export function useUpdatePost() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
         },
     });
 }
@@ -225,6 +235,8 @@ export function useDeletePost() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
