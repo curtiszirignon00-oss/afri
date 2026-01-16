@@ -19,6 +19,8 @@ import MarketsPageRefactored from './components/MarketsPageRefactored';
 import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import ProfilePage from './pages/ProfilePage';
 import CommunityPage from './pages/CommunityPage';
+import CommunitiesPage from './pages/CommunitiesPage';
+import CommunityDetailPage from './pages/CommunityDetailPage';
 import StockDetailPageEnhanced from './components/StockDetailPageEnhanced';
 import LearnPage from './components/LearnPage';
 import NewsPage from './components/NewsPage';
@@ -100,6 +102,8 @@ function Layout() {
           <Route path="/help" element={<HelpCenterPage />} />
           <Route path="/subscriptions" element={<SubscriptionPage />} />
           <Route path="/community" element={<CommunityPage />} />
+          <Route path="/communities" element={<CommunitiesPage />} />
+          <Route path="/communities/:slug" element={<CommunityDetailPage />} />
 
           {/* Onboarding - Protégé mais ne vérifie PAS le statut d'onboarding (évite la boucle) */}
           <Route

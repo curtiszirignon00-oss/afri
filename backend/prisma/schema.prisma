@@ -95,6 +95,15 @@ model User {
   notifications      Notification[]  @relation
   actedNotifications Notification[]  @relation("NotificationActor")
 
+  // --- Communautés ---
+  createdCommunities    Community[]            @relation("CommunityCreator")
+  communityMemberships  CommunityMember[]
+  communityPosts        CommunityPost[]
+  communityPostLikes    CommunityPostLike[]
+  communityPostComments CommunityPostComment[]
+  joinRequests          CommunityJoinRequest[] @relation("JoinRequestUser")
+  processedJoinRequests CommunityJoinRequest[] @relation("JoinRequestProcessor")
+
   // Statistiques dénormalisées
   posts_count Int @default(0)
 
@@ -1099,17 +1108,245 @@ model Comment {
   @@map("comments")
 }
 
+// ================================= //
+// === COMMUNAUTÉS ================= //
+// ================================= //
+
+enum CommunityVisibility {
+  PUBLIC  // Visible par tous, tout le monde peut rejoindre
+  PRIVATE // Visible mais nécessite approbation pour rejoindre
+  SECRET  // Invisible, uniquement sur invitation
+}
+
+enum CommunityMemberRole {
+  OWNER     // Créateur, tous les droits
+  ADMIN     // Peut gérer membres et contenu
+  MODERATOR // Peut modérer le contenu
+  MEMBER    // Membre standard
+}
+
+enum JoinRequestStatus {
+  PENDING  // En attente d'approbation
+  APPROVED // Approuvé
+  REJECTED // Rejeté
+}
+
+model Community {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  creator_id  String @db.ObjectId
+
+  // Informations de base
+  name        String
+  slug        String @unique // URL-friendly identifier
+  description String? @db.String
+
+  // Médias
+  avatar_url  String?
+  banner_url  String?
+
+  // Visibilité et accès
+  visibility  CommunityVisibility @default(PUBLIC)
+
+  // Règles de la communauté (JSON flexible)
+  rules       Json? // [{ title: "Règle 1", description: "..." }, ...]
+
+  // Catégorie/Tags
+  category    String? // investissement, trading, analyse, débutants, etc.
+  tags        String[] @default([])
+
+  // Paramètres
+  settings    Json? // { allow_posts: true, require_approval: false, min_level: 0, etc. }
+
+  // Statistiques dénormalisées
+  members_count Int @default(1) // Le créateur est inclus
+  posts_count   Int @default(0)
+
+  // Modération
+  is_verified Boolean @default(false) // Communauté officielle
+  is_active   Boolean @default(true)
+  is_featured Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  creator      User              @relation("CommunityCreator", fields: [creator_id], references: [id], onDelete: Cascade)
+  members      CommunityMember[]
+  posts        CommunityPost[]
+  joinRequests CommunityJoinRequest[]
+
+  @@index([creator_id])
+  @@index([visibility])
+  @@index([category])
+  @@index([is_active])
+  @@index([members_count])
+  @@index([created_at])
+  @@map("communities")
+}
+
+model CommunityMember {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  community_id String @db.ObjectId
+  user_id      String @db.ObjectId
+
+  role         CommunityMemberRole @default(MEMBER)
+
+  // Paramètres du membre
+  notifications_enabled Boolean @default(true)
+  is_muted              Boolean @default(false) // Muté par les modos
+  mute_reason           String?
+  muted_until           DateTime?
+
+  joined_at    DateTime @default(now())
+
+  community Community @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([community_id, user_id])
+  @@index([community_id])
+  @@index([user_id])
+  @@index([role])
+  @@map("community_members")
+}
+
+model CommunityJoinRequest {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  community_id String @db.ObjectId
+  user_id      String @db.ObjectId
+
+  status       JoinRequestStatus @default(PENDING)
+  message      String? // Message du demandeur
+
+  // Traitement
+  processed_by String? @db.ObjectId // Admin qui a traité
+  processed_at DateTime?
+  reject_reason String?
+
+  created_at   DateTime @default(now())
+
+  community Community @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  user      User      @relation("JoinRequestUser", fields: [user_id], references: [id], onDelete: Cascade)
+  processor User?     @relation("JoinRequestProcessor", fields: [processed_by], references: [id], onDelete: SetNull)
+
+  @@unique([community_id, user_id])
+  @@index([community_id])
+  @@index([user_id])
+  @@index([status])
+  @@map("community_join_requests")
+}
+
+model CommunityPost {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  community_id String @db.ObjectId
+  author_id    String @db.ObjectId
+
+  // Contenu
+  type    PostType @default(OPINION)
+  content String   @db.String
+  title   String?
+
+  // Contexte boursier (optionnel)
+  stock_symbol String?
+  stock_price  Float?
+  stock_change Float?
+
+  // Médias
+  images    String[] @default([])
+  video_url String?
+
+  // Métadonnées
+  tags            String[] @default([])
+  mentioned_users String[] @default([])
+
+  // Engagement (dénormalisé)
+  likes_count    Int @default(0)
+  comments_count Int @default(0)
+  views_count    Int @default(0)
+
+  // Modération
+  is_pinned   Boolean @default(false)
+  is_approved Boolean @default(true) // Pour les communautés avec modération
+  is_reported Boolean @default(false)
+  is_hidden   Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  community Community             @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  author    User                  @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  likes     CommunityPostLike[]
+  comments  CommunityPostComment[]
+
+  @@index([community_id])
+  @@index([author_id])
+  @@index([created_at])
+  @@index([is_pinned])
+  @@index([is_approved])
+  @@map("community_posts")
+}
+
+model CommunityPostLike {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  post_id    String   @db.ObjectId
+  user_id    String   @db.ObjectId
+  created_at DateTime @default(now())
+
+  post CommunityPost @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([post_id, user_id])
+  @@index([post_id])
+  @@index([user_id])
+  @@map("community_post_likes")
+}
+
+model CommunityPostComment {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  post_id   String  @db.ObjectId
+  author_id String  @db.ObjectId
+  parent_id String? @db.ObjectId
+
+  content String @db.String
+
+  // Engagement
+  likes_count Int @default(0)
+
+  // Modération
+  is_reported Boolean @default(false)
+  is_hidden   Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  post    CommunityPost          @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  author  User                   @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  parent  CommunityPostComment?  @relation("CommunityCommentReplies", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies CommunityPostComment[] @relation("CommunityCommentReplies")
+
+  @@index([post_id])
+  @@index([author_id])
+  @@index([parent_id])
+  @@index([created_at])
+  @@map("community_post_comments")
+}
+
 // ============= NOTIFICATIONS =============
 enum NotificationType {
-  NEW_POST       // Un utilisateur que vous suivez a posté
-  NEW_FOLLOWER   // Quelqu'un vous suit
-  POST_LIKE      // Quelqu'un a aimé votre post
-  POST_COMMENT   // Quelqu'un a commenté votre post
-  COMMENT_REPLY  // Quelqu'un a répondu à votre commentaire
-  MENTION        // Vous avez été mentionné
-  ACHIEVEMENT    // Vous avez débloqué un badge
-  LEVEL_UP       // Vous avez gagné un niveau
-  PRICE_ALERT    // Alerte de prix déclenchée
+  NEW_POST            // Un utilisateur que vous suivez a posté
+  NEW_FOLLOWER        // Quelqu'un vous suit
+  POST_LIKE           // Quelqu'un a aimé votre post
+  POST_COMMENT        // Quelqu'un a commenté votre post
+  COMMENT_REPLY       // Quelqu'un a répondu à votre commentaire
+  MENTION             // Vous avez été mentionné
+  ACHIEVEMENT         // Vous avez débloqué un badge
+  LEVEL_UP            // Vous avez gagné un niveau
+  PRICE_ALERT         // Alerte de prix déclenchée
+  COMMUNITY_INVITE    // Invitation à rejoindre une communauté
+  COMMUNITY_JOIN      // Quelqu'un a rejoint votre communauté
+  COMMUNITY_POST      // Nouveau post dans une communauté
+  JOIN_REQUEST        // Demande d'adhésion à votre communauté
+  JOIN_APPROVED       // Votre demande a été approuvée
+  JOIN_REJECTED       // Votre demande a été rejetée
 }
 
 model Notification {

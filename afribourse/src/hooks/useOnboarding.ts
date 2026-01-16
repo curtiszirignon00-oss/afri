@@ -1,5 +1,5 @@
 // src/hooks/useOnboarding.ts
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { apiClient } from '../lib/api-client';
@@ -32,10 +32,17 @@ export function useOnboardingStatus() {
  * Complete onboarding questionnaire
  */
 export function useCompleteOnboarding() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (data: OnboardingData) => {
             const response = await apiClient.post('/investor-profile/onboarding/complete', data);
             return response.data.data;
+        },
+        onSuccess: () => {
+            // Invalider le cache du statut d'onboarding pour éviter les boucles de redirection
+            queryClient.invalidateQueries({ queryKey: ['onboarding', 'status'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
