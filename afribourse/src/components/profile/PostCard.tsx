@@ -40,7 +40,7 @@ export default function PostCard({ post }: PostCardProps) {
     const followMutation = useFollowUser();
     const unfollowMutation = useUnfollowUser();
 
-    const authorId = post.author_id || post.author?.id;
+    const authorId = post.author?.id || post.author_id;
     const isOwner = userProfile?.id === authorId;
     const isFollowLoading = followMutation.isPending || unfollowMutation.isPending;
 
@@ -193,11 +193,10 @@ export default function PostCard({ post }: PostCardProps) {
                             <button
                                 onClick={handleFollow}
                                 disabled={isFollowLoading}
-                                className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full font-medium transition-all ${
-                                    isFollowing
+                                className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full font-medium transition-all ${isFollowing
                                         ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                         : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                } disabled:opacity-50`}
+                                    } disabled:opacity-50`}
                             >
                                 {isFollowLoading ? (
                                     <Loader2 className="w-3 h-3 animate-spin" />
