@@ -47,7 +47,8 @@ export default function OnboardingFlow() {
         completeOnboarding(formData as OnboardingData, {
             onSuccess: () => {
                 toast.success('Profil créé avec succès !');
-                navigate('/profile');
+                // Rediriger vers le dashboard (qui vérifiera l'onboarding avec le cache mis à jour)
+                navigate('/dashboard', { replace: true });
             },
             onError: (error: any) => {
                 toast.error(error.response?.data?.error || 'Erreur lors de la création du profil');

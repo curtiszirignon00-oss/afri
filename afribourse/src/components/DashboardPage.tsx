@@ -1,5 +1,5 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useNavigate } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
@@ -65,16 +65,24 @@ export default function DashboardPage() {
   const [selectedStockToBuy, setSelectedStockToBuy] = useState<Stock | null>(null);
   const [buyQuantity, setBuyQuantity] = useState(1);
 
+  // ✅ OPTIMISATION: Charger les données utilisateur une seule fois au montage
+  // et mettre à jour la watchlist quand stocksData devient disponible
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
+  const [watchlistTickers, setWatchlistTickers] = useState<string[]>([]);
+
   useEffect(() => {
     loadUserData();
-  }, [stocksData]);
+  }, []); // Chargement unique au montage
 
-  // Valider les calculs quand le portfolio ou les données des stocks changent
+  // ✅ Mettre à jour la watchlist filtrée quand stocksData change (sans recharger les données)
   useEffect(() => {
-    if (portfolio && Object.keys(stocksData).length > 0 && portfolioHistory.length > 0) {
-      validateCalculations();
+    if (Object.keys(stocksData).length > 0 && watchlistTickers.length > 0) {
+      const filtered = watchlistTickers
+        .map(ticker => stocksData[ticker])
+        .filter((stock): stock is Stock => !!stock);
+      setWatchlistStocks(filtered);
     }
-  }, [portfolio, stocksData, portfolioHistory]);
+  }, [stocksData, watchlistTickers]);
 
   async function loadUserData() {
     setLoading(true);
@@ -113,16 +121,13 @@ export default function DashboardPage() {
         setUserProfile({ ...profileData, first_name: profileData.name });
       }
 
-      const watchlistTickers = watchlistItems.map(item => item.stock_ticker);
-      if (watchlistTickers.length > 0 && Object.keys(stocksData).length > 0) {
-        const filtered = watchlistTickers
-          .map(ticker => stocksData[ticker])
-          .filter((stock): stock is Stock => !!stock);
-        setWatchlistStocks(filtered);
-      }
+      // Stocker les tickers de la watchlist (la mise à jour des stocks se fait dans le useEffect)
+      const tickers = watchlistItems.map(item => item.stock_ticker);
+      setWatchlistTickers(tickers);
 
       setRecentTransactions(transactionsData.slice(0, 5)); // Les 5 dernières
       setMarketIndices(indicesData);
+      setUserDataLoaded(true);
 
     } catch (err: any) {
       console.error("❌ [DASHBOARD] Error loading data:", err);
@@ -217,8 +222,8 @@ export default function DashboardPage() {
     }).format(date);
   }
 
-  // <-- AJOUT: Fonction pour filtrer l'historique selon le filtre de temps
-  function getFilteredHistory() {
+  // ✅ OPTIMISATION: Mémoiser le filtrage de l'historique
+  const filteredHistory = useMemo(() => {
     if (!portfolioHistory.length) return [];
 
     const now = new Date();
@@ -245,20 +250,15 @@ export default function DashboardPage() {
     }
 
     return portfolioHistory.filter(point => new Date(point.date) >= startDate);
-  }
+  }, [portfolioHistory, timeFilter]);
 
-  // <-- AJOUT: Calculer la performance du jour (amélioré)
-  function calculateDailyPerformance(): { value: number; percent: number } {
+  // ✅ OPTIMISATION: Mémoiser le calcul de la performance journalière
+  const dailyPerf = useMemo(() => {
     if (portfolioHistory.length < 2) return { value: 0, percent: 0 };
 
     const today = portfolioHistory[portfolioHistory.length - 1];
-
-    // Chercher le point d'hier (ou le dernier point avant aujourd'hui)
     const todayDate = new Date(today.date);
-    const yesterdayDate = new Date(todayDate);
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
 
-    // Trouver le point le plus proche d'hier (en remontant dans le temps)
     let previousPoint = portfolioHistory[portfolioHistory.length - 2];
     for (let i = portfolioHistory.length - 2; i >= 0; i--) {
       const pointDate = new Date(portfolioHistory[i].date);
@@ -274,107 +274,17 @@ export default function DashboardPage() {
       : 0;
 
     return { value: dailyChange, percent: dailyChangePercent };
-  }
+  }, [portfolioHistory]);
 
-  // <-- AJOUT: Calculer la meilleure et la pire performance journalière
-  function getBestWorstPerformance(): {
-    best: { date: string; value: number; percent: number } | null;
-    worst: { date: string; value: number; percent: number } | null;
-  } {
-    if (portfolioHistory.length < 2) {
-      return { best: null, worst: null };
-    }
-
-    const dailyChanges: { date: string; value: number; percent: number }[] = [];
-
-    for (let i = 1; i < portfolioHistory.length; i++) {
-      const today = portfolioHistory[i];
-      const yesterday = portfolioHistory[i - 1];
-      const change = today.value - yesterday.value;
-      const percent = yesterday.value > 0 ? (change / yesterday.value) * 100 : 0;
-
-      dailyChanges.push({
-        date: today.date,
-        value: change,
-        percent: percent
-      });
-    }
-
-    if (dailyChanges.length === 0) {
-      return { best: null, worst: null };
-    }
-
-    const best = dailyChanges.reduce((max, curr) =>
-      curr.percent > max.percent ? curr : max
-    );
-    const worst = dailyChanges.reduce((min, curr) =>
-      curr.percent < min.percent ? curr : min
-    );
-
-    return { best, worst };
-  }
-
-  // <-- AJOUT: Valider la cohérence des calculs (pour debug)
-  function validateCalculations() {
-    if (!portfolio) return;
+  // ✅ OPTIMISATION: Mémoiser les données d'allocation
+  const allocationData = useMemo(() => {
+    if (!portfolio || Object.keys(stocksData).length === 0) return [];
 
     const totalValue = calculateTotalValue();
-    const stocksValue = portfolio.positions.reduce((acc, pos) => {
-      const stock = stocksData[pos.stock_ticker];
-      return stock ? acc + (pos.quantity * stock.current_price) : acc;
-    }, 0);
-    const cashBalance = portfolio.cash_balance;
+    if (totalValue === 0) return [];
 
-    // Vérification 1 : Valeur totale = liquidités + valeur actions
-    const calculatedTotal = cashBalance + stocksValue;
-    if (Math.abs(calculatedTotal - totalValue) > 0.01) {
-      console.warn('⚠️ Incohérence: Valeur totale', {
-        totalValue,
-        calculatedTotal,
-        difference: calculatedTotal - totalValue
-      });
-    }
-
-    // Vérification 2 : Allocation totale = 100%
-    const allocationData = getAllocationData();
-    const totalAllocation = allocationData.reduce((sum, item) => sum + item.percent, 0);
-    if (Math.abs(totalAllocation - 100) > 0.01) {
-      console.warn('⚠️ Incohérence: Allocation totale', {
-        totalAllocation,
-        expected: 100,
-        difference: totalAllocation - 100
-      });
-    }
-
-    // Vérification 3 : Gain/Perte = Valeur actuelle - Solde initial
-    const initialBalance = portfolio.initial_balance || 0;
-    const totalGainLoss = totalValue - initialBalance;
-    const calculatedGainLoss = cashBalance + stocksValue - initialBalance;
-    if (Math.abs(totalGainLoss - calculatedGainLoss) > 0.01) {
-      console.warn('⚠️ Incohérence: Gain/Perte', {
-        totalGainLoss,
-        calculatedGainLoss,
-        difference: totalGainLoss - calculatedGainLoss
-      });
-    }
-
-    console.log('✅ Validation des calculs:', {
-      totalValue,
-      cashBalance,
-      stocksValue,
-      totalAllocation: totalAllocation.toFixed(2) + '%',
-      totalGainLoss
-    });
-  }
-
-  // <-- AJOUT: Préparer les données pour le graphique d'allocation
-  function getAllocationData() {
-    if (!portfolio) return [];
-
-    const totalValue = calculateTotalValue();
     const data: { name: string; value: number; percent: number }[] = [];
 
-    // Ajouter les positions
     portfolio.positions.forEach(position => {
       const stock = stocksData[position.stock_ticker];
       if (stock) {
@@ -387,7 +297,6 @@ export default function DashboardPage() {
       }
     });
 
-    // Ajouter les liquidités
     if (portfolio.cash_balance > 0) {
       data.push({
         name: 'Liquidités',
@@ -397,7 +306,10 @@ export default function DashboardPage() {
     }
 
     return data.sort((a, b) => b.value - a.value);
-  }
+  }, [portfolio, stocksData, calculateTotalValue]);
+
+  // Fonction utilitaire pour getAllocationData (utilisée dans le share)
+  const getAllocationData = useCallback(() => allocationData, [allocationData]);
 
   // ✅ Loading avec LoadingSpinner component
   if (loading || portfolioLoading) {
@@ -441,14 +353,13 @@ export default function DashboardPage() {
     );
   }
 
+  // ✅ OPTIMISATION: Ces valeurs sont maintenant mémorisées via useMemo
   const totalValue = calculateTotalValue();
   const initialBalance = portfolio.initial_balance || 0;
   const totalGainLoss = totalValue - initialBalance;
   const totalGainLossPercent = initialBalance > 0 ? (totalGainLoss / initialBalance) * 100 : 0;
-  const dailyPerf = calculateDailyPerformance(); // <-- AJOUT
-  const allocationData = getAllocationData(); // <-- AJOUT
-  const filteredHistory = getFilteredHistory(); // <-- AJOUT
-  const stocksValue = totalValue - portfolio.cash_balance; // <-- AJOUT: Valeur des actions
+  const stocksValue = totalValue - portfolio.cash_balance;
+  // dailyPerf, allocationData et filteredHistory sont déjà mémorisés plus haut
 
   return (
     <>
@@ -730,7 +641,7 @@ export default function DashboardPage() {
                                       currentValue,
                                       gainLoss,
                                       gainLossPercent,
-                                      logoUrl: stockData.logo_url,
+                                      logoUrl: stockData.logo_url || undefined,
                                     };
                                     openShareModal({
                                       type: 'POSITION',

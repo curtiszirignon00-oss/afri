@@ -33,8 +33,8 @@ export function usePortfolio(): UsePortfolioReturn {
     try {
       console.log('📊 [PORTFOLIO] Loading portfolio data...');
 
-      // Utiliser apiFetch qui gère automatiquement le token sur mobile
-      const [portfolioData, historyData] = await Promise.all([
+      // ✅ OPTIMISATION: Charger TOUS les appels en parallèle
+      const [portfolioData, historyData, allStocks] = await Promise.all([
         apiFetch<Portfolio>('/portfolios/my').catch(err => {
           console.warn('Portfolio fetch error:', err);
           if (err.message.includes('404')) return null; // Pas de portfolio
@@ -46,29 +46,29 @@ export function usePortfolio(): UsePortfolioReturn {
         apiFetch<PortfolioHistoryPoint[]>('/portfolios/my/history').catch(err => {
           console.warn('History fetch error:', err);
           return [];
+        }),
+        // ✅ Charger les stocks en parallèle avec le portfolio
+        apiFetch<Stock[]>('/stocks').catch(err => {
+          console.warn('Stocks fetch error:', err);
+          return [];
         })
       ]);
 
-      console.log('✅ [PORTFOLIO] Portfolio data loaded:', portfolioData);
+      console.log('✅ [PORTFOLIO] All data loaded in parallel');
+
+      // Créer le map des stocks immédiatement
+      if (allStocks && allStocks.length > 0) {
+        const stockDataMap = allStocks.reduce((acc, stock) => {
+          acc[stock.symbol] = stock;
+          return acc;
+        }, {} as { [key: string]: Stock });
+        setStocksData(stockDataMap);
+      }
 
       if (portfolioData) {
         setPortfolio(portfolioData);
-
-        // Charger les données de marché pour les positions
-        if (portfolioData.positions && portfolioData.positions.length > 0) {
-          console.log('📈 [PORTFOLIO] Loading stocks data...');
-          const allStocks = await apiFetch<Stock[]>('/stocks');
-
-          const stockDataMap = allStocks.reduce((acc, stock) => {
-            acc[stock.symbol] = stock;
-            return acc;
-          }, {} as { [key: string]: Stock });
-
-          setStocksData(stockDataMap);
-          console.log('✅ [PORTFOLIO] Stocks data loaded');
-        }
       } else {
-        setPortfolio(null); // Pas de portfolio
+        setPortfolio(null);
         console.log('ℹ️ [PORTFOLIO] No portfolio found');
       }
 
@@ -76,7 +76,6 @@ export function usePortfolio(): UsePortfolioReturn {
       if (historyData && historyData.length > 0) {
         historyData.sort((a, b) => a.date.localeCompare(b.date));
         setPortfolioHistory(historyData);
-        console.log('✅ [PORTFOLIO] History loaded');
       }
 
     } catch (err: any) {
