@@ -68,6 +68,9 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
       userId: profile.userId,
       username: profile.username,
       created_at: profile.user.created_at,
+      // Le nom est toujours public
+      name: profile.user.name,
+      lastname: profile.user.lastname,
     };
 
     // Appliquer les filtres
@@ -96,6 +99,9 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     if (profile.show_following_count) {
       filtered.followingCount = profile.following.length;
     }
+
+    // Le nombre de publications est toujours public
+    filtered.posts_count = profile.posts_count || 0;
 
     // Vérifier si le viewer suit ce profil
     if (viewerId) {

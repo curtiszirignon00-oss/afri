@@ -4,6 +4,7 @@ import { Camera, MapPin, Link as LinkIcon, Calendar, CheckCircle, Loader2, Edit2
 import FollowButton from './FollowButton';
 import EditProfileModal from './EditProfileModal';
 import { useUploadAvatar, useUploadBanner } from '../../hooks/useUpload';
+import toast from 'react-hot-toast';
 
 interface ProfileHeaderProps {
     profile: any;
@@ -155,10 +156,29 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     <button className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors">
                                         <MessageCircle className="w-5 h-5" />
                                     </button>
-                                    <FollowButton userId={profile.id} />
+                                    <FollowButton userId={profile.id} initialFollowing={profile.isFollowing} />
                                 </>
                             )}
-                            <button className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors">
+                            <button
+                                onClick={() => {
+                                    const shareData = {
+                                        title: `Profil de ${profile.name} ${profile.lastname}`,
+                                        text: `Découvrez le profil de ${profile.name} sur AfriBourse`,
+                                        url: window.location.href,
+                                    };
+                                    if (navigator.share) {
+                                        navigator.share(shareData).catch(() => {
+                                            // Fallback si l'utilisateur annule
+                                            navigator.clipboard.writeText(window.location.href);
+                                            toast.success('Lien copié !');
+                                        });
+                                    } else {
+                                        navigator.clipboard.writeText(window.location.href);
+                                        toast.success('Lien copié !');
+                                    }
+                                }}
+                                className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
+                            >
                                 <Share2 className="w-5 h-5" />
                             </button>
                         </div>

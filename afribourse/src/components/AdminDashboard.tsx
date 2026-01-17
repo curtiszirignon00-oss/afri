@@ -16,7 +16,14 @@ import {
   BarChart3,
   Eye,
   MousePointerClick,
+  Shield,
+  Flag,
+  AlertTriangle,
+  Ban,
+  FileText,
 } from 'lucide-react';
+import { useModerationStats, useReports } from '../hooks/useModeration';
+import ModerationSection from './moderation/ModerationSection';
 
 interface UserStats {
   total: number;
@@ -361,9 +368,8 @@ export default function AdminDashboard() {
                     <div
                       className="h-2 bg-green-600 rounded-full"
                       style={{
-                        width: `${
-                          (stats.users.confirmed / stats.users.total) * 100
-                        }%`,
+                        width: `${(stats.users.confirmed / stats.users.total) * 100
+                          }%`,
                       }}
                     ></div>
                   </div>
@@ -379,9 +385,8 @@ export default function AdminDashboard() {
                     <div
                       className="h-2 bg-red-600 rounded-full"
                       style={{
-                        width: `${
-                          (stats.users.unconfirmed / stats.users.total) * 100
-                        }%`,
+                        width: `${(stats.users.unconfirmed / stats.users.total) * 100
+                          }%`,
                       }}
                     ></div>
                   </div>
@@ -452,16 +457,14 @@ export default function AdminDashboard() {
                   <div className="flex items-center">
                     <div className="w-32 h-2 bg-gray-200 rounded-full mr-3">
                       <div
-                        className={`h-2 rounded-full ${
-                          plan.planId === 'pro'
-                            ? 'bg-purple-600'
-                            : 'bg-yellow-600'
-                        }`}
+                        className={`h-2 rounded-full ${plan.planId === 'pro'
+                          ? 'bg-purple-600'
+                          : 'bg-yellow-600'
+                          }`}
                         style={{
-                          width: `${
-                            (plan.count / stats.subscriptions.totalIntents) *
+                          width: `${(plan.count / stats.subscriptions.totalIntents) *
                             100
-                          }%`,
+                            }%`,
                         }}
                       ></div>
                     </div>
@@ -632,11 +635,10 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          user.role === 'admin'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-gray-100 text-gray-800'
+                          }`}
                       >
                         {user.role}
                       </span>
@@ -654,6 +656,25 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Moderation Section */}
+        <div className="mt-8 mb-8">
+          <div className="bg-gradient-to-r from-red-600 to-orange-600 rounded-xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                  <Shield className="w-6 h-6" />
+                  Modération de la Plateforme
+                </h2>
+                <p className="text-red-100 text-sm">
+                  Gestion des signalements et sécurité du contenu
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <ModerationSection />
         </div>
       </div>
     </div>

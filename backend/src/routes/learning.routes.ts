@@ -14,6 +14,9 @@ router.get('/', learningController.getModules.bind(learningController));
 // --- ROUTE : OBTENIR LA PROGRESSION DE L'UTILISATEUR ---
 router.get('/progress', auth, learningController.getUserProgress.bind(learningController));
 
+// --- ROUTE : OBTENIR LE RÉSUMÉ DE PROGRESSION POUR LE PROFIL ---
+router.get('/progress/summary', auth, learningController.getProgressSummary.bind(learningController));
+
 // --- ROUTE : MARQUER UN MODULE COMME COMPLÉTÉ ---
 router.post('/:slug/complete', auth, learningController.markAsCompleted.bind(learningController));
 
