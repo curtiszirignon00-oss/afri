@@ -10,6 +10,9 @@ import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { API_BASE_URL } from '../config/api';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import DashboardPriceAlerts from './price-alerts/DashboardPriceAlerts';
+import { ShareButton, ShareModal } from './share';
+import { useShare } from '../hooks/useShare';
+import type { ShareablePortfolioData, ShareablePerformanceData, ShareablePositionData } from '../types/share';
 
 type DashboardPageProps = {};
 
@@ -40,6 +43,9 @@ export default function DashboardPage() {
   // ✅ Analytics: Hook pour tracker les actions
   const { trackAction } = useAnalytics();
 
+  // ✅ Share: Hook pour le partage
+  const { isShareModalOpen, shareData, openShareModal, closeShareModal } = useShare();
+
   // États locaux
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [watchlistStocks, setWatchlistStocks] = useState<Stock[]>([]);
@@ -47,10 +53,10 @@ export default function DashboardPage() {
   const [marketIndices, setMarketIndices] = useState<MarketIndex[]>([]); // <-- AJOUT: Indices du marché
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // <-- AJOUT: État pour le filtre de temps du graphique
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('MAX');
-  
+
   // États pour les modals
   const [sellModalOpen, setSellModalOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<any>(null);
@@ -202,9 +208,9 @@ export default function DashboardPage() {
   function formatDate(dateString: string | null): string {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fr-FR', { 
-      day: '2-digit', 
-      month: 'short', 
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'short',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -214,10 +220,10 @@ export default function DashboardPage() {
   // <-- AJOUT: Fonction pour filtrer l'historique selon le filtre de temps
   function getFilteredHistory() {
     if (!portfolioHistory.length) return [];
-    
+
     const now = new Date();
     let startDate = new Date();
-    
+
     switch (timeFilter) {
       case '1W':
         startDate.setDate(now.getDate() - 7);
@@ -237,7 +243,7 @@ export default function DashboardPage() {
       case 'MAX':
         return portfolioHistory;
     }
-    
+
     return portfolioHistory.filter(point => new Date(point.date) >= startDate);
   }
 
@@ -380,7 +386,7 @@ export default function DashboardPage() {
         });
       }
     });
-    
+
     // Ajouter les liquidités
     if (portfolio.cash_balance > 0) {
       data.push({
@@ -389,7 +395,7 @@ export default function DashboardPage() {
         percent: (portfolio.cash_balance / totalValue) * 100
       });
     }
-    
+
     return data.sort((a, b) => b.value - a.value);
   }
 
@@ -487,12 +493,45 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* KPI Principal */}
             <div className="lg:col-span-2">
-              <div className="flex items-center space-x-2 mb-2">
-                <Wallet className="w-5 h-5 text-blue-200" />
-                <p className="text-sm font-medium text-blue-100 uppercase tracking-wide">Valeur Totale du Portefeuille</p>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Wallet className="w-5 h-5 text-blue-200" />
+                  <p className="text-sm font-medium text-blue-100 uppercase tracking-wide">Valeur Totale du Portefeuille</p>
+                </div>
+                <ShareButton
+                  onClick={() => {
+                    const allocationData = getAllocationData();
+                    const shareDataObj: ShareablePortfolioData = {
+                      totalValue,
+                      gainLoss: totalGainLoss,
+                      gainLossPercent: totalGainLossPercent,
+                      cashBalance: portfolio.cash_balance,
+                      stocksValue,
+                      topPositions: allocationData
+                        .filter(item => item.name !== 'Liquidités')
+                        .slice(0, 3)
+                        .map(item => ({
+                          ticker: item.name,
+                          companyName: stocksData[item.name]?.company_name || item.name,
+                          value: item.value,
+                          percent: item.percent,
+                        })),
+                      allocation: allocationData,
+                    };
+                    openShareModal({
+                      type: 'PORTFOLIO_VALUE',
+                      data: shareDataObj,
+                      generatedContent: '',
+                    });
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  label=""
+                  className="text-white hover:bg-white/20"
+                />
               </div>
               <h2 className="text-5xl font-extrabold mb-4">{formatNumber(totalValue)} FCFA</h2>
-              
+
               {/* Performance Totale */}
               <div className="flex items-center space-x-6 mb-4">
                 <div className="flex items-center space-x-2">
@@ -543,7 +582,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* <-- CORRECTION: Graphique d'Évolution avec Filtres de Temps */}
             <Card>
               <div className="flex items-center justify-between mb-4">
@@ -551,41 +590,40 @@ export default function DashboardPage() {
                   <ChartIcon className="w-6 h-6 text-indigo-600" />
                   <h2 className="text-2xl font-bold text-gray-900">Évolution du Portefeuille</h2>
                 </div>
-                
+
                 {/* <-- AJOUT: Filtres de temps */}
                 <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
                   {(['1W', '1M', '3M', '6M', '1Y', 'MAX'] as TimeFilter[]).map((filter) => (
                     <button
                       key={filter}
                       onClick={() => setTimeFilter(filter)}
-                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                        timeFilter === filter
-                          ? 'bg-white text-indigo-600 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
+                      className={`px-3 py-1 rounded text-sm font-medium transition-colors ${timeFilter === filter
+                        ? 'bg-white text-indigo-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                        }`}
                     >
                       {filter}
                     </button>
                   ))}
                 </div>
               </div>
-              
+
               {filteredHistory.length > 0 ? (
                 <ResponsiveContainer width="100%" height={320}>
                   <LineChart data={filteredHistory}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="date" 
+                    <XAxis
+                      dataKey="date"
                       stroke="#6b7280"
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="#6b7280"
                       tick={{ fontSize: 12 }}
                       tickFormatter={(value) => `${(value / 1000)}k`}
@@ -595,11 +633,11 @@ export default function DashboardPage() {
                       labelStyle={{ color: '#374151' }}
                       contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#3b82f6" 
-                      strokeWidth={3} 
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#3b82f6"
+                      strokeWidth={3}
                       dot={{ fill: '#3b82f6', r: 4 }}
                       activeDot={{ r: 6 }}
                       fill="url(#colorValue)"
@@ -622,7 +660,7 @@ export default function DashboardPage() {
                 <BarChart3 className="w-5 h-5 text-indigo-600" />
                 <span>Mes Positions</span>
               </h3>
-              
+
               {portfolio.positions && portfolio.positions.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -641,7 +679,7 @@ export default function DashboardPage() {
                       {portfolio.positions.map((position, idx) => {
                         const stockData = stocksData[position.stock_ticker];
                         if (!stockData) return null;
-                        
+
                         const currentValue = position.quantity * stockData.current_price;
                         const costBasis = position.quantity * position.average_buy_price;
                         const gainLoss = currentValue - costBasis;
@@ -679,18 +717,44 @@ export default function DashboardPage() {
                               </div>
                             </td>
                             <td className="py-4 px-2 text-center">
-                              {/* <-- AJOUT: Bouton Vendre dans le tableau */}
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedPosition(position);
-                                  setSellQuantity(1);
-                                  setSellModalOpen(true);
-                                }}
-                              >
-                                Vendre
-                              </Button>
+                              <div className="flex items-center justify-center gap-2">
+                                {/* Share Position Button */}
+                                <ShareButton
+                                  onClick={() => {
+                                    const shareDataObj: ShareablePositionData = {
+                                      ticker: position.stock_ticker,
+                                      companyName: stockData.company_name,
+                                      quantity: position.quantity,
+                                      averageBuyPrice: position.average_buy_price,
+                                      currentPrice: stockData.current_price,
+                                      currentValue,
+                                      gainLoss,
+                                      gainLossPercent,
+                                      logoUrl: stockData.logo_url,
+                                    };
+                                    openShareModal({
+                                      type: 'POSITION',
+                                      data: shareDataObj,
+                                      generatedContent: '',
+                                    });
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  label=""
+                                />
+                                {/* Sell Button */}
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPosition(position);
+                                    setSellQuantity(1);
+                                    setSellModalOpen(true);
+                                  }}
+                                >
+                                  Vendre
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -702,9 +766,9 @@ export default function DashboardPage() {
                 <div className="text-center py-12 text-gray-500">
                   <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p>Vous n'avez aucune position actuellement.</p>
-                  <Button 
-                    variant="primary" 
-                    size="sm" 
+                  <Button
+                    variant="primary"
+                    size="sm"
                     onClick={() => navigate('/markets')}
                     className="mt-4"
                   >
@@ -734,14 +798,13 @@ export default function DashboardPage() {
               {recentTransactions.length > 0 ? (
                 <div className="space-y-2">
                   {recentTransactions.map((transaction) => (
-                    <div 
-                      key={transaction.id} 
+                    <div
+                      key={transaction.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          transaction.type === 'BUY' ? 'bg-green-100' : 'bg-red-100'
-                        }`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${transaction.type === 'BUY' ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
                           {transaction.type === 'BUY' ? (
                             <TrendingUp className="w-4 h-4 text-green-600" />
                           ) : (
@@ -759,9 +822,8 @@ export default function DashboardPage() {
                         <p className="font-bold text-gray-900">
                           {transaction.quantity} × {formatNumber(transaction.price_per_share)} F
                         </p>
-                        <p className={`text-sm font-semibold ${
-                          transaction.type === 'BUY' ? 'text-red-600' : 'text-green-600'
-                        }`}>
+                        <p className={`text-sm font-semibold ${transaction.type === 'BUY' ? 'text-red-600' : 'text-green-600'
+                          }`}>
                           {transaction.type === 'BUY' ? '-' : '+'}{formatNumber(transaction.quantity * transaction.price_per_share)} F
                         </p>
                       </div>
@@ -782,14 +844,14 @@ export default function DashboardPage() {
 
           {/* Right Column */}
           <div className="space-y-8">
-            
+
             {/* <-- AJOUT: Allocation du Portefeuille (Donut Chart) */}
             <Card>
               <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
                 <PieChartIcon className="w-5 h-5 text-indigo-600" />
                 <span>Allocation</span>
               </h3>
-              
+
               {allocationData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={250}>
@@ -813,12 +875,12 @@ export default function DashboardPage() {
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                  
+
                   <div className="space-y-2 mt-4">
                     {allocationData.map((item, index) => (
                       <div key={item.name} className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <div 
+                          <div
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: ALLOCATION_COLORS[index % ALLOCATION_COLORS.length] }}
                           ></div>
@@ -843,18 +905,17 @@ export default function DashboardPage() {
                 <Activity className="w-5 h-5 text-indigo-600" />
                 <span>Aperçu du Marché</span>
               </h3>
-              
+
               {marketIndices.length > 0 ? (
                 <div className="space-y-3">
                   {marketIndices.map((index) => (
                     <div key={index.id} className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center justify-between mb-1">
                         <p className="font-semibold text-gray-700">{index.index_name}</p>
-                        <span className={`text-xs font-bold px-2 py-1 rounded ${
-                          index.daily_change_percent >= 0 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${index.daily_change_percent >= 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                          }`}>
                           {index.daily_change_percent >= 0 ? '+' : ''}{index.daily_change_percent.toFixed(2)}%
                         </span>
                       </div>
@@ -876,12 +937,12 @@ export default function DashboardPage() {
                 <Eye className="w-5 h-5 text-indigo-600" />
                 <span>Ma Watchlist</span>
               </h3>
-              
+
               {watchlistStocks.length > 0 ? (
                 <div className="space-y-3">
                   {watchlistStocks.map((stock) => (
-                    <div 
-                      key={stock.id} 
+                    <div
+                      key={stock.id}
                       className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -900,9 +961,8 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">{formatNumber(stock.current_price)} F</p>
-                          <p className={`text-xs font-semibold ${
-                            stock.daily_change_percent >= 0 ? 'text-green-600' : 'text-red-600'
-                          }`}>
+                          <p className={`text-xs font-semibold ${stock.daily_change_percent >= 0 ? 'text-green-600' : 'text-red-600'
+                            }`}>
                             {stock.daily_change_percent >= 0 ? '+' : ''}{stock.daily_change_percent.toFixed(2)}%
                           </p>
                         </div>
@@ -928,9 +988,9 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-gray-500">
                   <Eye className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p className="text-sm mb-3">Aucune action dans votre watchlist.</p>
-                  <Button 
-                    variant="primary" 
-                    size="sm" 
+                  <Button
+                    variant="primary"
+                    size="sm"
                     onClick={() => navigate('/markets')}
                   >
                     Ajouter des Actions
@@ -1104,6 +1164,13 @@ export default function DashboardPage() {
           </Card>
         </div>
       )}
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={closeShareModal}
+        shareData={shareData}
+      />
     </>
   );
 }

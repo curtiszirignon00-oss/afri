@@ -165,4 +165,21 @@ export class LearningController {
             return next(error);
         }
     }
+
+    // 8. OBTENIR LE RÉSUMÉ DE PROGRESSION POUR LE PROFIL (GET /api/learning/progress/summary)
+    async getProgressSummary(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = (req as any).user?.id as string;
+
+            if (!userId) {
+                return res.status(401).json({ message: "Utilisateur non authentifié." });
+            }
+
+            const summary = await learningService.getProgressSummary(userId);
+
+            return res.status(200).json({ success: true, data: summary });
+        } catch (error) {
+            return next(error);
+        }
+    }
 }

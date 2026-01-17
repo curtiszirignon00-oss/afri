@@ -438,3 +438,75 @@ export async function notifyCommunityInvite(
         metadata: { communityId, communityName, communitySlug },
     });
 }
+
+/**
+ * Notify platform admins about new community post for review
+ * Implements rate limiting to avoid spam (max 1 notification per admin every 5 minutes)
+ */
+export async function notifyAdminsNewCommunityPost(
+    communityId: string,
+    communityName: string,
+    communitySlug: string,
+    postId: string,
+    authorId: string,
+    authorName: string,
+    contentPreview: string
+) {
+    // Get all platform admins and moderators
+    const admins = await prisma.user.findMany({
+        where: {
+            role: { in: ['ADMIN', 'MODERATOR'] },
+        },
+        select: { id: true },
+    });
+
+    if (admins.length === 0) return 0;
+
+    // Rate limiting: Check last notification for each admin
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    const recentNotifications = await prisma.notification.groupBy({
+        by: ['user_id'],
+        where: {
+            type: 'COMMUNITY_POST_CREATED',
+            created_at: { gte: fiveMinutesAgo },
+            user_id: { in: admins.map(a => a.id) },
+        },
+        _count: { id: true },
+    });
+
+    // Create set of admins who recently received notifications
+    const recentlyNotifiedAdminIds = new Set(
+        recentNotifications.map(n => n.user_id)
+    );
+
+    // Filter out admins who were recently notified
+    const adminsToNotify = admins.filter(
+        admin => !recentlyNotifiedAdminIds.has(admin.id)
+    );
+
+    if (adminsToNotify.length === 0) return 0;
+
+    const title = 'Nouveau post communauté à vérifier';
+    const message = `${authorName} dans ${communityName}: "${contentPreview.substring(0, 100)}..."`;
+
+    const notifications = adminsToNotify.map(admin => ({
+        user_id: admin.id,
+        type: 'COMMUNITY_POST_CREATED' as NotificationType,
+        title,
+        message,
+        actor_id: authorId,
+        post_id: postId,
+        metadata: {
+            communityId,
+            communityName,
+            communitySlug,
+            contentPreview: contentPreview.substring(0, 200)
+        },
+        is_read: false,
+        created_at: new Date(),
+    }));
+
+    await prisma.notification.createMany({ data: notifications });
+    return notifications.length;
+}

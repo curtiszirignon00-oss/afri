@@ -8,16 +8,17 @@ import { Card } from '../ui';
 
 interface ActivityFeedProps {
     userId: string;
+    isOwnProfile?: boolean;
 }
 
-export default function ActivityFeed({ userId }: ActivityFeedProps) {
+export default function ActivityFeed({ userId, isOwnProfile = false }: ActivityFeedProps) {
     const [page, setPage] = useState(1);
     const { data, isLoading, error } = useUserPosts(userId, page);
 
     return (
         <div className="space-y-6">
-            {/* Post Composer */}
-            <PostComposer />
+            {/* Post Composer - Only show for own profile */}
+            {isOwnProfile && <PostComposer />}
 
             {/* Feed */}
             <div className="space-y-4">

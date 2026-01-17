@@ -8,6 +8,7 @@ import PostCard from '../components/profile/PostCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useCommunities } from '../hooks/useCommunity';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
+import CommunityRulesModal from '../components/community/CommunityRulesModal';
 
 interface CommunityPost {
     id: string;
@@ -41,6 +42,10 @@ export default function CommunityPage() {
     const { isLoggedIn } = useAuth();
     const [page, setPage] = useState(1);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showRulesModal, setShowRulesModal] = useState(() => {
+        // Check if user has seen the rules before
+        return !localStorage.getItem('hasSeenCommunityRules');
+    });
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
         queryKey: ['community-posts', page],
@@ -291,6 +296,11 @@ export default function CommunityPage() {
             {/* Create Community Modal */}
             {showCreateModal && (
                 <CreateCommunityModal onClose={() => setShowCreateModal(false)} />
+            )}
+
+            {/* Community Rules Modal - First Visit */}
+            {showRulesModal && (
+                <CommunityRulesModal onAccept={() => setShowRulesModal(false)} />
             )}
         </div>
     );

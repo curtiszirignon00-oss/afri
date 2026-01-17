@@ -1,5 +1,4 @@
 // src/components/profile/ProfileStats.tsx
-import { useState } from 'react';
 import {
     Zap,
     Trophy,
@@ -8,14 +7,15 @@ import {
     BookOpen,
     Wallet,
     Eye,
-    EyeOff,
     Lock,
     ChevronRight,
-    Star,
-    Target
+    Star
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card } from '../ui';
+import { ShareButton, ShareModal } from '../share';
+import { useShare } from '../../hooks/useShare';
+import type { ShareablePortfolioData } from '../../types/share';
 
 interface ProfileStatsProps {
     profile: any;
@@ -80,6 +80,7 @@ export default function ProfileStats({
     learningProgress
 }: ProfileStatsProps) {
     const investorProfile = profile.investorProfile;
+    const { isShareModalOpen, shareData, openShareModal, closeShareModal } = useShare();
 
     // Visibility settings from profile
     const showLevel = investorProfile?.show_level !== false;
@@ -260,13 +261,36 @@ export default function ProfileStats({
                                         <Wallet className="w-5 h-5 text-green-600" />
                                         <span className="font-medium text-gray-900">Portefeuille virtuel</span>
                                     </div>
-                                    <Link
-                                        to="/dashboard"
-                                        className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
-                                    >
-                                        Voir
-                                        <ChevronRight className="w-3 h-3" />
-                                    </Link>
+                                    <div className="flex items-center gap-2">
+                                        {isOwnProfile && showPortfolio && (
+                                            <ShareButton
+                                                onClick={() => {
+                                                    const shareDataObj: ShareablePortfolioData = {
+                                                        totalValue: portfolioData.totalValue,
+                                                        gainLoss: portfolioData.gainLoss,
+                                                        gainLossPercent: portfolioData.gainLossPercent,
+                                                        cashBalance: 0,
+                                                        stocksValue: portfolioData.totalValue,
+                                                    };
+                                                    openShareModal({
+                                                        type: 'PORTFOLIO_VALUE',
+                                                        data: shareDataObj,
+                                                        generatedContent: '',
+                                                    });
+                                                }}
+                                                variant="ghost"
+                                                size="sm"
+                                                label=""
+                                            />
+                                        )}
+                                        <Link
+                                            to="/dashboard"
+                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                        >
+                                            Voir
+                                            <ChevronRight className="w-3 h-3" />
+                                        </Link>
+                                    </div>
                                 </div>
                                 <div className="flex items-end justify-between">
                                     <div>
@@ -275,11 +299,10 @@ export default function ProfileStats({
                                         </div>
                                         <div className="text-xs text-gray-500">Valeur totale</div>
                                     </div>
-                                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${
-                                        portfolioData.gainLoss >= 0
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-red-100 text-red-700'
-                                    }`}>
+                                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${portfolioData.gainLoss >= 0
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-red-100 text-red-700'
+                                        }`}>
                                         <TrendingUp className={`w-4 h-4 ${portfolioData.gainLoss < 0 ? 'rotate-180' : ''}`} />
                                         <span className="font-medium text-sm">
                                             {portfolioData.gainLoss >= 0 ? '+' : ''}{portfolioData.gainLossPercent.toFixed(2)}%
@@ -317,6 +340,13 @@ export default function ProfileStats({
                     </div>
                 )}
             </div>
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={isShareModalOpen}
+                onClose={closeShareModal}
+                shareData={shareData}
+            />
         </Card>
     );
 }

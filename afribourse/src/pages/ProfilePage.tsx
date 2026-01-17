@@ -18,19 +18,35 @@ export default function ProfilePage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { userProfile } = useAuth();
-    const { data: investorProfile, isLoading, error } = useInvestorProfile();
     const { mutate: syncStats } = useSyncSocialStats();
     const [showCreateCommunityModal, setShowCreateCommunityModal] = useState(false);
 
-    // Synchroniser les stats au chargement de la page profil (propre profil uniquement)
+    // Déterminer si c'est son propre profil
     const isOwnProfile = !userId || userId === userProfile?.id;
+
+    // Récupérer son propre profil investisseur (seulement si c'est son profil)
+    const { data: investorProfile, isLoading: isLoadingOwn, error: errorOwn } = useInvestorProfile();
+
+    // Récupérer le profil public d'un autre utilisateur
+    const { data: otherUserProfile, isLoading: isLoadingOther, error: errorOther } = useQuery({
+        queryKey: ['public-profile', userId],
+        queryFn: async () => {
+            const response = await apiClient.get(`/profile/${userId}`);
+            return response.data;
+        },
+        enabled: !!userId && !isOwnProfile,
+    });
+
+    // États combinés
+    const isLoading = isOwnProfile ? isLoadingOwn : isLoadingOther;
+    const error = isOwnProfile ? errorOwn : errorOther;
 
     // Fetch portfolio data (only for own profile or if public)
     const { data: portfolioData } = useQuery({
         queryKey: ['portfolio-summary', userId || userProfile?.id],
         queryFn: async () => {
             try {
-                const response = await apiClient.get('/simulator/portfolio/summary');
+                const response = await apiClient.get('/portfolios/summary');
                 return response.data.data;
             } catch {
                 return null;
@@ -44,7 +60,7 @@ export default function ProfilePage() {
         queryKey: ['learning-progress', userId || userProfile?.id],
         queryFn: async () => {
             try {
-                const response = await apiClient.get('/learning/progress/summary');
+                const response = await apiClient.get('/learning-modules/progress/summary');
                 return response.data.data;
             } catch {
                 return null;
@@ -72,7 +88,8 @@ export default function ProfilePage() {
         );
     }
 
-    if (error || !investorProfile) {
+    // Gestion des erreurs différente selon le cas
+    if (isOwnProfile && (errorOwn || !investorProfile)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md mx-auto p-8">
@@ -91,33 +108,84 @@ export default function ProfilePage() {
         );
     }
 
+    if (!isOwnProfile && (errorOther || !otherUserProfile)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center max-w-md mx-auto p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non trouvé</h2>
+                    <p className="text-gray-600 mb-6">
+                        Ce profil n'existe pas ou n'est pas accessible.
+                    </p>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                    >
+                        Retour
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // Créer un objet profile compatible avec les composants
-    const profileData = {
-        id: userId || userProfile?.id || 'current-user',
-        name: userProfile?.name || 'Utilisateur',
-        lastname: userProfile?.lastname || '',
-        email: userProfile?.email || 'user@africbourse.com',
-        created_at: investorProfile?.created_at || new Date().toISOString(),
-        investorProfile: investorProfile,
-        stats: {
-            followers_count: investorProfile?.followers_count || 0,
-            following_count: investorProfile?.following_count || 0,
-            posts_count: investorProfile?.posts_count || 0,
-            portfolios_count: 0,
-        },
-        profile: {
-            username: investorProfile?.username || userProfile?.email?.split('@')[0] || 'user',
-            bio: investorProfile?.bio || '',
-            avatar_url: investorProfile?.avatar_url || null,
-            banner_url: investorProfile?.banner_url || null,
-            country: investorProfile?.country || null,
-            verified_investor: investorProfile?.verified_investor || false,
-            social_links: investorProfile?.social_links || null,
-            followers_count: investorProfile?.followers_count || 0,
-            following_count: investorProfile?.following_count || 0,
-            posts_count: investorProfile?.posts_count || 0,
-        },
-    };
+    // Différent selon qu'on consulte son propre profil ou celui d'un autre
+    const profileData = isOwnProfile
+        ? {
+            id: userProfile?.id || 'current-user',
+            name: userProfile?.name || 'Utilisateur',
+            lastname: userProfile?.lastname || '',
+            email: userProfile?.email || 'user@africbourse.com',
+            created_at: investorProfile?.created_at || new Date().toISOString(),
+            investorProfile: investorProfile,
+            stats: {
+                followers_count: investorProfile?.followers_count || 0,
+                following_count: investorProfile?.following_count || 0,
+                posts_count: investorProfile?.posts_count || 0,
+                portfolios_count: 0,
+            },
+            profile: {
+                username: investorProfile?.username || userProfile?.email?.split('@')[0] || 'user',
+                bio: investorProfile?.bio || '',
+                avatar_url: investorProfile?.avatar_url || null,
+                banner_url: investorProfile?.banner_url || null,
+                country: investorProfile?.country || null,
+                verified_investor: investorProfile?.verified_investor || false,
+                social_links: investorProfile?.social_links || null,
+                followers_count: investorProfile?.followers_count || 0,
+                following_count: investorProfile?.following_count || 0,
+                posts_count: investorProfile?.posts_count || 0,
+            },
+        }
+        : {
+            // Profil d'un autre utilisateur (données de l'API /profile/:userId)
+            id: otherUserProfile?.userId || userId || '',
+            name: otherUserProfile?.user?.name || otherUserProfile?.name || 'Utilisateur',
+            lastname: otherUserProfile?.user?.lastname || otherUserProfile?.lastname || '',
+            email: '', // Non accessible pour les autres profils
+            created_at: otherUserProfile?.created_at || new Date().toISOString(),
+            investorProfile: otherUserProfile, // Données du profil public
+            isFollowing: otherUserProfile?.isFollowing || false,
+            stats: {
+                followers_count: otherUserProfile?.followersCount || otherUserProfile?.followers_count || 0,
+                following_count: otherUserProfile?.followingCount || otherUserProfile?.following_count || 0,
+                posts_count: otherUserProfile?.posts_count || 0,
+                portfolios_count: 0,
+            },
+            profile: {
+                username: otherUserProfile?.username || 'user',
+                bio: otherUserProfile?.bio || '',
+                avatar_url: otherUserProfile?.avatar_url || null,
+                banner_url: otherUserProfile?.banner_url || null,
+                country: otherUserProfile?.country || null,
+                verified_investor: otherUserProfile?.verified_investor || false,
+                social_links: otherUserProfile?.social_links || null,
+                followers_count: otherUserProfile?.followersCount || otherUserProfile?.followers_count || 0,
+                following_count: otherUserProfile?.followingCount || otherUserProfile?.following_count || 0,
+                posts_count: otherUserProfile?.posts_count || 0,
+                level: otherUserProfile?.level || 1,
+                total_xp: otherUserProfile?.total_xp || 0,
+            },
+        };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -192,7 +260,7 @@ export default function ProfilePage() {
 
                     {/* Right Column - Activity Feed */}
                     <div className="lg:col-span-2">
-                        <ActivityFeed userId={profileData.id} />
+                        <ActivityFeed userId={profileData.id} isOwnProfile={isOwnProfile} />
                     </div>
                 </div>
             </div>

@@ -2,7 +2,7 @@
 // Routes pour la gestion du profil social
 
 import { Router } from 'express';
-import { auth } from '../middlewares/auth.middleware';
+import { auth, optionalAuth } from '../middlewares/auth.middleware';
 import {
   getPublicProfile,
   getMyProfile,
@@ -59,9 +59,9 @@ router.patch('/me/privacy', auth, updateMyPrivacy);
 /**
  * GET /api/profile/:userId
  * Récupère le profil public d'un utilisateur
- * Public (mais filtré selon confidentialité)
+ * Public avec auth optionnelle (pour calculer isFollowing si connecté)
  */
-router.get('/:userId', getPublicProfile);
+router.get('/:userId', optionalAuth, getPublicProfile);
 
 /**
  * GET /api/profile/:userId/followers

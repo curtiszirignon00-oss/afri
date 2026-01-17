@@ -2,11 +2,12 @@
 import { Router } from 'express';
 import { auth } from '../middlewares/auth.middleware';
 import * as moderationController from '../controllers/moderation.controller';
+import { reportLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
 // ============= REPORTS =============
-router.post('/reports', auth, moderationController.createReport);                    // Create report
+router.post('/reports', auth, reportLimiter, moderationController.createReport); // Create report - Rate limited
 router.get('/reports', auth, moderationController.getReports);                       // List reports (admin)
 router.put('/reports/:reportId', auth, moderationController.processReport);          // Process report (admin)
 
