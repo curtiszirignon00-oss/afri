@@ -22,7 +22,7 @@ export interface CreateCommunityDto {
     };
 }
 
-export interface UpdateCommunityDto extends Partial<CreateCommunityDto> {}
+export interface UpdateCommunityDto extends Partial<CreateCommunityDto> { }
 
 export interface CreateCommunityPostDto {
     type?: PostType;
@@ -1039,6 +1039,19 @@ export async function createCommunityPost(communityId: string, authorId: string,
             )
             .catch((err) => console.error('Error notifying community post:', err));
     }
+
+    // Always notify platform admins about new community posts for review
+    notificationService
+        .notifyAdminsNewCommunityPost(
+            communityId,
+            post.community?.name || 'Unknown',
+            post.community?.slug || '',
+            post.id,
+            authorId,
+            `${post.author.name} ${post.author.lastname}`,
+            postData.content
+        )
+        .catch((err) => console.error('Error notifying admins:', err));
 
     return post;
 }

@@ -11,6 +11,7 @@ import {
     TrendingUp,
     TrendingDown,
     CheckCircle,
+    Flag,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -24,6 +25,7 @@ import {
 } from '../../hooks/useCommunity';
 import { useAuth } from '../../contexts/AuthContext';
 import CommunityCommentSection from './CommunityCommentSection';
+import ReportModal from '../moderation/ReportModal';
 
 interface Props {
     post: CommunityPost;
@@ -46,6 +48,7 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
     const [showComments, setShowComments] = useState(false);
     const [isLiked, setIsLiked] = useState(post.hasLiked || false);
     const [likesCount, setLikesCount] = useState(post.likes_count);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const likePost = useLikeCommunityPost();
     const unlikePost = useUnlikeCommunityPost();
@@ -195,6 +198,18 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
                                                     Supprimer
                                                 </button>
                                             )}
+                                            {!isOwner && (
+                                                <button
+                                                    onClick={() => {
+                                                        setShowReportModal(true);
+                                                        setShowMenu(false);
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:bg-orange-50"
+                                                >
+                                                    <Flag className="w-4 h-4" />
+                                                    Signaler
+                                                </button>
+                                            )}
                                         </div>
                                     </>
                                 )}
@@ -223,9 +238,8 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
                             )}
                             {post.stock_change !== undefined && (
                                 <span
-                                    className={`flex items-center gap-1 text-sm ${
-                                        post.stock_change >= 0 ? 'text-green-600' : 'text-red-600'
-                                    }`}
+                                    className={`flex items-center gap-1 text-sm ${post.stock_change >= 0 ? 'text-green-600' : 'text-red-600'
+                                        }`}
                                 >
                                     {post.stock_change >= 0 ? (
                                         <TrendingUp className="w-4 h-4" />
@@ -243,13 +257,12 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
                 {/* Images */}
                 {post.images && post.images.length > 0 && (
                     <div
-                        className={`mt-3 grid gap-2 ${
-                            post.images.length === 1
+                        className={`mt-3 grid gap-2 ${post.images.length === 1
                                 ? 'grid-cols-1'
                                 : post.images.length === 2
-                                ? 'grid-cols-2'
-                                : 'grid-cols-2'
-                        }`}
+                                    ? 'grid-cols-2'
+                                    : 'grid-cols-2'
+                            }`}
                     >
                         {post.images.slice(0, 4).map((image, index) => (
                             <img
@@ -282,9 +295,8 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
                 <button
                     onClick={handleLike}
                     disabled={likePost.isPending || unlikePost.isPending}
-                    className={`flex items-center gap-2 ${
-                        isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                    } transition-colors`}
+                    className={`flex items-center gap-2 ${isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                        } transition-colors`}
                 >
                     <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
                     <span>{likesCount}</span>
@@ -302,6 +314,16 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
             {/* Comments Section */}
             {showComments && (
                 <CommunityCommentSection postId={post.id} />
+            )}
+
+            {/* Report Modal */}
+            {showReportModal && (
+                <ReportModal
+                    contentType="COMMUNITY_POST"
+                    contentId={post.id}
+                    contentAuthorName={`${post.author.name} ${post.author.lastname}`}
+                    onClose={() => setShowReportModal(false)}
+                />
             )}
         </div>
     );

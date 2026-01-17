@@ -1,9 +1,11 @@
 // src/components/profile/PostCard.tsx
 import { useState } from 'react';
-import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, CheckCircle, MoreHorizontal, Edit2, Trash2, X, Loader2, UserPlus, UserCheck } from 'lucide-react';
+import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, CheckCircle, MoreHorizontal, Edit2, Trash2, X, Loader2, UserPlus, UserCheck, Flag } from 'lucide-react';
 import { useLikePost, useUnlikePost, useDeletePost, useUpdatePost, useFollowUser, useUnfollowUser } from '../../hooks/useSocial';
 import CommentSection from './CommentSection';
+import ReportModal from '../moderation/ReportModal';
 import { Card } from '../ui';
+import { ShareablePortfolioCard, ShareablePerformanceCard, ShareablePositionCard } from '../share';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +34,7 @@ export default function PostCard({ post }: PostCardProps) {
     const [editContent, setEditContent] = useState(post.content);
     const [editTitle, setEditTitle] = useState(post.title || '');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
 
     const likeMutation = useLikePost();
     const unlikeMutation = useUnlikePost();
@@ -194,8 +197,8 @@ export default function PostCard({ post }: PostCardProps) {
                                 onClick={handleFollow}
                                 disabled={isFollowLoading}
                                 className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full font-medium transition-all ${isFollowing
-                                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                                     } disabled:opacity-50`}
                             >
                                 {isFollowLoading ? (
@@ -232,47 +235,78 @@ export default function PostCard({ post }: PostCardProps) {
                     </p>
                 </div>
 
-                {/* Menu dropdown for owner */}
-                {isOwner && (
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowMenu(!showMenu)}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                            <MoreHorizontal className="w-5 h-5" />
-                        </button>
-                        {showMenu && (
-                            <>
-                                <div
-                                    className="fixed inset-0 z-10"
-                                    onClick={() => setShowMenu(false)}
-                                />
-                                <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                                    <button
-                                        onClick={() => {
-                                            setIsEditing(true);
-                                            setShowMenu(false);
-                                        }}
-                                        className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                        Modifier
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setShowDeleteConfirm(true);
-                                            setShowMenu(false);
-                                        }}
-                                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Supprimer
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
+                {/* Menu dropdown */}
+                <div className="relative">
+                    {isOwner ? (
+                        <>
+                            <button
+                                onClick={() => setShowMenu(!showMenu)}
+                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                            >
+                                <MoreHorizontal className="w-5 h-5" />
+                            </button>
+                            {showMenu && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-10"
+                                        onClick={() => setShowMenu(false)}
+                                    />
+                                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                                        <button
+                                            onClick={() => {
+                                                setIsEditing(true);
+                                                setShowMenu(false);
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                            Modifier
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setShowDeleteConfirm(true);
+                                                setShowMenu(false);
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </>
+                    ) : isLoggedIn && (
+                        <>
+                            <button
+                                onClick={() => setShowMenu(!showMenu)}
+                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                            >
+                                <MoreHorizontal className="w-5 h-5" />
+                            </button>
+                            {showMenu && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-10"
+                                        onClick={() => setShowMenu(false)}
+                                    />
+                                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                                        <button
+                                            onClick={() => {
+                                                setShowReportModal(true);
+                                                setShowMenu(false);
+                                            }}
+                                            className="w-full px-4 py-2 text-left text-orange-600 hover:bg-orange-50 flex items-center gap-2"
+                                        >
+                                            <Flag className="w-4 h-4" />
+                                            Signaler
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Edit Mode */}
@@ -329,6 +363,28 @@ export default function PostCard({ post }: PostCardProps) {
                         </div>
                     </div>
                 </>
+            )}
+
+            {/* Shared Portfolio Data - render if share tags exist */}
+            {post.tags && post.tags.some((tag: string) => tag.startsWith('share-')) && (
+                <div className="mb-4">
+                    {post.tags.includes('share-portfolio_value') || post.tags.includes('share-portfolio_composition') ? (
+                        <ShareablePortfolioCard
+                            data={{
+                                totalValue: 5000000,
+                                gainLoss: 500000,
+                                gainLossPercent: 11.11,
+                                cashBalance: 1500000,
+                                stocksValue: 3500000,
+                                topPositions: [
+                                    { ticker: 'SNTS', companyName: 'Sonatel', value: 1500000, percent: 42.86 },
+                                    { ticker: 'SLBC', companyName: 'SLBC', value: 1000000, percent: 28.57 },
+                                    { ticker: 'BOAB', companyName: 'BOA Benin', value: 1000000, percent: 28.57 },
+                                ],
+                            }}
+                        />
+                    ) : null}
+                </div>
             )}
 
             {/* Stock Info - Clickable */}
@@ -421,6 +477,16 @@ export default function PostCard({ post }: PostCardProps) {
                 <div className="mt-4 pt-4 border-t border-gray-200">
                     <CommentSection postId={post.id} />
                 </div>
+            )}
+
+            {/* Report Modal */}
+            {showReportModal && (
+                <ReportModal
+                    contentType="POST"
+                    contentId={post.id}
+                    contentAuthorName={`${post.author.name} ${post.author.lastname}`}
+                    onClose={() => setShowReportModal(false)}
+                />
             )}
         </Card>
     );

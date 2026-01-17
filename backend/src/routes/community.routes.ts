@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { auth, optionalAuth } from '../middlewares/auth.middleware';
 import * as communityController from '../controllers/community.controller';
+import { communityPostCreationLimiter, commentCreationLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -26,12 +27,12 @@ router.post('/join-requests/:requestId/process', auth, communityController.proce
 
 // ============= COMMUNITY POSTS =============
 router.get('/:communityId/posts', optionalAuth, communityController.getCommunityPosts); // Get posts
-router.post('/:communityId/posts', auth, communityController.createCommunityPost); // Create post
+router.post('/:communityId/posts', auth, communityPostCreationLimiter, communityController.createCommunityPost); // Create post - Rate limited
 
 // ============= POST INTERACTIONS =============
 router.post('/posts/:postId/like', auth, communityController.likeCommunityPost); // Like post
 router.delete('/posts/:postId/like', auth, communityController.unlikeCommunityPost); // Unlike post
-router.post('/posts/:postId/comments', auth, communityController.commentCommunityPost); // Comment
+router.post('/posts/:postId/comments', auth, commentCreationLimiter, communityController.commentCommunityPost); // Comment - Rate limited
 router.get('/posts/:postId/comments', communityController.getCommunityPostComments); // Get comments
 router.delete('/posts/:postId', auth, communityController.deleteCommunityPost); // Delete post
 router.post('/posts/:postId/pin', auth, communityController.togglePinPost); // Pin/unpin post

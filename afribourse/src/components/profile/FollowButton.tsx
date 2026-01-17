@@ -1,5 +1,5 @@
 // src/components/profile/FollowButton.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserPlus, UserMinus, Loader2 } from 'lucide-react';
 import { useFollowUser, useUnfollowUser } from '../../hooks/useSocial';
 import toast from 'react-hot-toast';
@@ -11,6 +11,11 @@ interface FollowButtonProps {
 
 export default function FollowButton({ userId, initialFollowing = false }: FollowButtonProps) {
     const [isFollowing, setIsFollowing] = useState(initialFollowing);
+
+    // Synchroniser avec initialFollowing quand il change (ex: après chargement des données)
+    useEffect(() => {
+        setIsFollowing(initialFollowing);
+    }, [initialFollowing]);
     const followMutation = useFollowUser();
     const unfollowMutation = useUnfollowUser();
 

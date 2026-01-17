@@ -364,4 +364,56 @@ export class LearningServicePrisma {
             throw error;
         }
     }
+
+    // --- 8. RÉCUPÉRER LE RÉSUMÉ DE PROGRESSION POUR LE PROFIL ---
+    async getProgressSummary(userId: string) {
+        try {
+            // Récupérer tous les modules publiés
+            const totalModules = await prisma.learningModule.count({
+                where: { is_published: true }
+            });
+
+            // Récupérer la progression de l'utilisateur
+            const userProgress = await prisma.learningProgress.findMany({
+                where: { userId },
+                include: {
+                    module: {
+                        select: { is_published: true }
+                    }
+                }
+            });
+
+            // Filtrer uniquement les modules publiés
+            const progressOnPublished = userProgress.filter(p => p.module?.is_published);
+
+            // Calculer les statistiques
+            const completedModules = progressOnPublished.filter(p => p.is_completed).length;
+            const completedQuizzes = progressOnPublished.filter(p => p.quiz_score !== null).length;
+
+            // Calculer le score moyen des quiz
+            const quizScores = progressOnPublished
+                .filter(p => p.quiz_score !== null)
+                .map(p => p.quiz_score as number);
+
+            const averageScore = quizScores.length > 0
+                ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length)
+                : 0;
+
+            // Temps total passé
+            const totalTimeSpent = progressOnPublished
+                .reduce((total, p) => total + (p.time_spent_minutes || 0), 0);
+
+            return {
+                completedModules,
+                totalModules,
+                completedQuizzes,
+                averageScore,
+                totalTimeSpent,
+                progressPercent: totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
+            };
+        } catch (error) {
+            console.error(`❌ Erreur lors de la récupération du résumé de progression:`, error);
+            throw error;
+        }
+    }
 }
