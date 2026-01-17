@@ -39,10 +39,12 @@ export function useCompleteOnboarding() {
             const response = await apiClient.post('/investor-profile/onboarding/complete', data);
             return response.data.data;
         },
-        onSuccess: () => {
-            // Invalider le cache du statut d'onboarding pour éviter les boucles de redirection
-            queryClient.invalidateQueries({ queryKey: ['onboarding', 'status'] });
-            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
+        onSuccess: async () => {
+            // Mettre à jour le cache immédiatement avec le nouveau statut (completed = true)
+            queryClient.setQueryData(['onboarding', 'status'], { completed: true });
+            // Puis invalider pour s'assurer d'avoir les données fraîches
+            await queryClient.invalidateQueries({ queryKey: ['onboarding', 'status'] });
+            await queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
