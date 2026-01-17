@@ -53,8 +53,8 @@ export default function StockDetailPageEnhanced() {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
 
-  // Hooks React Query pour charger les données - DOIVENT être appelés avant tout early return
-  // IMPORTANT: Toujours utiliser symbol (du paramètre URL) pour éviter les violations des règles des hooks
+  // Hooks React Query pour charger les données
+  // enabled: !!symbol empêche les requêtes si symbol est vide
   const { data: historyData, isLoading: historyLoading } = useStockHistory(symbol || '', selectedPeriod);
   const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(symbol || '');
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(symbol || '');
@@ -134,7 +134,7 @@ export default function StockDetailPageEnhanced() {
     void loadData();
   }, [stock?.symbol, symbol, stock]);
 
-  // Préparer les données pour lightweight-charts (mémoïsées) - AVANT les early returns
+  // Préparer les données pour lightweight-charts (mémoïsées)
   const lightweightData = React.useMemo(() => {
     if (!historyData?.data || historyData.data.length === 0) return [];
     return convertToLightweightData(historyData.data);
