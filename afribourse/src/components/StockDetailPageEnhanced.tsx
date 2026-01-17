@@ -60,6 +60,9 @@ export default function StockDetailPageEnhanced() {
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(symbol || '');
   const { data: newsData, isLoading: newsLoading } = useStockNews(symbol || '', 10);
 
+  // État pour afficher/cacher le panneau d'ordre sur mobile - DOIT être avant les early returns
+  const [showMobileOrder, setShowMobileOrder] = useState(false);
+
   // Charger le stock depuis l'API si non disponible dans state
   useEffect(() => {
     async function loadStock() {
@@ -293,9 +296,6 @@ export default function StockDetailPageEnhanced() {
 
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
-
-  // État pour afficher/cacher le panneau d'ordre sur mobile
-  const [showMobileOrder, setShowMobileOrder] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
