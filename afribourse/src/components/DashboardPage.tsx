@@ -358,8 +358,11 @@ export default function DashboardPage() {
   const initialBalance = portfolio.initial_balance || 0;
   const totalGainLoss = totalValue - initialBalance;
   const totalGainLossPercent = initialBalance > 0 ? (totalGainLoss / initialBalance) * 100 : 0;
-  const stocksValue = totalValue - portfolio.cash_balance;
-  // dailyPerf, allocationData et filteredHistory sont déjà mémorisés plus haut
+  // ✅ FIX: Calculate stocksValue from actual positions instead of subtraction
+  const stocksValue = portfolio.positions.reduce((acc, pos) => {
+    const stock = stocksData[pos.stock_ticker];
+    return stock ? acc + (pos.quantity * stock.current_price) : acc;
+  }, 0);
 
   return (
     <>
