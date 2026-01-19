@@ -366,23 +366,14 @@ export default function PostCard({ post }: PostCardProps) {
             )}
 
             {/* Shared Portfolio Data - render if share tags exist */}
-            {post.tags && post.tags.some((tag: string) => tag.startsWith('share-')) && (
+            {post.tags && post.tags.some((tag: string) => tag.startsWith('share-')) && post.metadata?.shareData && (
                 <div className="mb-4">
                     {post.tags.includes('share-portfolio_value') || post.tags.includes('share-portfolio_composition') ? (
-                        <ShareablePortfolioCard
-                            data={{
-                                totalValue: 5000000,
-                                gainLoss: 500000,
-                                gainLossPercent: 11.11,
-                                cashBalance: 1500000,
-                                stocksValue: 3500000,
-                                topPositions: [
-                                    { ticker: 'SNTS', companyName: 'Sonatel', value: 1500000, percent: 42.86 },
-                                    { ticker: 'SLBC', companyName: 'SLBC', value: 1000000, percent: 28.57 },
-                                    { ticker: 'BOAB', companyName: 'BOA Benin', value: 1000000, percent: 28.57 },
-                                ],
-                            }}
-                        />
+                        <ShareablePortfolioCard data={post.metadata.shareData} />
+                    ) : post.tags.includes('share-performance') ? (
+                        <ShareablePerformanceCard data={post.metadata.shareData} />
+                    ) : post.tags.includes('share-position') ? (
+                        <ShareablePositionCard data={post.metadata.shareData} />
                     ) : null}
                 </div>
             )}
