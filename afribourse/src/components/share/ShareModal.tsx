@@ -22,7 +22,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
     if (!isOpen || !shareData) return null;
 
     const handleShare = () => {
-        const { content, metadata } = formatShareData(shareData.type, shareData.data);
+        const { content } = formatShareData(shareData.type, shareData.data);
 
         // Combine generated content with custom message
         const finalContent = customMessage.trim()
@@ -34,8 +34,12 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
                 type: 'TRANSACTION', // Type de post pour les partages de stats
                 content: finalContent,
                 visibility: 'PUBLIC',
-                // Store share metadata for rendering
                 tags: [`share-${shareData.type.toLowerCase()}`],
+                // ✅ Include the actual share data so it can be displayed in PostCard
+                metadata: {
+                    shareType: shareData.type,
+                    shareData: shareData.data,
+                },
             },
             {
                 onSuccess: () => {

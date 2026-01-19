@@ -13,6 +13,7 @@ export interface CreatePostData {
     video_url?: string;
     tags?: string[];
     visibility?: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
+    metadata?: any; // Store share data (portfolio, performance, position)
 }
 
 /**

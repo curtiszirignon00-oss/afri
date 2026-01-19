@@ -1086,6 +1086,7 @@ model Post {
   // Métadonnées
   tags            String[] @default([])
   mentioned_users String[] @default([])
+  metadata        Json?    // Store share data (portfolio, performance, position)
 
   // Engagement (dénormalisé pour performance)
   likes_count    Int @default(0)
