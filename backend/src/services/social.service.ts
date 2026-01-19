@@ -16,6 +16,7 @@ export interface CreatePostDto {
     video_url?: string;
     tags?: string[];
     visibility?: VisibilityLevel;
+    metadata?: any; // Portfolio share data
 }
 
 // ============= FOLLOW SERVICES =============
@@ -225,6 +226,7 @@ export async function createPost(authorId: string, postData: CreatePostDto) {
         video_url,
         tags,
         visibility,
+        metadata,
     } = postData;
 
     const post = await prisma.post.create({
@@ -240,6 +242,7 @@ export async function createPost(authorId: string, postData: CreatePostDto) {
             ...(video_url && { video_url }),
             ...(tags && tags.length > 0 && { tags }),
             ...(visibility && { visibility }),
+            ...(metadata && { metadata }),
         },
         include: {
             author: {
