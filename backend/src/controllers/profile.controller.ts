@@ -99,6 +99,15 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
     const updateData = req.body;
 
     // Validation basique
+    if (updateData.name && updateData.name.length > 50) {
+      return res.status(400).json({ message: 'Le prénom ne peut pas dépasser 50 caractères' });
+    }
+
+    if (updateData.lastname && updateData.lastname.length > 50) {
+      return res.status(400).json({ message: 'Le nom de famille ne peut pas dépasser 50 caractères' });
+    }
+
+    // Validation basique
     if (updateData.username) {
       if (updateData.username.length < 3 || updateData.username.length > 30) {
         return res.status(400).json({ message: 'Le nom d\'utilisateur doit contenir entre 3 et 30 caractères' });
@@ -170,9 +179,9 @@ export async function followUser(req: Request, res: Response, next: NextFunction
     const { userId: followingId } = req.params;
 
     const follow = await profileService.followUser(followerId, followingId);
-    return res.status(201).json({ 
+    return res.status(201).json({
       message: 'Abonnement réussi',
-      follow 
+      follow
     });
 
   } catch (error: any) {

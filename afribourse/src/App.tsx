@@ -11,6 +11,7 @@ import { queryClient } from './lib/queryClient';
 
 // Context
 import { AuthProvider } from './contexts/AuthContext';
+import { ChallengeProvider } from './context/ChallengeContext';
 
 // Components
 import Header from './components/Header';
@@ -46,6 +47,7 @@ import CheckoutPage from './components/CheckoutPage';
 import AdminDashboard from './components/AdminDashboard';
 import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import NotificationsPage from './pages/NotificationsPage';
+import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -104,6 +106,16 @@ function Layout() {
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
           <Route path="/communities/:slug" element={<CommunityDetailPage />} />
+
+          {/* Challenge AfriBourse 2026 - Protected route */}
+          <Route
+            path="/challenge/community"
+            element={
+              <ProtectedRoute requireOnboarding={true}>
+                <ChallengeCommunityPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Onboarding - Protégé mais ne vérifie PAS le statut d'onboarding (évite la boucle) */}
           <Route
@@ -288,9 +300,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
+        <ChallengeProvider>
+          <BrowserRouter>
+            <Layout />
+          </BrowserRouter>
+        </ChallengeProvider>
       </AuthProvider>
       {/* DevTools React Query (visible uniquement en développement) */}
       <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />

@@ -32,6 +32,8 @@ export interface OnboardingDto {
     investment_goals?: string[];
     experience_level?: string;
     quiz_score?: number;
+    profession?: string;
+    phone_number?: string;
 }
 
 // ============= SERVICES =============
@@ -144,20 +146,40 @@ export async function checkOnboardingStatus(userId: string) {
  * Complete onboarding questionnaire
  */
 export async function completeOnboarding(userId: string, answers: OnboardingDto) {
+    // Séparer les champs pour InvestorProfile et UserProfile
+    const { profession, phone_number, ...investorData } = answers;
+
+    // Mettre à jour InvestorProfile
     const investorProfile = await prisma.investorProfile.upsert({
         where: { user_id: userId },
         create: {
             user_id: userId,
             onboarding_completed: true,
             onboarding_date: new Date(),
-            ...answers,
+            ...investorData,
         },
         update: {
             onboarding_completed: true,
             onboarding_date: new Date(),
-            ...answers,
+            ...investorData,
         },
     });
+
+    // Mettre à jour UserProfile avec profession et phone_number
+    if (profession || phone_number) {
+        await prisma.userProfile.upsert({
+            where: { userId: userId },
+            create: {
+                userId: userId,
+                profession,
+                phone_number,
+            },
+            update: {
+                profession,
+                phone_number,
+            },
+        });
+    }
 
     return investorProfile;
 }

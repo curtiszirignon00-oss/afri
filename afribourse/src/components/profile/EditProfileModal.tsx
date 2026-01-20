@@ -11,6 +11,8 @@ interface EditProfileModalProps {
 
 export default function EditProfileModal({ isOpen, onClose, profile }: EditProfileModalProps) {
     const [formData, setFormData] = useState({
+        name: '',
+        lastname: '',
         username: '',
         bio: '',
         country: '',
@@ -27,6 +29,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
     useEffect(() => {
         if (profile) {
             setFormData({
+                name: profile.name || '',
+                lastname: profile.lastname || '',
                 username: profile.profile?.username || '',
                 bio: profile.profile?.bio || '',
                 country: profile.profile?.country || '',
@@ -53,6 +57,12 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
         const updateData: ProfileUpdateData = {};
 
         // N'envoyer que les champs qui ont une valeur
+        if (formData.name.trim()) {
+            updateData.name = formData.name.trim();
+        }
+        if (formData.lastname.trim()) {
+            updateData.lastname = formData.lastname.trim();
+        }
         if (formData.username.trim()) {
             updateData.username = formData.username.trim();
         }
@@ -98,6 +108,36 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Name */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Prénom
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Votre prénom"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            maxLength={50}
+                        />
+                    </div>
+
+                    {/* Lastname */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Nom de famille
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.lastname}
+                            onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
+                            placeholder="Votre nom de famille"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            maxLength={50}
+                        />
+                    </div>
+
                     {/* Username */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">

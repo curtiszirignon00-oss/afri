@@ -2,6 +2,7 @@
 
 import { Router } from 'express';
 import { auth } from '../middlewares/auth.middleware';
+import { validateTradingHours } from '../middleware/challenge.middleware';
 import {
     getMyPortfolio,
     createMyPortfolio,
@@ -18,8 +19,8 @@ router.get('/summary', auth, getPortfolioSummary); // Summary for profile displa
 router.get('/my', auth, getMyPortfolio);
 router.post('/my', auth, createMyPortfolio);
 router.get('/my/history', auth, getPortfolioHistory);
-router.post('/my/buy', auth, buyStock);
-router.post('/my/sell', auth, sellStock);
+router.post('/my/buy', auth, validateTradingHours, buyStock);
+router.post('/my/sell', auth, validateTradingHours, sellStock);
 router.get('/my/transactions', auth, getPortfolioTransactions);
 
 export default router;

@@ -16,6 +16,7 @@ import {
     LogOut,
     Clock,
     AlertCircle,
+    Trophy,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
@@ -32,11 +33,21 @@ import CommunityPostCard from '../components/community/CommunityPostCard';
 import CommunityPostComposer from '../components/community/CommunityPostComposer';
 import CommunityMembersModal from '../components/community/CommunityMembersModal';
 import CommunitySettingsModal from '../components/community/CommunitySettingsModal';
+import { Leaderboard } from '../components/challenge/Leaderboard';
+
+// Slug de la communauté du challenge AfriBourse
+const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-du-virtuel-au-reel-';
 
 export default function CommunityDetailPage() {
     const { slug } = useParams<{ slug: string }>();
-    const { isLoggedIn, userProfile } = useAuth();
-    const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'members'>('posts');
+    const { isLoggedIn } = useAuth();
+
+    // Détecter si c'est la communauté du challenge
+    const isChallengeCommunity = slug === CHALLENGE_COMMUNITY_SLUG;
+
+    const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'members' | 'leaderboard'>(
+        isChallengeCommunity ? 'leaderboard' : 'posts'
+    );
     const [postsPage, setPostsPage] = useState(1);
     const [showMembersModal, setShowMembersModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -242,6 +253,20 @@ export default function CommunityDetailPage() {
             <div className="border-b bg-white sticky top-0 z-10">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex gap-8">
+                        {/* Onglet Classement - uniquement pour la communauté challenge */}
+                        {isChallengeCommunity && (
+                            <button
+                                onClick={() => setActiveTab('leaderboard')}
+                                className={`py-4 border-b-2 font-medium transition-colors flex items-center gap-2 ${
+                                    activeTab === 'leaderboard'
+                                        ? 'border-indigo-600 text-indigo-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                <Trophy className="w-4 h-4" />
+                                Classement
+                            </button>
+                        )}
                         <button
                             onClick={() => setActiveTab('posts')}
                             className={`py-4 border-b-2 font-medium transition-colors ${
@@ -278,6 +303,30 @@ export default function CommunityDetailPage() {
 
             {/* Content */}
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Leaderboard Tab - uniquement pour la communauté challenge */}
+                {activeTab === 'leaderboard' && isChallengeCommunity && (
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 mb-6">
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-yellow-100 rounded-full">
+                                    <Trophy className="w-6 h-6 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 mb-1">
+                                        Classement du Challenge AfriBourse 2026
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Le classement est mis a jour chaque fin de journee.
+                                        Il est base sur la performance en pourcentage du portefeuille concours
+                                        par rapport au capital initial de 1 000 000 FCFA.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <Leaderboard limit={20} showMyRank={true} />
+                    </div>
+                )}
+
                 {/* Posts Tab */}
                 {activeTab === 'posts' && (
                     <div className="max-w-2xl mx-auto">

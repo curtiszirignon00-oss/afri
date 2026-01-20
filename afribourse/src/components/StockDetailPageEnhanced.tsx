@@ -49,6 +49,9 @@ export default function StockDetailPageEnhanced() {
   const [isTogglingWatchlist, setIsTogglingWatchlist] = useState(false);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
 
+  // Multi-wallet support - Challenge AfriBourse 2026
+  const [walletMode, setWalletMode] = useState<'SANDBOX' | 'CONCOURS'>('SANDBOX');
+
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
@@ -100,7 +103,7 @@ export default function StockDetailPageEnhanced() {
       setError(null);
       try {
         const [portfolioRes, watchlistRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/portfolios/my`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`, { credentials: 'include' }),
           fetch(`${API_BASE_URL}/watchlist/my`, { credentials: 'include' })
         ]);
 
@@ -113,6 +116,7 @@ export default function StockDetailPageEnhanced() {
             name: portfolioData.name || 'Mon Portfolio',
             initial_balance: portfolioData.initial_balance || 0,
             cash_balance: portfolioData.cash_balance,
+            wallet_type: portfolioData.wallet_type,
             positions: portfolioData.positions || []
           });
         } else if (portfolioRes.status === 401 || portfolioRes.status === 404) {
@@ -135,7 +139,7 @@ export default function StockDetailPageEnhanced() {
 
     // Appeler la fonction async sans retourner la promesse
     void loadData();
-  }, [stock?.symbol, symbol, stock]);
+  }, [stock?.symbol, symbol, stock, walletMode]);
 
   // Préparer les données pour lightweight-charts (mémoïsées)
   const lightweightData = React.useMemo(() => {
@@ -234,21 +238,25 @@ export default function StockDetailPageEnhanced() {
         body: JSON.stringify({
           stockTicker: stock.symbol,
           quantity: quantity,
-          pricePerShare: stock.current_price
+          pricePerShare: stock.current_price,
+          walletType: walletMode // Multi-wallet support
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Erreur lors de l'achat");
+        // Le backend renvoie "error" pour les erreurs du middleware challenge
+        const errorMessage = result.error || result.message || "Erreur lors de l'achat";
+        throw new Error(errorMessage);
       }
 
-      toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi !`, { id: toastId });
+      const walletLabel = walletMode === 'CONCOURS' ? '(Challenge)' : '(Simulation)';
+      toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi ! ${walletLabel}`, { id: toastId });
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (error: any) {
       console.error("Erreur achat:", error);
-      toast.error(`Erreur : ${error.message}`, { id: toastId });
+      toast.error(error.message, { id: toastId });
       setError(error.message);
       setIsBuying(false);
     }
@@ -303,13 +311,15 @@ export default function StockDetailPageEnhanced() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Bouton retour */}
-          <button
-            onClick={() => navigate('/markets')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm sm:text-base">Retour aux marchés</span>
-          </button>
+          <div className="mb-4 sm:mb-6">
+            <button
+              onClick={() => navigate('/markets')}
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm sm:text-base">Retour aux marchés</span>
+            </button>
+          </div>
 
           {/* Informations de l'action */}
           <div className="flex flex-col gap-4 sm:gap-6">
@@ -510,7 +520,29 @@ export default function StockDetailPageEnhanced() {
           {/* Colonne latérale - Panel d'ordre (DESKTOP ONLY) */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-              <h3 className="text-xl font-bold text-gray-900">Ordre de Simulation</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Passer un ordre</h3>
+
+              {/* Mini Wallet Switcher */}
+              <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50">
+                <button
+                  onClick={() => setWalletMode('SANDBOX')}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'SANDBOX'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  📊 Simulation
+                </button>
+                <button
+                  onClick={() => setWalletMode('CONCOURS')}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'CONCOURS'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  🏆 Challenge
+                </button>
+              </div>
 
               {/* Cash balance */}
               {portfolio ? (
@@ -628,7 +660,29 @@ export default function StockDetailPageEnhanced() {
             {/* Handle */}
             <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
 
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Ordre de Simulation</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-3">Passer un ordre</h3>
+
+            {/* Mini Wallet Switcher Mobile */}
+            <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50 mb-4">
+              <button
+                onClick={() => setWalletMode('SANDBOX')}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'SANDBOX'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-500'
+                  }`}
+              >
+                📊 Simulation
+              </button>
+              <button
+                onClick={() => setWalletMode('CONCOURS')}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'CONCOURS'
+                  ? 'bg-orange-500 text-white shadow-sm'
+                  : 'text-gray-500'
+                  }`}
+              >
+                🏆 Challenge
+              </button>
+            </div>
 
             {/* Cash balance */}
             {portfolio ? (

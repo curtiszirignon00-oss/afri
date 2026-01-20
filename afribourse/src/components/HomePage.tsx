@@ -1,16 +1,16 @@
 // src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
 import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <-- AJOUT: useState pour rotation images
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  ArrowRight, 
-  BookOpen, 
-  Newspaper, 
-  BarChart3, 
-  Users, 
-  FileText, 
-  ChevronLeft, 
+import {
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  BookOpen,
+  Newspaper,
+  BarChart3,
+  Users,
+  FileText,
+  ChevronLeft,
   ChevronRight,
   Star, // <-- AJOUT: Pour témoignages
   Quote, // <-- AJOUT: Pour témoignages
@@ -22,12 +22,13 @@ import {
 import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 import { useAuth } from '../contexts/AuthContext';
+import { ChallengeCTA } from './challenge';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const newsContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // <-- AJOUT: État pour rotation des images de fond
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
@@ -159,10 +160,10 @@ export default function HomePage() {
   // --- Fonctions Utilitaires ---
   function formatNumber(num: number | null | undefined, options?: Intl.NumberFormatOptions): string {
     if (num == null) return 'N/A';
-    return new Intl.NumberFormat('fr-FR', { 
-      minimumFractionDigits: 0, 
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-      ...options 
+      ...options
     }).format(num);
   }
 
@@ -258,15 +259,14 @@ export default function HomePage() {
             key={index}
             src={img}
             alt={`Marché financier africain ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              index === currentBgIndex ? 'opacity-20' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentBgIndex ? 'opacity-20' : 'opacity-0'
+              }`}
           />
         ))}
-        
+
         {/* <-- CORRECTION: Overlay amélioré pour meilleure lisibilité */}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="max-w-4xl text-center mx-auto">
             {/* <-- AJOUT: Badge "Nouvelle plateforme" */}
@@ -282,7 +282,7 @@ export default function HomePage() {
                 avenir financier
               </span>
             </h1>
-            
+
             <p className="text-lg md:text-2xl text-indigo-100 mb-10 max-w-3xl mx-auto leading-relaxed">
               Formations gratuites, données en temps réel et analyses d'experts pour vous aider à investir intelligemment sur la BRVM
             </p>
@@ -312,6 +312,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* === Challenge AfriBourse 2026 CTA === */}
+      <ChallengeCTA />
 
       {/* === Section Académie (inchangée) === */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
@@ -326,7 +328,7 @@ export default function HomePage() {
                 Apprenez à investir intelligemment
               </h2>
               <p className="text-gray-700 mb-6 max-w-xl">
-                Des guides complets, des tutoriels vidéo et des analyses pour maîtriser l'investissement boursier. 
+                Des guides complets, des tutoriels vidéo et des analyses pour maîtriser l'investissement boursier.
                 Apprenez à votre rythme.
               </p>
 
@@ -402,11 +404,10 @@ export default function HomePage() {
                   </div>
 
                   {/* <-- CORRECTION: Badge de variation amélioré */}
-                  <div className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${
-                    stock.daily_change_percent >= 0
-                      ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800'
-                      : 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800'
-                  }`}>
+                  <div className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${stock.daily_change_percent >= 0
+                    ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800'
+                    : 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800'
+                    }`}>
                     {stock.daily_change_percent >= 0 ? (
                       <TrendingUp className="w-3 h-3" />
                     ) : (
@@ -599,7 +600,7 @@ export default function HomePage() {
                     <CheckCircle className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
                     {faq.question}
                   </h3>
-                  
+
                   {/* Réponse dépliable */}
                   {openFaqId === faq.id && (
                     <p className="text-gray-600 leading-relaxed ml-7 mt-2 animate-fadeIn">
@@ -607,11 +608,10 @@ export default function HomePage() {
                     </p>
                   )}
                 </div>
-                
-                <ChevronRight 
-                  className={`w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-300 ${
-                    openFaqId === faq.id ? 'rotate-90' : ''
-                  }`}
+
+                <ChevronRight
+                  className={`w-5 h-5 text-gray-400 flex-shrink-0 ml-4 transition-transform duration-300 ${openFaqId === faq.id ? 'rotate-90' : ''
+                    }`}
                 />
               </div>
             </Card>
@@ -638,7 +638,7 @@ export default function HomePage() {
             <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
               Rejoignez des milliers d'investisseurs qui font confiance à AfriBourse pour développer leur patrimoine.
             </p>
-            
+
             <Button
               variant="secondary"
               size="lg"
@@ -694,11 +694,10 @@ export default function HomePage() {
                     className="transition-transform hover:scale-110 focus:outline-none"
                   >
                     <Star
-                      className={`w-10 h-10 ${
-                        star <= (hoveredStar || reviewRating)
-                          ? 'text-yellow-400 fill-current'
-                          : 'text-gray-300'
-                      }`}
+                      className={`w-10 h-10 ${star <= (hoveredStar || reviewRating)
+                        ? 'text-yellow-400 fill-current'
+                        : 'text-gray-300'
+                        }`}
                     />
                   </button>
                 ))}

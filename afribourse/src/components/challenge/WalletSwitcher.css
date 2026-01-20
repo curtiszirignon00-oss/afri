@@ -1,0 +1,136 @@
+/* src/components/challenge/WalletSwitcher.css */
+
+.wallet-switcher {
+    display: flex;
+    gap: 12px;
+    background: var(--surface-secondary);
+    padding: 8px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-switcher-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 20px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-width: 140px;
+}
+
+.wallet-switcher-btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+}
+
+.wallet-switcher-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.wallet-switcher-btn .icon {
+    font-size: 24px;
+    transition: transform 0.3s ease;
+}
+
+.wallet-switcher-btn .label {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.wallet-switcher-btn .sublabel {
+    font-size: 11px;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+/* Sandbox Mode (Bleu) */
+.wallet-switcher-btn.sandbox.active {
+    background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+    border-color: #4F46E5;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3);
+}
+
+.wallet-switcher-btn.sandbox.active .label,
+.wallet-switcher-btn.sandbox.active .sublabel {
+    color: white;
+}
+
+.wallet-switcher-btn.sandbox.active .icon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.wallet-switcher-btn.sandbox:not(.active):hover {
+    background: rgba(79, 70, 229, 0.1);
+    border-color: rgba(79, 70, 229, 0.3);
+}
+
+/* Concours Mode (Orange) */
+.wallet-switcher-btn.concours.active {
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    border-color: #FF6B35;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+}
+
+.wallet-switcher-btn.concours.active .label,
+.wallet-switcher-btn.concours.active .sublabel {
+    color: white;
+}
+
+.wallet-switcher-btn.concours.active .icon {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    animation: prize-pulse 2s ease-in-out infinite;
+}
+
+.wallet-switcher-btn.concours:not(.active):not(.disabled):hover {
+    background: rgba(255, 107, 53, 0.1);
+    border-color: rgba(255, 107, 53, 0.3);
+}
+
+/* Animation trophée */
+@keyframes prize-pulse {
+
+    0%,
+    100% {
+        transform: scale(1.1);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wallet-switcher {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .wallet-switcher-btn {
+        min-width: unset;
+        padding: 10px 16px;
+    }
+
+    .wallet-switcher-btn .icon {
+        font-size: 20px;
+    }
+
+    .wallet-switcher-btn .label {
+        font-size: 14px;
+    }
+
+    .wallet-switcher-btn .sublabel {
+        font-size: 10px;
+    }
+}

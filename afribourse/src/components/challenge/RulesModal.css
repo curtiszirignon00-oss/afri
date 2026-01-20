@@ -1,0 +1,252 @@
+/* src/components/challenge/RulesModal.css */
+
+.rules-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.rules-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.rules-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.rules-modal-close:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.rules-modal-header {
+  padding: 2rem 2rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rules-modal-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.rules-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem;
+}
+
+.rules-modal-header p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.rules-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  max-height: 400px;
+}
+
+.rule-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.rule-item:hover {
+  transform: translateX(4px);
+  box-shadow: -4px 0 0 #FF6B35;
+}
+
+.rule-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.rule-text h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.25rem;
+}
+
+.rule-text p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rules-download {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #e5e7eb;
+  text-align: center;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #FF6B35;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  background: #FFF7ED;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.download-link:hover {
+  background: #FFEDD5;
+  transform: translateY(-2px);
+}
+
+.rules-modal-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 16px 16px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn-accept {
+  flex: 2;
+  padding: 0.875rem 1.5rem;
+  border: none;
+  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-accept:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+}
+
+.btn-accept:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(5px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .rules-modal {
+    max-height: 100vh;
+    border-radius: 16px 16px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+  }
+
+  .rules-modal-header {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .rules-modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .rules-modal-content {
+    padding: 1rem;
+    max-height: 50vh;
+  }
+
+  .rule-item {
+    padding: 0.75rem;
+  }
+
+  .rules-modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .btn-secondary,
+  .btn-accept {
+    flex: none;
+    width: 100%;
+  }
+}

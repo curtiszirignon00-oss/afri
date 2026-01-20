@@ -77,7 +77,7 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     if (profile.show_avatar) filtered.avatar_url = profile.avatar_url;
     if (profile.show_bio) filtered.bio = profile.bio;
     if (profile.show_country) filtered.country = profile.country;
-    
+
     if (profile.show_level) filtered.level = profile.level;
     if (profile.show_xp) filtered.total_xp = profile.total_xp;
     if (profile.show_rank) {
@@ -177,21 +177,27 @@ export async function updateProfileSocial(userId: string, data: any) {
     console.log('📝 [SERVICE] updateProfileSocial called with userId:', userId);
     console.log('📝 [SERVICE] data received:', JSON.stringify(data));
 
-    const updateData: any = {};
+    const profileUpdateData: any = {};
+    const userUpdateData: any = {};
 
-    // Champs autorisés à la mise à jour
-    if (data.username !== undefined) updateData.username = data.username;
-    if (data.bio !== undefined) updateData.bio = data.bio;
-    if (data.country !== undefined) updateData.country = data.country;
-    if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
-    if (data.banner_url !== undefined) updateData.banner_url = data.banner_url;
-    if (data.banner_type !== undefined) updateData.banner_type = data.banner_type;
-    if (data.social_links !== undefined) updateData.social_links = data.social_links;
+    // Champs du UserProfile
+    if (data.username !== undefined) profileUpdateData.username = data.username;
+    if (data.bio !== undefined) profileUpdateData.bio = data.bio;
+    if (data.country !== undefined) profileUpdateData.country = data.country;
+    if (data.avatar_url !== undefined) profileUpdateData.avatar_url = data.avatar_url;
+    if (data.banner_url !== undefined) profileUpdateData.banner_url = data.banner_url;
+    if (data.banner_type !== undefined) profileUpdateData.banner_type = data.banner_type;
+    if (data.social_links !== undefined) profileUpdateData.social_links = data.social_links;
 
-    console.log('📝 [SERVICE] updateData prepared:', JSON.stringify(updateData));
+    // Champs du User (name et lastname)
+    if (data.name !== undefined) userUpdateData.name = data.name;
+    if (data.lastname !== undefined) userUpdateData.lastname = data.lastname;
+
+    console.log('📝 [SERVICE] profileUpdateData prepared:', JSON.stringify(profileUpdateData));
+    console.log('📝 [SERVICE] userUpdateData prepared:', JSON.stringify(userUpdateData));
 
     // Si aucune donnée à mettre à jour, retourner le profil existant
-    if (Object.keys(updateData).length === 0) {
+    if (Object.keys(profileUpdateData).length === 0 && Object.keys(userUpdateData).length === 0) {
       console.log('📝 [SERVICE] No data to update, fetching existing profile');
       const existingProfile = await prisma.userProfile.findUnique({
         where: { userId }
@@ -199,44 +205,63 @@ export async function updateProfileSocial(userId: string, data: any) {
       return existingProfile;
     }
 
-    // Utiliser upsert pour créer le profil s'il n'existe pas
-    console.log('📝 [SERVICE] Performing upsert...');
-    const updatedProfile = await prisma.userProfile.upsert({
-      where: { userId },
-      update: updateData,
-      create: {
-        userId,
-        username: updateData.username || null,
-        bio: updateData.bio || null,
-        country: updateData.country || null,
-        avatar_url: updateData.avatar_url || null,
-        banner_url: updateData.banner_url || null,
-        banner_type: updateData.banner_type || 'gradient',
-        social_links: updateData.social_links || null,
-        // Valeurs par défaut requises
-        is_public: true,
-        level: 1,
-        total_xp: 0,
-        current_streak: 0,
-        longest_streak: 0,
-        streak_freezes: 5,
-        followers_count: 0,
-        following_count: 0,
-        posts_count: 0,
-        reputation_score: 0,
-        verified_investor: false,
-      }
-    });
+    // Mettre à jour le User si nécessaire
+    if (Object.keys(userUpdateData).length > 0) {
+      console.log('📝 [SERVICE] Updating User table...');
+      await prisma.user.update({
+        where: { id: userId },
+        data: userUpdateData
+      });
+    }
 
-    console.log('✅ [SERVICE] Profile updated successfully:', updatedProfile.id);
-    return updatedProfile;
+    // Si il y a des données de profil à mettre à jour
+    if (Object.keys(profileUpdateData).length > 0) {
+      // Utiliser upsert pour créer le profil s'il n'existe pas
+      console.log('📝 [SERVICE] Performing upsert on UserProfile...');
+      const updatedProfile = await prisma.userProfile.upsert({
+        where: { userId },
+        update: profileUpdateData,
+        create: {
+          userId,
+          username: profileUpdateData.username || null,
+          bio: profileUpdateData.bio || null,
+          country: profileUpdateData.country || null,
+          avatar_url: profileUpdateData.avatar_url || null,
+          banner_url: profileUpdateData.banner_url || null,
+          banner_type: profileUpdateData.banner_type || 'gradient',
+          social_links: profileUpdateData.social_links || null,
+          // Valeurs par défaut requises
+          is_public: true,
+          level: 1,
+          total_xp: 0,
+          current_streak: 0,
+          longest_streak: 0,
+          streak_freezes: 5,
+          followers_count: 0,
+          following_count: 0,
+          posts_count: 0,
+          reputation_score: 0,
+          verified_investor: false,
+        }
+      });
+
+      console.log('✅ [SERVICE] Profile updated successfully:', updatedProfile.id);
+      return updatedProfile;
+    } else {
+      // Si seulement le User a été mis à jour, retourner le profil existant
+      const existingProfile = await prisma.userProfile.findUnique({
+        where: { userId }
+      });
+      console.log('✅ [SERVICE] User updated, returning existing profile');
+      return existingProfile;
+    }
 
   } catch (error: any) {
     console.error('❌ [SERVICE] Error in updateProfileSocial:', error.message);
     console.error('❌ [SERVICE] Error code:', error.code);
     console.error('❌ [SERVICE] Full error:', error);
     if (error.code === 'P2002') {
-      throw new Error('Ce nom d\'utilisateur est déjà pris');
+      throw new Error("Ce nom d'utilisateur est déjà pris");
     }
     throw error;
   }
@@ -539,15 +564,15 @@ export async function getSuggestions(userId: string, limit: number = 10) {
     // Calculer un score de compatibilité
     const scored = suggestions.map(profile => {
       let score = 0;
-      
+
       // Même pays : +30 points
       if (profile.country === currentUser.country) score += 30;
-      
+
       // Niveau similaire : +20 points
       const levelDiff = Math.abs(profile.level - currentUser.level);
       if (levelDiff <= 2) score += 20;
       else if (levelDiff <= 5) score += 10;
-      
+
       // Amis en commun : +30 points
       const mutualFriends = profile.followers.length;
       score += Math.min(mutualFriends * 10, 30);

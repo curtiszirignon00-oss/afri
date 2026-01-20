@@ -1,0 +1,244 @@
+/* src/components/challenge/ChallengeCTA.css */
+
+
+.challenge-cta {
+    background: #ffffff;
+    /* Clean white background */
+    border: 1px solid #eef2f6;
+    /* Very subtle border instead of the thick orange one */
+    padding: 60px 40px;
+    margin: 60px auto;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    /* Professional shadow */
+    max-width: 1200px;
+}
+
+.challenge-cta::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255, 107, 53, 0.03) 0%, transparent 60%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+/* Subtle pattern overlay to make it look "finance" */
+.challenge-cta::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(#f0f4f8 1px, transparent 1px), linear-gradient(90deg, #f0f4f8 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.challenge-cta-container {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.challenge-icon {
+    font-size: 80px;
+    margin: 0 auto 24px auto;
+    /* Centered explicitly */
+    display: block;
+    width: fit-content;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 10px 15px rgba(247, 147, 30, 0.3));
+    /* Gold glow */
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.challenge-title {
+    color: #111827;
+    /* Darker, sharper text */
+    font-size: 36px;
+    font-weight: 800;
+    margin: 0 0 20px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-family: 'Inter', sans-serif;
+    /* Assuming a modern font stack available */
+}
+
+.challenge-subtitle {
+    color: #4B5563;
+    font-size: 20px;
+    line-height: 1.6;
+    margin: 0 auto 40px;
+    max-width: 700px;
+}
+
+.challenge-subtitle strong {
+    font-weight: 700;
+    color: #0f172a;
+    /* Dark emphasis */
+}
+
+.prize {
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 24px;
+    font-weight: 800;
+    display: inline-block;
+    padding: 0;
+    /* Reset padding from previous style */
+    color: #F7931E !important;
+    /* Fallback */
+}
+
+.challenge-features {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    border-radius: 16px;
+    color: #374151;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+/* Animation on hover */
+.feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
+    border-color: #FF6B35;
+    background: #fffafa;
+}
+
+.feature-icon {
+    font-size: 28px;
+}
+
+.countdown-badge {
+    display: inline-block;
+    background: #FF6B35;
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    color: white;
+    padding: 8px 24px;
+    border-radius: 100px;
+    font-weight: 600;
+    margin-bottom: 32px;
+    font-size: 15px;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+.challenge-cta-button {
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    /* Orange gradient as requested */
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 20px 50px;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.challenge-cta-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    background: #000000;
+}
+
+.challenge-cta-button .arrow {
+    transition: transform 0.3s ease;
+}
+
+.challenge-cta-button:hover .arrow {
+    transform: translateX(5px);
+}
+
+
+.enrolled-status {
+    margin-top: 20px;
+    color: #10B981;
+    font-size: 15px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    display: inline-block;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .challenge-cta {
+        padding: 40px 20px;
+        margin: 20px 0;
+        border-radius: 16px;
+    }
+
+    .challenge-icon {
+        font-size: 48px;
+    }
+
+    .challenge-title {
+        font-size: 24px;
+    }
+
+    .challenge-subtitle {
+        font-size: 16px;
+    }
+
+    .challenge-features {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .feature {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .challenge-cta-button {
+        font-size: 16px;
+        padding: 16px 32px;
+        width: 100%;
+    }
+}

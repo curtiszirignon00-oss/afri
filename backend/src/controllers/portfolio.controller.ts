@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import * as portfolioService from '../services/portfolio.service.prisma';
+import * as challengeService from '../services/challenge.service';
 
 // --- Portfolio Summary for Profile ---
 
@@ -32,7 +33,10 @@ export async function getMyPortfolio(req: Request, res: Response, next: NextFunc
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const portfolio = await portfolioService.findPortfolioByUserId(userId);
+    // Support pour le multi-wallet (challenge)
+    const walletType = req.query.wallet_type as string | undefined;
+
+    const portfolio = await portfolioService.findPortfolioByUserId(userId, walletType);
     if (!portfolio) {
       return res.status(404).json({ message: 'Portefeuille non trouvé' });
     }
@@ -73,21 +77,31 @@ export async function buyStock(req: Request, res: Response, next: NextFunction) 
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const { stockTicker, quantity, pricePerShare } = req.body;
+    const { stockTicker, quantity, pricePerShare, walletType, wallet_type } = req.body;
+    const targetWallet = (walletType || wallet_type || 'SANDBOX') as 'SANDBOX' | 'CONCOURS';
 
     if (!stockTicker || !quantity || !pricePerShare || quantity <= 0 || pricePerShare <= 0) {
-        return res.status(400).json({ message: 'Données d\'achat invalides (ticker, quantité, prix)' });
+      return res.status(400).json({ message: 'Données d\'achat invalides (ticker, quantité, prix)' });
     }
 
-    // --- Service call is now active ---
-    const result = await portfolioService.buyStock(userId, stockTicker, quantity, pricePerShare);
-    return res.status(200).json(result); // Return updated portfolio and transaction details
-    // --- End Service call ---
+    // Call service with wallet_type
+    const result = await portfolioService.buyStock(userId, stockTicker, quantity, pricePerShare, targetWallet);
+
+    // Si wallet CONCOURS, mettre à jour l'éligibilité (unique ticker count)
+    if (targetWallet === 'CONCOURS') {
+      try {
+        await challengeService.validateTransaction(userId, stockTicker);
+      } catch (err) {
+        console.error('Error validating challenge transaction:', err);
+        // Non-blocking - ne pas faire échouer l'achat
+      }
+    }
+
+    return res.status(200).json(result);
 
   } catch (error: any) {
-     console.error("Error in buyStock controller:", error);
-     // Return specific error message from service (e.g., "Fonds insuffisants")
-     return res.status(400).json({ message: error.message || "Erreur lors de l'achat" });
+    console.error("Error in buyStock controller:", error);
+    return res.status(400).json({ message: error.message || "Erreur lors de l'achat" });
   }
 }
 
@@ -98,20 +112,19 @@ export async function sellStock(req: Request, res: Response, next: NextFunction)
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const { stockTicker, quantity, pricePerShare } = req.body;
+    const { stockTicker, quantity, pricePerShare, walletType, wallet_type } = req.body;
+    const targetWallet = (walletType || wallet_type || 'SANDBOX') as 'SANDBOX' | 'CONCOURS';
 
     if (!stockTicker || !quantity || !pricePerShare || quantity <= 0 || pricePerShare <= 0) {
-        return res.status(400).json({ message: 'Données de vente invalides (ticker, quantité, prix)' });
+      return res.status(400).json({ message: 'Données de vente invalides (ticker, quantité, prix)' });
     }
 
-    // --- Service call is now active ---
-    const result = await portfolioService.sellStock(userId, stockTicker, quantity, pricePerShare);
-    return res.status(200).json(result); // Return updated portfolio and transaction details
-    // --- End Service call ---
+    // Call service with wallet_type
+    const result = await portfolioService.sellStock(userId, stockTicker, quantity, pricePerShare, targetWallet);
+    return res.status(200).json(result);
 
   } catch (error: any) {
     console.error("Error in sellStock controller:", error);
-    // Return specific error message from service (e.g., "Quantité insuffisante")
     return res.status(400).json({ message: error.message || "Erreur lors de la vente" });
   }
 }
@@ -129,7 +142,10 @@ export async function getPortfolioHistory(req: Request, res: Response, next: Nex
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const historyData = await portfolioService.getPortfolioHistory(userId);
+    // Support pour le multi-wallet
+    const walletType = req.query.wallet_type as string | undefined;
+
+    const historyData = await portfolioService.getPortfolioHistory(userId, walletType);
     return res.status(200).json(historyData);
 
   } catch (error) {
@@ -143,8 +159,11 @@ export async function getPortfolioTransactions(req: Request, res: Response, next
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
+    // Support pour le multi-wallet
+    const walletType = req.query.wallet_type as string | undefined;
+
     // Find the portfolio first to get its ID
-    const portfolio = await portfolioService.findPortfolioByUserId(userId);
+    const portfolio = await portfolioService.findPortfolioByUserId(userId, walletType);
     if (!portfolio) {
       return res.status(404).json({ message: 'Portefeuille non trouvé' });
     }
