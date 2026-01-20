@@ -17,6 +17,10 @@ import {
     Clock,
     AlertCircle,
     Trophy,
+    Calendar,
+    Video,
+    ExternalLink,
+    MapPin,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
@@ -45,7 +49,7 @@ export default function CommunityDetailPage() {
     // Détecter si c'est la communauté du challenge
     const isChallengeCommunity = slug === CHALLENGE_COMMUNITY_SLUG;
 
-    const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'members' | 'leaderboard'>(
+    const [activeTab, setActiveTab] = useState<'posts' | 'about' | 'members' | 'leaderboard' | 'events'>(
         isChallengeCommunity ? 'leaderboard' : 'posts'
     );
     const [postsPage, setPostsPage] = useState(1);
@@ -267,6 +271,20 @@ export default function CommunityDetailPage() {
                                 Classement
                             </button>
                         )}
+                        {/* Onglet Événements - uniquement pour la communauté challenge */}
+                        {isChallengeCommunity && (
+                            <button
+                                onClick={() => setActiveTab('events')}
+                                className={`py-4 border-b-2 font-medium transition-colors flex items-center gap-2 ${
+                                    activeTab === 'events'
+                                        ? 'border-indigo-600 text-indigo-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                                <Calendar className="w-4 h-4" />
+                                Evenements
+                            </button>
+                        )}
                         <button
                             onClick={() => setActiveTab('posts')}
                             className={`py-4 border-b-2 font-medium transition-colors ${
@@ -324,6 +342,129 @@ export default function CommunityDetailPage() {
                             </div>
                         </div>
                         <Leaderboard limit={20} showMyRank={true} />
+                    </div>
+                )}
+
+                {/* Events Tab - uniquement pour la communauté challenge */}
+                {activeTab === 'events' && isChallengeCommunity && (
+                    <div className="max-w-3xl mx-auto">
+                        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 mb-6">
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-purple-100 rounded-full">
+                                    <Calendar className="w-6 h-6 text-purple-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 mb-1">
+                                        Evenements du Challenge
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        Retrouvez ici tous les webinaires, formations et evenements lies au Challenge AfriBourse 2026.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Liste des événements */}
+                        <div className="space-y-4">
+                            {/* Événement à venir */}
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                <div className="bg-indigo-600 text-white px-4 py-2 text-sm font-medium flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                    A venir
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-16 h-16 bg-indigo-100 rounded-xl flex flex-col items-center justify-center">
+                                            <span className="text-2xl font-bold text-indigo-600">15</span>
+                                            <span className="text-xs text-indigo-500 uppercase">Fev</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-900 text-lg mb-1">
+                                                Webinaire : Strategies de trading sur la BRVM
+                                            </h4>
+                                            <p className="text-gray-600 text-sm mb-3">
+                                                Apprenez les meilleures strategies pour maximiser vos performances sur le marche boursier regional.
+                                            </p>
+                                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="w-4 h-4" />
+                                                    <span>18h00 - 19h30 (GMT)</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Video className="w-4 h-4" />
+                                                    <span>En ligne (Zoom)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                                        <span className="text-sm text-gray-500">Gratuit pour les participants</span>
+                                        <a
+                                            href="#"
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                                        >
+                                            S'inscrire
+                                            <ExternalLink className="w-4 h-4" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Événement passé */}
+                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden opacity-75">
+                                <div className="bg-gray-500 text-white px-4 py-2 text-sm font-medium">
+                                    Termine
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-xl flex flex-col items-center justify-center">
+                                            <span className="text-2xl font-bold text-gray-500">02</span>
+                                            <span className="text-xs text-gray-400 uppercase">Fev</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-700 text-lg mb-1">
+                                                Lancement officiel du Challenge AfriBourse 2026
+                                            </h4>
+                                            <p className="text-gray-500 text-sm mb-3">
+                                                Ceremonie de lancement avec presentation des regles et des prix a gagner.
+                                            </p>
+                                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="w-4 h-4" />
+                                                    <span>10h00 - 12h00 (GMT)</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin className="w-4 h-4" />
+                                                    <span>Abidjan, Cote d'Ivoire</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t">
+                                        <a
+                                            href="#"
+                                            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                                        >
+                                            <Video className="w-4 h-4" />
+                                            Voir le replay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Message si pas d'événements */}
+                            {/*
+                            <div className="bg-white rounded-xl p-12 text-center">
+                                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    Aucun evenement programme
+                                </h3>
+                                <p className="text-gray-600">
+                                    Les prochains evenements seront annonces ici. Restez connectes!
+                                </p>
+                            </div>
+                            */}
+                        </div>
                     </div>
                 )}
 

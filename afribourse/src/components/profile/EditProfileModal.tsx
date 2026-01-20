@@ -16,6 +16,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
         username: '',
         bio: '',
         country: '',
+        avatar_color: '',
+        banner_color: '',
         linkedin: '',
         twitter: '',
         website: '',
@@ -34,6 +36,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                 username: profile.profile?.username || '',
                 bio: profile.profile?.bio || '',
                 country: profile.profile?.country || '',
+                avatar_color: profile.profile?.avatar_color || 'from-blue-500 to-purple-600',
+                banner_color: profile.profile?.banner_color || 'from-blue-600 via-indigo-600 to-purple-700',
                 linkedin: profile.profile?.social_links?.linkedin || '',
                 twitter: profile.profile?.social_links?.twitter || '',
                 website: profile.profile?.social_links?.website || '',
@@ -80,6 +84,12 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
         updateData.bio = formData.bio;
         if (formData.country) {
             updateData.country = formData.country;
+        }
+        if (formData.avatar_color) {
+            updateData.avatar_color = formData.avatar_color;
+        }
+        if (formData.banner_color) {
+            updateData.banner_color = formData.banner_color;
         }
         if (Object.keys(socialLinks).length > 0) {
             updateData.social_links = socialLinks;
@@ -209,6 +219,66 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                             <option value="France">France</option>
                             <option value="Autre">Autre</option>
                         </select>
+                    </div>
+
+                    {/* Avatar Color */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Couleur de l'avatar
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {[
+                                { value: 'from-blue-500 to-purple-600', label: 'Bleu-Violet' },
+                                { value: 'from-green-500 to-teal-600', label: 'Vert' },
+                                { value: 'from-orange-500 to-red-600', label: 'Orange' },
+                                { value: 'from-pink-500 to-purple-600', label: 'Rose' },
+                                { value: 'from-yellow-500 to-orange-600', label: 'Jaune' },
+                                { value: 'from-indigo-500 to-blue-600', label: 'Indigo' },
+                                { value: 'from-red-500 to-pink-600', label: 'Rouge' },
+                                { value: 'from-teal-500 to-green-600', label: 'Turquoise' },
+                            ].map((color) => (
+                                <button
+                                    key={color.value}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, avatar_color: color.value })}
+                                    className={`h-12 rounded-lg bg-gradient-to-br ${color.value} border-2 transition-all ${formData.avatar_color === color.value
+                                            ? 'border-gray-900 ring-2 ring-gray-900'
+                                            : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    title={color.label}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Banner Color */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Couleur de la bannière
+                        </label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {[
+                                { value: 'from-blue-600 via-indigo-600 to-purple-700', label: 'Bleu-Violet' },
+                                { value: 'from-green-600 via-teal-600 to-cyan-700', label: 'Vert-Cyan' },
+                                { value: 'from-orange-600 via-red-600 to-pink-700', label: 'Orange-Rose' },
+                                { value: 'from-purple-600 via-pink-600 to-red-700', label: 'Violet-Rouge' },
+                                { value: 'from-yellow-600 via-orange-600 to-red-700', label: 'Jaune-Rouge' },
+                                { value: 'from-indigo-600 via-blue-600 to-cyan-700', label: 'Indigo-Cyan' },
+                                { value: 'from-gray-600 via-gray-700 to-gray-800', label: 'Gris' },
+                                { value: 'from-emerald-600 via-green-600 to-teal-700', label: 'Émeraude' },
+                            ].map((color) => (
+                                <button
+                                    key={color.value}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, banner_color: color.value })}
+                                    className={`h-12 rounded-lg bg-gradient-to-br ${color.value} border-2 transition-all ${formData.banner_color === color.value
+                                            ? 'border-gray-900 ring-2 ring-gray-900'
+                                            : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                    title={color.label}
+                                />
+                            ))}
+                        </div>
                     </div>
 
                     {/* Social Links */}

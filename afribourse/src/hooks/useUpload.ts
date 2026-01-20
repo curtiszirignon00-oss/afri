@@ -185,6 +185,8 @@ export interface ProfileUpdateData {
     username?: string;
     bio?: string;
     country?: string;
+    avatar_color?: string;
+    banner_color?: string;
     social_links?: {
         linkedin?: string;
         twitter?: string;

@@ -206,7 +206,9 @@ export async function updateProfileSocial(userId: string, data: any) {
     if (data.bio !== undefined) profileUpdateData.bio = data.bio;
     if (data.country !== undefined) profileUpdateData.country = data.country;
     if (data.avatar_url !== undefined) profileUpdateData.avatar_url = data.avatar_url;
+    if (data.avatar_color !== undefined) profileUpdateData.avatar_color = data.avatar_color;
     if (data.banner_url !== undefined) profileUpdateData.banner_url = data.banner_url;
+    if (data.banner_color !== undefined) profileUpdateData.banner_color = data.banner_color;
     if (data.banner_type !== undefined) profileUpdateData.banner_type = data.banner_type;
     if (data.social_links !== undefined) profileUpdateData.social_links = data.social_links;
 
