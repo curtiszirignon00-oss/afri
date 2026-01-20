@@ -21,6 +21,12 @@ import {
     Video,
     ExternalLink,
     MapPin,
+    Plus,
+    Edit,
+    Trash2,
+    Eye,
+    EyeOff,
+    Play,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
@@ -38,6 +44,22 @@ import CommunityPostComposer from '../components/community/CommunityPostComposer
 import CommunityMembersModal from '../components/community/CommunityMembersModal';
 import CommunitySettingsModal from '../components/community/CommunitySettingsModal';
 import { Leaderboard } from '../components/challenge/Leaderboard';
+import {
+    usePublishedEvents,
+    useIsEventsAdmin,
+    useAllEvents,
+    useRegisterToEvent,
+    useCancelRegistration,
+    usePublishEvent,
+    useCancelEvent,
+    useCompleteEvent,
+    useDeleteEvent,
+    isEventPast,
+    isRegistrationOpen,
+    formatEventType,
+    type Event,
+} from '../hooks/useEvents';
+import EventFormModal from '../components/events/EventFormModal';
 
 // Slug de la communauté du challenge AfriBourse
 const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-du-virtuel-au-reel-';
@@ -55,8 +77,24 @@ export default function CommunityDetailPage() {
     const [postsPage, setPostsPage] = useState(1);
     const [showMembersModal, setShowMembersModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showEventFormModal, setShowEventFormModal] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
     const { data: community, isLoading, error } = useCommunity(slug || '');
+
+    // Events hooks (seulement pour la communauté challenge)
+    const { data: isEventsAdmin } = useIsEventsAdmin();
+    const { data: publishedEvents, isLoading: eventsLoading } = usePublishedEvents();
+    const { data: allEvents } = useAllEvents();
+    const registerToEvent = useRegisterToEvent();
+    const cancelRegistration = useCancelRegistration();
+    const publishEvent = usePublishEvent();
+    const cancelEvent = useCancelEvent();
+    const completeEvent = useCompleteEvent();
+    const deleteEvent = useDeleteEvent();
+
+    // Utiliser tous les événements si admin, sinon seulement les publiés
+    const events = isEventsAdmin ? allEvents : publishedEvents;
     const { data: postsData, isLoading: postsLoading } = useCommunityPosts(community?.id || '', postsPage);
     const { data: membersData } = useCommunityMembers(community?.id || '', 1);
 
@@ -353,7 +391,7 @@ export default function CommunityDetailPage() {
                                 <div className="p-3 bg-purple-100 rounded-full">
                                     <Calendar className="w-6 h-6 text-purple-600" />
                                 </div>
-                                <div>
+                                <div className="flex-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">
                                         Evenements du Challenge
                                     </h3>
@@ -361,99 +399,356 @@ export default function CommunityDetailPage() {
                                         Retrouvez ici tous les webinaires, formations et evenements lies au Challenge AfriBourse 2026.
                                     </p>
                                 </div>
+                                {/* Bouton créer événement pour admin */}
+                                {isEventsAdmin && (
+                                    <button
+                                        onClick={() => {
+                                            setEditingEvent(null);
+                                            setShowEventFormModal(true);
+                                        }}
+                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        Creer
+                                    </button>
+                                )}
                             </div>
                         </div>
 
+                        {/* Chargement */}
+                        {eventsLoading && (
+                            <div className="flex justify-center py-8">
+                                <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                            </div>
+                        )}
+
                         {/* Liste des événements */}
-                        <div className="space-y-4">
-                            {/* Événement à venir */}
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                <div className="bg-indigo-600 text-white px-4 py-2 text-sm font-medium flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    A venir
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="flex-shrink-0 w-16 h-16 bg-indigo-100 rounded-xl flex flex-col items-center justify-center">
-                                            <span className="text-2xl font-bold text-indigo-600">15</span>
-                                            <span className="text-xs text-indigo-500 uppercase">Fev</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-semibold text-gray-900 text-lg mb-1">
-                                                Webinaire : Strategies de trading sur la BRVM
-                                            </h4>
-                                            <p className="text-gray-600 text-sm mb-3">
-                                                Apprenez les meilleures strategies pour maximiser vos performances sur le marche boursier regional.
-                                            </p>
-                                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                                                <div className="flex items-center gap-1">
-                                                    <Clock className="w-4 h-4" />
-                                                    <span>18h00 - 19h30 (GMT)</span>
+                        {!eventsLoading && events && events.length > 0 && (
+                            <div className="space-y-4">
+                                {events.map((event) => {
+                                    const isPast = isEventPast(event);
+                                    const canRegister = isRegistrationOpen(event);
+                                    const eventDate = new Date(event.event_date);
+                                    const day = eventDate.getDate();
+                                    const month = eventDate.toLocaleString('fr-FR', { month: 'short' });
+                                    const time = eventDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                                    return (
+                                        <div
+                                            key={event.id}
+                                            className={`bg-white rounded-xl border border-gray-200 overflow-hidden ${
+                                                isPast ? 'opacity-75' : ''
+                                            }`}
+                                        >
+                                            {/* Badge de statut */}
+                                            <div
+                                                className={`px-4 py-2 text-sm font-medium flex items-center justify-between ${
+                                                    event.status === 'DRAFT'
+                                                        ? 'bg-gray-400 text-white'
+                                                        : event.status === 'CANCELLED'
+                                                        ? 'bg-red-500 text-white'
+                                                        : isPast
+                                                        ? 'bg-gray-500 text-white'
+                                                        : 'bg-indigo-600 text-white'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {!isPast && event.status === 'PUBLISHED' && (
+                                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                                    )}
+                                                    {event.status === 'DRAFT' && (
+                                                        <>
+                                                            <EyeOff className="w-4 h-4" />
+                                                            Brouillon
+                                                        </>
+                                                    )}
+                                                    {event.status === 'CANCELLED' && 'Annule'}
+                                                    {event.status === 'PUBLISHED' && !isPast && 'A venir'}
+                                                    {(event.status === 'PUBLISHED' || event.status === 'COMPLETED') && isPast && 'Termine'}
                                                 </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Video className="w-4 h-4" />
-                                                    <span>En ligne (Zoom)</span>
+                                                <span className="text-xs opacity-75">
+                                                    {formatEventType(event.type)}
+                                                </span>
+                                            </div>
+
+                                            <div className="p-6">
+                                                <div className="flex items-start gap-4">
+                                                    {/* Date */}
+                                                    <div
+                                                        className={`flex-shrink-0 w-16 h-16 rounded-xl flex flex-col items-center justify-center ${
+                                                            isPast ? 'bg-gray-100' : 'bg-indigo-100'
+                                                        }`}
+                                                    >
+                                                        <span
+                                                            className={`text-2xl font-bold ${
+                                                                isPast ? 'text-gray-500' : 'text-indigo-600'
+                                                            }`}
+                                                        >
+                                                            {day}
+                                                        </span>
+                                                        <span
+                                                            className={`text-xs uppercase ${
+                                                                isPast ? 'text-gray-400' : 'text-indigo-500'
+                                                            }`}
+                                                        >
+                                                            {month}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Contenu */}
+                                                    <div className="flex-1">
+                                                        <h4
+                                                            className={`font-semibold text-lg mb-1 ${
+                                                                isPast ? 'text-gray-700' : 'text-gray-900'
+                                                            }`}
+                                                        >
+                                                            {event.title}
+                                                        </h4>
+                                                        <p
+                                                            className={`text-sm mb-3 ${
+                                                                isPast ? 'text-gray-500' : 'text-gray-600'
+                                                            }`}
+                                                        >
+                                                            {event.description}
+                                                        </p>
+                                                        <div
+                                                            className={`flex flex-wrap items-center gap-4 text-sm ${
+                                                                isPast ? 'text-gray-400' : 'text-gray-500'
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center gap-1">
+                                                                <Clock className="w-4 h-4" />
+                                                                <span>{time} ({event.timezone})</span>
+                                                            </div>
+                                                            {event.is_online ? (
+                                                                <div className="flex items-center gap-1">
+                                                                    <Video className="w-4 h-4" />
+                                                                    <span>
+                                                                        {event.platform === 'zoom'
+                                                                            ? 'Zoom'
+                                                                            : event.platform === 'google_meet'
+                                                                            ? 'Google Meet'
+                                                                            : event.platform === 'teams'
+                                                                            ? 'Microsoft Teams'
+                                                                            : 'En ligne'}
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-1">
+                                                                    <MapPin className="w-4 h-4" />
+                                                                    <span>{event.physical_location}</span>
+                                                                </div>
+                                                            )}
+                                                            {event._count && (
+                                                                <div className="flex items-center gap-1">
+                                                                    <Users className="w-4 h-4" />
+                                                                    <span>
+                                                                        {event._count.registrations} inscrit(s)
+                                                                        {event.max_participants && ` / ${event.max_participants}`}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Lien de réunion pour les inscrits */}
+                                                        {event.isRegistered && event.meeting_url && !isPast && (
+                                                            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                                                <p className="text-sm text-green-700 font-medium mb-1">
+                                                                    Vous etes inscrit !
+                                                                </p>
+                                                                <a
+                                                                    href={event.meeting_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 text-sm"
+                                                                >
+                                                                    <ExternalLink className="w-4 h-4" />
+                                                                    Acceder a la reunion
+                                                                </a>
+                                                                {event.meeting_id && (
+                                                                    <p className="text-xs text-green-600 mt-1">
+                                                                        ID: {event.meeting_id}
+                                                                        {event.meeting_password && ` | Mot de passe: ${event.meeting_password}`}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                                                    <span className="text-sm text-gray-500">
+                                                        {event.is_free ? 'Gratuit' : `${event.price?.toLocaleString()} FCFA`}
+                                                    </span>
+
+                                                    <div className="flex items-center gap-2">
+                                                        {/* Boutons admin */}
+                                                        {isEventsAdmin && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setEditingEvent(event);
+                                                                        setShowEventFormModal(true);
+                                                                    }}
+                                                                    className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                                    title="Modifier"
+                                                                >
+                                                                    <Edit className="w-4 h-4" />
+                                                                </button>
+
+                                                                {event.status === 'DRAFT' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                await publishEvent.mutateAsync(event.id);
+                                                                                toast.success('Evenement publie');
+                                                                            } catch (err) {
+                                                                                toast.error('Erreur lors de la publication');
+                                                                            }
+                                                                        }}
+                                                                        className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                                        title="Publier"
+                                                                    >
+                                                                        <Eye className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+
+                                                                {event.status === 'PUBLISHED' && !isPast && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            if (confirm('Annuler cet evenement ?')) {
+                                                                                try {
+                                                                                    await cancelEvent.mutateAsync(event.id);
+                                                                                    toast.success('Evenement annule');
+                                                                                } catch (err) {
+                                                                                    toast.error('Erreur');
+                                                                                }
+                                                                            }
+                                                                        }}
+                                                                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                        title="Annuler"
+                                                                    >
+                                                                        <EyeOff className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+
+                                                                {isPast && event.status === 'PUBLISHED' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            const replayUrl = prompt('URL du replay (optionnel):');
+                                                                            try {
+                                                                                await completeEvent.mutateAsync({
+                                                                                    eventId: event.id,
+                                                                                    replay_url: replayUrl || undefined,
+                                                                                });
+                                                                                toast.success('Evenement marque comme termine');
+                                                                            } catch (err) {
+                                                                                toast.error('Erreur');
+                                                                            }
+                                                                        }}
+                                                                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                        title="Marquer termine"
+                                                                    >
+                                                                        <CheckCircle className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (confirm('Supprimer cet evenement ?')) {
+                                                                            try {
+                                                                                await deleteEvent.mutateAsync(event.id);
+                                                                                toast.success('Evenement supprime');
+                                                                            } catch (err) {
+                                                                                toast.error('Erreur');
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                                    title="Supprimer"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </>
+                                                        )}
+
+                                                        {/* Boutons utilisateur */}
+                                                        {!isPast && event.status === 'PUBLISHED' && (
+                                                            <>
+                                                                {event.isRegistered ? (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                await cancelRegistration.mutateAsync(event.id);
+                                                                                toast.success('Inscription annulee');
+                                                                            } catch (err: any) {
+                                                                                toast.error(err.response?.data?.error || 'Erreur');
+                                                                            }
+                                                                        }}
+                                                                        disabled={cancelRegistration.isPending}
+                                                                        className="px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium disabled:opacity-50"
+                                                                    >
+                                                                        Annuler inscription
+                                                                    </button>
+                                                                ) : canRegister && isLoggedIn ? (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                await registerToEvent.mutateAsync(event.id);
+                                                                                toast.success('Inscription reussie !');
+                                                                            } catch (err: any) {
+                                                                                toast.error(err.response?.data?.error || 'Erreur');
+                                                                            }
+                                                                        }}
+                                                                        disabled={registerToEvent.isPending}
+                                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium disabled:opacity-50"
+                                                                    >
+                                                                        {registerToEvent.isPending ? (
+                                                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                                                        ) : (
+                                                                            <UserPlus className="w-4 h-4" />
+                                                                        )}
+                                                                        S'inscrire
+                                                                    </button>
+                                                                ) : !isLoggedIn ? (
+                                                                    <Link
+                                                                        to="/login"
+                                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                                                                    >
+                                                                        Connectez-vous pour vous inscrire
+                                                                    </Link>
+                                                                ) : (
+                                                                    <span className="text-sm text-gray-500">
+                                                                        Inscriptions fermees
+                                                                    </span>
+                                                                )}
+                                                            </>
+                                                        )}
+
+                                                        {/* Replay */}
+                                                        {isPast && event.replay_url && (
+                                                            <a
+                                                                href={event.replay_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                                                            >
+                                                                <Play className="w-4 h-4" />
+                                                                Voir le replay
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                                        <span className="text-sm text-gray-500">Gratuit pour les participants</span>
-                                        <a
-                                            href="#"
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
-                                        >
-                                            S'inscrire
-                                            <ExternalLink className="w-4 h-4" />
-                                        </a>
-                                    </div>
-                                </div>
+                                    );
+                                })}
                             </div>
+                        )}
 
-                            {/* Événement passé */}
-                            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden opacity-75">
-                                <div className="bg-gray-500 text-white px-4 py-2 text-sm font-medium">
-                                    Termine
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-xl flex flex-col items-center justify-center">
-                                            <span className="text-2xl font-bold text-gray-500">02</span>
-                                            <span className="text-xs text-gray-400 uppercase">Fev</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-semibold text-gray-700 text-lg mb-1">
-                                                Lancement officiel du Challenge AfriBourse 2026
-                                            </h4>
-                                            <p className="text-gray-500 text-sm mb-3">
-                                                Ceremonie de lancement avec presentation des regles et des prix a gagner.
-                                            </p>
-                                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                                                <div className="flex items-center gap-1">
-                                                    <Clock className="w-4 h-4" />
-                                                    <span>10h00 - 12h00 (GMT)</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <MapPin className="w-4 h-4" />
-                                                    <span>Abidjan, Cote d'Ivoire</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 pt-4 border-t">
-                                        <a
-                                            href="#"
-                                            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
-                                        >
-                                            <Video className="w-4 h-4" />
-                                            Voir le replay
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Message si pas d'événements */}
-                            {/*
+                        {/* Message si pas d'événements */}
+                        {!eventsLoading && (!events || events.length === 0) && (
                             <div className="bg-white rounded-xl p-12 text-center">
                                 <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -463,8 +758,7 @@ export default function CommunityDetailPage() {
                                     Les prochains evenements seront annonces ici. Restez connectes!
                                 </p>
                             </div>
-                            */}
-                        </div>
+                        )}
                     </div>
                 )}
 
@@ -724,6 +1018,18 @@ export default function CommunityDetailPage() {
                 <CommunitySettingsModal
                     community={community}
                     onClose={() => setShowSettingsModal(false)}
+                />
+            )}
+
+            {/* Modal création/édition événement */}
+            {showEventFormModal && (
+                <EventFormModal
+                    isOpen={showEventFormModal}
+                    onClose={() => {
+                        setShowEventFormModal(false);
+                        setEditingEvent(null);
+                    }}
+                    event={editingEvent}
                 />
             )}
         </div>
