@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
+import toast from 'react-hot-toast';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { API_BASE_URL } from '../config/api';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
@@ -13,6 +14,9 @@ import DashboardPriceAlerts from './price-alerts/DashboardPriceAlerts';
 import { ShareButton, ShareModal } from './share';
 import { useShare } from '../hooks/useShare';
 import type { ShareablePortfolioData, ShareablePerformanceData, ShareablePositionData } from '../types/share';
+import { WalletSwitcher } from './challenge';
+import { useChallengeContext } from '../context/ChallengeContext';
+import { useCanTrade } from '../hooks/useChallenge';
 
 type DashboardPageProps = {};
 
@@ -24,7 +28,11 @@ type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  // ✅ React Query: Hook personnalisé pour le portfolio
+
+  // Challenge wallet mode context
+  const { walletMode, setWalletMode } = useChallengeContext();
+
+  // ✅ React Query: Hook personnalisé pour le portfolio avec wallet type
   const {
     portfolio,
     stocksData,
@@ -34,11 +42,14 @@ export default function DashboardPage() {
     refetch: reloadPortfolio,
     createPortfolio,
     calculateTotalValue
-  } = usePortfolio();
+  } = usePortfolio({ walletType: walletMode });
 
   // ✅ React Query: Hooks pour achat/vente
   const buyStock = useBuyStock();
   const sellStock = useSellStock();
+
+  // ✅ Challenge: Vérification des horaires de trading
+  const { canTrade, reason: tradingBlockedReason } = useCanTrade(walletMode);
 
   // ✅ Analytics: Hook pour tracker les actions
   const { trackAction } = useAnalytics();
@@ -72,7 +83,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadUserData();
-  }, []); // Chargement unique au montage
+  }, [walletMode]); // Recharger quand le wallet change
 
   // ✅ Mettre à jour la watchlist filtrée quand stocksData change (sans recharger les données)
   useEffect(() => {
@@ -105,7 +116,7 @@ export default function DashboardPage() {
           console.warn('Watchlist fetch error:', err);
           return [];
         }),
-        apiFetch<Transaction[]>('/portfolios/my/transactions').catch(err => {
+        apiFetch<Transaction[]>(`/portfolios/my/transactions?wallet_type=${walletMode}`).catch(err => {
           console.warn('Transactions fetch error:', err);
           return [];
         }),
@@ -150,7 +161,8 @@ export default function DashboardPage() {
       await sellStock.mutateAsync({
         stockTicker: selectedPosition.stock_ticker,
         quantity: sellQuantity,
-        pricePerShare: stockMarketData.current_price
+        pricePerShare: stockMarketData.current_price,
+        walletType: walletMode,
       });
 
       // Track la vente
@@ -161,7 +173,8 @@ export default function DashboardPage() {
           ticker: selectedPosition.stock_ticker,
           quantity: sellQuantity,
           price: stockMarketData.current_price,
-          totalValue: sellQuantity * stockMarketData.current_price
+          totalValue: sellQuantity * stockMarketData.current_price,
+          walletType: walletMode,
         }
       );
 
@@ -181,7 +194,8 @@ export default function DashboardPage() {
       await buyStock.mutateAsync({
         stockTicker: selectedStockToBuy.symbol,
         quantity: buyQuantity,
-        pricePerShare: selectedStockToBuy.current_price
+        pricePerShare: selectedStockToBuy.current_price,
+        walletType: walletMode,
       });
 
       // Track l'achat
@@ -192,7 +206,8 @@ export default function DashboardPage() {
           ticker: selectedStockToBuy.symbol,
           quantity: buyQuantity,
           price: selectedStockToBuy.current_price,
-          totalValue: buyQuantity * selectedStockToBuy.current_price
+          totalValue: buyQuantity * selectedStockToBuy.current_price,
+          walletType: walletMode,
         }
       );
 
@@ -376,6 +391,12 @@ export default function DashboardPage() {
             <p className="text-gray-600">Bienvenue sur votre tableau de bord.</p>
           </div>
           <div className="flex items-center space-x-4">
+            {/* WalletSwitcher - Challenge AfriBourse 2026 */}
+            <WalletSwitcher
+              currentMode={walletMode}
+              onModeChange={setWalletMode}
+            />
+
             <Button
               variant="secondary"
               onClick={() => navigate('/profile')}
@@ -403,14 +424,20 @@ export default function DashboardPage() {
         )}
 
         {/* <-- NOUVEAU: Vue d'Ensemble - Le Solde Principal */}
-        <Card className="mb-8 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white">
+        <Card className={`mb-8 text-white ${
+          walletMode === 'CONCOURS'
+            ? 'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-700'
+            : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800'
+        }`}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* KPI Principal */}
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <Wallet className="w-5 h-5 text-blue-200" />
-                  <p className="text-sm font-medium text-blue-100 uppercase tracking-wide">Valeur Totale du Portefeuille</p>
+                  <Wallet className={`w-5 h-5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`} />
+                  <p className={`text-sm font-medium uppercase tracking-wide ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>
+                    {walletMode === 'CONCOURS' ? '🏆 Portefeuille Challenge 2026' : 'Valeur Totale du Portefeuille'}
+                  </p>
                 </div>
                 <ShareButton
                   onClick={() => {
@@ -465,9 +492,9 @@ export default function DashboardPage() {
 
               {/* <-- AJOUT: Performance du Jour */}
               <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 inline-flex items-center space-x-3">
-                <Activity className="w-5 h-5 text-blue-200" />
+                <Activity className={`w-5 h-5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`} />
                 <div>
-                  <p className="text-xs text-blue-200 mb-0.5">Aujourd'hui</p>
+                  <p className={`text-xs mb-0.5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`}>Aujourd'hui</p>
                   <p className={`text-lg font-bold ${dailyPerf.value >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                     {dailyPerf.value >= 0 ? '+' : ''}{formatNumber(dailyPerf.value)} FCFA
                     <span className="text-sm ml-2">
@@ -481,11 +508,11 @@ export default function DashboardPage() {
             {/* <-- AJOUT: KPIs Secondaires */}
             <div className="space-y-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <p className="text-sm text-blue-100 mb-1">💰 Liquidités</p>
+                <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>💰 Liquidités</p>
                 <p className="text-2xl font-bold">{formatNumber(portfolio.cash_balance)} FCFA</p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <p className="text-sm text-blue-100 mb-1">📊 Valeur des Actions</p>
+                <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>📊 Valeur des Actions</p>
                 <p className="text-2xl font-bold">{formatNumber(stocksValue)} FCFA</p>
               </div>
             </div>
@@ -661,6 +688,10 @@ export default function DashboardPage() {
                                   variant="danger"
                                   size="sm"
                                   onClick={() => {
+                                    if (!canTrade) {
+                                      toast.error(tradingBlockedReason || 'Trading non autorisé');
+                                      return;
+                                    }
                                     setSelectedPosition(position);
                                     setSellQuantity(1);
                                     setSellModalOpen(true);
@@ -887,6 +918,10 @@ export default function DashboardPage() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (!canTrade) {
+                            toast.error(tradingBlockedReason || 'Trading non autorisé');
+                            return;
+                          }
                           setSelectedStockToBuy(stock);
                           setBuyQuantity(1);
                           setBuyModalOpen(true);

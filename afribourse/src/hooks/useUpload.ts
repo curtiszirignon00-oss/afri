@@ -180,6 +180,8 @@ export function useDeleteImage() {
 // ========================================
 
 export interface ProfileUpdateData {
+    name?: string;
+    lastname?: string;
     username?: string;
     bio?: string;
     country?: string;

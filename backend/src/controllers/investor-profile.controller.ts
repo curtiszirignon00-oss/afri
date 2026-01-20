@@ -94,6 +94,23 @@ export async function completeOnboarding(req: AuthRequest, res: Response) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
+        const { profession, phone_number } = req.body;
+
+        // Validation des données
+        if (profession && typeof profession !== 'string') {
+            return res.status(400).json({ error: 'La profession doit être une chaîne de caractères' });
+        }
+
+        if (phone_number) {
+            // Valider le format du numéro de téléphone
+            const cleanPhone = phone_number.replace(/[\s\-]/g, '');
+            if (!/^\+\d{8,15}$/.test(cleanPhone)) {
+                return res.status(400).json({
+                    error: 'Format de numéro de téléphone invalide (doit commencer par + suivi de 8 à 15 chiffres)'
+                });
+            }
+        }
+
         const profile = await investorProfileService.completeOnboarding(userId, req.body);
         res.status(200).json({ success: true, data: profile });
     } catch (error: any) {

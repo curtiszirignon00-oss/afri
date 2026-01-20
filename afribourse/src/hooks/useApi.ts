@@ -192,15 +192,27 @@ export function useBuyStock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { stockTicker: string; quantity: number; pricePerShare: number }) =>
+    mutationFn: (data: {
+      stockTicker: string;
+      quantity: number;
+      pricePerShare: number;
+      walletType?: 'SANDBOX' | 'CONCOURS';
+    }) =>
       apiFetch('/portfolios/my/buy', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          stockTicker: data.stockTicker,
+          quantity: data.quantity,
+          pricePerShare: data.pricePerShare,
+          wallet_type: data.walletType || 'SANDBOX',
+        }),
       }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       // Recharger le portfolio et les transactions
       queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      queryClient.invalidateQueries({ queryKey: ['portfolio', variables.walletType] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['challenge', 'status'] });
       toast.success('Achat effectué avec succès !');
     },
     onError: (error: Error) => {
@@ -214,13 +226,24 @@ export function useSellStock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { stockTicker: string; quantity: number; pricePerShare: number }) =>
+    mutationFn: (data: {
+      stockTicker: string;
+      quantity: number;
+      pricePerShare: number;
+      walletType?: 'SANDBOX' | 'CONCOURS';
+    }) =>
       apiFetch('/portfolios/my/sell', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          stockTicker: data.stockTicker,
+          quantity: data.quantity,
+          pricePerShare: data.pricePerShare,
+          wallet_type: data.walletType || 'SANDBOX',
+        }),
       }),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['portfolio'] });
+      queryClient.invalidateQueries({ queryKey: ['portfolio', variables.walletType] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success('Vente effectuée avec succès !');
     },

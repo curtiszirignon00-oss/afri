@@ -71,6 +71,7 @@ export interface Portfolio {
   name: string;
   initial_balance: number;
   cash_balance: number;
+  wallet_type?: 'SANDBOX' | 'CONCOURS';
   positions: Position[];
   transactions?: Transaction[];
 }

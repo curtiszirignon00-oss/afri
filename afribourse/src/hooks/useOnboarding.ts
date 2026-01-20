@@ -13,6 +13,8 @@ export interface OnboardingData {
     investment_goals?: string[];
     experience_level?: string;
     quiz_score?: number;
+    profession?: string;
+    phone_number?: string;
 }
 
 /**
