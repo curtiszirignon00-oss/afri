@@ -327,11 +327,15 @@ export const eventsController = {
         try {
             const userId = req.user?.id;
 
+            console.log('[Events] checkAdminAccess called, userId:', userId, 'user:', req.user);
+
             if (!userId) {
+                console.log('[Events] No userId, returning 401');
                 return res.status(401).json({ error: 'Non authentifié' });
             }
 
             const isAdmin = await eventsService.isAuthorizedAdmin(userId);
+            console.log('[Events] isAdmin result:', isAdmin);
             res.json({ isAdmin });
         } catch (error: any) {
             console.error('Erreur vérification admin:', error);
