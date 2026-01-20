@@ -179,6 +179,10 @@ model User {
   // --- Challenge 2026 ---
   challengeParticipant ChallengeParticipant?
 
+  // --- Événements ---
+  createdEvents      Event[]
+  eventRegistrations EventRegistration[]
+
   @@map("users")
 }
 
@@ -1612,4 +1616,100 @@ model ChallengeParticipant {
   @@index([is_eligible])
   @@index([enrollment_date])
   @@map("challenge_participants")
+}
+
+// ================================= //
+// === ÉVÉNEMENTS CHALLENGE ======== //
+// ================================= //
+
+enum EventType {
+  WEBINAR    // Webinaire en ligne
+  WORKSHOP   // Atelier pratique
+  CONFERENCE // Conférence
+  MEETUP     // Rencontre physique
+  OTHER      // Autre
+}
+
+enum EventStatus {
+  DRAFT      // Brouillon (non visible)
+  PUBLISHED  // Publié (visible)
+  CANCELLED  // Annulé
+  COMPLETED  // Terminé
+}
+
+model Event {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Informations de base
+  title       String
+  description String
+  type        EventType @default(WEBINAR)
+  status      EventStatus @default(DRAFT)
+
+  // Date et heure
+  event_date  DateTime  // Date et heure de l'événement
+  end_date    DateTime? // Date de fin (optionnel)
+  timezone    String    @default("GMT")
+
+  // Lieu / Plateforme
+  is_online       Boolean @default(true)
+  platform        String? // Zoom, Google Meet, etc.
+  meeting_url     String? // Lien de la réunion (visible après inscription)
+  meeting_id      String? // ID de réunion (optionnel)
+  meeting_password String? // Mot de passe (optionnel)
+  physical_location String? // Pour les événements physiques
+
+  // Inscription
+  registration_required Boolean @default(true)
+  registration_deadline DateTime? // Date limite d'inscription
+  max_participants      Int?      // Nombre max de participants (null = illimité)
+
+  // Contenu additionnel
+  image_url    String?  // Image de couverture
+  replay_url   String?  // Lien du replay (après l'événement)
+  documents    String[] // URLs de documents attachés
+
+  // Tarification
+  is_free      Boolean @default(true)
+  price        Float?  // Prix si payant
+
+  // Métadonnées
+  created_by   String  @db.ObjectId
+  creator      User    @relation(fields: [created_by], references: [id])
+
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relations
+  registrations EventRegistration[]
+
+  @@index([status])
+  @@index([event_date])
+  @@index([type])
+  @@map("events")
+}
+
+model EventRegistration {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+
+  event_id  String @db.ObjectId
+  event     Event  @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  user_id   String @db.ObjectId
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  // Statut de participation
+  attended     Boolean @default(false)
+  cancelled    Boolean @default(false)
+  cancelled_at DateTime?
+
+  // Informations supplémentaires
+  notes        String? // Notes de l'admin
+
+  registered_at DateTime @default(now())
+
+  @@unique([event_id, user_id])
+  @@index([event_id])
+  @@index([user_id])
+  @@map("event_registrations")
 }
