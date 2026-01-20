@@ -169,10 +169,15 @@ export function useIsEventsAdmin() {
     return useQuery({
         queryKey: ['events', 'admin-check'],
         queryFn: async () => {
-            const { data } = await api.get<{ isAdmin: boolean }>('/events/admin/check');
-            return data.isAdmin;
+            try {
+                const { data } = await api.get<{ isAdmin: boolean }>('/events/admin/check');
+                return data.isAdmin;
+            } catch (error) {
+                return false;
+            }
         },
         retry: false,
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 }
 

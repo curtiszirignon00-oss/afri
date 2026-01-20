@@ -45,8 +45,13 @@ class EventsService {
 
         if (!user) return false;
 
-        // L'admin contact@africbourse.com ou tout superadmin
-        return user.email === ADMIN_EMAIL || user.role === 'superadmin';
+        // L'admin contact@africbourse.com, ou tout admin/superadmin
+        const isAdminEmail = user.email === ADMIN_EMAIL;
+        const isAdminRole = user.role === 'admin' || user.role === 'superadmin';
+
+        console.log(`[EventsService] Checking admin access for ${user.email}, role: ${user.role}, isAdmin: ${isAdminEmail || isAdminRole}`);
+
+        return isAdminEmail || isAdminRole;
     }
 
     /**
