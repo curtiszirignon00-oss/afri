@@ -6,7 +6,8 @@ interface ProfessionPhoneStepProps {
     profession?: string;
     phoneNumber?: string;
     onNext: (profession: string, phoneNumber: string) => void;
-    onBack: () => void;
+    onBack?: () => void;
+    showBackButton?: boolean;
 }
 
 const PROFESSIONS = [
@@ -32,7 +33,7 @@ const COUNTRIES = [
     { code: 'GW', name: 'Guinée-Bissau', dialCode: '+245', flag: '🇬🇼' },
 ];
 
-export default function ProfessionPhoneStep({ profession, phoneNumber, onNext, onBack }: ProfessionPhoneStepProps) {
+export default function ProfessionPhoneStep({ profession, phoneNumber, onNext, onBack, showBackButton = true }: ProfessionPhoneStepProps) {
     const [selectedProfession, setSelectedProfession] = useState(profession || '');
     const [otherProfession, setOtherProfession] = useState('');
     const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]); // Côte d'Ivoire par défaut
@@ -49,21 +50,22 @@ export default function ProfessionPhoneStep({ profession, phoneNumber, onNext, o
             newErrors.profession = 'Veuillez préciser votre profession';
         }
 
-        // Validation téléphone
+        // Validation téléphone (optionnel, mais si fourni doit être valide)
         const cleanPhone = phone.replace(/\s/g, '');
-        if (!cleanPhone) {
-            newErrors.phone = 'Veuillez entrer votre numéro de téléphone';
-        } else if (cleanPhone.length < 8 || cleanPhone.length > 15) {
-            newErrors.phone = 'Numéro invalide (8-15 chiffres)';
-        } else if (!/^\d+$/.test(cleanPhone)) {
-            newErrors.phone = 'Le numéro ne doit contenir que des chiffres';
+        if (cleanPhone) {
+            // Seulement valider si un numéro est fourni
+            if (cleanPhone.length < 8 || cleanPhone.length > 15) {
+                newErrors.phone = 'Numéro invalide (8-15 chiffres)';
+            } else if (!/^\d+$/.test(cleanPhone)) {
+                newErrors.phone = 'Le numéro ne doit contenir que des chiffres';
+            }
         }
 
         setErrors(newErrors);
 
         if (!newErrors.profession && !newErrors.phone) {
             const finalProfession = selectedProfession === 'other' ? otherProfession : selectedProfession;
-            const finalPhone = `${selectedCountry.dialCode}${cleanPhone}`;
+            const finalPhone = cleanPhone ? `${selectedCountry.dialCode}${cleanPhone}` : '';
             onNext(finalProfession, finalPhone);
         }
     };
@@ -132,7 +134,7 @@ export default function ProfessionPhoneStep({ profession, phoneNumber, onNext, o
             {/* Téléphone */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Numéro de téléphone *
+                    Numéro de téléphone (optionnel)
                 </label>
 
                 {/* Pays */}
@@ -184,18 +186,20 @@ export default function ProfessionPhoneStep({ profession, phoneNumber, onNext, o
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
-                <button
-                    type="button"
-                    onClick={onBack}
-                    className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
-                >
-                    <ChevronLeft className="w-5 h-5" />
-                    Retour
-                </button>
+                {showBackButton && onBack && (
+                    <button
+                        type="button"
+                        onClick={onBack}
+                        className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                        Retour
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={handleNext}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-medium flex items-center justify-center gap-2 transition-all"
+                    className={`${showBackButton ? 'flex-1' : 'w-full'} px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-medium flex items-center justify-center gap-2 transition-all`}
                 >
                     Continuer
                     <ChevronRight className="w-5 h-5" />
