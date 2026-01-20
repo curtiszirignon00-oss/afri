@@ -94,7 +94,8 @@ export function ChallengeCTA() {
                 onClose={() => setShowEnrollmentModal(false)}
                 onSuccess={() => {
                     setShowEnrollmentModal(false);
-                    navigate('/challenge/community');
+                    // Rediriger vers la communauté officielle du Challenge sur africbourse.com
+                    window.location.href = 'https://www.africbourse.com/communities/-challenge-afribourse-du-virtuel-au-reel-';
                 }}
             />
         </>

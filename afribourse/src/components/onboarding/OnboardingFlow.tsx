@@ -61,17 +61,6 @@ export default function OnboardingFlow() {
         switch (currentStep) {
             case 1:
                 return (
-                    <RiskProfileStep
-                        value={formData.risk_profile}
-                        quizScore={formData.quiz_score}
-                        onNext={(riskProfile, quizScore) => {
-                            updateFormData({ risk_profile: riskProfile, quiz_score: quizScore });
-                            nextStep();
-                        }}
-                    />
-                );
-            case 2:
-                return (
                     <ProfessionPhoneStep
                         profession={formData.profession}
                         phoneNumber={formData.phone_number}
@@ -79,7 +68,18 @@ export default function OnboardingFlow() {
                             updateFormData({ profession, phone_number: phoneNumber });
                             nextStep();
                         }}
-                        onBack={prevStep}
+                        showBackButton={false}
+                    />
+                );
+            case 2:
+                return (
+                    <RiskProfileStep
+                        value={formData.risk_profile}
+                        quizScore={formData.quiz_score}
+                        onNext={(riskProfile, quizScore) => {
+                            updateFormData({ risk_profile: riskProfile, quiz_score: quizScore });
+                            nextStep();
+                        }}
                     />
                 );
             case 3:
