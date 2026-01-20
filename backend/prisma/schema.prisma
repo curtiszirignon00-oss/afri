@@ -94,6 +94,21 @@ enum ContentType {
 }
 
 // ================================= //
+// === ENUMS CHALLENGE 2026 ======== //
+// ================================= //
+
+enum WalletType {
+  SANDBOX // Portefeuille d'apprentissage (défaut)
+  CONCOURS // Portefeuille Challenge AfriBourse 2026
+}
+
+enum WalletStatus {
+  ACTIVE // Wallet actif
+  BANNED // Wallet banni (fraude/règlement)
+  SUSPENDED // Wallet suspendu temporairement
+}
+
+// ================================= //
 // === MODÈLES UTILISATEUR & AUTH === //
 // ================================= //
 
@@ -161,6 +176,9 @@ model User {
   bansIssued         UserBan[]        @relation("BannedByUser")
   bansLifted         UserBan[]        @relation("BanLiftedBy")
 
+  // --- Challenge 2026 ---
+  challengeParticipant ChallengeParticipant?
+
   @@map("users")
 }
 
@@ -174,6 +192,7 @@ model UserProfile {
   first_name        String?
   last_name         String?
   phone_number      String?
+  profession        String?
   country           String?
   experience_level  String?
   investment_goals  String?
@@ -659,11 +678,21 @@ model AnnualFinancials {
 // ================================= //
 
 model Portfolio {
-  id              String  @id @default(auto()) @map("_id") @db.ObjectId
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
   name            String
-  initial_balance Float   @default(1000000)
+  initial_balance Float        @default(1000000)
   cash_balance    Float
-  is_virtual      Boolean @default(true)
+  is_virtual      Boolean      @default(true)
+
+  // ============= CHALLENGE 2026 =============
+  wallet_type     WalletType   @default(SANDBOX)
+  status          WalletStatus @default(ACTIVE)
+  
+  // Contraintes temporelles
+  is_weekend_locked Boolean    @default(false)
+  
+  // Metadata challenge (questions qualification, dates, etc.)
+  contest_metadata  Json?
 
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
@@ -676,6 +705,8 @@ model Portfolio {
   snapshots    PortfolioSnapshot[]
 
   @@index([userId])
+  @@index([userId, wallet_type])
+  @@index([status])
   @@map("portfolios")
 }
 
@@ -724,11 +755,16 @@ model Transaction {
   price_per_share Float
   created_at      DateTime? @default(now())
 
+  // ============= CHALLENGE 2026 =============
+  execution_day   String?   // "MONDAY", "TUESDAY", etc. (validation weekend)
+  was_weekend     Boolean   @default(false)
+
   portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   portfolioId String    @db.ObjectId
 
   @@index([portfolioId])
   @@index([created_at])
+  @@index([stock_ticker]) // Pour comptage tickers uniques
   @@map("transactions")
 }
 
@@ -1535,4 +1571,45 @@ model UserBan {
   @@index([is_active])
   @@index([ends_at])
   @@map("user_bans")
+}
+
+// ================================= //
+// === CHALLENGE AFRIBOURSE 2026 === //
+// ================================= //
+
+model ChallengeParticipant {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String @unique @db.ObjectId
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ============= DONNÉES D'INSCRIPTION =============
+  experience_level      String  // DEBUTANT, INTERMEDIAIRE, EXPERT
+  has_real_account      Boolean
+  discovery_source      String  // SOCIAL_MEDIA, FRIEND, SCHOOL, OTHER
+  primary_goal          String  // WIN_PRIZE, LEARN, NETWORK
+  preferred_sector      String  // BANK, TELECOM, AGRICULTURE, INDUSTRY, SERVICES
+  referral_code         String?
+
+  // ============= STATUT =============
+  status          WalletStatus @default(ACTIVE)
+  enrollment_date DateTime     @default(now())
+  banned_at       DateTime?
+  ban_reason      String?
+
+  // ============= VALIDATION DES RÈGLES =============
+  accepted_rules    Boolean   @default(false)
+  rules_accepted_at DateTime?
+
+  // ============= PROGRESSION =============
+  // Compteur de tickers différents tradés (éligibilité après 5)
+  valid_transactions Int     @default(0)
+  is_eligible        Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([status])
+  @@index([is_eligible])
+  @@index([enrollment_date])
+  @@map("challenge_participants")
 }

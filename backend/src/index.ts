@@ -38,6 +38,7 @@ import uploadRoutes from './routes/upload.routes';
 import notificationRoutes from './routes/notification.routes';
 import communityRoutes from './routes/community.routes';
 import moderationRoutes from './routes/moderation.routes';
+import challengeRoutes from './routes/challenge.routes'; // Challenge AfriBourse 2026
 
 class App {
   private app: Application | null = null;
@@ -152,6 +153,7 @@ class App {
     this.app?.use('/api/notifications', notificationRoutes);        // Notifications
     this.app?.use('/api/communities', communityRoutes);              // Communities (groupes)
     this.app?.use('/api/moderation', moderationRoutes);              // Moderation (reports, bans, keywords)
+    this.app?.use('/api/challenge', challengeRoutes);                // Challenge AfriBourse 2026
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

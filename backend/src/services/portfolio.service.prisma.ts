@@ -5,181 +5,236 @@ import { Portfolio, Position, Transaction } from '@prisma/client';
 
 // --- Find/Create Portfolio (Keep existing functions) ---
 
-export async function findPortfolioByUserId(userId: string): Promise<Portfolio | null> {
-    try {
-        const portfolio = await prisma.portfolio.findFirst({
-            where: { userId: userId },
-            include: { // Include positions when fetching the portfolio
-                positions: true 
-            }
-        });
-        return portfolio;
-    } catch (error) {
-        console.error('Error finding portfolio by user ID:', error);
-        throw error;
+export async function findPortfolioByUserId(userId: string, walletType?: string): Promise<Portfolio | null> {
+  try {
+    const targetWalletType = walletType || 'SANDBOX';
+
+    // Récupérer tous les portfolios de l'utilisateur, triés par date de création (le plus ancien d'abord)
+    const allPortfolios = await prisma.portfolio.findMany({
+      where: { userId: userId },
+      include: { positions: true },
+      orderBy: { created_at: 'asc' } // Le plus ancien d'abord
+    });
+
+    if (allPortfolios.length === 0) {
+      return null;
     }
+
+    // Pour CONCOURS: chercher le portfolio avec wallet_type === 'CONCOURS'
+    if (targetWalletType === 'CONCOURS') {
+      return allPortfolios.find(p => p.wallet_type === 'CONCOURS') || null;
+    }
+
+    // Pour SANDBOX: retourner le premier (plus ancien) portfolio qui n'est pas CONCOURS
+    return allPortfolios.find(p => p.wallet_type !== 'CONCOURS') || null;
+  } catch (error) {
+    console.error('Error finding portfolio by user ID:', error);
+    throw error;
+  }
 }
 
 export async function createPortfolio(userId: string, data: Partial<Portfolio> = {}): Promise<Portfolio> {
-    try {
-        const portfolioData = {
-            userId: userId,
-            name: data.name || 'Mon Portefeuille Virtuel',
-            initial_balance: data.initial_balance || 1000000,
-            cash_balance: data.initial_balance || 1000000,
-            is_virtual: data.is_virtual ?? true,
-            ...data,
-        };
-        const newPortfolio = await prisma.portfolio.create({ data: portfolioData });
-        return newPortfolio;
-    } catch (error) {
-        console.error('Error creating portfolio:', error);
-        throw error;
-    }
+  try {
+    const portfolioData = {
+      userId: userId,
+      name: data.name || 'Mon Portefeuille Virtuel',
+      initial_balance: data.initial_balance || 1000000,
+      cash_balance: data.initial_balance || 1000000,
+      is_virtual: data.is_virtual ?? true,
+      ...data,
+    };
+    const newPortfolio = await prisma.portfolio.create({ data: portfolioData });
+    return newPortfolio;
+  } catch (error) {
+    console.error('Error creating portfolio:', error);
+    throw error;
+  }
 }
 
 // --- Buy Stock Logic ---
 
-export async function buyStock(userId: string, stockTicker: string, quantity: number, pricePerShare: number): Promise<{ portfolio: Portfolio, transaction: Transaction }> {
-    // We use Prisma Transaction to ensure all database operations succeed or fail together
-    return prisma.$transaction(async (tx) => {
-        // 1. Get the user's portfolio
-        const portfolio = await tx.portfolio.findFirst({
-            where: { userId: userId },
-            include: { positions: true } // Include current positions
-        });
+export async function buyStock(
+  userId: string,
+  stockTicker: string,
+  quantity: number,
+  pricePerShare: number,
+  walletType: 'SANDBOX' | 'CONCOURS' = 'SANDBOX'
+): Promise<{ portfolio: Portfolio, transaction: Transaction }> {
+  // We use Prisma Transaction to ensure all database operations succeed or fail together
+  return prisma.$transaction(async (tx) => {
+    // 1. Get all user portfolios, sorted by creation date (oldest first)
+    const allPortfolios = await tx.portfolio.findMany({
+      where: { userId: userId },
+      include: { positions: true },
+      orderBy: { created_at: 'asc' } // Le plus ancien d'abord
+    });
 
-        if (!portfolio) {
-            throw new Error("Portefeuille non trouvé pour cet utilisateur.");
-        }
+    let portfolio: (Portfolio & { positions: Position[] }) | null = null;
 
-        // 2. Calculate total cost and check funds
-        const totalCost = quantity * pricePerShare;
-        if (portfolio.cash_balance < totalCost) {
-            throw new Error("Fonds insuffisants pour effectuer cet achat.");
-        }
+    if (walletType === 'CONCOURS') {
+      portfolio = allPortfolios.find(p => p.wallet_type === 'CONCOURS') || null;
+    } else {
+      // Pour SANDBOX: retourner le premier (plus ancien) portfolio qui n'est pas CONCOURS
+      portfolio = allPortfolios.find(p => p.wallet_type !== 'CONCOURS') || null;
+    }
 
-        // 3. Update Portfolio cash balance
-        const updatedPortfolio = await tx.portfolio.update({
-            where: { id: portfolio.id },
-            data: {
-                cash_balance: portfolio.cash_balance - totalCost,
-            },
-        });
+    if (!portfolio) {
+      throw new Error(`Portefeuille ${walletType} non trouvé pour cet utilisateur.`);
+    }
 
-        // 4. Find or create the Position for this stock
-        let position = portfolio.positions.find(p => p.stock_ticker === stockTicker);
+    // 2. Calculate total cost and check funds
+    const totalCost = quantity * pricePerShare;
+    if (portfolio.cash_balance < totalCost) {
+      throw new Error("Fonds insuffisants pour effectuer cet achat.");
+    }
 
-        if (position) {
-            // Update existing position
-            const currentTotalValue = position.average_buy_price * position.quantity;
-            const newTotalQuantity = position.quantity + quantity;
-            const newAveragePrice = (currentTotalValue + totalCost) / newTotalQuantity;
+    // 3. Update Portfolio cash balance
+    const updatedPortfolio = await tx.portfolio.update({
+      where: { id: portfolio.id },
+      data: {
+        cash_balance: portfolio.cash_balance - totalCost,
+      },
+    });
 
-            position = await tx.position.update({
-                where: { id: position.id },
-                data: {
-                    quantity: newTotalQuantity,
-                    average_buy_price: newAveragePrice,
-                },
-            });
-        } else {
-            // Create new position
-            position = await tx.position.create({
-                data: {
-                    portfolioId: portfolio.id,
-                    stock_ticker: stockTicker,
-                    quantity: quantity,
-                    average_buy_price: pricePerShare,
-                },
-            });
-        }
+    // 4. Find or create the Position for this stock
+    let position = portfolio.positions.find(p => p.stock_ticker === stockTicker);
 
-        // 5. Create Transaction record
-        const transaction = await tx.transaction.create({
-            data: {
-                portfolioId: portfolio.id,
-                stock_ticker: stockTicker,
-                type: 'BUY',
-                quantity: quantity,
-                price_per_share: pricePerShare,
-            },
-        });
+    if (position) {
+      // Update existing position
+      const currentTotalValue = position.average_buy_price * position.quantity;
+      const newTotalQuantity = position.quantity + quantity;
+      const newAveragePrice = (currentTotalValue + totalCost) / newTotalQuantity;
 
-        // Return updated portfolio data (with new balance) and the transaction details
-        // Note: The position update is implicitly included in the transaction's success
-        return { portfolio: updatedPortfolio, transaction };
-    }); // End of Prisma Transaction
+      position = await tx.position.update({
+        where: { id: position.id },
+        data: {
+          quantity: newTotalQuantity,
+          average_buy_price: newAveragePrice,
+        },
+      });
+    } else {
+      // Create new position
+      position = await tx.position.create({
+        data: {
+          portfolioId: portfolio.id,
+          stock_ticker: stockTicker,
+          quantity: quantity,
+          average_buy_price: pricePerShare,
+        },
+      });
+    }
+
+    // 5. Create Transaction record with Challenge metadata
+    const now = new Date();
+    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const executionDay = dayNames[now.getDay()];
+    const wasWeekend = now.getDay() === 0 || now.getDay() === 6;
+
+    const transaction = await tx.transaction.create({
+      data: {
+        portfolioId: portfolio.id,
+        stock_ticker: stockTicker,
+        type: 'BUY',
+        quantity: quantity,
+        price_per_share: pricePerShare,
+        execution_day: executionDay,
+        was_weekend: wasWeekend,
+      },
+    });
+
+    // Return updated portfolio data (with new balance) and the transaction details
+    // Note: The position update is implicitly included in the transaction's success
+    return { portfolio: updatedPortfolio, transaction };
+  }); // End of Prisma Transaction
 }
 
 // --- Sell Stock Logic ---
 
-export async function sellStock(userId: string, stockTicker: string, quantity: number, pricePerShare: number): Promise<{ portfolio: Portfolio, transaction: Transaction }> {
-    return prisma.$transaction(async (tx) => {
-        // 1. Get portfolio AND the specific position to sell
-        const portfolio = await tx.portfolio.findFirst({
-            where: { userId: userId },
-            include: {
-                positions: { // Only include the position we want to sell
-                    where: { stock_ticker: stockTicker }
-                }
-            }
-        });
+export async function sellStock(
+  userId: string,
+  stockTicker: string,
+  quantity: number,
+  pricePerShare: number,
+  walletType: 'SANDBOX' | 'CONCOURS' = 'SANDBOX'
+): Promise<{ portfolio: Portfolio, transaction: Transaction }> {
+  return prisma.$transaction(async (tx) => {
+    // 1. Get all user portfolios, sorted by creation date (oldest first)
+    const allPortfolios = await tx.portfolio.findMany({
+      where: { userId: userId },
+      include: { positions: { where: { stock_ticker: stockTicker } } },
+      orderBy: { created_at: 'asc' } // Le plus ancien d'abord
+    });
 
-        if (!portfolio) {
-            throw new Error("Portefeuille non trouvé.");
-        }
+    let portfolio: (Portfolio & { positions: Position[] }) | null = null;
 
-        const position = portfolio.positions[0]; // Get the first (and only) position returned
+    if (walletType === 'CONCOURS') {
+      portfolio = allPortfolios.find(p => p.wallet_type === 'CONCOURS') || null;
+    } else {
+      // Pour SANDBOX: retourner le premier (plus ancien) portfolio qui n'est pas CONCOURS
+      portfolio = allPortfolios.find(p => p.wallet_type !== 'CONCOURS') || null;
+    }
 
-        if (!position) {
-            throw new Error(`Position non trouvée pour ${stockTicker} dans ce portefeuille.`);
-        }
+    if (!portfolio) {
+      throw new Error(`Portefeuille ${walletType} non trouvé.`);
+    }
 
-        // 2. Check if user has enough shares
-        if (position.quantity < quantity) {
-            throw new Error(`Quantité insuffisante. Vous n'avez que ${position.quantity} actions de ${stockTicker}.`);
-        }
+    const position = portfolio.positions[0]; // Get the first (and only) position returned
 
-        // 3. Calculate revenue and update portfolio cash balance
-        const totalRevenue = quantity * pricePerShare;
-        const updatedPortfolio = await tx.portfolio.update({
-            where: { id: portfolio.id },
-            data: {
-                cash_balance: portfolio.cash_balance + totalRevenue,
-            },
-        });
+    if (!position) {
+      throw new Error(`Position non trouvée pour ${stockTicker} dans ce portefeuille.`);
+    }
 
-        // 4. Update or Delete Position
-        const newQuantity = position.quantity - quantity;
-        if (newQuantity === 0) {
-            // Delete the position if quantity becomes zero
-            await tx.position.delete({
-                where: { id: position.id },
-            });
-        } else {
-            // Update the position quantity (average buy price doesn't change on sell)
-            await tx.position.update({
-                where: { id: position.id },
-                data: {
-                    quantity: newQuantity,
-                },
-            });
-        }
+    // 2. Check if user has enough shares
+    if (position.quantity < quantity) {
+      throw new Error(`Quantité insuffisante. Vous n'avez que ${position.quantity} actions de ${stockTicker}.`);
+    }
 
-        // 5. Create Transaction record
-        const transaction = await tx.transaction.create({
-            data: {
-                portfolioId: portfolio.id,
-                stock_ticker: stockTicker,
-                type: 'SELL',
-                quantity: quantity,
-                price_per_share: pricePerShare,
-            },
-        });
+    // 3. Calculate revenue and update portfolio cash balance
+    const totalRevenue = quantity * pricePerShare;
+    const updatedPortfolio = await tx.portfolio.update({
+      where: { id: portfolio.id },
+      data: {
+        cash_balance: portfolio.cash_balance + totalRevenue,
+      },
+    });
 
-        return { portfolio: updatedPortfolio, transaction };
-    }); // End of Prisma Transaction
+    // 4. Update or Delete Position
+    const newQuantity = position.quantity - quantity;
+    if (newQuantity === 0) {
+      // Delete the position if quantity becomes zero
+      await tx.position.delete({
+        where: { id: position.id },
+      });
+    } else {
+      // Update the position quantity (average buy price doesn't change on sell)
+      await tx.position.update({
+        where: { id: position.id },
+        data: {
+          quantity: newQuantity,
+        },
+      });
+    }
+
+    // 5. Create Transaction record with Challenge metadata
+    const now = new Date();
+    const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    const executionDay = dayNames[now.getDay()];
+    const wasWeekend = now.getDay() === 0 || now.getDay() === 6;
+
+    const transaction = await tx.transaction.create({
+      data: {
+        portfolioId: portfolio.id,
+        stock_ticker: stockTicker,
+        type: 'SELL',
+        quantity: quantity,
+        price_per_share: pricePerShare,
+        execution_day: executionDay,
+        was_weekend: wasWeekend,
+      },
+    });
+
+    return { portfolio: updatedPortfolio, transaction };
+  }); // End of Prisma Transaction
 }
 
 // --- Functions for getting positions/transactions (Add later if needed) ---
@@ -188,35 +243,51 @@ export async function sellStock(userId: string, stockTicker: string, quantity: n
 // Add this function to portfolio.service.prisma.ts
 
 // Function to get real portfolio history (cash + stock positions value)
-export async function getPortfolioHistory(userId: string): Promise<{ date: string; value: number }[]> {
+export async function getPortfolioHistory(userId: string, walletType?: string): Promise<{ date: string; value: number }[]> {
   try {
-    // 1. Find the user's portfolio with all necessary data
-    const portfolio = await prisma.portfolio.findFirst({
-      where: { userId: userId },
-      select: {
-        id: true,
-        initial_balance: true,
-        created_at: true,
-        cash_balance: true,
-        transactions: {
-          orderBy: { created_at: 'asc' },
-          select: {
-            stock_ticker: true,
-            type: true,
-            quantity: true,
-            price_per_share: true,
-            created_at: true
-          }
-        }
-      }
-    });
+    const targetWalletType = walletType || 'SANDBOX';
+    console.log(`📊 [HISTORY] Getting history for userId=${userId}, walletType=${targetWalletType}`);
+
+    // 1. Find the user's portfolio with all necessary data using the wallet-aware function
+    const portfolio = await findPortfolioByUserId(userId, walletType);
 
     if (!portfolio) {
+      console.log(`📊 [HISTORY] No portfolio found for ${targetWalletType}`);
       return []; // No portfolio, no history
     }
 
-    // 2. Si le portefeuille n'a aucune transaction, retourner uniquement le solde initial
-    if (!portfolio.transactions || portfolio.transactions.length === 0) {
+    console.log(`📊 [HISTORY] Found portfolio: id=${portfolio.id}, wallet_type=${portfolio.wallet_type}`);
+
+    // Vérifier que le portfolio trouvé correspond bien au type demandé
+    // Note: Les anciens portfolios SANDBOX peuvent avoir wallet_type = null/undefined
+    const portfolioIsConours = portfolio.wallet_type === 'CONCOURS';
+
+    if (targetWalletType === 'CONCOURS' && !portfolioIsConours) {
+      console.log(`⚠️ [HISTORY] Mismatch! Asked for CONCOURS but got ${portfolio.wallet_type || 'SANDBOX (null)'}`);
+      return []; // Ne pas retourner l'historique du mauvais wallet
+    }
+    if (targetWalletType !== 'CONCOURS' && portfolioIsConours) {
+      console.log(`⚠️ [HISTORY] Mismatch! Asked for SANDBOX but got CONCOURS`);
+      return []; // Ne pas retourner l'historique du mauvais wallet
+    }
+
+    // 2. Get transactions for this specific portfolio
+    const transactions = await prisma.transaction.findMany({
+      where: { portfolioId: portfolio.id },
+      orderBy: { created_at: 'asc' },
+      select: {
+        stock_ticker: true,
+        type: true,
+        quantity: true,
+        price_per_share: true,
+        created_at: true
+      }
+    });
+
+    console.log(`📊 [HISTORY] Found ${transactions.length} transactions for portfolio ${portfolio.id} (${targetWalletType})`);
+
+    // 3. Si le portefeuille n'a aucune transaction, retourner uniquement le solde initial
+    if (!transactions || transactions.length === 0) {
       const createdDate = portfolio.created_at || new Date();
       return [{
         date: createdDate.toISOString().split('T')[0],
@@ -224,13 +295,13 @@ export async function getPortfolioHistory(userId: string): Promise<{ date: strin
       }];
     }
 
-    // 3. Obtenir la plage de dates (de la création à aujourd'hui)
+    // 4. Obtenir la plage de dates (de la création à aujourd'hui)
     const startDate = portfolio.created_at || new Date();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 4. Récupérer tous les tickers utilisés dans les transactions
-    const tickers = Array.from(new Set(portfolio.transactions.map(tx => tx.stock_ticker)));
+    // 5. Récupérer tous les tickers utilisés dans les transactions
+    const tickers = Array.from(new Set(transactions.map(tx => tx.stock_ticker)));
 
     // 5. Pré-charger TOUS les prix historiques pour tous les tickers en une seule requête
     const allStockHistory = await prisma.stockHistory.findMany({
@@ -292,8 +363,8 @@ export async function getPortfolioHistory(userId: string): Promise<{ date: strin
       dateEnd.setHours(23, 59, 59, 999);
 
       // 10.1. Appliquer les transactions de ce jour (incrémental)
-      while (transactionIndex < portfolio.transactions.length) {
-        const tx = portfolio.transactions[transactionIndex];
+      while (transactionIndex < transactions.length) {
+        const tx = transactions[transactionIndex];
         const txDate = tx.created_at ? new Date(tx.created_at) : null;
 
         if (!txDate || txDate > dateEnd) {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCompleteOnboarding } from '../../hooks/useOnboarding';
 import type { OnboardingData } from '../../hooks/useOnboarding';
 import RiskProfileStep from './RiskProfileStep';
+import ProfessionPhoneStep from './ProfessionPhoneStep';
 import HorizonStep from './HorizonStep';
 import SectorsStep from './SectorsStep';
 import PrivacyStep from './PrivacyStep';
@@ -20,7 +21,7 @@ export default function OnboardingFlow() {
 
     const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
 
-    const totalSteps = 5;
+    const totalSteps = 6;
 
     const updateFormData = (data: Partial<OnboardingData>) => {
         setFormData((prev) => ({ ...prev, ...data }));
@@ -71,6 +72,18 @@ export default function OnboardingFlow() {
                 );
             case 2:
                 return (
+                    <ProfessionPhoneStep
+                        profession={formData.profession}
+                        phoneNumber={formData.phone_number}
+                        onNext={(profession, phoneNumber) => {
+                            updateFormData({ profession, phone_number: phoneNumber });
+                            nextStep();
+                        }}
+                        onBack={prevStep}
+                    />
+                );
+            case 3:
+                return (
                     <HorizonStep
                         value={formData.investment_horizon}
                         onNext={(horizon) => {
@@ -80,7 +93,7 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
-            case 3:
+            case 4:
                 return (
                     <SectorsStep
                         value={formData.favorite_sectors || []}
@@ -91,7 +104,7 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
-            case 4:
+            case 5:
                 return (
                     <PrivacyStep
                         onNext={(privacy) => {
@@ -101,7 +114,7 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
-            case 5:
+            case 6:
                 return (
                     <CompletionStep
                         data={formData}
