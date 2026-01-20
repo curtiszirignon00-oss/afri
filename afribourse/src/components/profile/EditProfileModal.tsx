@@ -46,6 +46,16 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validation des usernames réservés (frontend)
+        const reservedUsernames = ['afribourse', 'admin', 'administrator', 'support', 'official', 'help', 'contact', 'info', 'service', 'team'];
+        if (formData.username.trim() && reservedUsernames.includes(formData.username.trim().toLowerCase())) {
+            // Utiliser toast au lieu d'alert si disponible, sinon utiliser alert
+            if (typeof window !== 'undefined') {
+                alert('Ce nom d\'utilisateur est réservé et ne peut pas être utilisé');
+            }
+            return;
+        }
+
         // Construire social_links seulement si au moins un champ est rempli
         const socialLinks: Record<string, string> = {};
         if (formData.linkedin) socialLinks.linkedin = formData.linkedin;

@@ -5,6 +5,20 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Liste des noms d'utilisateur réservés pour la plateforme
+const RESERVED_USERNAMES = [
+  'afribourse',
+  'admin',
+  'administrator',
+  'support',
+  'official',
+  'help',
+  'contact',
+  'info',
+  'service',
+  'team'
+];
+
 // =====================================
 // PROFIL PUBLIC
 // =====================================
@@ -181,7 +195,14 @@ export async function updateProfileSocial(userId: string, data: any) {
     const userUpdateData: any = {};
 
     // Champs du UserProfile
-    if (data.username !== undefined) profileUpdateData.username = data.username;
+    if (data.username !== undefined) {
+      // Valider que le username n'est pas réservé
+      const normalizedUsername = data.username.toLowerCase().trim();
+      if (RESERVED_USERNAMES.includes(normalizedUsername)) {
+        throw new Error("Ce nom d'utilisateur est réservé et ne peut pas être utilisé");
+      }
+      profileUpdateData.username = data.username;
+    }
     if (data.bio !== undefined) profileUpdateData.bio = data.bio;
     if (data.country !== undefined) profileUpdateData.country = data.country;
     if (data.avatar_url !== undefined) profileUpdateData.avatar_url = data.avatar_url;
@@ -262,6 +283,10 @@ export async function updateProfileSocial(userId: string, data: any) {
     console.error('❌ [SERVICE] Full error:', error);
     if (error.code === 'P2002') {
       throw new Error("Ce nom d'utilisateur est déjà pris");
+    }
+    // Re-throw l'erreur des usernames réservés
+    if (error.message.includes('réservé')) {
+      throw error;
     }
     throw error;
   }

@@ -115,6 +115,11 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
       if (!/^[a-zA-Z0-9_]+$/.test(updateData.username)) {
         return res.status(400).json({ message: 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores' });
       }
+      // Vérifier les usernames réservés (case-insensitive)
+      const reservedUsernames = ['afribourse', 'admin', 'administrator', 'support', 'official', 'help', 'contact', 'info', 'service', 'team'];
+      if (reservedUsernames.includes(updateData.username.toLowerCase())) {
+        return res.status(400).json({ message: 'Ce nom d\'utilisateur est réservé et ne peut pas être utilisé' });
+      }
     }
 
     if (updateData.bio && updateData.bio.length > 200) {
@@ -130,6 +135,9 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
     console.error('❌ Erreur updateMyProfile:', error.message);
     console.error('❌ Stack:', error.stack);
     if (error.message?.includes('nom d\'utilisateur')) {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.message?.includes('réservé')) {
       return res.status(400).json({ message: error.message });
     }
     if (error.message?.includes('Profil non trouvé')) {
