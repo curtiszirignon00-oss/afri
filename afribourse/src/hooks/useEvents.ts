@@ -1,6 +1,6 @@
 // src/hooks/useEvents.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/axios';
+import { apiClient as api } from '../lib/api-client';
 
 // Types
 export interface Event {
