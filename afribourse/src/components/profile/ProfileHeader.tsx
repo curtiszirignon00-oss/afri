@@ -1,9 +1,8 @@
 // src/components/profile/ProfileHeader.tsx
-import { useState, useRef } from 'react';
-import { Camera, MapPin, Link as LinkIcon, Calendar, CheckCircle, Loader2, Edit2, Linkedin, Twitter, Instagram, Facebook, Globe, MessageCircle, MoreHorizontal, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Link as LinkIcon, Calendar, CheckCircle, Edit2, Linkedin, Twitter, Instagram, Facebook, MessageCircle, MoreHorizontal, Share2 } from 'lucide-react';
 import FollowButton from './FollowButton';
 import EditProfileModal from './EditProfileModal';
-import { useUploadAvatar, useUploadBanner } from '../../hooks/useUpload';
 import toast from 'react-hot-toast';
 
 interface ProfileHeaderProps {
@@ -12,76 +11,23 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderProps) {
-    const avatarInputRef = useRef<HTMLInputElement>(null);
-    const bannerInputRef = useRef<HTMLInputElement>(null);
     const [showEditModal, setShowEditModal] = useState(false);
 
-    const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadAvatar();
-    const { mutate: uploadBanner, isPending: isUploadingBanner } = useUploadBanner();
-
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            uploadAvatar(file);
-        }
-    };
-
-    const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            uploadBanner(file);
-        }
-    };
-
-    // Déterminer l'image de bannière
-    const bannerStyle = profile.profile?.banner_url
-        ? { backgroundImage: `url(${profile.profile.banner_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-        : {};
+    // Couleur de l'avatar (par défaut gradient bleu-violet)
+    const avatarColor = profile.profile?.avatar_color || 'from-blue-500 to-purple-600';
+    // Couleur de la bannière (par défaut gradient bleu-violet)
+    const bannerColor = profile.profile?.banner_color || 'from-blue-600 via-indigo-600 to-purple-700';
 
     const socialLinks = profile.profile?.social_links;
     const hasSocialLinks = socialLinks && (socialLinks.linkedin || socialLinks.twitter || socialLinks.instagram || socialLinks.facebook || socialLinks.website);
 
     return (
         <div className="bg-white shadow-sm">
-            {/* Hidden file inputs */}
-            <input
-                ref={avatarInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-            />
-            <input
-                ref={bannerInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleBannerChange}
-                className="hidden"
-            />
-
-            {/* Banner - Taller and more dramatic */}
+            {/* Banner */}
             <div className="relative">
-                <div
-                    className={`h-32 sm:h-48 md:h-56 lg:h-64 relative ${!profile.profile?.banner_url ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700' : ''}`}
-                    style={bannerStyle}
-                >
+                <div className={`h-32 sm:h-48 md:h-56 lg:h-64 relative bg-gradient-to-br ${bannerColor}`}>
                     {/* Overlay gradient for text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-
-                    {isOwnProfile && (
-                        <button
-                            onClick={() => bannerInputRef.current?.click()}
-                            disabled={isUploadingBanner}
-                            className="absolute bottom-4 right-4 px-4 py-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
-                        >
-                            {isUploadingBanner ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-gray-700" />
-                            ) : (
-                                <Camera className="w-4 h-4 text-gray-700" />
-                            )}
-                            <span className="hidden sm:inline">{isUploadingBanner ? 'Upload...' : 'Modifier la bannière'}</span>
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -92,32 +38,11 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
-                            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-xl overflow-hidden ring-4 ring-white">
-                                {profile.profile?.avatar_url ? (
-                                    <img
-                                        src={profile.profile.avatar_url}
-                                        alt={profile.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    `${profile.name?.[0] || ''}${profile.lastname?.[0] || ''}`
-                                )}
+                            <div className={`w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-xl ring-4 ring-white`}>
+                                {`${profile.name?.[0] || ''}${profile.lastname?.[0] || ''}`}
                             </div>
                             {/* Online indicator */}
                             <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full" />
-                            {isOwnProfile && (
-                                <button
-                                    onClick={() => avatarInputRef.current?.click()}
-                                    disabled={isUploadingAvatar}
-                                    className="absolute -bottom-1 -right-1 p-2.5 bg-gray-900 text-white rounded-xl shadow-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                                >
-                                    {isUploadingAvatar ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Camera className="w-4 h-4" />
-                                    )}
-                                </button>
-                            )}
                         </div>
 
                         {/* Stats Cards - Desktop */}
