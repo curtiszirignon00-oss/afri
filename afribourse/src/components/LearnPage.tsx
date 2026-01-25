@@ -420,7 +420,8 @@ export default function LearnPage() {
             });
 
             if (!response.ok) {
-                throw new Error(`Erreur ${response.status}: Impossible de marquer comme complété.`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || errorData.message || `Erreur ${response.status}: Impossible de marquer comme complété.`);
             }
 
             // Track la complétion du module
@@ -435,9 +436,10 @@ export default function LearnPage() {
             await loadData();
             toast.success('Module terminé avec succès ! 🎉', { id: toastId });
 
-        } catch (err) {
+        } catch (err: any) {
             console.error('Erreur complétion:', err);
-            toast.error("Erreur lors du marquage du module.", { id: toastId });
+            const errorMessage = err?.message || "Erreur lors du marquage du module.";
+            toast.error(errorMessage, { id: toastId });
         }
     }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
@@ -931,7 +933,27 @@ export default function LearnPage() {
                                 )}
 
                                 <button
-                                    onClick={() => setSelectedModule(null)}
+                                    onClick={() => {
+                                        // Trouver le module suivant
+                                        const currentOrder = selectedModule.order_index ?? 0;
+                                        const nextModule = allModules.find(m => (m.order_index ?? 0) === currentOrder + 1);
+
+                                        if (nextModule && isModuleUnlocked(nextModule)) {
+                                            // Aller au module suivant
+                                            setSelectedModule(nextModule);
+                                            setQuizState({
+                                                isActive: false,
+                                                answers: {},
+                                                score: null,
+                                                passed: null,
+                                                showResults: false
+                                            });
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        } else {
+                                            // Retour à la liste si pas de module suivant
+                                            setSelectedModule(null);
+                                        }
+                                    }}
                                     className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium w-full sm:w-auto shadow-md hover:shadow-lg"
                                 >
                                     Continuer l'apprentissage

@@ -289,12 +289,18 @@ async function main() {
       <li>Les <strong>obligations</strong> (prêts faits à une entreprise ou à un État)</li>
     </ul>
 
+    <p>Sur les marchés financiers on distingue :</p>
+    <ul>
+      <li><strong>Le marché primaire</strong> : le lieu où les nouveaux titres sont émis pour lever des capitaux frais</li>
+      <li><strong>Le marché secondaire</strong> : le lieu où ces titres déjà existants s'échangent ensuite entre investisseurs pour assurer leur liquidité</li>
+    </ul>
+
     <div class="analogy-box">
       <h3>🪶 L'analogie à retenir : Le Grand Marché de la Ville</h3>
       <p>Imaginez le grand marché central de votre ville :</p>
       <ul>
         <li>Dans une zone, les producteurs viennent vendre leurs produits frais pour la première fois (🍍 marché primaire)</li>
-        <li>Dans une autre zone, les commerçants revendent des produits déjà achetés (🍊 marché secondaire)</li>
+        <li>Dans une autre zone, les commerçants revendent les produits achetés aux producteurs  (🍊 marché secondaire)</li>
       </ul>
       <p><strong>👉 La BRVM joue le rôle de ce grand marché financier, mais avec des règles claires, un système sécurisé, et une surveillance stricte pour protéger tous les participants.</strong></p>
     </div>
@@ -309,44 +315,9 @@ async function main() {
   </div>
 </div>
 
-<div class="slide" data-slide="3">
-  <div class="section-green">
-    <h2>🏛️ 1.2 Le rôle et le fonctionnement de la BRVM</h2>
-
-    <h3>🌍 Une bourse régionale unique au monde</h3>
-    <p>La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA) :</p>
-    <p>🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
-    <p>Elle a été créée en 1998, avec son siège à Abidjan (Côte d'Ivoire), et son dépositaire central, le DC/BR, à Cotonou (Bénin).</p>
-
-    <h3>⚙️ Son fonctionnement</h3>
-    <ul>
-      <li>Les entreprises qui souhaitent lever des fonds émettent des titres (actions ou obligations)</li>
-      <li>Les investisseurs achètent et vendent ces titres via des Sociétés de Gestion et d'Intermédiation (SGI), qui sont les courtiers agréés</li>
-      <li>Le régulateur, le CREPMF, veille au respect des règles de transparence et de protection des investisseurs</li>
-    </ul>
-
-    <h3>📈 Les indices phares</h3>
-    <ul>
-      <li><strong>BRVM Composite</strong> : suit l'ensemble des sociétés cotées</li>
-      <li><strong>BRVM 10</strong> : regroupe les 10 entreprises les plus liquides et les plus importantes</li>
-    </ul>
-    <p><em>Quand on dit « la BRVM a progressé de 2 % aujourd'hui », cela signifie que, globalement, les valeurs cotées ont pris de la valeur.</em></p>
-
-    <div class="key-points-box">
-      <h3>💡 À retenir</h3>
-      <p>La BRVM permet :</p>
-      <ul>
-        <li>Aux entreprises de se financer localement sans dépendre uniquement des banques</li>
-        <li>Aux investisseurs de faire fructifier leur capital</li>
-        <li>Et à nos économies africaines de croître de manière inclusive et transparente</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
 <div class="slide" data-slide="4">
   <div class="section-purple">
-    <h2>🔁 1.3 Marché primaire vs marché secondaire</h2>
+    <h2>🔁 1.2 Marché primaire vs marché secondaire</h2>
     <p>Comprendre cette distinction est fondamental :</p>
 
     <table>
@@ -380,6 +351,45 @@ async function main() {
     </div>
   </div>
 </div>
+
+<div class="slide" data-slide="3">
+  <div class="section-green">
+    <h2>🏛️ 1.3 Le rôle et le fonctionnement de la BRVM</h2>
+
+    <p><strong>Une bourse est simplement un marché financier réglementé et centralisé</strong> où s'échangent des titres tels que des actions et des obligations. Elle permet aux entreprises de lever des capitaux et aux investisseurs d'acheter ou de vendre ces actifs en toute sécurité.</p>
+
+    <h3>🌍 Une bourse régionale unique au monde</h3>
+    <p>La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA) :</p>
+    <p>🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
+    <p>Elle a été créée en 1998, avec son siège à Abidjan (Côte d'Ivoire), et son dépositaire central, le DC/BR, à Cotonou (Bénin).</p>
+
+    <h3>⚙️ Son fonctionnement</h3>
+    <ul>
+      <li>Les entreprises qui souhaitent lever des fonds émettent des titres (actions ou obligations)</li>
+      <li>Les investisseurs achètent et vendent ces titres via des Sociétés de Gestion et d'Intermédiation (SGI), qui sont les courtiers agréés</li>
+      <li>Le régulateur, le CREPMF, veille au respect des règles de transparence et de protection des investisseurs</li>
+    </ul>
+
+    <h3>📈 Les indices phares</h3>
+    <ul>
+      <li><strong>BRVM Composite</strong> : suit l'ensemble des sociétés cotées</li>
+      <li><strong>BRVM 10</strong> : regroupe les 10 entreprises les plus liquides et les plus importantes</li>
+    </ul>
+    <p><em>Quand on dit « la BRVM a progressé de 2 % aujourd'hui », cela signifie que, globalement, les valeurs cotées ont pris de la valeur.</em></p>
+
+    <div class="key-points-box">
+      <h3>💡 À retenir</h3>
+      <p>La BRVM permet :</p>
+      <ul>
+        <li>Aux entreprises de se financer localement sans dépendre uniquement des banques</li>
+        <li>Aux investisseurs de faire fructifier leur capital</li>
+        <li>Et à nos économies africaines de croître de manière inclusive et transparente</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
 
 <div class="slide" data-slide="5">
   <div class="section-orange">
@@ -482,9 +492,9 @@ async function main() {
  <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
  <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous serez capable :</p>
  <ul class="space-y-2 text-lg leading-relaxed">
- <li>• d'identifier les principaux acteurs du marché financier régional ;</li>
- <li>• de comprendre comment vos ordres d'achat ou de vente circulent ;</li>
- <li>• de visualiser la chaîne de sécurité qui protège votre argent et vos titres.</li>
+ <li> d'identifier les principaux acteurs du marché financier régional ;</li>
+ <li> de comprendre comment vos ordres d'achat ou de vente circulent ;</li>
+ <li> de visualiser la chaîne de sécurité qui protège votre argent et vos titres.</li>
  </ul>
  </div>
 
