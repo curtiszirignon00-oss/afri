@@ -42,13 +42,29 @@ export interface OnboardingDto {
  * Get investor profile (merged with UserProfile social data)
  */
 export async function getInvestorProfile(userId: string) {
-    // Récupérer les deux profils en parallèle
-    const [investorProfile, existingUserProfile] = await Promise.all([
+    // Récupérer les deux profils et les badges en parallèle
+    const [investorProfile, existingUserProfile, userAchievements] = await Promise.all([
         prisma.investorProfile.findUnique({
             where: { user_id: userId },
         }),
         prisma.userProfile.findUnique({
             where: { userId: userId },
+        }),
+        prisma.userAchievement.findMany({
+            where: { userId: userId },
+            include: {
+                achievement: {
+                    select: {
+                        code: true,
+                        name: true,
+                        description: true,
+                        icon: true,
+                        category: true,
+                        rarity: true,
+                    },
+                },
+            },
+            orderBy: { unlocked_at: 'desc' },
         }),
     ]);
 
@@ -72,6 +88,17 @@ export async function getInvestorProfile(userId: string) {
         });
     }
 
+    // Transformer les badges en format simplifié
+    const badges = userAchievements.map(ua => ({
+        code: ua.achievement.code,
+        name: ua.achievement.name,
+        description: ua.achievement.description,
+        icon: ua.achievement.icon,
+        category: ua.achievement.category,
+        rarity: ua.achievement.rarity,
+        unlocked_at: ua.unlocked_at,
+    }));
+
     // Fusionner les données (UserProfile contient les infos sociales)
     return {
         ...investorProfile,
@@ -91,6 +118,8 @@ export async function getInvestorProfile(userId: string) {
         level: userProfile?.level || 1,
         total_xp: userProfile?.total_xp || 0,
         current_streak: userProfile?.current_streak || 0,
+        // Badges
+        badges: badges,
         // Timestamp
         created_at: investorProfile?.created_at || userProfile?.created_at,
     };

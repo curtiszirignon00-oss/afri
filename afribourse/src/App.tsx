@@ -4,13 +4,13 @@ import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TrendingUp } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // Query Client
 import { queryClient } from './lib/queryClient';
 
 // Context
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ChallengeProvider } from './context/ChallengeContext';
 
 // Components
@@ -48,6 +48,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import NotificationsPage from './pages/NotificationsPage';
 import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
+import WelcomePopup from './components/WelcomePopup';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -72,6 +73,8 @@ function ScrollToTop() {
 // Composant Layout pour le Header et Footer
 function Layout() {
   const location = useLocation();
+  const { isLoggedIn } = useAuth();
+  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
 
   // Initialiser Google Analytics pour tracker toutes les pages
   useGoogleAnalytics();
@@ -86,6 +89,11 @@ function Layout() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Toaster position="top-center" />
       <ScrollToTop />
+
+      {/* Popup de bienvenue pour les utilisateurs récupérés */}
+      {isLoggedIn && showWelcomePopup && (
+        <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
+      )}
 
       {showLayout && <Header />}
 

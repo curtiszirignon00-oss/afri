@@ -281,6 +281,9 @@ model UserProfile {
   reputation_score  Int     @default(0) // Calculé selon activité
   verified_investor Boolean @default(false) // Badge vérifié
 
+  // ============= POPUPS / NOTIFICATIONS =============
+  welcome_popup_seen Boolean @default(false) // Popup de bienvenue vu
+
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
 
