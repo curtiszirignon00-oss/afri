@@ -2,19 +2,21 @@
 
 import prisma from '../config/prisma';
 import { LearningModule } from '@prisma/client';
-import sanitizeHtml from 'sanitize-html'; 
+import sanitizeHtml from 'sanitize-html';
 
-const allowedTags = sanitizeHtml.defaults.allowedTags.concat([ 
-    'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'strong', 'em', 'u', 's', 'a', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td' 
+const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
+    'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'strong', 'em', 'u', 's', 'a', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'
 ]);
 
 const allowedAttributes = {
     ...sanitizeHtml.defaults.allowedAttributes,
-    'a': [ 'href', 'target' ],
-    'img': [ 'src', 'alt' ],
+    'a': ['href', 'target'],
+    'img': ['src', 'alt'],
     'table': ['class'],
     'th': ['class'],
     'td': ['class'],
+    'div': ['class', 'data-slide'],
+    '*': ['class'],
 };
 
 export class LearningServicePrisma {
@@ -30,9 +32,9 @@ export class LearningServicePrisma {
         return sanitizeHtml(cleanedContent, {
             allowedTags: allowedTags,
             allowedAttributes: allowedAttributes,
-            // Permet les classes pour le style Tailwind/CSS personnalisé
+            // Permet TOUTES les classes CSS via regex
             allowedClasses: {
-                '*': ['text-center', 'font-mono', 'my-4', 'text-xl', 'table-auto', 'w-full', 'text-left', 'border-collapse', 'border', 'border-gray-300', 'bg-gray-100', 'mt-8', 'text-lg', 'font-bold', 'text-blue-600']
+                '*': [/^.*$/]
             }
         });
     }
@@ -71,7 +73,7 @@ export class LearningServicePrisma {
     async getModuleBySlug(slug: string): Promise<LearningModule | null> {
         try {
             // CORRECTION: findUnique remplacé par findFirst pour résoudre l'erreur de typage TypeScript.
-            const module = await prisma.learningModule.findFirst({ 
+            const module = await prisma.learningModule.findFirst({
                 where: { slug: slug },
             });
 
@@ -107,7 +109,7 @@ export class LearningServicePrisma {
         return prisma.learningProgress.upsert({
             where: {
                 // Cette clé doit exister comme @@unique([userId, moduleId]) dans schema.prisma
-                userId_moduleId: { 
+                userId_moduleId: {
                     userId: userId,
                     moduleId: moduleId,
                 }

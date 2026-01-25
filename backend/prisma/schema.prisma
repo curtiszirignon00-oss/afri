@@ -1442,6 +1442,7 @@ enum NotificationType {
   JOIN_REQUEST        // Demande d'adhésion à votre communauté
   JOIN_APPROVED       // Votre demande a été approuvée
   JOIN_REJECTED       // Votre demande a été rejetée
+  SYSTEM              // Notification système / administrative
 }
 
 model Notification {

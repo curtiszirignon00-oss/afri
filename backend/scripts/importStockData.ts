@@ -480,124 +480,124 @@ async function importABJCData() {
 // import de boabf;
 
 async function importBOABFData() {
-  console.log('\n🚀 Starting import for BOABF (BOA BURKINA)\n');
+  console.log('\n🚀 Starting import for BOABF (BOA BURKINA)\n');
 
-  const ticker = 'BOABF';
-  // ATTENTION : J'ai normalisé le chemin d'accès pour éviter les caractères spéciaux invisibles (comme le U+202A de droite à gauche).
-  const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\Boabf\\BOABF.xlsx';
+  const ticker = 'BOABF';
+  // ATTENTION : J'ai normalisé le chemin d'accès pour éviter les caractères spéciaux invisibles (comme le U+202A de droite à gauche).
+  const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\Boabf\\BOABF.xlsx';
 
-  // 1. Import historical data from Excel
-  await importHistoryFromExcel(excelPath, ticker);
+  // 1. Import historical data from Excel
+  await importHistoryFromExcel(excelPath, ticker);
 
-  // 2. Import fundamental data
-  const fundamentalData: FundamentalData = {
-    ticker: 'BOABF',
-    companyName: 'BOA BURKINA',
-    description:
-      "La société : BOA BURKINA est une filiale du groupe BOA. Elle a été mis en place en 1998 (après les filiales du Mali, du Bénin, du Niger et de la Côte d'Ivoire). BOA BURKINA est l'un des grands acteurs du pays. En tant que banque commerciale, elle est profondément impliquée dans le financement de l'économie burkinabé. Malgré une forte intensité concurrentielle dans le secteur bancaire, BOA BF s’impose comme l’un des acteurs majeurs de la place bancaire burkinabé avec un total bilan de 757 milliards de FCFA. Au 31 décembre 2017, la Banque présentait un total dépôt de la clientèle de près de 524 milliards de F CFA, plus de 366 197 comptes, répartis sur un réseau de 50 agences.",
-    phone: '(226) 25 30 88 70 à 73',
-    fax: '(226) 25 30 88 74',
-    address:
-      "770, Avenue du Président Aboubakar Sangoulé Lamizana 01 BP 1319 Ouagadougou",
-    ceo: 'Faustin AMOUSSOU', // Le DG
-    president: 'N/A', // Information non fournie pour le Président
-    numberOfShares: 44_000_000,
-    freefloat: 29.10, // En %
-    marketCap: 161_920_000_000, // 161 920 M FCFA
-    pe_ratio: 7.22, // Latest PER from 2024
-    beta: undefined, // Information non fournie
-    rsi: undefined, // Information non fournie
-    // Financial data from 2024 (latest)
-    revenue: 57_490_000_000, // Produit Net Bancaire (PNB) 2024 - 57 490 M FCFA
-    revenueGrowth: -5.09,
-    netIncome: 22_419_000_000, // Résultat net (RN) 2024 - 22 419 M FCFA
-    netIncomeGrowth: -22.86,
-    bnpa: 510.00, // BNPA 2024
-    dividend: 428.00, // Expected dividend 2024
+  // 2. Import fundamental data
+  const fundamentalData: FundamentalData = {
+    ticker: 'BOABF',
+    companyName: 'BOA BURKINA',
+    description:
+      "La société : BOA BURKINA est une filiale du groupe BOA. Elle a été mis en place en 1998 (après les filiales du Mali, du Bénin, du Niger et de la Côte d'Ivoire). BOA BURKINA est l'un des grands acteurs du pays. En tant que banque commerciale, elle est profondément impliquée dans le financement de l'économie burkinabé. Malgré une forte intensité concurrentielle dans le secteur bancaire, BOA BF s’impose comme l’un des acteurs majeurs de la place bancaire burkinabé avec un total bilan de 757 milliards de FCFA. Au 31 décembre 2017, la Banque présentait un total dépôt de la clientèle de près de 524 milliards de F CFA, plus de 366 197 comptes, répartis sur un réseau de 50 agences.",
+    phone: '(226) 25 30 88 70 à 73',
+    fax: '(226) 25 30 88 74',
+    address:
+      "770, Avenue du Président Aboubakar Sangoulé Lamizana 01 BP 1319 Ouagadougou",
+    ceo: 'Faustin AMOUSSOU', // Le DG
+    president: 'N/A', // Information non fournie pour le Président
+    numberOfShares: 44_000_000,
+    freefloat: 29.10, // En %
+    marketCap: 161_920_000_000, // 161 920 M FCFA
+    pe_ratio: 7.22, // Latest PER from 2024
+    beta: undefined, // Information non fournie
+    rsi: undefined, // Information non fournie
+    // Financial data from 2024 (latest)
+    revenue: 57_490_000_000, // Produit Net Bancaire (PNB) 2024 - 57 490 M FCFA
+    revenueGrowth: -5.09,
+    netIncome: 22_419_000_000, // Résultat net (RN) 2024 - 22 419 M FCFA
+    netIncomeGrowth: -22.86,
+    bnpa: 510.00, // BNPA 2024
+    dividend: 428.00, // Expected dividend 2024
 
-    // Shareholders data
-    shareholders: [
-      {
-        name: 'BOA WEST AFRICA',
-        percentage: 56.48,
-        is_public: false,
-      },
-      {
-        name: 'DIVERS ACTIONNAIRES PRIVES (BOURSE)',
-        percentage: 25.92,
-        is_public: true,
-      },
-      {
-        name: 'LASSINE DIAWARA',
-        percentage: 9.21,
-        is_public: false,
-      },
-      {
-        name: 'UNION DES ASSURANCES DU BURKINA-VIE',
-        percentage: 8.39,
-        is_public: false,
-      },
-    ],
+    // Shareholders data
+    shareholders: [
+      {
+        name: 'BOA WEST AFRICA',
+        percentage: 56.48,
+        is_public: false,
+      },
+      {
+        name: 'DIVERS ACTIONNAIRES PRIVES (BOURSE)',
+        percentage: 25.92,
+        is_public: true,
+      },
+      {
+        name: 'LASSINE DIAWARA',
+        percentage: 9.21,
+        is_public: false,
+      },
+      {
+        name: 'UNION DES ASSURANCES DU BURKINA-VIE',
+        percentage: 8.39,
+        is_public: false,
+      },
+    ],
 
-    // Annual financials data (2020-2024)
-    annualFinancials: [
-      {
-        year: 2020,
-        // Pour une banque, le 'revenue' équivaut généralement au Produit Net Bancaire (PNB)
-        revenue: 47_367_000_000, 
-        revenue_growth: undefined,
-        net_income: 17_608_000_000,
-        net_income_growth: undefined,
-        eps: 400.18, // BNPA
-        pe_ratio: 9.20,
-        dividend: 185.00,
-      },
-      {
-        year: 2021,
-        revenue: 50_828_000_000,
-        revenue_growth: 7.31,
-        net_income: 21_245_000_000,
-        net_income_growth: 20.66,
-        eps: 482.83,
-        pe_ratio: 7.62,
-        dividend: 185.00,
-      },
-      {
-        year: 2022,
-        revenue: 56_646_000_000,
-        revenue_growth: 11.45,
-        net_income: 25_477_000_000,
-        net_income_growth: 19.92,
-        eps: 579.02,
-        pe_ratio: 6.36,
-        dividend: 224.00,
-      },
-      {
-        year: 2023,
-        revenue: 60_576_000_000,
-        revenue_growth: 6.94,
-        net_income: 29_063_000_000,
-        net_income_growth: 14.08,
-        eps: 660.52,
-        pe_ratio: 5.57,
-        dividend: 352.00,
-      },
-      {
-        year: 2024,
-        revenue: 57_490_000_000,
-        revenue_growth: -5.09,
-        net_income: 22_419_000_000,
-        net_income_growth: -22.86,
-        eps: 510.00,
-        pe_ratio: 7.22,
-        dividend: 428.00, 
-      },
-    ],
-  };
+    // Annual financials data (2020-2024)
+    annualFinancials: [
+      {
+        year: 2020,
+        // Pour une banque, le 'revenue' équivaut généralement au Produit Net Bancaire (PNB)
+        revenue: 47_367_000_000,
+        revenue_growth: undefined,
+        net_income: 17_608_000_000,
+        net_income_growth: undefined,
+        eps: 400.18, // BNPA
+        pe_ratio: 9.20,
+        dividend: 185.00,
+      },
+      {
+        year: 2021,
+        revenue: 50_828_000_000,
+        revenue_growth: 7.31,
+        net_income: 21_245_000_000,
+        net_income_growth: 20.66,
+        eps: 482.83,
+        pe_ratio: 7.62,
+        dividend: 185.00,
+      },
+      {
+        year: 2022,
+        revenue: 56_646_000_000,
+        revenue_growth: 11.45,
+        net_income: 25_477_000_000,
+        net_income_growth: 19.92,
+        eps: 579.02,
+        pe_ratio: 6.36,
+        dividend: 224.00,
+      },
+      {
+        year: 2023,
+        revenue: 60_576_000_000,
+        revenue_growth: 6.94,
+        net_income: 29_063_000_000,
+        net_income_growth: 14.08,
+        eps: 660.52,
+        pe_ratio: 5.57,
+        dividend: 352.00,
+      },
+      {
+        year: 2024,
+        revenue: 57_490_000_000,
+        revenue_growth: -5.09,
+        net_income: 22_419_000_000,
+        net_income_growth: -22.86,
+        eps: 510.00,
+        pe_ratio: 7.22,
+        dividend: 428.00,
+      },
+    ],
+  };
 
-  await importFundamentals(fundamentalData);
+  await importFundamentals(fundamentalData);
 
-  console.log('\n✅ Import completed successfully for BOABF!\n');
+  console.log('\n✅ Import completed successfully for BOABF!\n');
 }
 
 /**
@@ -627,133 +627,133 @@ async function importStockData(
 // export declare function importFundamentals(data: FundamentalData): Promise<void>;
 
 async function importBICICIData() {
-  console.log('\n🚀 Starting import for BICICI (Banque Internationale pour le Commerce et l\'Industrie de la Côte d\'Ivoire)\n');
+  console.log('\n🚀 Starting import for BICICI (Banque Internationale pour le Commerce et l\'Industrie de la Côte d\'Ivoire)\n');
 
-  const ticker = 'BICICI';
-  // Vous devrez ajuster ce chemin d'accès à l'emplacement réel de votre fichier BICICI.xlsx
-  const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\Bicici\\BICICI.xlsx'; 
+  const ticker = 'BICICI';
+  // Vous devrez ajuster ce chemin d'accès à l'emplacement réel de votre fichier BICICI.xlsx
+  const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\Bicici\\BICICI.xlsx';
 
-  // 1. Import historical data from Excel
-  await importHistoryFromExcel(excelPath, ticker);
+  // 1. Import historical data from Excel
+  await importHistoryFromExcel(excelPath, ticker);
 
-  // 2. Import fundamental data
-  const fundamentalData: FundamentalData = {
-    ticker: 'BICICI',
-    companyName: 'BANQUE INTERNATIONALE POUR LE COMMERCE ET L\'INDUSTRIE DE CÔTE D\'IVOIRE',
-    description:
-      "La Banque internationale pour le commerce et l'industrie de la Côte d'Ivoire, abrégée en BICICI, est une filiale du groupe français BNP Paribas. Elle est une banque générale, de gros et de détail, qui offre aux entreprises et aux particuliers du secteur formel tout un ensemble de crédits à court et moyen terme. L'activité s'organise essentiellement autour de 3 pôles : banque de détail ; banque de financement et d'investissement. À fin 2017, le groupe gère 549 milliards FCFA d'encours de dépôts et 440 milliards FCFA d'encours de crédits. La commercialisation des produits et services est assurée au travers d'un réseau de 43 agences implantées en Côte d'Ivoire.",
-    phone: '(+225) 20 20 16 05',
-    fax: '(+225) 20 20 17 00',
-    address:
-      "BANQUE INTERNATIONALE POUR LE COMMERCE ET L'INDUSTRIE DE CÔTE D'IVOIRE 01 ABIDJAN",
-    ceo: 'Mamady DIAKITE', // Directeur Général
-    president: 'Ahmed CISSE', // Président du conseil d'administration
-    numberOfShares: 16_666_670,
-    freefloat: 32.51, // En %
-    marketCap: 333_333_000_000, // 333 333 M FCFA
-    pe_ratio: 12.71, // Latest PER from 2024
-    beta: undefined, // Information non fournie
-    rsi: undefined, // Information non fournie
-    // Financial data from 2024 (latest)
-    revenue: 68_063_000_000, // Produit Net Bancaire (PNB) 2024 - 68 063 M FCFA
-    revenueGrowth: 22.62,
-    netIncome: 26_226_000_000, // Résultat net (RN) 2024 - 26 226 M FCFA
-    netIncomeGrowth: 57.08,
-    bnpa: 1574.00, // BNPA 2024
-    dividend: 830.72, // Expected dividend 2024
+  // 2. Import fundamental data
+  const fundamentalData: FundamentalData = {
+    ticker: 'BICICI',
+    companyName: 'BANQUE INTERNATIONALE POUR LE COMMERCE ET L\'INDUSTRIE DE CÔTE D\'IVOIRE',
+    description:
+      "La Banque internationale pour le commerce et l'industrie de la Côte d'Ivoire, abrégée en BICICI, est une filiale du groupe français BNP Paribas. Elle est une banque générale, de gros et de détail, qui offre aux entreprises et aux particuliers du secteur formel tout un ensemble de crédits à court et moyen terme. L'activité s'organise essentiellement autour de 3 pôles : banque de détail ; banque de financement et d'investissement. À fin 2017, le groupe gère 549 milliards FCFA d'encours de dépôts et 440 milliards FCFA d'encours de crédits. La commercialisation des produits et services est assurée au travers d'un réseau de 43 agences implantées en Côte d'Ivoire.",
+    phone: '(+225) 20 20 16 05',
+    fax: '(+225) 20 20 17 00',
+    address:
+      "BANQUE INTERNATIONALE POUR LE COMMERCE ET L'INDUSTRIE DE CÔTE D'IVOIRE 01 ABIDJAN",
+    ceo: 'Mamady DIAKITE', // Directeur Général
+    president: 'Ahmed CISSE', // Président du conseil d'administration
+    numberOfShares: 16_666_670,
+    freefloat: 32.51, // En %
+    marketCap: 333_333_000_000, // 333 333 M FCFA
+    pe_ratio: 12.71, // Latest PER from 2024
+    beta: undefined, // Information non fournie
+    rsi: undefined, // Information non fournie
+    // Financial data from 2024 (latest)
+    revenue: 68_063_000_000, // Produit Net Bancaire (PNB) 2024 - 68 063 M FCFA
+    revenueGrowth: 22.62,
+    netIncome: 26_226_000_000, // Résultat net (RN) 2024 - 26 226 M FCFA
+    netIncomeGrowth: 57.08,
+    bnpa: 1574.00, // BNPA 2024
+    dividend: 830.72, // Expected dividend 2024
 
-    // Shareholders data
-    shareholders: [
-      {
-        name: 'IPS-CNPS',
-        percentage: 21.54,
-        is_public: false, // Supposition : institutionnel
-      },
-      {
-        name: 'BNI',
-        percentage: 21.09,
-        is_public: false, // Supposition : institutionnel
-      },
-      {
-        name: 'BRANDON & MCAIN CAPITAL',
-        percentage: 19.11,
-        is_public: false, // Supposition : institutionnel
-      },
-      {
-        name: 'BRVM (DIVERS PORTEURS)',
-        percentage: 12.95,
-        is_public: true, // Correspond au flottant
-      },
-      {
-        name: 'CAISSE DES DEPÔTS ET DE CONSIGNATION',
-        percentage: 12.65,
-        is_public: false, // Supposition : institutionnel
-      },
-      {
-        name: 'IPS-CGRAE',
-        percentage: 12.65,
-        is_public: false, // Supposition : institutionnel
-      },
-    ],
+    // Shareholders data
+    shareholders: [
+      {
+        name: 'IPS-CNPS',
+        percentage: 21.54,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'BNI',
+        percentage: 21.09,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'BRANDON & MCAIN CAPITAL',
+        percentage: 19.11,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'BRVM (DIVERS PORTEURS)',
+        percentage: 12.95,
+        is_public: true, // Correspond au flottant
+      },
+      {
+        name: 'CAISSE DES DEPÔTS ET DE CONSIGNATION',
+        percentage: 12.65,
+        is_public: false, // Supposition : institutionnel
+      },
+      {
+        name: 'IPS-CGRAE',
+        percentage: 12.65,
+        is_public: false, // Supposition : institutionnel
+      },
+    ],
 
-    // Annual financials data (2020-2024)
-    annualFinancials: [
-      {
-        year: 2020,
-        revenue: 45_315_000_000, // PNB
-        revenue_growth: undefined,
-        net_income: 4_672_000_000,
-        net_income_growth: undefined,
-        eps: 280.32, // BNPA
-        pe_ratio: 71.35,
-        dividend: 50.00,
-      },
-      {
-        year: 2021,
-        revenue: 44_167_000_000,
-        revenue_growth: -2.53,
-        net_income: 9_603_000_000,
-        net_income_growth: 105.54,
-        eps: 576.18,
-        pe_ratio: 34.71,
-        dividend: 518.40,
-      },
-      {
-        year: 2022,
-        revenue: 47_275_000_000,
-        revenue_growth: 7.04,
-        net_income: 12_391_000_000,
-        net_income_growth: 29.03,
-        eps: 743.46,
-        pe_ratio: 26.90,
-        dividend: 401.80,
-      },
-      {
-        year: 2023,
-        revenue: 55_508_000_000,
-        revenue_growth: 17.42,
-        net_income: 16_696_000_000,
-        net_income_growth: 34.74,
-        eps: 1002.00,
-        pe_ratio: 19.96,
-        dividend: 540.90,
-      },
-      {
-        year: 2024,
-        revenue: 68_063_000_000,
-        revenue_growth: 22.62,
-        net_income: 26_226_000_000,
-        net_income_growth: 57.08,
-        eps: 1574.00,
-        pe_ratio: 12.71,
-        dividend: 830.72,
-      },
-    ],
-  };
+    // Annual financials data (2020-2024)
+    annualFinancials: [
+      {
+        year: 2020,
+        revenue: 45_315_000_000, // PNB
+        revenue_growth: undefined,
+        net_income: 4_672_000_000,
+        net_income_growth: undefined,
+        eps: 280.32, // BNPA
+        pe_ratio: 71.35,
+        dividend: 50.00,
+      },
+      {
+        year: 2021,
+        revenue: 44_167_000_000,
+        revenue_growth: -2.53,
+        net_income: 9_603_000_000,
+        net_income_growth: 105.54,
+        eps: 576.18,
+        pe_ratio: 34.71,
+        dividend: 518.40,
+      },
+      {
+        year: 2022,
+        revenue: 47_275_000_000,
+        revenue_growth: 7.04,
+        net_income: 12_391_000_000,
+        net_income_growth: 29.03,
+        eps: 743.46,
+        pe_ratio: 26.90,
+        dividend: 401.80,
+      },
+      {
+        year: 2023,
+        revenue: 55_508_000_000,
+        revenue_growth: 17.42,
+        net_income: 16_696_000_000,
+        net_income_growth: 34.74,
+        eps: 1002.00,
+        pe_ratio: 19.96,
+        dividend: 540.90,
+      },
+      {
+        year: 2024,
+        revenue: 68_063_000_000,
+        revenue_growth: 22.62,
+        net_income: 26_226_000_000,
+        net_income_growth: 57.08,
+        eps: 1574.00,
+        pe_ratio: 12.71,
+        dividend: 830.72,
+      },
+    ],
+  };
 
-  await importFundamentals(fundamentalData);
+  await importFundamentals(fundamentalData);
 
-  console.log('\n✅ Import completed successfully for BICICI!\n');
+  console.log('\n✅ Import completed successfully for BICICI!\n');
 }
 
 
@@ -1156,12 +1156,14 @@ async function importAllStocksFromConsolidatedFile(filePath: string) {
     try {
       console.log(`\n📊 Processing ${currentStock.ticker}...`);
 
+      /*
       const excelPath = findExcelFile(currentStock.ticker);
       if (excelPath) {
         await importHistoryFromExcel(excelPath, currentStock.ticker);
       } else {
         console.log(`⚠️  No Excel file found for ${currentStock.ticker}`);
       }
+      */
 
       await importFundamentals(currentStock);
       importedCount++;

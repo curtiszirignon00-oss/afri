@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as XLSX from 'xlsx';
 import { PrismaClient } from '@prisma/client';
 import * as path from 'path';

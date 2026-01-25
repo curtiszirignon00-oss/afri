@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/src/scripts/clean-all-modules.ts
 /**
  * Script pour nettoyer tous les modules avec le script Python

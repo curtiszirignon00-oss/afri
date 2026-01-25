@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as XLSX from 'xlsx';
 
 const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\abjc\\abjc.xlsx';
@@ -22,5 +23,5 @@ console.log(JSON.stringify(data.slice(-5), null, 2));
 
 console.log('\nColumn names from first row:');
 if (data.length > 0) {
-  console.log(Object.keys(data[0]));
+  console.log(Object.keys(data[0] as Record<string, unknown>));
 }
