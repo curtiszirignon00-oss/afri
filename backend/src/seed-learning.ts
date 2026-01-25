@@ -315,7 +315,7 @@ async function main() {
   </div>
 </div>
 
-<div class="slide" data-slide="4">
+<div class="slide" data-slide="3">
   <div class="section-purple">
     <h2>🔁 1.2 Marché primaire vs marché secondaire</h2>
     <p>Comprendre cette distinction est fondamental :</p>
@@ -352,7 +352,7 @@ async function main() {
   </div>
 </div>
 
-<div class="slide" data-slide="3">
+<div class="slide" data-slide="4">
   <div class="section-green">
     <h2>🏛️ 1.3 Le rôle et le fonctionnement de la BRVM</h2>
 

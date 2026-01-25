@@ -48,15 +48,14 @@
 .module-content .objectif-hero h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #000000;
+  color: white;
   margin-bottom: 1rem;
   margin-top: 0;
 }
 
 .module-content .objectif-hero p {
   font-size: 1.125rem;
-  color: #000000;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
   margin-bottom: 1rem;
 }
 
@@ -72,8 +71,7 @@
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   font-size: 1.125rem;
-  color: #000000;
-  font-weight: 700;
+  color: white;
   padding-left: 0;
 }
 
