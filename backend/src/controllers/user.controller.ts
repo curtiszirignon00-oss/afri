@@ -3,6 +3,7 @@
 import { Response, Request, NextFunction } from "express";
 import * as usersService from "../services/users.service.prisma";
 import { createError } from "../middlewares/errorHandlers";
+import { prisma } from "../config/database";
 
 // 1. Contrôleur pour GET /api/users
 export async function getUsers(req: Request, res: Response, next: NextFunction) {
@@ -120,6 +121,85 @@ export async function updateUserProfile(req: Request, res: Response, next: NextF
     const finalProfile = await usersService.getCurrentUserProfile(userId);
 
     return res.status(200).json(finalProfile);
+
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Contrôleur pour GET /api/users/welcome-popup
+// Vérifie si l'utilisateur a un popup de bienvenue à afficher
+export async function getWelcomePopup(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+
+    // Vérifier si l'utilisateur a le badge pioneer_2026 et n'a pas encore vu le popup
+    const [pioneerBadge, userProfile] = await Promise.all([
+      prisma.userAchievement.findFirst({
+        where: {
+          userId: userId,
+          achievement: { code: 'pioneer_2026' },
+        },
+        include: {
+          achievement: true,
+        },
+      }),
+      prisma.userProfile.findUnique({
+        where: { userId: userId },
+        select: { welcome_popup_seen: true },
+      }),
+    ]);
+
+    // Si l'utilisateur a le badge et n'a pas vu le popup
+    if (pioneerBadge && !userProfile?.welcome_popup_seen) {
+      // Récupérer le portefeuille pour montrer le bonus
+      const portfolio = await prisma.portfolio.findFirst({
+        where: { userId: userId, wallet_type: 'SANDBOX' },
+        select: { cash_balance: true },
+      });
+
+      return res.status(200).json({
+        show: true,
+        data: {
+          badge: {
+            name: pioneerBadge.achievement.name,
+            icon: pioneerBadge.achievement.icon,
+            description: pioneerBadge.achievement.description,
+            rarity: pioneerBadge.achievement.rarity,
+          },
+          bonusCapital: 500000,
+          bonusXp: 500,
+          modulesUnlocked: 2,
+          portfolioBalance: portfolio?.cash_balance || 0,
+        },
+      });
+    }
+
+    return res.status(200).json({ show: false });
+
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Contrôleur pour POST /api/users/welcome-popup/dismiss
+// Marque le popup comme vu
+export async function dismissWelcomePopup(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+
+    await prisma.userProfile.update({
+      where: { userId: userId },
+      data: { welcome_popup_seen: true },
+    });
+
+    return res.status(200).json({ success: true });
 
   } catch (error) {
     return next(error);
