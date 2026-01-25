@@ -211,11 +211,13 @@ model UserProfile {
 
   // ============= PROFIL SOCIAL (NOUVEAU) =============
   // Identification & Branding
-  username    String? // @mamadou_invest
-  bio         String? // Max 200 caractères
-  avatar_url  String?
-  banner_url  String?
-  banner_type String? @default("gradient") // gradient, color, image
+  username     String? // @mamadou_invest
+  bio          String? // Max 200 caractères
+  avatar_url   String?
+  avatar_color String? // Gradient couleur pour avatar (ex: "from-blue-500 to-purple-600")
+  banner_url   String?
+  banner_color String? // Gradient couleur pour banner (ex: "from-blue-600 to-purple-700")
+  banner_type  String? @default("gradient") // gradient, color, image
 
   // Liens sociaux
   social_links Json? // { linkedin: "url", twitter: "url", instagram: "url" }
