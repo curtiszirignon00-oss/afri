@@ -73,7 +73,7 @@ async function createModule1Quiz() {
           },
           {
             id: 'q3',
-            question: "Quelle est l'une des trois grandes fonctions essentielles des marchés financiers, selon le module?",
+            question: "Quelle est l'une des trois grandes fonctions essentielles des marchés financiers ?",
             options: [
               "Garantir un taux d'intérêt fixe sur l'épargne.",
               "Financer uniquement les projets des États, à l'exclusion des entreprises.",
@@ -146,7 +146,7 @@ async function createModule1Quiz() {
           },
           {
             id: 'q9',
-            question: "Quel pays ne fait PAS partie de la zone UEMOA et des huit pays de la BRVM, selon le module?",
+            question: "Quel pays ne fait PAS partie de la zone UEMOA et des huit pays de la BRVM ?",
             options: [
               "Le Sénégal.",
               "La Côte d'Ivoire.",
@@ -183,7 +183,7 @@ async function createModule1Quiz() {
           },
           {
             id: 'q12',
-            question: "L'une des raisons suivantes n'est PAS un motif pour une entreprise d'entrer en bourse (IPO):",
+            question: "L'une des raisons suivantes n'est PAS un motif pour une entreprise d'entrer en bourse :",
             options: [
               "Améliorer sa visibilité et sa crédibilité.",
               "Accéder à des capitaux illimités sans aucune exigence de transparence.",
