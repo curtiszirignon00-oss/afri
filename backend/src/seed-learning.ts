@@ -7,487 +7,476 @@ const prisma = new PrismaClient();
 
 // Fonction utilitaire pour créer ou mettre à jour un module de manière sécurisée
 async function createOrUpdateModule(data: any) {
- const { slug,...updateData } = data; // Extrait le slug
+  const { slug, ...updateData } = data; // Extrait le slug
 
- if (!slug) {
- console.error(`❌ Erreur: Slug manquant pour le module: ${data.title}`);
- return;
- }
+  if (!slug) {
+    console.error(`❌ Erreur: Slug manquant pour le module: ${data.title}`);
+    return;
+  }
 
- try {
- const existingModule = await prisma.learningModule.findFirst({
- where: { slug: slug },
- });
+  try {
+    const existingModule = await prisma.learningModule.findFirst({
+      where: { slug: slug },
+    });
 
- // CORRECTION: Suppression du champ main_goals qui n'existe pas sur le modèle LearningModule
- const moduleData = {
-...updateData,
- slug: slug,
- };
+    // CORRECTION: Suppression du champ main_goals qui n'existe pas sur le modèle LearningModule
+    const moduleData = {
+      ...updateData,
+      slug: slug,
+    };
 
- if (existingModule) {
- // Mettre à jour (sans le champ slug, qui est dans le where)
- await prisma.learningModule.update({
- where: { id: existingModule.id }, // On utilise l'ID récupéré
- data: moduleData,
- });
- console.log(`✅ Module ${data.order_index}: ${data.title} (slug: ${slug}) mis à jour.`);
- } else {
- // Créer
- await prisma.learningModule.create({
- data: moduleData,
- });
- console.log(`✅ Module ${data.order_index}: ${data.title} (slug: ${slug}) créé.`);
- }
- } catch (error) {
- console.error(`❌ Erreur lors du traitement du module ${data.title} (slug: ${slug}):`, error);
- // Laisser l'erreur remonter pour éviter l'arrêt complet
- // throw error; 
- }
+    if (existingModule) {
+      // Mettre à jour (sans le champ slug, qui est dans le where)
+      await prisma.learningModule.update({
+        where: { id: existingModule.id }, // On utilise l'ID récupéré
+        data: moduleData,
+      });
+      console.log(`✅ Module ${data.order_index}: ${data.title} (slug: ${slug}) mis à jour.`);
+    } else {
+      // Créer
+      await prisma.learningModule.create({
+        data: moduleData,
+      });
+      console.log(`✅ Module ${data.order_index}: ${data.title} (slug: ${slug}) créé.`);
+    }
+  } catch (error) {
+    console.error(`❌ Erreur lors du traitement du module ${data.title} (slug: ${slug}):`, error);
+    // Laisser l'erreur remonter pour éviter l'arrêt complet
+    // throw error; 
+  }
 }
 // --- FIN FONCTION UTILITAIRE ---
 
 
 async function main() {
- await connectPrismaDatabase();
- console.log("Démarrage de l'insertion/mise à jour des 16 modules d'apprentissage...");
-
- // ===================================
- // === M0 : PRÊT POUR LE DÉCOLLAGE ===
- // ===================================
- await createOrUpdateModule({
- title: "Prêt pour le décollage? (Mindset)",
- slug: 'pret-decollage',
- description: "Adoptez le bon état d'esprit et comprenez pourquoi la BRVM est une opportunité unique.",
- difficulty_level: 'debutant',
- content_type: 'article',
- duration_minutes: 5,
- order_index: 0,
- is_published: true,
- content: `
- <p class="text-xl italic mb-12 text-center text-gray-700">"L'investissement, c'est le pont entre votre présent et votre futur."</p>
-
- <div class="pedagogical-objective">
- <h2>🎯 Objectif pédagogique</h2>
- <p>À la fin de ce module, vous :</p>
- <ul>
- <li>Adopterez le bon état d'esprit d'investisseur à long terme.</li>
- <li>Comprendrez pourquoi la BRVM représente une opportunité unique pour les Africains.</li>
- <li>Connaîtrez la structure complète du parcours de formation.</li>
- <li>Serez capables de distinguer un investisseur d'un spéculateur.</li>
- </ul>
- </div>
-
-
- <h2>🪶 0.1 – Bienvenue dans l'Académie : Notre mission pour vous</h2>
-
- <p>Bienvenue dans l'Académie AfriBourse,</p>
-
- <p>Un espace pensé pour vous — l'épargnant, l'entrepreneur, le jeune professionnel — qui souhaite faire travailler son argent plutôt que de le laisser dormir.</p>
-
- <div class="warning-box">
- <h3>💡 Constat de départ : L'épargne seule ne suffit plus</h3>
- <p>L'inflation grignote la valeur de votre argent au fil du temps.</p>
- </div>
-
- <p>Notre mission est simple : transformer votre épargne en capital actif, grâce à une connaissance claire, à des outils accessibles, et à une pédagogie ancrée dans la réalité africaine.</p>
-
- <div class="key-points-box">
- <h3>💎 Chez AfriBourse, nous croyons que :</h3>
- <ul>
- <li>La connaissance est la clé de la confiance.</li>
- <li>La discipline est la clé de la réussite financière.</li>
- <li>Chaque Africain mérite une part du développement économique de son continent.</li>
- </ul>
- </div>
-
-
- <h2>🌍 0.2 – La Bourse, un moteur pour nos économies africaines</h2>
-
- <p>Investir à la BRVM, ce n'est pas seulement chercher un rendement — c'est participer activement à la construction économique de l'Afrique de l'Ouest.</p>
-
- <p>Chaque action achetée, chaque entreprise soutenue, contribue à :</p>
-
- <ul>
- <li>Financer la croissance de sociétés locales.</li>
- <li>Créer des emplois et soutenir l'innovation.</li>
- <li>Répartir la richesse de manière plus équitable entre citoyens et investisseurs.</li>
- </ul>
-
- <blockquote>💬 "Quand un Africain investit dans une entreprise africaine, il investit dans le futur de son peuple."</blockquote>
-
-
- <div class="analogy-box">
- <h3>⚓ L'analogie à retenir : le piroguier prudent</h3>
-
- <p>Imaginez votre richesse comme une pirogue.</p>
-
- <p>Le piroguier prudent ne se lance pas sans :</p>
-
- <ul>
- <li>Vérifier la météo (analyse du marché)</li>
- <li>Préparer son équipage (formation)</li>
- <li>Définir une destination (objectifs financiers)</li>
- </ul>
-
- <p>Sur la mer de l'investissement, les vagues représentent la volatilité.</p>
-
- <p>Mais celui qui a un cap, un plan et de la patience arrive toujours au rivage.</p>
-
- <p><strong>La bourse, ce n'est pas un sprint — c'est une navigation.</strong></p>
- </div>
-
-
- <h2>🗺️ 0.3 – Présentation du parcours : votre feuille de route vers l'autonomie</h2>
-
- <p>Voici comment se déroule votre voyage au sein de l'Académie AfriBourse 👇</p>
-
- <table>
- <thead>
- <tr>
- <th>Étape</th>
- <th>Objectif</th>
- <th>Modules concernés</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td>🧠 <strong>Mindset</strong></td>
- <td>Poser les bases mentales et émotionnelles de l'investisseur</td>
- <td>M0, M5</td>
- </tr>
- <tr>
- <td>⚙️ <strong>Fondations</strong></td>
- <td>Comprendre les marchés, les acteurs et les instruments</td>
- <td>M1, M2, M3, M4</td>
- </tr>
- <tr>
- <td>🔍 <strong>Analyse & Stratégie</strong></td>
- <td>Maîtriser l'analyse fondamentale et technique</td>
- <td>M6, M7, M8, M9, M10</td>
- </tr>
- <tr>
- <td>💼 <strong>Action & Gestion</strong></td>
- <td>Construire, exécuter et suivre son portefeuille</td>
- <td>M11 à M16</td>
- </tr>
- </tbody>
- </table>
-
- <div class="key-points-box">
- <h3>🎯 À la fin du parcours, vous serez capable de :</h3>
- <ul>
- <li>Analyser une entreprise cotée à la BRVM</li>
- <li>Identifier le bon moment pour investir</li>
- <li>Construire un portefeuille cohérent et rentable</li>
- <li>Investir avec confiance et méthode</li>
- </ul>
- </div>
-
-
- <h2>💥 0.4 – Brisons les mythes : Investisseur vs Spéculateur</h2>
-
-
- <div class="example-box">
- <h3>❌ Mythe 1 : "Il faut être riche pour investir"</h3>
-
- <p><strong>FAUX.</strong></p>
-
- <p>À la BRVM, vous pouvez commencer avec de petites sommes régulières.</p>
-
- <p><strong>Le plus important n'est pas le capital de départ, mais le temps et la constance.</strong></p>
-
- <blockquote>💬 "Le meilleur moment pour planter un arbre était il y a 20 ans. Le deuxième meilleur moment, c'est aujourd'hui." – Proverbe africain</blockquote>
- </div>
-
-
- <div class="example-box">
- <h3>❌ Mythe 2 : "La Bourse, c'est un casino"</h3>
-
- <p><strong>NON, ce n'est pas un jeu de hasard.</strong></p>
-
- <p>La <strong>spéculation</strong> repose sur les émotions et les paris à court terme.</p>
-
- <p>L'<strong>investissement</strong> repose sur l'analyse, la patience et la vision long terme.</p>
-
- <blockquote>
- 💡 "The individual investor should act consistently as an investor and not as a speculator."
- <br>— Benjamin Graham, mentor de Warren Buffett
- </blockquote>
-
- <p><strong>En clair :</strong></p>
-
- <p>L'<strong>investisseur</strong> achète une part d'entreprise pour en partager la réussite.</p>
-
- <p>Le <strong>spéculateur</strong> parie sur une fluctuation de prix.</p>
-
- <p><strong>À la BRVM, nous formons des investisseurs — pas des parieurs.</strong></p>
- </div>
-
-
- <h2>🧩 Les termes à maîtriser</h2>
-
- <table>
- <thead>
- <tr>
- <th>Terme</th>
- <th>Définition simple</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td><strong>BRVM</strong></td>
- <td>Bourse Régionale des Valeurs Mobilières : le marché commun de 8 pays de l'UEMOA.</td>
- </tr>
- <tr>
- <td><strong>Investisseur</strong></td>
- <td>Personne qui place son argent dans des actifs pour générer un rendement à long terme.</td>
- </tr>
- <tr>
- <td><strong>Spéculateur</strong></td>
- <td>Personne qui achète et revend à court terme pour profiter de variations de prix.</td>
- </tr>
- <tr>
- <td><strong>Volatilité</strong></td>
- <td>Variation (montée et descente) du prix d'un actif sur une période donnée.</td>
- </tr>
- </tbody>
- </table>
-
-
- <h3>🚀 Prochaine étape :</h3>
-
- <p>Vous avez préparé votre esprit, compris la vision, et brisé les mythes.</p>
-
- <p><strong>👉 Passez maintenant au Module 1 : Les Fondations – Qu'est-ce que la Bourse et la BRVM ?</strong></p>
-
- <p><em>C'est ici que commence votre apprentissage concret du marché financier africain.</em></p>
- `,
- });
-
- // ==============================================
- // === M1 : LES FONDATIONS - BOURSE ET BRVM ===
- // ==============================================
- await createOrUpdateModule({
- title: "Les Fondations — Qu'est-ce que la Bourse et la BRVM ?",
- slug: 'fondations-bourse-brvm',
- description: "Comprenez le rôle unique de la BRVM et distinguez clairement le marché primaire du marché secondaire.",
- difficulty_level: 'debutant',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 1,
- is_published: true,
- content: `
- <div class="space-y-8">
- <div class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-8 rounded-xl">
- <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
- <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous serez capable :</p>
- <ul class="space-y-2 text-lg leading-relaxed">
- <li>• d'expliquer ce qu'est un marché financier et à quoi il sert ;</li>
- <li>• de comprendre le rôle unique de la BRVM dans l'économie de la zone UEMOA ;</li>
- <li>• de distinguer clairement le marché primaire du marché secondaire ;</li>
- <li>• et de comprendre pourquoi et comment une entreprise choisit d'entrer en bourse.</li>
- </ul>
- </div>
-
- <div class="border-l-4 border-blue-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🧩 1.1 Qu'est-ce qu'un marché financier ?</h2>
-
- <p class="text-lg mb-4 leading-relaxed">Un marché financier est un espace — physique ou digital — où l'argent rencontre les opportunités.</p>
-
- <p class="text-base mb-3 leading-relaxed">C'est là que se rencontrent :</p>
- <ul class="list-disc ml-6 mb-4 space-y-1">
- <li>ceux qui ont de l'argent à placer (investisseurs), et</li>
- <li>ceux qui ont besoin d'argent pour financer leurs projets (entreprises ou États).</li>
- </ul>
-
- <p class="text-base mb-3 leading-relaxed">Sur ces marchés, on ne vend pas des produits physiques, mais des titres financiers :</p>
- <ul class="list-disc ml-6 mb-6 space-y-1">
- <li>Les <strong>actions</strong> (parts de propriété dans une entreprise)</li>
- <li>Les <strong>obligations</strong> (prêts faits à une entreprise ou à un État)</li>
- </ul>
-
- <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-6 my-6">
- <h3 class="text-xl font-bold text-amber-900 mb-3">🪶 L'analogie à retenir : Le Grand Marché de la Ville</h3>
- <p class="text-base mb-3 leading-relaxed">Imaginez le grand marché central de votre ville :</p>
- <ul class="list-disc ml-6 mb-3 space-y-1">
- <li>Dans une zone, les producteurs viennent vendre leurs produits frais pour la première fois (🍍 marché primaire).</li>
- <li>Dans une autre zone, les commerçants revendent des produits déjà achetés (🍊 marché secondaire).</li>
- </ul>
- <p class="text-base font-semibold leading-relaxed">👉 La BRVM joue le rôle de ce grand marché financier, mais avec des règles claires, un système sécurisé, et une surveillance stricte pour protéger tous les participants.</p>
- </div>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">📊 Pourquoi les marchés financiers sont essentiels</h3>
- <p class="text-base mb-3 leading-relaxed">Ils remplissent trois grandes fonctions :</p>
- <ol class="list-decimal ml-6 mb-4 space-y-2">
- <li><strong>Canaliser l'épargne vers l'investissement productif</strong><br/>→ Votre argent finance des projets réels : usines, routes, innovations.</li>
- <li><strong>Faciliter la liquidité</strong><br/>→ Vous pouvez revendre vos titres à tout moment.</li>
- <li><strong>Rendre l'économie plus transparente</strong><br/>→ Les entreprises cotées publient leurs résultats, ce qui permet de suivre leur performance.</li>
- </ol>
- </div>
-
- <div class="border-l-4 border-green-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🏛️ 1.2 Le rôle et le fonctionnement de la BRVM</h2>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">🌍 Une bourse régionale unique au monde</h3>
- <p class="text-base mb-3 leading-relaxed">La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA) :</p>
- <p class="text-base mb-4 leading-relaxed">🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
- <p class="text-base mb-6 leading-relaxed">Elle a été créée en 1998, avec son siège à Abidjan (Côte d'Ivoire), et son dépositaire central, le DC/BR, à Cotonou (Bénin).</p>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">⚙️ Son fonctionnement</h3>
- <ul class="list-disc ml-6 mb-6 space-y-1">
- <li>Les entreprises qui souhaitent lever des fonds émettent des titres (actions ou obligations).</li>
- <li>Les investisseurs achètent et vendent ces titres via des Sociétés de Gestion et d'Intermédiation (SGI), qui sont les courtiers agréés.</li>
- <li>Le régulateur, le CREPMF, veille au respect des règles de transparence et de protection des investisseurs.</li>
- </ul>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">📈 Les indices phares</h3>
- <ul class="list-disc ml-6 mb-4 space-y-1">
- <li><strong>BRVM Composite</strong> : suit l'ensemble des sociétés cotées.</li>
- <li><strong>BRVM 10</strong> : regroupe les 10 entreprises les plus liquides et les plus importantes.</li>
- </ul>
- <p class="text-sm italic mb-4 leading-relaxed">Quand on dit « la BRVM a progressé de 2 % aujourd'hui », cela signifie que, globalement, les valeurs cotées ont pris de la valeur.</p>
-
- <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-6">
- <p class="text-base font-semibold mb-2">💡 À retenir</p>
- <p class="text-base leading-relaxed">La BRVM permet :</p>
- <ul class="list-disc ml-6 mt-2 space-y-1">
- <li>aux entreprises de se financer localement sans dépendre uniquement des banques ;</li>
- <li>aux investisseurs de faire fructifier leur capital ;</li>
- <li>et à nos économies africaines de croître de manière inclusive et transparente.</li>
- </ul>
- </div>
- </div>
-
- <div class="border-l-4 border-purple-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🔁 1.3 Marché primaire vs marché secondaire</h2>
- <p class="text-base mb-4 leading-relaxed">Comprendre cette distinction est fondamental :</p>
-
- <div class="overflow-x-auto">
- <table class="min-w-full border-collapse border-2 border-gray-300 my-4">
- <thead class="bg-gray-100">
- <tr>
- <th class="border border-gray-300 px-4 py-3 text-left font-bold">Type de marché</th>
- <th class="border border-gray-300 px-4 py-3 text-left font-bold">Description</th>
- <th class="border border-gray-300 px-4 py-3 text-left font-bold">À qui va l'argent ?</th>
- <th class="border border-gray-300 px-4 py-3 text-left font-bold">Exemple concret</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td class="border border-gray-300 px-4 py-3">Marché primaire</td>
- <td class="border border-gray-300 px-4 py-3">Les titres sont émis et vendus pour la première fois.</td>
- <td class="border border-gray-300 px-4 py-3">Directement à l'entreprise ou à l'État.</td>
- <td class="border border-gray-300 px-4 py-3">Une société comme NSIA Banque émet de nouvelles actions pour financer son expansion.</td>
- </tr>
- <tr class="bg-gray-50">
- <td class="border border-gray-300 px-4 py-3">Marché secondaire</td>
- <td class="border border-gray-300 px-4 py-3">Les titres déjà émis sont échangés entre investisseurs.</td>
- <td class="border border-gray-300 px-4 py-3">L'argent circule entre investisseurs, pas vers l'entreprise.</td>
- <td class="border border-gray-300 px-4 py-3">Vous achetez des actions Sonatel à un autre investisseur via votre SGI.</td>
- </tr>
- </tbody>
- </table>
- </div>
-
- <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4 my-6">
- <p class="text-base font-bold leading-relaxed">🎯 Votre terrain de jeu principal, en tant qu'investisseur particulier, est le marché secondaire, car c'est là que vous pourrez acheter ou revendre vos titres.</p>
- </div>
- </div>
-
- <div class="border-l-4 border-orange-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🚀 1.4 Comment et pourquoi une entreprise entre en bourse (IPO)</h2>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">💰 Pourquoi entrer en bourse ?</h3>
- <p class="text-base mb-3 leading-relaxed">Une entreprise décide de s'introduire en bourse (faire une IPO – Initial Public Offering) pour :</p>
- <ol class="list-decimal ml-6 mb-6 space-y-2">
- <li>Lever des capitaux sans contracter de dettes bancaires.</li>
- <li>Améliorer sa visibilité et sa crédibilité auprès des investisseurs, partenaires et clients.</li>
- <li>Permettre à ses premiers actionnaires (fondateurs, fonds, salariés) de revendre une partie de leurs actions.</li>
- <li>Diversifier ses sources de financement et accéder à un marché de capitaux plus large.</li>
- </ol>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">⚙️ Comment cela se passe ?</h3>
- <ol class="list-decimal ml-6 mb-6 space-y-2">
- <li>L'entreprise prépare ses états financiers et un prospectus approuvé par le CREPMF.</li>
- <li>Elle choisit une SGI pour la conseiller et placer ses titres.</li>
- <li>Les investisseurs souscrivent aux actions pendant la période d'offre publique.</li>
- <li>Une fois les titres émis, l'entreprise devient cotée et ses actions sont échangées sur le marché secondaire.</li>
- </ol>
-
- <div class="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 my-6">
- <h3 class="text-lg font-bold text-orange-900 mb-3">🎯 Exemple africain</h3>
- <p class="text-base mb-2 leading-relaxed">L'introduction en bourse de Orange Côte d'Ivoire (2022) a permis :</p>
- <ul class="list-disc ml-6 space-y-1">
- <li>à l'entreprise de lever plusieurs dizaines de milliards FCFA ;</li>
- <li>aux citoyens ivoiriens de devenir actionnaires d'un acteur majeur du pays ;</li>
- <li>et à la BRVM d'attirer de nouveaux investisseurs régionaux.</li>
- </ul>
- </div>
- </div>
-
- <div class="bg-gray-100 rounded-xl p-6">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🧠 Les termes à maîtriser</h2>
- <table class="min-w-full border-collapse border-2 border-gray-300">
- <thead class="bg-gray-200">
- <tr>
- <th class="border border-gray-300 px-4 py-3 text-left font-bold">Terme</th>
- <th class="border border-gray-300 px-4 py-3 text-left font-bold">Définition</th>
- </tr>
- </thead>
- <tbody>
- <tr class="bg-white">
- <td class="border border-gray-300 px-4 py-3 font-bold">BRVM</td>
- <td class="border border-gray-300 px-4 py-3">Bourse Régionale des Valeurs Mobilières, marché commun de l'UEMOA.</td>
- </tr>
- <tr class="bg-gray-50">
- <td class="border border-gray-300 px-4 py-3 font-bold">BRVM Composite</td>
- <td class="border border-gray-300 px-4 py-3">Indice mesurant la performance de toutes les sociétés cotées.</td>
- </tr>
- <tr class="bg-white">
- <td class="border border-gray-300 px-4 py-3 font-bold">IPO (Initial Public Offering)</td>
- <td class="border border-gray-300 px-4 py-3">Introduction en bourse — première vente d'actions au public.</td>
- </tr>
- <tr class="bg-gray-50">
- <td class="border border-gray-300 px-4 py-3 font-bold">Marché primaire</td>
- <td class="border border-gray-300 px-4 py-3">Marché où sont émis les nouveaux titres financiers.</td>
- </tr>
- <tr class="bg-white">
- <td class="border border-gray-300 px-4 py-3 font-bold">Marché secondaire</td>
- <td class="border border-gray-300 px-4 py-3">Marché où les titres déjà émis s'échangent entre investisseurs.</td>
- </tr>
- <tr class="bg-gray-50">
- <td class="border border-gray-300 px-4 py-3 font-bold">SGI</td>
- <td class="border border-gray-300 px-4 py-3">Société de Gestion et d'Intermédiation, intermédiaire agréé pour acheter/vendre des titres.</td>
- </tr>
- </tbody>
- </table>
- </div>
-
- <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-xl">
- <h3 class="text-xl font-bold mb-3">🧭 Prochaine étape</h3>
- <p class="text-base mb-3 leading-relaxed">Vous avez maintenant compris le rôle des marchés financiers et de la BRVM dans notre économie.</p>
- <p class="text-lg font-bold leading-relaxed">👉 Prochaine leçon : Module 2 — Les Acteurs du Jeu : Qui fait quoi sur le marché ?</p>
- </div>
- </div>
- `,
- });
-
- // =====================================
- // === M2 : LES ACTEURS DU JEU ===
- // =====================================
- 
-await createOrUpdateModule({
- title: "Les Acteurs du Jeu – Qui fait quoi sur le marché ?",
- slug: "acteurs-du-jeu", 
- description:
- "Comprenez les rôles des SGI, AMF-UMOA, DC/BR, BCEAO et des entreprises cotées, et voyez comment vos ordres circulent dans le marché.",
- difficulty_level: "debutant",
- content_type: "article",
- duration_minutes: 18,
- order_index: 2,
- is_published: true,
- content: `
+  await connectPrismaDatabase();
+  console.log("Démarrage de l'insertion/mise à jour des 16 modules d'apprentissage...");
+
+  // ===================================
+  // === M0 : PRÊT POUR LE DÉCOLLAGE ===
+  // ===================================
+  await createOrUpdateModule({
+    title: "Prêt pour le décollage? (Mindset)",
+    slug: 'pret-decollage',
+    description: "Adoptez le bon état d'esprit et comprenez pourquoi la BRVM est une opportunité unique.",
+    difficulty_level: 'debutant',
+    content_type: 'article',
+    duration_minutes: 5,
+    order_index: 0,
+    is_published: true,
+    content: `
+<div class="citation-box">
+  <p>"L'investissement, c'est le pont entre votre présent et votre futur."</p>
+</div>
+
+<div class="objectif-hero">
+  <h2>🎯 Objectif pédagogique</h2>
+  <p>À la fin de ce module, vous :</p>
+  <ul>
+    <li>Adopterez le bon état d'esprit d'investisseur à long terme.</li>
+    <li>Comprendrez pourquoi la BRVM représente une opportunité unique pour les Africains.</li>
+    <li>Connaîtrez la structure complète du parcours de formation.</li>
+    <li>Serez capables de distinguer un investisseur d'un spéculateur.</li>
+  </ul>
+</div>
+
+<div class="section-blue">
+  <h2>🪶 0.1 – Bienvenue dans l'Académie : Notre mission pour vous</h2>
+
+  <p>Bienvenue dans l'<strong>Académie AfriBourse</strong>,</p>
+
+  <p>Un espace pensé pour vous — l'épargnant, l'entrepreneur, le jeune professionnel — qui souhaite faire travailler son argent plutôt que de le laisser dormir.</p>
+
+  <div class="warning-box">
+    <h3>⚠️ Constat de départ : L'épargne seule ne suffit plus</h3>
+    <p>L'inflation grignote la valeur de votre argent au fil du temps.</p>
+  </div>
+
+  <p>Notre mission est simple : <strong>transformer votre épargne en capital actif</strong>, grâce à une connaissance claire, à des outils accessibles, et à une pédagogie ancrée dans la réalité africaine.</p>
+
+  <div class="key-points-box">
+    <h3>💎 Chez AfriBourse, nous croyons que :</h3>
+    <ul>
+      <li>La connaissance est la clé de la confiance.</li>
+      <li>La discipline est la clé de la réussite financière.</li>
+      <li>Chaque Africain mérite une part du développement économique de son continent.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-green">
+  <h2>🌍 0.2 – La Bourse, un moteur pour nos économies africaines</h2>
+
+  <p>Investir à la BRVM, ce n'est pas seulement chercher un rendement — c'est <strong>participer activement à la construction économique de l'Afrique de l'Ouest</strong>.</p>
+
+  <p>Chaque action achetée, chaque entreprise soutenue, contribue à :</p>
+
+  <ul>
+    <li>Financer la croissance de sociétés locales.</li>
+    <li>Créer des emplois et soutenir l'innovation.</li>
+    <li>Répartir la richesse de manière plus équitable entre citoyens et investisseurs.</li>
+  </ul>
+
+  <blockquote>💬 "Quand un Africain investit dans une entreprise africaine, il investit dans le futur de son peuple."</blockquote>
+
+  <div class="analogy-box">
+    <h3>⚓ L'analogie à retenir : le piroguier prudent</h3>
+    <p>Imaginez votre richesse comme une <strong>pirogue</strong>.</p>
+    <p>Le piroguier prudent ne se lance pas sans :</p>
+    <ul>
+      <li>Vérifier la météo (analyse du marché)</li>
+      <li>Préparer son équipage (formation)</li>
+      <li>Définir une destination (objectifs financiers)</li>
+    </ul>
+    <p>Sur la mer de l'investissement, les vagues représentent la volatilité.</p>
+    <p>Mais celui qui a un cap, un plan et de la patience <strong>arrive toujours au rivage</strong>.</p>
+    <p><strong>💡 La bourse, ce n'est pas un sprint — c'est une navigation.</strong></p>
+  </div>
+</div>
+
+<div class="section-purple">
+  <h2>🗺️ 0.3 – Présentation du parcours : votre feuille de route vers l'autonomie</h2>
+
+  <p>Voici comment se déroule votre voyage au sein de l'<strong>Académie AfriBourse</strong> 👇</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Étape</th>
+        <th>Objectif</th>
+        <th>Modules</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>🧠 Mindset</strong></td>
+        <td>Poser les bases mentales et émotionnelles de l'investisseur</td>
+        <td>M0, M5</td>
+      </tr>
+      <tr>
+        <td><strong>⚙️ Fondations</strong></td>
+        <td>Comprendre les marchés, les acteurs et les instruments</td>
+        <td>M1 à M4</td>
+      </tr>
+      <tr>
+        <td><strong>🔍 Analyse & Stratégie</strong></td>
+        <td>Maîtriser l'analyse fondamentale et technique</td>
+        <td>M6 à M10</td>
+      </tr>
+      <tr>
+        <td><strong>💼 Action & Gestion</strong></td>
+        <td>Construire, exécuter et suivre son portefeuille</td>
+        <td>M11 à M16</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="key-points-box">
+    <h3>🎯 À la fin du parcours, vous serez capable de :</h3>
+    <ul>
+      <li>Analyser une entreprise cotée à la BRVM</li>
+      <li>Identifier le bon moment pour investir</li>
+      <li>Construire un portefeuille cohérent et rentable</li>
+      <li>Investir avec confiance et méthode</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-orange">
+  <h2>💥 0.4 – Brisons les mythes : Investisseur vs Spéculateur</h2>
+
+  <div class="example-box">
+    <h3>❌ Mythe 1 : "Il faut être riche pour investir"</h3>
+    <p><strong>FAUX.</strong></p>
+    <p>À la BRVM, vous pouvez commencer avec de petites sommes régulières.</p>
+    <p><strong>Le plus important n'est pas le capital de départ, mais le temps et la constance.</strong></p>
+    <blockquote>💬 "Le meilleur moment pour planter un arbre était il y a 20 ans. Le deuxième meilleur moment, c'est aujourd'hui." – Proverbe africain</blockquote>
+  </div>
+
+  <div class="example-box">
+    <h3>❌ Mythe 2 : "La Bourse, c'est un casino"</h3>
+    <p><strong>NON, ce n'est pas un jeu de hasard.</strong></p>
+    <p>La <strong>spéculation</strong> repose sur les émotions et les paris à court terme.</p>
+    <p>L'<strong>investissement</strong> repose sur l'analyse, la patience et la vision long terme.</p>
+    <blockquote>💡 "The individual investor should act consistently as an investor and not as a speculator." — Benjamin Graham, mentor de Warren Buffett</blockquote>
+    <p><strong>En clair :</strong></p>
+    <p>L'<strong>investisseur</strong> achète une part d'entreprise pour en partager la réussite.</p>
+    <p>Le <strong>spéculateur</strong> parie sur une fluctuation de prix.</p>
+    <p><strong>🎯 À la BRVM, nous formons des investisseurs — pas des parieurs.</strong></p>
+  </div>
+</div>
+
+<div class="glossary-box">
+  <h2>🧩 Les termes à maîtriser</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Terme</th>
+        <th>Définition simple</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>BRVM</strong></td>
+        <td>Bourse Régionale des Valeurs Mobilières : le marché commun de 8 pays de l'UEMOA.</td>
+      </tr>
+      <tr>
+        <td><strong>Investisseur</strong></td>
+        <td>Personne qui place son argent dans des actifs pour générer un rendement à long terme.</td>
+      </tr>
+      <tr>
+        <td><strong>Spéculateur</strong></td>
+        <td>Personne qui achète et revend à court terme pour profiter de variations de prix.</td>
+      </tr>
+      <tr>
+        <td><strong>Volatilité</strong></td>
+        <td>Variation (montée et descente) du prix d'un actif sur une période donnée.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="cta-box">
+  <h3>🚀 Prochaine étape</h3>
+  <p>Vous avez préparé votre esprit, compris la vision, et brisé les mythes.</p>
+  <p><strong>👉 Passez maintenant au Module 1 : Les Fondations – Qu'est-ce que la Bourse et la BRVM ?</strong></p>
+  <p><em>C'est ici que commence votre apprentissage concret du marché financier africain.</em></p>
+</div>
+        `,
+  });
+
+  // ==============================================
+  // === M1 : LES FONDATIONS - BOURSE ET BRVM ===
+  // ==============================================
+  await createOrUpdateModule({
+    title: "Les Fondations — Qu'est-ce que la Bourse et la BRVM ?",
+    slug: 'fondations-bourse-brvm',
+    description: "Comprenez le rôle unique de la BRVM et distinguez clairement le marché primaire du marché secondaire.",
+    difficulty_level: 'debutant',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 1,
+    is_published: true,
+    content: `
+<div class="slide" data-slide="1">
+  <div class="objectif-hero">
+    <h2>🎯 Objectif Pédagogique</h2>
+    <p>À la fin de ce module, vous serez capable :</p>
+    <ul>
+      <li>D'expliquer ce qu'est un marché financier et à quoi il sert</li>
+      <li>De comprendre le rôle unique de la BRVM dans l'économie de la zone UEMOA</li>
+      <li>De distinguer clairement le marché primaire du marché secondaire</li>
+      <li>De comprendre pourquoi et comment une entreprise choisit d'entrer en bourse</li>
+    </ul>
+  </div>
+</div>
+
+<div class="slide" data-slide="2">
+  <div class="section-blue">
+    <h2>🧩 1.1 Qu'est-ce qu'un marché financier ?</h2>
+
+    <p>Un marché financier est un espace — physique ou digital — où l'argent rencontre les opportunités.</p>
+
+    <p>C'est là que se rencontrent :</p>
+    <ul>
+      <li>Ceux qui ont de l'argent à placer (investisseurs)</li>
+      <li>Ceux qui ont besoin d'argent pour financer leurs projets (entreprises ou États)</li>
+    </ul>
+
+    <p>Sur ces marchés, on ne vend pas des produits physiques, mais des titres financiers :</p>
+    <ul>
+      <li>Les <strong>actions</strong> (parts de propriété dans une entreprise)</li>
+      <li>Les <strong>obligations</strong> (prêts faits à une entreprise ou à un État)</li>
+    </ul>
+
+    <div class="analogy-box">
+      <h3>🪶 L'analogie à retenir : Le Grand Marché de la Ville</h3>
+      <p>Imaginez le grand marché central de votre ville :</p>
+      <ul>
+        <li>Dans une zone, les producteurs viennent vendre leurs produits frais pour la première fois (🍍 marché primaire)</li>
+        <li>Dans une autre zone, les commerçants revendent des produits déjà achetés (🍊 marché secondaire)</li>
+      </ul>
+      <p><strong>👉 La BRVM joue le rôle de ce grand marché financier, mais avec des règles claires, un système sécurisé, et une surveillance stricte pour protéger tous les participants.</strong></p>
+    </div>
+
+    <h3>📊 Pourquoi les marchés financiers sont essentiels</h3>
+    <p>Ils remplissent trois grandes fonctions :</p>
+    <ol>
+      <li><strong>Canaliser l'épargne vers l'investissement productif</strong> — Votre argent finance des projets réels : usines, routes, innovations.</li>
+      <li><strong>Faciliter la liquidité</strong> — Vous pouvez revendre vos titres à tout moment.</li>
+      <li><strong>Rendre l'économie plus transparente</strong> — Les entreprises cotées publient leurs résultats, ce qui permet de suivre leur performance.</li>
+    </ol>
+  </div>
+</div>
+
+<div class="slide" data-slide="3">
+  <div class="section-green">
+    <h2>🏛️ 1.2 Le rôle et le fonctionnement de la BRVM</h2>
+
+    <h3>🌍 Une bourse régionale unique au monde</h3>
+    <p>La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA) :</p>
+    <p>🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
+    <p>Elle a été créée en 1998, avec son siège à Abidjan (Côte d'Ivoire), et son dépositaire central, le DC/BR, à Cotonou (Bénin).</p>
+
+    <h3>⚙️ Son fonctionnement</h3>
+    <ul>
+      <li>Les entreprises qui souhaitent lever des fonds émettent des titres (actions ou obligations)</li>
+      <li>Les investisseurs achètent et vendent ces titres via des Sociétés de Gestion et d'Intermédiation (SGI), qui sont les courtiers agréés</li>
+      <li>Le régulateur, le CREPMF, veille au respect des règles de transparence et de protection des investisseurs</li>
+    </ul>
+
+    <h3>📈 Les indices phares</h3>
+    <ul>
+      <li><strong>BRVM Composite</strong> : suit l'ensemble des sociétés cotées</li>
+      <li><strong>BRVM 10</strong> : regroupe les 10 entreprises les plus liquides et les plus importantes</li>
+    </ul>
+    <p><em>Quand on dit « la BRVM a progressé de 2 % aujourd'hui », cela signifie que, globalement, les valeurs cotées ont pris de la valeur.</em></p>
+
+    <div class="key-points-box">
+      <h3>💡 À retenir</h3>
+      <p>La BRVM permet :</p>
+      <ul>
+        <li>Aux entreprises de se financer localement sans dépendre uniquement des banques</li>
+        <li>Aux investisseurs de faire fructifier leur capital</li>
+        <li>Et à nos économies africaines de croître de manière inclusive et transparente</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="slide" data-slide="4">
+  <div class="section-purple">
+    <h2>🔁 1.3 Marché primaire vs marché secondaire</h2>
+    <p>Comprendre cette distinction est fondamental :</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Type de marché</th>
+          <th>Description</th>
+          <th>À qui va l'argent ?</th>
+          <th>Exemple concret</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Marché primaire</strong></td>
+          <td>Les titres sont émis et vendus pour la première fois.</td>
+          <td>Directement à l'entreprise ou à l'État.</td>
+          <td>Une société comme NSIA Banque émet de nouvelles actions pour financer son expansion.</td>
+        </tr>
+        <tr>
+          <td><strong>Marché secondaire</strong></td>
+          <td>Les titres déjà émis sont échangés entre investisseurs.</td>
+          <td>L'argent circule entre investisseurs, pas vers l'entreprise.</td>
+          <td>Vous achetez des actions Sonatel à un autre investisseur via votre SGI.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="key-points-box">
+      <h3>🎯 À retenir</h3>
+      <p><strong>Votre terrain de jeu principal, en tant qu'investisseur particulier, est le marché secondaire</strong>, car c'est là que vous pourrez acheter ou revendre vos titres.</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" data-slide="5">
+  <div class="section-orange">
+    <h2>🚀 1.4 Comment et pourquoi une entreprise entre en bourse (IPO)</h2>
+
+    <h3>💰 Pourquoi entrer en bourse ?</h3>
+    <p>Une entreprise décide de s'introduire en bourse (faire une IPO – Initial Public Offering) pour :</p>
+    <ol>
+      <li>Lever des capitaux sans contracter de dettes bancaires</li>
+      <li>Améliorer sa visibilité et sa crédibilité auprès des investisseurs, partenaires et clients</li>
+      <li>Permettre à ses premiers actionnaires (fondateurs, fonds, salariés) de revendre une partie de leurs actions</li>
+      <li>Diversifier ses sources de financement et accéder à un marché de capitaux plus large</li>
+    </ol>
+
+    <h3>⚙️ Comment cela se passe ?</h3>
+    <ol>
+      <li>L'entreprise prépare ses états financiers et un prospectus approuvé par le CREPMF</li>
+      <li>Elle choisit une SGI pour la conseiller et placer ses titres</li>
+      <li>Les investisseurs souscrivent aux actions pendant la période d'offre publique</li>
+      <li>Une fois les titres émis, l'entreprise devient cotée et ses actions sont échangées sur le marché secondaire</li>
+    </ol>
+
+    <div class="example-box">
+      <h3>🎯 Exemple africain</h3>
+      <p>L'introduction en bourse de Orange Côte d'Ivoire (2022) a permis :</p>
+      <ul>
+        <li>À l'entreprise de lever plusieurs dizaines de milliards FCFA</li>
+        <li>Aux citoyens ivoiriens de devenir actionnaires d'un acteur majeur du pays</li>
+        <li>Et à la BRVM d'attirer de nouveaux investisseurs régionaux</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="slide" data-slide="6">
+  <div class="glossary-box">
+    <h2>🧠 Les termes à maîtriser</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Terme</th>
+          <th>Définition</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>BRVM</strong></td>
+          <td>Bourse Régionale des Valeurs Mobilières, marché commun de l'UEMOA.</td>
+        </tr>
+        <tr>
+          <td><strong>BRVM Composite</strong></td>
+          <td>Indice mesurant la performance de toutes les sociétés cotées.</td>
+        </tr>
+        <tr>
+          <td><strong>IPO (Initial Public Offering)</strong></td>
+          <td>Introduction en bourse — première vente d'actions au public.</td>
+        </tr>
+        <tr>
+          <td><strong>Marché primaire</strong></td>
+          <td>Marché où sont émis les nouveaux titres financiers.</td>
+        </tr>
+        <tr>
+          <td><strong>Marché secondaire</strong></td>
+          <td>Marché où les titres déjà émis s'échangent entre investisseurs.</td>
+        </tr>
+        <tr>
+          <td><strong>SGI</strong></td>
+          <td>Société de Gestion et d'Intermédiation, intermédiaire agréé pour acheter/vendre des titres.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cta-box">
+    <h3>🧭 Prochaine étape</h3>
+    <p>Vous avez maintenant compris le rôle des marchés financiers et de la BRVM dans notre économie.</p>
+    <p><strong>👉 Prochaine leçon : Module 2 — Les Acteurs du Jeu : Qui fait quoi sur le marché ?</strong></p>
+  </div>
+</div>
+    `,
+  });
+
+  // =====================================
+  // === M2 : LES ACTEURS DU JEU ===
+  // =====================================
+
+  await createOrUpdateModule({
+    title: "Les Acteurs du Jeu – Qui fait quoi sur le marché ?",
+    slug: "acteurs-du-jeu",
+    description:
+      "Comprenez les rôles des SGI, AMF-UMOA, DC/BR, BCEAO et des entreprises cotées, et voyez comment vos ordres circulent dans le marché.",
+    difficulty_level: "debutant",
+    content_type: "article",
+    duration_minutes: 18,
+    order_index: 2,
+    is_published: true,
+    content: `
  <div class="space-y-8">
  <div class="bg-gradient-to-r from-green-600 to-emerald-700 text-white p-8 rounded-xl">
  <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
@@ -792,21 +781,21 @@ await createOrUpdateModule({
  <p class="text-lg font-bold leading-relaxed">👉 Prochaine leçon : Module 3 — Les Outils de l'Investisseur : Actions, Obligations et OPCVM</p>
  </div>
  `,
-});
+  });
 
- // ==================================================
- // === M3 : LES OUTILS DE L'INVESTISSEUR ===
- // ==================================================
- await createOrUpdateModule({
- title: "Les Outils de l’Investisseur — Les Instruments Financiers de la BRVM",
- slug: 'outils-investisseur',
- description:"Découvrez les principaux instruments financiers de la BRVM : actions, obligations, OPCVM, ETF. Comprenez leur fonctionnement, leurs risques et comment les choisir en fonction de votre profil.",
- difficulty_level: "debutant",
- content_type: "article",
- duration_minutes: 25,
- order_index: 3,
- is_published: true,
- content: `
+  // ==================================================
+  // === M3 : LES OUTILS DE L'INVESTISSEUR ===
+  // ==================================================
+  await createOrUpdateModule({
+    title: "Les Outils de l’Investisseur — Les Instruments Financiers de la BRVM",
+    slug: 'outils-investisseur',
+    description: "Découvrez les principaux instruments financiers de la BRVM : actions, obligations, OPCVM, ETF. Comprenez leur fonctionnement, leurs risques et comment les choisir en fonction de votre profil.",
+    difficulty_level: "debutant",
+    content_type: "article",
+    duration_minutes: 25,
+    order_index: 3,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-purple-600 to-violet-700 text-white p-8 rounded-2xl shadow-lg">
@@ -1047,22 +1036,22 @@ await createOrUpdateModule({
 
  </div>
 `,
- });
+  });
 
- // ==================================================
- // === M4 : LE TEMPS, Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement ===
- // ==================================================
- await createOrUpdateModule({
- title: "Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement",
- slug: 'le-temps-meilleur-allie',
- description:
- "Découvrez les actifs financiers avancés, émergents ou innovants : immobilier coté, finance islamique, produits structurés et ETF. Comprenez leurs mécanismes, risques et potentiel dans l’UEMOA.",
- difficulty_level: "intermediaire",
- content_type: "article",
- duration_minutes: 25,
- order_index: 4,
- is_published: true,
-content: `
+  // ==================================================
+  // === M4 : LE TEMPS, Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement ===
+  // ==================================================
+  await createOrUpdateModule({
+    title: "Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement",
+    slug: 'le-temps-meilleur-allie',
+    description:
+      "Découvrez les actifs financiers avancés, émergents ou innovants : immobilier coté, finance islamique, produits structurés et ETF. Comprenez leurs mécanismes, risques et potentiel dans l’UEMOA.",
+    difficulty_level: "intermediaire",
+    content_type: "article",
+    duration_minutes: 25,
+    order_index: 4,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-orange-600 to-amber-700 text-white p-8 rounded-2xl shadow-lg">
@@ -1292,21 +1281,21 @@ content: `
 
  </div>
 `,
- });
+  });
 
- // ================================================
- // === M5 : Le Temps, Votre Meilleur Allié — Définir ses Objectifs et son Horizon ===
- // ================================================
- await createOrUpdateModule({
- title: "Le Temps, Votre Meilleur Allié — Définir ses Objectifs et son Horizon",
- slug: 'mental-du-gagnant',
- description: "Maîtrisez vos émotions, comprenez les intérêts composés et différencier les grandes stratégies d'investissement.",
- difficulty_level: 'debutant',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 5,
- is_published: true,
- content: `
+  // ================================================
+  // === M5 : Le Temps, Votre Meilleur Allié — Définir ses Objectifs et son Horizon ===
+  // ================================================
+  await createOrUpdateModule({
+    title: "Le Temps, Votre Meilleur Allié — Définir ses Objectifs et son Horizon",
+    slug: 'mental-du-gagnant',
+    description: "Maîtrisez vos émotions, comprenez les intérêts composés et différencier les grandes stratégies d'investissement.",
+    difficulty_level: 'debutant',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 5,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-8 rounded-2xl shadow-lg">
@@ -1560,21 +1549,21 @@ content: `
 
  </div>
 `,
- });
+  });
 
- // =======================================================
- // === M6 : Le Mental du Gagnant – Psychologie d’Investissement ===
- // =======================================================
- await createOrUpdateModule({
- title: "Le Mental du Gagnant – Psychologie d’Investissement",
- slug: 'analyse-fondamentale',
- description: "Maîtrisez vos émotions, comprenez les intérêts composés et différencier les grandes stratégies d'investissement.",
- difficulty_level: 'Debutant',
- content_type: 'article',
- duration_minutes: 20,
- order_index: 6,
- is_published: true,
- content: `
+  // =======================================================
+  // === M6 : Le Mental du Gagnant – Psychologie d’Investissement ===
+  // =======================================================
+  await createOrUpdateModule({
+    title: "Le Mental du Gagnant – Psychologie d’Investissement",
+    slug: 'analyse-fondamentale',
+    description: "Maîtrisez vos émotions, comprenez les intérêts composés et différencier les grandes stratégies d'investissement.",
+    difficulty_level: 'Debutant',
+    content_type: 'article',
+    duration_minutes: 20,
+    order_index: 6,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-lg">
@@ -1788,21 +1777,21 @@ content: `
 
  </div>
 `,
- });
+  });
 
- // ====================================================
- // === M7 : Analyse Fondamentale – Devenir un Analyste Éclairé ===
- // ====================================================
- await createOrUpdateModule({
- title: ": Analyse Fondamentale – Devenir un Analyste Éclairé",
- slug: 'analyse-technique',
- description: "Décodez l'information des graphiques (chandeliers), identifiez les tendances et les niveaux psychologiques (Support et Résistance).",
- difficulty_level: 'intermediaire',
- content_type: 'article',
- duration_minutes: 20,
- order_index: 7,
- is_published: true,
- content: `
+  // ====================================================
+  // === M7 : Analyse Fondamentale – Devenir un Analyste Éclairé ===
+  // ====================================================
+  await createOrUpdateModule({
+    title: ": Analyse Fondamentale – Devenir un Analyste Éclairé",
+    slug: 'analyse-technique',
+    description: "Décodez l'information des graphiques (chandeliers), identifiez les tendances et les niveaux psychologiques (Support et Résistance).",
+    difficulty_level: 'intermediaire',
+    content_type: 'article',
+    duration_minutes: 20,
+    order_index: 7,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-emerald-700 to-teal-800 text-white p-8 rounded-2xl shadow-lg">
@@ -1990,21 +1979,21 @@ content: `
 
  </div>
 `,
- });
+  });
 
- // ====================================================
- // === M8 : L’Évaluation d’Entreprise – Projeter l’Avenir (Valorisation Avancée) ===
- // ====================================================
- await createOrUpdateModule({
- title: "L’Évaluation d’Entreprise – Projeter l’Avenir (Valorisation Avancée)",
- slug: 'construire-portefeuille',
- description: "Comprenez et appliquez la diversification (sectorielle, d'actifs) et saurez comment l'allocation d'actifs réduit le risque global de votre portefeuille.",
- difficulty_level: 'intermediaire',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 8,
- is_published: true,
- content: `
+  // ====================================================
+  // === M8 : L’Évaluation d’Entreprise – Projeter l’Avenir (Valorisation Avancée) ===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "L’Évaluation d’Entreprise – Projeter l’Avenir (Valorisation Avancée)",
+    slug: 'construire-portefeuille',
+    description: "Comprenez et appliquez la diversification (sectorielle, d'actifs) et saurez comment l'allocation d'actifs réduit le risque global de votre portefeuille.",
+    difficulty_level: 'intermediaire',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 8,
+    is_published: true,
+    content: `
  <div class="space-y-8">
  <div class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-8 rounded-xl">
  <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
@@ -2172,21 +2161,21 @@ content: `
  </div>
  </div>
  `,
- });
+  });
 
- // ====================================================
- // === M9 : L’Analyse Extra-Financière – Comprendre le Contexte===
- // ====================================================
- await createOrUpdateModule({
- title: "L’Analyse Extra-Financière – Comprendre le Contexte",
- slug: 'contexte-economique',
- description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
- difficulty_level: 'intermediaire',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 9,
- is_published: true,
- content: `
+  // ====================================================
+  // === M9 : L’Analyse Extra-Financière – Comprendre le Contexte===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "L’Analyse Extra-Financière – Comprendre le Contexte",
+    slug: 'contexte-economique',
+    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    difficulty_level: 'intermediaire',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 9,
+    is_published: true,
+    content: `
  <h2>9.1 Analyse Qualitative : Le cerveau de l’entreprise</h2>
 <p>L’analyse qualitative répond à une question simple : <strong>l’entreprise est-elle bien gérée, bien positionnée et son modèle est-il durable ?</strong> 
 C’est l’étape où l’on lit enfin le rapport annuel… mais pour le texte, pas pour les chiffres.</p>
@@ -2296,21 +2285,21 @@ L’atelier propose une analyse complète d’une entreprise BRVM (ex : Sonatel,
 Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la gestion du risque</strong>.</p>
 
  `,
- });
+  });
 
- // ====================================================
- // === M10 : L’Art du Timing – Analyse Technique et Lecture du Marché ===
- // ====================================================
- await createOrUpdateModule({
- title: "L’Art du Timing – Analyse Technique et Lecture du Marché",
- slug: 'passage-a-l-action',
- description: "Soyez 100% autonome pour choisir sa SGI, ouvrir son compte, passer ses premiers ordres d'achat, et comprendre les implications fiscales de son investissement à la BRVM.",
- difficulty_level: 'avance',
- content_type: 'article',
- duration_minutes: 20,
- order_index: 10,
- is_published: true,
- content: `
+  // ====================================================
+  // === M10 : L’Art du Timing – Analyse Technique et Lecture du Marché ===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "L’Art du Timing – Analyse Technique et Lecture du Marché",
+    slug: 'passage-a-l-action',
+    description: "Soyez 100% autonome pour choisir sa SGI, ouvrir son compte, passer ses premiers ordres d'achat, et comprendre les implications fiscales de son investissement à la BRVM.",
+    difficulty_level: 'avance',
+    content_type: 'article',
+    duration_minutes: 20,
+    order_index: 10,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 rounded-2xl shadow-lg">
@@ -2559,22 +2548,23 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
  </div>
 
  </div>
-`, });
+`,
+  });
 
 
- // ====================================================
- // === M11 : Maîtrise du Risque et Gestion de Portefeuille===
- // ====================================================
- await createOrUpdateModule({
- title: "Maîtrise du Risque et Gestion de Portefeuille",
- slug: 'Maîtrise-du-Risque',
- description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
- difficulty_level: 'avance',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 11,
- is_published: true,
- content: `
+  // ====================================================
+  // === M11 : Maîtrise du Risque et Gestion de Portefeuille===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "Maîtrise du Risque et Gestion de Portefeuille",
+    slug: 'Maîtrise-du-Risque',
+    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    difficulty_level: 'avance',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 11,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-slate-700 to-green-800 text-white p-8 rounded-2xl shadow-lg">
@@ -2760,22 +2750,22 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
 
  </div>
 `,
- });
+  });
 
- 
- // ====================================================
- // === M12 : L’Art de l’Architecte – Gestion Avancée du Risque===
- // ====================================================
- await createOrUpdateModule({
- title: "L'Art de l'Architecte – Gestion Avancée du Risque",
- slug: 'Architecte-du-Risque',
- description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
- difficulty_level: 'avance',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 12,
- is_published: true,
- content: `
+
+  // ====================================================
+  // === M12 : L’Art de l’Architecte – Gestion Avancée du Risque===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "L'Art de l'Architecte – Gestion Avancée du Risque",
+    slug: 'Architecte-du-Risque',
+    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    difficulty_level: 'avance',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 12,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-gray-900 to-slate-700 text-white p-8 rounded-2xl shadow-xl">
@@ -2943,22 +2933,22 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
 
  </div>
 `,
- });
+  });
 
- 
- // ====================================================
- // === M13 : Outils, Actualités et Fiscalité===
- // ====================================================
- await createOrUpdateModule({
- title: "Outils, Actualités et Fiscalité",
- slug: 'outils-actualites-fiscalite',
- description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
- difficulty_level: 'intermediaire',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 13,
- is_published: true,
- content: `
+
+  // ====================================================
+  // === M13 : Outils, Actualités et Fiscalité===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "Outils, Actualités et Fiscalité",
+    slug: 'outils-actualites-fiscalite',
+    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    difficulty_level: 'intermediaire',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 13,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-orange-700 to-red-800 text-white p-8 rounded-2xl shadow-xl">
@@ -3122,23 +3112,23 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
 
  </div>
 `,
- });
+  });
 
 
- 
- // ====================================================
- // === M14 : Contexte Économique – Sentir le Pouls du Marché UEMOA===
- // ====================================================
- await createOrUpdateModule({
- title: "Contexte Économique – Sentir le Pouls du Marché UEMOA",
- slug: 'contexte-eeconomique',
- description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
- difficulty_level: 'intermediaire',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 14,
- is_published: true,
- content: `
+
+  // ====================================================
+  // === M14 : Contexte Économique – Sentir le Pouls du Marché UEMOA===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "Contexte Économique – Sentir le Pouls du Marché UEMOA",
+    slug: 'contexte-eeconomique',
+    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    difficulty_level: 'intermediaire',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 14,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-blue-900 to-cyan-700 text-white p-8 rounded-2xl shadow-xl">
@@ -3302,23 +3292,23 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
 
  </div>
 `,
- });
+  });
 
 
- 
- // ====================================================
- // === M15 : La Stratégie d’Investissement Intégrée===
- // ====================================================
- await createOrUpdateModule({
- title: "La Stratégie d'Investissement Intégrée",
- slug: 'strat-strat',
- description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
- difficulty_level: 'intermediaire',
- content_type: 'article',
- duration_minutes: 15,
- order_index: 15,
- is_published: true,
- content: `
+
+  // ====================================================
+  // === M15 : La Stratégie d’Investissement Intégrée===
+  // ====================================================
+  await createOrUpdateModule({
+    title: "La Stratégie d'Investissement Intégrée",
+    slug: 'strat-strat',
+    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    difficulty_level: 'intermediaire',
+    content_type: 'article',
+    duration_minutes: 15,
+    order_index: 15,
+    is_published: true,
+    content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
  <div class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-xl">
@@ -3544,15 +3534,15 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
 
  </div>
 `,
- });
+  });
 
 
- console.log("Traitement des modules terminé.");
- await disconnectPrismaDatabase();
+  console.log("Traitement des modules terminé.");
+  await disconnectPrismaDatabase();
 }
 
 main().catch(async (e) => {
- console.error("Erreur fatale dans le script seed:", e);
- await disconnectPrismaDatabase();
- process.exit(1);
+  console.error("Erreur fatale dans le script seed:", e);
+  await disconnectPrismaDatabase();
+  process.exit(1);
 });

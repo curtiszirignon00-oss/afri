@@ -1,22 +1,24 @@
 // src/components/LearnPage.tsx - VERSION CORRIGÉE
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
-  BookOpen,
-  Clock,
-  Award,
-  AlertTriangle,
-  ArrowLeft,
-  CheckCircle,
-  Lock,
-  Volume2,
-  Brain,
-  Target,
-  TrendingUp,
-  Star,
-  XCircle,
-  MessageSquarePlus,
-  HelpCircle,
-  BarChart3
+    BookOpen,
+    Clock,
+    Award,
+    AlertTriangle,
+    ArrowLeft,
+    CheckCircle,
+    Lock,
+    Volume2,
+    Brain,
+    Target,
+    TrendingUp,
+    Star,
+    XCircle,
+    MessageSquarePlus,
+    HelpCircle,
+    BarChart3,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -30,20 +32,20 @@ import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import { LearningModule, LearningProgress } from '../types';
 
 interface QuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation?: string;
+    id: string;
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    explanation?: string;
 }
 
 interface QuizState {
-  isActive: boolean;
-  answers: { [questionId: string]: number };
-  score: number | null;
-  passed: boolean | null;
-  showResults: boolean;
-  detailedResults?: any[];
+    isActive: boolean;
+    answers: { [questionId: string]: number };
+    score: number | null;
+    passed: boolean | null;
+    showResults: boolean;
+    detailedResults?: any[];
 }
 
 export default function LearnPage() {
@@ -56,13 +58,13 @@ export default function LearnPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
-    
+
     const [quizState, setQuizState] = useState<QuizState>({
-      isActive: false,
-      answers: {},
-      score: null,
-      passed: null,
-      showResults: false
+        isActive: false,
+        answers: {},
+        score: null,
+        passed: null,
+        showResults: false
     });
 
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -105,45 +107,45 @@ export default function LearnPage() {
     }, [progress]);
 
     const isModuleUnlocked = useCallback((module: LearningModule): boolean => {
-      if (!module.order_index || module.order_index <= 1) {
-        return true;
-      }
+        if (!module.order_index || module.order_index <= 1) {
+            return true;
+        }
 
-      // Utiliser allModules au lieu de modules pour trouver le module précédent
-      const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
-      if (!previousModule) return true;
+        // Utiliser allModules au lieu de modules pour trouver le module précédent
+        const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
+        if (!previousModule) return true;
 
-      return isModuleCompleted(previousModule.slug);
+        return isModuleCompleted(previousModule.slug);
     }, [allModules, isModuleCompleted]);
 
     const getPreviousIncompleteModule = useCallback((module: LearningModule): LearningModule | null => {
-      if (!module.order_index || module.order_index <= 1) return null;
+        if (!module.order_index || module.order_index <= 1) return null;
 
-      // Utiliser allModules au lieu de modules pour trouver le module précédent
-      const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
-      if (!previousModule) return null;
+        // Utiliser allModules au lieu de modules pour trouver le module précédent
+        const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
+        if (!previousModule) return null;
 
-      return isModuleCompleted(previousModule.slug) ? null : previousModule;
+        return isModuleCompleted(previousModule.slug) ? null : previousModule;
     }, [allModules, isModuleCompleted]);
 
     const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
-      setQuizLoading(true);
-      try {
-        const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
-        if (!response.ok) {
-          throw new Error('Impossible de charger le quiz');
-        }
-        const quizData = await response.json();
+        setQuizLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
+            if (!response.ok) {
+                throw new Error('Impossible de charger le quiz');
+            }
+            const quizData = await response.json();
 
-        setQuizQuestions(quizData.questions || []);
-        setQuizPassingScore(quizData.passing_score || 70);
-      } catch (error) {
-        console.error('Erreur lors du chargement du quiz:', error);
-        toast.error('Impossible de charger le quiz');
-        setQuizQuestions([]);
-      } finally {
-        setQuizLoading(false);
-      }
+            setQuizQuestions(quizData.questions || []);
+            setQuizPassingScore(quizData.passing_score || 70);
+        } catch (error) {
+            console.error('Erreur lors du chargement du quiz:', error);
+            toast.error('Impossible de charger le quiz');
+            setQuizQuestions([]);
+        } finally {
+            setQuizLoading(false);
+        }
     }, []);
 
     // --- Logique de Chargement (Modules + Progression) ---
@@ -199,20 +201,33 @@ export default function LearnPage() {
     useEffect(() => {
         if (!selectedModule) return;
 
-        const slideElements = document.querySelectorAll('.slide[data-slide]');
-        const count = slideElements.length;
-        setTotalSlides(count > 0 ? count : 1);
+        // Attendre que le DOM soit mis à jour après le rendu de dangerouslySetInnerHTML
+        const timeoutId = setTimeout(() => {
+            const moduleContent = document.querySelector('.module-content');
+            const slideElements = moduleContent?.querySelectorAll('.slide[data-slide]') || [];
+            const count = slideElements.length;
 
-        slideElements.forEach(slide => {
-            (slide as HTMLElement).style.display = 'none';
-        });
+            console.log('[Slides Debug] Module:', selectedModule.slug);
+            console.log('[Slides Debug] Content preview:', selectedModule.content?.substring(0, 200));
+            console.log('[Slides Debug] Slides found:', count);
 
-        const currentSlideElement = document.querySelector(`.slide[data-slide="${currentSlide}"]`);
-        if (currentSlideElement) {
-            (currentSlideElement as HTMLElement).style.display = 'block';
-        }
+            setTotalSlides(count > 0 ? count : 1);
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (count > 0) {
+                slideElements.forEach(slide => {
+                    (slide as HTMLElement).style.display = 'none';
+                });
+
+                const currentSlideElement = moduleContent?.querySelector(`.slide[data-slide="${currentSlide}"]`);
+                if (currentSlideElement) {
+                    (currentSlideElement as HTMLElement).style.display = 'block';
+                }
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 150);
+
+        return () => clearTimeout(timeoutId);
     }, [selectedModule, currentSlide]);
 
     useEffect(() => {
@@ -238,192 +253,192 @@ export default function LearnPage() {
     }, [selectedModule]);
 
     const startQuiz = useCallback(() => {
-      if (!isLoggedIn) {
-        toast.error("Connectez-vous pour passer le quiz.");
-        return;
-      }
+        if (!isLoggedIn) {
+            toast.error("Connectez-vous pour passer le quiz.");
+            return;
+        }
 
-      // Track le début du quiz
-      if (selectedModule) {
-        trackAction(ACTION_TYPES.TAKE_QUIZ, 'Début du quiz', {
-          moduleSlug: selectedModule.slug,
-          moduleTitle: selectedModule.title,
-          moduleLevel: selectedModule.difficulty_level
+        // Track le début du quiz
+        if (selectedModule) {
+            trackAction(ACTION_TYPES.TAKE_QUIZ, 'Début du quiz', {
+                moduleSlug: selectedModule.slug,
+                moduleTitle: selectedModule.title,
+                moduleLevel: selectedModule.difficulty_level
+            });
+        }
+
+        setQuizState({
+            isActive: true,
+            answers: {},
+            score: null,
+            passed: null,
+            showResults: false,
+            detailedResults: []
         });
-      }
 
-      setQuizState({
-        isActive: true,
-        answers: {},
-        score: null,
-        passed: null,
-        showResults: false,
-        detailedResults: []
-      });
-
-      setTimeout(() => {
-        document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+        setTimeout(() => {
+            document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
     }, [isLoggedIn, selectedModule, trackAction]);
 
     const answerQuestion = useCallback((answerIndex: number) => {
-      const currentIndex = Object.keys(quizState.answers).length;
-      const currentQuestionId = quizQuestions[currentIndex]?.id;
+        const currentIndex = Object.keys(quizState.answers).length;
+        const currentQuestionId = quizQuestions[currentIndex]?.id;
 
-      if (!currentQuestionId) {
-        console.error('ID de question manquant');
-        return;
-      }
-
-      setQuizState(prev => ({
-        ...prev,
-        answers: {
-          ...prev.answers,
-          [currentQuestionId]: answerIndex
+        if (!currentQuestionId) {
+            console.error('ID de question manquant');
+            return;
         }
-      }));
+
+        setQuizState(prev => ({
+            ...prev,
+            answers: {
+                ...prev.answers,
+                [currentQuestionId]: answerIndex
+            }
+        }));
     }, [quizQuestions, quizState.answers]);
 
     const submitQuiz = useCallback(async () => {
-      if (!selectedModule) return;
+        if (!selectedModule) return;
 
-      const toastId = toast.loading('Validation du quiz en cours...');
+        const toastId = toast.loading('Validation du quiz en cours...');
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include',
-          body: JSON.stringify({ answers: quizState.answers })
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ answers: quizState.answers })
+            });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Erreur lors de la soumission du quiz');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erreur lors de la soumission du quiz');
+            }
+
+            const result = await response.json();
+
+            // Afficher les résultats d'abord
+            setQuizState(prev => ({
+                ...prev,
+                score: result.score,
+                passed: result.passed,
+                showResults: true,
+                isActive: false,
+                detailedResults: result.detailedResults || []
+            }));
+
+            if (result.passed) {
+                toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#4ADE80', '#22C55E', '#3B82F6', '#8B5CF6']
+                });
+            } else {
+                toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
+            }
+
+            // Scroller vers les résultats pour que l'utilisateur puisse les voir
+            setTimeout(() => {
+                document.getElementById('quiz-results')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
+            // Recharger les données en arrière-plan SANS perturber l'affichage des résultats
+            // Cela met à jour la progression de l'utilisateur
+            loadData();
+
+        } catch (error: any) {
+            console.error('Erreur lors de la soumission du quiz:', error);
+            toast.error(error.message || 'Erreur lors de la soumission du quiz', { id: toastId });
         }
-
-        const result = await response.json();
-
-        // Afficher les résultats d'abord
-        setQuizState(prev => ({
-          ...prev,
-          score: result.score,
-          passed: result.passed,
-          showResults: true,
-          isActive: false,
-          detailedResults: result.detailedResults || []
-        }));
-
-        if (result.passed) {
-          toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
-          confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#4ADE80', '#22C55E', '#3B82F6', '#8B5CF6']
-          });
-        } else {
-          toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
-        }
-
-        // Scroller vers les résultats pour que l'utilisateur puisse les voir
-        setTimeout(() => {
-          document.getElementById('quiz-results')?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-
-        // Recharger les données en arrière-plan SANS perturber l'affichage des résultats
-        // Cela met à jour la progression de l'utilisateur
-        loadData();
-
-      } catch (error: any) {
-        console.error('Erreur lors de la soumission du quiz:', error);
-        toast.error(error.message || 'Erreur lors de la soumission du quiz', { id: toastId });
-      }
     }, [selectedModule, quizState.answers, loadData]);
 
     const retryQuiz = useCallback(() => {
-      if (selectedModule) {
-        loadModuleQuiz(selectedModule.slug);
-      }
+        if (selectedModule) {
+            loadModuleQuiz(selectedModule.slug);
+        }
 
-      setQuizState({
-        isActive: true,
-        answers: {},
-        score: null,
-        passed: null,
-        showResults: false,
-        detailedResults: []
-      });
+        setQuizState({
+            isActive: true,
+            answers: {},
+            score: null,
+            passed: null,
+            showResults: false,
+            detailedResults: []
+        });
 
-      setTimeout(() => {
-        document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+        setTimeout(() => {
+            document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
     }, [selectedModule, loadModuleQuiz]);
 
     const toggleAudio = useCallback(() => {
-      if (!audioElement) {
-        const audio = new Audio('/audio/example-module.mp3');
-        audio.onended = () => setIsAudioPlaying(false);
-        audio.onpause = () => setIsAudioPlaying(false);
-        audio.onplay = () => setIsAudioPlaying(true);
-        setAudioElement(audio);
-        audio.play();
-        setIsAudioPlaying(true);
-      } else {
-        if (isAudioPlaying) {
-          audioElement.pause();
+        if (!audioElement) {
+            const audio = new Audio('/audio/example-module.mp3');
+            audio.onended = () => setIsAudioPlaying(false);
+            audio.onpause = () => setIsAudioPlaying(false);
+            audio.onplay = () => setIsAudioPlaying(true);
+            setAudioElement(audio);
+            audio.play();
+            setIsAudioPlaying(true);
         } else {
-          audioElement.play();
+            if (isAudioPlaying) {
+                audioElement.pause();
+            } else {
+                audioElement.play();
+            }
         }
-      }
     }, [audioElement, isAudioPlaying]);
 
     useEffect(() => {
-      return () => {
-        if (audioElement) {
-          audioElement.pause();
-          audioElement.src = '';
-        }
-      };
+        return () => {
+            if (audioElement) {
+                audioElement.pause();
+                audioElement.src = '';
+            }
+        };
     }, [audioElement]);
 
     const handleMarkAsCompleted = useCallback(async (moduleSlug: string) => {
-      if (!isLoggedIn) {
-        toast.error("Connectez-vous pour marquer un module comme terminé.");
-        return;
-      }
-
-      const toastId = toast.loading('Marquage en cours...');
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error(`Erreur ${response.status}: Impossible de marquer comme complété.`);
+        if (!isLoggedIn) {
+            toast.error("Connectez-vous pour marquer un module comme terminé.");
+            return;
         }
 
-        // Track la complétion du module
-        if (selectedModule) {
-          trackAction(ACTION_TYPES.COMPLETE_MODULE, 'Module complété', {
-            moduleSlug: selectedModule.slug,
-            moduleTitle: selectedModule.title,
-            moduleLevel: selectedModule.difficulty_level
-          });
+        const toastId = toast.loading('Marquage en cours...');
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erreur ${response.status}: Impossible de marquer comme complété.`);
+            }
+
+            // Track la complétion du module
+            if (selectedModule) {
+                trackAction(ACTION_TYPES.COMPLETE_MODULE, 'Module complété', {
+                    moduleSlug: selectedModule.slug,
+                    moduleTitle: selectedModule.title,
+                    moduleLevel: selectedModule.difficulty_level
+                });
+            }
+
+            await loadData();
+            toast.success('Module terminé avec succès ! 🎉', { id: toastId });
+
+        } catch (err) {
+            console.error('Erreur complétion:', err);
+            toast.error("Erreur lors du marquage du module.", { id: toastId });
         }
-
-        await loadData();
-        toast.success('Module terminé avec succès ! 🎉', { id: toastId });
-
-      } catch (err) {
-        console.error('Erreur complétion:', err);
-        toast.error("Erreur lors du marquage du module.", { id: toastId });
-      }
     }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
     useEffect(() => {
@@ -457,19 +472,19 @@ export default function LearnPage() {
                     <div className="max-w-4xl mx-auto relative z-10">
                         <button
                             onClick={() => {
-                              setSelectedModule(null);
-                              setQuizState({
-                                isActive: false,
-                                answers: {},
-                                score: null,
-                                passed: null,
-                                showResults: false
-                              });
-                              setShowAITutor(false);
-                              if (audioElement) {
-                                audioElement.pause();
-                                setIsAudioPlaying(false);
-                              }
+                                setSelectedModule(null);
+                                setQuizState({
+                                    isActive: false,
+                                    answers: {},
+                                    score: null,
+                                    passed: null,
+                                    showResults: false
+                                });
+                                setShowAITutor(false);
+                                if (audioElement) {
+                                    audioElement.pause();
+                                    setIsAudioPlaying(false);
+                                }
                             }}
                             className="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors text-sm font-medium group"
                         >
@@ -545,16 +560,15 @@ export default function LearnPage() {
                                 </div>
                                 <div className="w-full bg-slate-200 rounded-full h-2">
                                     <div
-                                        className={`h-2 rounded-full transition-all duration-500 ${
-                                            moduleProgress.quiz_score >= 70 ? 'bg-green-500' : 'bg-red-500'
-                                        }`}
+                                        className={`h-2 rounded-full transition-all duration-500 ${moduleProgress.quiz_score >= 70 ? 'bg-green-500' : 'bg-red-500'
+                                            }`}
                                         style={{ width: `${moduleProgress.quiz_score}%` }}
                                     />
                                 </div>
                             </div>
                         )}
 
-                        {/* Contenu du module - CORRECTION ICI */}
+                        {/* Contenu du module */}
                         <div ref={contentRef}>
                             {selectedModule.content ? (
                                 <div
@@ -568,6 +582,53 @@ export default function LearnPage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Navigation Slides */}
+                        {totalSlides > 1 && (
+                            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex items-center justify-between shadow-lg">
+                                <button
+                                    onClick={() => setCurrentSlide(prev => Math.max(1, prev - 1))}
+                                    disabled={currentSlide === 1}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${currentSlide === 1
+                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                        }`}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                    <span className="hidden sm:inline">Précédent</span>
+                                </button>
+
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium text-slate-600">
+                                        {currentSlide} / {totalSlides}
+                                    </span>
+                                    <div className="hidden sm:flex items-center gap-1">
+                                        {Array.from({ length: totalSlides }, (_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setCurrentSlide(i + 1)}
+                                                className={`w-2.5 h-2.5 rounded-full transition-all ${currentSlide === i + 1
+                                                    ? 'bg-blue-600 w-6'
+                                                    : 'bg-slate-300 hover:bg-slate-400'
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentSlide(prev => Math.min(totalSlides, prev + 1))}
+                                    disabled={currentSlide === totalSlides}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${currentSlide === totalSlides
+                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                        }`}
+                                >
+                                    <span className="hidden sm:inline">Suivant</span>
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
 
                         {/* Section Quiz */}
                         {hasQuiz && !isCompleted && (
@@ -636,23 +697,23 @@ export default function LearnPage() {
 
                                                 <div className="space-y-3">
                                                     {quizQuestions[currentIndex].options.map((option, index) => (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() => answerQuestion(index)}
-                                                        className="w-full text-left p-5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
-                                                    >
-                                                        <div className="flex items-center space-x-4">
-                                                            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center font-bold text-gray-600 group-hover:text-indigo-600 transition-colors">
-                                                                {String.fromCharCode(65 + index)}
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => answerQuestion(index)}
+                                                            className="w-full text-left p-5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                                                        >
+                                                            <div className="flex items-center space-x-4">
+                                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center font-bold text-gray-600 group-hover:text-indigo-600 transition-colors">
+                                                                    {String.fromCharCode(65 + index)}
+                                                                </div>
+                                                                <span className="text-gray-700 group-hover:text-gray-900 font-medium">
+                                                                    {option}
+                                                                </span>
                                                             </div>
-                                                            <span className="text-gray-700 group-hover:text-gray-900 font-medium">
-                                                                {option}
-                                                            </span>
-                                                        </div>
-                                                    </button>
-                                                ))}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
                                         );
                                     })()}
 
@@ -869,8 +930,8 @@ export default function LearnPage() {
                                     </div>
                                 )}
 
-                                <button 
-                                    onClick={() => setSelectedModule(null)} 
+                                <button
+                                    onClick={() => setSelectedModule(null)}
                                     className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium w-full sm:w-auto shadow-md hover:shadow-lg"
                                 >
                                     Continuer l'apprentissage
@@ -945,7 +1006,7 @@ export default function LearnPage() {
                             </div>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                            <div 
+                            <div
                                 className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
                                 style={{ width: `${progressPercentage}%` }}
                             />
@@ -977,11 +1038,10 @@ export default function LearnPage() {
                         <button
                             key={difficulty}
                             onClick={() => setSelectedDifficulty(difficulty)}
-                            className={`px-5 py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 ${
-                                selectedDifficulty === difficulty 
-                                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                            className={`px-5 py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 ${selectedDifficulty === difficulty
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
                         >
                             {difficulty === 'all' ? '📚 Tous les modules' : `${getDifficultyLabel(difficulty)}`}
                         </button>
@@ -1024,28 +1084,27 @@ export default function LearnPage() {
                             <button
                                 key={module.id}
                                 onClick={() => {
-                                  if (!isUnlocked) {
-                                    toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
-                                    return;
-                                  }
+                                    if (!isUnlocked) {
+                                        toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
+                                        return;
+                                    }
 
-                                  // Track l'ouverture du module
-                                  trackAction(ACTION_TYPES.START_MODULE, 'Ouverture de module', {
-                                    moduleSlug: module.slug,
-                                    moduleTitle: module.title,
-                                    moduleLevel: module.difficulty_level
-                                  });
+                                    // Track l'ouverture du module
+                                    trackAction(ACTION_TYPES.START_MODULE, 'Ouverture de module', {
+                                        moduleSlug: module.slug,
+                                        moduleTitle: module.title,
+                                        moduleLevel: module.difficulty_level
+                                    });
 
-                                  setSelectedModule(module);
+                                    setSelectedModule(module);
                                 }}
                                 disabled={!isUnlocked}
-                                className={`bg-white rounded-2xl shadow-lg border-2 p-6 transition-all text-left flex flex-col h-full group relative overflow-hidden ${
-                                    isCompleted 
-                                        ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl hover:-translate-y-1' 
-                                        : isUnlocked
+                                className={`bg-white rounded-2xl shadow-lg border-2 p-6 transition-all text-left flex flex-col h-full group relative overflow-hidden ${isCompleted
+                                    ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl hover:-translate-y-1'
+                                    : isUnlocked
                                         ? 'border-gray-200 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1'
                                         : 'border-gray-200 opacity-60 cursor-not-allowed'
-                                }`}
+                                    }`}
                             >
                                 {!isUnlocked && (
                                     <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] flex items-center justify-center z-10">
@@ -1059,12 +1118,12 @@ export default function LearnPage() {
                                     <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg shadow-md">
                                         {module.order_index ?? index + 1}
                                     </div>
-                                    
+
                                     <div className="flex flex-col items-end space-y-2">
                                         <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 ${getDifficultyColor(module.difficulty_level)}`}>
                                             {getDifficultyLabel(module.difficulty_level)}
                                         </span>
-                                        
+
                                         {isCompleted && (
                                             <div className="flex items-center space-x-1 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
                                                 <CheckCircle className="w-3.5 h-3.5" />
@@ -1113,7 +1172,7 @@ export default function LearnPage() {
                                                 <span>Quiz</span>
                                             </div>
                                         )}
-                                        
+
                                         <div className="flex items-center space-x-1 bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-medium opacity-50">
                                             <Volume2 className="w-3.5 h-3.5" />
                                             <span>Audio</span>
@@ -1141,7 +1200,7 @@ export default function LearnPage() {
                         Aucun module trouvé
                     </h3>
                     <p className="text-gray-500">
-                        {selectedDifficulty === 'all' 
+                        {selectedDifficulty === 'all'
                             ? "Aucun module disponible pour le moment."
                             : `Aucun module trouvé pour le niveau "${getDifficultyLabel(selectedDifficulty)}".`
                         }

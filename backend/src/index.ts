@@ -20,6 +20,8 @@ import portfolioRoutes from './routes/portfolio.routes';
 import homepageRoutes from './routes/homepage.routes';
 import watchlistRoutes from './routes/watchlist.routes';
 import './jobs/scraping.job';
+import './jobs/backup.job'; // Backup automatique chaque dimanche à 23h
+import './jobs/notify-users.job'; // Notification utilisateurs - Dimanche 26 janvier 10h (ONE-TIME)
 import learningRoutes from "./routes/learning.routes";
 import newsRoutes from "./routes/news.routes";
 import authRoutes from './routes/auth.routes';

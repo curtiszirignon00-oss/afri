@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as XLSX from 'xlsx';
 
 const excelPath = 'C:\\Users\\HP\\OneDrive\\Desktop\\actions brvm\\bicb\\bicb.xlsx';

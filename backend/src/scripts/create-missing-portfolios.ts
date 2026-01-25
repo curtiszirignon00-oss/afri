@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Script pour créer des portfolios pour les utilisateurs existants qui n'en ont pas
 import prisma from "../config/prisma";
 

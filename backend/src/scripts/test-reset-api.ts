@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Script pour tester l'API de réinitialisation de mot de passe
  * Simule exactement ce que fait le frontend

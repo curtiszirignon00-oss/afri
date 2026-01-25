@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Script pour vérifier l'état des comptes utilisateurs
  */

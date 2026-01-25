@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Script pour tester l'envoi d'email de réinitialisation
  * Usage: npx ts-node src/scripts/test-password-reset.ts <email>

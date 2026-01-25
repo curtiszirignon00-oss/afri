@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/scripts/importHistoryFromCSV.ts
 // Script pour importer l'historique depuis un fichier CSV
 

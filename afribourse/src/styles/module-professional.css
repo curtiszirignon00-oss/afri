@@ -5,52 +5,224 @@
 .module-content {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
   line-height: 1.8;
+  padding: 2rem;
+  color: #1f2937;
+  background-color: #fff;
 }
 
 /* ============================================
-   OBJECTIF PÉDAGOGIQUE
+   CITATION INSPIRANTE
+   ============================================ */
+
+.module-content .citation-box {
+  background: linear-gradient(to right, #1e293b, #0f172a);
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  margin: 1.5rem 0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.module-content .citation-box p {
+  font-size: 1.5rem;
+  font-style: italic;
+  font-weight: 300;
+  color: white;
+  margin: 0;
+}
+
+/* ============================================
+   OBJECTIF PÉDAGOGIQUE (VERSION HERO)
+   ============================================ */
+
+.module-content .objectif-hero {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.module-content .objectif-hero h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.module-content .objectif-hero p {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 1rem;
+}
+
+.module-content .objectif-hero ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.module-content .objectif-hero li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  color: white;
+  padding-left: 0;
+}
+
+.module-content .objectif-hero li::before {
+  content: "✓";
+  color: #86efac;
+  font-weight: 700;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   OBJECTIF PÉDAGOGIQUE (version originale)
    ============================================ */
 
 .module-content .pedagogical-objective {
-  @apply bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-r-xl p-8 my-8 shadow-sm;
+  background: linear-gradient(135deg, #eff6ff, #e0e7ff);
+  border-left: 4px solid #3b82f6;
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .module-content .pedagogical-objective h2,
 .module-content .pedagogical-objective h3 {
-  @apply text-xl font-bold text-blue-900 mb-4 flex items-center gap-3;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 1rem;
+  margin-top: 0;
 }
 
 .module-content .pedagogical-objective p {
-  @apply text-gray-700 mb-4 font-medium;
+  color: #374151;
+  margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .module-content .pedagogical-objective ul {
-  @apply space-y-3 ml-0 list-none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .module-content .pedagogical-objective li {
-  @apply flex items-start gap-3 text-gray-800;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #1f2937;
+  padding-left: 0;
 }
 
-.module-content .pedagogical-objective li:before {
+.module-content .pedagogical-objective li::before {
   content: "✓";
-  @apply text-blue-600 font-bold flex-shrink-0 text-xl;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   SECTIONS COLORÉES
+   ============================================ */
+
+.module-content .section-blue {
+  border-left: 4px solid #2563eb;
+  padding-left: 2rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: white;
+  border-radius: 0 0.75rem 0.75rem 0;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.module-content .section-green {
+  border-left: 4px solid #16a34a;
+  padding-left: 2rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: white;
+  border-radius: 0 0.75rem 0.75rem 0;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.module-content .section-purple {
+  border-left: 4px solid #7c3aed;
+  padding-left: 2rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: white;
+  border-radius: 0 0.75rem 0.75rem 0;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.module-content .section-orange {
+  border-left: 4px solid #ea580c;
+  padding-left: 2rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: white;
+  border-radius: 0 0.75rem 0.75rem 0;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.module-content .section-blue>h2:first-child,
+.module-content .section-green>h2:first-child,
+.module-content .section-purple>h2:first-child,
+.module-content .section-orange>h2:first-child {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 /* ============================================
    SECTIONS PRINCIPALES
    ============================================ */
 
-.module-content > div > h2 {
-  @apply text-2xl md:text-3xl font-bold text-gray-900 mb-6 mt-10 pb-3 border-b-2 border-gray-200;
+.module-content>div>h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1.5rem;
+  margin-top: 2.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-.module-content > div > h3 {
-  @apply text-xl md:text-2xl font-bold text-gray-800 mb-4 mt-8;
+.module-content>div>h3 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
 }
 
-.module-content > div > h4 {
-  @apply text-lg md:text-xl font-semibold text-gray-800 mb-3 mt-6;
+.module-content>div>h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
 }
 
 /* ============================================
@@ -58,16 +230,47 @@
    ============================================ */
 
 .module-content .analogy-box {
-  @apply bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-r-xl p-6 my-6 shadow-sm;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border-left: 4px solid #f59e0b;
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .module-content .analogy-box h3,
 .module-content .analogy-box h4 {
-  @apply text-lg font-bold text-amber-900 mb-3 flex items-center gap-2;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.75rem;
+  margin-top: 0;
 }
 
 .module-content .analogy-box p {
-  @apply text-gray-800 mb-3;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.module-content .analogy-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+}
+
+.module-content .analogy-box li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+  padding-left: 0;
+}
+
+.module-content .analogy-box li::before {
+  content: "•";
+  color: #f59e0b;
+  font-weight: 700;
 }
 
 /* ============================================
@@ -75,16 +278,40 @@
    ============================================ */
 
 .module-content .example-box {
-  @apply bg-gradient-to-br from-purple-50 to-pink-50 border-l-4 border-purple-500 rounded-r-xl p-6 my-6 shadow-sm;
+  background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+  border-left: 4px solid #8b5cf6;
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .module-content .example-box h3,
 .module-content .example-box h4 {
-  @apply text-lg font-bold text-purple-900 mb-3;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #5b21b6;
+  margin-bottom: 0.75rem;
+  margin-top: 0;
 }
 
 .module-content .example-box p {
-  @apply text-gray-800 mb-3;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.module-content .example-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.module-content .example-box li {
+  padding-left: 0;
+}
+
+.module-content .example-box li::before {
+  display: none;
 }
 
 /* ============================================
@@ -92,29 +319,47 @@
    ============================================ */
 
 .module-content .key-points-box {
-  @apply bg-gradient-to-br from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-r-xl p-6 my-6 shadow-sm;
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border-left: 4px solid #10b981;
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .module-content .key-points-box h3,
 .module-content .key-points-box h4 {
-  @apply text-lg font-bold text-green-900 mb-3 flex items-center gap-2;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #065f46;
+  margin-bottom: 0.75rem;
+  margin-top: 0;
 }
 
 .module-content .key-points-box p {
-  @apply text-gray-800 mb-3;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
 }
 
 .module-content .key-points-box ul {
-  @apply space-y-2 ml-0 list-none;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .module-content .key-points-box li {
-  @apply flex items-start gap-3 text-gray-800;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #1f2937;
+  padding-left: 0;
 }
 
-.module-content .key-points-box li:before {
+.module-content .key-points-box li::before {
   content: "→";
-  @apply text-green-600 font-bold flex-shrink-0;
+  color: #10b981;
+  font-weight: 700;
 }
 
 /* ============================================
@@ -122,11 +367,80 @@
    ============================================ */
 
 .module-content .warning-box {
-  @apply bg-gradient-to-br from-red-50 to-pink-50 border-l-4 border-red-500 rounded-r-xl p-6 my-6 shadow-sm;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border-left: 4px solid #ef4444;
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .module-content .warning-box h3 {
-  @apply text-lg font-bold text-red-900 mb-3 flex items-center gap-2;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin-bottom: 0.75rem;
+  margin-top: 0;
+}
+
+.module-content .warning-box p {
+  color: #1f2937;
+  margin-bottom: 0;
+}
+
+/* ============================================
+   GLOSSAIRE
+   ============================================ */
+
+.module-content .glossary-box {
+  background: #f8fafc;
+  padding: 2rem;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+}
+
+.module-content .glossary-box h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* ============================================
+   CTA / PROCHAINE ÉTAPE
+   ============================================ */
+
+.module-content .cta-box {
+  background: linear-gradient(to right, #2563eb, #4f46e5);
+  color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  margin: 2rem 0;
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.module-content .cta-box h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.module-content .cta-box p {
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0.75rem;
+}
+
+.module-content .cta-box p:last-child {
+  margin-bottom: 0;
+}
+
+.module-content .cta-box strong {
+  color: white;
 }
 
 /* ============================================
@@ -134,47 +448,85 @@
    ============================================ */
 
 .module-content table {
-  @apply w-full border-collapse my-8 shadow-md rounded-lg overflow-hidden;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 .module-content thead {
-  @apply bg-gradient-to-r from-gray-700 to-gray-800 text-white;
+  background: linear-gradient(to right, #374151, #1f2937);
+  color: white;
 }
 
 .module-content th {
-  @apply px-6 py-4 text-left font-bold text-sm uppercase tracking-wider;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .module-content td {
-  @apply px-6 py-4 border-b border-gray-200 text-gray-700;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
 }
 
 .module-content tbody tr {
-  @apply hover:bg-gray-50 transition-colors;
+  transition: background-color 0.15s;
+}
+
+.module-content tbody tr:hover {
+  background-color: #f9fafb;
 }
 
 .module-content tbody tr:nth-child(even) {
-  @apply bg-gray-50;
+  background-color: #f9fafb;
 }
 
 .module-content tbody tr:nth-child(odd) {
-  @apply bg-white;
+  background-color: white;
 }
 
 /* ============================================
-   LISTES
+   LISTES (GLOBAL)
    ============================================ */
 
 .module-content ul {
-  @apply list-disc list-inside mb-6 space-y-2 text-gray-700 ml-4;
+  list-style: none;
+  margin-bottom: 1.5rem;
+  padding-left: 0;
+}
+
+.module-content ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
+  padding-left: 0;
+}
+
+.module-content ul li::before {
+  content: "•";
+  color: #3b82f6;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .module-content ol {
-  @apply list-decimal list-inside mb-6 space-y-2 text-gray-700 ml-4;
+  list-style: decimal;
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
 }
 
-.module-content li {
-  @apply text-base md:text-lg leading-relaxed;
+.module-content ol li {
+  margin-bottom: 0.5rem;
+  line-height: 1.7;
 }
 
 /* ============================================
@@ -182,15 +534,20 @@
    ============================================ */
 
 .module-content p {
-  @apply text-base md:text-lg text-gray-700 mb-4 leading-relaxed;
+  font-size: 1.0625rem;
+  color: #374151;
+  margin-bottom: 1rem;
+  line-height: 1.75;
 }
 
 .module-content strong {
-  @apply font-bold text-gray-900;
+  font-weight: 700;
+  color: #111827;
 }
 
 .module-content em {
-  @apply italic text-gray-800;
+  font-style: italic;
+  color: #1f2937;
 }
 
 /* ============================================
@@ -198,7 +555,11 @@
    ============================================ */
 
 .module-content img {
-  @apply w-full h-auto rounded-lg shadow-md my-6;
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin: 1.5rem 0;
 }
 
 /* ============================================
@@ -206,7 +567,13 @@
    ============================================ */
 
 .module-content a {
-  @apply text-blue-600 hover:text-blue-800 underline transition-colors;
+  color: #2563eb;
+  text-decoration: underline;
+  transition: color 0.15s;
+}
+
+.module-content a:hover {
+  color: #1d4ed8;
 }
 
 /* ============================================
@@ -214,15 +581,27 @@
    ============================================ */
 
 .module-content code {
-  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-blue-600;
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #2563eb;
 }
 
 .module-content pre {
-  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-6;
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
 }
 
 .module-content pre code {
-  @apply bg-transparent p-0 text-gray-100;
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
 }
 
 /* ============================================
@@ -230,7 +609,14 @@
    ============================================ */
 
 .module-content blockquote {
-  @apply border-l-4 border-blue-500 pl-6 py-4 my-6 italic text-gray-700 bg-blue-50 rounded-r-lg;
+  border-left: 4px solid #3b82f6;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #4b5563;
+  background-color: #eff6ff;
+  padding: 1rem 1.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
 }
 
 /* ============================================
@@ -238,17 +624,38 @@
    ============================================ */
 
 @media (max-width: 768px) {
+
+  .module-content .objectif-hero,
   .module-content .pedagogical-objective,
   .module-content .analogy-box,
   .module-content .example-box,
   .module-content .key-points-box,
-  .module-content .warning-box {
-    @apply p-4;
+  .module-content .warning-box,
+  .module-content .citation-box,
+  .module-content .cta-box,
+  .module-content .glossary-box {
+    padding: 1rem;
+  }
+
+  .module-content .section-blue,
+  .module-content .section-green,
+  .module-content .section-purple,
+  .module-content .section-orange {
+    padding-left: 1rem;
   }
 
   .module-content th,
   .module-content td {
-    @apply px-3 py-2 text-sm;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .module-content .citation-box p {
+    font-size: 1.25rem;
+  }
+
+  .module-content .objectif-hero h2 {
+    font-size: 1.5rem;
   }
 }
 
@@ -256,10 +663,10 @@
    ESPACEMENT
    ============================================ */
 
-.module-content > * + * {
-  @apply mt-6;
+.module-content>*+* {
+  margin-top: 1.5rem;
 }
 
-.module-content > div + div {
-  @apply mt-8;
+.module-content>div+div {
+  margin-top: 2rem;
 }

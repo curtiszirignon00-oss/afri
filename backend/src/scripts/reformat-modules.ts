@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // backend/src/scripts/reformat-modules.ts
 /**
  * Script pour reformater tous les modules avec le nouveau design professionnel

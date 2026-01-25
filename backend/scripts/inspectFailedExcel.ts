@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as XLSX from 'xlsx';
 
 // Inspecter plusieurs fichiers qui ont échoué
