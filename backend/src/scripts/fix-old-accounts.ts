@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Script pour gérer les comptes créés avant le système de confirmation d'email
  *

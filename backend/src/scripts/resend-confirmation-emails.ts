@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 import { sendConfirmationEmail } from '../services/email.service';

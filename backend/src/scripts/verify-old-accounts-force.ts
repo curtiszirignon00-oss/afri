@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Script FORCE pour auto-vérifier les anciens comptes
  * Ce script vérifie automatiquement tous les comptes sans token de confirmation

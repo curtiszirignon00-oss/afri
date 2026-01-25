@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Script de migration pour TOUS les anciens comptes
  *
