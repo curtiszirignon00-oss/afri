@@ -444,7 +444,7 @@ export default function LearnPage() {
     }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
     useEffect(() => {
-        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 3) {
+        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5) {
             // Réinitialiser l'état du quiz quand on ouvre un nouveau module
             setQuizState({
                 isActive: false,
@@ -462,7 +462,7 @@ export default function LearnPage() {
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 3;
+        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5;
 
         return (
             <div className="min-h-screen bg-slate-50">
@@ -1104,7 +1104,7 @@ export default function LearnPage() {
                         const isCompleted = isModuleCompleted(module.slug);
                         const isUnlocked = isModuleUnlocked(module);
                         const previousModule = getPreviousIncompleteModule(module);
-                        const hasQuiz = (module.order_index ?? 0) >= 1;
+                        const hasQuiz = (module.order_index ?? 0) >= 1 && (module.order_index ?? 0) !== 4 && (module.order_index ?? 0) !== 5;
 
                         return (
                             <button
