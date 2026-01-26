@@ -444,7 +444,7 @@ export default function LearnPage() {
     }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
     useEffect(() => {
-        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4) {
+        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 3) {
             // Réinitialiser l'état du quiz quand on ouvre un nouveau module
             setQuizState({
                 isActive: false,
@@ -462,7 +462,7 @@ export default function LearnPage() {
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 4;
+        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) <= 3;
 
         return (
             <div className="min-h-screen bg-slate-50">
@@ -570,23 +570,25 @@ export default function LearnPage() {
                             </div>
                         )}
 
-                        {/* Contenu du module */}
-                        <div ref={contentRef}>
-                            {selectedModule.content ? (
-                                <div
-                                    className="module-content"
-                                    dangerouslySetInnerHTML={{ __html: selectedModule.content }}
-                                />
-                            ) : (
-                                <div className="text-center py-12 px-6">
-                                    <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-                                    <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
-                                </div>
-                            )}
-                        </div>
+                        {/* Contenu du module - Caché pendant le quiz */}
+                        {!quizState.isActive && !quizState.showResults && (
+                            <div ref={contentRef}>
+                                {selectedModule.content ? (
+                                    <div
+                                        className="module-content"
+                                        dangerouslySetInnerHTML={{ __html: selectedModule.content }}
+                                    />
+                                ) : (
+                                    <div className="text-center py-12 px-6">
+                                        <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+                                        <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
-                        {/* Navigation Slides */}
-                        {totalSlides > 1 && (
+                        {/* Navigation Slides - Cachée pendant le quiz */}
+                        {totalSlides > 1 && !quizState.isActive && !quizState.showResults && (
                             <div className="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex items-center justify-between shadow-lg">
                                 <button
                                     onClick={() => setCurrentSlide(prev => Math.max(1, prev - 1))}
@@ -912,7 +914,8 @@ export default function LearnPage() {
                             </button>
                         </div>
 
-                        {/* Footer du module */}
+                        {/* Footer du module - Caché pendant le quiz et les résultats */}
+                        {!quizState.isActive && !quizState.showResults && (
                         <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                                 {!hasQuiz && !isCompleted && (
@@ -960,6 +963,7 @@ export default function LearnPage() {
                                 </button>
                             </div>
                         </div>
+                        )}
                     </article>
 
                     {/* Bouton flottant AI Tutor */}

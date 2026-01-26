@@ -498,43 +498,8 @@ async function main() {
  </ul>
  </div>
 
- <div class="border-l-4 border-blue-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🏛️ 2.1 La BRVM : Une Bourse Unique au Monde</h2>
-
- <p class="text-lg mb-4 leading-relaxed">
- La <strong>BRVM (Bourse Régionale des Valeurs Mobilières)</strong> est une bourse régionale partagée par
- <strong>8 pays de l'UEMOA</strong> utilisant la même monnaie (le franc CFA) et la même banque centrale (la BCEAO).
- </p>
-
- <p class="text-base mb-3 leading-relaxed"><strong>Pays membres :</strong></p>
- <p class="text-base mb-4 leading-relaxed">🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo</p>
-
- <div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-6">
- <p class="text-base mb-2 leading-relaxed"><strong>🏢 Architecture géographique :</strong></p>
- <ul class="list-disc ml-6 space-y-1">
- <li><strong>Siège de la BRVM :</strong> Abidjan (Côte d'Ivoire) — Où se déroulent les échanges</li>
- <li><strong>Siège du DC/BR :</strong> Cotonou (Bénin) — Où sont conservés vos titres</li>
- </ul>
- </div>
-
- <p class="text-base mb-4 leading-relaxed">
- La BRVM joue un double rôle essentiel :
- </p>
- <ul class="list-disc ml-6 mb-6 space-y-2">
- <li><strong>Pour les entreprises :</strong> Elle leur permet de lever des fonds auprès du grand public, sans dépendre uniquement des banques.</li>
- <li><strong>Pour les investisseurs :</strong> Elle offre un accès sécurisé et réglementé pour acheter ou revendre facilement des titres financiers.</li>
- </ul>
-
- <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-6 my-6">
- <h3 class="text-xl font-bold text-amber-900 mb-3">🪶 L'analogie à retenir : Le Grand Marché Régional</h3>
- <p class="text-base mb-3 leading-relaxed">Imaginez un grand marché couvrant 8 villes, avec une seule monnaie, un seul système de sécurité et des règles communes.</p>
- <p class="text-base mb-2 leading-relaxed">Vous pouvez vendre vos produits dans n'importe quelle ville et acheter depuis n'importe où.</p>
- <p class="text-base font-semibold leading-relaxed">👉 C'est exactement ce que fait la BRVM pour les entreprises et les investisseurs de l'Afrique de l'Ouest.</p>
- </div>
- </div>
-
  <div class="border-l-4 border-green-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ 2.2 Les Trois Piliers Institutionnels du Marché</h2>
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ 2.1 Les Trois Piliers Institutionnels du Marché</h2>
  <p class="text-lg mb-4 leading-relaxed">Le marché financier régional repose sur <strong>trois institutions clés</strong> qui travaillent ensemble pour assurer la sécurité, la transparence et la stabilité :</p>
 
  <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4 mb-6">
@@ -545,7 +510,7 @@ async function main() {
  </ul>
  </div>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">🏦 2.2.1 BCEAO – Le Pilier Monétaire</h3>
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🏦 2.1.1 BCEAO – Le Pilier Monétaire</h3>
  <p class="text-base mb-3 leading-relaxed">
  La <strong>BCEAO (Banque Centrale des États de l'Afrique de l'Ouest)</strong> assure la stabilité monétaire de la région UEMOA.
  </p>
@@ -564,7 +529,12 @@ async function main() {
  </ul>
  </div>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">⚖️ 2.2.2 AMF-UMOA – Le Gendarme du Marché</h3>
+  <div class="bg-yellow-50 border-l-4 border-yellow-600 p-4 my-4">
+    <p class="font-semibold mb-2">🧩 À retenir :</p>
+    <p>La BCEAO ne gère pas directement la BRVM, mais influence fortement son évolution.</p>
+  </div>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">⚖️ 2.1.2 AMF-UMOA – Le Gendarme du Marché</h3>
  <p class="text-base mb-3 leading-relaxed">
  L'<strong>AMF-UMOA (Autorité des Marchés Financiers de l'UMOA)</strong> protège les investisseurs et veille à la transparence du marché.
  </p>
@@ -572,31 +542,66 @@ async function main() {
  <ul class="list-disc ml-6 mb-4 space-y-2">
  <li><strong>Définir les règles du jeu</strong> — Fixe les normes que tous les acteurs doivent respecter</li>
  <li><strong>Approuver les introductions en bourse</strong> — Valide que les entreprises respectent les critères de transparence</li>
- <li><strong>Surveiller et sanctionner les abus</strong> — Détecte les manipulations de marché et les délits d'initiés</li>
+ <li><strong>Surveiller et sanctionner les abus</strong> — elle enquête sur les abus, manipulations ou délits d’initiés.</li>
  <li><strong>Agréer les acteurs financiers</strong> — SGI, fonds, conseillers doivent obtenir une licence</li>
  </ul>
+
+
+<div class="bg-blue-50 border-l-4 border-blue-600 p-4 my-4">
+  <p class="font-semibold mb-2">💬 Pourquoi c'est important pour vous :</p>
+  <p class="mb-2">L'AMF-UMOA agit comme un gendarme financier. Elle s'assure que :</p>
+  <ul class="list-disc ml-6 space-y-1">
+    <li>les sociétés cotées publient des informations fiables ;</li>
+    <li>les SGI respectent les règles ;</li>
+    <li>vos transactions sont conformes aux lois LBC/FT (Lutte contre le Blanchiment et le Financement du Terrorisme).</li>
+  </ul>
+</div>
+
 
  <p class="text-base mb-4 font-semibold leading-relaxed">
  👉 C'est votre <strong>bouclier réglementaire</strong>. Sans l'AMF-UMOA, la confiance dans le marché s'effondrerait.
  </p>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">🔐 2.2.3 DC/BR – Le Notaire Digital du Marché</h3>
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🔐 2.1.3 DC/BR – Le Notaire Digital du Marché</h3>
  <p class="text-base mb-3 leading-relaxed">
  Le <strong>DC/BR (Dépositaire Central/Banque de Règlement)</strong> est l'entité qui conserve vos titres et sécurise toutes les transactions financières.
  </p>
 
  <p class="text-base mb-3 leading-relaxed">Ses trois fonctions clés :</p>
  <ul class="list-disc ml-6 mb-4 space-y-2">
- <li><strong>Conservation des titres :</strong> Vos actions et obligations ne sont PAS stockées chez votre SGI, mais bien au DC/BR, dans un coffre-fort numérique ultra-sécurisé.</li>
- <li><strong>Règlement-livraison :</strong> Garantit le transfert simultané des titres ET de l'argent lors d'une transaction (principe "Delivery versus Payment").</li>
+ <li><strong>Conservation des titres :</strong> Vos actions et obligations ne sont pas stockées chez votre SGI, mais enregistrées au DC/BR à votre nom.
+→ Si votre SGI disparaît, vos titres restent intacts et récupérables.
+</li>
+ <li><strong>Règlement-livraison :</strong> Quand vous achetez, le DC/BR transfère les titres sur votre compte et l’argent vers le vendeur — tout cela simultanément pour éviter les fraudes.</li>
  <li><strong>Banque de règlement :</strong> Gère les flux financiers entre toutes les SGI pour assurer la fluidité du marché.</li>
  </ul>
 
- <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-6 my-6">
- <h3 class="text-lg font-bold text-purple-900 mb-3">🪶 L'analogie à retenir : Le Notaire Digital</h3>
- <p class="text-base mb-2 leading-relaxed">Quand vous achetez une maison, c'est le notaire qui conserve les titres de propriété et garantit que l'argent et la propriété changent de main en toute sécurité.</p>
- <p class="text-base font-semibold leading-relaxed">👉 Le DC/BR joue exactement ce rôle pour vos titres financiers.</p>
- </div>
+
+ <div class="border-l-4 border-purple-600 pl-6 py-4">
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ 2.2 Les SGI – Votre Intermédiaire Officiel</h2>
+
+ <p class="text-base mb-4 leading-relaxed">
+ Les <strong>SGI (Sociétés de Gestion et d'Intermédiation)</strong> sont les courtiers agréés qui vous permettent d'accéder au marché boursier. Vous ne pouvez PAS acheter ou vendre des titres directement à la BRVM — vous devez obligatoirement passer par une SGI.
+ </p>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">🔑 Rôles clés d'une SGI :</h3>
+ <ul class="list-disc ml-6 mb-6 space-y-2">
+ <li><strong>Ouvrir et gérer votre compte-titres</strong> — Votre "compte bancaire" pour les actions et obligations</li>
+ <li><strong>Transmettre vos ordres à la BRVM</strong> — Achats et ventes que vous souhaitez effectuer</li>
+ <li><strong>Conserver vos fonds en attente d'investissement</strong> — Sécurisation de votre cash avant allocation</li>
+ <li><strong>Vous conseiller selon votre profil</strong> — Recommandations personnalisées basées sur vos objectifs</li>
+ <li><strong>Assurer le suivi administratif</strong> — Dividendes, relevés de compte, fiscalité</li>
+ </ul>
+
+ <h3 class="text-xl font-bold text-gray-900 mb-3">📋 Comment choisir une SGI ?</h3>
+ <p class="text-base mb-3 leading-relaxed">Critères à considérer :</p>
+ <ol class="list-decimal ml-6 mb-4 space-y-2">
+ <li><strong>Frais et commissions</strong> — Comparez les tarifs (frais de courtage, frais de garde, etc.)</li>
+ <li><strong>Qualité du service client</strong> — Réactivité, disponibilité, accompagnement</li>
+ <li><strong>Outils et plateformes</strong> — Interface en ligne, application mobile, facilité d'utilisation</li>
+ <li><strong>Réputation et ancienneté</strong> — Solidité financière et expérience sur le marché</li>
+ <li><strong>Accessibilité géographique</strong> — Présence dans votre ville ou pays</li>
+ </ol>
  </div>
 
  <div class="border-l-4 border-indigo-600 pl-6 py-4">
@@ -683,49 +688,10 @@ async function main() {
  </table>
  </div>
 
- <div class="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 my-6">
- <p class="text-base font-bold mb-2 leading-relaxed">💡 Principe fondamental :</p>
- <p class="text-lg font-semibold leading-relaxed">Acheter une action = devenir <strong>copropriétaire</strong> de l'entreprise.</p>
- <p class="text-base mt-2 leading-relaxed">Vous partagez ses profits (dividendes) et sa croissance (plus-value).</p>
- </div>
- </div>
 
- <div class="border-l-4 border-purple-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">⚙️ 2.5 Les SGI – Votre Intermédiaire Officiel</h2>
-
- <p class="text-base mb-4 leading-relaxed">
- Les <strong>SGI (Sociétés de Gestion et d'Intermédiation)</strong> sont les courtiers agréés qui vous permettent d'accéder au marché boursier. Vous ne pouvez PAS acheter ou vendre des titres directement à la BRVM — vous devez obligatoirement passer par une SGI.
- </p>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">🔑 Rôles clés d'une SGI :</h3>
- <ul class="list-disc ml-6 mb-6 space-y-2">
- <li><strong>Ouvrir et gérer votre compte-titres</strong> — Votre "compte bancaire" pour les actions et obligations</li>
- <li><strong>Transmettre vos ordres à la BRVM</strong> — Achats et ventes que vous souhaitez effectuer</li>
- <li><strong>Conserver vos fonds en attente d'investissement</strong> — Sécurisation de votre cash avant allocation</li>
- <li><strong>Vous conseiller selon votre profil</strong> — Recommandations personnalisées basées sur vos objectifs</li>
- <li><strong>Assurer le suivi administratif</strong> — Dividendes, relevés de compte, fiscalité</li>
- </ul>
-
- <div class="bg-amber-50 border-2 border-amber-300 rounded-lg p-6 my-6">
- <h3 class="text-xl font-bold text-amber-900 mb-3">🪶 L'analogie à retenir : Le Taxi-Moto Boursier</h3>
- <p class="text-base mb-3 leading-relaxed">Vous voulez aller au marché central (la BRVM), mais vous ne pouvez pas y aller à pied.</p>
- <p class="text-base mb-2 leading-relaxed">Vous prenez un taxi-moto (la SGI) qui connaît les routes, les raccourcis et les règles de circulation.</p>
- <p class="text-base font-semibold leading-relaxed">👉 La SGI est votre véhicule pour naviguer sur le marché en toute sécurité.</p>
- </div>
-
- <h3 class="text-xl font-bold text-gray-900 mb-3">📋 Comment choisir une SGI ?</h3>
- <p class="text-base mb-3 leading-relaxed">Critères à considérer :</p>
- <ol class="list-decimal ml-6 mb-4 space-y-2">
- <li><strong>Frais et commissions</strong> — Comparez les tarifs (frais de courtage, frais de garde, etc.)</li>
- <li><strong>Qualité du service client</strong> — Réactivité, disponibilité, accompagnement</li>
- <li><strong>Outils et plateformes</strong> — Interface en ligne, application mobile, facilité d'utilisation</li>
- <li><strong>Réputation et ancienneté</strong> — Solidité financière et expérience sur le marché</li>
- <li><strong>Accessibilité géographique</strong> — Présence dans votre ville ou pays</li>
- </ol>
- </div>
 
  <div class="border-l-4 border-pink-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🌐 2.6 Autres Acteurs Clés de l'Écosystème</h2>
+ <h2 class="text-2xl font-bold text-gray-900 mb-4">🌐 2.5 Autres Acteurs Clés de l'Écosystème</h2>
 
  <h3 class="text-xl font-bold text-gray-900 mb-3">📊 SGO (Sociétés de Gestion d'OPCVM)</h3>
  <p class="text-base mb-4 leading-relaxed">
@@ -739,7 +705,7 @@ async function main() {
 
  <h3 class="text-xl font-bold text-gray-900 mb-3">📰 Médias financiers et analystes</h3>
  <p class="text-base mb-6 leading-relaxed">
- Ils diffusent l'information financière, analysent les entreprises et contribuent à la transparence du marché. Exemples : AfriBourse (😉), Financial Afrik, Investir au Cameroun, etc.
+ Ils diffusent l'information financière, analysent les entreprises et contribuent à la transparence du marché. Exemples : AfriBourse (😉), Financial Afrik, etc.
  </p>
  </div>
 
@@ -850,9 +816,9 @@ async function main() {
  <div class="bg-red-50 p-4 rounded-lg">
  <h3 class="font-bold text-red-800 mb-2 flex items-center gap-2">⚠️ Risques associés</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-700">
- <li>Forte volatilité possible.</li>
- <li>Risque de faillite (actionnaires payés en dernier).</li>
- <li>Dividendes non garantis.</li>
+ <li>La valeur de l’action peut baisser fortement.</li>
+ <li>En cas de faillite, les actionnaires sont rémunérés en dernier.</li>
+ <li>Les dividendes ne sont jamais garantis.</li>
  </ul>
  </div>
  </div>
@@ -862,67 +828,73 @@ async function main() {
  </div>
 
  <div class="bg-blue-50 p-4 rounded-lg text-blue-800 font-medium text-center">
- 🎓 <strong>À retenir :</strong> Acheter une action, c’est parier sur la croissance future d’une entreprise.
+ 🎓 <strong>À retenir :</strong> Acheter une action, c’est croire en la croissance d’une entreprise.
+Vous partagez ses succès (dividendes, hausse de valeur) mais aussi ses difficultés.
  </div>
  </div>
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">3.2 Les Obligations — Prêter à une entreprise ou à l’État</h2>
- <p class="text-gray-600 mb-6">Une obligation est un titre de créance : vous prêtez de l'argent à un émetteur en échange d’intérêts fixes sur une durée définie.</p>
+ <p class="text-gray-600 mb-6">Une obligation est un titre de créance : vous prêtez de l'argent à un émetteur (entreprise, État ou institution publique) en échange d’intérêts fixes sur une durée définie.</p>
 
  <div class="grid md:grid-cols-2 gap-6 mb-6">
  <div>
  <h3 class="font-bold text-gray-800 mb-2">💰 Fonctionnement</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-600">
- <li>Versement de coupons annuels (intérêts).</li>
- <li>Remboursement du capital à l’échéance.</li>
+ <li>Vous prêtez, par exemple, 100 000 FCFA pour 5 ans.</li>
+ <li>L’émetteur vous verse des coupons annuels (intérêts) et vous rembourse le capital à la fin (maturité).</li>
  </ul>
  </div>
  <div>
  <h3 class="font-bold text-gray-800 mb-2">🧭 Types d'obligations à la BRVM</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-600">
- <li><strong>Obligations d’État</strong> : très sécurisées.</li>
+ <li><strong>Obligations d’État</strong> : émises par les pays de l’UEMOA (très sécurisées).</li>
  <li><strong>Obligations d’entreprise</strong> : rendement plus élevé, risque modéré.</li>
  </ul>
  </div>
  </div>
 
  <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500 mb-4">
- <h3 class="font-bold text-gray-800 mb-2">📊 Exemple BRVM</h3>
+ <h3 class="font-bold text-gray-800 mb-2">⚖️ Rendement / Risque</h3>
  <ul class="list-disc list-inside text-gray-700">
- <li>État du Sénégal 6,5% 2028</li>
- <li>Oragroup 5,75% 2027</li>
+ <li>Rendement stable, risque faible.</li>
+ <li>Mais la contrepartie est que vous ne profitez pas de la croissance de l’entreprise.</li>
  </ul>
  </div>
 
  <div class="bg-blue-50 p-4 rounded-lg text-blue-800 font-medium text-center">
- 🎓 <strong>À retenir :</strong> Une obligation est un prêt avec rendement stable et risque limité.
+ 🎓 <strong>À retenir :</strong> Une obligation, c’est un contrat de confiance : vous prêtez aujourd’hui, on vous rembourse demain avec intérêts.
  </div>
  </div>
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">3.3 Les OPCVM et ETF — Investissement collectif intelligent</h2>
- <p class="text-gray-600 mb-6">Les OPCVM regroupent l’argent de plusieurs investisseurs pour constituer un portefeuille diversifié, géré par des professionnels.</p>
+ <p class="text-gray-600 mb-6">Les OPCVM (Organismes de Placement Collectif en Valeurs Mobilières) regroupent l’argent de plusieurs investisseurs pour constituer un portefeuille diversifié, géré par des professionnels.</p>
  
  <div class="grid md:grid-cols-3 gap-4 mb-6">
  <div class="bg-gray-50 p-4 rounded-lg">
  <h3 class="font-bold text-gray-800 mb-2">📦 Deux familles</h3>
  <ul class="list-disc list-inside text-sm text-gray-600">
- <li><strong>FCP</strong> : fonds communs de placement.</li>
- <li><strong>SICAV</strong> : sociétés d’investissement à capital variable.</li>
+ <li><strong>FCP</strong> : fonds communs de placement. 
+ → Vous détenez des parts d’un fonds géré par une société agréée.</li>
+ <li><strong>SICAV</strong> : sociétés d’investissement à capital variable.
+ Vous êtes actionnaire d’une société qui gère le portefeuille.</li>
  </ul>
  </div>
  <div class="bg-gray-50 p-4 rounded-lg">
  <h3 class="font-bold text-gray-800 mb-2">🪙 Avantages</h3>
  <ul class="list-disc list-inside text-sm text-gray-600">
- <li>Diversification immédiate.</li>
- <li>Gestion professionnelle.</li>
- <li>Accessibilité avec un petit capital.</li>
+ <li>Diversification immédiate (moins de risque).</li>
+ <li>Gestion professionnelle (vous déléguez les décisions).</li>
+ <li>Accessibilité (petit capital possible).</li>
  </ul>
  </div>
  <div class="bg-gray-50 p-4 rounded-lg">
- <h3 class="font-bold text-gray-800 mb-2">📈 ETF</h3>
- <p class="text-sm text-gray-600">Répliquent un indice (ex: BRVM 10). Encore rares dans l'UEMOA, c'est le futur de l'investissement passif.</p>
+ <h3 class="font-bold text-gray-800 mb-2">📈 ETF (Exchange Traded Funds)</h3>
+ <p class="text-sm text-gray-600">Les ETF sont des OPCVM cotés en Bourse.
+Ils répliquent la performance d’un indice comme le BRVM Composite ou le BRVM 10.
+n'existe pas encore a la brvm, ils représentent le futur de l’investissement passif.
+</p>
  </div>
  </div>
 
@@ -940,7 +912,7 @@ async function main() {
  </div>
  <div class="space-y-2">
  <h3 class="text-lg font-bold text-indigo-600">📈 Splits</h3>
- <p class="text-gray-600 text-sm leading-relaxed">Division des actions pour les rendre plus accessibles. <br><span class="italic text-gray-500">Exemple : 1 action à 30 000 FCFA devient 10 à 3 000 FCFA.</span></p>
+ <p class="text-gray-600 text-sm leading-relaxed">Une entreprise divise ses actions pour rendre leur prix plus accessible. <br><span class="italic text-gray-500">Exemple : 1 action à 30 000 FCFA devient 10 à 3 000 FCFA. La valeur totale reste la même, mais la liquidité augmente.</span></p>
  </div>
  <div class="space-y-2">
  <h3 class="text-lg font-bold text-indigo-600">💹 Augmentation</h3>
@@ -996,29 +968,7 @@ async function main() {
  </div>
  </div>
 
- <div class="bg-indigo-50 p-8 rounded-xl border-2 border-indigo-100">
- <h2 class="text-2xl font-bold text-indigo-900 mb-4 flex items-center gap-2">
- 🧠 Atelier Pratique — “Action vs Obligation”
- </h2>
- 
- <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
- <p class="font-semibold text-gray-800 mb-2">Situation :</p>
- <p class="text-gray-600 mb-4">Vous avez 1 000 000 FCFA et hésitez entre :</p>
- <ul class="list-disc list-inside space-y-1 text-gray-700 ml-4">
- <li>Actions SONATEL (cours 15 000 FCFA, dividende 5%)</li>
- <li>Obligation État du Sénégal 6% sur 5 ans</li>
- </ul>
- </div>
 
- <div>
- <p class="font-semibold text-indigo-900 mb-2">Exercice :</p>
- <ol class="list-decimal list-inside space-y-2 text-indigo-800 ml-4">
- <li>Calculez le revenu annuel attendu de chaque option.</li>
- <li>Comparez les risques.</li>
- <li>Choisissez selon votre profil (croissance vs stabilité).</li>
- </ol>
- </div>
- </div>
 
  <div class="bg-gray-900 text-gray-300 p-8 rounded-xl">
  <h2 class="text-2xl font-bold text-white mb-6">🧭 En Résumé</h2>
@@ -1033,11 +983,10 @@ async function main() {
  <li class="flex items-center gap-2"><span class="text-yellow-400">★</span> Règle d’or : comprendre avant d’investir.</li>
  </ul>
  </div>
- 
  <hr class="border-gray-700 my-8"/>
  
  <div class="flex items-center justify-between">
- <p class="text-white font-medium">🚀 Prochaine étape : Module 4 — “Le Temps, votre meilleur allié”</p>
+ <p class="text-white font-medium">🚀 Prochaine étape : Module 4 — “Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement”</p>
  <button class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors">
  Commencer
  </button>
@@ -1062,34 +1011,17 @@ async function main() {
     order_index: 4,
     is_published: true,
     content: `
- <div class="space-y-8 max-w-4xl mx-auto">
-
- <div class="bg-gradient-to-r from-orange-600 to-amber-700 text-white p-8 rounded-2xl shadow-lg">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- 🎯 Objectif Pédagogique
- </h2>
- <p class="text-lg mb-6 text-orange-50">À la fin de ce module, vous comprendrez :</p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Les grandes familles d'actifs émergentes</strong> dans la région UEMOA.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Comment elles diffèrent</strong> des actions et obligations classiques.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Pourquoi elles représentent le futur</strong> de la finance africaine.
- </li>
- </ul>
- </div>
+<div class="slide" data-slide="1">
+  <div class="objectif-hero">
+    <h2>🎯 Objectif Pédagogique</h2>
+    <p>À la fin de ce module, vous comprendrez :</p>
+    <ul>
+      <li><strong>Les grandes familles d'actifs émergentes</strong> dans la région UEMOA</li>
+      <li><strong>Comment elles diffèrent</strong> des actions et obligations classiques</li>
+      <li><strong>Pourquoi elles représentent le futur</strong> de la finance africaine</li>
+    </ul>
+  </div>
+</div>
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-orange-100 pb-2 flex items-center gap-2">
@@ -1128,7 +1060,7 @@ async function main() {
  </div>
 
  <div class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded">
- 🔍 <strong>Cas régional :</strong> Dans l’UEMOA, la SCPI est encore marginale, mais des initiatives émergent, notamment via les futurs OPCI.
+ 🔍 <strong>Cas régional :</strong> Dans l’UEMOA, la SCPI reste encore marginale, mais plusieurs acteurs réfléchissent à sa mise en place. Les premiers fonds immobiliers régionaux devraient voir le jour dans les prochaines années, notamment via des OPCI (Organismes de Placement Collectif Immobilier).
  </div>
  </div>
 
