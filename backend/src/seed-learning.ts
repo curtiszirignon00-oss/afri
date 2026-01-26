@@ -1240,256 +1240,223 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
- <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white p-8 rounded-2xl shadow-lg">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- ⏳ Module 5 : Le Temps, Votre Meilleur Allié
- </h2>
- <p class="text-lg mb-6 text-teal-50">
- Définir ses Objectifs et son Horizon. À la fin de ce module, vous serez capable de : 
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Définir précisément votre horizon de placement</strong> (court, moyen, long terme) en fonction de vos objectifs. 
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Comprendre le rôle du temps</strong> pour gérer le risque et la volatilité. 
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Établir votre profil d'investisseur</strong> et déterminer l'allocation d'actifs cohérente. 
- </li>
- </ul>
- </div>
+<div class="slide" data-slide="1">
+  <div class="objectif-hero">
+    <h2 style="color: #000000;">⏳ Module 5 : Le Temps, Votre Meilleur Allié</h2>
+    <p>À la fin de ce module, vous serez capable de :</p>
+    <ul>
+      <li><strong>Définir précisément votre horizon de placement</strong> (court, moyen, long terme) en fonction de vos objectifs</li>
+      <li><strong>Comprendre le rôle du temps</strong> pour gérer le risque et la volatilité</li>
+      <li><strong>Établir votre profil d'investisseur</strong> et déterminer l'allocation d'actifs cohérente</li>
+    </ul>
+  </div>
+</div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-teal-100 pb-2 flex items-center gap-2">
- 🎯 5.1 Définir ses objectifs de vie et d’investissement
- </h2>
- 
- <p class="text-gray-600 mb-4">
- La bourse n'est pas un jeu, c'est un outil pour réaliser vos projets de vie. Avant de choisir un titre, vous devez définir la durée pendant laquelle vous pouvez vous passer de cet argent. 
- </p>
+<div class="slide" data-slide="2">
+  <div class="section-blue">
+    <h2>🎯 5.1 Définir ses objectifs de vie et d'investissement</h2>
 
- 
- <div class="mb-6">
- <h3 class="text-lg font-bold text-teal-700 mb-2">L'Horizon de Placement</h3>
- <p class="text-gray-600 mb-4">
- C'est la période pendant laquelle vous prévoyez de garder votre investissement. Cette durée dicte le niveau de risque que vous pouvez vous permettre. 
- </p>
- </div>
+    <p>La bourse n'est pas un jeu, c'est un outil pour réaliser vos projets de vie. Avant de choisir un titre, vous devez définir la durée pendant laquelle vous pouvez vous passer de cet argent.</p>
 
- <div class="overflow-x-auto mb-6">
- <table class="min-w-full divide-y divide-gray-200 text-sm">
- <thead class="bg-teal-50">
- <tr>
- <th class="px-4 py-3 text-left font-bold text-teal-900">Horizon</th>
- <th class="px-4 py-3 text-left font-bold text-teal-900">Durée</th>
- <th class="px-4 py-3 text-left font-bold text-teal-900">Objectif Typique</th>
- <th class="px-4 py-3 text-left font-bold text-teal-900">Allocation Recommandée</th>
- </tr>
- </thead>
- <tbody class="bg-white divide-y divide-gray-200">
- <tr>
- <td class="px-4 py-3 font-bold">Court Terme</td>
- <td class="px-4 py-3">Moins de 2 ans</td>
- <td class="px-4 py-3">Fonds d'urgence, scolarité</td>
- <td class="px-4 py-3 text-gray-500">Minimal (Obligations, sécurisé)</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-bold">Moyen Terme</td>
- <td class="px-4 py-3">2 à 7 ans</td>
- <td class="px-4 py-3">Auto, apport immobilier</td>
- <td class="px-4 py-3 text-yellow-600">Modéré (Mixte Actions/Obligations)</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-bold">Long Terme</td>
- <td class="px-4 py-3">Plus de 7 ans</td>
- <td class="px-4 py-3">Retraite, indépendance</td>
- <td class="px-4 py-3 text-green-600 font-bold">Croissance (Majorité Actions)</td>
- </tr>
- </tbody>
- </table>
- 
- </div>
+    <h3>L'Horizon de Placement : La Durée de l'Engagement</h3>
+    <p>C'est la période pendant laquelle vous prévoyez de garder votre investissement. Cette durée dicte le niveau de risque que vous pouvez vous permettre.</p>
 
- <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
- <p class="text-yellow-800">
- <strong>💡 Conseil d'Expert :</strong> Chaque grand objectif de vie (retraite, études, maison) doit être traité comme un compte d'investissement séparé, avec son propre horizon. 
- </p>
- </div>
- </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Horizon</th>
+          <th>Durée</th>
+          <th>Objectif Typique</th>
+          <th>Allocation Recommandée</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Court Terme</strong></td>
+          <td>Moins de 2 ans</td>
+          <td>Fonds d'urgence, scolarité</td>
+          <td>Minimal (Obligations, sécurisé)</td>
+        </tr>
+        <tr>
+          <td><strong>Moyen Terme</strong></td>
+          <td>2 à 7 ans</td>
+          <td>Auto, apport immobilier</td>
+          <td>Modéré (Mixte Actions/Obligations)</td>
+        </tr>
+        <tr>
+          <td><strong>Long Terme</strong></td>
+          <td>Plus de 7 ans</td>
+          <td>Retraite, indépendance</td>
+          <td>Croissance (Majorité Actions)</td>
+        </tr>
+      </tbody>
+    </table>
 
- <div class="bg-indigo-900 text-white p-8 rounded-xl shadow-md relative overflow-hidden">
- <div class="relative z-10">
- <h2 class="text-2xl font-bold mb-4 text-indigo-200">
- 🚌 5.1.2 Le Pouvoir du Temps : L'Analogie du Car de Nuit 
- </h2>
- 
- <div class="grid md:grid-cols-2 gap-8 items-center">
- <div>
- <h3 class="font-bold text-white mb-2">La Volatilité (Les secousses)</h3>
- <p class="text-indigo-100 mb-4 text-sm leading-relaxed">
- À court terme, les marchés peuvent être erratiques. Si vous regardez par la fenêtre, le paysage est flou et scintillant (volatilité quotidienne). Vous ne voyez que les secousses.
- </p>
- 
- <h3 class="font-bold text-white mb-2">La Destination (Long terme)</h3>
- <p class="text-indigo-100 text-sm leading-relaxed">
- Historiquement, les marchés ont toujours eu une tendance haussière sur des décennies. Si vous fixez l'horloge et la destination, vous savez que vous arriverez à bon port malgré les cahots. 
- </p>
- </div>
- <div class="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/20">
- <p class="text-center text-sm mt-2 italic text-indigo-200">
- "L'investisseur à long terme se concentre sur la destination, pas sur les secousses." 
- </p>
- </div>
- </div>
- </div>
- </div>
+    <div class="analogy-box">
+      <p><strong>💡 Conseil d'Expert :</strong> Chaque grand objectif de vie (retraite, études, maison) doit être traité comme un compte d'investissement séparé, avec son propre horizon.</p>
+    </div>
+  </div>
+</div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-teal-100 pb-2 flex items-center gap-2">
- ⚖️ 5.2 Lien entre horizon et allocation 
- </h2>
+<div class="slide" data-slide="3">
+  <div class="bg-indigo-900 text-white p-8 rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold mb-4 text-white">🚌 5.1.2 Le Pouvoir du Temps : L'Analogie du Car de Nuit</h2>
 
- <div class="mb-6">
- <p class="text-gray-600 mb-4">
- Votre profil est défini par votre <strong>tolérance au risque</strong> : votre capacité émotionnelle (accepter le stress) et financière (ne pas avoir besoin de l'argent) à subir une perte. 
- </p>
- <blockquote class="border-l-4 border-teal-500 pl-4 italic text-gray-600 my-4 bg-gray-50 py-2 pr-2 rounded-r">
- “If you aren't willing to own a stock for ten years, don't even think about owning it for ten minutes.” — Warren Buffett 
- </blockquote>
- </div>
+    <div class="grid md:grid-cols-2 gap-8 items-center">
+      <div>
+        <h3 class="font-bold text-white mb-2">La Volatilité (Les secousses)</h3>
+        <p class="text-white mb-4 text-sm leading-relaxed">
+          À court terme, les marchés peuvent être erratiques. Si vous regardez par la fenêtre, le paysage est flou et scintillant (volatilité quotidienne). Vous ne voyez que les secousses.
+        </p>
 
- 
- <h3 class="text-lg font-bold text-teal-700 mb-3 mt-6">Les Trois Profils d'Investisseur </h3>
- <div class="overflow-x-auto">
- <table class="min-w-full divide-y divide-gray-200">
- <thead class="bg-gray-50">
- <tr>
- <th class="px-4 py-3 text-left font-bold text-gray-600">Profil</th>
- <th class="px-4 py-3 text-left font-bold text-gray-600">Tolérance Risque</th>
- <th class="px-4 py-3 text-left font-bold text-gray-600">Allocation Typique</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-gray-200 text-sm">
- <tr class="hover:bg-gray-50">
- <td class="px-4 py-3 font-bold text-blue-600">🛡️ Prudent</td>
- <td class="px-4 py-3">Faible (Perte max 10%)</td>
- <td class="px-4 py-3">Majorité Obligations (ex: 80%)</td>
- </tr>
- <tr class="hover:bg-gray-50">
- <td class="px-4 py-3 font-bold text-yellow-600">⚖️ Équilibré</td>
- <td class="px-4 py-3">Moyenne (Perte max 15%)</td>
- <td class="px-4 py-3">Mixte Actions/Oblig. (50/50)</td>
- </tr>
- <tr class="hover:bg-gray-50">
- <td class="px-4 py-3 font-bold text-red-600">🚀 Dynamique</td>
- <td class="px-4 py-3">Élevée (Tolère 30%+)</td>
- <td class="px-4 py-3">Majorité Actions (80%+)</td>
- </tr>
- </tbody>
- </table>
- 
- </div>
+        <h3 class="font-bold text-white mb-2">La Destination (Long terme)</h3>
+        <p class="text-white text-sm leading-relaxed">
+          Historiquement, les marchés ont toujours eu une tendance haussière sur des décennies. Si vous fixez l'horloge et la destination, vous savez que vous arriverez à bon port malgré les cahots.
+        </p>
+      </div>
+      <div class="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/20">
+        <p class="text-center text-sm mt-2 italic text-white">
+          "L'investisseur à long terme se concentre sur la destination, pas sur les secousses."
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
- <div class="mt-4 bg-teal-50 p-4 rounded-lg text-sm text-teal-900">
- <strong>Exemple :</strong> Mamadou (25 ans, retraite) est <strong>Dynamique</strong>. Mamadou (55 ans, achat maison dans 3 ans) est <strong>Prudent</strong>.
- </div>
- </div>
+<div class="slide" data-slide="4">
+  <div class="section-green">
+    <h2>⚖️ 5.2 Lien entre horizon et allocation</h2>
 
- <div class="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
- 📝 5.3 Exercice Pratique : Quel est votre profil ?
- </h2>
+    <div class="mb-6">
+    <p class="text-gray-600 mb-4">Votre profil d'investisseur est défini par votre tolérance au risque, qui est votre capacité :</p>
+    <ol class="list-decimal ml-6 mb-4 space-y-2 text-gray-600">
+      <li><strong>Émotionnelle :</strong> À accepter psychologiquement une perte temporaire sur votre capital.</li>
+      <li><strong>Financière :</strong> À ne pas avoir besoin de cet argent en cas de baisse du marché.</li>
+    </ol>
+    <blockquote class="border-l-4 border-teal-500 pl-4 italic text-gray-600 my-4 bg-gray-50 py-2 pr-2 rounded-r">
+      "If you aren't willing to own a stock for ten years, don't even think about owning it for ten minutes." — Warren Buffett
+    </blockquote>
+  </div>
 
- <div class="space-y-6">
- <div class="bg-white p-4 rounded-lg shadow-sm">
- <h3 class="font-bold text-gray-800 mb-2">1. Question Émotionnelle </h3>
- <p class="text-gray-600 mb-3">Votre portefeuille perd 20% en un mois (1M FCFA devient 800k). Que faites-vous ?</p>
- <ul class="space-y-2 text-sm">
- <li class="flex items-center gap-2">
- <span class="w-6 h-6 rounded-full border flex items-center justify-center text-gray-500">A</span>
- Je vends tout pour sauver les meubles. <span class="font-bold text-blue-600">→ Prudent</span> 
- </li>
- <li class="flex items-center gap-2">
- <span class="w-6 h-6 rounded-full border flex items-center justify-center text-gray-500">B</span>
- Je stresse mais j'attends. <span class="font-bold text-yellow-600">→ Équilibré</span> 
- </li>
- <li class="flex items-center gap-2">
- <span class="w-6 h-6 rounded-full border flex items-center justify-center text-gray-500">C</span>
- J'achète plus à bas prix ! <span class="font-bold text-red-600">→ Dynamique</span> 
- </li>
- </ul>
- </div>
+  <h3 class="text-lg font-bold text-teal-700 mb-3 mt-6">Les Trois Profils d'Investisseur</h3>
+  <p class="text-gray-600 mb-4">Votre profil vous aide à déterminer la répartition idéale entre les classes d'actifs : les Actions (croissance, risque élevé) et les Obligations/Sécurité (sécurité, risque faible).</p>
 
- <div class="bg-white p-4 rounded-lg shadow-sm">
- <h3 class="font-bold text-gray-800 mb-2">Synthèse de la Stratégie </h3>
- <div class="overflow-x-auto">
- <table class="min-w-full text-sm">
- <thead class="bg-gray-100 text-gray-600">
- <tr>
- <th class="px-2 py-1 text-left">Objectif</th>
- <th class="px-2 py-1 text-left">Horizon</th>
- <th class="px-2 py-1 text-left">Allocation (Exemple BRVM)</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-gray-100">
- <tr>
- <td class="px-2 py-2 font-medium">Fonds d'Urgence</td>
- <td class="px-2 py-2">< 1 an</td>
- <td class="px-2 py-2">100% Liquide / Banque</td>
- </tr>
- <tr>
- <td class="px-2 py-2 font-medium">Études enfants</td>
- <td class="px-2 py-2">10-15 ans</td>
- <td class="px-2 py-2">60% Actions / 40% Oblig. (Sonatel, Ecobank)</td>
- </tr>
- <tr>
- <td class="px-2 py-2 font-medium">Retraite</td>
- <td class="px-2 py-2">20 ans +</td>
- <td class="px-2 py-2">80% Actions (Fort potentiel)</td>
- </tr>
- </tbody>
- </table>
- </div>
- </div>
- </div>
- </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
+      <thead class="bg-teal-50">
+        <tr>
+          <th class="px-4 py-3 text-left font-bold text-teal-900">Profil</th>
+          <th class="px-4 py-3 text-left font-bold text-teal-900">Objectif Principal</th>
+          <th class="px-4 py-3 text-left font-bold text-teal-900">Tolérance au Risque</th>
+          <th class="px-4 py-3 text-left font-bold text-teal-900">Allocation d'Actifs Typique</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr>
+          <td class="px-4 py-3 font-bold">Prudent</td>
+          <td class="px-4 py-3">Sécurité du capital, revenu stable</td>
+          <td class="px-4 py-3">Faible (Ne supporte pas une perte de 10%)</td>
+          <td class="px-4 py-3">Majorité Obligations/OPCVM Prudent (ex: 80% Obligations)</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 font-bold">Équilibré</td>
+          <td class="px-4 py-3">Croissance modérée et revenu</td>
+          <td class="px-4 py-3">Moyenne (Accepte une perte temporaire de 15%)</td>
+          <td class="px-4 py-3">Mixte Actions/Obligations (ex: 50%/50%)</td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3 font-bold">Dynamique</td>
+          <td class="px-4 py-3">Maximisation de la croissance</td>
+          <td class="px-4 py-3">Élevée (Se concentre sur le potentiel, tolère 30% de perte)</td>
+          <td class="px-4 py-3">Majorité Actions (ex: 80% et plus d'Actions)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
- <div class="bg-teal-900 text-teal-50 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-white mb-4">🧠 Les Termes à Maîtriser </h2>
- <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <div>
- <strong class="text-white">Horizon de Placement :</strong> La durée de détention prévue de l'actif. 
- </div>
- <div>
- <strong class="text-white">Volatilité :</strong> L'intensité des variations de prix. 
- </div>
- <div>
- <strong class="text-white">Allocation d'Actifs :</strong> Répartition du capital (Actions vs Obligations). 
- </div>
- </div>
- 
- <hr class="border-teal-700 my-6"/>
- 
- <div class="text-center">
- <h3 class="text-xl font-bold text-white mb-2">Félicitations ! 🎉</h3>
- <p class="mb-6">Vous savez désormais que le temps est votre plus grand atout. </p>
- <div class="inline-block bg-teal-600 hover:bg-teal-500 text-white px-6 py-3 rounded-lg transition-colors font-bold shadow-lg cursor-pointer">
- 👉 Prochaine leçon : Module 6 — Le Mental du Gagnant 
- </div>
- </div>
- </div>
+    <div class="example-box">
+      <p><strong>Exemple :</strong> Un Mamadou de 25 ans qui économise pour sa retraite est un investisseur dynamique, car il peut se permettre de prendre des risques sur 40 ans. Un Mamadou de 55 ans économisant pour l'achat d'une maison dans 3 ans sera prudent.</p>
+    </div>
+  </div>
+</div>
 
- </div>
+<div class="slide" data-slide="5">
+  <div class="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 5.3.2 Synthèse de la Stratégie</h2>
+    <p class="text-gray-600 mb-4">Aligner votre horizon temporel avec votre allocation d'actifs est la première étape vers une stratégie d'investissement réussie.</p>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-teal-50">
+          <tr>
+            <th class="px-4 py-3 text-left font-bold text-teal-900">Objectif de Vie (Poche)</th>
+            <th class="px-4 py-3 text-left font-bold text-teal-900">Horizon</th>
+            <th class="px-4 py-3 text-left font-bold text-teal-900">Profil d'Investissement</th>
+            <th class="px-4 py-3 text-left font-bold text-teal-900">Allocation d'Actifs (Ex.)</th>
+            <th class="px-4 py-3 text-left font-bold text-teal-900">Titres à Privilégier (BRVM)</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr>
+            <td class="px-4 py-3 font-bold">Fonds d'Urgence</td>
+            <td class="px-4 py-3">< 1 an</td>
+            <td class="px-4 py-3">Sécurité</td>
+            <td class="px-4 py-3">100% Liquide / Épargne</td>
+            <td class="px-4 py-3">Hors Bourse (Banque)</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-bold">Études des enfants</td>
+            <td class="px-4 py-3">10-15 ans</td>
+            <td class="px-4 py-3">Dynamique/Équilibré</td>
+            <td class="px-4 py-3">60% Actions BRVM / 40% Obligations</td>
+            <td class="px-4 py-3">Actions régionales solides (Sonatel, Ecobank, etc.)</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-bold">Retraite</td>
+            <td class="px-4 py-3">20 ans et +</td>
+            <td class="px-4 py-3">Dynamique</td>
+            <td class="px-4 py-3">80% Actions BRVM / 20% Obligations</td>
+            <td class="px-4 py-3">Actions à fort potentiel de croissance</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="slide" data-slide="6">
+  <div class="glossary-box">
+    <h2>🧠 Les Termes à Maîtriser</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Terme</th>
+          <th>Définition</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Horizon de Placement</strong></td>
+          <td>La durée de détention prévue de l'actif.</td>
+        </tr>
+        <tr>
+          <td><strong>Volatilité</strong></td>
+          <td>L'intensité des variations de prix.</td>
+        </tr>
+        <tr>
+          <td><strong>Allocation d'Actifs</strong></td>
+          <td>Répartition du capital (Actions vs Obligations).</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cta-box">
+    <h3>🎉 Félicitations !</h3>
+    <p>Vous savez désormais que le temps est votre plus grand atout.</p>
+    <p><strong>👉 Prochaine leçon : Module 6 — Le Mental du Gagnant</strong></p>
+  </div>
+</div>
 `,
   });
 
@@ -1508,216 +1475,260 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     content: `
  <div class="space-y-8 max-w-4xl mx-auto">
 
- <div class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-lg">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- 💭 Module 6 : Le Mental du Gagnant
- </h2>
- <p class="text-lg mb-6 text-purple-100">
- Psychologie d’Investissement. À la fin de ce module, vous serez capable de :
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Comprendre les principes de la finance comportementale</strong> et distinguer l'investissement de la spéculation.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Identifier les biais cognitifs et émotionnels</strong> (peur, avidité) pour éviter les pièges.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Utiliser le pouvoir des intérêts composés</strong> pour bâtir une vision long terme.
- </li>
- </ul>
- </div>
+<div class="space-y-8 max-w-4xl mx-auto">
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-purple-100 pb-2 flex items-center gap-2">
- 🧠 6.1 Introduction à la finance comportementale
- </h2>
- 
- <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-purple-500 mb-6">
- <p class="text-gray-700 italic">
- "Sur les marchés financiers, la plus grande menace pour votre portefeuille n'est pas la crise économique, mais l'homme qui se regarde dans le miroir : <strong>vous-même</strong>." 
- </p>
- </div>
+  <div class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-lg">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+      🎯 Objectif Pédagogique du Module
+    </h2>
+    <p class="text-lg mb-6 text-purple-100">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-3 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Comprendre les principes de la finance comportementale et la différence entre investir et spéculer.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Identifier les biais cognitifs et émotionnels les plus fréquents (peur, avidité) et leur impact sur vos décisions.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Mettre en place des stratégies (antidotes) pour une discipline d'investissement rigoureuse.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Utiliser le pouvoir des intérêts composés comme preuve de la nécessité d'une vision à long terme.
+      </li>
+    </ul>
+  </div>
 
- <h3 class="text-lg font-bold text-purple-800 mb-4">Investir vs. Spéculer : Une Distinction Essentielle</h3>
- 
- <div class="overflow-x-auto mb-6">
- <table class="min-w-full divide-y divide-gray-200 text-sm">
- <thead class="bg-purple-50">
- <tr>
- <th class="px-4 py-3 text-left font-bold text-purple-900">Caractéristique</th>
- <th class="px-4 py-3 text-left font-bold text-purple-900">L'Investisseur (Propriétaire)</th>
- <th class="px-4 py-3 text-left font-bold text-purple-900">Le Spéculateur (Joueur)</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-gray-200">
- <tr>
- <td class="px-4 py-3 font-bold text-gray-600">Objectif</td>
- <td class="px-4 py-3">Acquérir une part d’entreprise (Valeur interne) </td>
- <td class="px-4 py-3">Parier sur le prix à court terme </td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-bold text-gray-600">Horizon</td>
- <td class="px-4 py-3 text-green-600 font-bold">Long terme (années) </td>
- <td class="px-4 py-3 text-red-500 font-bold">Court terme (jours) </td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-bold text-gray-600">Moteur</td>
- <td class="px-4 py-3">Patience, fondamentaux </td>
- <td class="px-4 py-3">Excitation ou Panique </td>
- </tr>
- </tbody>
- </table>
- </div>
- </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-purple-100 pb-2 flex items-center gap-2">
+      🧠 6.1 Introduction à la finance comportementale
+    </h2>
+    
+    <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-purple-500 mb-6">
+      <p class="text-gray-700 italic">
+        Sur les marchés financiers, la plus grande menace pour votre portefeuille n'est pas la crise économique, mais l'homme qui se regarde dans le miroir : vous-même. 
+        La finance comportementale enseigne que les émotions (la peur et l'avidité) mènent aux décisions irrationnelles, ce qui est la cause principale des erreurs chez les débutants.
+      </p>
+    </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-purple-100 pb-2 flex items-center gap-2">
- 🎭 6.2 Nos pires ennemis : Émotions et Biais
- </h2>
+    <h3 class="text-xl font-bold text-purple-800 mb-4">6.1.1 Investir vs. Spéculer : Une Distinction Essentielle</h3>
+    <p class="text-gray-600 mb-4">Définir clairement votre rôle est la première étape pour maîtriser votre mental :</p>
+    
+    <div class="overflow-x-auto mb-6">
+      <table class="min-w-full border divide-y divide-gray-200 text-sm">
+        <thead class="bg-purple-50">
+          <tr>
+            <th class="px-4 py-3 text-left font-bold text-purple-900">Caractéristique</th>
+            <th class="px-4 py-3 text-left font-bold text-purple-900">L'Investisseur (Le Propriétaire)</th>
+            <th class="px-4 py-3 text-left font-bold text-purple-900">Le Spéculateur (Le Joueur)</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr>
+            <td class="px-4 py-3 font-bold text-gray-700">Objectif</td>
+            <td class="px-4 py-3 text-gray-600">Acquérir une part d’entreprise solide pour son potentiel de croissance future (Valeur interne de l’actif).</td>
+            <td class="px-4 py-3 text-gray-600">Parier sur l’évolution à court terme du prix.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-bold text-gray-700">Horizon de Temps</td>
+            <td class="px-4 py-3 text-green-600 font-bold">Long terme (années, décennies).</td>
+            <td class="px-4 py-3 text-red-500 font-bold">Court terme (jours, semaines).</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 font-bold text-gray-700">Moteur</td>
+            <td class="px-4 py-3 text-gray-600">La patience, l’analyse des fondamentaux.</td>
+            <td class="px-4 py-3 text-gray-600">L'excitation (marché monte) ou panique (marché descend).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
- <div class="grid md:grid-cols-2 gap-6 mb-8">
- <div class="bg-rose-50 p-5 rounded-xl border border-rose-100">
- <h3 class="text-lg font-bold text-rose-800 mb-2 flex items-center gap-2">😨 La Peur (Fear)</h3>
- <p class="text-sm text-gray-700 mb-2">Vous pousse à vendre lorsque les prix baissent.</p>
- <p class="text-xs font-bold text-rose-700">Conséquence : Transforme une perte temporaire en perte réelle.</p>
- </div>
- <div class="bg-amber-50 p-5 rounded-xl border border-amber-100">
- <h3 class="text-lg font-bold text-amber-800 mb-2 flex items-center gap-2">🤑 L'Avidité (Greed)</h3>
- <p class="text-sm text-gray-700 mb-2">Vous pousse à acheter cher par peur de manquer le gain (FOMO).</p>
- <p class="text-xs font-bold text-amber-700">Conséquence : Achat de titres surévalués.</p>
- </div>
- </div>
+    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+      <p class="text-sm text-blue-800">
+        <strong>💡 Rappel de l'Expert :</strong> L'excitation et les dépenses sont vos ennemis. L'excitation conduit aux achats impulsifs aux prix trop élevés. Concentrez-vous à agir comme un propriétaire d'entreprise.
+      </p>
+    </div>
+  </div>
 
- <h3 class="text-lg font-bold text-purple-800 mb-4">Les Biais Cognitifs Fréquents</h3>
- <div class="space-y-4">
- <div class="flex items-start gap-3">
- <div class="bg-purple-100 p-2 rounded text-purple-600 mt-1">1</div>
- <div>
- <strong class="text-gray-800">Le Biais de Confirmation :</strong> Chercher uniquement les infos qui confortent votre choix initial.
- </div>
- </div>
- <div class="flex items-start gap-3">
- <div class="bg-purple-100 p-2 rounded text-purple-600 mt-1">2</div>
- <div>
- <strong class="text-gray-800">L'Ancrage :</strong> Rester figé sur le prix d'achat initial, ce qui empêche de vendre un titre perdant.
- </div>
- </div>
- <div class="flex items-start gap-3">
- <div class="bg-purple-100 p-2 rounded text-purple-600 mt-1">3</div>
- <div>
- <strong class="text-gray-800">L'Excès de Confiance :</strong> Surestimer sa capacité à "battre le marché".
- </div>
- </div>
- </div>
- </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-purple-100 pb-2 flex items-center gap-2">
+      🎭 6.2 Nos pires ennemis : La Peur, l'Avidité et les Biais Cognitifs
+    </h2>
+    <p class="text-gray-600 mb-6">Les bulles spéculatives et les krachs boursiers sont avant tout des phénomènes psychologiques, alimentés par deux émotions primaires.</p>
 
- <div class="bg-indigo-900 text-white p-8 rounded-xl shadow-md">
- <h2 class="text-2xl font-bold mb-4 text-indigo-100 flex items-center gap-2">
- 📈 6.3 La 8ème Merveille du Monde : Les Intérêts Composés
- </h2>
- 
- <div class="grid md:grid-cols-2 gap-8 items-center">
- <div>
- <p class="text-indigo-100 mb-4 leading-relaxed">
- C'est l'argent qui travaille pour l'argent. Les gains sont réinvestis pour générer de nouveaux gains.
- </p>
- <div class="bg-white/10 p-4 rounded-lg backdrop-blur-sm border border-white/20 text-center font-mono text-sm mb-4">
- $$ \text{Capital} \times (1 + \text{Taux})^{\text{Années}} $$
- </div>
- <div class="bg-green-600/20 p-4 rounded-lg border border-green-500/30">
- <h4 class="font-bold text-green-300 mb-1">🌳 Analogie du Baobab</h4>
- <p class="text-sm text-indigo-100">Un baobab grandit lentement au début, puis sa croissance accélère massivement. C'est le temps, pas l'effort, qui crée sa majesté.</p>
- </div>
- </div>
- <div class="bg-white/5 p-2 rounded-lg">
- </div>
- </div>
- </div>
+    <h3 class="text-lg font-bold text-purple-800 mb-4">6.2.1 La Peur et l'Avidité (Fear & Greed)</h3>
+    <div class="overflow-x-auto mb-8">
+      <table class="min-w-full border divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left font-bold text-gray-700">Émotion</th>
+            <th class="px-4 py-3 text-left font-bold text-gray-700">Description</th>
+            <th class="px-4 py-3 text-left font-bold text-gray-700">Conséquence Destructrice</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr class="bg-amber-50/30">
+            <td class="px-4 py-3 font-bold text-amber-700 italic">L'Avidité (Greed)</td>
+            <td class="px-4 py-3">Pousse à acheter quand les prix sont hauts par peur de manquer le gain (FOMO).</td>
+            <td class="px-4 py-3 font-medium text-amber-800">Achat de titres surévalués.</td>
+          </tr>
+          <tr class="bg-rose-50/30">
+            <td class="px-4 py-3 font-bold text-rose-700 italic">La Peur (Fear)</td>
+            <td class="px-4 py-3">Pousse à vendre lorsque les prix baissent.</td>
+            <td class="px-4 py-3 font-medium text-rose-800">Transformation d'une perte temporaire en perte réelle.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-purple-100 pb-2">
- 🛡️ Antidotes et Stratégies
- </h2>
+    <h3 class="text-lg font-bold text-purple-800 mb-4">6.2.2 Les Biais Cognitifs les Plus Fréquents</h3>
+    <div class="space-y-4">
+      <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+        <div class="bg-purple-600 text-white font-bold rounded-full h-8 w-8 flex items-center justify-center shrink-0">1</div>
+        <p class="text-gray-700"><strong class="text-purple-900">Le Biais de Confirmation :</strong> Chercher uniquement les nouvelles qui confortent votre choix initial, en ignorant les informations contradictoires.</p>
+      </div>
+      <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+        <div class="bg-purple-600 text-white font-bold rounded-full h-8 w-8 flex items-center justify-center shrink-0">2</div>
+        <p class="text-gray-700"><strong class="text-purple-900">L'Ancrage :</strong> Rester figé(e) sur le prix initial d'achat. Cela empêche de vendre un titre perdant car vous attendez qu'il remonte à votre prix d'achat.</p>
+      </div>
+      <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+        <div class="bg-purple-600 text-white font-bold rounded-full h-8 w-8 flex items-center justify-center shrink-0">3</div>
+        <p class="text-gray-700"><strong class="text-purple-900">L'Excès de Confiance :</strong> Surestimer sa propre capacité à battre le marché ou à prédire les mouvements de prix futurs.</p>
+      </div>
+    </div>
+  </div>
 
- <div class="grid md:grid-cols-3 gap-4 mb-8">
- <div class="bg-gray-50 p-4 rounded-lg">
- <h3 class="font-bold text-indigo-700 mb-2">💎 Value Investing</h3>
- <p class="text-sm text-gray-600">Acheter des "bonnes affaires" en dessous de leur valeur réelle (Style Warren Buffett).</p>
- </div>
- <div class="bg-gray-50 p-4 rounded-lg">
- <h3 class="font-bold text-indigo-700 mb-2">🚀 Growth Investing</h3>
- <p class="text-sm text-gray-600">Acheter des entreprises à forte croissance, même si elles semblent chères.</p>
- </div>
- <div class="bg-gray-50 p-4 rounded-lg">
- <h3 class="font-bold text-indigo-700 mb-2">💰 Dividendes</h3>
- <p class="text-sm text-gray-600">Viser des revenus réguliers via des entreprises matures (Banques, Télécoms).</p>
- </div>
- </div>
+  <div class="bg-indigo-950 text-white p-8 rounded-2xl shadow-xl">
+    <h2 class="text-2xl font-bold mb-6 text-indigo-200 border-b border-indigo-800 pb-2 flex items-center gap-2">
+      🛡️ 6.3 Les Antidotes : Discipline, Méthode et Routine
+    </h2>
+    
+    <div class="mb-10">
+      <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-300">📈 6.3.1 La 8ème Merveille du Monde : Les Intérêts Composés</h3>
+      <p class="text-indigo-100 mb-6 leading-relaxed">
+        C'est l'essence même de l'investissement à long terme. Les gains générés sont réinvestis pour produire à leur tour de nouveaux gains : c'est l'argent qui travaille pour l'argent.
+      </p>
+      
+      <div class="bg-white/10 p-6 rounded-xl border border-white/20 text-center mb-6">
+        <p class="text-sm text-indigo-300 mb-2 font-mono">Formule mathématique :</p>
+        <div class="text-xl font-mono">
+          $$ \text{Valeur Finale} = \text{Capital} \times (1 + \text{Taux d'intérêt})^{\text{Nombre d'années}} $$
+        </div>
+      </div>
 
- <div class="bg-red-50 p-5 rounded-xl border-l-4 border-red-500">
- <h3 class="font-bold text-red-800 mb-3">🚫 3 Erreurs à Éviter </h3>
- <ul class="list-disc list-inside space-y-1 text-red-700 text-sm">
- <li><strong>Timer le marché :</strong> Essayer de deviner le point le plus bas.</li>
- <li><strong>Manquer de diversification :</strong> Tout miser sur une seule action.</li>
- <li><strong>Vendre en Panique :</strong> Réagir émotionnellement à une baisse.</li>
- </ul>
- </div>
- </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-indigo-900/50 p-4 rounded-lg border border-indigo-700">
+          <p class="text-sm"><strong>🚀 Effet Exponentiel :</strong> Plus vous commencez tôt, plus la courbe de votre richesse s'envole de manière spectaculaire.</p>
+        </div>
+        <div class="bg-green-900/30 p-4 rounded-lg border border-green-700/50">
+          <h4 class="font-bold text-green-400 mb-1">🌳 Analogie : Le Jeune Baobab</h4>
+          <p class="text-xs text-indigo-100">Il met du temps à grandir au début, mais une fois ses racines établies, sa croissance accélère massivement. C'est le temps, pas l'effort, qui crée sa majesté.</p>
+        </div>
+      </div>
+    </div>
 
- <div class="bg-gray-800 text-gray-300 p-8 rounded-xl border border-gray-700">
- <div class="max-w-3xl mx-auto text-center">
- <h3 class="text-xl font-bold text-white mb-4">Le Secret de la Maîtrise</h3>
- <blockquote class="text-lg italic text-gray-400 mb-6">
- "Be fearful when others are greedy and greedy only when others are fearful."
- </blockquote>
- <p class="text-white font-medium">
- En résumé : Quand le marché panique, c'est le moment d'acheter. Quand tout le monde s'emballe, c'est le moment d'être prudent.
- </p>
- </div>
- </div>
+    <div class="bg-red-900/20 p-6 rounded-xl border border-red-500/30 mb-8">
+      <h3 class="text-lg font-bold text-red-400 mb-4 uppercase tracking-wider">🚫 6.3.2 Les 3 Erreurs Classiques à Éviter</h3>
+      <div class="space-y-4 text-sm">
+        <p><strong>1. Tenter de "Timer" le Marché :</strong> Essayer de deviner les points hauts ou bas. C'est de la spéculation.</p>
+        <p><strong>2. Manquer de Diversification :</strong> Tout miser sur une seule action. La diversification réduit le risque.</p>
+        <p><strong>3. Vendre en Panique :</strong> Réagir émotionnellement à une baisse, détruisant ainsi la puissance du long terme.</p>
+      </div>
+    </div>
 
- <div class="bg-purple-900 text-purple-50 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-white mb-4">🧠 Les Termes à Maîtriser</h2>
- <div class="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm mb-8">
- <div class="flex flex-col">
- <strong class="text-white">Intérêts Composés</strong>
- <span class="opacity-80">Gains réinvestis pour produire de nouveaux gains.</span>
- </div>
- <div class="flex flex-col">
- <strong class="text-white">Biais Cognitif</strong>
- <span class="opacity-80">Erreur de jugement basée sur des émotions.</span>
- </div>
- <div class="flex flex-col">
- <strong class="text-white">Ancrage</strong>
- <span class="opacity-80">Rester bloqué sur son prix d'achat initial.</span>
- </div>
- <div class="flex flex-col">
- <strong class="text-white">Value Investing</strong>
- <span class="opacity-80">Acheter des titres sous-évalués.</span>
- </div>
- </div>
- 
- <hr class="border-purple-700 my-6"/>
- 
- <div class="flex flex-col md:flex-row items-center justify-between gap-4">
- <p class="font-medium">Vous avez le mental. Place à l'analyse !</p>
- <button class="bg-white text-purple-900 hover:bg-purple-50 font-bold px-6 py-3 rounded-lg transition-colors shadow-lg">
- 👉 Module 7 : Analyse Fondamentale
- </button>
- </div>
- </div>
+    <h3 class="text-lg font-bold text-indigo-300 mb-4">6.3.3 Les Grandes Stratégies d'Investissement</h3>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+        <h4 class="font-bold text-white mb-2 underline">Value Investing</h4>
+        <p class="text-xs text-indigo-200">Acheter des "bonnes affaires" en dessous de leur valeur intrinsèque (Style Buffett).</p>
+      </div>
+      <div class="bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+        <h4 class="font-bold text-white mb-2 underline">Growth Investing</h4>
+        <p class="text-xs text-indigo-200">Acheter des entreprises à croissance rapide, même si elles semblent chères.</p>
+      </div>
+      <div class="bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
+        <h4 class="font-bold text-white mb-2 underline">Dividendes</h4>
+        <p class="text-xs text-indigo-200">Viser des revenus réguliers via des entreprises matures (Banques, Télécoms).</p>
+      </div>
+    </div>
+  </div>
 
- </div>
+  <div class="bg-gray-100 p-8 rounded-xl border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">📈 6.4 Psychologie face à la Volatilité</h2>
+    <p class="text-gray-700 mb-6">La volatilité est la norme, pas l'exception. La psychologie du gagnant consiste à transformer la volatilité en opportunité.</p>
+    
+    <div class="bg-white p-8 rounded-xl shadow-inner border-l-8 border-purple-800 text-center italic">
+      <p class="text-xl text-gray-800 mb-4">
+        "Investors should remember that excitement and expenses are their enemies. And if they insist on trying to time their participation in equities, they should try to be fearful when others are greedy and greedy only when others are fearful."
+      </p>
+      <cite class="text-purple-900 font-bold not-italic">— Warren Buffett</cite>
+    </div>
+    
+    <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
+      <p class="text-purple-900 font-medium text-center">
+        En d'autres termes : quand le marché panique, c'est le moment d'acheter. Quand tout le monde s'emballe, c'est le moment d'être prudent.
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-purple-900 text-white p-8 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">🧠 Les Termes à Maîtriser</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="border-b border-purple-700">
+            <th class="px-4 py-2 text-left text-purple-200 uppercase">Terme</th>
+            <th class="px-4 py-2 text-left text-purple-200 uppercase">Définition</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-purple-800">
+          <tr>
+            <td class="px-4 py-4 font-bold">Intérêts Composés</td>
+            <td class="px-4 py-4 opacity-90">Processus par lequel les gains sont réinvestis pour produire leurs propres gains.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">Biais Cognitif</td>
+            <td class="px-4 py-4 opacity-90">Erreur de jugement systématique basée sur des raccourcis de pensée.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">Value Investing</td>
+            <td class="px-4 py-4 opacity-90">Stratégie consistant à acheter des titres sous-évalués par le marché.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">Ancrage</td>
+            <td class="px-4 py-4 opacity-90">Biais qui pousse à rester focalisé sur le prix initial d'achat d'un titre.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <hr class="border-purple-700 my-8"/>
+    
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="text-center md:text-left">
+        <p class="text-xl font-bold text-white">🧭 Prochaine Étape</p>
+        <p class="text-purple-200">Vous avez la discipline. Place à l'outil le plus puissant : l'analyse.</p>
+      </div>
+      <button class="bg-white text-purple-900 hover:bg-purple-50 font-bold px-8 py-4 rounded-xl transition-all transform hover:scale-105 shadow-xl flex items-center gap-2">
+        👉 Module 7 : Analyse Fondamentale
+      </button>
+    </div>
+  </div>
+
+</div>
 `,
   });
 
