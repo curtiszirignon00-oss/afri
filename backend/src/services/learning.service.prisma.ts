@@ -168,6 +168,9 @@ export class LearningServicePrisma {
                 selectedQuestions = shuffled.slice(0, QUESTIONS_PER_TEST);
             }
 
+            // Debug: afficher les IDs des questions sélectionnées
+            console.log('📤 Questions envoyées au frontend:', selectedQuestions.map((q: any) => ({ id: q.id, question: q.question?.substring(0, 30) })));
+
             // Retourner le quiz avec seulement les questions sélectionnées
             return {
                 ...quiz,
@@ -245,12 +248,16 @@ export class LearningServicePrisma {
             const detailedResults: any[] = [];
             const questionIds = Object.keys(answersMap);
 
+            // Debug: afficher les IDs des questions
+            console.log('🔍 IDs des questions reçues:', questionIds);
+            console.log('🔍 IDs des questions dans la base:', allQuestions.map((q: any) => q.id));
+
             questionIds.forEach((questionId: string) => {
                 // Trouver la question dans toutes les questions
                 const question = allQuestions.find((q: any) => q.id === questionId);
 
                 if (!question) {
-                    console.warn(`Question ${questionId} non trouvée dans le quiz`);
+                    console.warn(`⚠️ Question ${questionId} non trouvée dans le quiz. Questions disponibles:`, allQuestions.map((q: any) => q.id));
                     return;
                 }
 
@@ -306,6 +313,14 @@ export class LearningServicePrisma {
                     last_accessed_at: new Date(),
                     time_spent_minutes: timeSpent || 0
                 }
+            });
+
+            console.log('📊 Résultats du quiz à renvoyer:', {
+                score,
+                passed,
+                totalQuestions,
+                detailedResultsCount: detailedResults.length,
+                detailedResults: detailedResults.slice(0, 2) // Log des 2 premiers pour debug
             });
 
             return {

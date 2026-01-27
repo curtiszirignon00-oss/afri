@@ -1477,38 +1477,14 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 <div class="space-y-8 max-w-4xl mx-auto">
 
-  <div class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-lg">
-    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
-      🎯 Objectif Pédagogique du Module
-    </h2>
-    <p class="text-lg mb-6 text-purple-100">
-      À la fin de ce module, vous serez capable de :
-    </p>
-    <ul class="space-y-3 text-lg">
-      <li class="flex items-start gap-3">
-        <span class="bg-white/20 rounded-full p-1 mt-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Comprendre les principes de la finance comportementale et la différence entre investir et spéculer.
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="bg-white/20 rounded-full p-1 mt-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Identifier les biais cognitifs et émotionnels les plus fréquents (peur, avidité) et leur impact sur vos décisions.
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="bg-white/20 rounded-full p-1 mt-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Mettre en place des stratégies (antidotes) pour une discipline d'investissement rigoureuse.
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="bg-white/20 rounded-full p-1 mt-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Utiliser le pouvoir des intérêts composés comme preuve de la nécessité d'une vision à long terme.
-      </li>
+  <div class="objectif-hero">
+    <h2 style="color: #000000;">🎯 Objectif Pédagogique :</h2>
+    <p style="color: #000000;"><strong></strong> À la fin de ce module, vous serez capable de :</p>
+    <ul style="color: #000000;">
+      <li>Comprendre les principes de la finance comportementale et la différence entre investir et spéculer.</li>
+      <li>Identifier les biais cognitifs et émotionnels les plus fréquents (peur, avidité) et leur impact sur vos décisions.</li>
+      <li>Mettre en place des stratégies (antidotes) pour une discipline d'investissement rigoureuse.</li>
+      <li>Utiliser le pouvoir des intérêts composés comme preuve de la nécessité d'une vision à long terme.</li>
     </ul>
   </div>
 
@@ -1529,11 +1505,11 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     
     <div class="overflow-x-auto mb-6">
       <table class="min-w-full border divide-y divide-gray-200 text-sm">
-        <thead class="bg-purple-50">
+        <thead class="bg-purple-700">
           <tr>
-            <th class="px-4 py-3 text-left font-bold text-purple-900">Caractéristique</th>
-            <th class="px-4 py-3 text-left font-bold text-purple-900">L'Investisseur (Le Propriétaire)</th>
-            <th class="px-4 py-3 text-left font-bold text-purple-900">Le Spéculateur (Le Joueur)</th>
+            <th class="px-4 py-3 text-left font-bold text-white">Caractéristique</th>
+            <th class="px-4 py-3 text-left font-bold text-white">L'Investisseur (Le Propriétaire)</th>
+            <th class="px-4 py-3 text-left font-bold text-white">Le Spéculateur (Le Joueur)</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -1572,11 +1548,11 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     <h3 class="text-lg font-bold text-purple-800 mb-4">6.2.1 La Peur et l'Avidité (Fear & Greed)</h3>
     <div class="overflow-x-auto mb-8">
       <table class="min-w-full border divide-y divide-gray-200 text-sm">
-        <thead class="bg-gray-50">
+        <thead class="bg-purple-700">
           <tr>
-            <th class="px-4 py-3 text-left font-bold text-gray-700">Émotion</th>
-            <th class="px-4 py-3 text-left font-bold text-gray-700">Description</th>
-            <th class="px-4 py-3 text-left font-bold text-gray-700">Conséquence Destructrice</th>
+            <th class="px-4 py-3 text-left font-bold text-white">Émotion</th>
+            <th class="px-4 py-3 text-left font-bold text-white">Description</th>
+            <th class="px-4 py-3 text-left font-bold text-white">Conséquence Destructrice</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -1611,57 +1587,57 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     </div>
   </div>
 
-  <div class="bg-indigo-950 text-white p-8 rounded-2xl shadow-xl">
-    <h2 class="text-2xl font-bold mb-6 text-indigo-200 border-b border-indigo-800 pb-2 flex items-center gap-2">
+  <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b border-gray-200 pb-2 flex items-center gap-2">
       🛡️ 6.3 Les Antidotes : Discipline, Méthode et Routine
     </h2>
-    
+
     <div class="mb-10">
-      <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-300">📈 6.3.1 La 8ème Merveille du Monde : Les Intérêts Composés</h3>
-      <p class="text-indigo-100 mb-6 leading-relaxed">
+      <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-gray-800">📈 6.3.1 La 8ème Merveille du Monde : Les Intérêts Composés</h3>
+      <p class="text-gray-700 mb-6 leading-relaxed">
         C'est l'essence même de l'investissement à long terme. Les gains générés sont réinvestis pour produire à leur tour de nouveaux gains : c'est l'argent qui travaille pour l'argent.
       </p>
-      
-      <div class="bg-white/10 p-6 rounded-xl border border-white/20 text-center mb-6">
-        <p class="text-sm text-indigo-300 mb-2 font-mono">Formule mathématique :</p>
-        <div class="text-xl font-mono">
-          $$ \text{Valeur Finale} = \text{Capital} \times (1 + \text{Taux d'intérêt})^{\text{Nombre d'années}} $$
-        </div>
+
+      <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 text-center mb-6">
+        <p class="text-sm text-gray-700 mb-3 font-bold">Formule mathématique :</p>
+        <p class="text-xl text-gray-800">
+          <strong>Valeur Finale</strong> = Capital × (1 + Taux d'intérêt)<sup>Nombre d'années</sup>
+        </p>
       </div>
 
       <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-indigo-900/50 p-4 rounded-lg border border-indigo-700">
-          <p class="text-sm"><strong>🚀 Effet Exponentiel :</strong> Plus vous commencez tôt, plus la courbe de votre richesse s'envole de manière spectaculaire.</p>
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <p class="text-sm text-gray-800"><strong>🚀 Effet Exponentiel :</strong> Plus vous commencez tôt, plus la courbe de votre richesse s'envole de manière spectaculaire.</p>
         </div>
-        <div class="bg-green-900/30 p-4 rounded-lg border border-green-700/50">
-          <h4 class="font-bold text-green-400 mb-1">🌳 Analogie : Le Jeune Baobab</h4>
-          <p class="text-xs text-indigo-100">Il met du temps à grandir au début, mais une fois ses racines établies, sa croissance accélère massivement. C'est le temps, pas l'effort, qui crée sa majesté.</p>
+        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+          <h4 class="font-bold text-green-700 mb-1">🌳 Analogie : Le Jeune Baobab</h4>
+          <p class="text-sm text-gray-800">Il met du temps à grandir au début, mais une fois ses racines établies, sa croissance accélère massivement. C'est le temps, pas l'effort, qui crée sa majesté.</p>
         </div>
       </div>
     </div>
 
-    <div class="bg-red-900/20 p-6 rounded-xl border border-red-500/30 mb-8">
-      <h3 class="text-lg font-bold text-red-400 mb-4 uppercase tracking-wider">🚫 6.3.2 Les 3 Erreurs Classiques à Éviter</h3>
-      <div class="space-y-4 text-sm">
+    <div class="bg-red-50 p-6 rounded-xl border border-red-200 mb-8">
+      <h3 class="text-lg font-bold text-red-700 mb-4 uppercase tracking-wider">🚫 6.3.2 Les 3 Erreurs Classiques à Éviter</h3>
+      <div class="space-y-4 text-sm text-gray-800">
         <p><strong>1. Tenter de "Timer" le Marché :</strong> Essayer de deviner les points hauts ou bas. C'est de la spéculation.</p>
         <p><strong>2. Manquer de Diversification :</strong> Tout miser sur une seule action. La diversification réduit le risque.</p>
         <p><strong>3. Vendre en Panique :</strong> Réagir émotionnellement à une baisse, détruisant ainsi la puissance du long terme.</p>
       </div>
     </div>
 
-    <h3 class="text-lg font-bold text-indigo-300 mb-4">6.3.3 Les Grandes Stratégies d'Investissement</h3>
+    <h3 class="text-lg font-bold text-gray-800 mb-4">6.3.3 Les Grandes Stratégies d'Investissement</h3>
     <div class="grid md:grid-cols-3 gap-4">
-      <div class="bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-        <h4 class="font-bold text-white mb-2 underline">Value Investing</h4>
-        <p class="text-xs text-indigo-200">Acheter des "bonnes affaires" en dessous de leur valeur intrinsèque (Style Buffett).</p>
+      <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors">
+        <h4 class="font-bold text-gray-800 mb-2 underline">Value Investing</h4>
+        <p class="text-sm text-gray-700">Acheter des "bonnes affaires" en dessous de leur valeur intrinsèque (Style Buffett).</p>
       </div>
-      <div class="bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-        <h4 class="font-bold text-white mb-2 underline">Growth Investing</h4>
-        <p class="text-xs text-indigo-200">Acheter des entreprises à croissance rapide, même si elles semblent chères.</p>
+      <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors">
+        <h4 class="font-bold text-gray-800 mb-2 underline">Growth Investing</h4>
+        <p class="text-sm text-gray-700">Acheter des entreprises à croissance rapide, même si elles semblent chères.</p>
       </div>
-      <div class="bg-white/5 p-4 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
-        <h4 class="font-bold text-white mb-2 underline">Dividendes</h4>
-        <p class="text-xs text-indigo-200">Viser des revenus réguliers via des entreprises matures (Banques, Télécoms).</p>
+      <div class="bg-purple-50 p-4 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors">
+        <h4 class="font-bold text-gray-800 mb-2 underline">Dividendes</h4>
+        <p class="text-sm text-gray-700">Viser des revenus réguliers via des entreprises matures (Banques, Télécoms).</p>
       </div>
     </div>
   </div>
@@ -1684,45 +1660,45 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     </div>
   </div>
 
-  <div class="bg-purple-900 text-white p-8 rounded-xl shadow-lg">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">🧠 Les Termes à Maîtriser</h2>
+  <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">🧠 Les Termes à Maîtriser</h2>
     <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
+      <table class="min-w-full text-sm border border-gray-200">
         <thead>
-          <tr class="border-b border-purple-700">
-            <th class="px-4 py-2 text-left text-purple-200 uppercase">Terme</th>
-            <th class="px-4 py-2 text-left text-purple-200 uppercase">Définition</th>
+          <tr class="bg-purple-700">
+            <th class="px-4 py-3 text-left text-white uppercase font-bold">Terme</th>
+            <th class="px-4 py-3 text-left text-white uppercase font-bold">Définition</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-purple-800">
+        <tbody class="divide-y divide-gray-200">
           <tr>
-            <td class="px-4 py-4 font-bold">Intérêts Composés</td>
-            <td class="px-4 py-4 opacity-90">Processus par lequel les gains sont réinvestis pour produire leurs propres gains.</td>
+            <td class="px-4 py-4 font-bold text-gray-800">Intérêts Composés</td>
+            <td class="px-4 py-4 text-gray-700">Processus par lequel les gains sont réinvestis pour produire leurs propres gains.</td>
           </tr>
           <tr>
-            <td class="px-4 py-4 font-bold">Biais Cognitif</td>
-            <td class="px-4 py-4 opacity-90">Erreur de jugement systématique basée sur des raccourcis de pensée.</td>
+            <td class="px-4 py-4 font-bold text-gray-800">Biais Cognitif</td>
+            <td class="px-4 py-4 text-gray-700">Erreur de jugement systématique basée sur des raccourcis de pensée.</td>
           </tr>
           <tr>
-            <td class="px-4 py-4 font-bold">Value Investing</td>
-            <td class="px-4 py-4 opacity-90">Stratégie consistant à acheter des titres sous-évalués par le marché.</td>
+            <td class="px-4 py-4 font-bold text-gray-800">Value Investing</td>
+            <td class="px-4 py-4 text-gray-700">Stratégie consistant à acheter des titres sous-évalués par le marché.</td>
           </tr>
           <tr>
-            <td class="px-4 py-4 font-bold">Ancrage</td>
-            <td class="px-4 py-4 opacity-90">Biais qui pousse à rester focalisé sur le prix initial d'achat d'un titre.</td>
+            <td class="px-4 py-4 font-bold text-gray-800">Ancrage</td>
+            <td class="px-4 py-4 text-gray-700">Biais qui pousse à rester focalisé sur le prix initial d'achat d'un titre.</td>
           </tr>
         </tbody>
       </table>
     </div>
-    
-    <hr class="border-purple-700 my-8"/>
-    
+
+    <hr class="border-gray-200 my-8"/>
+
     <div class="flex flex-col md:flex-row items-center justify-between gap-6">
       <div class="text-center md:text-left">
-        <p class="text-xl font-bold text-white">🧭 Prochaine Étape</p>
-        <p class="text-purple-200">Vous avez la discipline. Place à l'outil le plus puissant : l'analyse.</p>
+        <p class="text-xl font-bold text-gray-800">🧭 Prochaine Étape</p>
+        <p class="text-gray-700">Vous avez la discipline. Place à l'outil le plus puissant : l'analyse.</p>
       </div>
-      <button class="bg-white text-purple-900 hover:bg-purple-50 font-bold px-8 py-4 rounded-xl transition-all transform hover:scale-105 shadow-xl flex items-center gap-2">
+      <button class="bg-purple-600 text-white hover:bg-purple-700 font-bold px-8 py-4 rounded-xl transition-all transform hover:scale-105 shadow-xl flex items-center gap-2">
         👉 Module 7 : Analyse Fondamentale
       </button>
     </div>
@@ -1736,201 +1712,351 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
   // === M7 : Analyse Fondamentale – Devenir un Analyste Éclairé ===
   // ====================================================
   await createOrUpdateModule({
-    title: ": Analyse Fondamentale – Devenir un Analyste Éclairé",
+    title: "Analyse Fondamentale – Devenir un Analyste Éclairé",
     slug: 'analyse-technique',
-    description: "Décodez l'information des graphiques (chandeliers), identifiez les tendances et les niveaux psychologiques (Support et Résistance).",
+    description: "Apprenez à déceler la santé réelle des entreprises, anticipez l'impact des actualités et déterminez le prix juste avant que le marché ne réagisse.",
     difficulty_level: 'intermediaire',
     content_type: 'article',
     duration_minutes: 20,
     order_index: 7,
     is_published: true,
     content: `
- <div class="space-y-8 max-w-4xl mx-auto">
+ <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
 
- <div class="bg-gradient-to-r from-emerald-700 to-teal-800 text-white p-8 rounded-2xl shadow-lg">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- 🔍 Module 7 : Analyse Fondamentale
- </h2>
- <p class="text-lg mb-6 text-emerald-50">
- Devenir un Analyste Éclairé. À la fin de ce module, vous serez capable de :
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Lire et comprendre la logique</strong> des trois états financiers (Compte de Résultat, Bilan, Cash Flow).
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Calculer et interpréter les ratios clés</strong> (PER, ROE, Marge Nette) pour évaluer la santé financière.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Déterminer la valeur intrinsèque</strong> pour savoir si une action est chère ou bon marché.
- </li>
- </ul>
- </div>
+  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #4c1d95; color: #ffffff;">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+      🎯 Objectif Pédagogique du Module
+    </h2>
+    <p class="text-lg mb-6" style="color: #ede9fe;">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-4 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Lire et comprendre la logique des trois principaux états financiers d'une société cotée (Compte de Résultat, Bilan, Tableau des Flux de Trésorerie).
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Calculer et interpréter les ratios fondamentaux clés (PER, ROE, Marge Nette, Gearing) pour évaluer la santé financière et la rentabilité.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Appliquer des méthodes simples de valorisation pour déterminer si une action BRVM est chère ou bon marché.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Utiliser une approche structurée pour choisir les meilleures entreprises où investir.
+      </li>
+    </ul>
+  </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-emerald-100 pb-2 flex items-center gap-2">
- 📑 7.1 Les Trois Piliers de l'Analyse
- </h2>
+  <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-purple-600 pb-3">
+      7.1 Lecture et compréhension des états financiers
+    </h2>
+    <p class="text-gray-700 mb-10 text-lg leading-relaxed">
+      L'Analyse Fondamentale est l'art de déterminer la vraie valeur (valeur intrinsèque) d'une entreprise avant d'acheter ses actions. Elle se base sur l'étude des rapports annuels et des états financiers.
+    </p>
+
+    <div class="bg-gray-50 p-6 rounded-xl">
+      <h3 class="text-xl font-bold text-purple-800 mb-6">7.1.1 Les Trois Piliers de l'Analyse</h3>
+      <p class="text-gray-600 mb-8 leading-relaxed">Pour évaluer la santé d'une entreprise, vous avez besoin de ses trois états financiers :</p>
+
+      <div class="space-y-8">
+        <!-- Compte de Résultat -->
+        <div class="bg-white p-6 rounded-xl border-l-4 border-purple-500 shadow-sm">
+          <p class="font-bold text-purple-900 mb-4 text-lg">Le Compte de Résultat (P&L - Profit and Loss) :</p>
+          <div class="space-y-4 text-gray-700">
+            <p class="leading-relaxed"><strong class="text-gray-900">La question :</strong> Qu'est-ce qu'on gagne ?</p>
+            <p class="leading-relaxed"><strong class="text-gray-900">Le rôle :</strong> Il mesure la performance de l'entreprise sur une période donnée (une année, un trimestre).</p>
+            <p class="leading-relaxed"><strong class="text-gray-900">Les éléments clés :</strong> Chiffre d'Affaires (Ventes totales), Dépenses (Charges), et le résultat final (le Bénéfice Net).</p>
+          </div>
+        </div>
+
+        <!-- Bilan -->
+        <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
+          <p class="font-bold text-blue-900 mb-4 text-lg">Le Bilan :</p>
+          <div class="space-y-4 text-gray-700">
+            <p class="leading-relaxed"><strong class="text-gray-900">La question :</strong> Qu'est-ce qu'on possède et qu'est-ce qu'on doit ?</p>
+            <p class="leading-relaxed"><strong class="text-gray-900">Le rôle :</strong> C'est une photographie à un instant T de ce que possède l'entreprise (Actifs) et de ce qu'elle doit (Passifs).</p>
+            <p class="leading-relaxed"><strong class="text-gray-900">La logique :</strong> Le total des Actifs doit toujours être égal au total des Passifs (Dettes + Capitaux Propres). Les Capitaux Propres représentent l'argent qui appartient aux actionnaires.</p>
+          </div>
+        </div>
+
+        <!-- Tableau des Flux -->
+        <div class="bg-white p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
+          <p class="font-bold text-green-900 mb-4 text-lg">Le Tableau des Flux de Trésorerie (TFT/Cash Flow) :</p>
+          <div class="space-y-4 text-gray-700">
+            <p class="leading-relaxed"><strong class="text-gray-900">La question :</strong> Où va l'argent liquide ?</p>
+            <p class="leading-relaxed"><strong class="text-gray-900">Le rôle :</strong> Il est le plus honnête ! Il montre les mouvements réels de cash (argent) entrant et sortant.</p>
+            <p class="leading-relaxed"><strong class="text-gray-900">Pourquoi est-il crucial :</strong> Le Bénéfice Net du Compte de Résultat peut être manipulé par des écritures comptables (amortissements, provisions). Le Cash Flow montre si l'entreprise génère réellement du liquide, ce qui est nécessaire pour payer les dividendes, les dettes et investir.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-purple-600 pb-3">
+      7.2 Analyse détaillée : Les trois volets
+    </h2>
+    <p class="text-gray-700 mb-10 italic text-lg leading-relaxed">L'analyste éclairé étudie les tendances sur 5 ans. Une bonne entreprise présente une croissance stable et régulière de ses indicateurs.</p>
+
+    <div class="space-y-12">
+      <!-- 7.2.1 -->
+      <div class="bg-gray-50 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-purple-800 mb-6">7.2.1 Analyse du Compte de Résultat : Les Marge et la Croissance</h3>
+        <div class="space-y-6">
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed"><strong class="text-gray-900">Croissance du Chiffre d'Affaires :</strong> L'indicateur de base. L'entreprise vend-elle de plus en plus ? Une croissance régulière est un signe de bonne santé.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed mb-4"><strong class="text-gray-900">Marge Brute, Marge Opérationnelle et Marge Nette :</strong></p>
+            <p class="text-gray-600 leading-relaxed mb-5 pl-4">La Marge Nette est le ratio le plus important. Elle mesure quel pourcentage du chiffre d'affaires est conservé comme Bénéfice Net.</p>
+            <div class="my-6 p-5 bg-purple-100 rounded-xl text-center font-bold text-purple-900 text-lg">
+              <strong>Marge Nette</strong> = Bénéfice Net ÷ Chiffre d'Affaires
+            </div>
+            <p class="text-gray-600 italic leading-relaxed pl-4">Interprétation : C'est le "rendement" des ventes. Pour 100 xof  de produits vendus, combien de franc finissent réellement dans la poche de l'entreprise après avoir payé absolument tout le monde (fournisseurs, impôts, salaires).</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7.2.2 -->
+      <div class="bg-gray-50 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-purple-800 mb-6">7.2.2 Analyse du Bilan : La Solvabilité</h3>
+        <div class="space-y-6">
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed"><strong class="text-gray-900">Capitaux Propres :</strong> L'argent qui appartient aux actionnaires doit croître année après année, signe que l'entreprise conserve et réinvestit une partie de ses bénéfices.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed mb-4"><strong class="text-gray-900">Le Ratio d'Endettement (Gearing ou Ratio Dette Nette / Capitaux Propres) :</strong></p>
+            <div class="my-6 p-5 bg-blue-100 rounded-xl text-center font-bold text-blue-900 text-lg">
+              <strong>Gearing</strong> = Dette Nette ÷ Capitaux Propres
+            </div>
+            <div class="pl-4 space-y-4">
+              <p class="text-gray-600 leading-relaxed"><strong class="text-gray-800">Interprétation :</strong> Elle mesure la dépendance de l'entreprise vis-à-vis de ses créanciers. Un ratio de 0,5 signifie que la dette représente 50 % des fonds propres. Au-delà de 1 (ou 100 %), on commence souvent à surveiller si l'entreprise n'est pas trop "sous pression".
+              Ce ratio est crucial. Un Gearing élevé (Dette > Capitaux Propres) signifie que l'entreprise est très dépendante de la dette bancaire. Elle est vulnérable en cas de hausse des taux d'intérêt (décidée par la BCEAO) ou de crise économique.</p>
+              <p class="text-gray-600 leading-relaxed"><strong class="text-gray-800">Règle du débutant :</strong> Assurez-vous que les Capitaux Propres couvrent largement les dettes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7.2.3 -->
+      <div class="bg-gray-50 p-6 rounded-xl">
+        <h3 class="text-xl font-bold text-purple-800 mb-6">7.2.3 Analyse du Tableau des Flux de Trésorerie : La Qualité des Profits</h3>
+        <div class="space-y-4">
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed"><strong class="text-gray-900">Flux de Trésorerie d'Exploitation (FTE) :</strong> C'est l'argent généré par l'activité normale de l'entreprise. S'il est positif et supérieur au Bénéfice Net, c'est un excellent signe de profits de haute qualité.</p>
+          </div>
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed"><strong class="text-gray-900">Flux de Trésorerie d'Investissement :</strong> Montre combien l'entreprise dépense pour son avenir (usines, machines, etc.).</p>
+          </div>
+          <div class="bg-white p-5 rounded-lg border border-gray-200">
+            <p class="text-gray-700 leading-relaxed"><strong class="text-gray-900">Flux de Trésorerie de Financement :</strong> Montre comment l'entreprise gère sa dette et ses actionnaires (paiement de dividendes, émission de nouvelles dettes).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-purple-50 p-8 rounded-xl border border-purple-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-purple-600 pb-3">
+      7.3 Les ratios essentiels pour l'investisseur BRVM
+    </h2>
+    <p class="text-gray-700 mb-8 text-lg leading-relaxed">Les ratios permettent de comparer facilement des entreprises de tailles différentes et d'évaluer leur efficacité.</p>
+
+    <div class="bg-white p-5 rounded-lg border border-purple-100 mb-6">
+      <h3 class="font-bold text-purple-900 mb-2">7.3.1 PER (Price-to-Earnings Ratio) : Le Prix du Bénéfice</h3>
+      <p class="text-sm text-gray-600 mb-4">Le PER est le ratio le plus célèbre. Il mesure combien les investisseurs sont prêts à payer pour chaque franc CFA de bénéfice net annuel d'une action.</p>
+      <div class="p-4 bg-purple-900 text-white rounded text-center font-bold mb-4">
+        <strong>PER</strong> = Cours de l'action ÷ Bénéfice Net par Action (BPA)
+      </div>
+      <p class="text-gray-700 mb-2"><strong>Interprétation :</strong> Un PER de 10 signifie qu'il faudrait 10 années de bénéfices stables pour "récupérer" l'investissement initial.</p>
+      <ul class="ml-6 text-sm text-gray-700 space-y-1">
+        <li> <strong>PER faible (ex: 5 à 10) :</strong> Souvent considéré comme une bonne affaire (Value Investing).</li>
+        <li> <strong>PER élevé (ex: 20+) :</strong> Le marché anticipe une très forte croissance future (Growth Investing).</li>
+      </ul>
+      <div class="bg-white p-5 rounded-lg border border-purple-100 mt-6">
+      <h3 class="font-bold text-purple-900 mb-2">Le Ratio PEG : Le juge de paix de la croissance</h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Pour savoir si un PER élevé est justifié, on utilise le PEG (Price/Earnings to Growth). Il lie le prix de l'action à la vitesse à laquelle l'entreprise progresse.
+      </p>
+      <div class="p-4 bg-purple-900 text-white rounded text-center font-bold mb-4">
+        <strong>PEG</strong> = PER ÷ Taux de croissance annuel des bénéfices (%)
+      </div>
+
+      <div class="space-y-4">
+        <p class="text-gray-700 text-sm">
+          <strong>Pourquoi l'utiliser ?</strong> Si une action a un PER élevé de 20, mais que ses bénéfices croissent de 20 % par an, son PEG est de 1.
+        </p>
+        
+        <div class="p-4 bg-blue-50 border-l-4 border-blue-500">
+          <p class="text-sm text-blue-900">
+            <strong>Interprétation :</strong> Un PEG proche de 1 est souvent considéré comme un prix juste pour une entreprise en pleine expansion. S'il est bien inférieur à 1, l'action est potentiellement sous-évaluée malgré un PER élevé.
+          </p>
+        </div>
+      </div>
+    </div>
+      <div class="mt-4 p-4 bg-amber-50 border-l-4 border-amber-500 text-sm text-amber-900">
+        <strong>Nuance BRVM (Essentiel) :</strong> La BRVM est un marché de croissance (Frontier Market). Les études montrent que les investisseurs régionaux valorisent fortement le potentiel de croissance future. Ne rejetez jamais une action uniquement à cause d'un PER élevé. Comparez-le toujours à la moyenne sectorielle et aux perspectives de croissance.
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-lg border border-purple-100">
+      <h3 class="font-bold text-purple-900 mb-2">7.3.2 ROE (Return on Equity) : L'Efficacité</h3>
+      <p class="text-sm text-gray-600 mb-4">Le Retour sur Capitaux Propres (ROE) mesure l'efficacité avec laquelle l'entreprise utilise l'argent investi par ses actionnaires.</p>
+      <div class="p-4 bg-purple-900 text-white rounded text-center font-bold mb-4">
+        <strong>ROE</strong> = Bénéfice Net ÷ Capitaux Propres
+      </div>
+      <p class="text-gray-700 mb-4"><strong>Interprétation :</strong> Un ROE de 15 % et plus est considéré comme excellent. Il indique que l'entreprise génère 15 FCFA de bénéfice pour chaque 100 FCFA que les actionnaires y ont investis. C'est le signe d'une bonne gestion.</p>
+      
+      <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+        <h4 class="font-bold text-green-800">L'Analogie à Retenir : Le Gestionnaire du Maquis</h4>
+        <p class="text-sm text-green-900">Un maquis peut avoir de grandes ventes (chiffre d'affaires), mais s'il gaspille beaucoup d'ingrédients, il est inefficace. Le ROE mesure si le gestionnaire (l'équipe dirigeante) est efficace à transformer l'argent que vous lui donnez en profit. Plus le ROE est élevé, plus l'entreprise est efficace.</p>
+      </div>
+    </div>
+
+<div class="my-8 rounded-2xl overflow-hidden shadow-xl border-2 border-red-600">
+  <div class="p-6" style="background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%); color: #ffffff;">
+    
+    <div class="flex items-center gap-4 mb-4">
+      <div class="bg-white/20 p-2 rounded-lg">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold uppercase tracking-wide">
+        Le revers de la médaille : Attention à l'endettement
+      </h2>
+    </div>
+
+    <div class="space-y-4 text-lg leading-relaxed">
+      <p class="font-medium">
+        Un ROE très élevé peut parfois cacher une entreprise trop endettée. En finance, on dit que la dette fait "levier" sur la rentabilité.
+      </p>
+      
+      
+
+      <div class="bg-black/20 p-4 rounded-xl border border-white/30">
+        <p>
+          Vérifiez toujours le <strong>Gearing</strong> (ratio d'endettement) en parallèle : un ROE de 30 % avec une dette massive est beaucoup plus risqué qu'un ROE de 15 % sans aucune dette.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>    
+  </div>
+
+  <div class="bg-white p-6 rounded-xl border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-purple-600 pb-2">
+      7.4 Valorisation d’une action : Déterminer la valeur intrinsèque
+    </h2>
+    <div class="space-y-6 text-gray-700">
+      <div>
+        <h3 class="font-bold text-purple-900">7.4.1 La Méthode des Comparables (Multiples)</h3>
+        <p class="text-sm"><strong>Principe :</strong> C'est la méthode la plus simple pour le débutant. Si une entreprise A (ex: Ecobank CI) se vend à un PER de 8, alors une entreprise B (ex: une autre banque) ne devrait pas se vendre à un PER de 20, sauf si elle a une croissance exceptionnelle.</p>
+        <p class="text-sm"><strong>Mise en œuvre :</strong> Calculer les ratios (PER, P/B, Marge) de votre cible et les comparer à la moyenne du secteur à la BRVM. Si les ratios de votre cible sont meilleurs mais que le prix est similaire, elle pourrait être sous-évaluée.</p>
+      
+        <div class="my-6 rounded-xl border-2 border-amber-400 bg-amber-50 overflow-hidden shadow-sm">
+  <div class="flex flex-col md:flex-row">
+    <div class="bg-amber-400 p-4 flex items-center justify-center shrink-0">
+      <svg class="w-10 h-10 text-amber-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.674M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+      </svg>
+    </div>
+    
+    <div class="p-6">
+      <h3 class="text-xl font-bold text-amber-900 mb-3 flex items-center gap-2">
+        💡 Le point clé : On ne compare que ce qui est comparable
+      </h3>
+      
+      <div class="space-y-4 text-amber-950">
+        <p class="leading-relaxed">
+          On ne compare pas le PER d'une banque (Ecobank) avec celui d'une entreprise industrielle (SITAB).
+        </p>
+
+        <div class="bg-white/50 p-4 rounded-lg border border-amber-200">
+          <p class="italic">
+            <strong>Astuce :</strong> Si l'entreprise cible a un PER de 6 alors que la moyenne de son secteur à la BRVM est de 10, elle est soit une opportunité en or, soit elle cache un problème grave que le marché a déjà anticipé.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+      <div>
+        <h3 class="font-bold text-purple-900">7.4.2 La Méthode des Dividendes Actualisés (DDM)</h3>
+        <p class="text-sm"><strong>Principe :</strong> La valeur d'une action est égale à la somme des dividendes futurs qu'elle versera, actualisée à aujourd'hui. Elle est très utile pour les entreprises matures de la BRVM qui versent des dividendes stables (Télécoms, Banques).</p>
+        <p class="text-sm"><strong>Limitation :</strong> Ne fonctionne pas bien pour les entreprises qui ne versent pas ou peu de dividendes (entreprises en forte croissance).</p>
+      </div>
+      <div class="p-4 bg-gray-50 rounded border-l-4 border-purple-300">
+        <h3 class="font-bold text-purple-900">7.4.3 Le Flux de Trésorerie Actualisés (DCF - Discounted Cash Flow)</h3>
+        <p class="text-sm"><strong>Principe (Avancé) :</strong> La valeur d'une entreprise est déterminée par la somme de tous ses Flux de Trésorerie Futurs (Cash Flow), actualisée à aujourd'hui.</p>
+        <p class="text-sm"><strong>Avantage :</strong> C'est la méthode la plus précise car elle se base sur le vrai cash généré.</p>
+        <p class="text-sm font-bold mt-2">Recommandation pour le débutant : Comprenez la logique (la valeur vient du cash futur), mais laissez les calculs complexes aux professionnels. Pour l'instant, focalisez-vous sur les ratios. Heureusement, ces ratios sont disponibles pour chaque action dans l'onglet Marchés/analyse  "Ratios".</p>
+      </div>
+    </div>
+  </div>
+
  
- <p class="text-gray-600 mb-6">
- Pour évaluer la santé d'une entreprise, vous avez besoin de ses trois états financiers. L'analyste étudie les tendances sur 5 ans.
- </p>
+  <div class="bg-gray-900 text-white p-8 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 border-b border-gray-700 pb-2">🧠 Les Termes à Maîtriser</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-gray-400 uppercase">
+            <th class="px-4 py-2 text-left">Terme</th>
+            <th class="px-4 py-2 text-left">Définition</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+          <tr>
+            <td class="px-4 py-4 font-bold text-purple-400">Bénéfice Net par Action (BPA)</td>
+            <td class="px-4 py-4">Le Bénéfice Net divisé par le nombre total d'actions. Base de calcul du PER.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-purple-400">Marge Nette</td>
+            <td class="px-4 py-4">Mesure le pourcentage du Chiffre d'Affaires conservé en Bénéfice Net.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-purple-400">Gearing</td>
+            <td class="px-4 py-4">Ratio Dette Nette / Capitaux Propres, mesure le niveau d'endettement d'une entreprise par rapport à ses propres fonds.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-purple-400">Valeur Intrinsèque</td>
+            <td class="px-4 py-4">La vraie valeur estimée d'une entreprise, indépendante de son prix en bourse.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-purple-400">DCF</td>
+            <td class="px-4 py-4">Discounted Cash Flow (Flux de Trésorerie Actualisés), méthode de valorisation basée sur les flux de trésorerie futurs.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
- 
- <div class="grid md:grid-cols-3 gap-4 mb-6 mt-6">
- <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
- <h3 class="font-bold text-blue-800 mb-2">1. Compte de Résultat (P&L)</h3>
- <p class="text-xs font-bold text-gray-500 uppercase mb-2">Qu'est-ce qu'on gagne ?</p>
- <p class="text-sm text-gray-700">Mesure la <strong>performance</strong> sur une période. <br>Clé : Chiffre d'Affaires vs Bénéfice Net.</p>
- </div>
- <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
- <h3 class="font-bold text-amber-800 mb-2">2. Le Bilan</h3>
- <p class="text-xs font-bold text-gray-500 uppercase mb-2">Ce qu'on possède / doit ?</p>
- <p class="text-sm text-gray-700">Une <strong>photo à l'instant T</strong>. <br>Clé : Actifs = Passifs + Capitaux Propres.</p>
- </div>
- <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
- <h3 class="font-bold text-emerald-800 mb-2">3. Cash Flow (TFT)</h3>
- <p class="text-xs font-bold text-gray-500 uppercase mb-2">Où va l'argent ?</p>
- <p class="text-sm text-gray-700">Le plus <strong>honnête</strong>. Montre les mouvements réels de liquide (nécessaire pour les dividendes).</p>
- </div>
- </div>
- </div>
+  <div class="bg-gray-100 p-8 rounded-xl text-center border border-gray-200">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">🧭 Prochaine Étape</h3>
+    <p class="text-gray-600 mb-6">Vous maîtrisez désormais les outils pour choisir une bonne entreprise. Mais le risque existe toujours. Comment le gérer ?</p>
+    <button class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-md">
+      👉 Prochaine leçon : Module 8 — La Maîtrise du Risque : Diversification et Gestion de Portefeuille.
+    </button>
+  </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-emerald-100 pb-2 flex items-center gap-2">
- 📊 7.2 & 7.3 Indicateurs et Ratios Clés
- </h2>
-
- <div class="space-y-8">
- <div>
- <h3 class="text-lg font-bold text-emerald-700 mb-2 flex items-center gap-2">
- 📈 La Marge Nette (Rentabilité)
- </h3>
- <div class="bg-gray-50 p-3 rounded border border-gray-200 mb-2 font-mono text-center text-sm">
- $$ \text{Marge Nette} = \frac{\text{Bénéfice Net}}{\text{Chiffre d'Affaires}} $$
- </div>
- <p class="text-gray-600 text-sm">Une marge stable ou en hausse (ex: 15%) montre que l'entreprise contrôle ses coûts.</p>
- </div>
-
- <div>
- <h3 class="text-lg font-bold text-emerald-700 mb-2 flex items-center gap-2">
- ⚖️ Le Gearing (Dette)
- </h3>
- <div class="bg-gray-50 p-3 rounded border border-gray-200 mb-2 font-mono text-center text-sm">
- $$ \text{Gearing} = \frac{\text{Dette Nette}}{\text{Capitaux Propres}} $$
- </div>
- <div class="bg-red-50 border-l-4 border-red-500 p-3">
- <p class="text-sm text-red-800"><strong>Attention :</strong> Si Dette > Capitaux Propres, l'entreprise est vulnérable aux crises.</p>
- </div>
- </div>
-
- <div>
- <h3 class="text-lg font-bold text-emerald-700 mb-2 flex items-center gap-2">
- 🏷️ Le PER (Prix)
- </h3>
- <p class="text-sm text-gray-600 mb-2">Combien on paie pour 1 FCFA de bénéfice.</p>
- <div class="grid grid-cols-2 gap-4 text-sm">
- <div class="bg-green-100 p-2 rounded text-center">
- <strong>PER 5-10</strong><br>Bonne affaire (Value)
- </div>
- <div class="bg-purple-100 p-2 rounded text-center">
- <strong>PER 20+</strong><br>Forte Croissance (Growth)
- </div>
- </div>
- <p class="text-xs text-gray-500 mt-2 italic">Note : À la BRVM, ne rejetez pas une action juste pour un PER élevé si le potentiel est fort.</p>
- </div>
- </div>
- </div>
-
- <div class="bg-slate-800 text-white p-8 rounded-xl shadow-md">
- <h2 class="text-2xl font-bold mb-4 text-emerald-400">
- 🏆 Le ROE (L'Efficacité)
- </h2>
- <div class="grid md:grid-cols-2 gap-8 items-center">
- <div>
- <div class="bg-white/10 p-3 rounded border border-white/20 mb-4 font-mono text-center">
- $$ \text{ROE} = \frac{\text{Bénéfice Net}}{\text{Capitaux Propres}} $$
- </div>
- <p class="text-slate-200 text-sm mb-4">
- Indique combien de bénéfice est généré pour chaque 100 FCFA investi par les actionnaires. > 15% est excellent.
- </p>
- </div>
- <div class="bg-emerald-900/50 p-4 rounded-lg border border-emerald-500/30">
- <h4 class="font-bold text-emerald-300 mb-2">🥘 L'Analogie du Maquis</h4>
- <p class="text-sm text-slate-200 italic leading-relaxed">
- "Un maquis peut avoir de grosses ventes, mais s'il gaspille les ingrédients, il est inefficace. Le ROE mesure si le gérant transforme bien votre argent en profit." 
- </p>
- </div>
- </div>
- </div>
-
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
- <h2 class="text-2xl font-bold text-gray-800 mb-6">⚔️ Étude de Cas : SONATEL vs ECOBANK</h2>
- 
- <div class="overflow-x-auto">
- <table class="min-w-full text-sm divide-y divide-gray-200">
- <thead class="bg-gray-50">
- <tr>
- <th class="px-4 py-3 text-left font-bold text-gray-600">Critère</th>
- <th class="px-4 py-3 text-left font-bold text-orange-600">SONATEL (Télécom)</th>
- <th class="px-4 py-3 text-left font-bold text-blue-600">ECOBANK CI (Banque)</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-gray-100">
- <tr>
- <td class="px-4 py-3 font-medium">Profil</td>
- <td class="px-4 py-3">Dynamique / Croissance</td>
- <td class="px-4 py-3">Mature / Dividendes</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-medium">PER</td>
- <td class="px-4 py-3 font-bold text-purple-600">Élevé (Anticipation)</td>
- <td class="px-4 py-3 font-bold text-green-600">Faible (Régularité)</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-medium">ROE</td>
- <td class="px-4 py-3 text-green-600">Excellent (>20%)</td>
- <td class="px-4 py-3 text-green-600">Bon (>15%)</td>
- </tr>
- <tr class="bg-gray-50">
- <td class="px-4 py-3 font-bold">Conclusion</td>
- <td class="px-4 py-3">Pour la <strong>plus-value</strong> à long terme.</td>
- <td class="px-4 py-3">Pour le <strong>revenu passif</strong> immédiat.</td>
- </tr>
- </tbody>
- </table>
- </div>
- </div>
-
- <div class="bg-gray-900 text-gray-300 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-white mb-4">🧠 Glossaire Analyste</h2>
- <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <p><strong class="text-emerald-400">BPA :</strong> Bénéfice par Action. Base du PER.</p>
- <p><strong class="text-emerald-400">Valeur Intrinsèque :</strong> La "vraie" valeur estimée, hors prix bourse.</p>
- <p><strong class="text-emerald-400">DCF :</strong> Valorisation basée sur le cash futur (avancé).</p>
- <p><strong class="text-emerald-400">Comparables :</strong> Comparer les ratios avec les concurrents.</p>
- </div>
- 
- <hr class="border-gray-700 my-6"/>
- 
- <div class="flex flex-col md:flex-row items-center justify-between gap-4">
- <p class="font-medium text-white">Vous savez analyser. Mais savez-vous gérer le risque ?</p>
- <button class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg transition-colors shadow-lg">
- 👉 Module 8 : Maîtrise du Risque
- </button>
- </div>
- </div>
-
- </div>
+</div>
 `,
   });
 
