@@ -34,10 +34,17 @@ export async function addItemToMyWatchlist(req: Request, res: Response, next: Ne
         return res.status(400).json({ message: 'Ticker invalide fourni.' });
     }
 
-    const newItem = await watchlistService.addToWatchlist(userId, stockTicker.toUpperCase());
+    // Récupérer le tier d'abonnement de l'utilisateur
+    const subscriptionTier = (req.user?.subscriptionTier || 'free') as 'free' | 'premium' | 'pro' | 'max';
+
+    const newItem = await watchlistService.addToWatchlist(userId, stockTicker.toUpperCase(), subscriptionTier);
     return res.status(201).json(newItem); // Return the created/existing item
 
-  } catch (error) {
+  } catch (error: any) {
+    // Gérer l'erreur de limite atteinte
+    if (error.message?.includes('Limite de watchlist atteinte')) {
+      return res.status(403).json({ message: error.message });
+    }
     return next(error);
   }
 }

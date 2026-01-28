@@ -53,9 +53,12 @@ export default function SubscriptionPage() {
         { text: 'Données de marché (délai 15-30 min)', included: true },
         { text: 'Fiches d\'entreprises basiques', included: true },
         { text: '1 Portefeuille Virtuel (1M FCFA)', included: true },
+        { text: 'Jusqu\'à 3 alertes de prix', included: true },
+        { text: 'Jusqu\'à 3 actions en watchlist', included: true },
+        { text: 'Comparaison de 2 actions max', included: true },
+        { text: 'Création de communauté', included: false },
         { text: 'Données en temps réel', included: false },
         { text: 'Coach IA', included: false },
-        { text: 'Alertes personnalisées', included: false },
         { text: 'Screener avancé', included: false },
         { text: 'Export de données CSV', included: false },
       ],
@@ -76,8 +79,11 @@ export default function SubscriptionPage() {
         { text: '🌟 Données de marché en Temps Réel', included: true },
         { text: '🌟 Fiches d\'Analyse Complètes', included: true },
         { text: '🌟 Screener d\'Actions Avancé', included: true },
-        { text: '🌟 Alertes Personnalisées', included: true },
-        { text: '🌟 5 Portefeuilles Virtuels Illimités', included: true },
+        { text: '🌟 Jusqu\'à 15 alertes de prix', included: true },
+        { text: '🌟 Jusqu\'à 15 actions en watchlist', included: true },
+        { text: '🌟 Comparaison de 4 actions max', included: true },
+        { text: '🌟 Création de communauté', included: true },
+        { text: '🌟 5 Portefeuilles Virtuels', included: true },
         { text: '🌟 Export de données CSV', included: true },
         { text: '🌟 Expérience sans publicité', included: true },
         { text: '🌟 Accès à l\'IA pour analyse des actions', included: true },
@@ -87,17 +93,21 @@ export default function SubscriptionPage() {
       ],
     },
     {
-      id: 'pro',
-      name: 'Pro',
+      id: 'max',
+      name: 'Max',
       price: '300 000',
       period: '/ mois',
       description: 'Pour les professionnels et institutions',
       icon: Crown,
       iconColor: 'text-purple-500',
-      buttonText: 'Passer à Pro',
+      buttonText: 'Passer à Max',
       buttonColor: 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white',
       features: [
         { text: 'Tout du plan Investisseur+', included: true },
+        { text: '💎 Alertes de prix illimitées', included: true },
+        { text: '💎 Watchlist illimitée', included: true },
+        { text: '💎 Comparaison d\'actions illimitée', included: true },
+        { text: '💎 Création de communautés illimitée', included: true },
         { text: '💎 Accès API complet', included: true },
         { text: '💎 Rapports d\'Analyse Sectoriels Exclusifs', included: true },
         { text: '💎 Webinaires Mensuels avec Experts', included: true },
@@ -244,18 +254,37 @@ export default function SubscriptionPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">
-                Les données en temps réel sont-elles vraiment instantanées ?
+                Quelles sont les limites du plan gratuit ?
               </h3>
               <p className="text-gray-600">
-                Oui, avec Investisseur+ et Pro, vous accédez aux cotations avec un délai de quelques secondes seulement.
+                Avec le plan Essentiel (gratuit), vous pouvez créer jusqu'à 3 alertes de prix, suivre 3 actions dans votre watchlist,
+                et comparer jusqu'à 2 actions entre elles. Le plan Investisseur+ augmente ces limites à 15 alertes, 15 watchlist et 4 comparaisons,
+                tandis que le plan Max offre un accès illimité à toutes ces fonctionnalités.
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">
-                Le plan Pro est-il adapté aux institutions ?
+                Puis-je créer ma propre communauté ?
               </h3>
               <p className="text-gray-600">
-                Absolument. Le plan Pro offre un accès API complet, des rapports exclusifs et un support prioritaire, idéal pour les professionnels et institutions.
+                La création de communautés est réservée aux abonnés Investisseur+ et Max.
+                Avec ces plans, vous pouvez créer et gérer vos propres communautés pour partager vos analyses et échanger avec d'autres investisseurs.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Les données en temps réel sont-elles vraiment instantanées ?
+              </h3>
+              <p className="text-gray-600">
+                Oui, avec Investisseur+ et Max, vous accédez aux cotations avec un délai de quelques secondes seulement.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2">
+                Le plan Max est-il adapté aux institutions ?
+              </h3>
+              <p className="text-gray-600">
+                Absolument. Le plan Max offre un accès API complet, des alertes et watchlist illimitées, des rapports exclusifs et un support prioritaire, idéal pour les professionnels et institutions.
               </p>
             </div>
           </div>

@@ -129,6 +129,7 @@ model User {
   telephone                  String?
   address                    String?
   role                       String    @default("user")
+  subscriptionTier           String    @default("free") // free, premium, max
 
   // --- Relations existantes ---
   profile          UserProfile?

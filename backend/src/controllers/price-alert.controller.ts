@@ -34,7 +34,7 @@ export async function createAlert(req: Request, res: Response, next: NextFunctio
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const { stockTicker, alertType, targetPrice, notifyEmail, notifyInApp, subscriptionTier } = req.body;
+    const { stockTicker, alertType, targetPrice, notifyEmail, notifyInApp } = req.body;
 
     // Validation
     if (!stockTicker || typeof stockTicker !== 'string') {
@@ -49,6 +49,9 @@ export async function createAlert(req: Request, res: Response, next: NextFunctio
       return res.status(400).json({ message: 'Prix cible invalide' });
     }
 
+    // Récupérer le tier d'abonnement de l'utilisateur
+    const userSubscriptionTier = (req.user?.subscriptionTier || 'free') as 'free' | 'premium' | 'pro' | 'max';
+
     const newAlert = await priceAlertService.createPriceAlert(
       userId,
       stockTicker.toUpperCase(),
@@ -56,7 +59,7 @@ export async function createAlert(req: Request, res: Response, next: NextFunctio
       targetPrice,
       notifyEmail !== false, // Par défaut true
       notifyInApp !== false, // Par défaut true
-      subscriptionTier || 'free' // Par défaut free
+      userSubscriptionTier
     );
 
     return res.status(201).json(newAlert);

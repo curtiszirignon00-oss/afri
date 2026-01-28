@@ -3,6 +3,14 @@
 import prisma from '../config/prisma';
 import { WatchlistItem } from '@prisma/client';
 
+// Limites de watchlist selon l'abonnement
+const WATCHLIST_LIMITS: Record<string, number> = {
+  free: 3,
+  premium: 15,
+  pro: Infinity,
+  max: Infinity, // Alias pour le plan max
+};
+
 // Get all watchlist items for a specific user
 export async function getWatchlistByUserId(userId: string): Promise<WatchlistItem[]> {
   try {
@@ -22,7 +30,11 @@ export async function getWatchlistByUserId(userId: string): Promise<WatchlistIte
 }
 
 // Add a stock ticker to a user's watchlist
-export async function addToWatchlist(userId: string, stockTicker: string): Promise<WatchlistItem> {
+export async function addToWatchlist(
+  userId: string,
+  stockTicker: string,
+  userSubscriptionTier: 'free' | 'premium' | 'pro' | 'max' = 'free'
+): Promise<WatchlistItem> {
   try {
     // First, check if the item already exists to avoid duplicates
     const existingItem = await prisma.watchlistItem.findFirst({
@@ -35,6 +47,20 @@ export async function addToWatchlist(userId: string, stockTicker: string): Promi
     if (existingItem) {
       // If it exists, just return the existing item
       return existingItem;
+    }
+
+    // Vérifier la limite de watchlist pour l'utilisateur
+    const existingCount = await prisma.watchlistItem.count({
+      where: {
+        userId: userId,
+      },
+    });
+
+    const limit = WATCHLIST_LIMITS[userSubscriptionTier] ?? WATCHLIST_LIMITS.free;
+    if (existingCount >= limit) {
+      throw new Error(
+        `Limite de watchlist atteinte (${limit}). Passez à un plan supérieur pour ajouter plus d'actions.`
+      );
     }
 
     // If it doesn't exist, create it

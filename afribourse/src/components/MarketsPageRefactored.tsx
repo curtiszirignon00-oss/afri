@@ -7,13 +7,27 @@ import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import StockComparison from './markets/StockComparison';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 import { useNavigate } from 'react-router-dom';
+
+// Limites de comparaison selon l'abonnement
+const COMPARISON_LIMITS: Record<string, number> = {
+  free: 2,
+  premium: 4,
+  pro: Infinity,
+  max: Infinity,
+};
 type MarketsPageRefactoredProps = {};
 
 export default function MarketsPageRefactored() {
   const navigate = useNavigate();
   const { trackAction } = useAnalytics();
+  const { userProfile } = useAuth();
+
+  // Déterminer la limite de comparaison selon le tier
+  const subscriptionTier = (userProfile as any)?.subscriptionTier || 'free';
+  const comparisonLimit = COMPARISON_LIMITS[subscriptionTier] ?? COMPARISON_LIMITS.free;
   // États locaux pour les filtres
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('all');
@@ -118,8 +132,16 @@ export default function MarketsPageRefactored() {
 
   // Comparison functions
   const addToComparison = (stock: Stock) => {
-    if (comparisonStocks.length >= 4) {
-      toast.error('Maximum 4 actions pour la comparaison');
+    if (comparisonStocks.length >= comparisonLimit) {
+      const tierName = subscriptionTier === 'free' ? 'gratuit' : subscriptionTier;
+      toast.error(
+        `Limite de comparaison atteinte (${comparisonLimit} actions). ${
+          subscriptionTier === 'free' || subscriptionTier === 'premium'
+            ? 'Passez à un plan supérieur pour comparer plus d\'actions.'
+            : ''
+        }`,
+        { duration: 4000 }
+      );
       return;
     }
     if (comparisonStocks.find(s => s.id === stock.id)) {
