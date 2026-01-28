@@ -14,10 +14,11 @@ export type PriceAlertWithUser = PriceAlert & {
 };
 
 // Limites d'alertes selon l'abonnement
-const ALERT_LIMITS = {
+const ALERT_LIMITS: Record<string, number> = {
   free: 3,
-  premium: 10,
+  premium: 15,
   pro: Infinity,
+  max: Infinity, // Alias pour le plan max
 };
 
 // Récupérer toutes les alertes d'un utilisateur
@@ -91,7 +92,7 @@ export async function createPriceAlert(
   targetPrice: number,
   notifyEmail: boolean = true,
   notifyInApp: boolean = true,
-  userSubscriptionTier: 'free' | 'premium' | 'pro' = 'free'
+  userSubscriptionTier: 'free' | 'premium' | 'pro' | 'max' = 'free'
 ): Promise<PriceAlert> {
   try {
     // Vérifier la limite d'alertes pour l'utilisateur

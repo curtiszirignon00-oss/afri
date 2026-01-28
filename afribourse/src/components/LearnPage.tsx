@@ -320,6 +320,8 @@ export default function LearnPage() {
             }
 
             const result = await response.json();
+            console.log('📊 Résultat du quiz reçu:', result);
+            console.log('📝 Détails des réponses:', result.detailedResults);
 
             // Afficher les résultats d'abord
             setQuizState(prev => ({
@@ -782,24 +784,25 @@ export default function LearnPage() {
                                             </div>
 
                                             {/* Détails des réponses */}
-                                            {quizState.detailedResults && quizState.detailedResults.length > 0 && (
-                                                <div className="mb-6">
-                                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
-                                                        <div className="flex items-center">
-                                                            <div className="flex-shrink-0">
-                                                                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                </svg>
-                                                            </div>
-                                                            <div className="ml-3">
-                                                                <p className="text-sm font-medium text-blue-800">
-                                                                    📚 Consultez vos réponses ci-dessous pour apprendre de vos erreurs !
-                                                                </p>
-                                                            </div>
+                                            <div className="mb-6">
+                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0">
+                                                            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="ml-3">
+                                                            <p className="text-sm font-medium text-blue-800">
+                                                                📚 Consultez vos réponses ci-dessous pour apprendre de vos erreurs !
+                                                            </p>
                                                         </div>
                                                     </div>
+                                                </div>
 
-                                                    <h4 className="text-xl font-bold text-gray-900 mb-4">📝 Détails de vos réponses</h4>
+                                                <h4 className="text-xl font-bold text-gray-900 mb-4">📝 Détails de vos réponses</h4>
+
+                                                {quizState.detailedResults && quizState.detailedResults.length > 0 ? (
                                                     <div className="space-y-4">
                                                         {quizState.detailedResults.map((result, index) => {
                                                             const isCorrect = result.isCorrect;
@@ -838,8 +841,14 @@ export default function LearnPage() {
                                                             );
                                                         })}
                                                     </div>
-                                                </div>
-                                            )}
+                                                ) : (
+                                                    <div className="bg-gray-50 p-6 rounded-xl text-center">
+                                                        <p className="text-gray-600">
+                                                            Les détails des réponses ne sont pas disponibles pour ce quiz.
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
 
                                             {/* Boutons d'action */}
                                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -903,7 +912,8 @@ export default function LearnPage() {
                             </div>
                         )}
 
-                        {/* Bouton d'aide IA */}
+                        {/* Bouton d'aide IA - Caché pendant le quiz et les résultats */}
+                        {!quizState.isActive && !quizState.showResults && (
                         <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
                             <button
                                 onClick={() => setShowPremiumPaywall(true)}
@@ -913,6 +923,7 @@ export default function LearnPage() {
                                 Je ne comprends pas quelque chose - Demander au tuteur IA
                             </button>
                         </div>
+                        )}
 
                         {/* Footer du module - Caché pendant le quiz et les résultats */}
                         {!quizState.isActive && !quizState.showResults && (
