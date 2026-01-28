@@ -2,12 +2,16 @@
 import { Request, Response } from 'express';
 import * as communityService from '../services/community.service';
 
+// Plans autorisés à créer des communautés
+const ALLOWED_TIERS_FOR_COMMUNITY = ['premium', 'pro', 'max'];
+
 // Extend Request interface to include user
 interface AuthRequest extends Request {
     user?: {
         id: string;
         email: string;
         role?: string;
+        subscriptionTier?: string;
     };
 }
 
@@ -19,6 +23,14 @@ export async function createCommunity(req: AuthRequest, res: Response) {
 
         if (!creatorId) {
             return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Vérifier que l'utilisateur a un plan premium ou supérieur
+        const userTier = req.user?.subscriptionTier || 'free';
+        if (!ALLOWED_TIERS_FOR_COMMUNITY.includes(userTier)) {
+            return res.status(403).json({
+                error: 'La création de communautés est réservée aux abonnés Premium et Max. Passez à un plan supérieur pour créer votre propre communauté.'
+            });
         }
 
         const community = await communityService.createCommunity(creatorId, req.body);
