@@ -37,6 +37,7 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
             name: true,
             lastname: true,
             email: true,
+            role: true,
             created_at: true,
           }
         },
