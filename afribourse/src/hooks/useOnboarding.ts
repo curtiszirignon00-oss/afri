@@ -77,18 +77,34 @@ export function useUpdateInvestorDNA() {
 }
 
 /**
- * Update privacy settings
+ * Update privacy/visibility settings on UserProfile
  */
 export function useUpdatePrivacySettings() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: async (data: {
-            portfolio_visibility?: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
-            show_performance?: boolean;
-            show_transactions?: boolean;
-            show_holdings?: boolean;
+            show_level?: boolean;
+            show_xp?: boolean;
+            show_streak?: boolean;
+            show_portfolio_value?: boolean;
+            show_badges?: boolean;
+            show_achievements?: boolean;
+            show_avatar?: boolean;
+            show_bio?: boolean;
+            show_country?: boolean;
+            show_rank?: boolean;
+            show_followers_count?: boolean;
+            show_following_count?: boolean;
+            show_activity_feed?: boolean;
+            appear_in_search?: boolean;
+            appear_in_suggestions?: boolean;
         }) => {
-            const response = await apiClient.put('/investor-profile/privacy', data);
-            return response.data.data;
+            const response = await apiClient.patch('/profile/me/privacy', data);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
         },
     });
 }
