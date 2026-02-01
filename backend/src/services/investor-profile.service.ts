@@ -1,6 +1,7 @@
 // src/services/investor-profile.service.ts
 import { prisma } from '../config/database';
 import type { RiskProfile, InvestmentHorizon, VisibilityLevel } from '@prisma/client';
+import { calculateLevelFromXP } from './xp.service';
 
 // ============= TYPES =============
 
@@ -117,7 +118,7 @@ export async function getInvestorProfile(userId: string) {
         followers_count: userProfile?.followers_count || 0,
         following_count: userProfile?.following_count || 0,
         posts_count: userProfile?.posts_count || 0,
-        level: userProfile?.level || 1,
+        level: calculateLevelFromXP(userProfile?.total_xp || 0),
         total_xp: userProfile?.total_xp || 0,
         current_streak: userProfile?.current_streak || 0,
         longest_streak: userProfile?.longest_streak || 0,
