@@ -1,5 +1,5 @@
 // src/pages/CommunityPage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck } from 'lucide-react';
@@ -64,6 +64,13 @@ export default function CommunityPage() {
     const { data: suggestions, isLoading: suggestionsLoading } = useFollowSuggestions();
     const followMutation = useFollowUser();
     const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
+
+    // Clear followedIds when suggestions refresh (new profiles from API)
+    useEffect(() => {
+        if (suggestions) {
+            setFollowedIds(new Set());
+        }
+    }, [suggestions]);
 
     const posts: CommunityPost[] = data?.data || [];
     const totalPages = data?.totalPages || 1;
