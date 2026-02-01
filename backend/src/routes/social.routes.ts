@@ -12,6 +12,9 @@ router.delete('/follow/:userId', auth, socialController.unfollowUser);
 router.get('/followers/:userId', socialController.getFollowers);
 router.get('/following/:userId', socialController.getFollowing);
 
+// ============= SUGGESTION ROUTES =============
+router.get('/suggestions', auth, socialController.getFollowSuggestions);
+
 // ============= POST ROUTES =============
 router.get('/community', optionalAuth, socialController.getPublicPosts); // Public community feed with optional auth for follow status
 router.get('/feed', auth, socialController.getFeed);
