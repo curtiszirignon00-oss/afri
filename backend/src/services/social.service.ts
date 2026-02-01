@@ -208,6 +208,147 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
     };
 }
 
+// ============= SUGGESTION SERVICES =============
+
+const SUGGESTION_COUNT = 3;
+const CANDIDATE_POOL_SIZE = 30;
+
+/**
+ * Get follow suggestions for a user
+ * Returns up to 3 profiles scored by affinity (sectors, country, risk, popularity, verified)
+ */
+export async function getFollowSuggestions(userId: string) {
+    // Phase 1: Gather current user context + exclusion list in parallel
+    const [currentUserProfile, currentInvestorProfile, alreadyFollowing] = await Promise.all([
+        prisma.userProfile.findUnique({
+            where: { userId },
+            select: { country: true, level: true },
+        }),
+        prisma.investorProfile.findUnique({
+            where: { user_id: userId },
+            select: { risk_profile: true, favorite_sectors: true },
+        }),
+        prisma.follow.findMany({
+            where: { followerId: userId },
+            select: { followingId: true },
+        }),
+    ]);
+
+    const followingIds = alreadyFollowing.map(f => f.followingId);
+    const excludeIds = [userId, ...followingIds];
+
+    // Phase 2: Fetch candidate pool
+    const candidates = await prisma.userProfile.findMany({
+        where: {
+            userId: { notIn: excludeIds },
+            is_public: true,
+            appear_in_suggestions: true,
+            username: { not: null },
+        },
+        select: {
+            userId: true,
+            username: true,
+            avatar_url: true,
+            avatar_color: true,
+            bio: true,
+            level: true,
+            followers_count: true,
+            posts_count: true,
+            verified_investor: true,
+            country: true,
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
+                    investorProfile: {
+                        select: {
+                            risk_profile: true,
+                            favorite_sectors: true,
+                        },
+                    },
+                },
+            },
+        },
+        take: CANDIDATE_POOL_SIZE,
+        orderBy: { followers_count: 'desc' },
+    });
+
+    // Phase 3: Score each candidate
+    const riskOrder = ['CONSERVATIVE', 'MODERATE', 'BALANCED', 'GROWTH', 'AGGRESSIVE'];
+
+    const scored = candidates.map(candidate => {
+        let score = 0;
+        const candidateInvestor = candidate.user.investorProfile;
+
+        // Factor 1: Shared favorite sectors (max 30 pts)
+        if (currentInvestorProfile?.favorite_sectors?.length && candidateInvestor?.favorite_sectors?.length) {
+            const currentSectors = new Set(currentInvestorProfile.favorite_sectors);
+            const sharedCount = candidateInvestor.favorite_sectors.filter(s => currentSectors.has(s)).length;
+            const maxPossible = Math.min(
+                currentInvestorProfile.favorite_sectors.length,
+                candidateInvestor.favorite_sectors.length
+            );
+            if (maxPossible > 0) {
+                score += Math.round((sharedCount / maxPossible) * 30);
+            }
+        }
+
+        // Factor 2: Same country (20 pts)
+        if (currentUserProfile?.country && candidate.country === currentUserProfile.country) {
+            score += 20;
+        }
+
+        // Factor 3: Same risk profile (max 15 pts, partial for adjacent)
+        if (currentInvestorProfile?.risk_profile && candidateInvestor?.risk_profile) {
+            if (candidateInvestor.risk_profile === currentInvestorProfile.risk_profile) {
+                score += 15;
+            } else {
+                const currentIdx = riskOrder.indexOf(currentInvestorProfile.risk_profile);
+                const candidateIdx = riskOrder.indexOf(candidateInvestor.risk_profile);
+                const distance = Math.abs(currentIdx - candidateIdx);
+                if (distance === 1) score += 8;
+                else if (distance === 2) score += 3;
+            }
+        }
+
+        // Factor 4: Popularity / Activity (max 20 pts)
+        const followerScore = Math.min(Math.log2((candidate.followers_count || 0) + 1) * 2, 12);
+        const activityScore = Math.min(Math.log2((candidate.posts_count || 0) + 1) * 2, 8);
+        score += Math.round(followerScore + activityScore);
+
+        // Factor 5: Verified investor (15 pts)
+        if (candidate.verified_investor) {
+            score += 15;
+        }
+
+        return {
+            id: candidate.user.id,
+            name: candidate.user.name,
+            lastname: candidate.user.lastname,
+            username: candidate.username,
+            avatar_url: candidate.avatar_url,
+            avatar_color: candidate.avatar_color,
+            bio: candidate.bio,
+            level: candidate.level,
+            followers_count: candidate.followers_count,
+            verified_investor: candidate.verified_investor,
+            country: candidate.country,
+            _score: score,
+        };
+    });
+
+    // Phase 4: Sort by score desc, randomize ties
+    scored.sort((a, b) => {
+        const diff = b._score - a._score;
+        if (diff !== 0) return diff;
+        return Math.random() - 0.5;
+    });
+
+    // Phase 5: Take top 3, strip internal score
+    return scored.slice(0, SUGGESTION_COUNT).map(({ _score, ...profile }) => profile);
+}
+
 // ============= POST SERVICES =============
 
 /**
