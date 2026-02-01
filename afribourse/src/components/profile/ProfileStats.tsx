@@ -165,7 +165,7 @@ export default function ProfileStats({
                             {/* Progress bar to next level */}
                             <div className="mt-2">
                                 <div className="flex justify-between text-xs text-gray-600 mb-1">
-                                    <span>Progression</span>
+                                    <span>Niveau {level + 1}</span>
                                     <span>{Math.round(progressPercent)}%</span>
                                 </div>
                                 <div className="h-2 bg-white/50 rounded-full overflow-hidden">
@@ -174,8 +174,9 @@ export default function ProfileStats({
                                         style={{ width: `${progressPercent}%` }}
                                     />
                                 </div>
-                                <div className="text-xs text-gray-500 mt-1 text-right">
-                                    {xpProgress} / {xpNeeded} XP
+                                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>{formatNumber(totalXp)} XP</span>
+                                    <span>{formatNumber(xpLevelEnd)} XP</span>
                                 </div>
                             </div>
                         </div>
