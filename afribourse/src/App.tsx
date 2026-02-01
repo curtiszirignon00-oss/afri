@@ -48,6 +48,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import NotificationsPage from './pages/NotificationsPage';
 import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
+import AchievementsPage from './pages/AchievementsPage';
 import WelcomePopup from './components/WelcomePopup';
 
 // Hooks
@@ -121,6 +122,16 @@ function Layout() {
             element={
               <ProtectedRoute requireOnboarding={true}>
                 <ChallengeCommunityPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Achievements - Badges */}
+          <Route
+            path="/achievements"
+            element={
+              <ProtectedRoute requireOnboarding={true}>
+                <AchievementsPage />
               </ProtectedRoute>
             }
           />
