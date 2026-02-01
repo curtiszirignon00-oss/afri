@@ -19,6 +19,7 @@ import { Card } from '../ui';
 import { ShareButton, ShareModal } from '../share';
 import { useShare } from '../../hooks/useShare';
 import { useUpdatePrivacySettings } from '../../hooks/useOnboarding';
+import { calculateLevelFromXP } from '../../hooks/useGamification';
 import type { ShareablePortfolioData } from '../../types/share';
 
 interface ProfileStatsProps {
@@ -94,20 +95,20 @@ export default function ProfileStats({
     const showPortfolio = investorProfile?.show_portfolio_value !== false;
 
     // Stats from profile
-    const level = investorProfile?.level || 1;
     const totalXp = investorProfile?.total_xp || 0;
     const currentStreak = investorProfile?.current_streak || 0;
     const longestStreak = investorProfile?.longest_streak || 0;
 
+    // Recalculer le niveau à partir du XP total pour éviter les incohérences
+    const level = calculateLevelFromXP(totalXp);
+
     // Formule Duolingo-style: seuil niveau N = 50 * N * (N + 1)
-    // Bornes alignees avec calculateLevelFromXP du backend :
-    // Level 1: [0, 300)  |  Level 2: [300, 600)  |  Level 3: [600, 1000)  etc.
     const getXPRequired = (n: number) => 50 * n * (n + 1);
     const xpLevelStart = level <= 1 ? 0 : getXPRequired(level);
     const xpLevelEnd = getXPRequired(level + 1);
-    const xpProgress = totalXp - xpLevelStart;
+    const xpProgress = Math.max(0, totalXp - xpLevelStart);
     const xpNeeded = xpLevelEnd - xpLevelStart;
-    const progressPercent = Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
+    const progressPercent = xpNeeded > 0 ? Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100)) : 0;
 
     // Blur class for hidden values
     const blurClass = 'blur-sm select-none';
