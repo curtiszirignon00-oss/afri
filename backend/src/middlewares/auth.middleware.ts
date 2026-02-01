@@ -22,6 +22,10 @@ export async function auth(req: AuthenticatedRequest, res: Response, next: NextF
 
         console.log('✅ [AUTH] User authenticated:', user?.email);
         req.user = user;
+        // Admin gets full pro/max access
+        if (req.user && req.user.role === 'admin') {
+            req.user.subscriptionTier = 'max';
+        }
         next();
         return;
     } catch (error) {
@@ -54,6 +58,9 @@ export async function optionalAuth(req: AuthenticatedRequest, res: Response, nex
         const {user} = await getUserFromToken(req);
         if (user) {
             req.user = user;
+            if (user.role === 'admin') {
+                req.user.subscriptionTier = 'max';
+            }
         }
         next();
         return;

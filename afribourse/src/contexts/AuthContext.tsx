@@ -8,6 +8,7 @@ interface UserProfile {
   name: string | null;
   lastname: string | null;
   role?: string;
+  subscriptionTier?: string;
 }
 
 interface AuthContextType {
@@ -66,7 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         console.log('✅ [AUTH] User authenticated:', data.user?.email);
-        setUserProfile(data.user); // <-- Met à jour le profil (le backend retourne { user: {...} })
+        const profile = data.user;
+        // Admin gets full pro/max access
+        if (profile?.role === 'admin') {
+          profile.subscriptionTier = 'max';
+        }
+        setUserProfile(profile); // <-- Met à jour le profil (le backend retourne { user: {...} })
         setIsLoggedIn(true); // <-- CRITIQUE : Met à jour isLoggedIn
       } else {
         console.log('❌ [AUTH] Authentication failed');
