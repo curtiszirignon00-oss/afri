@@ -215,12 +215,12 @@ export function useCanTrade(walletType: 'SANDBOX' | 'CONCOURS'): {
     }
 
     // Check date ouverture
-    const launchDate = new Date('2026-02-02T00:00:00Z');
+    const launchDate = new Date('2026-03-02T00:00:00Z');
     if (now < launchDate) {
         const daysRemaining = Math.ceil((launchDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
         return {
             canTrade: false,
-            reason: `Le Challenge AfriBourse ouvre le 2 février 2026 (dans ${daysRemaining} jours).`,
+            reason: `Le Challenge AfriBourse ouvre le 2 mars 2026 (dans ${daysRemaining} jours).`,
         };
     }
 
@@ -231,6 +231,6 @@ export function useCanTrade(walletType: 'SANDBOX' | 'CONCOURS'): {
  * Hook pour vérifier si le challenge est ouvert
  */
 export function useIsChallengeOpen(): boolean {
-    const launchDate = new Date('2026-02-02T00:00:00Z');
+    const launchDate = new Date('2026-03-02T00:00:00Z');
     return Date.now() >= launchDate.getTime();
 }

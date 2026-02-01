@@ -41,17 +41,17 @@ export function validateTradingHours(req: AuthRequest, res: Response, next: Next
 }
 
 /**
- * Middleware: Vérifie que le Challenge est ouvert (après le 2 février 2026)
+ * Middleware: Vérifie que le Challenge est ouvert (après le 2 mars 2026)
  */
 export function checkChallengeOpening(req: AuthRequest, res: Response, next: NextFunction) {
-    const LAUNCH_DATE = new Date('2026-02-02T00:00:00Z');
+    const LAUNCH_DATE = new Date('2026-03-02T00:00:00Z');
     const now = new Date();
 
     if (now < LAUNCH_DATE) {
         const daysRemaining = Math.ceil((LAUNCH_DATE.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
         return res.status(403).json({
-            error: `Le Challenge AfriBourse ouvre le 2 février 2026`,
+            error: `Le Challenge AfriBourse ouvre le 2 mars 2026`,
             code: 'CHALLENGE_NOT_OPEN',
             launchDate: LAUNCH_DATE.toISOString(),
             daysRemaining,

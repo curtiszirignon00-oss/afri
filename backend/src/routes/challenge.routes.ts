@@ -15,11 +15,11 @@ router.get('/info', (req, res) => {
         success: true,
         data: {
             name: 'Challenge AfriBourse 2026',
-            startDate: '2026-02-02T00:00:00Z',
+            startDate: '2026-03-02T00:00:00Z',
             initialBalance: 1000000,
             currency: 'FCFA',
             eligibilityCriteria: '5 transactions sur tickers différents',
-            status: Date.now() >= new Date('2026-02-02').getTime() ? 'OPEN' : 'COMING_SOON',
+            status: Date.now() >= new Date('2026-03-02').getTime() ? 'OPEN' : 'COMING_SOON',
         },
     });
 });

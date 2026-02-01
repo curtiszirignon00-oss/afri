@@ -25,7 +25,7 @@ export interface ChallengeStatus {
 
 // ============= CONSTANTS =============
 
-const CHALLENGE_START_DATE = new Date('2026-02-02T00:00:00Z');
+const CHALLENGE_START_DATE = new Date('2026-03-02T00:00:00Z');
 const INITIAL_CHALLENGE_BALANCE = 1000000; // 1M FCFA
 const REQUIRED_UNIQUE_TICKERS = 5;
 const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-le-hub-de-lelite';
@@ -69,7 +69,7 @@ export function canTrade(walletType: 'SANDBOX' | 'CONCOURS', currentTime: Date =
         const daysRemaining = Math.ceil((CHALLENGE_START_DATE.getTime() - currentTime.getTime()) / (1000 * 60 * 60 * 24));
         return {
             allowed: false,
-            reason: `Le Challenge AfriBourse ouvre le 2 février 2026 (dans ${daysRemaining} jours).`,
+            reason: `Le Challenge AfriBourse ouvre le 2 mars 2026 (dans ${daysRemaining} jours).`,
         };
     }
 

@@ -13,7 +13,7 @@ const RULES = [
   {
     icon: '📅',
     title: 'Dates du Challenge',
-    description: 'Du 2 février au 30 juin 2026. Les inscriptions sont ouvertes dès maintenant.',
+    description: 'Du 2 mars au 30 juin 2026. Les inscriptions sont ouvertes dès maintenant.',
   },
   {
     icon: '💰',
