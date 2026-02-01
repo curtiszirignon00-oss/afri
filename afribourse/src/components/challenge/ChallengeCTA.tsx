@@ -22,7 +22,7 @@ export function ChallengeCTA() {
             setShowEnrollmentModal(true);
         } else {
             // Déjà inscrit → Communauté officielle du Challenge sur africbourse.com
-            window.location.href = 'https://www.africbourse.com/communities/-challenge-afribourse-du-virtuel-au-reel-';
+            window.location.href = 'https://www.africbourse.com/communities/-challenge-afribourse-le-hub-de-lelite';
         }
     };
 
@@ -95,7 +95,7 @@ export function ChallengeCTA() {
                 onSuccess={() => {
                     setShowEnrollmentModal(false);
                     // Rediriger vers la communauté officielle du Challenge sur africbourse.com
-                    window.location.href = 'https://www.africbourse.com/communities/-challenge-afribourse-du-virtuel-au-reel-';
+                    window.location.href = 'https://www.africbourse.com/communities/-challenge-afribourse-le-hub-de-lelite';
                 }}
             />
         </>

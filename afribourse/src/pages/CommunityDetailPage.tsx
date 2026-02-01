@@ -62,7 +62,7 @@ import {
 import EventFormModal from '../components/events/EventFormModal';
 
 // Slug de la communauté du challenge AfriBourse
-const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-du-virtuel-au-reel-';
+const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-le-hub-de-lelite';
 
 export default function CommunityDetailPage() {
     const { slug } = useParams<{ slug: string }>();
