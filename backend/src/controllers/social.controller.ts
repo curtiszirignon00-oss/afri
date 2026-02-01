@@ -111,6 +111,23 @@ export async function getFollowing(req: Request, res: Response) {
     }
 }
 
+// ============= SUGGESTION CONTROLLERS =============
+
+export async function getFollowSuggestions(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const suggestions = await socialService.getFollowSuggestions(userId);
+        res.status(200).json({ success: true, data: suggestions });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 // ============= POST CONTROLLERS =============
 
 export async function createPost(req: AuthRequest, res: Response) {
