@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles } from 'lucide-react';
+import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
 import { useAuth } from '../contexts/AuthContext';
 import { useCommunities } from '../hooks/useCommunity';
+import { useFollowSuggestions, useFollowUser } from '../hooks/useSocial';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 import CommunityRulesModal from '../components/community/CommunityRulesModal';
 
@@ -58,6 +59,11 @@ export default function CommunityPage() {
     // Fetch communities to discover
     const { data: communitiesData, isLoading: communitiesLoading } = useCommunities(1, { limit: 5 });
     const communities = communitiesData?.data || [];
+
+    // Fetch follow suggestions
+    const { data: suggestions, isLoading: suggestionsLoading } = useFollowSuggestions();
+    const followMutation = useFollowUser();
+    const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
 
     const posts: CommunityPost[] = data?.data || [];
     const totalPages = data?.totalPages || 1;
@@ -204,6 +210,101 @@ export default function CommunityPage() {
                                 <ChevronRight className="w-4 h-4" />
                             </Link>
                         </div>
+
+                        {/* Suggested Profiles */}
+                        {isLoggedIn && (
+                            <div className="bg-white rounded-2xl shadow-sm p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <UserPlus className="w-5 h-5 text-purple-500" />
+                                    <h3 className="font-semibold text-gray-900">Suggestions</h3>
+                                </div>
+
+                                {suggestionsLoading && (
+                                    <div className="flex justify-center py-6">
+                                        <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+                                    </div>
+                                )}
+
+                                {!suggestionsLoading && (!suggestions || suggestions.length === 0) && (
+                                    <p className="text-sm text-gray-500 text-center py-4">
+                                        Aucune suggestion pour le moment
+                                    </p>
+                                )}
+
+                                {!suggestionsLoading && suggestions && suggestions.length > 0 && (
+                                    <div className="space-y-3">
+                                        {suggestions.map((user: any) => (
+                                            <div
+                                                key={user.id}
+                                                className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                                            >
+                                                <Link
+                                                    to={`/profile/${user.id}`}
+                                                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden"
+                                                    style={{
+                                                        background: user.avatar_url
+                                                            ? undefined
+                                                            : `linear-gradient(135deg, ${user.avatar_color || '#6366f1'}, ${user.avatar_color || '#8b5cf6'})`,
+                                                    }}
+                                                >
+                                                    {user.avatar_url ? (
+                                                        <img
+                                                            src={user.avatar_url}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <>{user.name?.[0]}{user.lastname?.[0]}</>
+                                                    )}
+                                                </Link>
+                                                <div className="flex-1 min-w-0">
+                                                    <Link
+                                                        to={`/profile/${user.id}`}
+                                                        className="flex items-center gap-1"
+                                                    >
+                                                        <span className="font-medium text-gray-900 text-sm truncate">
+                                                            {user.name} {user.lastname}
+                                                        </span>
+                                                        {user.verified_investor && (
+                                                            <CheckCircle className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                                        )}
+                                                    </Link>
+                                                    <p className="text-xs text-gray-500">
+                                                        {user.followers_count} abonne{user.followers_count > 1 ? 's' : ''}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        if (!followedIds.has(user.id)) {
+                                                            followMutation.mutate(user.id);
+                                                            setFollowedIds(prev => new Set(prev).add(user.id));
+                                                        }
+                                                    }}
+                                                    disabled={followedIds.has(user.id) || followMutation.isPending}
+                                                    className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-full font-medium transition-colors flex-shrink-0 ${
+                                                        followedIds.has(user.id)
+                                                            ? 'bg-gray-100 text-gray-500'
+                                                            : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                                                    }`}
+                                                >
+                                                    {followedIds.has(user.id) ? (
+                                                        <>
+                                                            <UserCheck className="w-3 h-3" />
+                                                            Suivi
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <UserPlus className="w-3 h-3" />
+                                                            Suivre
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Main Content - Posts */}
