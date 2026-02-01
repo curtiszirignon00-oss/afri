@@ -262,7 +262,7 @@ export default function ProfilePage() {
                             } : null}
                         />
 
-                        <InvestorDNA profile={profileData} />
+                        <InvestorDNA profile={profileData} isOwnProfile={isOwnProfile} />
                         <SocialStats profile={profileData} />
 
                         {/* Gamification Section - Only for own profile */}
