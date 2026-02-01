@@ -3,6 +3,12 @@
 
 import { Request, Response, NextFunction } from 'express';
 import * as profileService from '../services/profile.service';
+// Import gamification services
+import * as xpService from '../services/xp.service';
+import * as streakService from '../services/streak.service';
+import * as achievementService from '../services/achievement.service';
+import * as weeklyChallengeService from '../services/weekly-challenge.service';
+import { prisma } from '../config/database';
 
 // =====================================
 // PROFIL PUBLIC
@@ -129,7 +135,64 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
     console.log('📝 [UPDATE PROFILE] Calling service...');
     const updatedProfile = await profileService.updateProfileSocial(userId, updateData);
     console.log('✅ [UPDATE PROFILE] Success:', updatedProfile?.id);
-    return res.status(200).json({ success: true, data: updatedProfile });
+
+    // ========== GAMIFICATION TRIGGERS ==========
+    let xpGained = 0;
+    let newAchievements: string[] = [];
+
+    try {
+      // 1. Enregistrer activité streak
+      await streakService.recordActivity(userId, 'profile_edit');
+
+      // 2. Vérifier si le profil est maintenant complet
+      // Un profil est considéré comme complet si: avatar, bio, username, country sont remplis
+      const profile = await prisma.userProfile.findUnique({
+        where: { userId },
+        include: { user: true }
+      });
+
+      if (profile) {
+        const isComplete = !!(
+          profile.avatar_url &&
+          profile.bio &&
+          profile.username &&
+          profile.country &&
+          profile.user.name &&
+          profile.user.lastname
+        );
+
+        // Vérifier si on n'a pas déjà attribué le badge "new_member"
+        const hasNewMemberBadge = await prisma.userAchievement.findFirst({
+          where: {
+            userId,
+            achievement: { code: 'new_member' }
+          }
+        });
+
+        if (isComplete && !hasNewMemberBadge) {
+          // Profil maintenant complet! +250 XP
+          const xpResult = await xpService.addXPForAction(userId, 'PROFILE_COMPLETED');
+          xpGained = xpResult.xp_added;
+
+          // Vérifier déblocage de badges sociaux
+          const unlockedAchievements = await achievementService.checkSocialAchievements(userId);
+          newAchievements = unlockedAchievements.map(a => a.name);
+        }
+      }
+
+    } catch (gamificationError) {
+      console.error('Erreur gamification (profile update):', gamificationError);
+    }
+    // ========== FIN GAMIFICATION ==========
+
+    return res.status(200).json({
+      success: true,
+      data: updatedProfile,
+      gamification: {
+        xpGained,
+        newAchievements
+      }
+    });
 
   } catch (error: any) {
     console.error('❌ Erreur updateMyProfile:', error.message);
@@ -187,9 +250,50 @@ export async function followUser(req: Request, res: Response, next: NextFunction
     const { userId: followingId } = req.params;
 
     const follow = await profileService.followUser(followerId, followingId);
+
+    // ========== GAMIFICATION TRIGGERS ==========
+    let gamificationData: any = {};
+
+    try {
+      // 1. Enregistrer activité streak pour le follower
+      await streakService.recordActivity(followerId, 'follow_user');
+
+      // 2. Mettre à jour progression défis hebdomadaires (follow)
+      await weeklyChallengeService.updateChallengeProgress(followerId, 'social', 1);
+
+      // 3. Vérifier badges sociaux pour l'utilisateur suivi (nombre de followers)
+      const followerCount = await prisma.follow.count({
+        where: { followingId }
+      });
+
+      // Paliers de followers: 10, 50, 100, 150, 200, 500
+      const followerMilestones = [10, 50, 100, 150, 200, 500];
+      if (followerMilestones.includes(followerCount)) {
+        // L'utilisateur suivi reçoit XP pour le palier atteint (+200 XP)
+        const xpResult = await xpService.addXPForAction(followingId, 'FOLLOWER_MILESTONE');
+        gamificationData.targetUserXP = xpResult.xp_added;
+
+        // Récompenser freezes pour 50 abonnés
+        if (followerCount === 50) {
+          await streakService.rewardFreezeForAction(followingId, 'FOLLOWER_50');
+        }
+
+        // Vérifier badges sociaux pour l'utilisateur suivi
+        const unlockedBadges = await achievementService.checkSocialAchievements(followingId);
+        if (unlockedBadges.length > 0) {
+          gamificationData.targetUserBadges = unlockedBadges.map(a => a.name);
+        }
+      }
+
+    } catch (gamificationError) {
+      console.error('Erreur gamification (follow):', gamificationError);
+    }
+    // ========== FIN GAMIFICATION ==========
+
     return res.status(201).json({
       message: 'Abonnement réussi',
-      follow
+      follow,
+      gamification: gamificationData
     });
 
   } catch (error: any) {

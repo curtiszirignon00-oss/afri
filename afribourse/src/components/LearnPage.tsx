@@ -18,15 +18,19 @@ import {
     HelpCircle,
     BarChart3,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Zap
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 import confetti from 'canvas-confetti';
-import { AITutor } from './AITutor';
 import PremiumPaywall from './PremiumPaywall';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+
+// Gamification imports
+import { useGamificationSummary } from '../hooks/useGamification';
+import { XPProgressBar, LevelBadge, StreakCounter, showXPGainToast } from './gamification';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -51,6 +55,10 @@ interface QuizState {
 export default function LearnPage() {
     const { isLoggedIn } = useAuth();
     const { trackAction } = useAnalytics();
+
+    // Gamification data
+    const { data: gamificationSummary, refetch: refetchGamification } = useGamificationSummary();
+
     const [modules, setModules] = useState<LearningModule[]>([]);
     const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
     const [progress, setProgress] = useState<LearningProgress[]>([]);
@@ -341,6 +349,18 @@ export default function LearnPage() {
                     origin: { y: 0.6 },
                     colors: ['#4ADE80', '#22C55E', '#3B82F6', '#8B5CF6']
                 });
+
+                // Show XP gain toast
+                const xpGained = result.score === 100 ? 100 : 50; // 100 XP for perfect, 50 for pass
+                showXPGainToast({
+                    xpGained,
+                    bonusXP: result.score === 100 ? { reason: 'Quiz parfait', amount: 50 } : undefined,
+                    newAchievements: result.newAchievements || [],
+                    levelUp: result.levelUp || undefined
+                });
+
+                // Refresh gamification data
+                refetchGamification();
             } else {
                 toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
             }
@@ -437,6 +457,17 @@ export default function LearnPage() {
 
             await loadData();
             toast.success('Module terminé avec succès ! 🎉', { id: toastId });
+
+            // Show XP gain toast for module completion
+            showXPGainToast({
+                xpGained: 200, // Standard XP for module completion
+                bonusXP: undefined,
+                newAchievements: [],
+                levelUp: undefined
+            });
+
+            // Refresh gamification data
+            refetchGamification();
 
         } catch (err: any) {
             console.error('Erreur complétion:', err);
@@ -1027,26 +1058,66 @@ export default function LearnPage() {
                 </div>
 
                 {isLoggedIn && (
-                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6 mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-                                    <TrendingUp className="w-6 h-6 text-white" />
+                    <div className="max-w-4xl mx-auto mb-8">
+                        {/* Gamification Stats */}
+                        {gamificationSummary && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                                {/* Level & XP */}
+                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <LevelBadge level={gamificationSummary.xp.level} size="md" />
+                                        <div>
+                                            <p className="text-sm text-gray-500">Niveau {gamificationSummary.xp.level}</p>
+                                            <p className="font-bold text-gray-900">{gamificationSummary.xp.title}</p>
+                                        </div>
+                                    </div>
+                                    <XPProgressBar
+                                        stats={gamificationSummary.xp}
+                                        showDetails={false}
+                                        size="sm"
+                                    />
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-900">Votre Progression</h3>
-                                    <p className="text-sm text-gray-600">{completedCount} / {totalModules} modules complétés</p>
+
+                                {/* Streak */}
+                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 flex items-center justify-center">
+                                    <StreakCounter
+                                        streak={gamificationSummary.streak}
+                                        size="md"
+                                        showFreezes={false}
+                                    />
+                                </div>
+
+                                {/* Total XP */}
+                                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl shadow-lg border-2 border-amber-200 p-4 flex flex-col items-center justify-center">
+                                    <Zap className="w-8 h-8 text-amber-600 mb-2" />
+                                    <p className="text-2xl font-bold text-amber-700">{gamificationSummary.xp.total_xp.toLocaleString()}</p>
+                                    <p className="text-sm text-amber-600">XP Total</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <span className="text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
+                        )}
+
+                        {/* Learning Progress */}
+                        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                                        <TrendingUp className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">Votre Progression</h3>
+                                        <p className="text-sm text-gray-600">{completedCount} / {totalModules} modules complétés</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                            <div
-                                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
-                                style={{ width: `${progressPercentage}%` }}
-                            />
+                            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                <div
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
+                                    style={{ width: `${progressPercentage}%` }}
+                                />
+                            </div>
                         </div>
                     </div>
                 )}

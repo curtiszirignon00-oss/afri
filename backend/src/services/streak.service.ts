@@ -1,11 +1,26 @@
 // backend/src/services/streak.service.ts
 // Service pour gérer les séries (streaks) quotidiennes
+// Inspiré de Duolingo pour AfriBourse
 
 import { PrismaClient } from '@prisma/client';
 import * as xpService from './xp.service';
 import * as activityService from './activity.service';
+import { STREAK_ACTIONS, StreakAction, StreakStats, XP_REWARDS } from '../types/gamification.types';
 
 const prisma = new PrismaClient();
+
+// =====================================
+// CONSTANTES
+// =====================================
+
+const MAX_FREEZES = 5; // Maximum de freezes stockables
+
+/**
+ * Vérifie si une action compte pour le streak
+ */
+export function isStreakAction(action: string): action is StreakAction {
+  return STREAK_ACTIONS.includes(action as StreakAction);
+}
 
 // =====================================
 // ENREGISTREMENT ACTIVITÉ
@@ -58,11 +73,17 @@ export async function recordActivity(userId: string, activityType: string) {
       newStreak++;
       console.log(`🔥 ${userId} maintient sa série ! Jour ${newStreak}`);
 
-      // Ajouter XP pour maintien de série
+      // Ajouter XP pour maintien de série selon les paliers
       if (newStreak === 7) {
-        await xpService.addXP(userId, 200, 'streak_maintained', 'Série de 7 jours maintenue !');
+        await xpService.addXP(userId, XP_REWARDS.STREAK_7, 'streak_7', 'Série de 7 jours maintenue ! 🔥');
       } else if (newStreak === 30) {
-        await xpService.addXP(userId, 800, 'streak_maintained', 'Série de 30 jours maintenue !');
+        await xpService.addXP(userId, XP_REWARDS.STREAK_30, 'streak_30', 'Série de 30 jours maintenue ! ⚡');
+        // Bonus: +3 freezes pour 30 jours
+        await addFreezes(userId, 3, 'Bonus série 30 jours');
+      } else if (newStreak === 100) {
+        await xpService.addXP(userId, XP_REWARDS.STREAK_100, 'streak_100', 'Série de 100 jours maintenue ! 💪');
+      } else if (newStreak === 365) {
+        await xpService.addXP(userId, XP_REWARDS.STREAK_365, 'streak_365', 'Série de 365 jours - IMMORTEL ! 🏆');
       }
 
     } else if (!lastActivity || lastActivity.getTime() < yesterday.getTime()) {
@@ -177,22 +198,47 @@ export async function useFreeze(userId: string) {
 }
 
 /**
- * Ajoute des freezes à un utilisateur
+ * Ajoute des freezes à un utilisateur (max 5)
  */
 export async function addFreezes(userId: string, quantity: number, reason: string) {
   try {
+    // Récupérer le nombre actuel de freezes
+    const profile = await prisma.userProfile.findUnique({
+      where: { userId },
+      select: { streak_freezes: true }
+    });
+
+    if (!profile) {
+      throw new Error('Profil non trouvé');
+    }
+
+    // Calculer le nouveau nombre (max 5)
+    const currentFreezes = profile.streak_freezes;
+    const newTotal = Math.min(MAX_FREEZES, currentFreezes + quantity);
+    const actualAdded = newTotal - currentFreezes;
+
+    if (actualAdded <= 0) {
+      return {
+        message: `Vous avez déjà le maximum de freezes (${MAX_FREEZES})`,
+        freezes: currentFreezes,
+        added: 0
+      };
+    }
+
     await prisma.userProfile.update({
       where: { userId },
       data: {
-        streak_freezes: { increment: quantity }
+        streak_freezes: newTotal
       }
     });
 
-    console.log(`🧊 ${userId} a reçu ${quantity} freeze(s) - ${reason}`);
+    console.log(`🧊 ${userId} a reçu ${actualAdded} freeze(s) - ${reason} (total: ${newTotal})`);
 
     return {
-      message: `${quantity} freeze(s) ajouté(s)`,
-      reason
+      message: `${actualAdded} freeze(s) ajouté(s)`,
+      reason,
+      freezes: newTotal,
+      added: actualAdded
     };
 
   } catch (error) {
@@ -201,13 +247,34 @@ export async function addFreezes(userId: string, quantity: number, reason: strin
   }
 }
 
+/**
+ * Actions qui donnent des freezes automatiquement
+ */
+export const FREEZE_REWARDS = {
+  MODULE_COMPLETE: { amount: 1, reason: 'Module complété' },
+  FOLLOWER_50: { amount: 2, reason: 'Atteint 50 abonnés' },
+  INVITE_FRIEND: { amount: 1, reason: 'Ami invité' },
+  STREAK_30: { amount: 3, reason: 'Série de 30 jours' }
+};
+
+/**
+ * Ajoute un freeze pour une action spécifique
+ */
+export async function rewardFreezeForAction(
+  userId: string,
+  actionKey: keyof typeof FREEZE_REWARDS
+): Promise<ReturnType<typeof addFreezes>> {
+  const reward = FREEZE_REWARDS[actionKey];
+  return addFreezes(userId, reward.amount, reward.reason);
+}
+
 // =====================================
 // VÉRIFICATION QUOTIDIENNE (CRON)
 // =====================================
 
 /**
- * Vérifie les séries de tous les utilisateurs (CRON quotidien)
- * Réinitialise les séries non maintenues
+ * Vérifie les séries de tous les utilisateurs (CRON quotidien à 01h00)
+ * Utilise automatiquement les freezes ou réinitialise les séries
  */
 export async function checkAllStreaks() {
   try {
@@ -230,39 +297,80 @@ export async function checkAllStreaks() {
       select: {
         userId: true,
         current_streak: true,
-        last_activity_date: true
+        longest_streak: true,
+        last_activity_date: true,
+        streak_freezes: true
       }
     });
 
     console.log(`📊 ${profiles.length} profils avec série à risque`);
 
     let streaksLost = 0;
+    let freezesUsed = 0;
 
     for (const profile of profiles) {
-      // Vérifier si l'utilisateur a des freezes
-      const fullProfile = await prisma.userProfile.findUnique({
-        where: { userId: profile.userId },
-        select: { streak_freezes: true }
-      });
+      if (profile.streak_freezes > 0) {
+        // Utiliser automatiquement un freeze pour protéger la série
+        await prisma.userProfile.update({
+          where: { userId: profile.userId },
+          data: {
+            streak_freezes: { decrement: 1 },
+            last_activity_date: yesterday // Rétroactif pour maintenir la série
+          }
+        });
 
-      // TODO: Implémenter l'utilisation automatique des freezes si souhaité
+        console.log(`🧊 ${profile.userId} - Freeze automatique utilisé. Série de ${profile.current_streak} jours protégée`);
+        freezesUsed++;
 
-      // Réinitialiser la série
-      await prisma.userProfile.update({
-        where: { userId: profile.userId },
-        data: {
-          current_streak: 0
-        }
-      });
+        // Créer une notification/activité
+        await activityService.createActivity(
+          profile.userId,
+          'milestone',
+          `Streak Freeze utilisé automatiquement ! Série de ${profile.current_streak} jours protégée 🧊`,
+          {
+            streak: profile.current_streak,
+            freezes_remaining: profile.streak_freezes - 1,
+            auto_used: true
+          },
+          false
+        );
 
-      console.log(`💔 ${profile.userId} a perdu sa série de ${profile.current_streak} jours`);
-      streaksLost++;
+        // TODO: Envoyer notification push
+      } else {
+        // Pas de freeze, série perdue
+        await prisma.userProfile.update({
+          where: { userId: profile.userId },
+          data: {
+            current_streak: 0
+          }
+        });
+
+        console.log(`💔 ${profile.userId} a perdu sa série de ${profile.current_streak} jours`);
+        streaksLost++;
+
+        // Créer une activité de série perdue
+        await activityService.createActivity(
+          profile.userId,
+          'milestone',
+          `A perdu sa série de ${profile.current_streak} jours 💔`,
+          {
+            lost_streak: profile.current_streak,
+            longest_streak: profile.longest_streak
+          },
+          false
+        );
+
+        // TODO: Envoyer notification push de série perdue
+      }
     }
 
-    console.log(`✅ Vérification terminée. ${streaksLost} série(s) perdue(s).`);
+    console.log(`✅ Vérification terminée.`);
+    console.log(`   - ${freezesUsed} freeze(s) utilisé(s) automatiquement`);
+    console.log(`   - ${streaksLost} série(s) perdue(s)`);
 
     return {
       checked: profiles.length,
+      freezes_used: freezesUsed,
       streaks_lost: streaksLost
     };
 

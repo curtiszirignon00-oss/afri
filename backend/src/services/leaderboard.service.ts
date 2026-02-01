@@ -50,7 +50,7 @@ async function calculatePortfolioPerformance(userId: string) {
     // Récupérer les prix actuels des actions
     for (const position of wallet.positions) {
         const stock = await prisma.stock.findUnique({
-            where: { ticker: position.stock_ticker },
+            where: { symbol: position.stock_ticker },
         });
 
         if (stock) {
@@ -277,28 +277,28 @@ export async function getWeeklyStockPerformance() {
     // Récupérer les infos des actions et leur performance
     const tickers = Object.keys(tickerCount);
     const stocks = await prisma.stock.findMany({
-        where: { ticker: { in: tickers } },
+        where: { symbol: { in: tickers } },
         select: {
-            ticker: true,
+            symbol: true,
             company_name: true,
             current_price: true,
-            change_percent: true,
+            daily_change_percent: true,
         },
     });
 
     const stocksWithActivity = stocks.map((stock) => ({
         ...stock,
-        tradingVolume: tickerCount[stock.ticker],
+        tradingVolume: tickerCount[stock.symbol],
     }));
 
     // Top 3 = Plus forte hausse
     const top3 = stocksWithActivity
-        .sort((a, b) => b.change_percent - a.change_percent)
+        .sort((a, b) => b.daily_change_percent - a.daily_change_percent)
         .slice(0, 3);
 
     // Flop 3 = Plus forte baisse
     const flop3 = stocksWithActivity
-        .sort((a, b) => a.change_percent - b.change_percent)
+        .sort((a, b) => a.daily_change_percent - b.daily_change_percent)
         .slice(0, 3);
 
     return {

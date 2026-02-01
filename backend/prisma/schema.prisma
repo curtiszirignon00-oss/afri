@@ -238,6 +238,10 @@ model UserProfile {
   global_rank  Int?
   country_rank Int?
 
+  // Compteurs de connexion (pour badges early_bird/night_owl)
+  early_logins_count Int @default(0) // Connexions avant 8h
+  night_logins_count Int @default(0) // Connexions après 22h
+
   // ============= PARAMÈTRES DE CONFIDENTIALITÉ (NOUVEAU) =============
   // Informations personnelles
   show_avatar     Boolean @default(true)

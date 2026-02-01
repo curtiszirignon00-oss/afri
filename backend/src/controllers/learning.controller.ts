@@ -3,6 +3,12 @@
 import { Request, Response, NextFunction } from 'express';
 // Assurez-vous d'importer la classe LearningServicePrisma
 import { LearningServicePrisma } from '../services/learning.service.prisma';
+// Import gamification services
+import * as xpService from '../services/xp.service';
+import * as streakService from '../services/streak.service';
+import * as achievementService from '../services/achievement.service';
+import * as weeklyChallengeService from '../services/weekly-challenge.service';
+import { prisma } from '../config/database';
 
 // Instancie le service une seule fois
 const learningService = new LearningServicePrisma();
@@ -46,19 +52,70 @@ export class LearningController {
     async markAsCompleted(req: Request, res: Response, next: NextFunction) {
         try {
             // Récupération de l'ID utilisateur via le middleware d'authentification
-            const userId = (req as any).user?.id as string; 
+            const userId = (req as any).user?.id as string;
             const { slug } = req.params;
 
             if (!userId) {
                 // CORRECTION TS7030: Retour explicite
                 return res.status(401).json({ message: "Utilisateur non authentifié. L'ID utilisateur est manquant." });
             }
-            
+
             const progress = await learningService.markModuleAsCompleted(userId, slug);
-            
-            return res.status(200).json({ 
+
+            // ========== GAMIFICATION TRIGGERS ==========
+            let xpGained = 0;
+            let bonusXP = 0;
+            let newAchievements: string[] = [];
+
+            try {
+                // 1. Ajouter XP pour complétion de module (+200 XP)
+                const xpResult = await xpService.addXPForAction(userId, 'MODULE_COMPLETED');
+                xpGained = xpResult.xp_added;
+
+                // 2. Enregistrer activité streak
+                await streakService.recordActivity(userId, 'MODULE_COMPLETE');
+
+                // 3. Récompenser freeze pour module complété
+                await streakService.rewardFreezeForAction(userId, 'MODULE_COMPLETE');
+
+                // 4. Vérifier bonus 3 modules/jour (+200 XP)
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const modulesToday = await prisma.learningProgress.count({
+                    where: {
+                        userId,
+                        is_completed: true,
+                        completed_at: { gte: today }
+                    }
+                });
+
+                if (modulesToday === 3) {
+                    const bonusResult = await xpService.addXPForAction(userId, 'DAILY_3_MODULES');
+                    bonusXP = bonusResult.xp_added;
+                }
+
+                // 5. Mettre à jour progression défis hebdomadaires
+                await weeklyChallengeService.updateChallengeProgress(userId, 'module', 1);
+
+                // 6. Vérifier déblocage de badges
+                const unlockedAchievements = await achievementService.checkFormationAchievements(userId);
+                newAchievements = unlockedAchievements.map(a => a.name);
+
+            } catch (gamificationError) {
+                // Log l'erreur mais ne bloque pas la réponse
+                console.error('Erreur gamification (module complete):', gamificationError);
+            }
+            // ========== FIN GAMIFICATION ==========
+
+            return res.status(200).json({
                 message: `Module ${slug} marqué comme terminé.`,
-                progress: progress
+                progress: progress,
+                gamification: {
+                    xpGained: xpGained + bonusXP,
+                    bonusXP: bonusXP > 0 ? { reason: '3 modules complétés aujourd\'hui!', amount: bonusXP } : null,
+                    newAchievements
+                }
             });
         } catch (error) {
             // CORRECTION TS7030: Retour explicite
@@ -135,7 +192,53 @@ export class LearningController {
 
             const result = await learningService.submitQuiz(userId, slug, answers, timeSpent);
 
-            return res.status(200).json(result);
+            // ========== GAMIFICATION TRIGGERS ==========
+            let xpGained = 0;
+            let bonusXP = 0;
+            let newAchievements: string[] = [];
+
+            try {
+                // Score >= 80% = quiz passé
+                const passed = result.score >= 80;
+                const perfect = result.score === 100;
+
+                if (passed) {
+                    // 1. Ajouter XP pour quiz réussi (+50 XP)
+                    const xpResult = await xpService.addXPForAction(userId, 'QUIZ_PASS');
+                    xpGained = xpResult.xp_added;
+
+                    // 2. Bonus XP pour quiz parfait (+50 XP supplémentaires)
+                    if (perfect) {
+                        const bonusResult = await xpService.addXPForAction(userId, 'QUIZ_PERFECT');
+                        bonusXP = bonusResult.xp_added;
+                        // Note: Le quiz parfait est comptabilisé avec le quiz normal
+                    }
+
+                    // 3. Enregistrer activité streak
+                    await streakService.recordActivity(userId, 'quiz_pass');
+
+                    // 4. Mettre à jour progression défis hebdomadaires (quiz)
+                    await weeklyChallengeService.updateChallengeProgress(userId, 'quiz', 1);
+
+                    // 5. Vérifier déblocage de badges
+                    const unlockedAchievements = await achievementService.checkFormationAchievements(userId);
+                    newAchievements = unlockedAchievements.map(a => a.name);
+                }
+
+            } catch (gamificationError) {
+                // Log l'erreur mais ne bloque pas la réponse
+                console.error('Erreur gamification (quiz submit):', gamificationError);
+            }
+            // ========== FIN GAMIFICATION ==========
+
+            return res.status(200).json({
+                ...result,
+                gamification: {
+                    xpGained: xpGained + bonusXP,
+                    bonusXP: bonusXP > 0 ? { reason: 'Quiz parfait! 100%', amount: bonusXP } : null,
+                    newAchievements
+                }
+            });
         } catch (error: any) {
             // Gérer les erreurs personnalisées avec statusCode (ex: limite de tentatives)
             if (error.statusCode) {

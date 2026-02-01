@@ -2073,297 +2073,424 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     order_index: 8,
     is_published: true,
     content: `
- <div class="space-y-8">
- <div class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white p-8 rounded-xl">
- <h2 class="text-3xl font-bold mb-6">🎯 Objectif Pédagogique</h2>
- <p class="text-lg mb-4 leading-relaxed">À la fin de ce module, vous saurez :</p>
- <ul class="space-y-2 text-lg leading-relaxed">
- <li>• Comprendre la logique fondamentale de la valorisation basée sur l'actualisation (méthode DCF et DDM).</li>
- <li>• Identifier les paramètres clés : taux d'actualisation, taux de croissance, Valeur Terminale (VT) et mesurer leur impact.</li>
- <li>• Appliquer la méthode DDM pour valoriser des entreprises matures versant des dividendes réguliers (cas BRVM).</li>
- </ul>
- </div>
+ <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
 
- <div class="border-l-4 border-blue-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">💡 8.1 Méthode DCF (Discounted Cash Flow) : Actualisation des Flux de Trésorerie</h2>
- <p class="text-base mb-4 leading-relaxed">La méthode DCF est la référence des analystes : la valeur d'une entreprise est la somme de ses flux de trésorerie futurs ramenés à aujourd'hui.</p>
+  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #312e81; color: #ffffff;">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+      🎯 Objectif Pédagogique du Module
+    </h2>
+    <p class="text-lg mb-6" style="color: #e0e7ff;">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-4 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Comprendre la logique fondamentale de la valorisation basée sur l'actualisation (méthode DCF et DDM).
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Identifier les paramètres clés (taux d'actualisation, taux de croissance, Terminal Value) et leur impact sur la valeur finale d'une action.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Appliquer la méthode DDM pour valoriser les entreprises matures à dividendes réguliers de la BRVM.
+      </li>
+    </ul>
+  </div>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">8.1.1 Le principe de l'actualisation : Pourquoi aujourd'hui est mieux que demain</h3>
- <ul class="list-disc ml-6 mb-4 space-y-2">
- <li><strong>Valeur temps de l'argent :</strong> Un franc CFA reçu aujourd'hui vaut plus qu'un franc CFA reçu demain — pour deux raisons principales :
- <ul class="list-disc ml-6 mt-2 space-y-1">
- <li><em>Inflation</em> : le pouvoir d'achat diminue avec le temps.</li>
- <li><em>Coût d'opportunité</em> : l'argent non investi aujourd'hui ne génère pas d'intérêts composés (voir Module 6).</li>
- </ul>
- </li>
- <li><strong>Actualisation :</strong> opération mathématique ramenant les flux futurs à leur Valeur Actuelle Nette (VAN).</li>
- </ul>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-indigo-600 pb-2">
+      8.1 Méthode DCF (Discounted Cash Flow) : Actualisation des Flux de Trésorerie
+    </h2>
+    <p class="text-gray-700 mb-6">
+      La méthode DCF est la plus respectée par les analystes professionnels. Elle repose sur le principe que la valeur d'une entreprise est égale à la somme de tous ses flux de trésorerie futurs, ramenée à sa valeur aujourd'hui (Actualisé).
+    </p>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">8.1.2 Les deux composantes du DCF</h3>
- <ol class="list-decimal ml-6 mb-4 space-y-2">
- <li><strong>Période de prévision explicite (5 à 10 ans)</strong>
- <ul class="list-disc ml-6 mt-2 space-y-1">
- <li>L'analyste projette les flux de trésorerie d'exploitation pour les 5–10 prochaines années (s'appuyer sur l'analyse fondamentale du Module 7).</li>
- <li><strong>Clé BRVM :</strong> rester prudent — le marché régional est sensible aux chocs (matières premières, politique).</li>
- </ul>
- </li>
- <li><strong>Valeur Terminale (VT)</strong>
- <ul class="list-disc ml-6 mt-2 space-y-1">
- <li>Représente la valeur au-delà de la période explicite (de l'an 11 à l'infini).</li>
- <li>Hypothèse : l'entreprise continue d'exister mais croît à un rythme stable et faible. La VT peut représenter 70–80 % de la valeur totale.</li>
- </ul>
- </li>
- </ol>
+    <div class="space-y-8">
+      <div>
+        <h3 class="text-xl font-bold text-indigo-800 mb-4 italic">8.1.1 Le Principe de l'Actualisation : Pourquoi aujourd'hui est mieux que demain</h3>
+        <ul class="space-y-4 text-gray-700">
+          <li>• <strong>La Valeur Temps de l'Argent :</strong> Un Franc CFA reçu aujourd'hui vaut plus qu'un Franc CFA reçu dans un an. Pourquoi ?
+            <div class="ml-6 mt-2 grid md:grid-cols-2 gap-4">
+              <div class="p-3 bg-gray-50 rounded border border-gray-100">
+                <span class="font-bold text-indigo-700">Inflation :</span> Le pouvoir d'achat diminue avec le temps.
+              </div>
+              <div class="p-3 bg-gray-50 rounded border border-gray-100">
+                <span class="font-bold text-indigo-700">Coût d'Opportunité :</span> L'argent non investi aujourd'hui ne peut pas générer d'intérêts (composés, Module 6).
+              </div>
+            </div>
+          </li>
+          <li>• <strong>L'Actualisation :</strong> C'est l'opération mathématique qui permet de ramener ces flux futurs (prévus) à leur Valeur Actuelle Nette (VAN).</li>
+        </ul>
+      </div>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">8.1.3 Le taux d'actualisation (le WACC)</h3>
- <ul class="list-disc ml-6 mb-4 space-y-1">
- <li><strong>Rôle :</strong> coût moyen pondéré du capital — coût total du financement (dette + fonds propres).</li>
- <li><strong>Impact :</strong> plus le WACC est élevé, plus la valeur actuelle des flux est faible (risque perçu élevé).</li>
- </ul>
+      
 
- <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg my-4">
- <p class="text-gray-700 mb-2"><strong>📝 Résumé du DCF :</strong></p>
- <div class="bg-gray-100 p-4 rounded-lg font-mono text-sm">
- <strong>Valeur intrinsèque</strong> = <em>∑<sub>t=1</sub><sup>N</sup> Flux de trésorerie<sub>t</sub> / (1 + WACC)<sup>t</sup></em> + VT<sub>N</sub> / (1 + WACC)<sup>N</sup>
- </div>
- </div>
- </div>
+      <div>
+        <h3 class="text-xl font-bold text-indigo-800 mb-4 italic">8.1.2 Les Deux Composantes du DCF</h3>
+        <p class="text-gray-600 mb-4">L'évaluation DCF se fait en deux grandes étapes :</p>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="p-5 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
+            <p class="font-bold text-indigo-900 mb-2">La Période de Prévision Explicite (5 à 10 ans) :</p>
+            <p class="text-sm text-gray-700">L'analyste projette les Flux de Trésorerie d'Exploitation pour les 5 ou 10 prochaines années (en se basant sur l'Analyse Fondamentale du Module 7).<br><br><strong>Clé pour la BRVM :</strong> La projection doit être prudente, car le marché régional peut être volatil (chocs sur les matières premières, politique).</p>
+          </div>
+          <div class="p-5 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
+            <p class="font-bold text-indigo-900 mb-2">La Valeur Terminale (Terminal Value - VT) :</p>
+            <p class="text-sm text-gray-700">C'est la valeur de l'entreprise après la période de prévision explicite (de l'an 11 à l'infini).<br><br><strong>Pourquoi ?</strong> On suppose que l'entreprise continuera d'exister et de générer du cash indéfiniment, mais à un taux de croissance plus faible et stable. La VT représente souvent 70 à 80 % de la valeur totale de l'entreprise !</p>
+          </div>
+        </div>
+      </div>
 
- <div class="border-l-4 border-green-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">💰 8.2 Méthode DDM (Dividend Discount Model) : Actualisation des dividendes</h2>
- <p class="text-base mb-4 leading-relaxed">Le DDM est pertinent pour les entreprises BRVM versant des dividendes stables et croissants (banques, télécoms, entreprises matures).</p>
+      <div>
+        <h3 class="text-xl font-bold text-indigo-800 mb-4 italic">8.1.3 Le Taux d'Actualisation (Le WACC)</h3>
+        <p class="text-gray-700 mb-4">Le Taux d'Actualisation est le taux utilisé pour ramener les flux futurs à la valeur présente. Il est souvent appelé Coût Moyen Pondéré du Capital (CMPC ou WACC).</p>
+        <ul class="ml-6 space-y-2 text-gray-700">
+          <li>• <strong>Rôle :</strong> Il représente le coût total pour l'entreprise de financer ses actifs (par la dette et par les fonds propres des actionnaires).</li>
+          <li>• <strong>Impact :</strong> Plus ce taux est élevé, plus la valeur actuelle des flux futurs est faible, et donc plus la valeur intrinsèque de l'action est faible (car le risque est perçu comme élevé).</li>
+        </ul>
+      </div>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">8.2.1 Le principe fondamental</h3>
- <ul class="list-disc ml-6 mb-4 space-y-1">
- <li>Postulat : la valeur d'une action = somme des dividendes futurs actualisés.</li>
- <li>Avantage : simplicité ; s'appuie sur le rendement de dividende observable sur la BRVM.</li>
- </ul>
+      <div class="p-6 bg-indigo-900 text-white rounded-xl shadow-inner">
+        <p class="text-center text-indigo-200 mb-4 font-bold uppercase tracking-wider">Résumé du DCF :</p>
+        <div class="text-center font-mono text-lg overflow-x-auto">
+          $$ \text{Valeur Intrinsèque} = \sum_{t=1}^{N} \frac{\text{Flux de Trésorerie}_t}{(1 + \text{WACC})^t} + \frac{\text{Valeur Terminale}_N}{(1 + \text{WACC})^N} $$
+        </div>
+      </div>
+    </div>
+  </div>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">8.2.2 Le modèle de Gordon-Shapiro (DDM simplifié)</h3>
- <p class="text-base mb-3 leading-relaxed">Quand on suppose un taux de croissance des dividendes constant <em>g</em> :</p>
- <div class="bg-gray-100 p-4 rounded-lg font-mono text-sm mb-4">
- <strong>Prix de l'action</strong> = D<sub>1</sub> / (k − g)
- </div>
- <ul class="list-disc ml-6 mb-4 space-y-1">
- <li><strong>D<sub>1</sub> :</strong> dividende prévu pour l'année prochaine.</li>
- <li><strong>k :</strong> coût des fonds propres (taux d'actualisation, proche du WACC).</li>
- <li><strong>g :</strong> taux de croissance annuel constant des dividendes.</li>
- </ul>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-indigo-600 pb-2">
+      8.2 Méthode DDM (Dividend Discount Model) : Actualisation des Dividendes
+    </h2>
+    <p class="text-gray-700 mb-6">
+      La méthode DDM (modèle d'actualisation des dividendes) est particulièrement utile pour les entreprises de la BRVM qui ont l'habitude de verser des dividendes stables et croissants (banques, télécoms, agro-industrie mature).
+    </p>
 
- <h3 class="text-xl font-bold text-gray-900 mb-3">8.2.3 Application à la BRVM : l'intérêt pour les "Dividend Kings"</h3>
- <ul class="list-disc ml-6 mb-4 space-y-1">
- <li>Utiliser le DDM pour des entreprises matures et stables, où la croissance des dividendes est prévisible (ex. certaines banques, services publics).</li>
- <li>Ne pas l'appliquer si l'entreprise réinvestit massivement ses bénéfices ou est en forte croissance.</li>
- </ul>
- </div>
+    
 
- <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 my-6">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">📊 8.3 Étapes clés pour la projection (synthèse)</h2>
- <p class="text-base mb-4 leading-relaxed">Transformer l'analyse fondamentale (Module 7) en une estimation monétaire requiert méthode et rigueur. Tableau synthétique :</p>
- <div class="overflow-x-auto">
- <table class="w-full border-collapse border border-gray-300 my-4">
- <thead class="bg-gray-100">
- <tr>
- <th class="border border-gray-300 px-4 py-2 text-left">Étape</th>
- <th class="border border-gray-300 px-4 py-2 text-left">Action de l'analyste</th>
- <th class="border border-gray-300 px-4 py-2 text-left">Risque émotionnel à éviter (Module 6)</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td class="border border-gray-300 px-4 py-2">1. Projection de la croissance</td>
- <td class="border border-gray-300 px-4 py-2">Déterminer le taux de croissance du chiffre d'affaires et des marges</td>
- <td class="border border-gray-300 px-4 py-2">Biais d'excès de confiance (surestimer la croissance)</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2">2. Estimation du risque</td>
- <td class="border border-gray-300 px-4 py-2">Déterminer le WACC (coût du capital)</td>
- <td class="border border-gray-300 px-4 py-2">Ignorer le risque spécifique du marché régional</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2">3. Calcul de la valeur terminale</td>
- <td class="border border-gray-300 px-4 py-2">Déterminer la valeur au-delà de 10 ans</td>
- <td class="border border-gray-300 px-4 py-2">Utiliser un g trop élevé / gonfler artificiellement la VT</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2">4. Comparaison</td>
- <td class="border border-gray-300 px-4 py-2">Comparer la valeur intrinsèque (DCF/DDM) au cours boursier</td>
- <td class="border border-gray-300 px-4 py-2">Ancrage sur le prix d'achat au lieu du calcul</td>
- </tr>
- </tbody>
- </table>
- </div>
+    <div class="space-y-8">
+      <div>
+        <h3 class="text-lg font-bold text-indigo-800 mb-4">8.2.1 Le Principe Fondamental</h3>
+        <ul class="ml-6 space-y-3 text-gray-700">
+          <li>• <strong>Postulat :</strong> Pour un investisseur en actions de ce type, la valeur d'une action provient uniquement des dividendes futurs qu'il recevra, actualisés à aujourd'hui.</li>
+          <li>• <strong>Avantage :</strong> C'est une méthode simple, basée sur une donnée facilement observable à la BRVM (le rendement du dividende historique).</li>
+        </ul>
+      </div>
 
- <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg mt-4">
- <p class="text-gray-700">💡 <strong>Conclusion pratique :</strong> si le cours est nettement inférieur à votre valeur intrinsèque, vous disposez d'une <strong>marge de sécurité</strong> pour investir.</p>
- </div>
- </div>
+      <div>
+        <h3 class="text-lg font-bold text-indigo-800 mb-4">8.2.2 Le Modèle de Gordon-Shapiro (DDM simplifié)</h3>
+        <p class="text-gray-700 mb-4">Le modèle de Gordon-Shapiro est une version simplifiée du DDM, utilisée lorsque l'on suppose que le dividende va croître à un taux constant ($g$) pour toujours.</p>
+        <div class="my-6 p-5 bg-gray-100 rounded-lg text-center font-mono font-bold text-indigo-900">
+          $$ \text{Prix de l'action} = \frac{\text{Dividende Prochain} (D_1)}{\text{Coût des Fonds Propres} (k) - \text{Taux de croissance du dividende} (g)} $$
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-center italic text-gray-600">
+          <p><strong>$D_1$ :</strong> Le dividende prévu pour l'année prochaine.</p>
+          <p><strong>$k$ :</strong> Le taux d'actualisation utilisé.</p>
+          <p><strong>$g$ :</strong> Le taux de croissance annuel constant.</p>
+        </div>
+      </div>
 
- <div class="border-l-4 border-purple-600 pl-6 py-4">
- <h2 class="text-2xl font-bold text-gray-900 mb-4">🧠 Termes à maîtriser</h2>
- <div class="overflow-x-auto">
- <table class="w-full border-collapse border border-gray-300">
- <thead class="bg-gray-100">
- <tr>
- <th class="border border-gray-300 px-4 py-2 text-left">Terme</th>
- <th class="border border-gray-300 px-4 py-2 text-left">Définition</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td class="border border-gray-300 px-4 py-2"><strong>Actualisation</strong></td>
- <td class="border border-gray-300 px-4 py-2">Opération qui ramène une valeur future à sa valeur présente.</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2"><strong>WACC (CMPC)</strong></td>
- <td class="border border-gray-300 px-4 py-2">Coût moyen pondéré du capital, taux utilisé pour actualiser les flux futurs.</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2"><strong>Valeur intrinsèque</strong></td>
- <td class="border border-gray-300 px-4 py-2">La valeur estimée d'une entreprise par l'analyste.</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2"><strong>Valeur terminale (VT)</strong></td>
- <td class="border border-gray-300 px-4 py-2">Valeur estimée de l'entreprise au-delà de la période de prévision explicite.</td>
- </tr>
- <tr>
- <td class="border border-gray-300 px-4 py-2"><strong>Marge de sécurité</strong></td>
- <td class="border border-gray-300 px-4 py-2">Différence positive entre la valeur intrinsèque et le prix du marché.</td>
- </tr>
- </tbody>
- </table>
- </div>
- </div>
+      <div class="bg-amber-50 p-6 rounded-xl border border-amber-200 shadow-sm">
+        <h3 class="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
+           💡 8.2.3 Application à la BRVM : L'Intérêt pour les "Dividend Kings"
+        </h3>
+        <p class="text-amber-950 mb-4">Les entreprises de la BRVM qui versent des dividendes réguliers sont très appréciées des investisseurs régionaux car elles offrent un flux de revenus stable.</p>
+        <ul class="space-y-3 text-amber-900 ml-6">
+          <li>• <strong>Quand l'utiliser ?</strong> Lorsque l'entreprise est mature, son marché est stable, et la croissance de ses dividendes est prévisible (ex: certaines banques ou sociétés de services publics).</li>
+          <li>• <strong>Attention :</strong> Si l'entreprise est en difficulté ou si elle réinvestit la majorité de ses bénéfices (croissance), cette méthode est inadaptée.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
- <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg mt-8">
- <p class="text-gray-700"><strong>🧭 Prochaine étape :</strong> Vous avez le mental (Module 6) et les outils (Module 7 &amp; 8). Assurez-vous maintenant de protéger votre capital face aux risques identifiés.</p>
- </div>
- </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-indigo-600 pb-2">
+      8.3 Étapes Clés pour la Projection (Synthèse du Module)
+    </h2>
+    <p class="text-gray-700 mb-6 italic">Réaliser une projection est l'art de traduire l'Analyse Fondamentale (Module 7) en une valeur monétaire.</p>
+
+    <div class="overflow-x-auto mb-8">
+      <table class="min-w-full border-collapse border border-gray-300 text-sm">
+        <thead>
+          <tr style="background-color: #312e81; color: #ffffff;">
+            <th class="border border-gray-300 px-4 py-3 text-left">Étape</th>
+            <th class="border border-gray-300 px-4 py-3 text-left">Action de l'Analyste</th>
+            <th class="border border-gray-300 px-4 py-3 text-left">Risque Émotionnel à Éviter (Module 6)</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700">
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 px-4 py-3 font-bold bg-gray-50">1. Projection de la Croissance</td>
+            <td class="border border-gray-300 px-4 py-3">Déterminer le taux de croissance futur du Chiffre d'Affaires et des marges.</td>
+            <td class="border border-gray-300 px-4 py-3 text-red-600">Biais d'Excès de Confiance (surestimer la croissance).</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 px-4 py-3 font-bold bg-gray-50">2. Estimation du Risque</td>
+            <td class="border border-gray-300 px-4 py-3">Déterminer le WACC (Coût du Capital) de l'entreprise.</td>
+            <td class="border border-gray-300 px-4 py-3 text-red-600">Ignorer le risque spécifique du marché régional.</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 px-4 py-3 font-bold bg-gray-50">3. Calcul de la Valeur Terminale</td>
+            <td class="border border-gray-300 px-4 py-3">Déterminer la valeur de l'entreprise au-delà de 10 ans.</td>
+            <td class="border border-gray-300 px-4 py-3 text-red-600">Utiliser un taux de croissance g trop élevé, qui gonfle artificiellement la VT.</td>
+          </tr>
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 px-4 py-3 font-bold bg-gray-50">4. Comparaison</td>
+            <td class="border border-gray-300 px-4 py-3">Comparer la Valeur Intrinsèque (obtenue par DCF/DDM) avec le Cours actuel de l'action (Bourse).</td>
+            <td class="border border-gray-300 px-4 py-3 text-red-600">Ancrage (Rester bloqué sur le prix d'achat, au lieu de faire confiance au calcul).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="p-6 bg-green-50 border-l-8 border-green-600 rounded-lg">
+      <p class="text-green-900 font-bold text-lg italic">
+        Conclusion de l'Expert : Si le prix en bourse est significativement inférieur à votre valeur intrinsèque calculée, vous avez trouvé une marge de sécurité pour votre investissement.
+      </p>
+    </div>
+  </div>
+
+  <div class="bg-gray-900 text-white p-8 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-gray-700 pb-2">
+      🧠 Les Termes à Maîtriser
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-indigo-300 uppercase text-xs tracking-widest font-bold">
+            <th class="px-4 py-3 text-left">Terme</th>
+            <th class="px-4 py-3 text-left">Définition</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+          <tr>
+            <td class="px-4 py-4 font-bold text-indigo-400">Actualisation</td>
+            <td class="px-4 py-4 text-gray-300">Opération financière qui ramène la valeur future d'un montant à sa valeur présente.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-indigo-400">WACC (CMPC)</td>
+            <td class="px-4 py-4 text-gray-300">Coût Moyen Pondéré du Capital, le taux utilisé pour actualiser les flux futurs (taux d'actualisation).</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-indigo-400">Valeur Intrinsèque</td>
+            <td class="px-4 py-4 text-gray-300">La vraie valeur estimée d'une entreprise selon l'analyste.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-indigo-400">Valeur Terminale (VT)</td>
+            <td class="px-4 py-4 text-gray-300">La valeur estimée de l'entreprise au-delà de la période de prévision explicite.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold text-indigo-400">Marge de Sécurité</td>
+            <td class="px-4 py-4 text-gray-300">La différence positive entre la valeur intrinsèque (élevée) et le prix du marché (faible).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-gray-100 p-8 rounded-xl text-center border border-gray-200">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">🧭 Prochaine Étape</h3>
+    <p class="text-gray-600 mb-6">Vous avez le mental (M6) et les outils pour évaluer (M7 & M8). Il faut maintenant garantir la survie de votre capital face au risque.</p>
+    <button class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
+      👉 Module 9 : La Maîtrise du Risque
+    </button>
+  </div>
+
+</div>
  `,
   });
 
-  // ====================================================
-  // === M9 : L’Analyse Extra-Financière – Comprendre le Contexte===
+ // ====================================================
+  // === M9 : 🌱 Module 9 : L’Analyse Extra-Financière – Comprendre le Contexte ===
   // ====================================================
   await createOrUpdateModule({
-    title: "L’Analyse Extra-Financière – Comprendre le Contexte",
+    title: "🌱 Module 9 : L’Analyse Extra-Financière – Comprendre le Contexte",
     slug: 'contexte-economique',
-    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
-    difficulty_level: 'intermediaire',
+    description: "Apprenez à évaluer ce que les chiffres ne disent pas : la qualité du management, la solidité du modèle économique et les critères ESG pour sécuriser vos investissements.",
+    difficulty_level: 'avance',
     content_type: 'article',
-    duration_minutes: 15,
-    order_index: 9,
+    duration_minutes: 20,
+    order_index: 10,
     is_published: true,
     content: `
- <h2>9.1 Analyse Qualitative : Le cerveau de l’entreprise</h2>
-<p>L’analyse qualitative répond à une question simple : <strong>l’entreprise est-elle bien gérée, bien positionnée et son modèle est-il durable ?</strong> 
-C’est l’étape où l’on lit enfin le rapport annuel… mais pour le texte, pas pour les chiffres.</p>
+<div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
 
-<h3><strong>9.1.1 La Gouvernance : L’Équipe et la Direction</strong></h3>
-<p>La qualité du management est souvent le facteur déterminant d’un investissement gagnant ou perdant.</p>
-<ul>
- <li><strong>Leadership :</strong> Qui dirige l’entreprise ? Quelle est leur expérience ? Leur réputation inspire-t-elle confiance ?</li>
- <li><strong>Transparence et responsabilité :</strong> L’entreprise explique-t-elle clairement sa stratégie ? Le Conseil d’Administration est-il suffisamment indépendant ?</li>
- <li><strong>Alignement des intérêts :</strong> La rémunération des dirigeants dépend-elle de la performance long terme (et non du profit court terme) ?</li>
-</ul>
-<p><strong>Pourquoi c’est vital à la BRVM :</strong> Sur un marché moins couvert par les analystes, la qualité du management influence fortement le risque… et les opportunités.</p>
+  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #1e1b4b; color: #ffffff;">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+      🎯 Objectif Pédagogique du Module
+    </h2>
+    <p class="text-lg mb-6" style="color: #e0e7ff;">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-4 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Mener une analyse qualitative pour évaluer la qualité de la direction, la solidité du modèle économique et le positionnement concurrentiel d'une entreprise.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Comprendre les enjeux du reporting ESG (Environnement, Social, Gouvernance) et l'importance de la finance durable à la BRVM.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Intégrer l'analyse quantitative (M7 & M8) et qualitative (M9) pour prendre une décision d'investissement complète.
+      </li>
+    </ul>
+  </div>
 
-<h3><strong>9.1.2 Le Modèle Économique (Business Model)</strong></h3>
-<p>Comprendre comment l’entreprise gagne de l’argent, et si elle pourra continuer à le faire dans 5, 10 ou 20 ans.</p>
-<ul>
- <li><strong>Avantage concurrentiel (Moat) :</strong> Technologie propriétaire ? Coûts plus bas ? Position de monopole (ex : entreprises publiques) ?</li>
- <li><strong>Résilience :</strong> Le modèle peut-il supporter une crise, une nouvelle loi ou un choc sur les prix ?</li>
- <li><strong>Diversification :</strong> L’entreprise dépend-elle d’un seul produit ou d’un seul pays ? L’expansion régionale est un marqueur de solidité.</li>
-</ul>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-indigo-600 pb-2">
+      9.1 Analyse Qualitative : Le Cerveau de l'Entreprise
+    </h2>
+    <p class="text-gray-700 mb-6 leading-relaxed">
+      L'analyse qualitative consiste à répondre à la question : L'entreprise est-elle bien gérée, bien positionnée et son modèle est-il durable ? C'est l'étape où vous lisez le rapport annuel (non pas pour les chiffres, mais pour le texte !).
+    </p>
 
-<h3><strong>9.1.3 Analyse du Secteur et de la Concurrence</strong></h3>
-<ul>
- <li><strong>Positionnement :</strong> Leader, challenger ou suiveur ? Les leaders comme Sonatel disposent souvent d’un pouvoir de prix.</li>
- <li><strong>Barrières à l’entrée :</strong> Implantation d’une banque ? Construction d’une cimenterie ? Ce sont des secteurs difficiles à concurrencer.</li>
-</ul>
+    <div class="space-y-8">
+      <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <h3 class="text-xl font-bold text-indigo-900 mb-4">9.1.1 La Gouvernance : L'Équipe et la Direction</h3>
+        <p class="text-gray-700 mb-4 italic">La qualité de la gestion est souvent le facteur décisif.</p>
+        
+        
 
-<hr>
+        <ul class="space-y-4 text-gray-700 ml-4">
+          <li>• <strong>Le Leadership :</strong> Qui dirige l'entreprise ? Quelle est leur expérience ? Leur réputation est-elle solide ?</li>
+          <li>• <strong>Transparence et Responsabilité :</strong> L'entreprise communique-t-elle clairement ses stratégies ? La structure du Conseil d'Administration est-elle indépendante des actionnaires majoritaires ?</li>
+          <li>• <strong>Rémunération :</strong> La rémunération des dirigeants est-elle alignée avec la performance à long terme de l'entreprise (et non seulement les bénéfices à court terme) ?</li>
+        </ul>
+        <div class="mt-4 p-4 bg-indigo-100 rounded-lg text-indigo-900 text-sm">
+          <strong>Pourquoi c'est vital à la BRVM :</strong> Sur un marché régional moins couvert par les analystes internationaux, la confiance accordée au management est un facteur de risque (ou d'opportunité) plus important que sur des marchés développés.
+        </div>
+      </div>
 
-<h2>9.2 Focus UEMOA : Le Reporting ESG et la Finance Durable</h2>
-<p>La performance financière ne suffit plus. Les critères <strong>ESG</strong> deviennent essentiels pour comprendre le risque global d’une entreprise.</p>
+      <div>
+        <h3 class="text-xl font-bold text-indigo-800 mb-4 italic">9.1.2 Le Modèle Économique (Business Model)</h3>
+        <p class="text-gray-700 mb-4">Vous devez comprendre comment l'entreprise gagne de l'argent et si cela est durable.</p>
+        
+        
 
-<h3><strong>9.2.1 Comprendre les critères ESG</strong></h3>
-<p>L'analyse ESG évalue les risques et opportunités extra-financiers :</p>
-<ul>
- <li><strong>E – Environnement :</strong> gestion des déchets, émissions carbone, consommation d’eau. Exemple : une cimenterie prépare-t-elle un plan de réduction CO₂ ?</li>
- <li><strong>S – Social :</strong> conditions de travail, sécurité, impact sur les communautés, politique RSE.</li>
- <li><strong>G – Gouvernance :</strong> lutte contre la corruption, transparence, indépendance du Conseil d’Administration.</li>
-</ul>
+        <ul class="space-y-4 text-gray-700 ml-6">
+          <li>• <strong>L'Avantage Concurrentiel (Le Moat) :</strong> Qu'est-ce qui rend l'entreprise meilleure ou différente de ses concurrents ? Est-ce un brevet ? Des coûts plus bas ? Un réseau de distribution monopolistique (comme certaines entreprises de services publics) ?</li>
+          <li>• <strong>La Résilience :</strong> Le modèle économique peut-il survivre à un choc majeur (crise, pandémie, nouvelle réglementation) ?</li>
+          <li>• <strong>Diversification des Revenus :</strong> L'entreprise dépend-elle d'un seul produit ou d'un seul marché ? (La BRVM concerne 8 pays, l'expansion régionale est un signe de solidité).</li>
+        </ul>
+      </div>
 
-<h3><strong>9.2.2 Le rôle du reporting et de l’AMF-UMOA</strong></h3>
-<ul>
- <li><strong>Reporting RSE :</strong> de plus en plus d’entreprises BRVM publient des rapports RSE structurés.</li>
- <li><strong>Finance durable :</strong> l’UEMOA évolue vers les obligations vertes et les fonds ESG.</li>
-</ul>
-<p><strong>Avantage investisseur :</strong> Une entreprise bien classée ESG gère mieux ses risques, donc a plus de chances de performer à long terme.</p>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="p-5 border border-gray-100 bg-gray-50 rounded-lg">
+          <h3 class="font-bold text-indigo-800 mb-2">9.1.3 L'Analyse du Secteur et de la Concurrence</h3>
+          <ul class="text-sm space-y-2 text-gray-700">
+            <li><strong>Positionnement :</strong> L'entreprise est-elle leader, challenger ou suiveur ? Le leader (par exemple, Sonatel au Sénégal) a souvent un pouvoir de fixation des prix supérieur.</li>
+            <li><strong>Barrières à l'Entrée :</strong> Est-il facile pour un nouvel acteur (concurrent) d'entrer sur le marché ? Les coûts d'installation d'une banque ou d'une cimenterie sont de fortes barrières.</li>
+          </ul>
+        </div>
 
-<hr>
+        <div class="p-5 border border-red-200 bg-red-50 rounded-lg">
+          <h3 class="font-bold text-red-800 mb-2">9.1.4 Les « Red Flags » : Les Signaux d'Alerte</h3>
+          <p class="text-xs text-red-700 mb-3 italic">Voici les drapeaux rouges qui doivent vous faire fuir :</p>
+          <ul class="text-xs space-y-2 text-gray-800">
+            <li>🚩 <strong>L'Instabilité de la Direction :</strong> Démission soudaine sans raison claire.</li>
+            <li>🚩 <strong>Les Réserves des Commissaires aux Comptes :</strong> Si les auditeurs refusent de certifier les comptes.</li>
+            <li>🚩 <strong>Les Transactions entre Parties Liées :</strong> Conflits d'intérêts avec les sociétés du PDG.</li>
+            <li>🚩 <strong>La Complexité Inutile :</strong> Structures de holding opaques. Adage de Buffett : "N'investissez jamais dans un business que vous ne comprenez pas."</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<h2>9.3 Atelier : Étude de cas intégrée (Ratios + DCF + ESG)</h2>
-<p>L’objectif est d’intégrer toutes les compétences apprises dans les modules 7, 8 et 9. 
-L’atelier propose une analyse complète d’une entreprise BRVM (ex : Sonatel, Ecobank).</p>
+  <div class="my-8 rounded-2xl overflow-hidden shadow-lg border-2 border-amber-400">
+    <div class="p-8" style="background-color: #fffbeb; color: #92400e;">
+      <h2 class="text-2xl font-bold mb-4 flex items-center gap-2" style="color: #78350f;">
+        💡 Le Lien avec la Valorisation (Le Risk Premium)
+      </h2>
+      <p class="mb-6 leading-relaxed">
+        Pourquoi s'embêter avec cette analyse qualitative ? Parce qu'elle modifie directement le prix que vous devez payer (votre calcul du Module 8).
+      </p>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-4 rounded-xl border border-amber-200">
+          <p class="font-bold text-green-700 mb-1">Gouvernance Solide = Risque Faible</p>
+          <p class="text-sm">Vous pouvez utiliser un taux d'actualisation ($k$) plus bas. L'entreprise vaut donc plus cher.</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-amber-200">
+          <p class="font-bold text-red-700 mb-1">Gouvernance Douteuse = Risque Élevé</p>
+          <p class="text-sm">Vous devez exiger une "prime de risque" supplémentaire. Vous augmentez votre taux d'actualisation (par exemple de 12 % à 15 %), ce qui fait mécaniquement baisser la valeur intrinsèque de l'action.</p>
+        </div>
+      </div>
+      <p class="mt-6 text-center font-bold italic text-amber-900 border-t border-amber-200 pt-4">
+        En résumé : Une mauvaise gouvernance est une taxe invisible qui détruit la valeur de l'actionnaire.
+      </p>
+    </div>
+  </div>
 
-<table>
-<thead>
-<tr>
- <th>Étape de l’Atelier</th>
- <th>Module Réf.</th>
- <th>Action Clé</th>
-</tr>
-</thead>
-<tbody>
-<tr>
- <td><strong>I. Examen Qualitatif</strong></td>
- <td>M9 (9.1)</td>
- <td>Évaluer le management, le business model et l’avantage compétitif.</td>
-</tr>
-<tr>
- <td><strong>II. Analyse de Performance</strong></td>
- <td>M7 (7.2 / 7.3)</td>
- <td>Calculer la croissance, le ROE, la marge nette.</td>
-</tr>
-<tr>
- <td><strong>III. Solvabilité et Endettement</strong></td>
- <td>M7 (7.3)</td>
- <td>Calculer le gearing et interpréter le risque.</td>
-</tr>
-<tr>
- <td><strong>IV. Valorisation par les Multiples</strong></td>
- <td>M7 (7.3)</td>
- <td>Calculer le PER et le comparer au secteur.</td>
-</tr>
-<tr>
- <td><strong>V. Valorisation par Projections</strong></td>
- <td>M8 (8.1 / 8.2)</td>
- <td>Appliquer le DDM (Gordon-Shapiro) si l’entreprise est mature.</td>
-</tr>
-<tr>
- <td><strong>VI. Analyse ESG et Risque</strong></td>
- <td>M9 (9.2)</td>
- <td>Interpréter les scores ESG et leur impact sur l’investissement.</td>
-</tr>
-<tr>
- <td><strong>VII. Conclusion</strong></td>
- <td>M5–M9</td>
- <td>Comparer valeur intrinsèque (V) et prix de marché (P) pour décider : Acheter / Conserver / Vendre.</td>
-</tr>
-</tbody>
-</table>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-emerald-600 pb-2">
+      9.2 Focus UEMOA : Le Reporting ESG et la Finance Durable
+    </h2>
+    <p class="text-gray-700 mb-8">L'investissement ne se résume plus au seul profit. Les critères ESG sont désormais essentiels pour les investisseurs institutionnels et deviennent incontournables à la BRVM.</p>
 
-<p><strong>Résultat attendu :</strong> être capable de rédiger une note d’analyse complète, structurée et argumentée.</p>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div>
+        <h3 class="text-lg font-bold text-emerald-800 mb-4 italic text-center">9.2.1 Comprendre les Critères ESG</h3>
+        
+        
 
-<hr>
+        <div class="space-y-4 mt-4">
+          <div class="flex items-start gap-3">
+            <span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded">E</span>
+            <p class="text-sm text-gray-700"><strong>Environnement :</strong> Gestion des déchets, émissions de carbone, consommation d'eau. Exemple : Une cimenterie a-t-elle des plans pour réduire son empreinte carbone ?</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-blue-100 text-blue-700 font-bold px-2 py-1 rounded">S</span>
+            <p class="text-sm text-gray-700"><strong>Social :</strong> Santé et sécurité, respect des normes du travail, impact communautaire (RSE). Exemple : Comment la SGI traite-t-elle ses employés ?</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded">G</span>
+            <p class="text-sm text-gray-700"><strong>Gouvernance :</strong> Transparence, lutte contre la corruption, indépendance du conseil (déjà couvert en 9.1.1).</p>
+          </div>
+        </div>
+      </div>
 
-<h2>🧭 Prochaine Étape</h2>
-<p>Vous maîtrisez désormais l’analyse complète : chiffres, projections, contexte. 
-Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la gestion du risque</strong>.</p>
+      <div>
+        <h3 class="text-lg font-bold text-emerald-800 mb-4 italic text-center">9.2.2 Le Rôle du Reporting et de l'AMF-UMOA</h3>
+        <ul class="space-y-4 text-sm text-gray-700">
+          <li class="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+            <strong>Reporting RSE :</strong> De plus en plus d'entreprises cotées à la BRVM publient des rapports de Responsabilité Sociale et Environnementale.
+          </li>
+          <li class="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+            <strong>La Finance Durable :</strong> Le marché de l'UEMOA s'oriente vers des obligations vertes (Green Bonds) et des fonds ESG. Investir dans des entreprises bien notées réduit le risque à long terme.
+          </li>
+        </ul>
+        <div class="mt-4 p-4 bg-emerald-900 text-white rounded-lg text-center text-xs">
+          <strong>Avantage Investisseur :</strong> Une entreprise avec un score ESG élevé est souvent synonyme de meilleure gestion des risques.
+        </div>
+      </div>
+    </div>
+  </div>
 
- `,
+  <div class="bg-slate-100 p-8 rounded-xl text-center border border-slate-200 shadow-inner">
+    <h3 class="text-xl font-bold text-slate-800 mb-4">🧭 Prochaine Étape</h3>
+    <p class="text-slate-600 mb-6">Nous avons maintenant couvert l'analyse complète (chiffres, projections, contexte). Il est temps d'assurer le bon timing grâce à l'analyse technique.</p>
+    <button class="bg-indigo-900 hover:bg-indigo-950 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
+      👉 Module 10 : Analyse Technique
+    </button>
+  </div>
+
+</div>
+`,
   });
 
   // ====================================================
@@ -2372,261 +2499,308 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
   await createOrUpdateModule({
     title: "L’Art du Timing – Analyse Technique et Lecture du Marché",
     slug: 'passage-a-l-action',
-    description: "Soyez 100% autonome pour choisir sa SGI, ouvrir son compte, passer ses premiers ordres d'achat, et comprendre les implications fiscales de son investissement à la BRVM.",
+    description: "Maîtrisez l'art du timing boursier grâce à l'analyse technique : décryptez les graphiques et les tendances pour savoir exactement quand acheter ou vendre",
     difficulty_level: 'avance',
     content_type: 'article',
     duration_minutes: 20,
     order_index: 10,
     is_published: true,
     content: `
- <div class="space-y-8 max-w-4xl mx-auto">
+ <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
 
- <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-8 rounded-2xl shadow-lg">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- 📉 Module 10 : L’Art du Timing
- </h2>
- <p class="text-lg mb-6 text-blue-100">
- Analyse Technique et Lecture du Marché. À la fin de ce module, vous serez capable de :
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Comprendre la philosophie de l'Analyse Technique (AT)</strong> et son rôle complémentaire au Fondamental.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Décoder les graphiques de prix</strong> (chandeliers, tendances, support/résistance).
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Utiliser les indicateurs techniques clés</strong> (Moyennes Mobiles, RSI) pour identifier les points d'entrée et de sortie.
- </li>
- </ul>
- </div>
+  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #0f172a; color: #ffffff;">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+      🎯 Objectif Pédagogique du Module
+    </h2>
+    <p class="text-lg mb-6" style="color: #94a3b8;">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-4 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Comprendre la philosophie de l'Analyse Technique (AT) et son rôle complémentaire à l'Analyse Fondamentale.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Décoder les graphiques de prix (chandeliers, tendances, support/résistance).
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Utiliser les indicateurs techniques clés (Moyennes Mobiles, RSI, MACD, Bandes de Bollinger) pour identifier les points d'entrée et de sortie.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Élaborer une stratégie de timing prudente et adaptée au contexte de la BRVM.
+      </li>
+    </ul>
+  </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-blue-100 pb-2 flex items-center gap-2">
- 🧭 10.1 Philosophie et Théorie de Dow
- </h2>
- 
- <p class="text-gray-600 mb-4">
- L'Analyse Technique (AT) est l'étude des mouvements de prix historiques. Elle repose sur des postulats clés formalisés par la **Théorie de Dow**.
- </p>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b-2 border-blue-600 pb-2">
+      10.1 Philosophie et Théorie de Dow
+    </h2>
+    <p class="text-gray-700 mb-6 leading-relaxed">
+      L'Analyse Technique (AT) est l'étude des mouvements de prix historiques d'un titre, généralement représentés par des graphiques. Elle repose sur des postulats clés formalisés par la Théorie de Dow, le père de l'analyse technique.
+    </p>
 
- <h3 class="text-lg font-bold text-blue-700 mb-3">Les Postulats Fondamentaux de l'AT</h3>
- <ul class="space-y-3 pl-4">
- <li class="flex items-start gap-3">
- <span class="text-blue-500 font-bold mt-1">✓</span>
- <strong class="text-gray-800">Le marché actualise tout :</strong> Le prix reflète déjà toutes les informations (fondamentales, économiques, rumeurs).
- </li>
- <li class="flex items-start gap-3">
- <span class="text-blue-500 font-bold mt-1">✓</span>
- <strong class="text-gray-800">Les prix évoluent en tendances :</strong> Les mouvements ne sont pas aléatoires ; ils suivent des directions identifiables.
- </li>
- <li class="flex items-start gap-3">
- <span class="text-blue-500 font-bold mt-1">✓</span>
- <strong class="text-gray-800">L'histoire se répète :</strong> Les schémas de comportement humain (peur, avidité) entraînent la récurrence de configurations graphiques.
- </li>
- </ul>
- 
- <div class="mt-6 bg-gray-50 p-4 rounded-lg border-l-4 border-yellow-500">
- <p class="text-gray-700">
- <strong class="text-yellow-800">Rôle pour l'Investisseur :</strong> L'Analyse Fondamentale (M7) vous dit **quoi acheter** (la valeur), l'Analyse Technique vous aide à déterminer **quand acheter ou vendre** (le timing).
- </p>
- </div>
- </div>
+    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+      <h3 class="text-xl font-bold text-blue-900 mb-4 italic">10.1.1 Les Postulats Fondamentaux de l'AT</h3>
+      <ul class="space-y-4 text-gray-700">
+        <li>• <strong>Le marché actualise tout :</strong> Le prix actuel de l'action reflète déjà toutes les informations fondamentales, économiques et psychologiques connues (bénéfices, crises, rumeurs).</li>
+        <li>• <strong>Les prix évoluent en tendances :</strong> Les mouvements de prix ne sont pas aléatoires ; ils suivent des directions identifiables (tendance haussière, baissière, neutre).</li>
+        <li>• <strong>L'histoire se répète :</strong> Les schémas de comportement humain (peur, avidité, Module 6) se répètent, menant à la récurrence de certaines configurations graphiques.</li>
+      </ul>
+    </div>
+    
+    <div class="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500 text-blue-900">
+      <strong>Rôle l'Investisseur Débutant :</strong> Alors que l'Analyse Fondamentale (M7/M9) vous dit quoi acheter (la valeur), l'Analyse Technique vous aide à déterminer quand acheter ou vendre (le timing).
+    </div>
+  </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-blue-100 pb-2 flex items-center gap-2">
- 📊 10.2 Chartisme et Lecture de Graphiques
- </h2>
- 
- <h3 class="text-lg font-bold text-blue-700 mb-3">Les Chandeliers Japonais : Une Histoire d'Acheteurs et Vendeurs</h3>
- <p class="text-gray-600 mb-4">
- Chaque **chandelier** raconte l'histoire de la confrontation entre acheteurs et vendeurs sur une période donnée (jour, semaine).
- </p>
- 
- 
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2">
+      10.2 Chartisme et Lecture de Graphiques
+    </h2>
 
-[Image of Japanese candlestick chart explained]
+    <div class="space-y-8">
+      <div>
+        <h3 class="text-lg font-bold text-blue-800 mb-4">10.2.1 Un Graphique, une Histoire : Les Chandeliers Japonais</h3>
+        <p class="text-gray-700 mb-4">Le graphique en chandeliers est le plus utilisé. Chaque chandelier représente une période de temps (jour, semaine, etc.) et raconte l'histoire de la confrontation entre acheteurs et vendeurs.</p>
+        
+        
 
+        <div class="grid md:grid-cols-2 gap-4 mt-4">
+          <div class="p-4 border rounded-lg bg-green-50">
+            <p class="font-bold text-green-700">Le Corps Vert/Blanc :</p>
+            <p class="text-sm">Prix a augmenté (Clôture > Ouverture) – Domination des Acheteurs.</p>
+          </div>
+          <div class="p-4 border rounded-lg bg-red-50">
+            <p class="font-bold text-red-700">Le Corps Rouge/Noir :</p>
+            <p class="text-sm">Prix a diminué (Clôture < Ouverture) – Domination des Vendeurs.</p>
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-gray-600 italic">• <strong>Les Mèches (ou Ombres) :</strong> Indiquent les prix les plus hauts et les plus bas atteints pendant la période.</p>
+      </div>
 
- <div class="grid md:grid-cols-2 gap-4 mb-6">
- <div class="bg-green-50 p-3 rounded-lg">
- <strong class="text-green-800">Corps Vert/Blanc :</strong> Prix a augmenté (Clôture > Ouverture). Domination des Acheteurs.
- </div>
- <div class="bg-red-50 p-3 rounded-lg">
- <strong class="text-red-800">Corps Rouge/Noir :</strong> Prix a diminué (Clôture < Ouverture). Domination des Vendeurs.
- </div>
- <div class="md:col-span-2">
- <p class="text-sm text-gray-600 mt-2">
- Les **Mèches (Ombres)** indiquent les extrêmes (haut et bas) atteints durant la période.
- </p>
- </div>
- </div>
+      <hr class="border-slate-100">
 
- <h3 class="text-lg font-bold text-blue-700 mb-3 mt-4">Identifier les Tendances</h3>
- <div class="space-y-2 text-sm text-gray-600">
- <p>— **Tendance Haussière (Bullish)** : Sommets et creux de plus en plus hauts. (Acheter)</p>
- <p>— **Tendance Baissière (Bearish)** : Sommets et creux de plus en plus bas. (Vendre/Attendre)</p>
- <p>— **Tendance Neutre (Latérale)** : Prix dans une fourchette limitée. (Accumuler)</p>
- </div>
+      <div>
+        <h3 class="text-lg font-bold text-blue-800 mb-4">10.2.2 Identifier les Tendances (Le Concept Clé)</h3>
+        <p class="text-gray-700 mb-4">Le concept le plus important est la tendance, la direction générale des prix.</p>
+        
+        
 
- <h3 class="text-lg font-bold text-blue-700 mb-3 mt-4">Support et Résistance (Niveaux Psychologiques)</h3>
- <div class="grid md:grid-cols-2 gap-4">
- <div class="bg-blue-50 p-4 rounded-lg">
- <strong class="text-blue-800">Support (Le Plancher) :</strong> Niveau où les acheteurs entrent, empêchant le prix de chuter davantage.
- </div>
- <div class="bg-red-50 p-4 rounded-lg">
- <strong class="text-red-800">Résistance (Le Plafond) :</strong> Niveau où les vendeurs sortent, empêchant le prix de monter.
- </div>
- </div>
- <div class="mt-4 text-sm text-gray-500 italic">
- <strong class="text-gray-600">Analogie :</strong> Le prix du Sac de Riz au marché a un prix minimal (Support) et maximal (Résistance) que le marché accepte.
- </div>
- 
- 
+        <div class="grid md:grid-cols-3 gap-4 text-sm text-center">
+          <div class="p-3 bg-slate-50 border rounded font-medium">Tendance Haussière (Bullish) : Succession de sommets et de creux de plus en plus hauts.</div>
+          <div class="p-3 bg-slate-50 border rounded font-medium">Tendance Baissière (Bearish) : Succession de sommets et de creux de plus en plus bas.</div>
+          <div class="p-3 bg-slate-50 border rounded font-medium">Tendance Neutre (Latérale) : Prix se déplaçant horizontalement dans une fourchette limitée.</div>
+        </div>
+      </div>
 
-[Image of support and resistance levels on a stock chart]
+      <div>
+        <h3 class="text-lg font-bold text-blue-800 mb-4">10.2.3 Support et Résistance (Niveaux Psychologiques)</h3>
+        <p class="text-gray-700 mb-4">Ce sont des niveaux de prix importants qui agissent comme des barrières.</p>
+        
+        
 
- </div>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="p-5 bg-blue-900 text-white rounded-xl">
+            <h4 class="font-bold mb-2">Support (Le Plancher)</h4>
+            <p class="text-sm opacity-90">Niveau où l'intérêt d'achat est suffisamment fort pour empêcher le prix de baisser davantage.</p>
+          </div>
+          <div class="p-5 bg-slate-800 text-white rounded-xl">
+            <h4 class="font-bold mb-2">Résistance (Le Plafond)</h4>
+            <p class="text-sm opacity-90">Niveau où la pression de vente est forte, empêchant le prix de monter.</p>
+          </div>
+        </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-blue-100 pb-2 flex items-center gap-2">
- ⚙️ 10.3 Indicateurs Clés : Lisser, Mesurer la Force
- </h2>
+        <div class="mt-6 p-5 bg-amber-50 rounded-lg border border-amber-200">
+          <h4 class="font-bold text-amber-800 mb-2 italic">L'Analogie à Retenir : Le Prix du Sac de Riz au Marché</h4>
+          <p class="text-sm text-amber-950">Le prix du sac de riz peut fluctuer, mais il y a toujours un prix minimal (le Support) en dessous duquel les producteurs refusent de vendre, et un prix maximal (la Résistance) au-delà duquel les clients refusent d'acheter.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
- <div class="space-y-6">
- <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
- <h3 class="font-bold text-blue-800 mb-2">1. Moyennes Mobiles (MM) : Lisser la Tendance</h3>
- <p class="text-sm text-gray-700 mb-2">
- Lignes représentant le prix moyen sur une période (ex: MM 50 jours, MM 200 jours).
- </p>
- <ul class="list-disc list-inside text-xs text-gray-600 ml-4">
- <li>**Règle Simple :** Prix au-dessus de la MM 200 jours = Signal de force à long terme.</li>
- <li>**Croisement (Golden Cross) :** MM courte qui croise MM longue par le bas = Signal d'achat.</li>
- </ul>
- </div>
- <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
- <h3 class="font-bold text-blue-800 mb-2">2. RSI (Relative Strength Index) : Mesurer la Force</h3>
- <p class="text-sm text-gray-700 mb-2">
- Indicateur de momentum mesurant la vitesse des mouvements de prix. Il indique si l'actif est suracheté ou survendu.
- </p>
- <div class="grid grid-cols-2 gap-2 text-center text-sm">
- <div class="bg-red-100 p-2 rounded"><strong>RSI > 70 :</strong> Surachat (Correction Imminente)</div>
- <div class="bg-green-100 p-2 rounded"><strong>RSI < 30 :</strong> Survente (Rebond Proche)</div>
- </div>
- </div>
- <div class="grid md:grid-cols-2 gap-4 pt-2">
- <div>
- <h3 class="font-bold text-blue-800 mb-2">3. MACD (Impulsion)</h3>
- <p class="text-xs text-gray-700">Montre la relation entre deux moyennes mobiles. Les croisements signalent des points d'achat/vente.</p>
- </div>
- <div>
- <h3 class="font-bold text-blue-800 mb-2">4. Bandes de Bollinger (Volatilité)</h3>
- <p class="text-xs text-gray-700">Lignes au-dessus et en dessous d'une moyenne mobile. Si elles se resserrent, un mouvement de prix important est imminent.</p>
- </div>
- </div>
- </div>
- 
- 
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2">
+      10.3 Indicateurs Clés : Lisser, Mesurer la Force et le Momentum
+    </h2>
+    <p class="text-gray-700 mb-6">Les indicateurs sont des formules mathématiques appliquées aux prix pour donner des signaux plus clairs.</p>
 
-[Image of RSI indicator on a stock chart]
+    <div class="space-y-8">
+      <div>
+        <h3 class="font-bold text-blue-900">10.3.1 Moyennes Mobiles (MM) : Lisser la Tendance</h3>
+        <p class="text-sm text-gray-600 mb-4">Les Moyennes Mobiles (MM) sont des lignes qui représentent le prix moyen sur une période donnée (ex: MM 50 jours, MM 200 jours).</p>
+        
+        
 
- </div>
+        <ul class="text-sm space-y-2 ml-4 mt-4">
+          <li>• <strong>Rôle :</strong> Lisser les fluctuations quotidiennes et identifier la tendance sous-jacente.</li>
+          <li>• <strong>Règles Simples :</strong> Si le prix de l'action est au-dessus de sa MM 200 jours, c'est un signal de force à long terme. Le croisement de deux MM (ex: MM 50 qui croise la MM 200 par le bas) donne des signaux d'achat (Golden Cross).</li>
+        </ul>
+      </div>
 
- <div class="bg-indigo-900 text-white p-8 rounded-xl shadow-md">
- <h2 class="text-2xl font-bold mb-4 text-blue-300 flex items-center gap-2">
- 🔬 10.5 Synthèse et Confirmation Multi-Signaux
- </h2>
- 
- <p class="text-indigo-100 mb-4 leading-relaxed">
- Ne jamais se fier à un seul indicateur. La puissance de l'AT réside dans la **confirmation** de plusieurs signaux.
- </p>
+      <div>
+        <h3 class="font-bold text-blue-900">10.3.2 RSI (Relative Strength Index) : Mesurer la Force</h3>
+        <p class="text-sm text-gray-600 mb-4">Indicateur de momentum qui mesure la vitesse et le changement des mouvements de prix. Il indique si l'actif est suracheté ou survendu.</p>
+        
+        
 
- <div class="overflow-x-auto mb-6">
- <table class="min-w-full text-sm divide-y divide-indigo-700">
- <thead class="bg-indigo-800 text-indigo-200">
- <tr>
- <th class="px-2 py-2 text-center">Signal 1 (Tendance)</th>
- <th class="px-2 py-2 text-center">Signal 2 (Momentum)</th>
- <th class="px-2 py-2 text-center">Décision (Confirmation)</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-indigo-700 text-center">
- <tr class="bg-indigo-700/50">
- <td class="px-2 py-3 font-bold text-green-300">Le prix touche un Support.</td>
- <td class="px-2 py-3 font-bold text-green-300">RSI sort de la survendue (< 30).</td>
- <td class="px-2 py-3 font-bold text-white">ACHAT FORT</td>
- </tr>
- <tr>
- <td class="px-2 py-3 font-bold text-red-300">Le prix atteint une Résistance.</td>
- <td class="px-2 py-3 font-bold text-red-300">RSI entre en surachat (> 70).</td>
- <td class="px-2 py-3 font-bold text-white">VENTE / PRISE DE PROFIT</td>
- </tr>
- </tbody>
- </table>
- </div>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="p-3 bg-red-50 border-l-4 border-red-500 text-sm"><strong>RSI > 70 :</strong> Le titre est suracheté (trop d'acheteurs) et une correction (baisse) pourrait être imminente.</div>
+          <div class="p-3 bg-green-50 border-l-4 border-green-500 text-sm"><strong>RSI < 30 :</strong> Le titre est survendu (trop de vendeurs) et un rebond pourrait être proche.</div>
+        </div>
+      </div>
 
- <div class="bg-blue-600/30 p-4 rounded-lg border border-blue-500/50">
- <h3 class="font-bold text-blue-300 mb-2">Stratégie BRVM</h3>
- <p class="text-sm text-indigo-100">
- Sur un marché où la liquidité est intermittente, utilisez la volatilité (baisse) pour **acheter à bas prix** les actions fondamentalement solides (Analyse Fondamentale !).
- </p>
- </div>
- </div>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="font-bold text-blue-900">10.3.3 MACD : Mesurer l'Impulsion</h3>
+          <p class="text-xs text-gray-600 mb-2">Indicateur de tendance qui montre la relation entre deux moyennes mobiles du prix d'un titre.</p>
+          <p class="text-xs text-gray-700 italic">Signal : Les croisements entre la ligne MACD et sa ligne de signal sont des points d'achat ou de vente potentiels.</p>
+          <div class="mt-2"></div>
+        </div>
+        <div>
+          <h3 class="font-bold text-blue-900">10.3.4 Bandes de Bollinger : Mesurer la Volatilité</h3>
+          <p class="text-xs text-gray-600 mb-2">Lignes tracées au-dessus et en dessous d'une moyenne mobile. Elles mesurent la volatilité du prix.</p>
+          <p class="text-xs text-gray-700 italic">Interprétation : Lorsque les bandes se resserrent, cela signale une faible volatilité et l'anticipation d'un mouvement important.</p>
+          <div class="mt-2"></div>
+        </div>
+      </div>
 
- <div class="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-300">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
- ⚙️ Atelier Pratique : Stratégie Technique BRVM
- </h2>
+      <div class="p-6 bg-slate-900 text-white rounded-xl">
+        <h3 class="font-bold text-blue-400 mb-2">10.3.5 Les Volumes : Le Détecteur de Mensonges</h3>
+        <p class="text-sm mb-4">Les barres verticales en bas du graphique qui montrent combien d'actions ont été échangées.</p>
+        
+        
 
- <p class="text-gray-600 mb-4">
- L'application des outils doit être adaptée aux réalités régionales :
- </p>
- <ul class="list-disc list-inside space-y-2 text-sm text-gray-700 ml-4 mb-6">
- <li>**Privilégier le Long Terme :** Utilisez des graphiques hebdomadaires/mensuels. Le trading intra-journalier est risqué.</li>
- <li>**Filtre de Liquidité :** Focalisez-vous sur les titres les plus liquides (Sonatel, Ecobank, SGB-CI) où l'AT est plus fiable.</li>
- </ul>
+        <div class="space-y-2 text-sm mt-4">
+          <p>• <strong>Règle d'Or :</strong> Le volume doit confirmer la tendance.</p>
+          <p>• <strong>Interprétation :</strong> Si le prix casse une Résistance avec de gros volumes, c'est un signal validé. Si le prix monte avec de faibles volumes, méfiance : c'est peut-être un piège haussier sans conviction.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
- <h3 class="font-bold text-blue-800 mb-3">Concevez Votre Règle de Timing</h3>
- <div class="bg-white p-4 rounded-lg shadow-sm space-y-2">
- <p class="font-medium">1. Actif Solide (M7) : <span class="text-gray-500 italic">... SONATEL</span></p>
- <p class="font-medium">2. Indicateur de Tendance : <span class="text-gray-500 italic">... MM 200 jours</span></p>
- <p class="font-medium">3. Indicateur de Timing : <span class="text-gray-500 italic">... RSI 30/70</span></p>
- <div class="bg-blue-100 p-3 rounded-lg mt-3">
- <p class="text-blue-900 font-bold">Règle Établie :</p>
- <p class="text-sm text-blue-800">J'achète une fois l'action fondamentalement solide si son prix est près du Support **ET** que le RSI est inférieur à 40.</p>
- </div>
- </div>
- </div>
+  <div class="bg-white p-6 rounded-xl border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b-2 border-blue-600 pb-2">
+      10.4 Comprendre et Utiliser la Volatilité
+    </h2>
+    <p class="text-gray-700 mb-6">La volatilité est l'intensité et la fréquence des variations de prix (déjà abordé en M5). En Analyse Technique, la volatilité est une opportunité.</p>
+    <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="p-4 bg-gray-50 rounded"><strong>Forte Volatilité :</strong> Risque élevé, mais potentiel de gain rapide. Le timing est crucial.</div>
+      <div class="p-4 bg-gray-50 rounded"><strong>Faible Volatilité :</strong> Risque faible, mais faible potentiel de gain rapide. Idéal pour l'accumulation par l'investisseur à long terme.</div>
+    </div>
+    <div class="mt-6 p-4 bg-indigo-50 border border-indigo-100 rounded text-indigo-900">
+      <strong>Stratégie BRVM :</strong> Sur un marché comme la BRVM, où la liquidité peut être intermittente, la volatilité des prix peut parfois être exagérée. L'investisseur fondamentaliste utilise ces pics de volatilité (baisse) pour acheter à bas prix.
+    </div>
+  </div>
 
- <div class="bg-gray-900 text-gray-300 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-white mb-4">🧠 Les Termes à Maîtriser</h2>
- <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <p><strong class="text-blue-400">Chandelier Japonais :</strong> Représentation des prix (ouverture, clôture, etc.).</p>
- <p><strong class="text-blue-400">Support / Résistance :</strong> Niveaux de prix psychologiques (plancher / plafond).</p>
- <p><strong class="text-blue-400">Moyenne Mobile (MM) :</strong> Ligne traçant le prix moyen lissé.</p>
- <p><strong class="text-blue-400">RSI :</strong> Indicateur mesurant si un titre est suracheté ou survendu.</p>
- </div>
- 
- <hr class="border-gray-700 my-6"/>
- 
- <div class="flex flex-col md:flex-row items-center justify-between gap-4">
- <p class="font-medium text-white">Vous avez le mental, l'analyse et l'outil de timing.</p>
- <button class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-lg transition-colors shadow-lg">
- 👉 Module 11 : Maîtrise du Risque
- </button>
- </div>
- </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2">
+      10.5 Synthèse Technique et Confirmation Multi-Signaux
+    </h2>
+    <p class="text-gray-700 mb-6 italic">Ne jamais prendre une décision sur un seul indicateur. La puissance de l'AT réside dans la confirmation de plusieurs signaux.</p>
 
- </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse border border-slate-300 text-sm">
+        <thead>
+          <tr style="background-color: #0f172a; color: #ffffff;">
+            <th class="border border-slate-300 px-4 py-3 text-left">Signal 1 (Tendance)</th>
+            <th class="border border-slate-300 px-4 py-3 text-left">Signal 2 (Momentum)</th>
+            <th class="border border-slate-300 px-4 py-3 text-left">Signal 3 (Volatilité)</th>
+            <th class="border border-slate-300 px-4 py-3 text-left">Décision (Confirmation)</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-800">
+          <tr class="bg-green-50">
+            <td class="border border-slate-300 px-4 py-3">Le prix touche un Support.</td>
+            <td class="border border-slate-300 px-4 py-3">Le RSI sort de la zone de survendue (remonte au-dessus de 30).</td>
+            <td class="border border-slate-300 px-4 py-3">Les Bandes de Bollinger se resserrent puis s'écartent.</td>
+            <td class="border border-slate-300 px-4 py-3 font-bold text-green-700 uppercase">SIGNAL D'ACHAT FORT</td>
+          </tr>
+          <tr class="bg-red-50">
+            <td class="border border-slate-300 px-4 py-3">Le prix atteint une Résistance.</td>
+            <td class="border border-slate-300 px-4 py-3">Le RSI entre en zone de surachat (dépasse 70).</td>
+            <td class="border border-slate-300 px-4 py-3">Le prix est loin de sa MM 200 jours.</td>
+            <td class="border border-slate-300 px-4 py-3 font-bold text-red-700 uppercase">SIGNAL DE VENTE/PRISE DE PROFIT</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2 text-center">
+      10.6 Lecture en Temps Réel des Graphiques BRVM
+    </h2>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="space-y-4">
+        <h4 class="font-bold text-blue-900">Privilégier les Grandes Périodes</h4>
+        <p class="text-sm text-gray-700">Utilisez des graphiques hebdomadaires ou mensuels (vs quotidiens) pour identifier la tendance de fond. Le trading intra-journalier est risqué sur le marché UEMOA.</p>
+      </div>
+      <div class="space-y-4">
+        <h4 class="font-bold text-blue-900">Liquidity Filter</h4>
+        <p class="text-sm text-gray-700">Focalisez-vous sur les titres les plus liquides (Sonatel, Ecobank, SGB-CI) où l'AT est plus fiable. Les titres peu liquides ont des graphiques erratiques.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-900 text-white p-8 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-slate-700 pb-2">
+      🧠 Les Termes à Maîtriser
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="text-blue-400 uppercase text-xs">
+            <th class="px-4 py-2 text-left">Terme</th>
+            <th class="px-4 py-2 text-left">Définition</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800">
+          <tr>
+            <td class="px-4 py-4 font-bold">Chandelier Japonais</td>
+            <td class="px-4 py-4 text-slate-300">Représentation graphique des mouvements de prix (ouverture, clôture, haut, bas) sur une période.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">Support / Résistance</td>
+            <td class="px-4 py-4 text-slate-300">Niveaux de prix psychologiques qui agissent comme plancher et plafond.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">Moyenne Mobile (MM)</td>
+            <td class="px-4 py-4 text-slate-300">Ligne traçant le prix moyen lissé sur une période (ex: 50 ou 200 jours).</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">RSI</td>
+            <td class="px-4 py-4 text-slate-300">Relative Strength Index, indicateur de momentum qui mesure si un titre est suracheté ou survendu.</td>
+          </tr>
+          <tr>
+            <td class="px-4 py-4 font-bold">Tendance</td>
+            <td class="px-4 py-4 text-slate-300">La direction générale des mouvements de prix sur une période.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 p-8 rounded-xl text-center border border-slate-200">
+    <h3 class="text-xl font-bold text-slate-800 mb-4">🧭 Prochaine Étape</h3>
+    <p class="text-slate-600 mb-6">Vous avez le mental, l'analyse fondamentale et l'outil de timing. La dernière pièce du puzzle est la gestion du risque structurel.</p>
+    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
+      👉 Module 11 : La Maîtrise du Risque
+    </button>
+  </div>
+
+</div>
 `,
   });
 
@@ -2637,197 +2811,221 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
   await createOrUpdateModule({
     title: "Maîtrise du Risque et Gestion de Portefeuille",
     slug: 'Maîtrise-du-Risque',
-    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    description: "Sécurisez votre capital sur le long terme en maîtrisant les règles d'or de la diversification, de l'allocation d'actifs et des techniques de protection contre les chocs de marché.",
     difficulty_level: 'avance',
     content_type: 'article',
     duration_minutes: 15,
     order_index: 11,
     is_published: true,
     content: `
- <div class="space-y-8 max-w-4xl mx-auto">
+ <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
 
- <div class="bg-gradient-to-r from-slate-700 to-green-800 text-white p-8 rounded-2xl shadow-lg">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- 💼 Module 11 : Maîtrise du Risque et Gestion de Portefeuille
- </h2>
- <p class="text-lg mb-6 text-slate-100">
- À la fin de ce module, vous serez capable de :
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Appliquer le principe de la diversification</strong> pour réduire le risque spécifique de votre portefeuille.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Structurer un portefeuille</strong> cohérent en fonction de votre profil et de votre stratégie.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- <strong>Utiliser des techniques de gestion</strong> (DCA, Stop-Loss, Rééquilibrage) pour protéger votre capital.
- </li>
- </ul>
- </div>
+  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #1e3a8a; color: #ffffff;">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+      🎯 Objectif Pédagogique du Module
+    </h2>
+    <p class="text-lg mb-6" style="color: #dbeafe;">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-4 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Comprendre et appliquer le principe de la diversification pour réduire le risque non systématique de votre portefeuille.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Structurer un portefeuille cohérent en fonction de votre profil d'investisseur (M5) et des grandes stratégies (M6).
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-white/20 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Mettre en place des techniques de gestion du risque pour protéger votre capital contre les chocs de marché.
+      </li>
+    </ul>
+  </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-green-100 pb-2 flex items-center gap-2">
- 💰 11.1 Révision : La Puissance des Intérêts Composés
- </h2>
- 
- <p class="text-gray-600 mb-4">
- Les intérêts composés sont le moteur de l'enrichissement à long terme, mais leur effet exponentiel est **cassé par les pertes catastrophiques**. La gestion du risque est la garantie que votre courbe de croissance ne s'arrête pas.
- </p>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-blue-600 pb-2">
+      11.1 Les Grandes Stratégies : Allocation d'Actifs et Cohérence
+    </h2>
+    <p class="text-gray-700 mb-6">Cette section réaffirme le lien entre l'analyse qualitative/quantitative et la construction de portefeuille.</p>
 
- <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500 mb-6">
- <h3 class="text-lg font-bold text-green-800 mb-2">Rappel de la formule</h3>
- <div class="font-mono text-center text-sm">
- $$ \text{Valeur Finale} = \text{Capital} \times (1 + \text{Taux d'intérêt})^{\text{Nombre d'années}} $$
- </div>
- 
+    <div class="mb-8">
+      <h3 class="text-xl font-bold text-blue-900 mb-4">11.1.1 Réviser les Grandes Approches (M6)</h3>
+      <div class="grid md:grid-cols-3 gap-4 text-sm">
+        <div class="p-4 bg-gray-50 rounded border border-gray-200">
+          <strong class="text-blue-800 block mb-2">Value Investing (Valeur)</strong>
+          Acheter des titres sous-évalués (V > P). Ce portefeuille nécessite patience et une bonne analyse fondamentale (M7).
+        </div>
+        <div class="p-4 bg-gray-50 rounded border border-gray-200">
+          <strong class="text-blue-800 block mb-2">Growth Investing (Croissance)</strong>
+          Acheter des entreprises en forte croissance. Ce portefeuille est plus volatil et nécessite d'accepter un PER plus élevé.
+        </div>
+        <div class="p-4 bg-gray-50 rounded border border-gray-200">
+          <strong class="text-blue-800 block mb-2">Dividendes (Revenus)</strong>
+          Choisir des entreprises matures (BRVM) qui offrent un flux de trésorerie régulier.
+        </div>
+      </div>
+    </div>
 
-[Image of compound interest curve vs linear interest]
+    <div>
+      <h3 class="text-xl font-bold text-blue-900 mb-4">11.1.2 L'Allocation d'Actifs (Rappel M5)</h3>
+      <p class="text-gray-700 mb-4">Votre portefeuille doit refléter votre profil d'investisseur (M5). La première décision stratégique est l'allocation entre les grandes classes d'actifs :</p>
+      
+      <div class="overflow-x-auto mb-4">
+        <table class="min-w-full border-collapse border border-gray-300 text-sm">
+          <thead>
+            <tr style="background-color: #1e3a8a; color: #ffffff;">
+              <th class="border border-gray-300 px-4 py-3 text-left">Profil d'Investisseur</th>
+              <th class="border border-gray-300 px-4 py-3 text-left">Objectif</th>
+              <th class="border border-gray-300 px-4 py-3 text-left">Allocation Actions / Obligations (Ex.)</th>
+              <th class="border border-gray-300 px-4 py-3 text-left">Rôle du Portefeuille</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-800">
+            <tr class="hover:bg-gray-50">
+              <td class="border border-gray-300 px-4 py-3 font-bold">Prudent</td>
+              <td class="border border-gray-300 px-4 py-3">Sécurité</td>
+              <td class="border border-gray-300 px-4 py-3">20% Actions / 80% Obligations</td>
+              <td class="border border-gray-300 px-4 py-3">Protection du capital</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="border border-gray-300 px-4 py-3 font-bold">Équilibré</td>
+              <td class="border border-gray-300 px-4 py-3">Croissance Modérée</td>
+              <td class="border border-gray-300 px-4 py-3">50% Actions / 50% Obligations</td>
+              <td class="border border-gray-300 px-4 py-3">Équilibre entre sécurité et performance</td>
+            </tr>
+            <tr class="hover:bg-gray-50">
+              <td class="border border-gray-300 px-4 py-3 font-bold">Dynamique</td>
+              <td class="border border-gray-300 px-4 py-3">Maximisation</td>
+              <td class="border border-gray-300 px-4 py-3">80% Actions / 20% Obligations</td>
+              <td class="border border-gray-300 px-4 py-3">Recherche de la croissance maximale</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-900 text-sm">
+        <strong>Conseil BRVM :</strong> Les obligations (publiques ou d'entreprise) cotées à la BRVM sont un excellent outil de diversification pour la partie "sécurité" du portefeuille.
+      </div>
+    </div>
+  </div>
 
- </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-blue-600 pb-2">
+      11.2 Gestion du Risque : Le Rempart du Portefeuille
+    </h2>
+    <p class="text-gray-700 mb-6 italic">Le but de la gestion du risque n'est pas d'éviter toute perte, mais de s'assurer qu'aucune perte ne puisse mettre en péril l'intégralité de votre capital.</p>
 
- <p class="text-sm text-gray-500 italic">
- Conclusion : La gestion du risque est la seule garantie que la courbe de vos intérêts composés ne s'arrête pas en cas de crise.
- </p>
- </div>
+    <div class="mb-8 space-y-6">
+      <h3 class="text-xl font-bold text-blue-900">11.2.1 La Diversification : La Seule Règle d'Or</h3>
+      <p class="text-gray-700">La diversification est l'art de ne pas mettre tous ses œufs dans le même panier.</p>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-green-100 pb-2 flex items-center gap-2">
- ⚖️ 11.2 Allocation d'Actifs et Cohérence Stratégique
- </h2>
- 
- <h3 class="text-lg font-bold text-green-700 mb-3">L'Allocation d'Actifs (Rappel M5)</h3>
- <p class="text-gray-600 mb-4">
- Votre portefeuille doit refléter votre profil d'investisseur. La première décision stratégique est la répartition entre les grandes classes d'actifs.
- </p>
- 
- <div class="overflow-x-auto mb-6">
- <table class="min-w-full divide-y divide-gray-200 text-sm">
- <thead class="bg-slate-50">
- <tr>
- <th class="px-4 py-3 text-left font-bold text-slate-700">Profil</th>
- <th class="px-4 py-3 text-left font-bold text-slate-700">Objectif</th>
- <th class="px-4 py-3 text-left font-bold text-slate-700">Allocation Actions / Obligations (Ex.)</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-gray-200">
- <tr>
- <td class="px-4 py-3 font-bold text-blue-600">🛡️ Prudent</td>
- <td class="px-4 py-3">Sécurité</td>
- <td class="px-4 py-3">20% Actions / 80% Obligations</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-bold text-yellow-600">⚖️ Équilibré</td>
- <td class="px-4 py-3">Croissance Modérée</td>
- <td class="px-4 py-3">50% Actions / 50% Obligations</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-bold text-red-600">🚀 Dynamique</td>
- <td class="px-4 py-3">Maximisation</td>
- <td class="px-4 py-3">80% Actions / 20% Obligations</td>
- </tr>
- </tbody>
- </table>
- </div>
- 
- <div class="text-xs text-gray-500 italic mt-2 bg-slate-50 p-2 rounded">
- **Conseil BRVM :** Les obligations (publiques ou d'entreprise) cotées à la BRVM sont un excellent outil de diversification pour la partie "sécurité" de votre portefeuille.
- </div>
- </div>
+      <div class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+        <h4 class="font-bold text-blue-800 mb-3">A. Risque Systématique vs. Non Systématique</h4>
+        <ul class="space-y-2 text-sm text-gray-700">
+          <li>• <strong>Risque Systématique (Risque de Marché) :</strong> Le risque qui affecte toutes les actions (ex: une crise régionale, une hausse des taux BCEAO). Ce risque ne peut pas être éliminé par la diversification.</li>
+          <li>• <strong>Risque Non Systématique (Risque Spécifique) :</strong> Le risque propre à une seule entreprise (ex: une mauvaise gestion chez une banque, une grève chez un agro-industriel). Ce risque peut être éliminé par la diversification.</li>
+        </ul>
+        <p class="mt-3 font-bold text-gray-800 text-sm">Conclusion : En investissant dans suffisamment d'entreprises (souvent 10 à 15 titres), vous éliminez la quasi-totalité du risque non systématique, vous laissant seulement face au risque de marché.</p>
+      </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-green-100 pb-2 flex items-center gap-2">
- 🛡️ 11.3 Gestion du Risque : Le Rempart du Portefeuille
- </h2>
+      <div>
+        <h4 class="font-bold text-blue-800 mb-3">B. Les Piliers de la Diversification</h4>
+        <div class="grid md:grid-cols-3 gap-4 text-sm mb-4">
+          <div class="p-3 bg-blue-50 rounded"><strong>Par Actifs :</strong> Actions, Obligations, OPCVM.</div>
+          <div class="p-3 bg-blue-50 rounded"><strong>Par Secteurs :</strong> Ne pas investir 80 % de votre capital dans les banques, même si vous les analysez bien.</div>
+          <div class="p-3 bg-blue-50 rounded"><strong>Par Géographie :</strong> Le marché BRVM offre déjà une diversification intrinsèque puisqu'il couvre 8 pays.</div>
+        </div>
+        
+        <div class="p-4 bg-gray-100 rounded-lg text-sm space-y-2">
+          <p><strong>Note pour l'investisseur :</strong> Si l'ajout d'actions sur des marchés plus stables (Europe, USA) est une stratégie de protection puissante, elle constitue une étape avancée en raison des contraintes de change et des formalités administratives.</p>
+          <p><strong>Alternative locale :</strong> Pour diversifier géographiquement sans ces complexités, vous pouvez vous tourner vers des OPCVM locaux (FCP ou SICAV). Certains fonds de la place investissent une partie de leurs actifs sur les marchés internationaux, vous offrant ainsi une exposition globale tout en restant dans le cadre réglementaire régional.</p>
+        </div>
+      </div>
+    </div>
 
- <h3 class="text-xl font-bold text-green-700 mb-3">11.3.1 La Diversification : La Seule Règle d'Or</h3>
- <p class="text-gray-600 mb-4">
- Le but est d'éliminer le **Risque Non Systématique** (propre à une seule entreprise) en ne mettant pas tous ses œufs dans le même panier.
- </p>
- 
- 
+    <div class="mb-8">
+      <h3 class="text-xl font-bold text-blue-900 mb-4">11.2.2 Les Techniques de Protection du Capital</h3>
+      <p class="text-gray-700 mb-6">Même avec un bon portefeuille, vous devez vous protéger contre l'émotion et les événements imprévus.</p>
 
- <div class="grid md:grid-cols-2 gap-4 mb-6">
- <div class="bg-green-50 p-4 rounded-lg">
- <strong class="text-green-800">Risque Non Systématique (Éliminable) :</strong> Problème spécifique à une société (fraude, grève).
- </div>
- <div class="bg-red-50 p-4 rounded-lg">
- <strong class="text-red-800">Risque Systématique (Inéliminable) :</strong> Risque de marché (crise régionale, hausse des taux BCEAO).
- </div>
- </div>
+      <div class="space-y-6">
+        <div class="p-5 border-l-4 border-green-500 bg-green-50 rounded-r-lg">
+          <h4 class="font-bold text-green-900">1. L'Investissement Échelonné (Dollar-Cost Averaging - DCA)</h4>
+          <p class="text-sm text-green-800 mt-2"><strong>Principe :</strong> Au lieu d'investir 100% de votre capital en une seule fois (tentative de "Timer" le marché, M6), vous investissez le même montant régulièrement (ex: 50 000 FCFA par mois).</p>
+          <p class="text-sm text-green-800 mt-1"><strong>Avantage :</strong> Vous achetez à la fois cher et bon marché, lissant votre prix d'achat et éliminant le risque de timing. C'est l'approche la plus disciplinée pour le débutant.</p>
+        </div>
 
- <h4 class="font-bold text-gray-700 mb-2">Les Piliers de la Diversification (Minimum 10-15 titres)</h4>
- <ul class="list-disc list-inside space-y-1 text-sm text-gray-600 ml-4">
- <li>**Par Actifs :** Actions, Obligations, Liquidités.</li>
- <li>**Par Secteurs :** Télécoms, Banques, Agro-industrie, etc. (Ne pas miser 80 % sur un secteur).</li>
- <li>**Par Géographie :** BRVM (déjà diversifiée sur 8 pays), plus l'international (Europe/USA).</li>
- </ul>
+        <div class="p-5 bg-gray-100 rounded-lg border border-gray-300">
+          <h4 class="font-bold text-gray-800 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            2. Le Cash est une Arme
+          </h4>
+          <p class="text-sm text-gray-700 mt-2">Le Cash est aussi une position ! N'ayez pas peur de garder une partie de votre portefeuille (5 à 10 %) en liquidités (Cash ou Compte Épargne). Ce "trésor de guerre" a deux fonctions :</p>
+          <ul class="list-disc list-inside text-sm text-gray-700 mt-2 ml-4">
+            <li><strong>Assurance :</strong> En cas de besoin urgent d'argent, vous ne touchez pas à vos actions.</li>
+            <li><strong>Munitions :</strong> Si le marché chute brutalement (soldes), vous avez de l'argent disponible immédiatement pour renforcer vos meilleures actions à bas prix.</li>
+          </ul>
+        </div>
 
- <h3 class="text-xl font-bold text-green-700 mb-3 mt-6">11.3.2 Les Techniques de Protection du Capital</h3>
+        <div class="p-5 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
+          <h4 class="font-bold text-red-900">3. Les Ordres Stop-Loss</h4>
+          <p class="text-sm text-red-800 mt-2"><strong>Principe :</strong> Ordre donné à votre SGI de vendre automatiquement un titre si son prix atteint un seuil de perte prédéfini (ex: 10% de perte).</p>
+          <p class="text-sm text-red-800 mt-1"><strong>Rôle :</strong> Protéger votre portefeuille contre des chutes brutales. Il transforme la décision émotionnelle en une règle mécanique.</p>
+          
+          <div class="mt-4 p-3 bg-white/60 rounded border border-red-200 text-xs text-red-900 font-bold">
+            ⚠️ Attention Spéciale BRVM : La Liquidité. L'ordre Stop-Loss est une excellente protection, mais il a une limite : la liquidité. Sur des petites valeurs où il y a peu d'échanges quotidiens, il est possible que votre ordre ne trouve pas d'acheteur au prix souhaité. Conseil : Utilisez les Stop-Loss en priorité sur les "Blue Chips" (les plus grandes entreprises du marché) et surveillez manuellement vos petites lignes.
+          </div>
+        </div>
 
- <div class="space-y-4">
- <div class="bg-slate-100 p-4 rounded-lg border-l-4 border-slate-500">
- <h4 class="font-bold text-slate-800 mb-2">L'Investissement Échelonné (DCA)</h4>
- <p class="text-sm text-gray-700 mb-2">
- **Principe :** Investir le même montant régulièrement (ex: 50 000 FCFA/mois) au lieu de tout investir en une fois.
- </p>
- <p class="text-xs font-bold text-green-700">
- **Avantage :** Lisse votre prix d'achat, éliminant le risque de timing. Approche la plus disciplinée.
- </p>
- 
+        <div class="p-5 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg">
+          <h4 class="font-bold text-amber-900">4. Le Take Profit (Prise de Profit) : Savoir Sortir Gagnant</h4>
+          <p class="text-sm text-amber-800 mt-2">Le Take Profit est un ordre automatique (ou une règle disciplinée) qui consiste à vendre un titre une fois qu'il a atteint un objectif de gain prédéfini.</p>
+          <ul class="text-sm text-amber-800 mt-2 space-y-1">
+            <li>• <strong>Le Principe :</strong> Vous fixez un prix cible supérieur à votre prix d'achat. Si l'action atteint ce prix, vous vendez pour encaisser vos plus-values.</li>
+            <li>• <strong>Le Rôle Psychologique :</strong> Il est le meilleur antidote contre l'avidité (Module 6).</li>
+            <li>• <strong>Comment fixer son Take Profit ?</strong> Via l'Analyse Fondamentale (Valeur Intrinsèque M8) ou l'Analyse Technique (Résistance M10).</li>
+          </ul>
+          
+          <div class="mt-4 p-3 bg-white/60 rounded border border-amber-200">
+            <p class="text-sm font-bold text-amber-900 underline mb-1">La Nuance Stratégique : Le Ratio Risque/Rendement</p>
+            <p class="text-xs text-amber-900">Pour qu'un investissement soit mathématiquement "sain", votre Take Profit doit toujours être plus éloigné de votre prix d'achat que votre Stop-Loss.</p>
+            <p class="text-xs text-amber-900 mt-1 italic">Exemple : Prix d'achat : 10 000 FCFA. Stop-Loss : 9 500 FCFA (Risque : 500 FCFA). Take Profit : 11 500 FCFA (Espérance de gain : 1 500 FCFA). Ratio : 1 pour 3.</p>
+          </div>
 
-[Image of dollar-cost averaging strategy]
+          <div class="mt-4 p-4 bg-amber-100 border border-amber-300 rounded text-amber-900 text-xs font-bold flex items-start gap-2">
+            <span class="text-lg">⚠️</span>
+            <p>Rappel Liquidité BRVM : Tout comme pour le Stop-Loss, le Take Profit peut être difficile à exécuter d'un coup sur des titres peu liquides si vous vendez une grosse quantité d'actions. Soyez patient et fractionnez vos ventes si nécessaire.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
- </div>
+    <div>
+      <h3 class="text-xl font-bold text-blue-900 mb-4">11.2.3 Le Rééquilibrage du Portefeuille (Rebalancing)</h3>
+      <p class="text-gray-700 mb-4">Avec le temps, vos actions les plus performantes vont occuper une part de plus en plus grande de votre portefeuille, déséquilibrant l'allocation initiale.</p>
+      <ul class="space-y-3 text-sm text-gray-700">
+        <li class="p-3 bg-gray-50 rounded"><strong>Exemple :</strong> Si vous étiez à 50% Actions / 50% Obligations, et que les actions prennent 30%, vous êtes maintenant à 65% Actions / 35% Obligations.</li>
+        <li class="p-3 bg-gray-50 rounded"><strong>Action :</strong> Le rééquilibrage consiste à vendre une partie des actifs qui ont trop monté (les actions) pour racheter des actifs qui sont en retard (les obligations), ramenant le portefeuille à sa proportion cible (50/50).</li>
+        <li class="p-3 bg-gray-50 rounded"><strong>Avantage :</strong> Cela force l'investisseur à vendre cher et acheter bon marché d'une manière mécanique et disciplinée (anticorps contre l'avidité, M6).</li>
+      </ul>
+    </div>
+  </div>
 
- <div class="bg-slate-100 p-4 rounded-lg border-l-4 border-slate-500">
- <h4 class="font-bold text-slate-800 mb-2">Les Ordres Stop-Loss</h4>
- <p class="text-sm text-gray-700 mb-2">
- **Principe :** Ordre donné à votre SGI de vendre automatiquement un titre si son prix atteint un seuil de perte prédéfini (ex: -10%).
- </p>
- <p class="text-xs font-bold text-green-700">
- **Rôle :** Protéger votre capital contre les chutes brutales et remplacer la décision émotionnelle par une règle mécanique.
- </p>
- </div>
- </div>
- 
- <div class="mt-6 bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
- <h3 class="font-bold text-yellow-800 mb-2">11.3.3 Le Rééquilibrage du Portefeuille (Rebalancing)</h3>
- <p class="text-sm text-gray-700 mb-2">
- Si vos actions montent trop, elles déséquilibrent votre allocation cible (ex: de 50/50 à 65/35). Le rééquilibrage force l'investisseur à **vendre ce qui est cher** (actions) pour **racheter ce qui est en retard** (obligations), ramenant le portefeuille à sa proportion cible.
- </p>
- </div>
- </div>
+  <div class="bg-gray-100 p-8 rounded-xl text-center border border-gray-200">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">🧭 Prochaine Étape</h3>
+    <p class="text-gray-600 mb-6">Félicitations, vous maîtrisez désormais les bases essentielles de la protection de votre capital. Passez maintenant au niveau supérieur avec le Module 12.</p>
+    <button class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
+      👉 Module 12 : Stratégies Avancées
+    </button>
+  </div>
 
- <div class="bg-gray-900 text-gray-300 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-white mb-4">🧠 Les Termes à Maîtriser</h2>
- <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <p><strong class="text-green-400">Diversification :</strong> Ne pas mettre tous ses œufs dans le même panier.</p>
- <p><strong class="text-green-400">Risque Non Systématique :</strong> Risque spécifique à une entreprise (éliminable par la diversification).</p>
- <p><strong class="text-green-400">DCA :</strong> Dollar-Cost Averaging, investissement échelonné et régulier.</p>
- <p><strong class="text-green-400">Rééquilibrage :</strong> Ajuster les proportions d'actifs pour revenir à l'allocation cible.</p>
- </div>
- 
- <hr class="border-gray-700 my-6"/>
- 
- <div class="flex flex-col md:flex-row items-center justify-between gap-4">
- <p class="font-medium text-white">Félicitations ! Vous avez complété le parcours théorique.</p>
- <button class="bg-green-600 hover:bg-green-500 text-white font-bold px-6 py-3 rounded-lg transition-colors shadow-lg">
- 👉 Module 12 : Synthèse Finale et Exécution
- </button>
- </div>
- </div>
-
- </div>
+</div>
 `,
   });
 
@@ -2838,7 +3036,7 @@ Il est temps d’aborder le cœur de la gestion de portefeuille : <strong>la ges
   await createOrUpdateModule({
     title: "L'Art de l'Architecte – Gestion Avancée du Risque",
     slug: 'Architecte-du-Risque',
-    description: "Comprenez l'impact des indicateurs macroéconomiques (Inflation, Taux d'intérêt, PIB) et le rôle de la BCEAO sur la performance des entreprises BRVM.",
+    description: "Devenez l'architecte de votre succès financier en maîtrisant les techniques avancées d'allocation, de diversification sectorielle et de dimensionnement de vos positions.",
     difficulty_level: 'avance',
     content_type: 'article',
     duration_minutes: 15,

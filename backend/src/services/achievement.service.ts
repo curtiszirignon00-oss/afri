@@ -1,7 +1,10 @@
 // backend/src/services/achievement.service.ts
 // Service pour gérer les achievements (badges)
+// Système de gamification AfriBourse
 
 import { PrismaClient } from '@prisma/client';
+import * as xpService from './xp.service';
+import * as activityService from './activity.service';
 
 const prisma = new PrismaClient();
 
@@ -130,17 +133,29 @@ export async function unlockAchievement(userId: string, achievementCode: string)
     });
 
     // Créer une activité
-    await prisma.userActivity.create({
-      data: {
-        userId,
-        type: 'badge',
-        description: `a débloqué le badge "${achievement.name}"`,
-        metadata: { achievementId: achievement.id, icon: achievement.icon },
-        is_public: true
-      }
-    });
+    await activityService.createActivity(
+      userId,
+      'badge',
+      `a débloqué le badge "${achievement.name}" ${achievement.icon}`,
+      {
+        achievementId: achievement.id,
+        icon: achievement.icon,
+        rarity: achievement.rarity,
+        xp_reward: achievement.xp_reward
+      },
+      true
+    );
 
-    // TODO: Ajouter les XP (via xpService)
+    // Ajouter les XP si > 0
+    if (achievement.xp_reward > 0) {
+      await xpService.addXP(
+        userId,
+        achievement.xp_reward,
+        `badge_${achievement.code}`,
+        `Badge débloqué: ${achievement.name}`
+      );
+    }
+
     console.log(`🏆 ${userId} a débloqué "${achievement.name}" (+${achievement.xp_reward} XP)`);
 
     return {
@@ -307,21 +322,132 @@ export async function checkSocialAchievements(userId: string) {
 }
 
 /**
+ * Vérifie et débloque les achievements engagement d'un utilisateur
+ */
+export async function checkEngagementAchievements(userId: string) {
+  try {
+    const profile = await prisma.userProfile.findUnique({
+      where: { userId },
+      select: {
+        current_streak: true,
+        longest_streak: true
+      }
+    });
+
+    if (!profile) {
+      return [];
+    }
+
+    const toUnlock: string[] = [];
+
+    // Vérifier les achievements de streak
+    const maxStreak = Math.max(profile.current_streak, profile.longest_streak);
+    if (maxStreak >= 7) toUnlock.push('streak_7');
+    if (maxStreak >= 30) toUnlock.push('streak_30');
+    if (maxStreak >= 100) toUnlock.push('streak_100');
+
+    // TODO: Vérifier early_bird, night_owl, weekend_warrior
+    // Nécessite un tracking des heures de connexion
+
+    // Débloquer
+    const unlocked = [];
+    for (const code of toUnlock) {
+      const result = await unlockAchievement(userId, code);
+      if (!result.alreadyUnlocked) {
+        unlocked.push(result);
+      }
+    }
+
+    return unlocked;
+
+  } catch (error) {
+    console.error('❌ Erreur checkEngagementAchievements:', error);
+    throw error;
+  }
+}
+
+/**
+ * Vérifie et débloque les achievements spéciaux d'un utilisateur
+ */
+export async function checkSpecialAchievements(userId: string) {
+  try {
+    const [profile, user] = await Promise.all([
+      prisma.userProfile.findUnique({
+        where: { userId },
+        select: {
+          total_xp: true,
+          global_rank: true
+        }
+      }),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          created_at: true
+        }
+      })
+    ]);
+
+    if (!profile || !user) {
+      return [];
+    }
+
+    const toUnlock: string[] = [];
+
+    // Vérifier XP total
+    if (profile.total_xp >= 30000) toUnlock.push('diamond_investor');
+    if (profile.total_xp >= 50000) toUnlock.push('legend');
+
+    // Vérifier anniversaire (1 an)
+    const accountAgeMs = Date.now() - new Date(user.created_at).getTime();
+    const accountAgeDays = accountAgeMs / (1000 * 60 * 60 * 24);
+    if (accountAgeDays >= 365) toUnlock.push('anniversary');
+
+    // Vérifier top 10%
+    if (profile.global_rank) {
+      const totalUsers = await prisma.userProfile.count({
+        where: { total_xp: { gt: 0 } }
+      });
+      const percentile = (profile.global_rank / totalUsers) * 100;
+      if (percentile <= 10) toUnlock.push('top_10_percent');
+    }
+
+    // Débloquer
+    const unlocked = [];
+    for (const code of toUnlock) {
+      const result = await unlockAchievement(userId, code);
+      if (!result.alreadyUnlocked) {
+        unlocked.push(result);
+      }
+    }
+
+    return unlocked;
+
+  } catch (error) {
+    console.error('❌ Erreur checkSpecialAchievements:', error);
+    throw error;
+  }
+}
+
+/**
  * Vérifie tous les achievements d'un utilisateur (fonction générique)
  */
 export async function checkAllAchievements(userId: string) {
   try {
-    const [formation, trading, social] = await Promise.all([
+    const [formation, trading, social, engagement, special] = await Promise.all([
       checkFormationAchievements(userId),
       checkTradingAchievements(userId),
-      checkSocialAchievements(userId)
+      checkSocialAchievements(userId),
+      checkEngagementAchievements(userId),
+      checkSpecialAchievements(userId)
     ]);
 
     return {
       formation,
       trading,
       social,
-      total: formation.length + trading.length + social.length
+      engagement,
+      special,
+      total: formation.length + trading.length + social.length + engagement.length + special.length
     };
 
   } catch (error) {

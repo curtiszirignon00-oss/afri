@@ -360,3 +360,195 @@ export interface StockNewsItem {
   tag: string;
   summary: string;
 }
+
+// ========================================
+// TYPES GAMIFICATION
+// ========================================
+
+// --- XP & Niveaux ---
+export interface XPStats {
+  total_xp: number;
+  level: number;
+  xp_for_current_level: number;
+  xp_for_next_level: number;
+  progress_percent: number;
+  title: string;
+  title_emoji: string;
+}
+
+export interface XPHistoryEntry {
+  id: string;
+  amount: number;
+  reason: string;
+  description?: string;
+  created_at: string;
+}
+
+export interface LevelInfo {
+  level: number;
+  title: string;
+  emoji: string;
+  min_xp: number;
+  max_xp: number;
+  color: string;
+}
+
+// --- Streaks ---
+export interface StreakData {
+  current_streak: number;
+  longest_streak: number;
+  streak_freezes: number;
+  last_activity_date: string | null;
+  streak_at_risk: boolean;
+  days_until_freeze_needed: number;
+}
+
+// --- Achievements/Badges ---
+export type AchievementRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type AchievementCategory = 'formation' | 'trading' | 'social' | 'engagement' | 'special';
+
+export interface Achievement {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  icon: string;
+  rarity: AchievementRarity;
+  category: AchievementCategory;
+  xp_reward: number;
+  criteria: string;
+  is_secret: boolean;
+}
+
+export interface UserAchievement {
+  id: string;
+  achievement: Achievement;
+  unlocked_at: string;
+  is_displayed: boolean;
+}
+
+// --- Weekly Challenges ---
+export type GamificationChallengeType = 'module' | 'quiz' | 'trade' | 'social' | 'streak';
+
+export interface WeeklyChallenge {
+  id: string;
+  title: string;
+  description: string;
+  challenge_type: GamificationChallengeType;
+  target: number;
+  xp_reward: number;
+  badge_code?: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+}
+
+export interface ChallengeProgress {
+  id: string;
+  challengeId: string;
+  challenge: WeeklyChallenge;
+  current: number;
+  completed: boolean;
+  completed_at?: string;
+  claimed: boolean;
+  claimed_at?: string;
+}
+
+// --- Gamification Leaderboard ---
+export interface GamificationLeaderboardEntry {
+  rank: number;
+  userId: string;
+  username: string;
+  avatar_url: string | null;
+  level: number;
+  total_xp: number;
+  title: string;
+  title_emoji: string;
+  country?: string;
+  badges_count?: number;
+}
+
+export interface GamificationLeaderboardResponse {
+  type: 'global' | 'country' | 'friends' | 'roi' | 'streak';
+  entries: GamificationLeaderboardEntry[];
+  user_rank?: number;
+  user_entry?: GamificationLeaderboardEntry;
+  total_participants: number;
+  percentile?: number;
+  updated_at: string;
+}
+
+// --- Rewards ---
+export type RewardType = 'virtual_cash' | 'freeze' | 'consultation' | 'cosmetic';
+
+export interface Reward {
+  id: string;
+  name: string;
+  description: string;
+  reward_type: RewardType;
+  xp_cost: number;
+  value: number;
+  icon: string;
+  is_available: boolean;
+  stock?: number;
+  max_per_user?: number;
+}
+
+export interface UserReward {
+  id: string;
+  reward: Reward;
+  claimed_at: string;
+  applied: boolean;
+}
+
+// --- Gamification Summary ---
+export interface GamificationSummary {
+  xp: XPStats;
+  streak: StreakData;
+  achievements: {
+    total: number;
+    unlocked: number;
+    recent: UserAchievement[];
+  };
+  challenges: {
+    active: ChallengeProgress[];
+    completed_this_week: number;
+    total_completed: number;
+  };
+  rank: {
+    global: number | null;
+    country: number | null;
+    percentile: number | null;
+  };
+}
+
+// --- XP Gain Response (from API) ---
+export interface XPGainResponse {
+  gamification: {
+    xpGained: number;
+    bonusXP?: { reason: string; amount: number } | null;
+    newAchievements: string[];
+  };
+}
+
+// Rarity colors
+export const RARITY_COLORS: Record<AchievementRarity, { bg: string; text: string; border: string }> = {
+  common: { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' },
+  rare: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-400' },
+  epic: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-400' },
+  legendary: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-400' }
+};
+
+// Level titles
+export const LEVEL_TITLES: LevelInfo[] = [
+  { level: 1, title: 'Débutant', emoji: '🌱', min_xp: 0, max_xp: 100, color: 'text-gray-500' },
+  { level: 5, title: 'Apprenti', emoji: '📚', min_xp: 1500, max_xp: 3000, color: 'text-green-500' },
+  { level: 10, title: 'Investisseur', emoji: '💼', min_xp: 5500, max_xp: 6600, color: 'text-blue-500' },
+  { level: 20, title: 'Trader', emoji: '📊', min_xp: 21000, max_xp: 23100, color: 'text-indigo-500' },
+  { level: 30, title: 'Expert', emoji: '🎯', min_xp: 46500, max_xp: 49600, color: 'text-purple-500' },
+  { level: 40, title: 'Maître', emoji: '🏆', min_xp: 82000, max_xp: 86100, color: 'text-amber-500' },
+  { level: 50, title: 'Légende', emoji: '⭐', min_xp: 127500, max_xp: 132600, color: 'text-orange-500' },
+  { level: 65, title: 'Champion', emoji: '👑', min_xp: 214500, max_xp: 221100, color: 'text-red-500' },
+  { level: 80, title: 'Titan', emoji: '💎', min_xp: 324000, max_xp: 332100, color: 'text-cyan-500' },
+  { level: 100, title: 'Immortel', emoji: '🌟', min_xp: 505000, max_xp: 515100, color: 'text-yellow-500' }
+];

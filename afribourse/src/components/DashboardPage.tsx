@@ -17,6 +17,10 @@ import type { ShareablePortfolioData, ShareablePerformanceData, ShareablePositio
 import { WalletSwitcher } from './challenge';
 import { useChallengeContext } from '../context/ChallengeContext';
 import { useCanTrade } from '../hooks/useChallenge';
+// Gamification imports
+import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward } from '../hooks/useGamification';
+import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
+import { Target, Flame, Zap, Trophy } from 'lucide-react';
 
 type DashboardPageProps = {};
 
@@ -56,6 +60,11 @@ export default function DashboardPage() {
 
   // ✅ Share: Hook pour le partage
   const { isShareModalOpen, shareData, openShareModal, closeShareModal } = useShare();
+
+  // ✅ Gamification: Hooks pour XP, streak et défis
+  const { data: gamificationSummary, isLoading: gamificationLoading } = useGamificationSummary();
+  const { data: challengesProgress } = useMyChallengesProgress();
+  const claimChallengeMutation = useClaimChallengeReward();
 
   // États locaux
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -789,6 +798,105 @@ export default function DashboardPage() {
 
           {/* Right Column */}
           <div className="space-y-8">
+
+            {/* Widget Gamification */}
+            {gamificationSummary && (
+              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-indigo-600" />
+                    Ma Progression
+                  </h3>
+                  <LevelBadge level={gamificationSummary.xp.level} size="sm" />
+                </div>
+
+                {/* XP Progress */}
+                <XPProgressBar stats={gamificationSummary.xp} size="sm" className="mb-4" />
+
+                {/* Streak */}
+                <div className="flex items-center justify-between p-3 bg-white/60 rounded-xl mb-4">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-5 h-5 text-orange-500" />
+                    <span className="font-medium text-gray-700">Série actuelle</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-orange-600">
+                      {gamificationSummary.streak.current_streak}
+                    </span>
+                    <span className="text-gray-500">jours</span>
+                  </div>
+                </div>
+
+                {/* Défis en cours (mini preview) */}
+                {challengesProgress && challengesProgress.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
+                        <Target className="w-4 h-4" />
+                        Défis de la semaine
+                      </span>
+                      <span className="text-xs text-indigo-600">
+                        {challengesProgress.filter(c => c.completed).length}/{challengesProgress.length}
+                      </span>
+                    </div>
+                    {challengesProgress.slice(0, 2).map((progress) => (
+                      <div
+                        key={progress.id}
+                        className="p-2 bg-white/80 rounded-lg"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-gray-700 truncate">
+                            {progress.challenge.title}
+                          </span>
+                          {progress.completed && !progress.claimed && (
+                            <button
+                              onClick={() => claimChallengeMutation.mutate(progress.challengeId)}
+                              className="text-xs px-2 py-0.5 bg-green-500 text-white rounded-full hover:bg-green-600"
+                            >
+                              +{progress.challenge.xp_reward} XP
+                            </button>
+                          )}
+                        </div>
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              progress.completed ? 'bg-green-500' : 'bg-indigo-500'
+                            }`}
+                            style={{ width: `${Math.min((progress.current / progress.challenge.target) * 100, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate('/gamification')}
+                      className="w-full text-indigo-600 hover:bg-indigo-100"
+                    >
+                      Voir tous les défis
+                    </Button>
+                  </div>
+                )}
+
+                {/* Badges récents */}
+                {gamificationSummary.achievements.recent.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-indigo-100">
+                    <p className="text-xs text-gray-500 mb-2">Derniers badges</p>
+                    <div className="flex gap-2">
+                      {gamificationSummary.achievements.recent.slice(0, 3).map((ua) => (
+                        <div
+                          key={ua.id}
+                          className="text-2xl"
+                          title={ua.achievement.name}
+                        >
+                          {ua.achievement.icon || '🏆'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            )}
 
             {/* <-- AJOUT: Allocation du Portefeuille (Donut Chart) */}
             <Card>
