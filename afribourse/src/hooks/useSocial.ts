@@ -17,6 +17,19 @@ export interface CreatePostData {
 }
 
 /**
+ * Get follow suggestions (3 profiles)
+ */
+export function useFollowSuggestions() {
+    return useQuery({
+        queryKey: ['follow-suggestions'],
+        queryFn: async () => {
+            const response = await apiClient.get('/social/suggestions');
+            return response.data.data;
+        },
+    });
+}
+
+/**
  * Follow a user
  */
 export function useFollowUser() {
@@ -34,6 +47,7 @@ export function useFollowUser() {
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
             queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
+            queryClient.invalidateQueries({ queryKey: ['follow-suggestions'] });
         },
     });
 }
@@ -56,6 +70,7 @@ export function useUnfollowUser() {
             queryClient.invalidateQueries({ queryKey: ['feed'] });
             queryClient.invalidateQueries({ queryKey: ['user-posts'] });
             queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
+            queryClient.invalidateQueries({ queryKey: ['follow-suggestions'] });
         },
     });
 }
