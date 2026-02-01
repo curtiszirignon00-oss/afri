@@ -33,7 +33,7 @@ export function ChallengeCTA() {
     };
 
     const getDaysUntilLaunch = () => {
-        const launchDate = new Date('2026-02-02T00:00:00Z');
+        const launchDate = new Date('2026-03-02T00:00:00Z');
         const now = new Date();
         const diff = launchDate.getTime() - now.getTime();
         return Math.ceil(diff / (1000 * 60 * 60 * 24));
@@ -72,7 +72,7 @@ export function ChallengeCTA() {
 
                     {!isChallengeOpen && challengeStatus?.enrolled && (
                         <div className="countdown-badge">
-                            ⏳ Le trading ouvre le 2 février - Dans {getDaysUntilLaunch()} jours
+                            ⏳ Le trading ouvre le 2 mars - Dans {getDaysUntilLaunch()} jours
                         </div>
                     )}
 
