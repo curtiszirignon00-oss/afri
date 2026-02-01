@@ -91,10 +91,13 @@ export async function getUserXPStats(userId: string): Promise<UserXPStats> {
 
   const currentLevel = profile.level;
   const totalXP = profile.total_xp;
-  const xpForCurrentLevel = currentLevel > 1 ? getXPRequiredForLevel(currentLevel - 1) : 0;
-  const xpForNextLevel = getXPRequiredForLevel(currentLevel);
-  const currentLevelXP = totalXP - xpForCurrentLevel;
-  const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
+  // Bornes correctes alignees avec calculateLevelFromXP :
+  // Level 1: [0, getXPRequiredForLevel(2))  = [0, 300)
+  // Level N (N>=2): [getXPRequiredForLevel(N), getXPRequiredForLevel(N+1))
+  const xpLevelStart = currentLevel <= 1 ? 0 : getXPRequiredForLevel(currentLevel);
+  const xpLevelEnd = getXPRequiredForLevel(currentLevel + 1);
+  const currentLevelXP = totalXP - xpLevelStart;
+  const xpNeededForLevel = xpLevelEnd - xpLevelStart;
   const { title, emoji } = getLevelTitle(currentLevel);
 
   return {
@@ -102,9 +105,9 @@ export async function getUserXPStats(userId: string): Promise<UserXPStats> {
     level: currentLevel,
     total_xp: totalXP,
     current_level_xp: currentLevelXP,
-    xp_for_next_level: xpForNextLevel,
-    xp_needed: xpForNextLevel - totalXP,
-    progress_percent: Math.min(100, (currentLevelXP / xpNeededForLevel) * 100),
+    xp_for_next_level: xpLevelEnd,
+    xp_needed: xpLevelEnd - totalXP,
+    progress_percent: Math.min(100, Math.max(0, (currentLevelXP / xpNeededForLevel) * 100)),
     title,
     title_emoji: emoji
   };
