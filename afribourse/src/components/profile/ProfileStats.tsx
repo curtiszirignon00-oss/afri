@@ -1,4 +1,5 @@
 // src/components/profile/ProfileStats.tsx
+import { useState } from 'react';
 import {
     Zap,
     Trophy,
@@ -9,12 +10,15 @@ import {
     Eye,
     Lock,
     ChevronRight,
-    Star
+    Star,
+    X,
+    Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card } from '../ui';
 import { ShareButton, ShareModal } from '../share';
 import { useShare } from '../../hooks/useShare';
+import { useUpdatePrivacySettings } from '../../hooks/useOnboarding';
 import type { ShareablePortfolioData } from '../../types/share';
 
 interface ProfileStatsProps {
@@ -81,12 +85,13 @@ export default function ProfileStats({
 }: ProfileStatsProps) {
     const investorProfile = profile.investorProfile;
     const { isShareModalOpen, shareData, openShareModal, closeShareModal } = useShare();
+    const [showVisibilityModal, setShowVisibilityModal] = useState(false);
 
     // Visibility settings from profile
     const showLevel = investorProfile?.show_level !== false;
     const showXp = investorProfile?.show_xp === true;
     const showStreak = investorProfile?.show_streak !== false;
-    const showPortfolio = investorProfile?.show_portfolio !== false;
+    const showPortfolio = investorProfile?.show_portfolio_value !== false;
 
     // Stats from profile
     const level = investorProfile?.level || 1;
@@ -112,13 +117,13 @@ export default function ProfileStats({
                     Progression
                 </h3>
                 {isOwnProfile && (
-                    <Link
-                        to="/profile/settings"
+                    <button
+                        onClick={() => setShowVisibilityModal(true)}
                         className="text-xs text-gray-500 hover:text-indigo-600 flex items-center gap-1"
                     >
                         <Eye className="w-3 h-3" />
                         Visibilite
-                    </Link>
+                    </button>
                 )}
             </div>
 
@@ -314,31 +319,6 @@ export default function ProfileStats({
                     </div>
                 )}
 
-                {/* Achievements Preview */}
-                {investorProfile?.badges && investorProfile.badges.length > 0 && (
-                    <div className="pt-3 border-t">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-sm font-medium text-gray-700">Badges recents</span>
-                            <Link
-                                to="/profile/badges"
-                                className="text-xs text-indigo-600 hover:text-indigo-700"
-                            >
-                                Voir tout
-                            </Link>
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                            {investorProfile.badges.slice(0, 5).map((badge: any, index: number) => (
-                                <div
-                                    key={index}
-                                    className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center text-lg"
-                                    title={badge.name || badge}
-                                >
-                                    {badge.icon || '🏆'}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
             </div>
 
             {/* Share Modal */}
@@ -347,6 +327,121 @@ export default function ProfileStats({
                 onClose={closeShareModal}
                 shareData={shareData}
             />
+
+            {/* Visibility Settings Modal */}
+            {showVisibilityModal && (
+                <VisibilitySettingsModal
+                    investorProfile={investorProfile}
+                    onClose={() => setShowVisibilityModal(false)}
+                />
+            )}
         </Card>
+    );
+}
+
+// ============= Visibility Settings Modal =============
+
+interface VisibilitySettingsModalProps {
+    investorProfile: any;
+    onClose: () => void;
+}
+
+function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySettingsModalProps) {
+    const { mutate: updatePrivacy, isPending } = useUpdatePrivacySettings();
+
+    const [settings, setSettings] = useState({
+        show_level: investorProfile?.show_level ?? true,
+        show_xp: investorProfile?.show_xp ?? false,
+        show_streak: investorProfile?.show_streak ?? true,
+        show_portfolio_value: investorProfile?.show_portfolio_value ?? true,
+        show_badges: investorProfile?.show_badges ?? true,
+        show_rank: investorProfile?.show_rank ?? true,
+        show_bio: investorProfile?.show_bio ?? true,
+        show_country: investorProfile?.show_country ?? true,
+    });
+
+    const toggles: { key: keyof typeof settings; label: string }[] = [
+        { key: 'show_level', label: 'Niveau' },
+        { key: 'show_xp', label: 'XP total' },
+        { key: 'show_streak', label: 'Streak' },
+        { key: 'show_rank', label: 'Classement' },
+        { key: 'show_portfolio_value', label: 'Valeur portefeuille' },
+        { key: 'show_badges', label: 'Badges' },
+        { key: 'show_bio', label: 'Bio' },
+        { key: 'show_country', label: 'Pays' },
+    ];
+
+    const handleSave = () => {
+        updatePrivacy(settings, {
+            onSuccess: () => onClose(),
+        });
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+            <div
+                className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between p-5 border-b">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <Eye className="w-5 h-5 text-indigo-600" />
+                        Visibilite du profil
+                    </h3>
+                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
+                        <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-5 space-y-1 max-h-[60vh] overflow-y-auto">
+                    <p className="text-sm text-gray-500 mb-4">
+                        Choisissez les informations visibles par les autres utilisateurs.
+                    </p>
+                    {toggles.map(({ key, label }) => (
+                        <label
+                            key={key}
+                            className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                        >
+                            <span className="text-sm font-medium text-gray-700">{label}</span>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={settings[key]}
+                                onClick={() => setSettings(prev => ({ ...prev, [key]: !prev[key] }))}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                    settings[key] ? 'bg-indigo-600' : 'bg-gray-300'
+                                }`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                        settings[key] ? 'translate-x-6' : 'translate-x-1'
+                                    }`}
+                                />
+                            </button>
+                        </label>
+                    ))}
+                </div>
+
+                {/* Footer */}
+                <div className="flex gap-3 p-5 border-t">
+                    <button
+                        onClick={onClose}
+                        className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isPending}
+                        className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                        {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
