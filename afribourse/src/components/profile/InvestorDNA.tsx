@@ -3,6 +3,7 @@ import { Shield, TrendingUp, Target, Building2, Clock, Briefcase, PieChart } fro
 
 interface InvestorDNAProps {
     profile: any;
+    isOwnProfile?: boolean;
 }
 
 const riskProfileConfig: Record<string, { label: string; color: string; bgColor: string; textColor: string; icon: any }> = {
@@ -31,10 +32,14 @@ const sectorColors: Record<string, string> = {
     'Télécoms': 'bg-indigo-100 text-indigo-700 border-indigo-200',
 };
 
-export default function InvestorDNA({ profile }: InvestorDNAProps) {
+export default function InvestorDNA({ profile, isOwnProfile = false }: InvestorDNAProps) {
     const investorProfile = profile.investorProfile;
 
     if (!investorProfile || !investorProfile.onboarding_completed) {
+        // Si c'est le profil d'un autre utilisateur, ne pas afficher la section
+        if (!isOwnProfile) {
+            return null;
+        }
         return (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center gap-3 mb-4">
