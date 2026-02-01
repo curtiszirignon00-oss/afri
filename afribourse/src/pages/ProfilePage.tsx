@@ -151,6 +151,7 @@ export default function ProfilePage() {
                 posts_count: investorProfile?.posts_count || 0,
                 portfolios_count: 0,
             },
+            role: userProfile?.role || 'user',
             profile: {
                 username: investorProfile?.username || userProfile?.email?.split('@')[0] || 'user',
                 bio: investorProfile?.bio || '',
@@ -179,6 +180,7 @@ export default function ProfilePage() {
                 posts_count: otherUserProfile?.posts_count || 0,
                 portfolios_count: 0,
             },
+            role: otherUserProfile?.user?.role || 'user',
             profile: {
                 username: otherUserProfile?.username || 'user',
                 bio: otherUserProfile?.bio || '',
