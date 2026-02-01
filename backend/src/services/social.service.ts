@@ -213,6 +213,15 @@ export async function getFollowing(userId: string, page: number = 1, limit: numb
 const SUGGESTION_COUNT = 3;
 const CANDIDATE_POOL_SIZE = 30;
 
+/** Simple hash for deterministic daily rotation */
+function hashCode(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    }
+    return hash >>> 0; // unsigned
+}
+
 /**
  * Get follow suggestions for a user
  * Returns up to 3 profiles scored by affinity (sectors, country, risk, popularity, verified)
@@ -274,10 +283,14 @@ export async function getFollowSuggestions(userId: string) {
         orderBy: { followers_count: 'desc' },
     });
 
+    // Daily seed: rotate suggestions every day based on userId + date
+    const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    const dailySeed = hashCode(userId + today);
+
     // Phase 3: Score each candidate
     const riskOrder = ['CONSERVATIVE', 'MODERATE', 'BALANCED', 'GROWTH', 'AGGRESSIVE'];
 
-    const scored = candidates.map(candidate => {
+    const scored = candidates.map((candidate, index) => {
         let score = 0;
         const candidateInvestor = candidate.user.investorProfile;
 
@@ -322,6 +335,11 @@ export async function getFollowSuggestions(userId: string) {
             score += 15;
         }
 
+        // Daily rotation: add deterministic daily bonus (0-10 pts) per candidate
+        // This shifts the ranking each day so different profiles surface
+        const dailyBonus = ((dailySeed + index * 2654435761) >>> 0) % 11;
+        score += dailyBonus;
+
         return {
             id: candidate.user.id,
             name: candidate.user.name,
@@ -338,12 +356,8 @@ export async function getFollowSuggestions(userId: string) {
         };
     });
 
-    // Phase 4: Sort by score desc, randomize ties
-    scored.sort((a, b) => {
-        const diff = b._score - a._score;
-        if (diff !== 0) return diff;
-        return Math.random() - 0.5;
-    });
+    // Phase 4: Sort by score desc, deterministic daily tie-breaking
+    scored.sort((a, b) => b._score - a._score);
 
     // Phase 5: Take top 3, strip internal score
     return scored.slice(0, SUGGESTION_COUNT).map(({ _score, ...profile }) => profile);
