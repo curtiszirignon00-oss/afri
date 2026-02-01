@@ -89,14 +89,26 @@ export async function getUserXPStats(userId: string): Promise<UserXPStats> {
     throw new Error('Profil non trouvé');
   }
 
-  const currentLevel = profile.level;
   const totalXP = profile.total_xp;
+
+  // Recalculer le niveau depuis le XP total pour corriger les incohérences
+  const currentLevel = calculateLevelFromXP(totalXP);
+
+  // Auto-correction si le niveau stocké ne correspond pas
+  if (profile.level !== currentLevel) {
+    console.warn(`⚠️ Level mismatch for ${userId}: stored=${profile.level}, calculated=${currentLevel}, xp=${totalXP}. Auto-correcting.`);
+    await prisma.userProfile.update({
+      where: { userId },
+      data: { level: currentLevel }
+    });
+  }
+
   // Bornes correctes alignees avec calculateLevelFromXP :
   // Level 1: [0, getXPRequiredForLevel(2))  = [0, 300)
   // Level N (N>=2): [getXPRequiredForLevel(N), getXPRequiredForLevel(N+1))
   const xpLevelStart = currentLevel <= 1 ? 0 : getXPRequiredForLevel(currentLevel);
   const xpLevelEnd = getXPRequiredForLevel(currentLevel + 1);
-  const currentLevelXP = totalXP - xpLevelStart;
+  const currentLevelXP = Math.max(0, totalXP - xpLevelStart);
   const xpNeededForLevel = xpLevelEnd - xpLevelStart;
   const { title, emoji } = getLevelTitle(currentLevel);
 
@@ -106,8 +118,8 @@ export async function getUserXPStats(userId: string): Promise<UserXPStats> {
     total_xp: totalXP,
     current_level_xp: currentLevelXP,
     xp_for_next_level: xpLevelEnd,
-    xp_needed: xpLevelEnd - totalXP,
-    progress_percent: Math.min(100, Math.max(0, (currentLevelXP / xpNeededForLevel) * 100)),
+    xp_needed: Math.max(0, xpLevelEnd - totalXP),
+    progress_percent: xpNeededForLevel > 0 ? Math.min(100, Math.max(0, (currentLevelXP / xpNeededForLevel) * 100)) : 0,
     title,
     title_emoji: emoji
   };
