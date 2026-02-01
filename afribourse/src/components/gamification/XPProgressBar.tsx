@@ -84,10 +84,7 @@ export function XPProgressBar({
 
       {showDetails && (
         <div className={`flex justify-between mt-1 ${sizes.text} text-gray-400`}>
-          <span>{Math.max(0, stats.total_xp - stats.current_level_xp).toLocaleString()} XP</span>
-          <span className="text-gray-500">
-            {Math.max(0, stats.xp_for_next_level - stats.total_xp).toLocaleString()} XP restants
-          </span>
+          <span>{stats.total_xp.toLocaleString()} XP</span>
           <span>{stats.xp_for_next_level.toLocaleString()} XP</span>
         </div>
       )}
