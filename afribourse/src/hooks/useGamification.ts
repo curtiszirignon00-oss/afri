@@ -27,7 +27,7 @@ export function useXPStats() {
     queryKey: ['gamification', 'xp', 'stats'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/xp/me');
-      return response.data.data as XPStats;
+      return response.data as XPStats;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -41,7 +41,7 @@ export function useXPHistory(limit: number = 20) {
     queryKey: ['gamification', 'xp', 'history', limit],
     queryFn: async () => {
       const response = await apiClient.get(`/gamification/xp/history?limit=${limit}`);
-      return response.data.data as XPHistoryEntry[];
+      return response.data as XPHistoryEntry[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -57,7 +57,7 @@ export function useStreak() {
     queryKey: ['gamification', 'streak'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/streak/me');
-      return response.data.data as StreakData;
+      return response.data as StreakData;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -90,7 +90,7 @@ export function useAllAchievements() {
     queryKey: ['gamification', 'achievements', 'all'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/achievements');
-      return response.data.data as Achievement[];
+      return response.data as Achievement[];
     },
     staleTime: 30 * 60 * 1000, // 30 minutes (static data)
   });
@@ -104,7 +104,7 @@ export function useMyAchievements() {
     queryKey: ['gamification', 'achievements', 'me'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/achievements/me');
-      return response.data.data as UserAchievement[];
+      return response.data as UserAchievement[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -118,7 +118,7 @@ export function useAchievementsByCategory(category: string) {
     queryKey: ['gamification', 'achievements', 'category', category],
     queryFn: async () => {
       const response = await apiClient.get(`/gamification/achievements/category/${category}`);
-      return response.data.data as Achievement[];
+      return response.data as Achievement[];
     },
     staleTime: 30 * 60 * 1000,
   });
@@ -134,7 +134,7 @@ export function useWeeklyChallenges() {
     queryKey: ['gamification', 'challenges', 'weekly'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/challenges');
-      return response.data.data as WeeklyChallenge[];
+      return (response.data.challenges || response.data) as WeeklyChallenge[];
     },
     staleTime: 10 * 60 * 1000,
   });
@@ -148,7 +148,7 @@ export function useMyChallengesProgress() {
     queryKey: ['gamification', 'challenges', 'progress'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/challenges/progress');
-      return response.data.data as ChallengeProgress[];
+      return (response.data.challenges || response.data) as ChallengeProgress[];
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -200,7 +200,7 @@ export function useGlobalLeaderboard(limit: number = 50) {
     queryKey: ['gamification', 'leaderboard', 'global', limit],
     queryFn: async () => {
       const response = await apiClient.get(`/gamification/leaderboard/global?limit=${limit}`);
-      return response.data.data as GamificationLeaderboardResponse;
+      return response.data as GamificationLeaderboardResponse;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -217,7 +217,7 @@ export function useCountryLeaderboard(countryCode?: string, limit: number = 50) 
         ? `/gamification/leaderboard/country?country=${countryCode}&limit=${limit}`
         : `/gamification/leaderboard/country?limit=${limit}`;
       const response = await apiClient.get(url);
-      return response.data.data as GamificationLeaderboardResponse;
+      return response.data as GamificationLeaderboardResponse;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -231,7 +231,7 @@ export function useFriendsLeaderboard() {
     queryKey: ['gamification', 'leaderboard', 'friends'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/leaderboard/friends');
-      return response.data.data as GamificationLeaderboardResponse;
+      return response.data as GamificationLeaderboardResponse;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -245,7 +245,7 @@ export function useStreakLeaderboard(limit: number = 50) {
     queryKey: ['gamification', 'leaderboard', 'streak', limit],
     queryFn: async () => {
       const response = await apiClient.get(`/gamification/leaderboard/streaks?limit=${limit}`);
-      return response.data.data as GamificationLeaderboardResponse;
+      return response.data as GamificationLeaderboardResponse;
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -261,7 +261,7 @@ export function useAllRewards() {
     queryKey: ['gamification', 'rewards', 'all'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/rewards');
-      return response.data.data as Reward[];
+      return response.data as Reward[];
     },
     staleTime: 10 * 60 * 1000,
   });
@@ -275,7 +275,7 @@ export function useMyRewards() {
     queryKey: ['gamification', 'rewards', 'me'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/rewards/me');
-      return response.data.data as UserReward[];
+      return response.data as UserReward[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -310,7 +310,7 @@ export function useGamificationSummary() {
     queryKey: ['gamification', 'summary'],
     queryFn: async () => {
       const response = await apiClient.get('/gamification/summary');
-      return response.data.data as GamificationSummary;
+      return response.data as GamificationSummary;
     },
     staleTime: 2 * 60 * 1000,
   });

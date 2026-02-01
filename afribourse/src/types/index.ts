@@ -367,10 +367,12 @@ export interface StockNewsItem {
 
 // --- XP & Niveaux ---
 export interface XPStats {
+  userId?: string;
   total_xp: number;
   level: number;
-  xp_for_current_level: number;
+  current_level_xp: number;
   xp_for_next_level: number;
+  xp_needed: number;
   progress_percent: number;
   title: string;
   title_emoji: string;
@@ -399,8 +401,8 @@ export interface StreakData {
   longest_streak: number;
   streak_freezes: number;
   last_activity_date: string | null;
-  streak_at_risk: boolean;
-  days_until_freeze_needed: number;
+  is_active_today?: boolean;
+  streak_at_risk?: boolean;
 }
 
 // --- Achievements/Badges ---
@@ -416,8 +418,11 @@ export interface Achievement {
   rarity: AchievementRarity;
   category: AchievementCategory;
   xp_reward: number;
-  criteria: string;
-  is_secret: boolean;
+  criteria: any;
+  required_level?: number | null;
+  is_hidden: boolean;
+  is_secret?: boolean;
+  created_at?: string;
 }
 
 export interface UserAchievement {
@@ -479,19 +484,21 @@ export interface GamificationLeaderboardResponse {
 }
 
 // --- Rewards ---
-export type RewardType = 'virtual_cash' | 'freeze' | 'consultation' | 'cosmetic';
+export type RewardType = 'virtual_cash' | 'freeze' | 'consultation' | 'cosmetic' | 'feature' | 'masterclass';
 
 export interface Reward {
   id: string;
-  name: string;
+  title: string;
   description: string;
   reward_type: RewardType;
-  xp_cost: number;
-  value: number;
+  xp_required: number;
+  reward_data: any;
   icon: string;
-  is_available: boolean;
-  stock?: number;
-  max_per_user?: number;
+  is_active: boolean;
+  tier: number;
+  unlocked?: boolean;
+  xp_needed?: number;
+  created_at?: string;
 }
 
 export interface UserReward {
@@ -506,19 +513,12 @@ export interface GamificationSummary {
   xp: XPStats;
   streak: StreakData;
   achievements: {
-    total: number;
-    unlocked: number;
-    recent: UserAchievement[];
+    total_unlocked: number;
+    recent: any[];
   };
-  challenges: {
-    active: ChallengeProgress[];
-    completed_this_week: number;
-    total_completed: number;
-  };
-  rank: {
-    global: number | null;
-    country: number | null;
-    percentile: number | null;
+  rewards: {
+    total_unlocked: number;
+    unclaimed: number;
   };
 }
 

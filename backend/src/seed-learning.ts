@@ -3043,172 +3043,195 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     order_index: 12,
     is_published: true,
     content: `
- <div class="space-y-8 max-w-4xl mx-auto">
+ <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
 
- <div class="bg-gradient-to-r from-gray-900 to-slate-700 text-white p-8 rounded-2xl shadow-xl">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 text-amber-400">
- 👷 Module 12 : L’Art de l’Architecte
- </h2>
- <p class="text-lg mb-6 text-slate-200">
- Gestion Avancée du Risque. À la fin de ce module, vous serez capable de :
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-amber-400/20 rounded-full p-1 mt-1 text-amber-400">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- Différencier l'allocation d'actifs **stratégique** et **tactique**.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-amber-400/20 rounded-full p-1 mt-1 text-amber-400">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- Appliquer le **position sizing** (règle des 1%) pour gérer l'exposition au risque de chaque ligne.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-amber-400/20 rounded-full p-1 mt-1 text-amber-400">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- Comprendre les principes du **hedging** (couverture) dans un contexte BRVM.
- </li>
- </ul>
- </div>
+  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #334155; color: #ffffff;">
+    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+      👷 Module 12 : L’Art de l’Architecte – Gestion Avancée du Risque
+    </h2>
+    <div class="mb-6 border-b border-slate-500"></div>
+    <p class="text-lg mb-6" style="color: #cbd5e1;">
+      À la fin de ce module, vous serez capable de :
+    </p>
+    <ul class="space-y-4 text-lg">
+      <li class="flex items-start gap-3">
+        <span class="bg-teal-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Différencier l'allocation d'actifs stratégique et tactique et comprendre comment ajuster votre portefeuille aux conditions du marché BRVM.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-teal-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Mettre en œuvre des techniques de diversification avancées spécifiques au marché UEMOA (sectorielle et régionale).
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-teal-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Appliquer le position sizing pour gérer l'exposition au risque de chaque ligne de votre portefeuille.
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="bg-teal-500 rounded-full p-1 mt-1 shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </span>
+        Comprendre les principes du hedging (couverture) comme outil de protection.
+      </li>
+    </ul>
+  </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-amber-100 pb-2 flex items-center gap-2">
- 🧭 12.1 Allocation Stratégique et Tactique
- </h2>
- 
- <p class="text-gray-600 mb-4">
- L'allocation d'actifs est la répartition de votre capital entre Actions, Obligations et Liquidités. L'investisseur avancé distingue deux types :
- </p>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b-2 border-teal-600 pb-2">
+      12.1 Allocation d’Actifs Stratégique et Tactique
+    </h2>
+    <p class="text-gray-700 mb-6">
+      L'allocation d'actifs est la répartition de votre capital entre les grandes classes d'actifs (Actions, Obligations, Liquidités). Il existe deux manières de l'aborder :
+    </p>
 
- 
+    
 
- <div class="grid md:grid-cols-2 gap-4 mb-6 mt-4">
- <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-slate-500">
- <h3 class="font-bold text-slate-800 mb-2">Stratégique (Le Plan de Route)</h3>
- <p class="text-sm text-gray-700">
- **Principe :** Répartition de base, définie par votre profil et votre horizon long terme. Elle est maintenue par le rééquilibrage (M11).
- </p>
- <p class="text-xs font-bold text-slate-600 mt-2">
- **Rôle :** Passive, minimise la volatilité à long terme.
- </p>
- </div>
- <div class="bg-amber-50 p-4 rounded-lg border-l-4 border-amber-500">
- <h3 class="font-bold text-amber-800 mb-2">Tactique (L'Ajustement Fin)</h3>
- <p class="text-sm text-gray-700">
- **Principe :** Ajustement temporaire pour tirer parti des conditions de marché à court/moyen terme.
- </p>
- <p class="text-xs font-bold text-amber-700 mt-2">
- **Exemple BRVM :** Réduire les obligations si une hausse des taux BCEAO est anticipée.
- </p>
- </div>
- </div>
- 
- <p class="text-sm text-gray-500 italic mt-2">
- **Analogie :** L'Allocation Stratégique est le plan de vol initial ; l'Allocation Tactique est le pilote qui ajuste l'altitude pour éviter les turbulences.
- </p>
- </div>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-slate-50 p-5 rounded-lg border-l-4 border-slate-500">
+        <h3 class="text-xl font-bold text-slate-800 mb-3">12.1.1 L'Allocation Stratégique (Le Plan de Route)</h3>
+        <ul class="space-y-3 text-sm text-gray-700">
+          <li>• <strong>Principe :</strong> C'est la répartition de base, définie par votre profil d'investisseur (M5) et votre horizon. C'est l'objectif de long terme que vous maintenez par le rééquilibrage (rebalancing, M11).</li>
+          <li>• <strong>Rôle :</strong> Elle est passive et a pour but d'atteindre vos objectifs en minimisant la volatilité à long terme.</li>
+        </ul>
+      </div>
 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-amber-100 pb-2 flex items-center gap-2">
- 🌳 12.2 Diversification Sectorielle à la BRVM
- </h2>
+      <div class="bg-teal-50 p-5 rounded-lg border-l-4 border-teal-500">
+        <h3 class="text-xl font-bold text-teal-900 mb-3">12.1.2 L'Allocation Tactique (L'Ajustement FIn)</h3>
+        <ul class="space-y-3 text-sm text-gray-700">
+          <li>• <strong>Principe :</strong> C'est un ajustement temporaire de l'allocation stratégique pour tirer parti des conditions de marché à court/moyen terme.</li>
+          <li>
+            • <strong>Exemple BRVM :</strong>
+            <ul class="ml-4 mt-2 list-disc space-y-1">
+              <li>Si vous anticipez une hausse des taux d'intérêt BCEAO (M2), vous pouvez réduire temporairement votre exposition aux obligations (qui baissent en valeur quand les taux montent) et augmenter les liquidités.</li>
+              <li>Si une crise de l'or noir affecte la Côte d'Ivoire, vous pourriez réduire légèrement l'exposition aux actions ivoiriennes pour renforcer l'exposition aux actions sénégalaises.</li>
+            </ul>
+          </li>
+          <li class="font-bold text-teal-800 italic">Attention : L'allocation tactique est une compétence avancée et ne doit jamais dévier radicalement de votre stratégie.</li>
+        </ul>
+      </div>
+    </div>
 
- <h3 class="text-xl font-bold text-gray-700 mb-3">Diversification des Moteurs de Croissance</h3>
- <p class="text-gray-600 mb-4">
- Il est crucial de répartir votre capital entre des secteurs ayant des **moteurs de croissance différents** pour éliminer le risque non systématique (M11).
- </p>
- 
- <ul class="space-y-3 text-sm text-gray-700 mb-6 bg-gray-50 p-4 rounded-lg">
- <li>**Banques (Ex: ECOBANK CI) :** Sensibles au coût de l'argent (BCEAO). Offre des dividendes stables.</li>
- <li>**Agro-Industriel (Ex: PALM-CI) :** Sensible aux cours mondiaux et au climat. Offre une protection contre l'inflation locale.</li>
- <li>**Télécoms (Ex: SONATEL) :** Sensible à la pénétration d'internet et à l'innovation. Fort potentiel de croissance.</li>
- </ul>
+    <div class="p-4 bg-gray-100 rounded-lg text-center text-gray-800 font-medium border border-gray-300">
+      Analogie : L'Allocation Stratégique est le plan de vol initial (Dakar à Abidjan). L'Allocation Tactique est le pilote qui ajuste l'altitude pour éviter les turbulences.
+    </div>
+  </div>
 
- <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
- <h3 class="font-bold text-yellow-800 mb-2">Le Risque de Corrélation</h3>
- <p class="text-sm text-yellow-800 mb-2">
- Sur la BRVM, les actions ont souvent une **forte corrélation** (elles montent et descendent ensemble) à cause des chocs macroéconomiques régionaux.
- </p>
- <p class="text-xs text-yellow-700">
- **L'Antidote :** Chercher des actifs avec une faible corrélation, comme les obligations d'État BRVM ou l'international.
- </p>
- </div>
- 
- </div>
- 
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-amber-100 pb-2 flex items-center gap-2">
- 📐 12.3 Position Sizing – Ajuster la Taille de Position
- </h2>
- 
- <h3 class="text-xl font-bold text-amber-700 mb-3">La Règle du Risque de Capital (La Règle des 1%)</h3>
- <p class="text-gray-600 mb-4">
- Cette technique vous assure de ne jamais risquer de perdre plus de **1% de votre capital total** sur une seule transaction. C'est le lien direct entre l'analyse de risque et l'exécution de l'ordre.
- </p>
- 
- <div class="bg-gray-100 p-4 rounded-lg mb-4">
- <h4 class="font-bold text-gray-800 mb-2">Formule de Calcul :</h4>
- <div class="font-mono text-center text-sm bg-white p-3 rounded mb-2">
- $$ \text{Taille de Position} = \frac{\text{Capital risqué maximal}}{\text{Perte unitaire acceptée}} $$
- </div>
- <ul class="list-disc list-inside text-sm text-gray-700 ml-4">
- <li>**Capital Risqué Max :** Capital total $\times$ 1% (Ex: 1 000 000 FCFA $\times$ 1% = 10 000 FCFA).</li>
- <li>**Perte Unitaire Acceptée :** (Prix d'Achat - Prix du Stop-Loss).</li>
- </ul>
- </div>
- 
- <p class="text-sm text-gray-500 italic">
- **Exemple :** Si vous risquez 10 000 FCFA et que votre Stop-Loss est placé 500 FCFA sous le prix d'achat, vous ne pouvez acheter que 10 000 / 500 = **20 actions**.
- </p>
- 
- 
- </div>
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-teal-600 pb-2">
+      12.2 Diversification Sectorielle à la BRVM
+    </h2>
+    <p class="text-gray-700 mb-6">Nous avons vu que la diversification réduit le risque non systématique (M11). Sur un marché régional comme la BRVM, la diversification sectorielle est essentielle.</p>
 
- <div class="bg-gray-900 text-white p-8 rounded-xl shadow-md">
- <h2 class="text-2xl font-bold mb-4 text-amber-400 flex items-center gap-2">
- 🔒 12.4 Hedging et Gestion de la Couverture
- </h2>
- 
- <p class="text-slate-200 mb-4 leading-relaxed">
- Le **Hedging** (couverture) est une technique avancée pour compenser le risque d'un portefeuille existant. Pour l'investisseur BRVM, l'approche la plus simple est l'équilibre structurel.
- </p>
+    <h3 class="text-xl font-bold text-slate-800 mb-4">12.2.1 Diversification des Moteurs de Croissance</h3>
+    <p class="text-gray-600 mb-4">Les moteurs de croissance de l'UEMOA ne sont pas les mêmes dans tous les secteurs :</p>
 
- <h3 class="font-bold text-amber-400 mb-3">La Couverture par l'Équilibre (Le Véritable Hedging du Débutant)</h3>
- <div class="grid md:grid-cols-2 gap-4">
- <div class="bg-slate-700/50 p-4 rounded-lg border-l-4 border-amber-500">
- <strong class="text-white">Liquidités (Cash) :</strong>
- <p class="text-sm text-slate-300 mt-1">Garder 10 à 20 % du portefeuille en liquidités pour saisir les opportunités d'achat en cas de krach boursier (M6).</p>
- </div>
- <div class="bg-slate-700/50 p-4 rounded-lg border-l-4 border-amber-500">
- <strong class="text-white">Actifs Non Corréllés :</strong>
- <p class="text-sm text-slate-300 mt-1">Utiliser les **Obligations d'État BRVM** (moins volatiles) comme refuge en période d'incertitude boursière.</p>
- </div>
- </div>
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+        <strong class="text-blue-900 block mb-2">Secteur Bancaire (Ex: ECOBANK CI, SGB-CI)</strong>
+        <p class="text-xs text-blue-800">Sensible au coût de l'argent (BCEAO) et à la croissance du crédit. Offre des dividendes stables.</p>
+      </div>
+      <div class="p-4 bg-green-50 border border-green-100 rounded-lg">
+        <strong class="text-green-900 block mb-2">Secteur Agro-Industriel (Ex: PALM-CI, SUCRIVOIRE)</strong>
+        <p class="text-xs text-green-800">Sensible aux cours mondiaux des matières premières (cacao, huile de palme) et au climat. Offre une protection contre l'inflation locale.</p>
+      </div>
+      <div class="p-4 bg-purple-50 border border-purple-100 rounded-lg">
+        <strong class="text-purple-900 block mb-2">Secteur des Télécoms (Ex: SONATEL)</strong>
+        <p class="text-xs text-purple-800">Sensible à la pénétration d'internet et à l'innovation. Offre un fort potentiel de croissance (Growth Investing).</p>
+      </div>
+    </div>
 
- <div class="mt-6 text-sm text-slate-400 italic">
- La vente à découvert (short selling) est une technique de hedging très risquée et souvent déconseillée aux débutants sur la BRVM.
- </div>
- </div>
+    <p class="text-sm font-bold text-gray-800 mb-4">Règle : Ne pas dépasser 15 à 20 % de votre portefeuille total sur un seul secteur pour minimiser l'impact d'une crise sectorielle (ex: une année de mauvaise récolte sur l'agro-industrie).</p>
 
- <div class="bg-gray-50 text-gray-700 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-gray-800 mb-4">🧠 Les Termes à Maîtriser</h2>
- <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <p><strong class="text-amber-600">Allocation Tactique :</strong> Ajustement temporaire de la répartition des actifs.</p>
- <p><strong class="text-amber-600">Position Sizing :</strong> Détermination de la taille d'un investissement basée sur un risque maximal toléré.</p>
- <p><strong class="text-amber-600">Corrélation :</strong> Mesure de la tendance de deux actifs à évoluer dans le même sens.</p>
- <p><strong class="text-amber-600">Hedging (Couverture) :</strong> Stratégie pour réduire le risque d'un portefeuille, souvent via des actifs non corrélés.</p>
- </div>
- 
- <hr class="border-gray-300 my-6"/>
- 
- 
- </div>
- </div>
+    <div class="mb-8 p-4 bg-amber-50 border-l-4 border-amber-400 text-amber-900 text-sm">
+      <strong>💡 Note Spéciale BRVM :</strong> Le secteur financier étant ultra-dominant sur notre marché, il peut être difficile de respecter strictement ce plafond au début. Si vous devez le dépasser, redoublez d'exigence sur la qualité financière des entreprises choisies (Modules 7 & 9) pour compenser ce manque de diversification sectorielle.
+    </div>
 
- </div>
+    <h3 class="text-xl font-bold text-slate-800 mb-4">12.2.2 Le Risque de Corrélation et la BRVM</h3>
+    
+    
+
+    <ul class="space-y-3 text-gray-700">
+      <li>• <strong>Corrélation :</strong> Deux actifs sont corrélés s'ils montent et descendent en même temps.</li>
+      <li>• <strong>Le Piège Régional :</strong> Sur la BRVM, les actions ont souvent une forte corrélation, car elles réagissent toutes aux mêmes chocs macroéconomiques régionaux (prix du pétrole, décisions BCEAO, etc.).</li>
+      <li>• <strong>L'Antidote :</strong> Pour une diversification efficace, il faut trouver des actifs avec une faible corrélation (ex: comparer une action BRVM avec une obligation d'État émise par un pays non UEMOA).</li>
+    </ul>
+  </div>
+
+  <div class="bg-slate-900 text-white p-6 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 border-b-2 border-teal-400 pb-2 text-white">
+      12.3 Position Sizing – Ajuster la Taille de Position
+    </h2>
+    <p class="text-slate-300 mb-6">
+      Le Position Sizing est la technique qui permet de déterminer combien d'argent vous allez placer sur un titre donné. C'est le lien direct entre votre analyse de risque et l'exécution d'un ordre (M10).
+    </p>
+
+    <h3 class="text-lg font-bold text-teal-300 mb-4">L'Utilisation du Stop-Loss (Rappel M11)</h3>
+    <p class="text-slate-300 mb-4">Pour calculer la taille de votre position ($T_{pos}$), vous devez définir où vous placez votre Stop-Loss (le seuil de vente automatique, M11).</p>
+
+    <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center mb-6">
+      <div class="text-xl font-mono text-white overflow-x-auto">
+        $$ \text{Taille de Position} = \frac{\text{Capital risqué maximal}}{\text{Perte unitaire acceptée}} $$
+      </div>
+    </div>
+
+    
+
+    <div class="bg-white text-slate-900 p-5 rounded-lg">
+      <strong class="block mb-2 text-teal-700">Exemple Concret :</strong>
+      <ul class="list-disc list-inside space-y-1 text-sm">
+        <li>Capital risqué maximal (1%) : 10 000 FCFA.</li>
+        <li>Vous achetez une action à 10 000 FCFA et vous placez votre Stop-Loss à 9 500 FCFA. La perte unitaire acceptée est de 500 FCFA (10 000 - 9 500).</li>
+        <li class="font-mono bg-gray-100 p-1 rounded inline-block mt-1">$\text{Taille de Position} = 10 000 \text{ FCFA} / 500 \text{ FCFA} = 20$ actions.</li>
+        <li class="mt-1">Vous achetez seulement 20 actions. Si le Stop-Loss est touché, vous perdez exactement 10 000 FCFA.</li>
+      </ul>
+    </div>
+    
+    <p class="mt-4 text-sm text-teal-200 italic">Avantage : Cette méthode vous permet d'investir de manière disciplinée et mécanique, en vous assurant que vous pouvez survivre à une série de pertes sans dérailler.</p>
+  </div>
+
+  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-teal-600 pb-2">
+      12.4 Hedging et Gestion de la Couverture
+    </h2>
+    <p class="text-gray-700 mb-6">Le Hedging (couverture) est une technique avancée qui vise à réduire ou compenser le risque d'un portefeuille existant.</p>
+
+    
+
+    <div class="grid md:grid-cols-2 gap-8 mt-6">
+      <div>
+        <h3 class="font-bold text-slate-900 mb-3">12.4.1 Les Principes du Hedging</h3>
+        <p class="text-sm text-gray-600 mb-2"><strong>Utilisation d'Actifs Non Corréllés :</strong> La forme la plus simple de hedging pour l'investisseur BRVM est de détenir des actifs qui ne réagissent pas de la même manière au marché local :</p>
+        <ul class="text-sm text-gray-700 space-y-2 pl-4 border-l-2 border-slate-300">
+          <li><strong>Or / Devises fortes :</strong> En cas de forte crise régionale, ces actifs conservent souvent leur valeur ou augmentent.</li>
+          <li><strong>Obligations d'État BRVM :</strong> Elles sont moins volatiles que les actions et servent de refuge en période d'incertitude boursière.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-slate-900 mb-3">12.4.2 La Couverture par l'Équilibre (Le Véritable Hedging du Débutant)</h3>
+        <p class="text-sm text-gray-600 mb-2">Le meilleur hedging pour l'investisseur BRVM n'est pas l'utilisation de produits complexes, mais le maintien rigoureux de :</p>
+        <ul class="text-sm text-gray-700 space-y-2 pl-4 border-l-2 border-teal-300">
+          <li><strong>Liquidités (Cash) :</strong> Garder 10 à 20 % du portefeuille en liquidités (hors bourse) pour pouvoir saisir les opportunités d'achat en cas de krach boursier (quand tout le monde panique, M6).</li>
+          <li><strong>Allocation Stratégique :</strong> S'assurer que les obligations ou les OPCVM Prudents couvrent une partie significative de votre portefeuille.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 p-8 rounded-xl text-center border border-slate-200">
+    <h3 class="text-xl font-bold text-slate-800 mb-4">🧭 Prochaine Étape</h3>
+    <p class="text-slate-600 mb-6">Félicitations, vous maîtrisez maintenant l’architecture de votre portefeuille. Dirigez-vous vers le Module 13 pour découvrir les outils concrets, les plateformes de trading et les règles fiscales indispensables pour passer à l'action et piloter vos investissements avec rigueur.</p>
+    <button class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
+      👉 Module 13 : Outils et Fiscalité
+    </button>
+  </div>
+
+</div>
 `,
   });
 

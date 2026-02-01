@@ -101,12 +101,12 @@ export function AchievementCard({
 
         {/* Titre */}
         <h3 className={`font-bold ${sizes.title} text-gray-800 ${!isUnlocked ? 'blur-sm' : ''}`}>
-          {isUnlocked || !achievement.is_secret ? achievement.name : '???'}
+          {isUnlocked || !(achievement.is_hidden || achievement.is_secret) ? achievement.name : '???'}
         </h3>
 
         {/* Description */}
-        <p className={`${sizes.desc} text-gray-600 mt-1 ${!isUnlocked && achievement.is_secret ? 'blur-sm' : ''}`}>
-          {isUnlocked || !achievement.is_secret ? achievement.description : 'Badge secret'}
+        <p className={`${sizes.desc} text-gray-600 mt-1 ${!isUnlocked && (achievement.is_hidden || achievement.is_secret) ? 'blur-sm' : ''}`}>
+          {isUnlocked || !(achievement.is_hidden || achievement.is_secret) ? achievement.description : 'Badge secret'}
         </p>
 
         {/* XP Reward */}

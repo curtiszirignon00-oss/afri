@@ -21,8 +21,8 @@ export function RewardCard({
   isClaimLoading = false,
   className = ''
 }: RewardCardProps) {
-  const canAfford = userXP >= reward.xp_cost;
-  const isAvailable = reward.is_available && (reward.stock === undefined || reward.stock > 0);
+  const canAfford = userXP >= reward.xp_required;
+  const isAvailable = reward.is_active;
   const canClaim = canAfford && isAvailable && !alreadyClaimed;
 
   // Icône selon le type de récompense
@@ -60,18 +60,18 @@ export function RewardCard({
   const colors = getRewardColors(reward.reward_type);
   const icon = getRewardIcon(reward.reward_type);
 
-  // Formatage de la valeur
-  const formatValue = (value: number, type: RewardType): string => {
-    if (type === 'virtual_cash') {
-      return `+${value.toLocaleString()} FCFA`;
+  // Formatage de la valeur depuis reward_data
+  const formatRewardValue = (data: any, type: RewardType): string => {
+    if (type === 'virtual_cash' && data?.amount) {
+      return `+${data.amount.toLocaleString()} ${data.currency || 'FCFA'}`;
     }
-    if (type === 'freeze') {
-      return `${value} freeze${value > 1 ? 's' : ''}`;
+    if (type === 'freeze' && data?.quantity) {
+      return `${data.quantity} freeze${data.quantity > 1 ? 's' : ''}`;
     }
-    if (type === 'consultation') {
-      return `${value} min`;
+    if (type === 'consultation' && data?.duration_minutes) {
+      return `${data.duration_minutes} min`;
     }
-    return String(value);
+    return '';
   };
 
   return (
@@ -97,9 +97,9 @@ export function RewardCard({
             {icon}
           </div>
           <div>
-            <h3 className="font-bold text-gray-800">{reward.name}</h3>
+            <h3 className="font-bold text-gray-800">{reward.title}</h3>
             <p className="text-lg font-semibold text-gray-700">
-              {formatValue(reward.value, reward.reward_type)}
+              {formatRewardValue(reward.reward_data, reward.reward_type)}
             </p>
           </div>
         </div>
@@ -109,10 +109,10 @@ export function RewardCard({
           {reward.description}
         </p>
 
-        {/* Stock restant */}
-        {reward.stock !== undefined && reward.stock > 0 && (
+        {/* Tier */}
+        {reward.tier && (
           <p className="text-xs text-gray-500 mb-3">
-            {reward.stock} restant{reward.stock > 1 ? 's' : ''}
+            Tier {reward.tier}
           </p>
         )}
 
@@ -121,7 +121,7 @@ export function RewardCard({
           {/* Coût XP */}
           <div className={`flex items-center gap-1.5 ${canAfford ? 'text-amber-600' : 'text-gray-400'}`}>
             <Zap className="w-5 h-5" />
-            <span className="font-bold text-lg">{reward.xp_cost.toLocaleString()}</span>
+            <span className="font-bold text-lg">{reward.xp_required.toLocaleString()}</span>
             <span className="text-sm">XP</span>
           </div>
 
@@ -135,7 +135,7 @@ export function RewardCard({
             <div className="flex items-center gap-1 text-gray-400">
               <Lock className="w-4 h-4" />
               <span className="text-sm">
-                {(reward.xp_cost - userXP).toLocaleString()} XP manquants
+                {(reward.xp_required - userXP).toLocaleString()} XP manquants
               </span>
             </div>
           ) : !isAvailable ? (

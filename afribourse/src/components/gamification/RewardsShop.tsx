@@ -149,7 +149,7 @@ export function RewardsShop({
                 className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm"
               >
                 <span>{ur.reward.icon || '🎁'}</span>
-                <span className="font-medium">{ur.reward.name}</span>
+                <span className="font-medium">{ur.reward.title}</span>
                 <span className="text-gray-400">
                   {new Date(ur.claimed_at).toLocaleDateString('fr-FR')}
                 </span>

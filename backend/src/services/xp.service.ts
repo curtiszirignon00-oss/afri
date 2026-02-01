@@ -1,33 +1,113 @@
 // backend/src/services/xp.service.ts
 // Service pour gérer le système XP, Level-up et Rewards
+// Inspiré de Duolingo pour AfriBourse
 
 import { PrismaClient } from '@prisma/client';
 import * as achievementService from './achievement.service';
 import * as activityService from './activity.service';
+import {
+  XP_REWARDS,
+  LEVEL_TITLES,
+  LEVEL_FEATURES,
+  LevelTitle,
+  UserXPStats,
+  XPGainResult
+} from '../types/gamification.types';
 
 const prisma = new PrismaClient();
 
 // =====================================
-// CONFIGURATION XP
+// CONFIGURATION XP - FORMULE DUOLINGO-STYLE
 // =====================================
 
 /**
- * Calcule l'XP nécessaire pour atteindre un niveau
- * Formule : 100 * (level ^ 1.5)
+ * Calcule l'XP TOTAL nécessaire pour atteindre un niveau N
+ * Formule du document: XP = 50 × N × (N + 1)
+ *
+ * Exemples:
+ * - Niveau 1: 100 XP
+ * - Niveau 5: 1,500 XP
+ * - Niveau 10: 5,500 XP
+ * - Niveau 50: 127,500 XP
+ * - Niveau 100: 505,000 XP
  */
-function getXPRequiredForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(level, 1.5));
+export function getXPRequiredForLevel(level: number): number {
+  return 50 * level * (level + 1);
+}
+
+/**
+ * Calcule l'XP nécessaire UNIQUEMENT pour passer du niveau actuel au suivant
+ */
+export function getXPForCurrentLevel(level: number): number {
+  if (level <= 1) return 100;
+  return getXPRequiredForLevel(level) - getXPRequiredForLevel(level - 1);
 }
 
 /**
  * Calcule le niveau basé sur l'XP total
+ * Inverse de la formule: niveau ≈ (-1 + √(1 + 4*XP/50)) / 2
  */
-function calculateLevelFromXP(totalXP: number): number {
-  let level = 1;
-  while (totalXP >= getXPRequiredForLevel(level + 1)) {
-    level++;
+export function calculateLevelFromXP(totalXP: number): number {
+  if (totalXP < 100) return 1;
+
+  // Résolution de l'équation quadratique: 50*n*(n+1) = XP
+  // n = (-1 + √(1 + 4*XP/50)) / 2
+  const discriminant = 1 + (4 * totalXP) / 50;
+  const level = Math.floor((-1 + Math.sqrt(discriminant)) / 2);
+
+  // Vérification et ajustement
+  if (getXPRequiredForLevel(level + 1) <= totalXP) {
+    return level + 1;
   }
-  return level;
+  return Math.max(1, level);
+}
+
+/**
+ * Retourne le titre correspondant au niveau
+ */
+export function getLevelTitle(level: number): { title: LevelTitle; emoji: string } {
+  const config = LEVEL_TITLES.find(
+    t => level >= t.min_level && level <= t.max_level
+  ) || LEVEL_TITLES[0];
+
+  return { title: config.title, emoji: config.emoji };
+}
+
+/**
+ * Retourne les stats XP complètes d'un utilisateur
+ */
+export async function getUserXPStats(userId: string): Promise<UserXPStats> {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: {
+      total_xp: true,
+      level: true
+    }
+  });
+
+  if (!profile) {
+    throw new Error('Profil non trouvé');
+  }
+
+  const currentLevel = profile.level;
+  const totalXP = profile.total_xp;
+  const xpForCurrentLevel = currentLevel > 1 ? getXPRequiredForLevel(currentLevel - 1) : 0;
+  const xpForNextLevel = getXPRequiredForLevel(currentLevel);
+  const currentLevelXP = totalXP - xpForCurrentLevel;
+  const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
+  const { title, emoji } = getLevelTitle(currentLevel);
+
+  return {
+    userId,
+    level: currentLevel,
+    total_xp: totalXP,
+    current_level_xp: currentLevelXP,
+    xp_for_next_level: xpForNextLevel,
+    xp_needed: xpForNextLevel - totalXP,
+    progress_percent: Math.min(100, (currentLevelXP / xpNeededForLevel) * 100),
+    title,
+    title_emoji: emoji
+  };
 }
 
 // =====================================
@@ -333,20 +413,70 @@ async function applyReward(userId: string, reward: any) {
 
 /**
  * Vérifie et débloque les features selon le niveau
+ * Selon le document de gamification AfriBourse
  */
 async function checkFeatureUnlocks(userId: string, level: number) {
-  const features: { [key: number]: string } = {
-    5: 'advanced_charts',
-    10: 'watchlist',
-    15: 'forum_access',
-    20: 'ai_insights',
-    30: 'verified_badge',
-    50: 'premium_webinars'
-  };
+  const featureConfig = LEVEL_FEATURES.find(f => f.level === level);
 
-  if (features[level]) {
-    console.log(`🔓 Niveau ${level} atteint ! Feature "${features[level]}" débloquée`);
-    // TODO: Stocker les features débloquées
+  if (!featureConfig) {
+    return;
+  }
+
+  console.log(`🔓 Niveau ${level} atteint ! Feature "${featureConfig.feature}" débloquée`);
+
+  try {
+    // Appliquer la feature selon son type
+    switch (featureConfig.feature) {
+      case 'bonus_cash':
+      case 'second_simulator':
+      case 'bonus_simulator':
+        // Ajouter de l'argent au portfolio SANDBOX
+        const portfolio = await prisma.portfolio.findFirst({
+          where: { userId, wallet_type: 'SANDBOX' }
+        });
+
+        if (portfolio) {
+          await prisma.portfolio.update({
+            where: { id: portfolio.id },
+            data: {
+              cash_balance: { increment: featureConfig.value as number }
+            }
+          });
+          console.log(`💰 +${featureConfig.value} FCFA ajoutés au portfolio (niveau ${level})`);
+        }
+        break;
+
+      case 'verified_badge':
+        // Mettre à jour le profil avec le badge vérifié
+        await prisma.userProfile.update({
+          where: { userId },
+          data: { verified_investor: true }
+        });
+        console.log(`✅ Badge "Verified Investor" attribué`);
+        break;
+
+      case 'extra_alerts':
+      case 'extra_watchlist':
+      case 'extra_comparator':
+      case 'create_community':
+      case 'premium_webinars':
+        // Ces features sont vérifiées dynamiquement selon le niveau
+        // Pas besoin de stocker, on vérifie le niveau de l'utilisateur
+        console.log(`⚡ Feature "${featureConfig.feature}" débloquée pour niveau ${level}`);
+        break;
+    }
+
+    // Créer une activité pour la feature débloquée
+    await activityService.createActivity(
+      userId,
+      'milestone',
+      `a débloqué : ${featureConfig.description}`,
+      { level, feature: featureConfig.feature, value: featureConfig.value },
+      true
+    );
+
+  } catch (error) {
+    console.error(`❌ Erreur lors du déblocage de feature niveau ${level}:`, error);
   }
 }
 
@@ -459,18 +589,85 @@ export async function getXPToNextLevel(userId: string) {
 
 // =====================================
 // ACTIONS XP PRÉDÉFINIES
+// Basé sur le document de gamification AfriBourse
 // =====================================
 
 export const XP_ACTIONS = {
-  MODULE_COMPLETED: { amount: 200, reason: 'module_completed' },
-  QUIZ_PERFECT: { amount: 50, reason: 'quiz_100' },
-  FIRST_TRADE: { amount: 200, reason: 'first_trade' },
-  TRADE: { amount: 10, reason: 'trade' },
-  STREAK_7: { amount: 200, reason: 'streak_maintained' },
-  STREAK_30: { amount: 800, reason: 'streak_maintained' },
-  INVITE_FRIEND: { amount: 500, reason: 'referral' },
-  NEW_FOLLOWER: { amount: 200, reason: 'new_follower' }, // Par palier de 50
-  PROFILE_COMPLETED: { amount: 250, reason: 'profile_completed' },
-  PROFILE_VISIT: { amount: 1, reason: 'profile_visit' },
-  PROFILE_UPDATE: { amount: 5, reason: 'profile_update' }
+  // === FORMATION ===
+  MODULE_COMPLETED: { amount: XP_REWARDS.MODULE_COMPLETE, reason: 'module_completed', description: 'Module complété' },
+  QUIZ_PASS: { amount: XP_REWARDS.QUIZ_PASS, reason: 'quiz_pass', description: 'Quiz réussi (≥80%)' },
+  QUIZ_PERFECT: { amount: XP_REWARDS.QUIZ_PASS + XP_REWARDS.QUIZ_PERFECT_BONUS, reason: 'quiz_perfect', description: 'Quiz parfait (100%)' },
+  DAILY_3_MODULES: { amount: XP_REWARDS.DAILY_3_MODULES_BONUS, reason: 'daily_3_modules', description: 'Challenge quotidien: 3 modules' },
+
+  // === TRADING ===
+  FIRST_TRADE: { amount: XP_REWARDS.FIRST_TRADE, reason: 'first_trade', description: 'Premier investissement' },
+  TRADE: { amount: XP_REWARDS.TRANSACTION, reason: 'trade', description: 'Transaction effectuée' },
+
+  // === SOCIAL ===
+  PROFILE_COMPLETED: { amount: XP_REWARDS.PROFILE_COMPLETE, reason: 'profile_completed', description: 'Profil complété à 100%' },
+  FOLLOWER_MILESTONE: { amount: XP_REWARDS.FOLLOWER_MILESTONE, reason: 'follower_milestone', description: 'Palier de 50 abonnés' },
+  INVITE_FRIEND: { amount: XP_REWARDS.INVITE_FRIEND, reason: 'referral', description: 'Ami invité et actif' },
+  PROFILE_VISIT: { amount: XP_REWARDS.PROFILE_VISIT, reason: 'profile_visit', description: 'Visite de profil' },
+  PROFILE_UPDATE: { amount: XP_REWARDS.PROFILE_UPDATE, reason: 'profile_update', description: 'Modification de profil' },
+
+  // === ENGAGEMENT / STREAKS ===
+  STREAK_7: { amount: XP_REWARDS.STREAK_7, reason: 'streak_7', description: 'Série de 7 jours' },
+  STREAK_30: { amount: XP_REWARDS.STREAK_30, reason: 'streak_30', description: 'Série de 30 jours' },
+  STREAK_100: { amount: XP_REWARDS.STREAK_100, reason: 'streak_100', description: 'Série de 100 jours' },
+  STREAK_365: { amount: XP_REWARDS.STREAK_365, reason: 'streak_365', description: 'Série de 365 jours' },
+  EARLY_BIRD: { amount: XP_REWARDS.EARLY_BIRD_BADGE, reason: 'early_bird', description: 'Connexion avant 8h (5x)' },
+  NIGHT_OWL: { amount: XP_REWARDS.NIGHT_OWL_BADGE, reason: 'night_owl', description: 'Connexion après 22h (5x)' },
+
+  // === BADGES (XP attribués lors du déblocage) ===
+  BADGE_50_TRADES: { amount: XP_REWARDS.BADGE_50_TRADES, reason: 'badge_active_trader', description: 'Badge: Trader Actif (50 transactions)' },
+  BADGE_200_TRADES: { amount: XP_REWARDS.BADGE_200_TRADES, reason: 'badge_pro_investor', description: 'Badge: Investisseur Pro (200 transactions)' },
+  BADGE_ROI_20: { amount: XP_REWARDS.BADGE_ROI_20, reason: 'badge_performance', description: 'Badge: Performance (ROI > 20%)' },
+  BADGE_DIVERSIFICATION: { amount: XP_REWARDS.BADGE_DIVERSIFICATION, reason: 'badge_diversification', description: 'Badge: Diversification (10+ positions)' }
 };
+
+// =====================================
+// HELPERS PUBLICS
+// =====================================
+
+/**
+ * Ajoute de l'XP pour une action prédéfinie
+ */
+export async function addXPForAction(
+  userId: string,
+  actionKey: keyof typeof XP_ACTIONS,
+  metadata?: any
+): Promise<XPGainResult> {
+  const action = XP_ACTIONS[actionKey];
+  return addXP(userId, action.amount, action.reason, action.description, metadata);
+}
+
+/**
+ * Vérifie si l'utilisateur a atteint un niveau requis pour une feature
+ */
+export async function hasLevelFeature(userId: string, featureName: string): Promise<boolean> {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { level: true }
+  });
+
+  if (!profile) return false;
+
+  const featureConfig = LEVEL_FEATURES.find(f => f.feature === featureName);
+  if (!featureConfig) return false;
+
+  return profile.level >= featureConfig.level;
+}
+
+/**
+ * Retourne toutes les features débloquées pour un utilisateur
+ */
+export async function getUnlockedFeatures(userId: string): Promise<typeof LEVEL_FEATURES> {
+  const profile = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { level: true }
+  });
+
+  if (!profile) return [];
+
+  return LEVEL_FEATURES.filter(f => profile.level >= f.level);
+}
