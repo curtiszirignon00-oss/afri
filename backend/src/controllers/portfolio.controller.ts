@@ -3,6 +3,12 @@
 import { Request, Response, NextFunction } from 'express';
 import * as portfolioService from '../services/portfolio.service.prisma';
 import * as challengeService from '../services/challenge.service';
+// Import gamification services
+import * as xpService from '../services/xp.service';
+import * as streakService from '../services/streak.service';
+import * as achievementService from '../services/achievement.service';
+import * as weeklyChallengeService from '../services/weekly-challenge.service';
+import { prisma } from '../config/database';
 
 // --- Portfolio Summary for Profile ---
 
@@ -97,7 +103,50 @@ export async function buyStock(req: Request, res: Response, next: NextFunction) 
       }
     }
 
-    return res.status(200).json(result);
+    // ========== GAMIFICATION TRIGGERS ==========
+    let xpGained = 0;
+    let bonusXP = 0;
+    let newAchievements: string[] = [];
+
+    try {
+      // 1. Vérifier si c'est la première transaction de l'utilisateur
+      const transactionCount = await prisma.transaction.count({
+        where: { portfolio: { userId } }
+      });
+
+      if (transactionCount === 1) {
+        // Première transaction! +200 XP bonus
+        const firstTradeResult = await xpService.addXPForAction(userId, 'FIRST_TRADE');
+        bonusXP = firstTradeResult.xp_added;
+      }
+
+      // 2. Ajouter XP pour la transaction (+10 XP)
+      const xpResult = await xpService.addXPForAction(userId, 'TRADE');
+      xpGained = xpResult.xp_added;
+
+      // 3. Enregistrer activité streak
+      await streakService.recordActivity(userId, 'transaction');
+
+      // 4. Mettre à jour progression défis hebdomadaires
+      await weeklyChallengeService.updateChallengeProgress(userId, 'trade', 1);
+
+      // 5. Vérifier déblocage de badges trading
+      const unlockedAchievements = await achievementService.checkTradingAchievements(userId);
+      newAchievements = unlockedAchievements.map(a => a.name);
+
+    } catch (gamificationError) {
+      console.error('Erreur gamification (buy stock):', gamificationError);
+    }
+    // ========== FIN GAMIFICATION ==========
+
+    return res.status(200).json({
+      ...result,
+      gamification: {
+        xpGained: xpGained + bonusXP,
+        bonusXP: bonusXP > 0 ? { reason: 'Première transaction!', amount: bonusXP } : null,
+        newAchievements
+      }
+    });
 
   } catch (error: any) {
     console.error("Error in buyStock controller:", error);
@@ -121,7 +170,38 @@ export async function sellStock(req: Request, res: Response, next: NextFunction)
 
     // Call service with wallet_type
     const result = await portfolioService.sellStock(userId, stockTicker, quantity, pricePerShare, targetWallet);
-    return res.status(200).json(result);
+
+    // ========== GAMIFICATION TRIGGERS ==========
+    let xpGained = 0;
+    let newAchievements: string[] = [];
+
+    try {
+      // 1. Ajouter XP pour la transaction (+10 XP)
+      const xpResult = await xpService.addXPForAction(userId, 'TRADE');
+      xpGained = xpResult.xp_added;
+
+      // 2. Enregistrer activité streak
+      await streakService.recordActivity(userId, 'transaction');
+
+      // 3. Mettre à jour progression défis hebdomadaires
+      await weeklyChallengeService.updateChallengeProgress(userId, 'trade', 1);
+
+      // 4. Vérifier déblocage de badges trading
+      const unlockedAchievements = await achievementService.checkTradingAchievements(userId);
+      newAchievements = unlockedAchievements.map(a => a.name);
+
+    } catch (gamificationError) {
+      console.error('Erreur gamification (sell stock):', gamificationError);
+    }
+    // ========== FIN GAMIFICATION ==========
+
+    return res.status(200).json({
+      ...result,
+      gamification: {
+        xpGained,
+        newAchievements
+      }
+    });
 
   } catch (error: any) {
     console.error("Error in sellStock controller:", error);
