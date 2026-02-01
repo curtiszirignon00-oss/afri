@@ -28,6 +28,7 @@ export interface ChallengeStatus {
 const CHALLENGE_START_DATE = new Date('2026-02-02T00:00:00Z');
 const INITIAL_CHALLENGE_BALANCE = 1000000; // 1M FCFA
 const REQUIRED_UNIQUE_TICKERS = 5;
+const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-le-hub-de-lelite';
 
 // ============= HELPER FUNCTIONS =============
 
@@ -158,7 +159,33 @@ export async function enrollInChallenge(userId: string, data: EnrollmentData) {
             },
         });
 
-        return { participant, wallet };
+        // 3. Ajouter automatiquement à la communauté du challenge
+        const community = await tx.community.findUnique({
+            where: { slug: CHALLENGE_COMMUNITY_SLUG },
+        });
+
+        if (community) {
+            const alreadyMember = await tx.communityMember.findUnique({
+                where: { community_id_user_id: { community_id: community.id, user_id: userId } },
+            });
+
+            if (!alreadyMember) {
+                await tx.communityMember.create({
+                    data: {
+                        community_id: community.id,
+                        user_id: userId,
+                        role: 'MEMBER',
+                    },
+                });
+
+                await tx.community.update({
+                    where: { id: community.id },
+                    data: { members_count: { increment: 1 } },
+                });
+            }
+        }
+
+        return { participant, wallet, communityId: community?.id };
     });
 
     return result;
