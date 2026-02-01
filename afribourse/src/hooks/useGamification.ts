@@ -319,30 +319,32 @@ export function useGamificationSummary() {
 // ============= HELPER HOOKS =============
 
 /**
- * Calcule le niveau à partir de l'XP total
- * Formule: XP requis niveau N = 50 × N × (N + 1)
+ * Calcule le niveau a partir de l'XP total
+ * Formule alignee sur le backend: seuil niveau N = 50 * N * (N + 1)
+ * Level 1: 0-299 XP | Level 2: 300-599 XP | Level 3: 600-999 XP | etc.
  */
 export function calculateLevelFromXP(totalXP: number): number {
-  // XP cumulé pour atteindre le niveau N = somme de 50 × k × (k+1) pour k de 1 à N-1
-  // Résolution: trouver le plus grand N tel que XP_cumulé(N) <= totalXP
-  let level = 1;
-  let cumulativeXP = 0;
-
-  while (cumulativeXP <= totalXP) {
-    const xpForNextLevel = 50 * level * (level + 1);
-    if (cumulativeXP + xpForNextLevel > totalXP) break;
-    cumulativeXP += xpForNextLevel;
-    level++;
-  }
-
-  return level;
+  if (totalXP < 100) return 1;
+  const discriminant = 1 + (4 * totalXP) / 50;
+  const level = Math.floor((-1 + Math.sqrt(discriminant)) / 2);
+  if (50 * (level + 1) * (level + 2) <= totalXP) return level + 1;
+  return Math.max(1, level);
 }
 
 /**
- * Calcule l'XP nécessaire pour le prochain niveau
+ * Seuil XP total pour atteindre le niveau N
+ */
+export function getXPRequiredForLevel(level: number): number {
+  return 50 * level * (level + 1);
+}
+
+/**
+ * XP necessaire pour passer du niveau actuel au suivant
  */
 export function getXPForNextLevel(level: number): number {
-  return 50 * level * (level + 1);
+  const start = level <= 1 ? 0 : getXPRequiredForLevel(level);
+  const end = getXPRequiredForLevel(level + 1);
+  return end - start;
 }
 
 /**

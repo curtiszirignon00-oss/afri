@@ -99,12 +99,15 @@ export default function ProfileStats({
     const currentStreak = investorProfile?.current_streak || 0;
     const longestStreak = investorProfile?.longest_streak || 0;
 
-    // XP to next level (example formula: level * 100 XP per level)
-    const xpForCurrentLevel = (level - 1) * 100;
-    const xpForNextLevel = level * 100;
-    const xpProgress = totalXp - xpForCurrentLevel;
-    const xpNeeded = xpForNextLevel - xpForCurrentLevel;
-    const progressPercent = Math.min(100, (xpProgress / xpNeeded) * 100);
+    // Formule Duolingo-style: seuil niveau N = 50 * N * (N + 1)
+    // Bornes alignees avec calculateLevelFromXP du backend :
+    // Level 1: [0, 300)  |  Level 2: [300, 600)  |  Level 3: [600, 1000)  etc.
+    const getXPRequired = (n: number) => 50 * n * (n + 1);
+    const xpLevelStart = level <= 1 ? 0 : getXPRequired(level);
+    const xpLevelEnd = getXPRequired(level + 1);
+    const xpProgress = totalXp - xpLevelStart;
+    const xpNeeded = xpLevelEnd - xpLevelStart;
+    const progressPercent = Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
 
     // Blur class for hidden values
     const blurClass = 'blur-sm select-none';
