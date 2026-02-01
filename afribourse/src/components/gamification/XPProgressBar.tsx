@@ -78,15 +78,15 @@ export function XPProgressBar({
       <div className={`w-full bg-gray-200 rounded-full overflow-hidden ${sizes.container}`}>
         <div
           className={`h-full bg-gradient-to-r ${gradientColor} rounded-full transition-all duration-500 ease-out`}
-          style={{ width: `${Math.min(stats.progress_percent, 100)}%` }}
+          style={{ width: `${Math.min(Math.max(stats.progress_percent, 0), 100)}%` }}
         />
       </div>
 
       {showDetails && (
         <div className={`flex justify-between mt-1 ${sizes.text} text-gray-400`}>
-          <span>{stats.current_level_xp.toLocaleString()} XP</span>
+          <span>{Math.max(0, stats.total_xp - stats.current_level_xp).toLocaleString()} XP</span>
           <span className="text-gray-500">
-            {stats.xp_for_next_level - stats.current_level_xp - (stats.total_xp - stats.current_level_xp)} XP restants
+            {Math.max(0, stats.xp_for_next_level - stats.total_xp).toLocaleString()} XP restants
           </span>
           <span>{stats.xp_for_next_level.toLocaleString()} XP</span>
         </div>

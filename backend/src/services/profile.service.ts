@@ -2,6 +2,7 @@
 // Service pour gérer le profil social des utilisateurs
 
 import { PrismaClient, Prisma } from '@prisma/client';
+import { calculateLevelFromXP } from './xp.service';
 
 const prisma = new PrismaClient();
 
@@ -93,7 +94,9 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     if (profile.show_bio) filtered.bio = profile.bio;
     if (profile.show_country) filtered.country = profile.country;
 
-    if (profile.show_level) filtered.level = profile.level;
+    // Recalculer le niveau depuis le XP pour éviter les incohérences
+    const correctLevel = calculateLevelFromXP(profile.total_xp || 0);
+    if (profile.show_level) filtered.level = correctLevel;
     if (profile.show_xp) filtered.total_xp = profile.total_xp;
     if (profile.show_rank) {
       filtered.global_rank = profile.global_rank;
