@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { useInvestorProfile, useSyncSocialStats } from '../hooks/useOnboarding';
+import { useSyncSocialStats } from '../hooks/useOnboarding';
 import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../lib/api-client';
 import ProfileHeader from '../components/profile/ProfileHeader';
@@ -25,17 +25,25 @@ export default function ProfilePage() {
     const { mutate: syncStats } = useSyncSocialStats();
     const [showCreateCommunityModal, setShowCreateCommunityModal] = useState(false);
 
-    // Déterminer si c'est son propre profil
+    // Determiner si c'est son propre profil
+    const isLoggedIn = !!userProfile?.id;
     const isOwnProfile = !userId || userId === userProfile?.id;
 
-    // Gamification hooks (only for own profile)
+    // Gamification hooks (only for own profile - hooks doivent toujours etre appeles)
     const { data: myAchievements } = useMyAchievements();
     const { data: streakData } = useStreak();
 
-    // Récupérer son propre profil investisseur (seulement si c'est son profil)
-    const { data: investorProfile, isLoading: isLoadingOwn, error: errorOwn } = useInvestorProfile();
+    // Recuperer son propre profil investisseur (SEULEMENT si c'est son profil ET connecte)
+    const { data: investorProfile, isLoading: isLoadingOwn, error: errorOwn } = useQuery({
+        queryKey: ['investor-profile'],
+        queryFn: async () => {
+            const response = await apiClient.get('/investor-profile');
+            return response.data.data;
+        },
+        enabled: isOwnProfile && isLoggedIn,
+    });
 
-    // Récupérer le profil public d'un autre utilisateur
+    // Recuperer le profil public d'un autre utilisateur
     const { data: otherUserProfile, isLoading: isLoadingOther, error: errorOther } = useQuery({
         queryKey: ['public-profile', userId],
         queryFn: async () => {
@@ -45,9 +53,8 @@ export default function ProfilePage() {
         enabled: !!userId && !isOwnProfile,
     });
 
-    // États combinés
+    // Etats combines
     const isLoading = isOwnProfile ? isLoadingOwn : isLoadingOther;
-    const error = isOwnProfile ? errorOwn : errorOther;
 
     // Fetch portfolio data (only for own profile or if public)
     const { data: portfolioData } = useQuery({
@@ -88,6 +95,24 @@ export default function ProfilePage() {
         }
     }, [isOwnProfile, isLoading]);
 
+    // Garde : si c'est "son propre profil" mais pas connecte, rediriger
+    if (isOwnProfile && !isLoggedIn) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center max-w-md mx-auto p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Connexion requise</h2>
+                    <p className="text-gray-600 mb-6">Connectez-vous pour voir votre profil.</p>
+                    <a
+                        href="/login"
+                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                    >
+                        Se connecter
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -96,31 +121,32 @@ export default function ProfilePage() {
         );
     }
 
-    // Gestion des erreurs différente selon le cas
-    if (isOwnProfile && (errorOwn || !investorProfile)) {
+    // Gestion des erreurs : propre profil (connecte + onboarding non complete)
+    if (isOwnProfile && isLoggedIn && (errorOwn || !investorProfile)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md mx-auto p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non configuré</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non configure</h2>
                     <p className="text-gray-600 mb-6">
-                        Vous n'avez pas encore complété votre profil investisseur.
+                        Vous n'avez pas encore complete votre profil investisseur.
                     </p>
                     <a
                         href="/onboarding"
                         className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                     >
-                        Compléter mon profil
+                        Completer mon profil
                     </a>
                 </div>
             </div>
         );
     }
 
+    // Gestion des erreurs : profil d'un autre utilisateur introuvable
     if (!isOwnProfile && (errorOther || !otherUserProfile)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md mx-auto p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non trouvé</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non trouve</h2>
                     <p className="text-gray-600 mb-6">
                         Ce profil n'existe pas ou n'est pas accessible.
                     </p>
