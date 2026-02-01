@@ -9,6 +9,10 @@ import { sendConfirmationEmail, sendPasswordResetEmail } from "../services/email
 // --- CONSOLIDATION : N'IMPORTER QUE LE SERVICE PRISMA ---
 import * as usersServicePrisma from "../services/users.service.prisma";
 import * as portfolioService from "../services/portfolio.service.prisma";
+// Import gamification services
+import * as streakService from "../services/streak.service";
+import * as achievementService from "../services/achievement.service";
+import { prisma } from "../config/database";
 // L'import vers usersServiceMongo n'est plus nécessaire
 
 // --- INSCRIPTION (REGISTER) ---
@@ -154,8 +158,39 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
         res.cookie("token", token, cookieOptions as any);
 
+        // ========== GAMIFICATION TRIGGERS ==========
+        let gamificationData: any = {};
+
+        try {
+            const userId = userAsAny.id;
+
+            // 1. Enregistrer activité de streak (login compte comme visite profil)
+            await streakService.recordActivity(userId, 'profile_visit');
+
+            // 2. Récupérer les stats gamification pour la réponse
+            const userGamificationStats = await prisma.userProfile.findUnique({
+                where: { userId },
+                select: {
+                    total_xp: true,
+                    level: true,
+                    current_streak: true,
+                    streak_freezes: true
+                }
+            });
+
+            gamificationData.stats = userGamificationStats;
+
+            // NOTE: Pour activer le tracking early_bird/night_owl, exécuter:
+            // npx prisma generate
+            // Les champs early_logins_count et night_logins_count ont été ajoutés au schema
+
+        } catch (gamificationError) {
+            console.error('Erreur gamification (login):', gamificationError);
+        }
+        // ========== FIN GAMIFICATION ==========
+
         console.log('✅ [LOGIN] Cookie set, sending response');
-        return res.status(200).json({ token, user: userWithoutPassword });
+        return res.status(200).json({ token, user: userWithoutPassword, gamification: gamificationData });
     } catch (error) {
         next(error);
         return;

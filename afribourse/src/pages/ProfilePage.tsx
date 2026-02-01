@@ -11,7 +11,11 @@ import SocialStats from '../components/profile/SocialStats';
 import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
-import { Loader2, ArrowLeft, Users, Plus } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake } from 'lucide-react';
+
+// Gamification imports
+import { useMyAchievements, useStreak } from '../hooks/useGamification';
+import { AchievementCard, StreakFreezeIndicator } from '../components/gamification';
 
 export default function ProfilePage() {
     const { userId } = useParams();
@@ -23,6 +27,10 @@ export default function ProfilePage() {
 
     // Déterminer si c'est son propre profil
     const isOwnProfile = !userId || userId === userProfile?.id;
+
+    // Gamification hooks (only for own profile)
+    const { data: myAchievements } = useMyAchievements();
+    const { data: streakData } = useStreak();
 
     // Récupérer son propre profil investisseur (seulement si c'est son profil)
     const { data: investorProfile, isLoading: isLoadingOwn, error: errorOwn } = useInvestorProfile();
@@ -228,6 +236,76 @@ export default function ProfilePage() {
 
                         <InvestorDNA profile={profileData} />
                         <SocialStats profile={profileData} />
+
+                        {/* Gamification Section - Only for own profile */}
+                        {isOwnProfile && (
+                            <>
+                                {/* Streak Freezes */}
+                                {streakData && streakData.streak_freezes > 0 && (
+                                    <div className="bg-white rounded-2xl shadow-sm p-6">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                                                <Snowflake className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold text-gray-900">Protection Streak</h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {streakData.streak_freezes} freeze{streakData.streak_freezes > 1 ? 's' : ''} disponible{streakData.streak_freezes > 1 ? 's' : ''}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <StreakFreezeIndicator
+                                            freezesAvailable={streakData.streak_freezes}
+                                            maxFreezes={5}
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Recent Achievements */}
+                                {myAchievements && myAchievements.length > 0 && (
+                                    <div className="bg-white rounded-2xl shadow-sm p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                                                    <Trophy className="w-5 h-5 text-amber-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-gray-900">Mes Badges</h3>
+                                                    <p className="text-sm text-gray-500">
+                                                        {myAchievements.length} badge{myAchievements.length > 1 ? 's' : ''} debloques
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => navigate('/achievements')}
+                                                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+                                            >
+                                                Voir tout
+                                            </button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {myAchievements.slice(0, 3).map((ua) => (
+                                                <AchievementCard
+                                                    key={ua.id}
+                                                    achievement={ua.achievement}
+                                                    userAchievement={ua}
+                                                    isUnlocked={true}
+                                                    size="sm"
+                                                />
+                                            ))}
+                                        </div>
+                                        {myAchievements.length > 3 && (
+                                            <button
+                                                onClick={() => navigate('/achievements')}
+                                                className="w-full mt-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-gray-50 rounded-lg"
+                                            >
+                                                +{myAchievements.length - 3} autres badges
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </>
+                        )}
 
                         {/* Create Community Button - Only for own profile */}
                         {isOwnProfile && (

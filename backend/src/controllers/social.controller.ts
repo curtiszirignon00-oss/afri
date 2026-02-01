@@ -1,6 +1,12 @@
 // src/controllers/social.controller.ts
 import { Request, Response } from 'express';
 import * as socialService from '../services/social.service';
+// Import gamification services
+import * as xpService from '../services/xp.service';
+import * as streakService from '../services/streak.service';
+import * as achievementService from '../services/achievement.service';
+import * as weeklyChallengeService from '../services/weekly-challenge.service';
+import { prisma } from '../config/database';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -23,7 +29,41 @@ export async function followUser(req: AuthRequest, res: Response) {
         }
 
         const follow = await socialService.followUser(followerId, userId);
-        res.status(201).json({ success: true, data: follow });
+
+        // ========== GAMIFICATION TRIGGERS ==========
+        let gamificationData: any = {};
+
+        try {
+            // 1. Enregistrer activité streak pour le follower
+            await streakService.recordActivity(followerId, 'follow_user');
+
+            // 2. Mettre à jour progression défis hebdomadaires (follow)
+            await weeklyChallengeService.updateChallengeProgress(followerId, 'social', 1);
+
+            // 3. Vérifier badges sociaux pour l'utilisateur suivi (nombre de followers)
+            const followerCount = await prisma.follow.count({
+                where: { followingId: userId }
+            });
+
+            // Paliers de followers: 10, 50, 100, 150, 200, 500
+            const followerMilestones = [10, 50, 100, 150, 200, 500];
+            if (followerMilestones.includes(followerCount)) {
+                // L'utilisateur suivi reçoit XP pour le palier atteint
+                await xpService.addXPForAction(userId, 'FOLLOWER_MILESTONE');
+
+                // Vérifier badges sociaux pour l'utilisateur suivi
+                const unlockedBadges = await achievementService.checkSocialAchievements(userId);
+                if (unlockedBadges.length > 0) {
+                    gamificationData.targetUserBadges = unlockedBadges.map(a => a.name);
+                }
+            }
+
+        } catch (gamificationError) {
+            console.error('Erreur gamification (follow):', gamificationError);
+        }
+        // ========== FIN GAMIFICATION ==========
+
+        res.status(201).json({ success: true, data: follow, gamification: gamificationData });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }
@@ -131,6 +171,20 @@ export async function commentPost(req: AuthRequest, res: Response) {
         }
 
         const comment = await socialService.commentPost(userId, postId, content, parentId);
+
+        // ========== GAMIFICATION TRIGGERS ==========
+        try {
+            // 1. Enregistrer activité streak
+            await streakService.recordActivity(userId, 'comment');
+
+            // 2. Mettre à jour progression défis hebdomadaires (interactions)
+            await weeklyChallengeService.updateChallengeProgress(userId, 'social', 1);
+
+        } catch (gamificationError) {
+            console.error('Erreur gamification (comment):', gamificationError);
+        }
+        // ========== FIN GAMIFICATION ==========
+
         res.status(201).json({ success: true, data: comment });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
