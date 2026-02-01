@@ -120,6 +120,18 @@ export async function getInvestorProfile(userId: string) {
         level: userProfile?.level || 1,
         total_xp: userProfile?.total_xp || 0,
         current_streak: userProfile?.current_streak || 0,
+        longest_streak: userProfile?.longest_streak || 0,
+        // Paramètres de visibilité depuis UserProfile
+        show_level: userProfile?.show_level ?? true,
+        show_xp: userProfile?.show_xp ?? false,
+        show_streak: userProfile?.show_streak ?? true,
+        show_portfolio_value: userProfile?.show_portfolio_value ?? true,
+        show_badges: userProfile?.show_badges ?? true,
+        show_achievements: userProfile?.show_achievements ?? true,
+        show_avatar: userProfile?.show_avatar ?? true,
+        show_bio: userProfile?.show_bio ?? true,
+        show_country: userProfile?.show_country ?? true,
+        show_rank: userProfile?.show_rank ?? true,
         // Badges
         badges: badges,
         // Timestamp
