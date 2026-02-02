@@ -33,10 +33,9 @@ export default function ProtectedRoute({ children, requireOnboarding = true }: P
     return <LoadingSpinner fullScreen text="Chargement de votre profil..." />;
   }
 
-  // Si l'onboarding est requis et non complété, le hook gère la redirection
-  // On empêche juste le rendu du contenu protégé
+  // Si l'onboarding est requis et non complété, rediriger directement
   if (requireOnboarding && needsOnboarding) {
-    return null; // La redirection se fait via le hook
+    return <Navigate to="/onboarding" replace />;
   }
 
   // Autorise l'accès si authentifié et onboarding complété (si requis)
