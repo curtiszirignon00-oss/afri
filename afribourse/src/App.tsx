@@ -13,6 +13,9 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ChallengeProvider } from './context/ChallengeContext';
 
+// Error Boundary
+import ErrorBoundary from './components/ErrorBoundary';
+
 // Components
 import Header from './components/Header';
 import HomePage from './components/HomePage';
@@ -317,17 +320,19 @@ function Layout() {
 // --- Composant racine avec tous les Providers ---
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ChallengeProvider>
-          <BrowserRouter>
-            <Layout />
-          </BrowserRouter>
-        </ChallengeProvider>
-      </AuthProvider>
-      {/* DevTools React Query (visible uniquement en développement) */}
-      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ChallengeProvider>
+            <BrowserRouter>
+              <Layout />
+            </BrowserRouter>
+          </ChallengeProvider>
+        </AuthProvider>
+        {/* DevTools React Query (visible uniquement en développement) */}
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
