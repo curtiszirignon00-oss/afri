@@ -827,61 +827,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Défis en cours (mini preview) */}
-                {challengesProgress && challengesProgress.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                        <Target className="w-4 h-4" />
-                        Défis de la semaine
-                      </span>
-                      <span className="text-xs text-indigo-600">
-                        {challengesProgress.filter(c => c.completed).length}/{challengesProgress.length}
-                      </span>
-                    </div>
-                    {challengesProgress.slice(0, 2).map((progress) => {
-                      if (!progress?.challenge) return null;
-                      const target = progress.challenge.target || 1;
-                      return (
-                        <div
-                          key={progress.id}
-                          className="p-2 bg-white/80 rounded-lg"
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium text-gray-700 truncate">
-                              {progress.challenge.title}
-                            </span>
-                            {progress.completed && !progress.claimed && (
-                              <button
-                                onClick={() => claimChallengeMutation.mutate(progress.challengeId)}
-                                className="text-xs px-2 py-0.5 bg-green-500 text-white rounded-full hover:bg-green-600"
-                              >
-                                +{progress.challenge.xp_reward} XP
-                              </button>
-                            )}
-                          </div>
-                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${
-                                progress.completed ? 'bg-green-500' : 'bg-indigo-500'
-                              }`}
-                              style={{ width: `${Math.min((progress.current / target) * 100, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate('/gamification')}
-                      className="w-full text-indigo-600 hover:bg-indigo-100"
-                    >
-                      Voir tous les défis
-                    </Button>
-                  </div>
-                )}
-
                 {/* Badges récents */}
                 {gamificationSummary.achievements?.recent && gamificationSummary.achievements.recent.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-indigo-100">
