@@ -800,14 +800,14 @@ export default function DashboardPage() {
           <div className="space-y-8">
 
             {/* Widget Gamification */}
-            {gamificationSummary && (
+            {gamificationSummary?.xp && gamificationSummary?.streak && (
               <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-indigo-600" />
                     Ma Progression
                   </h3>
-                  <LevelBadge level={gamificationSummary.xp.level} size="sm" />
+                  <LevelBadge level={gamificationSummary.xp.level ?? 1} size="sm" />
                 </div>
 
                 {/* XP Progress */}
@@ -821,7 +821,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold text-orange-600">
-                      {gamificationSummary.streak.current_streak}
+                      {gamificationSummary.streak.current_streak ?? 0}
                     </span>
                     <span className="text-gray-500">jours</span>
                   </div>
@@ -839,34 +839,38 @@ export default function DashboardPage() {
                         {challengesProgress.filter(c => c.completed).length}/{challengesProgress.length}
                       </span>
                     </div>
-                    {challengesProgress.slice(0, 2).map((progress) => (
-                      <div
-                        key={progress.id}
-                        className="p-2 bg-white/80 rounded-lg"
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-gray-700 truncate">
-                            {progress.challenge.title}
-                          </span>
-                          {progress.completed && !progress.claimed && (
-                            <button
-                              onClick={() => claimChallengeMutation.mutate(progress.challengeId)}
-                              className="text-xs px-2 py-0.5 bg-green-500 text-white rounded-full hover:bg-green-600"
-                            >
-                              +{progress.challenge.xp_reward} XP
-                            </button>
-                          )}
+                    {challengesProgress.slice(0, 2).map((progress) => {
+                      if (!progress?.challenge) return null;
+                      const target = progress.challenge.target || 1;
+                      return (
+                        <div
+                          key={progress.id}
+                          className="p-2 bg-white/80 rounded-lg"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-gray-700 truncate">
+                              {progress.challenge.title}
+                            </span>
+                            {progress.completed && !progress.claimed && (
+                              <button
+                                onClick={() => claimChallengeMutation.mutate(progress.challengeId)}
+                                className="text-xs px-2 py-0.5 bg-green-500 text-white rounded-full hover:bg-green-600"
+                              >
+                                +{progress.challenge.xp_reward} XP
+                              </button>
+                            )}
+                          </div>
+                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                progress.completed ? 'bg-green-500' : 'bg-indigo-500'
+                              }`}
+                              style={{ width: `${Math.min((progress.current / target) * 100, 100)}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              progress.completed ? 'bg-green-500' : 'bg-indigo-500'
-                            }`}
-                            style={{ width: `${Math.min((progress.current / progress.challenge.target) * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -879,7 +883,7 @@ export default function DashboardPage() {
                 )}
 
                 {/* Badges récents */}
-                {gamificationSummary.achievements.recent.length > 0 && (
+                {gamificationSummary.achievements?.recent && gamificationSummary.achievements.recent.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-indigo-100">
                     <p className="text-xs text-gray-500 mb-2">Derniers badges</p>
                     <div className="flex gap-2">
@@ -887,9 +891,9 @@ export default function DashboardPage() {
                         <div
                           key={ua.id}
                           className="text-2xl"
-                          title={ua.achievement.name}
+                          title={ua.achievement?.name || ''}
                         >
-                          {ua.achievement.icon || '🏆'}
+                          {ua.achievement?.icon || '🏆'}
                         </div>
                       ))}
                     </div>
