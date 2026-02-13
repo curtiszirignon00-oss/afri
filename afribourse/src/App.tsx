@@ -20,6 +20,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import MarketsPageRefactored from './components/MarketsPageRefactored';
+import IndicesPage from './components/IndicesPage';
 import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import ProfilePage from './pages/ProfilePage';
 import CommunityPage from './pages/CommunityPage';
@@ -111,6 +112,7 @@ function Layout() {
           {/* Routes publiques */}
           <Route path="/" element={<HomePage />} />
           <Route path="/markets" element={<MarketsPageRefactored />} />
+          <Route path="/indices" element={<IndicesPage />} />
           <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />

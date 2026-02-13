@@ -616,8 +616,31 @@ model MarketIndex {
   date                 DateTime
   created_at           DateTime? @default(now())
 
+  history MarketIndexHistory[]
+
   @@index([date])
   @@map("market_indices")
+}
+
+model MarketIndexHistory {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  index_name           String
+  date                 DateTime
+  open                 Float
+  high                 Float
+  low                  Float
+  close                Float
+  daily_change_percent Float    @default(0)
+  created_at           DateTime @default(now())
+
+  marketIndex   MarketIndex @relation(fields: [marketIndexId], references: [id], onDelete: Cascade)
+  marketIndexId String      @db.ObjectId
+
+  @@unique([index_name, date])
+  @@index([marketIndexId])
+  @@index([index_name])
+  @@index([date])
+  @@map("market_index_history")
 }
 
 model CompanyInfo {

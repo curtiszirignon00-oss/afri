@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
@@ -51,20 +51,24 @@ export default function StockChartNew({
     indicators: activeIndicators, // Passer les indicateurs actifs
   });
 
+  // Synchroniser l'état isFullscreen avec le vrai état du navigateur
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // Gestion du plein écran
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
 
-    if (!isFullscreen) {
-      if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
-      }
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen?.();
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
+      document.exitFullscreen?.();
     }
-    setIsFullscreen(!isFullscreen);
   };
 
   // Toggle indicateur
@@ -200,14 +204,15 @@ export default function StockChartNew({
             {/* Bouton Indicateurs */}
             <button
               onClick={() => setShowIndicators(!showIndicators)}
-              className={`p-2 rounded-lg transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
                 showIndicators
-                  ? 'bg-blue-100 text-blue-600'
-                  : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses}`
+                  ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                  : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
               }`}
               title="Indicateurs techniques"
             >
               <Indicator className="w-4 h-4" />
+              <span className="hidden sm:inline">Indicateurs</span>
             </button>
 
             {/* Bouton Plein écran */}
