@@ -256,13 +256,21 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       }
     };
 
+    // Redimensionner aussi quand on sort du plein écran
+    const handleFullscreenChange = () => {
+      // Petit délai pour laisser le DOM se stabiliser après la sortie du plein écran
+      setTimeout(handleResize, 100);
+    };
+
     window.addEventListener('resize', handleResize);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
     setIsReady(true);
     console.log('useStockChart: Chart ready');
 
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;

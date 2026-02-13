@@ -1,8 +1,8 @@
 import cron from 'node-cron';
 import { scrapeStock, scrapeIndex } from '../services/scraping.service';
-import { saveIndices } from '../services/index.service.prisma';
+import { saveIndices, saveCurrentDayIndexHistory } from '../services/index.service.prisma';
 import { saveStocks } from '../services/stock.service.prisma';
-import { saveCurrentDayHistory } from '../services/stockHistory.service'; // 🆕 Service pour historique
+import { saveCurrentDayHistory } from '../services/stockHistory.service';
 import {
     getActiveAlerts,
     shouldTriggerAlert,
@@ -27,12 +27,12 @@ cron.schedule('0 * * * *', async () => { // Exécute toutes les heures
         await saveStocks(stocks);
         await saveIndices(indices);
 
-        // 🆕 Sauvegarder aussi dans l'historique (une fois par jour seulement)
+        // Sauvegarder dans l'historique (une fois par jour seulement, à 18h après clôture BRVM)
         const currentHour = new Date().getHours();
-        // Sauvegarder l'historique seulement à 18h (après clôture BRVM)
         if (currentHour === 18) {
-            console.log('📊 Sauvegarde de l\'historique du jour...');
+            console.log('📊 Sauvegarde de l\'historique du jour (actions + indices)...');
             await saveCurrentDayHistory();
+            await saveCurrentDayIndexHistory();
         }
 
         console.log('✅ Scraping et sauvegarde terminés avec succès');
