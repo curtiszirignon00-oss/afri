@@ -2311,13 +2311,13 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
   // === M9 : 🌱 Module 9 : L’Analyse Extra-Financière – Comprendre le Contexte ===
   // ====================================================
   await createOrUpdateModule({
-    title: "🌱 Module 9 : L’Analyse Extra-Financière – Comprendre le Contexte",
+    title: "L'Analyse Extra-Financière – Comprendre le Contexte",
     slug: 'contexte-economique',
     description: "Apprenez à évaluer ce que les chiffres ne disent pas : la qualité du management, la solidité du modèle économique et les critères ESG pour sécuriser vos investissements.",
     difficulty_level: 'avance',
     content_type: 'article',
     duration_minutes: 20,
-    order_index: 10,
+    order_index: 9,
     is_published: true,
     content: `
 <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
