@@ -79,7 +79,8 @@
       "Bash(Stop-Process -Id 186408 -Force)",
       "Bash(powershell -Command \"Stop-Process -Id 186408 -Force\")",
       "Bash(start \"c:\\\\Users\\\\HP\\\\OneDrive\\\\Desktop\\\\afri\\\\backend\\\\preview-price-alert-email.html\")",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

@@ -3,6 +3,7 @@
 import prisma from '../config/prisma';
 import { LearningModule } from '@prisma/client';
 import sanitizeHtml from 'sanitize-html';
+import { cacheGet, cacheSet, CACHE_TTL, CACHE_KEYS } from './cache.service';
 
 const allowedTags = sanitizeHtml.defaults.allowedTags.concat([
     'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'strong', 'em', 'u', 's', 'a', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'div', 'span'
@@ -39,9 +40,14 @@ export class LearningServicePrisma {
         });
     }
 
-    // --- 1. RÉCUPÉRER LES MODULES PUBLIÉS ---
+    // --- 1. RÉCUPÉRER LES MODULES PUBLIÉS (avec cache Redis) ---
     async getPublishedModules(difficulty?: string): Promise<LearningModule[]> {
         try {
+            // Cache: verifier le cache
+            const cacheKey = CACHE_KEYS.learningModules(difficulty || 'all');
+            const cached = await cacheGet<LearningModule[]>(cacheKey);
+            if (cached) return cached;
+
             const whereClause: { is_published: boolean; difficulty_level?: string } = {
                 is_published: true,
             };
@@ -58,10 +64,15 @@ export class LearningServicePrisma {
             });
 
             // Sécurisation
-            return modules.map(module => ({
+            const sanitizedModules = modules.map(module => ({
                 ...module,
                 content: this.sanitizeContent(module.content),
             }));
+
+            // Cache: stocker le resultat (TTL 24h)
+            await cacheSet(cacheKey, sanitizedModules, CACHE_TTL.LEARNING_MODULES);
+
+            return sanitizedModules;
 
         } catch (error) {
             console.error(`❌ Erreur lors de la récupération des modules d'apprentissage:`, error);
@@ -69,9 +80,14 @@ export class LearningServicePrisma {
         }
     }
 
-    // --- 2. RÉCUPÉRER UN MODULE PAR SLUG ---
+    // --- 2. RÉCUPÉRER UN MODULE PAR SLUG (avec cache Redis) ---
     async getModuleBySlug(slug: string): Promise<LearningModule | null> {
         try {
+            // Cache: verifier le cache
+            const cacheKey = CACHE_KEYS.learningModule(slug);
+            const cached = await cacheGet<LearningModule>(cacheKey);
+            if (cached) return cached;
+
             // CORRECTION: findUnique remplacé par findFirst pour résoudre l'erreur de typage TypeScript.
             const module = await prisma.learningModule.findFirst({
                 where: { slug: slug },
@@ -80,10 +96,15 @@ export class LearningServicePrisma {
             if (!module) return null;
 
             // Sécurisation
-            return {
+            const sanitizedModule = {
                 ...module,
                 content: this.sanitizeContent(module.content),
             };
+
+            // Cache: stocker le resultat (TTL 24h)
+            await cacheSet(cacheKey, sanitizedModule, CACHE_TTL.LEARNING_MODULE);
+
+            return sanitizedModule;
         } catch (error) {
             console.error(`❌ Erreur lors de la récupération du module par slug:`, error);
             throw error;

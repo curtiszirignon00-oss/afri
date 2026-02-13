@@ -126,6 +126,38 @@ export const authLimiter = rateLimit({
 });
 
 /**
+ * Rate limiter for password reset requests
+ * Limit: 3 attempts per hour (prevent email enumeration attacks)
+ */
+export const resetPasswordLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3,
+    message: {
+        error: 'Trop de demandes de réinitialisation. Réessayez dans une heure.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+/**
+ * Rate limiter for trading operations (buy/sell)
+ * Limit: 30 transactions per minute (prevent automated trading abuse)
+ */
+export const tradingLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 30,
+    message: {
+        error: 'Trop de transactions. Veuillez ralentir.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req: any) => req.user?.id || req.ip,
+    skip: (req: any) => {
+        return req.user?.role === 'ADMIN';
+    }
+});
+
+/**
  * Rate limiter for reporting content
  * Limit: 20 reports per hour (prevent report spam)
  */

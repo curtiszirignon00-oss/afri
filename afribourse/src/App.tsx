@@ -53,6 +53,9 @@ import NotificationsPage from './pages/NotificationsPage';
 import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
 import AchievementsPage from './pages/AchievementsPage';
 import WelcomePopup from './components/WelcomePopup';
+import { UpdatePrompt } from './components/pwa/UpdatePrompt';
+import { OfflineBanner } from './components/pwa/OfflineBanner';
+import { PushNotificationPrompt } from './components/pwa/PushNotificationPrompt';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -91,6 +94,8 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* PWA Offline Banner */}
+      <OfflineBanner />
       <Toaster position="top-center" />
       <ScrollToTop />
 
@@ -313,6 +318,12 @@ function Layout() {
           </div>
         </footer>
       )}
+
+      {/* PWA Update Prompt */}
+      <UpdatePrompt />
+
+      {/* Push Notification Prompt */}
+      <PushNotificationPrompt />
     </div>
   );
 }

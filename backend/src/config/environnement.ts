@@ -20,6 +20,13 @@ interface IConfig {
     
     redis: {
       url: string | undefined,
+      token: string | undefined,
+      enabled: boolean,
+    },
+
+    cron: {
+      secret: string | undefined,
+      qstashToken: string | undefined,
     },
     
     jwt: {
@@ -88,6 +95,13 @@ const config : IConfig = {
   
   redis: {
     url: process.env.REDIS_URL,
+    token: process.env.REDIS_TOKEN,
+    enabled: process.env.CACHE_ENABLED === 'true',
+  },
+
+  cron: {
+    secret: process.env.CRON_SECRET,
+    qstashToken: process.env.QSTASH_TOKEN,
   },
   
   jwt: {

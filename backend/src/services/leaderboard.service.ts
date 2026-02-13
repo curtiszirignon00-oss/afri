@@ -1,5 +1,6 @@
 // src/services/leaderboard.service.ts
 import { prisma } from '../config/database';
+import { cacheGet, cacheSet, cacheDelete, cacheInvalidatePattern, CACHE_TTL, CACHE_KEYS } from './cache.service';
 
 // ============= TYPES =============
 
@@ -140,16 +141,28 @@ export async function calculateWeeklyRankings(limit: number = 100) {
 }
 
 /**
- * Récupère le leaderboard Top N
+ * Récupère le leaderboard Top N (avec cache Redis)
  */
 export async function getLeaderboard(limit: number = 20): Promise<LeaderboardEntry[]> {
-    return await calculateWeeklyRankings(limit);
+    const cacheKey = CACHE_KEYS.leaderboard(limit);
+    const cached = await cacheGet<LeaderboardEntry[]>(cacheKey);
+    if (cached) return cached;
+
+    const rankings = await calculateWeeklyRankings(limit);
+
+    await cacheSet(cacheKey, rankings, CACHE_TTL.LEADERBOARD);
+
+    return rankings;
 }
 
 /**
- * Récupère le rang d'un utilisateur spécifique
+ * Récupère le rang d'un utilisateur spécifique (avec cache Redis)
  */
 export async function getUserRank(userId: string): Promise<UserRankInfo> {
+    const cacheKey = CACHE_KEYS.userRank(userId);
+    const cached = await cacheGet<UserRankInfo>(cacheKey);
+    if (cached) return cached;
+
     // Vérifier si participant
     const participant = await prisma.challengeParticipant.findUnique({
         where: { userId },
@@ -177,34 +190,37 @@ export async function getUserRank(userId: string): Promise<UserRankInfo> {
 
     const percentile = ((totalParticipants - userEntry.rank) / totalParticipants) * 100;
 
-    return {
+    const result: UserRankInfo = {
         rank: userEntry.rank,
         totalParticipants,
         percentile,
     };
+
+    await cacheSet(cacheKey, result, CACHE_TTL.LEADERBOARD);
+
+    return result;
 }
 
 // ============= CACHE (OPTIONNEL - REDIS) =============
 
 /**
- * Cache le leaderboard (si Redis disponible)
- * À implémenter si vous avez Redis configuré
+ * Force le rafraichissement du cache leaderboard.
  */
 export async function cacheLeaderboard() {
-    const rankings = await calculateWeeklyRankings(100);
-
-    // TODO: Implémenter cache Redis
-    // await redis.setex('challenge:leaderboard:weekly', 300, JSON.stringify(rankings));
-
-    return rankings;
+    await cacheInvalidatePattern('leaderboard:*');
+    return await getLeaderboard(100);
 }
 
 // ============= STATISTICS =============
 
 /**
- * Récupère les statistiques globales du challenge
+ * Récupère les statistiques globales du challenge (avec cache Redis)
  */
 export async function getChallengeStatistics() {
+    const cacheKey = CACHE_KEYS.challengeStats();
+    const cached = await cacheGet<any>(cacheKey);
+    if (cached) return cached;
+
     const [
         totalParticipants,
         activeParticipants,
@@ -231,13 +247,17 @@ export async function getChallengeStatistics() {
         },
     });
 
-    return {
+    const stats = {
         totalParticipants,
         activeParticipants,
         eligibleParticipants,
         bannedParticipants,
         totalTransactions,
     };
+
+    await cacheSet(cacheKey, stats, CACHE_TTL.CHALLENGE_STATS);
+
+    return stats;
 }
 
 /**

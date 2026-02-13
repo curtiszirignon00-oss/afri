@@ -1724,3 +1724,43 @@ model EventRegistration {
   @@index([user_id])
   @@map("event_registrations")
 }
+
+// ================================= //
+// === AUDIT LOGS (SÉCURITÉ) ======= //
+// ================================= //
+
+enum AuditAction {
+  LOGIN             // Connexion réussie
+  LOGIN_FAILED      // Tentative de connexion échouée
+  LOGOUT            // Déconnexion
+  REGISTER          // Inscription
+  PASSWORD_RESET    // Réinitialisation du mot de passe
+  EMAIL_CONFIRM     // Confirmation de l'email
+  PROFILE_UPDATE    // Mise à jour du profil
+  TRADE_BUY         // Achat d'action
+  TRADE_SELL        // Vente d'action
+  ADMIN_ACTION      // Action administrative
+}
+
+model AuditLog {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?     @db.ObjectId
+  userEmail String?
+  userRole  String?
+  action    AuditAction
+  resource  String?     // Ressource concernée (ex: "stock:SIVC")
+  details   String?     // Description de l'action
+  metadata  Json?       // Données additionnelles (montant, quantité, etc.)
+  ip        String?
+  userAgent String?
+  success   Boolean     @default(true)
+  errorMsg  String?     // Message d'erreur si échec
+
+  created_at DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([created_at])
+  @@index([success])
+  @@map("audit_logs")
+}

@@ -1,6 +1,5 @@
 // backend/src/routes/auth.routes.ts
 import { Router } from "express";
-// Assurez-vous que 'register' est listé ici
 import {
     login,
     logout,
@@ -14,16 +13,17 @@ import {
 import { auth } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validate.util";
 import { registerSchema, loginSchema } from "../validation/auth.validation";
+import { authLimiter, resetPasswordLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
-// Route d'INSCRIPTION (REGISTER)
-router.post('/register', validate(registerSchema), register);
+// Route d'INSCRIPTION (REGISTER) - limite: 5 tentatives / 15 min
+router.post('/register', authLimiter, validate(registerSchema), register);
 
-// Route de CONNEXION (LOGIN)
-router.post('/login', validate(loginSchema), login);
+// Route de CONNEXION (LOGIN) - limite: 5 tentatives / 15 min
+router.post('/login', authLimiter, validate(loginSchema), login);
 
-// --- CORRECTION : AJOUT DE LA ROUTE DE DÉCONNEXION ---
+// Route de DÉCONNEXION
 router.post('/logout', logout);
 
 // Route pour l'utilisateur courant (getMe)
@@ -32,13 +32,13 @@ router.get('/me', auth, getMe);
 // Route de confirmation d'email
 router.get('/confirm-email', confirmEmail);
 
-// Route pour renvoyer l'email de confirmation
-router.post('/resend-confirmation', resendConfirmationEmail);
+// Route pour renvoyer l'email de confirmation - limite: 3 / heure
+router.post('/resend-confirmation', resetPasswordLimiter, resendConfirmationEmail);
 
-// Route pour demander la réinitialisation du mot de passe
-router.post('/request-password-reset', requestPasswordReset);
+// Route pour demander la réinitialisation du mot de passe - limite: 3 / heure
+router.post('/request-password-reset', resetPasswordLimiter, requestPasswordReset);
 
-// Route pour réinitialiser le mot de passe
-router.post('/reset-password', resetPassword);
+// Route pour réinitialiser le mot de passe - limite: 3 / heure
+router.post('/reset-password', resetPasswordLimiter, resetPassword);
 
 export default router;
