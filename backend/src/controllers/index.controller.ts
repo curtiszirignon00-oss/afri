@@ -36,3 +36,15 @@ export async function getLatestIndices(req: Request, res: Response, next: NextFu
         return next(error);
     }
 }
+
+// Controller for GET /api/indices/history/:indexName
+export async function getIndexHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+        const { indexName } = req.params;
+        const period = req.query.period as string | undefined;
+        const history = await indexService.getIndexHistory(indexName, period);
+        return res.status(200).json({ data: history });
+    } catch (error) {
+        return next(error);
+    }
+}

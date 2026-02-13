@@ -1,7 +1,8 @@
 // src/components/MarketsPageRefactored.tsx
 import { useState, useMemo, useEffect } from 'react';
 import { Search, Filter, Star, Info, PlusCircle, CheckCircle } from 'lucide-react';
-import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, type StockFilters, type Stock } from '../hooks/useApi';
+import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
+import type { MarketIndex } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
@@ -61,6 +62,12 @@ export default function MarketsPageRefactored() {
     ...(minDividend !== undefined && { minDividend: minDividend.toString() }),
     ...(maxDividend !== undefined && { maxDividend: maxDividend.toString() }),
   }), [debouncedSearchTerm, selectedSector, sortBy, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend]);
+
+  // Indices du marché
+  const [marketIndices, setMarketIndices] = useState<MarketIndex[]>([]);
+  useEffect(() => {
+    apiFetch<MarketIndex[]>('/indices/latest?limit=2').then(setMarketIndices).catch(() => {});
+  }, []);
 
   // Hooks React Query
   const { data: stocks = [], isLoading, error, refetch } = useStocks(filters);
@@ -247,6 +254,49 @@ export default function MarketsPageRefactored() {
             {stocks.length} action{stocks.length > 1 ? 's' : ''} disponible{stocks.length > 1 ? 's' : ''}
           </p>
         </div>
+
+        {/* Indices du marché */}
+        {marketIndices.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Indices BRVM</h2>
+              <button
+                onClick={() => navigate('/indices')}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Voir tous les indices &rarr;
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {marketIndices.map((index) => (
+                <div
+                  key={index.id}
+                  onClick={() => navigate('/indices')}
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">{index.index_name}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {formatNumber(index.index_value, 2)}
+                    </p>
+                  </div>
+                  <div
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-semibold ${
+                      index.daily_change_percent >= 0
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    <span>
+                      {index.daily_change_percent >= 0 ? '+' : ''}
+                      {index.daily_change_percent.toFixed(2)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Filtres */}
         <Card className="mb-6">

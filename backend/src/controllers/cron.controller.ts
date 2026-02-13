@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { scrapeStock, scrapeIndex } from '../services/scraping.service';
 import { saveStocks } from '../services/stock.service.prisma';
-import { saveIndices } from '../services/index.service.prisma';
+import { saveIndices, saveCurrentDayIndexHistory } from '../services/index.service.prisma';
 import { saveCurrentDayHistory } from '../services/stockHistory.service';
 import {
     getActiveAlerts,
@@ -62,13 +62,14 @@ export async function cronScrapeStocks(req: Request, res: Response) {
 export async function cronSaveDailyHistory(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Sauvegarde historique du jour...');
+        console.log('[CRON API] Sauvegarde historique du jour (actions + indices)...');
         await saveCurrentDayHistory();
+        await saveCurrentDayIndexHistory();
 
         const duration = Date.now() - startTime;
         return res.status(200).json({
             success: true,
-            message: 'Historique du jour sauvegarde',
+            message: 'Historique du jour sauvegarde (actions + indices)',
             duration_ms: duration,
         });
     } catch (error: any) {
