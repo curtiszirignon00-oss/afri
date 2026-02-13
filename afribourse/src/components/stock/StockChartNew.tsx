@@ -331,7 +331,7 @@ export default function StockChartNew({
         </div>
         <div className="flex items-center space-x-1">
           <span>📊</span>
-          <span>Volume en bas</span>
+          <span>Indicateurs</span>
         </div>
       </div>
     </div>
