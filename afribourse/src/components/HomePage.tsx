@@ -1,6 +1,7 @@
 // src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
 import { useRef, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // <-- AJOUT: useState pour rotation images
+import { useNavigate } from 'react-router-dom';
+import OptimizedImage from './ui/OptimizedImage';
 import {
   TrendingUp,
   TrendingDown,
@@ -390,7 +391,7 @@ export default function HomePage() {
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-sm overflow-hidden shadow-md">
                       {stock.logo_url ? (
-                        <img src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
+                        <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
                       ) : (
                         stock.symbol.substring(0, 2)
                       )}
@@ -558,7 +559,7 @@ export default function HomePage() {
                 <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden">
                     {testimonial.avatar ? (
-                      <img src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
+                      <OptimizedImage src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
                     ) : (
                       testimonial.name.charAt(0)
                     )}
