@@ -98,17 +98,9 @@ export default function NotificationDropdown() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleNotificationClick = (notification: Notification) => {
+    const handleNotificationClick = () => {
         setIsOpen(false);
-
-        // Navigate based on notification type
-        if (notification.post_id) {
-            navigate(`/community?post=${notification.post_id}`);
-        } else if (notification.actor_id && notification.type === 'NEW_FOLLOWER') {
-            navigate(`/investor/${notification.actor_id}`);
-        } else if (notification.type === 'PRICE_ALERT') {
-            navigate('/dashboard');
-        }
+        navigate('/notifications');
     };
 
     const handleMarkAllAsRead = () => {
@@ -178,7 +170,7 @@ export default function NotificationDropdown() {
                                         key={notification.id}
                                         notification={notification}
                                         onMarkAsRead={(id) => markAsRead.mutate(id)}
-                                        onClick={() => handleNotificationClick(notification)}
+                                        onClick={() => handleNotificationClick()}
                                     />
                                 ))}
                             </div>
