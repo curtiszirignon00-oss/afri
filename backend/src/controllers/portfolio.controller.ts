@@ -9,6 +9,8 @@ import * as streakService from '../services/streak.service';
 import * as achievementService from '../services/achievement.service';
 import * as weeklyChallengeService from '../services/weekly-challenge.service';
 import { prisma } from '../config/database';
+// Audit logging
+import { writeAuditLog, getClientIp, getUserAgent } from '../services/audit.service';
 
 // --- Portfolio Summary for Profile ---
 
@@ -139,6 +141,24 @@ export async function buyStock(req: Request, res: Response, next: NextFunction) 
     }
     // ========== FIN GAMIFICATION ==========
 
+    // Audit log - Achat d'action
+    await writeAuditLog({
+      userId,
+      userEmail: req.user?.email,
+      action: 'TRADE_BUY',
+      resource: `stock:${stockTicker}`,
+      details: `Achat de ${quantity} ${stockTicker} a ${pricePerShare} FCFA`,
+      metadata: {
+        stockTicker,
+        quantity,
+        pricePerShare,
+        totalCost: quantity * pricePerShare,
+        walletType: targetWallet,
+      },
+      ip: getClientIp(req),
+      userAgent: getUserAgent(req),
+    });
+
     return res.status(200).json({
       ...result,
       gamification: {
@@ -194,6 +214,24 @@ export async function sellStock(req: Request, res: Response, next: NextFunction)
       console.error('Erreur gamification (sell stock):', gamificationError);
     }
     // ========== FIN GAMIFICATION ==========
+
+    // Audit log - Vente d'action
+    await writeAuditLog({
+      userId,
+      userEmail: req.user?.email,
+      action: 'TRADE_SELL',
+      resource: `stock:${stockTicker}`,
+      details: `Vente de ${quantity} ${stockTicker} a ${pricePerShare} FCFA`,
+      metadata: {
+        stockTicker,
+        quantity,
+        pricePerShare,
+        totalValue: quantity * pricePerShare,
+        walletType: targetWallet,
+      },
+      ip: getClientIp(req),
+      userAgent: getUserAgent(req),
+    });
 
     return res.status(200).json({
       ...result,

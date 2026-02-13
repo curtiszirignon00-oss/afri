@@ -7,18 +7,25 @@ interface SLBCRow {
     Date?: string | number;
     date?: string | number;
     DATE?: string | number;
+    fermeture?: number | string;
+    Fermeture?: number | string;
+    '+Bas'?: number | string;
+    '+Haut'?: number | string;
+    Ouverture?: number | string;
+    ouverture?: number | string;
     Open?: number;
     open?: number;
     OPEN?: number;
-    Ouverture?: number;
     High?: number;
     high?: number;
     HIGH?: number;
     'Plus haut'?: number;
+    'Plus Haut'?: number;
     Low?: number;
     low?: number;
     LOW?: number;
     'Plus bas'?: number;
+    'Plus Bas'?: number;
     Close?: number;
     close?: number;
     CLOSE?: number;
@@ -28,6 +35,8 @@ interface SLBCRow {
     volume?: number | string;
     VOLUME?: number | string;
     'Volume Titres'?: number | string;
+    Variation?: number | string;
+    variation?: number | string;
     [key: string]: any;
 }
 
@@ -58,6 +67,7 @@ async function importSLBCHistory() {
         // Afficher un aperçu de la première ligne pour debug
         console.log('🔍 Aperçu de la première ligne:');
         console.log(JSON.stringify(rawData[0], null, 2));
+        console.log('\n📋 Colonnes disponibles:', Object.keys(rawData[0]));
         console.log('\n');
 
         // Vérifier si SLBC existe dans la base de données
@@ -71,7 +81,7 @@ async function importSLBCHistory() {
             stock = await prisma.stock.create({
                 data: {
                     symbol: 'SLBC',
-                    company_name: 'SOLIBRA',
+                    company_name: 'SOLIBRA CI',
                     sector: 'Consommation de Base',
                     current_price: 0,
                     daily_change_percent: 0,
@@ -91,31 +101,36 @@ async function importSLBCHistory() {
 
         console.log('🔄 Import des données historiques en cours...\n');
 
+        // Fonction pour nettoyer les nombres (enlever les espaces, virgules, etc.)
+        const cleanNumber = (value: any): number => {
+            if (value === null || value === undefined || value === '' || value === '-') {
+                return 0;
+            }
+            if (typeof value === 'string') {
+                // Enlever les espaces, remplacer virgule par point
+                let cleaned = value.replace(/\s/g, '').replace(',', '.');
+                // Enlever le symbole % si présent
+                cleaned = cleaned.replace('%', '');
+                const num = Number(cleaned);
+                return isNaN(num) ? 0 : num;
+            }
+            const num = Number(value);
+            return isNaN(num) ? 0 : num;
+        };
+
         for (let i = 0; i < rawData.length; i++) {
             const row = rawData[i];
 
             try {
-                // Extraire les données avec gestion des différentes casses et colonnes françaises
+                // Extraire les données avec priorité aux colonnes BRVM
                 const dateValue = row.Date || row.date || row.DATE;
-                let openValue = row.Open || row.open || row.OPEN || row.Ouverture;
-                let highValue = row.High || row.high || row.HIGH || row['Plus haut'];
-                let lowValue = row.Low || row.low || row.LOW || row['Plus bas'];
-                let closeValue = row.Close || row.close || row.CLOSE || row['Clôture'] || row.Cloture;
-                let volumeValue = row.Volume || row.volume || row.VOLUME || row['Volume Titres'];
 
-                // Fonction pour nettoyer les nombres (enlever les espaces)
-                const cleanNumber = (value: any): number => {
-                    if (value === null || value === undefined || value === '') {
-                        return 0;
-                    }
-                    if (typeof value === 'string') {
-                        const cleaned = value.replace(/\s/g, '');
-                        const num = Number(cleaned);
-                        return isNaN(num) ? 0 : num;
-                    }
-                    const num = Number(value);
-                    return isNaN(num) ? 0 : num;
-                };
+                // Colonnes BRVM en priorité, puis autres formats
+                let closeValue = row.fermeture || row.Fermeture || row.Close || row.close || row.CLOSE || row['Clôture'] || row.Cloture;
+                let lowValue = row['+Bas'] || row['Plus Bas'] || row['Plus bas'] || row.Low || row.low || row.LOW;
+                let highValue = row['+Haut'] || row['Plus Haut'] || row['Plus haut'] || row.High || row.high || row.HIGH;
+                let openValue = row.Ouverture || row.ouverture || row.Open || row.open || row.OPEN;
+                let volumeValue = row.Volume || row.volume || row.VOLUME || row['Volume Titres'];
 
                 // Nettoyer tous les nombres
                 openValue = cleanNumber(openValue);
@@ -138,7 +153,22 @@ async function importSLBCHistory() {
                     date = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
                 } else if (typeof dateValue === 'string') {
                     // Si c'est déjà une chaîne de caractères
-                    date = new Date(dateValue);
+                    // Gérer différents formats de date
+                    if (dateValue.includes('/')) {
+                        // Format DD/MM/YYYY ou MM/DD/YYYY
+                        const parts = dateValue.split('/');
+                        if (parts.length === 3) {
+                            // Supposons DD/MM/YYYY
+                            const day = parseInt(parts[0], 10);
+                            const month = parseInt(parts[1], 10) - 1;
+                            const year = parseInt(parts[2], 10);
+                            date = new Date(year, month, day);
+                        } else {
+                            date = new Date(dateValue);
+                        }
+                    } else {
+                        date = new Date(dateValue);
+                    }
                 } else {
                     console.log(`⚠️  Ligne ${i + 1}: Format de date invalide, ignorée`);
                     skippedCount++;
@@ -177,10 +207,32 @@ async function importSLBCHistory() {
                 };
 
                 if (existing) {
-                    // Ne mettre à jour QUE si les données Excel sont plus récentes ou différentes
-                    // Mais en général, on ne touche pas aux données existantes
-                    console.log(`ℹ️  Ligne ${i + 1}: Donnée déjà existante pour ${date.toISOString().split('T')[0]}, ignorée`);
-                    skippedCount++;
+                    // Mettre à jour si les valeurs sont différentes
+                    if (existing.open !== openValue || existing.high !== highValue ||
+                        existing.low !== lowValue || existing.close !== closeValue ||
+                        existing.volume !== volumeValue) {
+                        await prisma.stockHistory.update({
+                            where: {
+                                stock_ticker_date: {
+                                    stock_ticker: 'SLBC',
+                                    date: date
+                                }
+                            },
+                            data: {
+                                open: openValue,
+                                high: highValue,
+                                low: lowValue,
+                                close: closeValue,
+                                volume: volumeValue
+                            }
+                        });
+                        updatedCount++;
+                        if (updatedCount % 50 === 0) {
+                            console.log(`🔄 ${updatedCount} données mises à jour...`);
+                        }
+                    } else {
+                        skippedCount++;
+                    }
                 } else {
                     // Ajouter la nouvelle donnée historique
                     await prisma.stockHistory.create({
@@ -203,7 +255,8 @@ async function importSLBCHistory() {
         console.log('📊 RÉSUMÉ DE L\'IMPORT');
         console.log('='.repeat(60));
         console.log(`✅ Nouvelles données ajoutées: ${addedCount}`);
-        console.log(`ℹ️  Données ignorées (déjà existantes): ${skippedCount}`);
+        console.log(`🔄 Données mises à jour: ${updatedCount}`);
+        console.log(`ℹ️  Données ignorées (identiques): ${skippedCount}`);
         console.log(`❌ Erreurs: ${errorCount}`);
         console.log(`📈 Total lignes traitées: ${rawData.length}`);
         console.log('='.repeat(60) + '\n');

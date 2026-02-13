@@ -179,13 +179,6 @@ async function createModule2Quiz() {
           },
           {
             id: 'q12',
-            question: "Quel pays n'est PAS siège d’une institution clé de la BRVM ?",
-            options: ["Côte d'Ivoire", "Bénin", "Sénégal", "Mali", "Niger"],
-            correct_answer: 2,
-            explanation: "Les sièges sont à Abidjan (BRVM) et Cotonou (DC/BR)."
-          },
-          {
-            id: 'q13',
             question: "Pourquoi les entreprises choisissent-elles d’entrer en bourse ?",
             options: [
               "Payer moins d'impôts",
@@ -198,28 +191,28 @@ async function createModule2Quiz() {
             explanation: "La bourse permet de lever des fonds sans recourir à l’endettement bancaire."
           },
           {
-            id: 'q14',
+            id: 'q13',
             question: "Quel acteur est le 'notaire digital du marché' ?",
             options: ["AMF-UMOA", "BCEAO", "SGI", "BRVM", "DC/BR"],
             correct_answer: 4,
             explanation: "Le DC/BR garde et authentifie les titres des investisseurs."
           },
           {
-            id: 'q15',
+            id: 'q14',
             question: "Qui gère les FCP et SICAV ?",
             options: ["SGO", "Sociétés cotées", "SGI", "DC/BR", "AMF-UMOA"],
             correct_answer: 0,
             explanation: "Les SGO (Sociétés de Gestion) gèrent les OPCVM."
           },
           {
-            id: 'q16',
+            id: 'q15',
             question: "Quelle mission de l’AMF-UMOA concerne les délits d’initiés ?",
             options: ["Réglementer", "Autoriser", "Surveiller et sanctionner", "Agréer", "Politique monétaire"],
             correct_answer: 2,
             explanation: "L’AMF-UMOA lutte contre la fraude et les abus de marché."
           },
           {
-            id: 'q17',
+            id: 'q16',
             question: "Qu’est-ce qu’un Investisseur Institutionnel ?",
             options: [
               "Structure investissant pour des clients",
@@ -232,7 +225,7 @@ async function createModule2Quiz() {
             explanation: "Un investisseur institutionnel gère les fonds de tiers."
           },
           {
-            id: 'q18',
+            id: 'q17',
             question: "Impact d'une hausse des taux BCEAO ?",
             options: [
               "Les valorisations montent",
@@ -245,20 +238,7 @@ async function createModule2Quiz() {
             explanation: "Un crédit plus cher réduit l’investissement et les bénéfices futurs."
           },
           {
-            id: 'q19',
-            question: "L’analogie 'taxi-moto boursier' décrit :",
-            options: [
-              "Petite taille",
-              "Coût faible",
-              "Intermédiaire exécutant les ordres",
-              "Transport de capitaux",
-              "Gardien des titres"
-            ],
-            correct_answer: 2,
-            explanation: "La SGI connaît la route et exécute vos ordres."
-          },
-          {
-            id: 'q20',
+            id: 'q18',
             question: "Quel acteur assure le respect des règles LBC/FT ?",
             options: ["BCEAO", "DC/BR", "AMF-UMOA", "Sociétés cotées", "SGI"],
             correct_answer: 2,
