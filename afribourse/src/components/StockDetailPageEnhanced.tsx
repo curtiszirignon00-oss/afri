@@ -142,10 +142,36 @@ export default function StockDetailPageEnhanced() {
   }, [stock?.symbol, symbol, stock, walletMode]);
 
   // Préparer les données pour lightweight-charts (mémoïsées)
+  // Ajoute/met à jour le dernier point avec le prix actuel pour éviter un décalage
   const lightweightData = React.useMemo(() => {
     if (!historyData?.data || historyData.data.length === 0) return [];
-    return convertToLightweightData(historyData.data);
-  }, [historyData?.data]);
+    const converted = convertToLightweightData(historyData.data);
+    if (stock && converted.length > 0) {
+      const lastPoint = converted[converted.length - 1];
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const todayTimestamp = Math.floor(new Date(todayStr).getTime() / 1000);
+
+      if (lastPoint.time === todayTimestamp) {
+        // Même jour : mettre à jour le close avec le prix actuel
+        lastPoint.close = stock.current_price;
+        lastPoint.high = Math.max(lastPoint.high, stock.current_price);
+        lastPoint.low = Math.min(lastPoint.low, stock.current_price);
+      } else if (todayTimestamp > lastPoint.time) {
+        // Jour suivant : ajouter un nouveau point avec le prix actuel
+        converted.push({
+          date: todayStr,
+          time: todayTimestamp,
+          open: stock.current_price,
+          high: stock.current_price,
+          low: stock.current_price,
+          close: stock.current_price,
+          volume: 0,
+        });
+      }
+    }
+    return converted;
+  }, [historyData?.data, stock?.current_price]);
 
   // Afficher un loader si le stock est en cours de chargement
   if (loading) {
