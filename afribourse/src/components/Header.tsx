@@ -205,6 +205,13 @@ export default function Header() {
                 </div>
               )}
                 
+              {/* Mobile Notification Bell - visible next to hamburger */}
+              {!loading && isLoggedIn && (
+                <div className="lg:hidden">
+                  <NotificationDropdown />
+                </div>
+              )}
+
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -248,13 +255,6 @@ export default function Header() {
               {/* Mobile Account Actions */}
               {!loading && (
                 <>
-                  {/* Mobile Notifications - Only for logged in users */}
-                  {isLoggedIn && (
-                    <div className="flex justify-center py-2">
-                      <NotificationDropdown />
-                    </div>
-                  )}
-
                   <button
                     onClick={() => {
                       navigate(isLoggedIn ? '/dashboard' : '/login');
