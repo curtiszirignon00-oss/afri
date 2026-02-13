@@ -61,6 +61,17 @@ export interface MarketIndex {
   date: string;
 }
 
+export interface MarketIndexHistory {
+  id: string;
+  index_name: string;
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  daily_change_percent: number;
+}
+
 // ========================================
 // TYPES PORTFOLIO & TRANSACTIONS
 // ========================================
