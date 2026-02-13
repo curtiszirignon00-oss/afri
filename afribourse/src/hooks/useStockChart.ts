@@ -147,8 +147,8 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       rightPriceScale: {
         borderColor: isDark ? '#374151' : '#e2e8f0',
         scaleMargins: {
-          top: 0.1,
-          bottom: 0.25,
+          top: 0.05,
+          bottom: 0.05,
         },
       },
       timeScale: {
