@@ -52,8 +52,8 @@ export function useUnreadNotificationCount() {
     return useQuery({
         queryKey: ['notifications-unread-count'],
         queryFn: async () => {
-            const response = await apiClient.get<{ unreadCount: number }>('/notifications/unread-count');
-            return response.data.unreadCount;
+            const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
+            return response.data.count;
         },
         refetchInterval: 15000, // Refetch every 15 seconds
         staleTime: 5000,

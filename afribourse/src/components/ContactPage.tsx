@@ -45,10 +45,11 @@ const ContactPage: React.FC = () => {
         // Réinitialiser le message de succès après 5 secondes
         setTimeout(() => setIsSubmitted(false), 5000);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur lors de l\'envoi du message:', err);
+      const axiosError = err as { response?: { data?: { message?: string } } };
       setError(
-        err.response?.data?.message ||
+        axiosError.response?.data?.message ||
         'Une erreur est survenue lors de l\'envoi du message. Veuillez réessayer.'
       );
     } finally {
