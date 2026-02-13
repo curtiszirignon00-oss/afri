@@ -1,16 +1,23 @@
+// IMPORTANT: Sentry MUST be initialized before any other imports
+import { initSentry, Sentry } from './config/sentry';
+initSentry();
+
 import path from 'path';
 import Express, { Application, json, urlencoded } from 'express';
 import { Server } from 'http';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import config from './config/environnement';
 import rateLimit from 'express-rate-limit';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandlers';
 // Seule l'importation de la connexion Prisma est conservée
 import { connectPrismaDatabase, disconnectPrismaDatabase } from './config/database.prisma';
-import { verifyApiKey } from './middlewares/apiCheck.middleware';
+import { getRedisClient } from './config/redis';
 import compression from 'compression';
+import { requestLogger, attachRequestId } from './middlewares/request-logger.middleware';
+import logger from './config/logger';
 
 // Imports des routes
 import userRoutes from './routes/user.routes';
@@ -19,10 +26,11 @@ import indexRoutes from './routes/index.routes';
 import portfolioRoutes from './routes/portfolio.routes';
 import homepageRoutes from './routes/homepage.routes';
 import watchlistRoutes from './routes/watchlist.routes';
+// FALLBACK: Jobs node-cron in-process (gardes pour fiabilite en complement de QStash)
 import './jobs/scraping.job';
-import './jobs/backup.job'; // Backup automatique chaque dimanche à 23h
-import './jobs/notify-users.job'; // Notification utilisateurs - Dimanche 26 janvier 10h (ONE-TIME)
-import './jobs/gamification.job'; // Jobs gamification (streaks, rankings, défis, nettoyage)
+import './jobs/backup.job';
+import './jobs/notify-users.job';
+import './jobs/gamification.job';
 import learningRoutes from "./routes/learning.routes";
 import newsRoutes from "./routes/news.routes";
 import authRoutes from './routes/auth.routes';
@@ -44,6 +52,8 @@ import moderationRoutes from './routes/moderation.routes';
 import challengeRoutes from './routes/challenge.routes'; // Challenge AfriBourse 2026
 import eventsRoutes from './routes/events.routes'; // Événements Challenge
 import gamificationRoutes from './routes/gamification.routes'; // Système de gamification
+import cronRoutes from './routes/cron.routes'; // Endpoints CRON securises (QStash/Bearer)
+import healthRoutes from './routes/health.routes'; // Health check endpoints
 
 class App {
   private app: Application | null = null;
@@ -59,6 +69,31 @@ class App {
   }
 
   private initializeMiddlewares() {
+    // Note: Sentry v8+ auto-instruments Express via Sentry.init() integrations
+    // No need for manual requestHandler/tracingHandler
+
+    // --- Security Headers (Helmet) ---
+    this.app?.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          frameSrc: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Permettre les ressources cross-origin
+      hsts: {
+        maxAge: 31536000, // 1 an
+        includeSubDomains: true,
+        preload: true,
+      },
+    }));
+
     // --- CORS Configuration ---
     // Supporter plusieurs origines pour le développement et la production
     const allowedOrigins = config.cors.origin.split(',').map((origin: string) => origin.trim());
@@ -71,7 +106,7 @@ class App {
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
         } else {
-          console.warn(`⚠️ CORS blocked origin: ${origin}`);
+          logger.warn(`CORS blocked origin: ${origin}`);
           callback(new Error('Not allowed by CORS'));
         }
       },
@@ -105,33 +140,20 @@ class App {
       })
     );
 
-    // Request Logger
-    this.app?.use((req, res, next) => {
-      const { method, url } = req;
-      const timestamp = new Date().toISOString();
-      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      console.info(
-        `\x1b[36m[${timestamp}]\x1b[0m \x1b[32m${method}\x1b[0m \x1b[33m${url}\x1b[0m \x1b[35mIP:\x1b[0m ${ip}`
-      );
-      next();
-    });
+    // Request Logger (Pino with structured logging)
+    this.app?.use(attachRequestId);
+    this.app?.use(requestLogger);
 
     // Static Files
     this.app?.use('/', Express.static(path.join(__dirname, '../public/')));
 
-    console.info('🗂  Middlewares initialisés');
+    logger.info('Middlewares initialized');
   }
 
   private initializeRoutes() {
-    // Health Check Route
-    this.app?.use('/api/health', (req, res) => {
-      return res.status(200).json({
-        status: 'OK',
-        timestamp: new Date().toLocaleDateString(),
-        environment: config.nodeEnv,
-        version: process.env.npm_package_version || '1.0.0',
-      });
-    });
+    // Health Check Routes (liveness, readiness, deep)
+    this.app?.use('/health', healthRoutes);
+    this.app?.use('/api/health', healthRoutes); // Also expose at /api/health for backwards compatibility
 
     // API Routes
     this.app?.use('/api/users', userRoutes);
@@ -161,18 +183,24 @@ class App {
     this.app?.use('/api/challenge', challengeRoutes);                // Challenge AfriBourse 2026
     this.app?.use('/api/events', eventsRoutes);                      // Événements Challenge
     this.app?.use('/api/gamification', gamificationRoutes);          // Système de gamification (XP, niveaux, streaks, badges)
+    this.app?.use('/api/cron', cronRoutes);                            // Endpoints CRON securises (QStash/Bearer)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));
 
-    console.info('🛣  Routes initialisés');
+    logger.info('Routes initialized');
   }
 
   private initializeErrorsHandling() {
-    // These should come AFTER routes
+    // Sentry v8+ error handler (MUST come before custom error handlers)
+    if (process.env.SENTRY_DSN && this.app) {
+      Sentry.setupExpressErrorHandler(this.app);
+    }
+
+    // These should come AFTER Sentry error handler
     this.app?.use(notFoundHandler); // Handle 404s first
     this.app?.use(errorHandler);    // Then handle other errors
-    console.info('⭕ Gestion d\'erreurs initialisés');
+    logger.info('Error handlers initialized');
   }
 
   public async start() {
@@ -180,19 +208,20 @@ class App {
       // CONSOLIDATION : Appel unique à la connexion Prisma
       await connectPrismaDatabase();
 
+      // Redis Cache
+      const redis = getRedisClient();
+      if (redis) {
+        logger.info('Redis cache: active (Upstash REST)');
+      } else {
+        logger.info('Redis cache: disabled');
+      }
+
       // Start Server
       this.server?.listen(config.port, config.host as string, () => {
-        console.info(
-          `🚀 Serveur lancé sur http://${config.host}:${config.port}`
-        );
-        console.info(`📝 Environment: ${config.nodeEnv}`);
-        console.info(`🌐 CORS origins autorisées: ${config.cors.origin}`);
-        console.info(
-          `📦 Base de données: ${config.database.uri.replace(
-            /\/\/.*@/,
-            '//***:***@'
-          )}`
-        );
+        logger.info({ port: config.port, host: config.host }, `Server started on http://${config.host}:${config.port}`);
+        logger.info({ env: config.nodeEnv }, `Environment: ${config.nodeEnv}`);
+        logger.info(`CORS origins: ${config.cors.origin}`);
+        logger.info(`Database: ${config.database.uri.replace(/\/\/.*@/, '//***:***@')}`);
       });
 
       // Graceful Shutdown Listeners
@@ -201,22 +230,22 @@ class App {
     } catch (error) {
       // Disconnect DB on startup error
       await disconnectPrismaDatabase();
-      console.error('Failed to start server:', error);
+      logger.error({ error }, 'Failed to start server');
       process.exit(1);
     }
   }
 
   public async shutdown() {
-    console.info('🛑 Arrêt du serveur...');
-    await disconnectPrismaDatabase(); // Disconnect DB
+    logger.info('Server shutting down...');
+    await disconnectPrismaDatabase();
     this.server?.close(() => {
-      console.info('✅ Serveur arrêté');
+      logger.info('Server stopped');
       process.exit(0);
     });
 
     // Force shutdown after timeout
     setTimeout(() => {
-      console.error('❌ Le serveur ne s\'est pas arrêté. Arrêt forcé.');
+      logger.error('Server did not shut down gracefully. Forcing exit.');
       process.exit(1);
     }, 10000);
   }
@@ -225,7 +254,7 @@ class App {
 // Instantiate and start the App
 const app = new App();
 app.start().catch((error) => {
-  console.error('Failed to start application:', error);
+  logger.error({ error }, 'Failed to start application');
   process.exit(1);
 });
 

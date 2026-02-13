@@ -8,6 +8,7 @@ import { usePortfolio } from '../hooks/usePortfolio';
 import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
+import OptimizedImage from './ui/OptimizedImage';
 import { API_BASE_URL } from '../config/api';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import DashboardPriceAlerts from './price-alerts/DashboardPriceAlerts';
@@ -641,7 +642,7 @@ export default function DashboardPage() {
                               <div className="flex items-center space-x-3">
                                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
                                   {stockData.logo_url ? (
-                                    <img src={stockData.logo_url} alt={stockData.symbol} className="w-full h-full object-cover rounded-lg" />
+                                    <OptimizedImage src={stockData.logo_url} alt={stockData.symbol} className="w-full h-full object-cover rounded-lg" />
                                   ) : (
                                     stockData.symbol.substring(0, 2)
                                   )}
@@ -951,7 +952,7 @@ export default function DashboardPage() {
                         <div className="flex items-center space-x-2">
                           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">
                             {stock.logo_url ? (
-                              <img src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover rounded-lg" />
+                              <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover rounded-lg" />
                             ) : (
                               stock.symbol.substring(0, 2)
                             )}

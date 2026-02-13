@@ -26,3 +26,13 @@ Thumbs.db
 # Uploaded files (keep structure, ignore content)
 uploads/**/*
 !uploads/**/.gitkeep
+
+# Backups (contient des données sensibles)
+backups/
+
+# Exports (données utilisateurs)
+exports/
+
+# Fichiers de recovery/backup JSON
+*.json.backup
+oplog-recovery.json

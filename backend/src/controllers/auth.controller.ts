@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { signJWT } from "../utils";
 import { createError } from "../middlewares/errorHandlers";
-import config from "../config/environnement"; // Chemin relatif corrigé
+import config from "../config/environnement";
 import { generateConfirmationToken, getTokenExpirationDate, isTokenExpired } from "../utils/token.utils";
 import { sendConfirmationEmail, sendPasswordResetEmail } from "../services/email.service";
 
@@ -13,7 +13,8 @@ import * as portfolioService from "../services/portfolio.service.prisma";
 import * as streakService from "../services/streak.service";
 import * as achievementService from "../services/achievement.service";
 import { prisma } from "../config/database";
-// L'import vers usersServiceMongo n'est plus nécessaire
+// Audit logging
+import { writeAuditLog, getClientIp, getUserAgent } from "../services/audit.service";
 
 // --- INSCRIPTION (REGISTER) ---
 export async function register(req: Request, res: Response, next: NextFunction) {
@@ -97,6 +98,17 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         console.log('✅ [REGISTER] Utilisateur créé avec succès:', user.email);
         console.log(`   → Email envoyé: ${emailSent ? 'OUI ✅' : 'NON ❌'}`);
 
+        // Audit log - Inscription réussie
+        await writeAuditLog({
+            userId: user.id,
+            userEmail: user.email,
+            userRole: 'user',
+            action: 'REGISTER',
+            details: `Nouvel utilisateur inscrit: ${user.email}`,
+            ip: getClientIp(req),
+            userAgent: getUserAgent(req),
+        });
+
         // Message personnalisé selon si l'email a été envoyé ou non
         const message = emailSent
             ? "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception."
@@ -124,6 +136,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         const user = await usersServicePrisma.getUserByEmail(email);
 
         if (!user) {
+            // Audit log - Tentative de connexion echouee (email inconnu)
+            await writeAuditLog({
+                userEmail: email,
+                action: 'LOGIN_FAILED',
+                details: 'Tentative de connexion avec email inconnu',
+                ip: getClientIp(req),
+                userAgent: getUserAgent(req),
+                success: false,
+                errorMsg: 'Email ou mot de passe invalide',
+            });
             return next(createError.unauthorized("Email ou mot de passe invalide"));
         }
 
@@ -135,6 +157,17 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         // 3. Comparaison CRITIQUE du mot de passe
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            // Audit log - Tentative de connexion echouee (mauvais mot de passe)
+            await writeAuditLog({
+                userId: (user as any).id,
+                userEmail: email,
+                action: 'LOGIN_FAILED',
+                details: 'Tentative de connexion avec mauvais mot de passe',
+                ip: getClientIp(req),
+                userAgent: getUserAgent(req),
+                success: false,
+                errorMsg: 'Email ou mot de passe invalide',
+            });
             return next(createError.unauthorized("Email ou mot de passe invalide"));
         }
         
@@ -189,6 +222,17 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         }
         // ========== FIN GAMIFICATION ==========
 
+        // Audit log - Connexion reussie
+        await writeAuditLog({
+            userId: userAsAny.id,
+            userEmail: userAsAny.email,
+            userRole: userAsAny.role,
+            action: 'LOGIN',
+            details: 'Connexion reussie',
+            ip: getClientIp(req),
+            userAgent: getUserAgent(req),
+        });
+
         console.log('✅ [LOGIN] Cookie set, sending response');
         return res.status(200).json({ token, user: userWithoutPassword, gamification: gamificationData });
     } catch (error) {
@@ -221,6 +265,19 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
 // --- LOGOUT ---
 export async function logout(req: Request, res: Response, next: NextFunction) {
     try {
+        // Audit log - Deconnexion
+        const user = (req as any).user;
+        if (user) {
+            await writeAuditLog({
+                userId: user.id,
+                userEmail: user.email,
+                action: 'LOGOUT',
+                details: 'Deconnexion utilisateur',
+                ip: getClientIp(req),
+                userAgent: getUserAgent(req),
+            });
+        }
+
         res.clearCookie("token", {
             httpOnly: true,
             secure: config.nodeEnv === "production",
@@ -413,6 +470,16 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
         await usersServicePrisma.resetUserPassword(user.id, hashedPassword);
 
         console.log(`✅ [PASSWORD_RESET] Mot de passe réinitialisé pour l'utilisateur: ${user.email}`);
+
+        // Audit log - Reinitialisation du mot de passe
+        await writeAuditLog({
+            userId: user.id,
+            userEmail: user.email,
+            action: 'PASSWORD_RESET',
+            details: 'Mot de passe reinitialise avec succes',
+            ip: getClientIp(req),
+            userAgent: getUserAgent(req),
+        });
 
         return res.status(200).json({
             message: "Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter.",

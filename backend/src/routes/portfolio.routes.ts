@@ -3,6 +3,7 @@
 import { Router } from 'express';
 import { auth } from '../middlewares/auth.middleware';
 import { validateTradingHours } from '../middleware/challenge.middleware';
+import { tradingLimiter } from '../middleware/rateLimiter';
 import {
     getMyPortfolio,
     createMyPortfolio,
@@ -19,8 +20,9 @@ router.get('/summary', auth, getPortfolioSummary); // Summary for profile displa
 router.get('/my', auth, getMyPortfolio);
 router.post('/my', auth, createMyPortfolio);
 router.get('/my/history', auth, getPortfolioHistory);
-router.post('/my/buy', auth, validateTradingHours, buyStock);
-router.post('/my/sell', auth, validateTradingHours, sellStock);
+// Trading routes avec rate limiting (30 transactions/min max)
+router.post('/my/buy', auth, tradingLimiter, validateTradingHours, buyStock);
+router.post('/my/sell', auth, tradingLimiter, validateTradingHours, sellStock);
 router.get('/my/transactions', auth, getPortfolioTransactions);
 
 export default router;

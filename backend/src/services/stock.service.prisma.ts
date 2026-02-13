@@ -3,6 +3,7 @@
 import prisma from "../config/prisma";
 import { Prisma } from '@prisma/client';
 import { StockData } from "./scraping.service";
+import { cacheGet, cacheSet, cacheInvalidatePattern, hashFilters, CACHE_TTL, CACHE_KEYS } from './cache.service';
 
 // <-- AJOUT : Mapping des secteurs pour assignation automatique lors du scraping
 const SECTOR_MAPPING: Record<string, string> = {
@@ -104,6 +105,10 @@ export async function saveStocks(stocksData: StockData[]) {
       });
     }
     console.log(`✅ ${stocksData.length} actions traitées par Prisma.`);
+
+    // Invalider le cache des stocks apres mise a jour
+    await cacheInvalidatePattern('stocks:*');
+    await cacheInvalidatePattern('stock:*');
   } catch (error) {
     console.error('❌ Erreur lors de la sauvegarde Prisma des actions:', error);
     throw error;
@@ -123,6 +128,11 @@ export async function getAllStocks(filters: {
 }) {
   try {
     const { searchTerm, sector, sortBy, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend } = filters;
+
+    // Cache: verifier le cache
+    const cacheKey = CACHE_KEYS.stocks(hashFilters(filters));
+    const cached = await cacheGet<any[]>(cacheKey);
+    if (cached) return cached;
 
     // Build WHERE clause dynamically
     const whereClause: Prisma.StockWhereInput = {
@@ -231,6 +241,9 @@ export async function getAllStocks(filters: {
           break;
       }
     }
+
+    // Cache: stocker le resultat (TTL 1h)
+    await cacheSet(cacheKey, filteredStocks, CACHE_TTL.STOCKS);
 
     return filteredStocks;
   } catch (error) {
