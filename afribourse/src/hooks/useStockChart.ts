@@ -357,28 +357,11 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
     seriesRef.current = mainSeries;
 
-    // Recréer la série de volume
-    const volumeSeries = chartApi.addHistogramSeries({
-      color: CHART_COLORS.upColor + '40',
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: 'volume',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
-    } as HistogramSeriesPartialOptions);
-
-    volumeSeriesRef.current = volumeSeries;
-
       // Appliquer les données
       if (data.length > 0) {
         console.log('useStockChart: Setting data', data.length, 'points');
         const chartData = convertData();
-        const volumeData = convertVolumeData();
         mainSeries.setData(chartData as any);
-        volumeSeries.setData(volumeData);
         chartRef.current.timeScale().fitContent();
         console.log('useStockChart: Data set successfully');
       }
@@ -550,6 +533,24 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         chartRef.current.removeSeries(bbLowerSeriesRef.current);
         bbLowerSeriesRef.current = null;
       }
+    }
+
+    // Volume - Histogramme
+    if (indicators?.includes('volume')) {
+      if (!volumeSeriesRef.current) {
+        const volumeSeries = chartApi.addHistogramSeries({
+          color: CHART_COLORS.upColor + '40',
+          priceFormat: { type: 'volume' },
+          priceScaleId: 'volume',
+          scaleMargins: { top: 0.8, bottom: 0 },
+        } as HistogramSeriesPartialOptions);
+        const volumeData = convertVolumeData();
+        volumeSeries.setData(volumeData);
+        volumeSeriesRef.current = volumeSeries;
+      }
+    } else if (volumeSeriesRef.current) {
+      chartRef.current.removeSeries(volumeSeriesRef.current);
+      volumeSeriesRef.current = null;
     }
   }, [indicators, isReady, data.length]);
 
