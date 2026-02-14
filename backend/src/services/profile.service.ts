@@ -3,6 +3,8 @@
 
 import { PrismaClient, Prisma } from '@prisma/client';
 import { calculateLevelFromXP } from './xp.service';
+import { getPortfolioSummary } from './portfolio.service.prisma';
+import { getWatchlistByUserId } from './watchlist.service.prisma';
 
 const prisma = new PrismaClient();
 
@@ -69,13 +71,44 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     const isSelf = viewerId === userId;
     const isFriend = viewerId ? await checkIfFriend(viewerId, userId) : false;
 
-    // Si c'est soi-même, retourner tout
+    // Si c'est soi-même, retourner tout + portfolio & watchlist
     if (isSelf) {
+      let portfolioStats = null;
+      let positions: any[] = [];
+      let watchlist: any[] = [];
+
+      try {
+        const summary = await getPortfolioSummary(userId);
+        if (summary) {
+          portfolioStats = {
+            totalValue: summary.totalValue,
+            gainLoss: summary.gainLoss,
+            gainLossPercent: summary.gainLossPercent,
+            positionsCount: summary.positionsCount,
+          };
+          positions = [
+            ...summary.topPerformers,
+            ...summary.topLosers,
+          ].sort((a, b) => b.value - a.value);
+        }
+      } catch (e) { /* ignore */ }
+
+      try {
+        const items = await getWatchlistByUserId(userId);
+        watchlist = items.map(item => ({
+          ticker: item.stock_ticker,
+          addedAt: item.created_at,
+        }));
+      } catch (e) { /* ignore */ }
+
       return {
         ...profile,
         followersCount: profile.followers.length,
         followingCount: profile.following.length,
-        isFollowing: false // Pas besoin si c'est soi-même
+        isFollowing: false,
+        portfolioStats,
+        positions,
+        watchlist,
       };
     }
 
@@ -128,6 +161,40 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
 
     // Statut public/privé
     filtered.is_public = profile.is_public;
+
+    // Données portefeuille (selon les paramètres de confidentialité)
+    if (profile.show_portfolio_value || profile.show_positions) {
+      try {
+        const summary = await getPortfolioSummary(userId);
+        if (summary) {
+          if (profile.show_portfolio_value) {
+            filtered.portfolioStats = {
+              totalValue: summary.totalValue,
+              gainLoss: summary.gainLoss,
+              gainLossPercent: summary.gainLossPercent,
+              positionsCount: summary.positionsCount,
+            };
+          }
+          if (profile.show_positions) {
+            filtered.positions = [
+              ...summary.topPerformers,
+              ...summary.topLosers,
+            ].sort((a, b) => b.value - a.value);
+          }
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    // Watchlist (selon les paramètres de confidentialité)
+    if (profile.show_watchlist) {
+      try {
+        const items = await getWatchlistByUserId(userId);
+        filtered.watchlist = items.map(item => ({
+          ticker: item.stock_ticker,
+          addedAt: item.created_at,
+        }));
+      } catch (e) { /* ignore */ }
+    }
 
     return filtered;
 
