@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // backend/scripts/create-module8-quiz.ts
-// Script pour créer le quiz du Module 8 - L'Art de la Diversification et la Gestion du Risque
+// Script pour mettre à jour le quiz du Module 8 - L’Évaluation d’Entreprise
 
 import { PrismaClient } from '@prisma/client';
 
@@ -8,15 +8,15 @@ const prisma = new PrismaClient();
 
 async function createModule8Quiz() {
     try {
-        console.log('🔍 Recherche du Module 8...');
+        console.log('🔍 Recherche du Module 8 (Mise à jour)...');
 
-        // Le slug est basé sur le titre du module : L’Art de la Diversification et la Gestion du Risque
+        // Conservation du slug existant comme demandé
         const module = await prisma.learningModule.findFirst({
             where: { slug: 'construire-portefeuille' } 
         });
 
         if (!module) {
-            console.error('❌ Module 8 non trouvé. Vérifiez le slug: lart-de-la-diversification');
+            console.error('❌ Module 8 non trouvé. Vérifiez le slug: construire-portefeuille');
             return;
         }
 
@@ -28,13 +28,13 @@ async function createModule8Quiz() {
         });
 
         if (existingQuiz) {
-            console.log('⚠️  Un quiz existe déjà pour ce module. Suppression...');
+            console.log('⚠️  Un quiz existe déjà pour ce module. Suppression pour mise à jour...');
             await prisma.quiz.delete({ where: { id: existingQuiz.id } });
             console.log('🗑️  Ancien quiz supprimé');
         }
 
-        // Créer le quiz avec 15 questions
-        console.log('📝 Création du quiz avec 15 questions...');
+        // Créer le quiz avec les 15 nouvelles questions
+        console.log('📝 Création du nouveau quiz "Évaluation d\'Entreprise"...');
 
         const quiz = await prisma.quiz.create({
             data: {
@@ -43,198 +43,183 @@ async function createModule8Quiz() {
                 questions: [
                     {
                         id: 'q1',
-                        question: "Quelle est l'idée fondamentale derrière le concept de Diversification ?",
+                        question: "Qu'est-ce que l'actualisation dans le contexte de l'analyse financière ?",
                         options: [
-                            "Miser tout son capital sur l'action avec le meilleur rendement.",
-                            "Investir uniquement dans des produits garantis par l'État.",
-                            "Ne jamais investir plus de 10 % de son épargne.",
-                            "Répartir son capital sur différents titres, secteurs ou zones pour minimiser le risque spécifique.",
-                            "Acheter au plus bas et vendre au plus haut (Market Timing)."
+                            "Le fait de mettre à jour le prix d'une action chaque matin en bourse.",
+                            "L'opération qui ramène des flux financiers futurs à leur valeur d'aujourd'hui.",
+                            "Le calcul de la croissance du chiffre d'affaires sur les 5 dernières années.",
+                            "L'augmentation systématique des dividendes d'une année sur l'autre."
                         ],
-                        correct_answer: 3,
-                        explanation: "La diversification est la stratégie de répartition des risques par l'éclatement du capital sur différents actifs, réduisant l'impact de la chute d'un seul titre."
+                        correct_answer: 1, // B
+                        explanation: "L'actualisation est le mécanisme inverse de la capitalisation : elle permet d'estimer la valeur présente d'une somme qui sera reçue dans le futur."
                     },
                     {
                         id: 'q2',
-                        question: "Quel type de risque la diversification permet-elle principalement d'éliminer ou de réduire significativement ?",
+                        question: "Pourquoi un Franc CFA reçu aujourd'hui vaut-il plus qu'un Franc CFA reçu dans un an ?",
                         options: [
-                            "Le Risque d'Inflation.",
-                            "Le Risque Systémique (ou de Marché).",
-                            "Le Risque Spécifique (ou Idiosyncratique).",
-                            "Le Risque de Taux d'Intérêt.",
-                            "Le Risque de Liquidité."
+                            "À cause de l'inflation et du coût d'opportunité.",
+                            "Parce que les banques ferment le week-end.",
+                            "Uniquement parce que le cours du Dollar change.",
+                            "C'est une illusion d'optique, la valeur est strictement identique."
                         ],
-                        correct_answer: 2,
-                        explanation: "Le risque spécifique est propre à une seule entreprise (ex: scandale, faillite) et peut être éliminé par la diversification."
+                        correct_answer: 0, // A
+                        explanation: "L'argent disponible aujourd'hui peut être investi pour générer des intérêts (coût d'opportunité) et ne subit pas encore l'érosion monétaire future (inflation)."
                     },
                     {
                         id: 'q3',
-                        question: "Le Risque Systémique est celui qui affecte l'ensemble du marché et de l'économie. Quelle est sa principale caractéristique ?",
+                        question: "Sur quel principe repose la méthode DCF (Discounted Cash Flow) ?",
                         options: [
-                            "Il ne concerne que les obligations d'État.",
-                            "Il peut être éliminé par une bonne diversification.",
-                            "Il ne peut pas être éliminé, il doit être accepté et géré par l'Allocation d'Actifs.",
-                            "Il est synonyme de Risque de Liquidité.",
-                            "Il ne se produit jamais sur la BRVM."
+                            "L'entreprise vaut la somme de tous ses actifs physiques (usines, stocks).",
+                            "Le prix est uniquement déterminé par l'offre et la demande en bourse.",
+                            "La valeur d'une entreprise est la somme de ses flux de trésorerie futurs actualisés.",
+                            "Une entreprise vaut exactement 10 fois son bénéfice net."
                         ],
-                        correct_answer: 2,
-                        explanation: "Le Risque Systémique (crise financière, pandémie, etc.) est inhérent au marché et ne peut être géré que par l'ajustement de l'Allocation d'Actifs."
+                        correct_answer: 2, // C
+                        explanation: "Le DCF considère que la valeur intrinsèque d'un actif est égale à la somme de tout le cash qu'il générera dans le futur, ramené à sa valeur d'aujourd'hui."
                     },
                     {
                         id: 'q4',
-                        question: "Le 'Corridor de Rééquilibrage' est un outil de gestion du risque qui consiste à :",
+                        question: "Quelle est la durée habituelle de la période de prévision explicite dans un modèle DCF ?",
                         options: [
-                            "Vendre tous ses actifs à chaque fois qu'ils font un gain de 10 %.",
-                            "Acheter un seul titre chaque mois, indépendamment du prix.",
-                            "Ramener périodiquement son portefeuille à son Allocation d'Actifs initiale (ex: vendre des actions montées pour racheter des obligations).",
-                            "Ne réinvestir les dividendes qu'une fois par an.",
-                            "Ne regarder son portefeuille qu'une fois par an."
+                            "1 à 2 mois.",
+                            "5 à 10 ans.",
+                            "Exactement 50 ans.",
+                            "Jusqu'à la fin de vie du fondateur."
                         ],
-                        correct_answer: 2,
-                        explanation: "Le rééquilibrage force l'investisseur à vendre 'cher' et acheter 'bon marché' pour maintenir son niveau de risque cible, luttant ainsi contre l'émotion."
+                        correct_answer: 1, // B
+                        explanation: "C'est l'horizon de temps sur lequel un analyste peut projeter les comptes de manière raisonnablement détaillée avant de passer à la Valeur Terminale."
                     },
                     {
                         id: 'q5',
-                        question: "Quel est le Risque d'Inflation ?",
+                        question: "Qu'est-ce que la Valeur Terminale (VT) dans une évaluation ?",
                         options: [
-                            "Le risque qu'un titre chute de 50 %.",
-                            "Le risque que les frais de gestion soient trop élevés.",
-                            "Le risque que le pouvoir d'achat de votre argent investi diminue au fil du temps.",
-                            "Le risque de ne pas trouver d'acheteur pour son titre.",
-                            "Le risque d'une faillite d'entreprise."
+                            "Le prix de vente final de l'action par l'investisseur.",
+                            "Le montant total de la dette à rembourser à la fin.",
+                            "La valeur estimée de l'entreprise après la période de prévision explicite.",
+                            "La valeur de l'entreprise si elle faisait faillite aujourd'hui."
                         ],
-                        correct_answer: 2,
-                        explanation: "L'inflation érode la valeur réelle de l'argent et des rendements, nécessitant d'investir pour que le rendement dépasse l'inflation."
+                        correct_answer: 2, // C
+                        explanation: "La Valeur Terminale capture la valeur de tous les flux de trésorerie au-delà de l'horizon de prévision (ex: après la 10ème année) jusqu'à l'infini."
                     },
                     {
                         id: 'q6',
-                        question: "Un FCP/OPCVM est un outil de diversification car il permet à l'investisseur :",
+                        question: "Quelle part de la valeur totale d'une entreprise la Valeur Terminale représente-t-elle souvent ?",
                         options: [
-                            "D'investir uniquement dans les produits structurés.",
-                            "De gérer lui-même et activement son portefeuille.",
-                            "D'obtenir une diversification instantanée sur des dizaines de titres pour un petit capital.",
-                            "De ne subir aucun risque de marché.",
-                            "D'acheter une seule action et d'être diversifié."
+                            "Moins de 5 %.",
+                            "Exactement 100 %.",
+                            "70 % à 80 %.",
+                            "Seulement le montant du capital social."
                         ],
-                        correct_answer: 2,
-                        explanation: "L'OPCVM (ou FCP) est un panier de titres géré par un professionnel, offrant une diversification clé en main même avec de faibles sommes."
+                        correct_answer: 2, // C
+                        explanation: "Comme une entreprise est censée durer indéfiniment, la majorité de sa valeur réside dans son futur lointain (la perpétuité), d'où son poids important dans le DCF."
                     },
                     {
                         id: 'q7',
-                        question: "Le Risque de Liquidité se produit lorsque :",
+                        question: "Que signifie l'acronyme WACC (ou CMPC en français) ?",
                         options: [
-                            "Le PER de l'entreprise est élevé.",
-                            "Le Gearing est trop faible.",
-                            "Un investisseur ne peut pas revendre rapidement son titre au juste prix (ou doit baisser drastiquement le prix pour trouver un acheteur).",
-                            "Le Bénéfice Net par Action est négatif.",
-                            "L'entreprise ne verse plus de dividendes."
+                            "World Active Cash Commission.",
+                            "Coefficient Moyen de Plus-value Capitalisée.",
+                            "Coût Moyen Pondéré du Capital.",
+                            "Calcul de la Marge de Croissance."
                         ],
-                        correct_answer: 2,
-                        explanation: "La liquidité est la facilité et la rapidité avec laquelle un actif peut être converti en espèces. Une faible liquidité augmente le risque de perte en cas de besoin de vente urgente."
+                        correct_answer: 2, // C
+                        explanation: "C'est le taux de rendement moyen exigé par ceux qui financent l'entreprise (actionnaires et banques). Il sert de taux d'actualisation."
                     },
                     {
                         id: 'q8',
-                        question: "Comment un investisseur avec un horizon Long Terme gère-t-il le Risque de Volatilité inhérent au marché des actions ?",
+                        question: "Quel est l'impact d'une hausse du taux d'actualisation (WACC) sur la valeur d'une action ?",
                         options: [
-                            "En vendant toutes ses actions dès qu'il y a une baisse de 5 %.",
-                            "En se concentrant sur le court terme (Market Timing).",
-                            "En utilisant le temps (son meilleur allié) pour lisser les fluctuations et profiter de la croissance composée.",
-                            "En n'achetant que des obligations d'État.",
-                            "En réinvestissant tout son capital en une seule fois."
+                            "La valeur intrinsèque diminue.",
+                            "La valeur intrinsèque augmente.",
+                            "Le prix en bourse augmente immédiatement.",
+                            "Cela n'a aucun impact sur l'évaluation."
                         ],
-                        correct_answer: 2,
-                        explanation: "L'horizon long terme permet d'atténuer l'impact des cycles de marché et de faire jouer les intérêts composés sur la croissance."
+                        correct_answer: 0, // A
+                        explanation: "Mathématiquement, plus on actualise fort (taux élevé au dénominateur), plus la valeur présente des flux futurs est faible. Le risque fait baisser la valeur."
                     },
                     {
                         id: 'q9',
-                        question: "Quel est le danger principal de la 'Sur-diversification' ?",
+                        question: "Sur quoi se base la méthode DDM (Dividend Discount Model) ?",
                         options: [
-                            "Elle augmente le risque spécifique.",
-                            "Elle élimine tout le risque de marché.",
-                            "Elle dilue les gains potentiels et rend le portefeuille plus difficile à gérer (trop d'actions à suivre).",
-                            "Elle est obligatoire pour le profil Prudent.",
-                            "Elle mène au Biais d'Ancrage."
+                            "Sur la revente de l'usine pièce par pièce.",
+                            "Sur l'actualisation des dividendes futurs.",
+                            "Sur le chiffre d'affaires multiplié par deux.",
+                            "Sur le nombre de followers de l'entreprise."
                         ],
-                        correct_answer: 2,
-                        explanation: "Trop d'actifs (sur-diversification) rend le suivi et la gestion du portefeuille inefficaces, car les gains des uns compensent trop les pertes des autres, menant à des rendements moyens."
+                        correct_answer: 1, // B
+                        explanation: "Le DDM considère que la valeur d'une action pour un actionnaire minoritaire est simplement la somme des dividendes qu'il recevra."
                     },
                     {
                         id: 'q10',
-                        question: "L'Allocation d'Actifs est le premier outil de gestion du risque. Pour un profil 'Prudent', quelle allocation est recommandée (exemple) ?",
+                        question: "Dans le modèle de Gordon-Shapiro, que représente la variable « g » ?",
                         options: [
-                            "80% Actions / 20% Obligations.",
-                            "100% Liquidités.",
-                            "70% Obligations / 30% Actions.",
-                            "100% Actions.",
-                            "Uniquement des cryptomonnaies."
+                            "Le montant du gearing de la société.",
+                            "Le gain total réalisé par l'actionnaire.",
+                            "Le taux de croissance annuel constant des dividendes.",
+                            "Le nombre de jours avant le prochain coupon."
                         ],
-                        correct_answer: 2,
-                        explanation: "Le profil Prudent privilégie la sécurité, d'où la majorité du capital en Obligations (ou assimilés) et une faible exposition aux Actions."
+                        correct_answer: 2, // C
+                        explanation: "La variable 'g' (growth) correspond au taux de croissance perpétuel attendu des dividendes."
                     },
                     {
                         id: 'q11',
-                        question: "Quel acteur du marché est votre meilleur allié pour réaliser une diversification professionnelle et de qualité (sans avoir à acheter des dizaines de titres vous-même) ?",
+                        question: "Pour quel type d'entreprise la méthode DDM est-elle la plus adaptée à la BRVM ?",
                         options: [
-                            "Le DC/BR (Dépositaire Central/Banque de Règlement).",
-                            "La BCEAO (Banque Centrale des États de l'Afrique de l'Ouest).",
-                            "Un Spéculateur.",
-                            "Un gérant d'OPCVM ou votre SGI (Société de Gestion et d'Intermédiation).",
-                            "L'AMF-UMOA (Régulateur)."
+                            "Les start-ups technologiques qui ne font pas de bénéfices.",
+                            "Les entreprises matures versant des dividendes stables (ex: banques).",
+                            "Les entreprises en faillite imminente.",
+                            "Les entreprises qui réinvestissent 100 % de leurs profits."
                         ],
-                        correct_answer: 3,
-                        explanation: "Le gérant d'OPCVM (ou FCP) est le professionnel qui gère un portefeuille diversifié pour vous."
+                        correct_answer: 1, // B
+                        explanation: "Le modèle fonctionne mieux avec des sociétés stables qui ont une politique de distribution de dividendes régulière et prévisible."
                     },
                     {
                         id: 'q12',
-                        question: "Quel est l'un des risques spécifiques associés à l'investissement dans les Obligations ?",
+                        question: "Quelle est la formule simplifiée du modèle de Gordon-Shapiro ?",
                         options: [
-                            "Le Risque Systémique (crise économique générale).",
-                            "Le Risque d'Inflation.",
-                            "Le Risque de Défaut (l'émetteur ne peut pas rembourser le capital ou payer les intérêts).",
-                            "Le Risque de Volatilité des actions.",
-                            "Le Biais d'Ancrage."
+                            "Prix = D₁ × (k + g)",
+                            "Prix = Bénéfice / Actions",
+                            "Prix = D₁ / (k − g)",
+                            "Prix = Cours × PER"
                         ],
-                        correct_answer: 2,
-                        explanation: "Le Risque de Défaut est la probabilité que l'émetteur (État ou entreprise) fasse défaut sur sa dette."
+                        correct_answer: 2, // C
+                        explanation: "La valeur est le dividende de l'année prochaine (D1) divisé par la différence entre le coût du capital (k) et le taux de croissance (g)."
                     },
                     {
                         id: 'q13',
-                        question: "Pourquoi les réinvestissements réguliers des dividendes (DCA) constituent-ils une bonne pratique de gestion du risque ?",
+                        question: "Qu'est-ce que la « Marge de Sécurité » ?",
                         options: [
-                            "Car ils réduisent le Risque Systémique.",
-                            "Car ils augmentent la liquidité du titre.",
-                            "Car ils permettent d'acheter plus d'actions sans effort (DCA) et de lisser le prix moyen, maximisant l'effet des intérêts composés.",
-                            "Car ils garantissent un rendement minimum.",
-                            "Car ils obligent à sur-diversifier."
+                            "Le montant minimal d'argent à garder sur son compte bancaire.",
+                            "L'écart entre la valeur intrinsèque calculée et le prix actuel du marché.",
+                            "Le taux d'intérêt minimal garanti par la BCEAO.",
+                            "Le montant maximum que l'on peut perdre sur une action."
                         ],
-                        correct_answer: 2,
-                        explanation: "Le réinvestissement des dividendes soutient le principe des intérêts composés et renforce la discipline du DCA (Dollar Cost Averaging)."
+                        correct_answer: 1, // B
+                        explanation: "C'est la différence entre la valeur réelle d'une entreprise (estimée par l'analyste) et son prix en Bourse. Elle protège contre les erreurs d'estimation."
                     },
                     {
                         id: 'q14',
-                        question: "Selon la règle de base, une diversification efficace doit inclure :",
+                        question: "Quel biais émotionnel consiste à rester bloqué sur un prix passé au lieu de croire en son calcul ?",
                         options: [
-                            "Uniquement des actions de deux secteurs différents.",
-                            "Au moins 10 titres différents, répartis dans au moins 3 à 5 secteurs différents et 2 classes d'actifs (Actions et Obligations).",
-                            "Seulement des titres à faible PER.",
-                            "Uniquement des titres à fort dividende.",
-                            "Seulement des titres d'une même banque."
+                            "Le biais d'Ancrage.",
+                            "L'Excès de Confiance.",
+                            "Le déni de réalité.",
+                            "La loi des petits nombres."
                         ],
-                        correct_answer: 1,
-                        explanation: "La diversification doit être horizontale (classes d'actifs) et verticale (secteurs et titres) pour être efficace."
+                        correct_answer: 0, // A
+                        explanation: "L'ancrage est la tendance psychologique à se fier trop lourdement à la première information reçue (l'ancre), souvent le prix d'achat historique."
                     },
                     {
                         id: 'q15',
-                        question: "Quel est le Risque de Contrepartie (Risque de Défaut) ?",
+                        question: "Que doit faire l'analyste après avoir trouvé une valeur intrinsèque de 15 000 FCFA pour une action cotée à 10 000 FCFA ?",
                         options: [
-                            "Le risque que le cours de l'action s'effondre.",
-                            "Le risque qu'un partenaire ou émetteur ne remplisse pas ses obligations financières (ex: ne pas payer l'intérêt d'une obligation).",
-                            "Le risque d'une réglementation défavorable.",
-                            "Le risque lié à la gestion du FCP.",
-                            "Le risque d'une faible liquidité."
+                            "Vendre immédiatement car le prix est trop bas.",
+                            "Attendre que la valeur intrinsèque baisse à 10 000 FCFA.",
+                            "Considérer l'achat car il y a une marge de sécurité de 5 000 FCFA.",
+                            "Appeler la BRVM pour dénoncer une erreur."
                         ],
-                        correct_answer: 1,
-                        explanation: "Le risque de contrepartie est le risque qu'une partie à une transaction financière ne tienne pas ses engagements."
+                        correct_answer: 2, // C
+                        explanation: "Si Valeur > Prix, l'action est sous-évaluée. Avec une décote importante (marge de sécurité), c'est une opportunité d'achat rationnelle."
                     }
                 ]
             }
@@ -247,9 +232,9 @@ async function createModule8Quiz() {
         });
 
         console.log('✅ Quiz créé avec succès !');
-        console.log(`  - ID: ${quiz.id}`);
-        console.log(`  - Nombre de questions: ${(quiz.questions as any[])?.length || 0}`);
-        console.log(`  - Score de passage: ${quiz.passing_score}%`);
+        console.log(` - ID: ${quiz.id}`);
+        console.log(` - Nombre de questions: ${(quiz.questions as any[])?.length || 0}`);
+        console.log(` - Score de passage: ${quiz.passing_score}%`);
         console.log('');
         console.log('📝 Note: Le système sélectionnera automatiquement 10 questions aléatoires parmi les 15 lors de chaque test.');
 

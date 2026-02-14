@@ -2158,8 +2158,19 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
       <div class="p-6 bg-indigo-900 text-white rounded-xl shadow-inner">
         <p class="text-center text-indigo-200 mb-4 font-bold uppercase tracking-wider">Résumé du DCF :</p>
-        <div class="text-center font-mono text-lg overflow-x-auto">
-          $$ \text{Valeur Intrinsèque} = \sum_{t=1}^{N} \frac{\text{Flux de Trésorerie}_t}{(1 + \text{WACC})^t} + \frac{\text{Valeur Terminale}_N}{(1 + \text{WACC})^N} $$
+        <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;font-family:Georgia,serif;font-size:1.15rem;padding:8px 0;">
+          <span style="font-weight:600;">Valeur Intrinsèque</span>
+          <span>=</span>
+          <span style="font-size:2rem;line-height:1;">∑</span>
+          <span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;">
+            <span style="border-bottom:2px solid #c7d2fe;padding:2px 10px 4px;">FCF<sub style="font-size:0.75em;">t</sub></span>
+            <span style="padding:4px 10px 2px;">(1 + WACC)<sup style="font-size:0.75em;">t</sup></span>
+          </span>
+          <span style="font-size:1.3rem;">+</span>
+          <span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;">
+            <span style="border-bottom:2px solid #c7d2fe;padding:2px 10px 4px;">VT<sub style="font-size:0.75em;">N</sub></span>
+            <span style="padding:4px 10px 2px;">(1 + WACC)<sup style="font-size:0.75em;">N</sup></span>
+          </span>
         </div>
       </div>
     </div>
@@ -2186,14 +2197,21 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
       <div>
         <h3 class="text-lg font-bold text-indigo-800 mb-4">8.2.2 Le Modèle de Gordon-Shapiro (DDM simplifié)</h3>
-        <p class="text-gray-700 mb-4">Le modèle de Gordon-Shapiro est une version simplifiée du DDM, utilisée lorsque l'on suppose que le dividende va croître à un taux constant ($g$) pour toujours.</p>
-        <div class="my-6 p-5 bg-gray-100 rounded-lg text-center font-mono font-bold text-indigo-900">
-          $$ \text{Prix de l'action} = \frac{\text{Dividende Prochain} (D_1)}{\text{Coût des Fonds Propres} (k) - \text{Taux de croissance du dividende} (g)} $$
+        <p class="text-gray-700 mb-4">Le modèle de Gordon-Shapiro est une version simplifiée du DDM, utilisée lorsque l'on suppose que le dividende va croître à un taux constant (<strong style="font-family:Georgia,serif;color:#312e81;">g</strong>) pour toujours.</p>
+        <div class="my-6 p-5 bg-gray-100 rounded-lg">
+          <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;font-family:Georgia,serif;font-size:1.15rem;color:#312e81;font-weight:700;">
+            <span>Prix de l'action</span>
+            <span>=</span>
+            <span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;">
+              <span style="border-bottom:2px solid #4338ca;padding:2px 16px 4px;">D<sub style="font-size:0.75em;">1</sub></span>
+              <span style="padding:4px 16px 2px;">k − g</span>
+            </span>
+          </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-center italic text-gray-600">
-          <p><strong>$D_1$ :</strong> Le dividende prévu pour l'année prochaine.</p>
-          <p><strong>$k$ :</strong> Le taux d'actualisation utilisé.</p>
-          <p><strong>$g$ :</strong> Le taux de croissance annuel constant.</p>
+          <p><strong style="font-family:Georgia,serif;color:#312e81;">D<sub>1</sub></strong> : Le dividende prévu pour l'année prochaine.</p>
+          <p><strong style="font-family:Georgia,serif;color:#312e81;">k</strong> : Le taux d'actualisation utilisé.</p>
+          <p><strong style="font-family:Georgia,serif;color:#312e81;">g</strong> : Le taux de croissance annuel constant.</p>
         </div>
       </div>
 
@@ -2423,7 +2441,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
       <div class="grid md:grid-cols-2 gap-6">
         <div class="bg-white p-4 rounded-xl border border-amber-200">
           <p class="font-bold text-green-700 mb-1">Gouvernance Solide = Risque Faible</p>
-          <p class="text-sm">Vous pouvez utiliser un taux d'actualisation ($k$) plus bas. L'entreprise vaut donc plus cher.</p>
+          <p class="text-sm">Vous pouvez utiliser un taux d'actualisation (<strong style="font-family:Georgia,serif;color:#312e81;">k</strong>) plus bas. L'entreprise vaut donc plus cher.</p>
         </div>
         <div class="bg-white p-4 rounded-xl border border-amber-200">
           <p class="font-bold text-red-700 mb-1">Gouvernance Douteuse = Risque Élevé</p>
@@ -3171,11 +3189,16 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     </p>
 
     <h3 class="text-lg font-bold text-teal-300 mb-4">L'Utilisation du Stop-Loss (Rappel M11)</h3>
-    <p class="text-slate-300 mb-4">Pour calculer la taille de votre position ($T_{pos}$), vous devez définir où vous placez votre Stop-Loss (le seuil de vente automatique, M11).</p>
+    <p class="text-slate-300 mb-4">Pour calculer la taille de votre position, vous devez définir où vous placez votre Stop-Loss (le seuil de vente automatique, M11).</p>
 
     <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 text-center mb-6">
-      <div class="text-xl font-mono text-white overflow-x-auto">
-        $$ \text{Taille de Position} = \frac{\text{Capital risqué maximal}}{\text{Perte unitaire acceptée}} $$
+      <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;font-family:Georgia,serif;font-size:1.15rem;color:white;font-weight:600;">
+        <span>Taille de Position</span>
+        <span>=</span>
+        <span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;">
+          <span style="border-bottom:2px solid #5eead4;padding:2px 12px 4px;">Capital risqué maximal</span>
+          <span style="padding:4px 12px 2px;">Perte unitaire acceptée</span>
+        </span>
       </div>
     </div>
 
@@ -3186,7 +3209,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
       <ul class="list-disc list-inside space-y-1 text-sm">
         <li>Capital risqué maximal (1%) : 10 000 FCFA.</li>
         <li>Vous achetez une action à 10 000 FCFA et vous placez votre Stop-Loss à 9 500 FCFA. La perte unitaire acceptée est de 500 FCFA (10 000 - 9 500).</li>
-        <li class="font-mono bg-gray-100 p-1 rounded inline-block mt-1">$\text{Taille de Position} = 10 000 \text{ FCFA} / 500 \text{ FCFA} = 20$ actions.</li>
+        <li class="mt-1"><span class="font-mono bg-gray-100 p-1 rounded inline-block">Taille de Position = 10 000 FCFA / 500 FCFA = <strong>20 actions</strong></span></li>
         <li class="mt-1">Vous achetez seulement 20 actions. Si le Stop-Loss est touché, vous perdez exactement 10 000 FCFA.</li>
       </ul>
     </div>
@@ -3375,8 +3398,16 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </div>
 
  <h3 class="text-lg font-bold text-orange-700 mb-3">Mesurer la Performance (Le Rendement Annuel)</h3>
- <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 mb-4 font-mono text-center text-sm">
- $$ \text{Rendement Annuel} = \frac{(\text{Valeur Finale} - \text{Valeur Initiale}) + \text{Dividendes Reçus}}{\text{Valeur Initiale}} \times 100 $$
+ <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 mb-4">
+  <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;font-family:Georgia,serif;font-size:1rem;color:#1e293b;font-weight:600;">
+    <span>Rendement Annuel</span>
+    <span>=</span>
+    <span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;">
+      <span style="border-bottom:2px solid #475569;padding:2px 10px 4px;">(Valeur Finale − Valeur Initiale) + Dividendes Reçus</span>
+      <span style="padding:4px 10px 2px;">Valeur Initiale</span>
+    </span>
+    <span>× 100</span>
+  </div>
  </div>
  
  <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
