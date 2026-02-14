@@ -274,7 +274,7 @@ export default function ProfilePage() {
                             }
                             positions={
                                 isOwnProfile
-                                    ? (portfolioData?.topPerformers || []).concat(portfolioData?.topLosers || []).sort((a: any, b: any) => (b.value || 0) - (a.value || 0))
+                                    ? (portfolioData?.positions || [])
                                     : (otherUserProfile?.positions || [])
                             }
                             watchlist={
