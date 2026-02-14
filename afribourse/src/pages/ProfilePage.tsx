@@ -56,13 +56,27 @@ export default function ProfilePage() {
     // Etats combines
     const isLoading = isOwnProfile ? isLoadingOwn : isLoadingOther;
 
-    // Fetch portfolio data (only for own profile or if public)
+    // Fetch portfolio data (only for own profile)
     const { data: portfolioData } = useQuery({
         queryKey: ['portfolio-summary', userId || userProfile?.id],
         queryFn: async () => {
             try {
                 const response = await apiClient.get('/portfolios/summary');
                 return response.data.data;
+            } catch {
+                return null;
+            }
+        },
+        enabled: isOwnProfile && !!userProfile?.id,
+    });
+
+    // Fetch watchlist (only for own profile)
+    const { data: watchlistData } = useQuery({
+        queryKey: ['watchlist-my'],
+        queryFn: async () => {
+            try {
+                const response = await apiClient.get('/watchlist/my');
+                return response.data.data || response.data;
             } catch {
                 return null;
             }
@@ -249,11 +263,28 @@ export default function ProfilePage() {
                         <ProfileStats
                             profile={profileData}
                             isOwnProfile={isOwnProfile}
-                            portfolioData={portfolioData ? {
-                                totalValue: portfolioData.totalValue || portfolioData.total_value || 0,
-                                gainLoss: portfolioData.gainLoss || portfolioData.gain_loss || 0,
-                                gainLossPercent: portfolioData.gainLossPercent || portfolioData.gain_loss_percent || 0,
-                            } : null}
+                            portfolioData={
+                                isOwnProfile
+                                    ? (portfolioData ? {
+                                        totalValue: portfolioData.totalValue || portfolioData.total_value || 0,
+                                        gainLoss: portfolioData.gainLoss || portfolioData.gain_loss || 0,
+                                        gainLossPercent: portfolioData.gainLossPercent || portfolioData.gain_loss_percent || 0,
+                                    } : null)
+                                    : (otherUserProfile?.portfolioStats || null)
+                            }
+                            positions={
+                                isOwnProfile
+                                    ? (portfolioData?.topPerformers || []).concat(portfolioData?.topLosers || []).sort((a: any, b: any) => (b.value || 0) - (a.value || 0))
+                                    : (otherUserProfile?.positions || [])
+                            }
+                            watchlist={
+                                isOwnProfile
+                                    ? (watchlistData ? (Array.isArray(watchlistData) ? watchlistData : []).map((item: any) => ({
+                                        ticker: item.stock_ticker || item.ticker,
+                                        addedAt: item.created_at || item.addedAt,
+                                    })) : [])
+                                    : (otherUserProfile?.watchlist || [])
+                            }
                             learningProgress={learningData ? {
                                 completedModules: learningData.completedModules || learningData.completed_modules || 0,
                                 totalModules: learningData.totalModules || learningData.total_modules || 10,
