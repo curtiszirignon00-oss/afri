@@ -133,24 +133,37 @@ export default function StockComparison({ stocks, onRemove, onClose }: StockComp
                 {/* Tab Content */}
                 {activeTab === 'table' ? (
                     <>
-                        {/* Comparison Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {/* Comparison Grid - horizontal scroll on mobile */}
+                        <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory scrollbar-hide pb-3 sm:pb-0 -mx-2 px-2 sm:mx-0 sm:px-0">
                             {stocks.map((stock) => {
                                 const metrics = bestWorst.find(bw => bw.stockId === stock.id);
                                 return (
-                                    <ComparisonCard
-                                        key={stock.id}
-                                        stock={stock}
-                                        onRemove={() => onRemove(stock.id)}
-                                        isBest={metrics?.isBest}
-                                        isWorst={metrics?.isWorst}
-                                    />
+                                    <div key={stock.id} className="w-[260px] sm:w-auto flex-shrink-0 sm:flex-shrink snap-start">
+                                        <ComparisonCard
+                                            stock={stock}
+                                            onRemove={() => onRemove(stock.id)}
+                                            isBest={metrics?.isBest}
+                                            isWorst={metrics?.isWorst}
+                                        />
+                                    </div>
                                 );
                             })}
                         </div>
 
+                        {/* Legend on mobile */}
+                        <div className="flex sm:hidden items-center justify-center gap-4 mt-3 text-xs">
+                            <div className="flex items-center gap-1">
+                                <div className="w-3 h-3 bg-green-100 border border-green-400 rounded"></div>
+                                <span className="text-gray-600">Meilleure</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <div className="w-3 h-3 bg-red-100 border border-red-400 rounded"></div>
+                                <span className="text-gray-600">Moins bonne</span>
+                            </div>
+                        </div>
+
                         {/* Help Text */}
-                        <div className="mt-4 flex items-start gap-2 p-3 bg-blue-100 rounded-lg">
+                        <div className="mt-3 sm:mt-4 flex items-start gap-2 p-2.5 sm:p-3 bg-blue-100 rounded-lg">
                             <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                             <p className="text-xs text-blue-900">
                                 <strong>Astuce :</strong> Les valeurs en vert indiquent les meilleures performances,
