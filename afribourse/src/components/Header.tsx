@@ -2,7 +2,7 @@ import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu } from './MegaMenus';
+import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
 
 // --- MegaMenu Mapping ---
@@ -10,6 +10,7 @@ const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
   learn: LearnMegaMenu,
   news: NewsMegaMenu,
   markets: MarketsMegaMenu,
+  community: CommunityMegaMenu,
 };
 
 export default function Header() {
@@ -36,21 +37,16 @@ export default function Header() {
     { name: 'Apprendre', id: 'learn', icon: BookOpen, hasMegaMenu: true },
     { name: 'Marchés', id: 'markets', icon: BarChart3, hasMegaMenu: true },
     { name: 'Actualités', id: 'news', icon: TrendingUp, hasMegaMenu: true },
-    { name: 'Communauté', id: 'community', icon: Users, hasMegaMenu: false },
+    { name: 'Communauté', id: 'community', icon: Users, hasMegaMenu: true },
   ];
 
   const ActiveMegaMenuComponent = activeMegaMenu ? MEGA_MENU_COMPONENTS[activeMegaMenu] : null;
 
   return (
-    <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        {/* Top Banner */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2">
-          {/* Message de la bannière ici */}
-        </div>
-
+    <div className="sticky top-0 z-50">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
             <div className="flex items-center">
               <button
@@ -295,13 +291,12 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mega Menus */}
+      {/* Mega Menus - rendered inside the sticky wrapper so they attach to the header */}
       {ActiveMegaMenuComponent && (
-        <div onMouseLeave={() => setActiveMegaMenu(null)}>
-          <ActiveMegaMenuComponent
-          />
+        <div className="relative" onMouseLeave={() => setActiveMegaMenu(null)}>
+          <ActiveMegaMenuComponent />
         </div>
       )}
-    </>
+    </div>
   );
 }
