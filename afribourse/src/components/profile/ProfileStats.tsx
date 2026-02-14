@@ -5,14 +5,18 @@ import {
     Trophy,
     Flame,
     TrendingUp,
+    TrendingDown,
     BookOpen,
     Wallet,
     Eye,
+    EyeOff,
     Lock,
     ChevronRight,
     Star,
     X,
-    Loader2
+    Loader2,
+    BarChart3,
+    Bookmark,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card } from '../ui';
@@ -22,6 +26,22 @@ import { useUpdatePrivacySettings } from '../../hooks/useOnboarding';
 import { calculateLevelFromXP } from '../../hooks/useGamification';
 import type { ShareablePortfolioData } from '../../types/share';
 
+interface PositionItem {
+    ticker: string;
+    name: string;
+    quantity: number;
+    avgPrice: number;
+    currentPrice: number;
+    value: number;
+    gainLoss: number;
+    gainLossPercent: number;
+}
+
+interface WatchlistItem {
+    ticker: string;
+    addedAt: string;
+}
+
 interface ProfileStatsProps {
     profile: any;
     isOwnProfile?: boolean;
@@ -30,6 +50,8 @@ interface ProfileStatsProps {
         gainLoss: number;
         gainLossPercent: number;
     } | null;
+    positions?: PositionItem[];
+    watchlist?: WatchlistItem[];
     learningProgress?: {
         completedModules: number;
         totalModules: number;
@@ -82,6 +104,8 @@ export default function ProfileStats({
     profile,
     isOwnProfile = false,
     portfolioData,
+    positions = [],
+    watchlist = [],
     learningProgress
 }: ProfileStatsProps) {
     const investorProfile = profile.investorProfile;
@@ -93,6 +117,8 @@ export default function ProfileStats({
     const showXp = investorProfile?.show_xp === true;
     const showStreak = investorProfile?.show_streak !== false;
     const showPortfolio = investorProfile?.show_portfolio_value !== false;
+    const showPositions = investorProfile?.show_positions !== false;
+    const showWatchlist = investorProfile?.show_watchlist !== false;
 
     // Stats from profile
     const totalXp = investorProfile?.total_xp || 0;
@@ -321,6 +347,116 @@ export default function ProfileStats({
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* Positions (Actions achetees) */}
+                {(positions.length > 0 || (!isOwnProfile && !showPositions)) && (
+                    <div className="relative">
+                        {!showPositions && !isOwnProfile ? (
+                            <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
+                                <Lock className="w-4 h-4 text-gray-400 mr-2" />
+                                <span className="text-sm text-gray-500">Positions privees</span>
+                            </div>
+                        ) : positions.length > 0 ? (
+                            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <BarChart3 className="w-5 h-5 text-blue-600" />
+                                        <span className="font-medium text-gray-900">Actions achetees</span>
+                                    </div>
+                                    {isOwnProfile && (
+                                        <Link
+                                            to="/dashboard"
+                                            className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                        >
+                                            Dashboard
+                                            <ChevronRight className="w-3 h-3" />
+                                        </Link>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    {positions.slice(0, 5).map((pos) => (
+                                        <div
+                                            key={pos.ticker}
+                                            className="flex items-center justify-between py-2 px-3 bg-white/60 rounded-lg"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-semibold text-sm text-gray-900">{pos.ticker}</span>
+                                                <span className="text-xs text-gray-500 truncate max-w-[100px]">{pos.name}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-500">{pos.quantity} titres</span>
+                                                <div className={`flex items-center gap-0.5 text-xs font-medium ${
+                                                    pos.gainLossPercent >= 0 ? 'text-green-600' : 'text-red-600'
+                                                }`}>
+                                                    {pos.gainLossPercent >= 0
+                                                        ? <TrendingUp className="w-3 h-3" />
+                                                        : <TrendingDown className="w-3 h-3" />
+                                                    }
+                                                    {pos.gainLossPercent >= 0 ? '+' : ''}{pos.gainLossPercent.toFixed(1)}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {positions.length > 5 && (
+                                        <div className="text-center">
+                                            <Link
+                                                to="/dashboard"
+                                                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                            >
+                                                +{positions.length - 5} autres positions
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                )}
+
+                {/* Watchlist (Actions suivies) */}
+                {(watchlist.length > 0 || (!isOwnProfile && !showWatchlist)) && (
+                    <div className="relative">
+                        {!showWatchlist && !isOwnProfile ? (
+                            <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
+                                <Lock className="w-4 h-4 text-gray-400 mr-2" />
+                                <span className="text-sm text-gray-500">Watchlist privee</span>
+                            </div>
+                        ) : watchlist.length > 0 ? (
+                            <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <Bookmark className="w-5 h-5 text-amber-600" />
+                                        <span className="font-medium text-gray-900">Actions suivies</span>
+                                    </div>
+                                    {isOwnProfile && (
+                                        <Link
+                                            to="/markets"
+                                            className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                                        >
+                                            Marche
+                                            <ChevronRight className="w-3 h-3" />
+                                        </Link>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {watchlist.slice(0, 8).map((item) => (
+                                        <span
+                                            key={item.ticker}
+                                            className="inline-flex items-center px-3 py-1.5 bg-white/70 rounded-lg text-sm font-medium text-gray-700 border border-amber-200"
+                                        >
+                                            {item.ticker}
+                                        </span>
+                                    ))}
+                                    {watchlist.length > 8 && (
+                                        <span className="inline-flex items-center px-3 py-1.5 text-xs text-amber-600 font-medium">
+                                            +{watchlist.length - 8} autres
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 )}
 
