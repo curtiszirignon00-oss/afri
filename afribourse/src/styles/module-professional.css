@@ -8,6 +8,24 @@
   padding: 2rem;
   color: #1f2937;
   background-color: #fff;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tous les enfants respectent la largeur du parent */
+.module-content * {
+  box-sizing: border-box;
+}
+
+/* Les divs enfants ne depassent pas */
+.module-content > div,
+.module-content > div > div {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ============================================
@@ -447,6 +465,18 @@
    TABLEAUX
    ============================================ */
 
+/* Wrapper scrollable pour les tableaux */
+.module-content .table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+}
+
+.module-content .table-wrapper table {
+  margin: 0;
+}
+
 .module-content table {
   width: 100%;
   border-collapse: collapse;
@@ -454,6 +484,15 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   border-radius: 0.5rem;
   overflow: hidden;
+}
+
+/* Tables directes ou imbriquees: forcer scroll horizontal */
+.module-content > table,
+.module-content > div > table,
+.module-content > div > div > table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .module-content thead {
@@ -468,6 +507,7 @@
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .module-content td {
@@ -625,6 +665,30 @@
 
 @media (max-width: 768px) {
 
+  /* Conteneur principal: reduire le padding */
+  .module-content {
+    padding: 1rem !important;
+  }
+
+  /* Titres: tailles reduites */
+  .module-content>div>h2 {
+    font-size: 1.25rem;
+  }
+
+  .module-content>div>h3 {
+    font-size: 1.125rem;
+  }
+
+  .module-content>div>h4 {
+    font-size: 1rem;
+  }
+
+  /* Paragraphes */
+  .module-content p {
+    font-size: 0.9375rem;
+  }
+
+  /* Encadres speciaux: padding reduit */
   .module-content .objectif-hero,
   .module-content .pedagogical-objective,
   .module-content .analogy-box,
@@ -634,28 +698,114 @@
   .module-content .citation-box,
   .module-content .cta-box,
   .module-content .glossary-box {
-    padding: 1rem;
+    padding: 0.875rem;
+    margin: 1rem 0;
   }
 
+  /* Sections colorees: padding reduit */
   .module-content .section-blue,
   .module-content .section-green,
   .module-content .section-purple,
   .module-content .section-orange {
-    padding-left: 1rem;
+    padding-left: 0.875rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    padding-right: 0.5rem;
   }
 
-  .module-content th,
+  .module-content .section-blue>h2:first-child,
+  .module-content .section-green>h2:first-child,
+  .module-content .section-purple>h2:first-child,
+  .module-content .section-orange>h2:first-child {
+    font-size: 1.125rem;
+  }
+
+  /* Tableaux: cellules compactes */
+  .module-content th {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
   .module-content td {
-    padding: 0.75rem;
-    font-size: 0.875rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.8125rem;
   }
 
+  /* Citations */
   .module-content .citation-box p {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 
   .module-content .objectif-hero h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+  }
+
+  .module-content .objectif-hero li,
+  .module-content .objectif-hero p {
+    font-size: 0.9375rem;
+  }
+
+  .module-content .pedagogical-objective h2,
+  .module-content .pedagogical-objective h3 {
+    font-size: 1.0625rem;
+  }
+
+  /* Grilles Tailwind en colonne sur mobile */
+  .module-content [class*="grid-cols-2"],
+  .module-content [class*="grid-cols-3"],
+  .module-content [class*="grid-cols-4"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  .module-content .grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Flex wrap pour eviter overflow */
+  .module-content [class*="flex"][class*="gap-"] {
+    flex-wrap: wrap;
+  }
+
+  /* Images */
+  .module-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+  }
+
+  /* Blockquotes */
+  .module-content blockquote {
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+  }
+
+  /* Code blocks */
+  .module-content pre {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Espacement reduit entre elements */
+  .module-content>*+* {
+    margin-top: 1rem;
+  }
+
+  .module-content>div+div {
+    margin-top: 1.25rem;
+  }
+
+  /* Glossaire */
+  .module-content .glossary-box h2 {
+    font-size: 1.125rem;
+  }
+
+  /* CTA */
+  .module-content .cta-box h3 {
+    font-size: 1.0625rem;
   }
 }
 
