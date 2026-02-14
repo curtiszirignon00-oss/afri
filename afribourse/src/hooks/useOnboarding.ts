@@ -88,6 +88,8 @@ export function useUpdatePrivacySettings() {
             show_xp?: boolean;
             show_streak?: boolean;
             show_portfolio_value?: boolean;
+            show_positions?: boolean;
+            show_watchlist?: boolean;
             show_badges?: boolean;
             show_achievements?: boolean;
             show_avatar?: boolean;

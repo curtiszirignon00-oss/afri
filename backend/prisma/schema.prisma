@@ -260,6 +260,7 @@ model UserProfile {
   show_roi             Boolean @default(false) // ROI exact caché par défaut
   show_positions       Boolean @default(true)
   show_transactions    Boolean @default(false)
+  show_watchlist       Boolean @default(true)
 
   // Succès
   show_achievements      Boolean @default(true)

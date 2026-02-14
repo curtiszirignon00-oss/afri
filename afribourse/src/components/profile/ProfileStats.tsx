@@ -359,21 +359,40 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
         show_xp: investorProfile?.show_xp ?? false,
         show_streak: investorProfile?.show_streak ?? true,
         show_portfolio_value: investorProfile?.show_portfolio_value ?? true,
+        show_positions: investorProfile?.show_positions ?? true,
+        show_watchlist: investorProfile?.show_watchlist ?? true,
         show_badges: investorProfile?.show_badges ?? true,
         show_rank: investorProfile?.show_rank ?? true,
         show_bio: investorProfile?.show_bio ?? true,
         show_country: investorProfile?.show_country ?? true,
     });
 
-    const toggles: { key: keyof typeof settings; label: string }[] = [
-        { key: 'show_level', label: 'Niveau' },
-        { key: 'show_xp', label: 'XP total' },
-        { key: 'show_streak', label: 'Streak' },
-        { key: 'show_rank', label: 'Classement' },
-        { key: 'show_portfolio_value', label: 'Valeur portefeuille' },
-        { key: 'show_badges', label: 'Badges' },
-        { key: 'show_bio', label: 'Bio' },
-        { key: 'show_country', label: 'Pays' },
+    const toggleGroups: { title: string; toggles: { key: keyof typeof settings; label: string; description?: string }[] }[] = [
+        {
+            title: 'Informations personnelles',
+            toggles: [
+                { key: 'show_bio', label: 'Bio' },
+                { key: 'show_country', label: 'Pays' },
+            ],
+        },
+        {
+            title: 'Progression',
+            toggles: [
+                { key: 'show_level', label: 'Niveau' },
+                { key: 'show_xp', label: 'XP total' },
+                { key: 'show_streak', label: 'Streak' },
+                { key: 'show_rank', label: 'Classement' },
+                { key: 'show_badges', label: 'Badges' },
+            ],
+        },
+        {
+            title: 'Portefeuille',
+            toggles: [
+                { key: 'show_portfolio_value', label: 'Valeur du portefeuille', description: 'Montant total et performance' },
+                { key: 'show_positions', label: 'Actions achetees', description: 'Positions ouvertes dans le portefeuille' },
+                { key: 'show_watchlist', label: 'Actions suivies', description: 'Votre liste de surveillance' },
+            ],
+        },
     ];
 
     const handleSave = () => {
@@ -400,32 +419,46 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
                 </div>
 
                 {/* Body */}
-                <div className="p-5 space-y-1 max-h-[60vh] overflow-y-auto">
-                    <p className="text-sm text-gray-500 mb-4">
+                <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                    <p className="text-sm text-gray-500 mb-2">
                         Choisissez les informations visibles par les autres utilisateurs.
                     </p>
-                    {toggles.map(({ key, label }) => (
-                        <label
-                            key={key}
-                            className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-50 cursor-pointer"
-                        >
-                            <span className="text-sm font-medium text-gray-700">{label}</span>
-                            <button
-                                type="button"
-                                role="switch"
-                                aria-checked={settings[key]}
-                                onClick={() => setSettings(prev => ({ ...prev, [key]: !prev[key] }))}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                    settings[key] ? 'bg-indigo-600' : 'bg-gray-300'
-                                }`}
-                            >
-                                <span
-                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                        settings[key] ? 'translate-x-6' : 'translate-x-1'
-                                    }`}
-                                />
-                            </button>
-                        </label>
+                    {toggleGroups.map((group) => (
+                        <div key={group.title}>
+                            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 px-3">
+                                {group.title}
+                            </h4>
+                            <div className="space-y-0.5">
+                                {group.toggles.map(({ key, label, description }) => (
+                                    <label
+                                        key={key}
+                                        className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                    >
+                                        <div className="flex-1 mr-3">
+                                            <span className="text-sm font-medium text-gray-700">{label}</span>
+                                            {description && (
+                                                <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+                                            )}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            aria-checked={settings[key]}
+                                            onClick={() => setSettings(prev => ({ ...prev, [key]: !prev[key] }))}
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
+                                                settings[key] ? 'bg-indigo-600' : 'bg-gray-300'
+                                            }`}
+                                        >
+                                            <span
+                                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                    settings[key] ? 'translate-x-6' : 'translate-x-1'
+                                                }`}
+                                            />
+                                        </button>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
                     ))}
                 </div>
 
