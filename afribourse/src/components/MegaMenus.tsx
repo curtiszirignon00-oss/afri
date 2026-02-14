@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Lightbulb, Newspaper, Globe, DollarSign, Eye, Building2, MapPin } from 'lucide-react'; // Added TrendingDown
+import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Lightbulb, Newspaper, Globe, DollarSign, Eye, Building2, MapPin, MessageCircle, Trophy, Award, Calendar, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
@@ -29,7 +29,7 @@ type MegaMenuProps = {};
 export function LearnMegaMenu() {
   const navigate = useNavigate();
   return (
-    <div className="absolute left-0 top-full w-screen max-w-full bg-white shadow-xl border-t border-gray-200 z-40"> {/* Added max-w-full */}
+    <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40"> {/* Added max-w-full */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ... Learn menu content ... */}
          <div className="grid md:grid-cols-3 gap-8">
@@ -82,7 +82,7 @@ export function NewsMegaMenu() {
   }, []); // Run once on mount
 
   return (
-    <div className="absolute left-0 top-full w-screen max-w-full bg-white shadow-xl border-t border-gray-200 z-40">
+    <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid md:grid-cols-3 gap-8">
           {/* Column 1: Categories */}
@@ -151,7 +151,7 @@ export function MarketsMegaMenu() {
   }
 
   return (
-    <div className="absolute left-0 top-full w-screen max-w-full bg-white shadow-xl border-t border-gray-200 z-40">
+    <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid md:grid-cols-3 gap-8">
            {/* Column 1: Links */}
@@ -209,7 +209,7 @@ export function PortfolioMegaMenu() {
   const { isLoggedIn } = useAuth();
 
   return (
-     <div className="absolute left-0 top-full w-screen max-w-full bg-white shadow-xl border-t border-gray-200 z-40">
+     <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40">
        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
          <div className="grid md:grid-cols-3 gap-8">
              {/* Links */}
@@ -225,6 +225,90 @@ export function PortfolioMegaMenu() {
      </div>
     );
 }
+
+// --- CommunityMegaMenu ---
+export function CommunityMegaMenu() {
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
+
+  return (
+    <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid md:grid-cols-3 gap-8">
+          {/* Column 1: Navigation */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Communauté</h3>
+            {/* Feed Social */}
+            <button onClick={() => navigate('/community')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left">
+              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><MessageCircle className="w-6 h-6 text-blue-600" /></div>
+              <div> <h4 className="font-semibold text-gray-900 mb-1">Feed Social</h4> <p className="text-sm text-gray-600">Publications et analyses.</p> </div>
+            </button>
+            {/* Groupes */}
+            <button onClick={() => navigate('/communities')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left">
+              <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors"><Users className="w-6 h-6 text-purple-600" /></div>
+              <div> <h4 className="font-semibold text-gray-900 mb-1">Groupes</h4> <p className="text-sm text-gray-600">Rejoignez des communautés.</p> </div>
+            </button>
+            {/* Challenge */}
+            <button onClick={() => navigate(isLoggedIn ? '/challenge/community' : '/login')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left">
+              <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors"><Trophy className="w-6 h-6 text-amber-600" /></div>
+              <div> <h4 className="font-semibold text-gray-900 mb-1">Challenge Trading</h4> <p className="text-sm text-gray-600">Compétition & classement.</p> </div>
+            </button>
+          </div>
+
+          {/* Column 2: More links */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Activités</h3>
+            {/* Achievements */}
+            <button onClick={() => navigate(isLoggedIn ? '/achievements' : '/login')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left">
+              <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors"><Award className="w-6 h-6 text-emerald-600" /></div>
+              <div> <h4 className="font-semibold text-gray-900 mb-1">Badges & XP</h4> <p className="text-sm text-gray-600">Vos récompenses.</p> </div>
+            </button>
+            {/* Events */}
+            <button onClick={() => navigate('/events')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left">
+              <div className="flex-shrink-0 w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors"><Calendar className="w-6 h-6 text-rose-600" /></div>
+              <div> <h4 className="font-semibold text-gray-900 mb-1">Événements</h4> <p className="text-sm text-gray-600">Webinaires & meetups.</p> </div>
+            </button>
+            {/* Leaderboard */}
+            <button onClick={() => navigate(isLoggedIn ? '/challenge/community' : '/login')} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left">
+              <div className="flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors"><BarChart3 className="w-6 h-6 text-indigo-600" /></div>
+              <div> <h4 className="font-semibold text-gray-900 mb-1">Classement</h4> <p className="text-sm text-gray-600">Top investisseurs.</p> </div>
+            </button>
+          </div>
+
+          {/* Column 3: Promotion */}
+          <div>
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 h-full flex flex-col justify-between">
+              <div>
+                <div className="inline-block px-3 py-1 bg-amber-500 text-white rounded-full text-sm font-medium mb-4">Challenge 2026</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Participez au Challenge Trading</h3>
+                <p className="text-sm text-gray-700 mb-4">Affrontez d'autres investisseurs, grimpez dans le classement et gagnez des récompenses exclusives.</p>
+                <div className="flex items-center space-x-3 text-sm text-gray-600 mb-2">
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                  <span>Classement en temps réel</span>
+                </div>
+                <div className="flex items-center space-x-3 text-sm text-gray-600 mb-2">
+                  <Award className="w-4 h-4 text-amber-500" />
+                  <span>100+ badges à débloquer</span>
+                </div>
+                <div className="flex items-center space-x-3 text-sm text-gray-600">
+                  <Users className="w-4 h-4 text-amber-500" />
+                  <span>Communauté active</span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate(isLoggedIn ? '/challenge/community' : '/login')}
+                className="mt-6 px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold text-sm"
+              >
+                {isLoggedIn ? 'Rejoindre le Challenge' : 'Se connecter pour participer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+// --- END CommunityMegaMenu ---
 
 // --- SGIMegaMenu (Can be removed if you removed SGI focus) ---
 // export function SGIMegaMenu({ navigate }: MegaMenuProps) { ... }
