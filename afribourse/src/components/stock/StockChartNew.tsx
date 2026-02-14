@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
+import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
 
 interface StockChartProps {
@@ -37,6 +38,9 @@ export default function StockChartNew({
   isLoading = false,
   theme = 'light',
 }: StockChartProps) {
+  const { userProfile } = useAuth();
+  const isPremium = userProfile?.subscriptionTier && userProfile.subscriptionTier !== 'free';
+
   const [selectedInterval, setSelectedInterval] = useState<TimeInterval>(currentInterval);
   const [selectedChartType, setSelectedChartType] = useState<ChartType>('candlestick');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -254,35 +258,48 @@ export default function StockChartNew({
             <h4 className={`text-sm font-semibold ${textClasses} mb-3`}>Indicateurs Techniques</h4>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {[
-                { id: 'ma20', label: 'MA 20', description: 'Moyenne mobile 20 périodes' },
-                { id: 'ma50', label: 'MA 50', description: 'Moyenne mobile 50 périodes' },
-                { id: 'ma200', label: 'MA 200', description: 'Moyenne mobile 200 périodes' },
-                { id: 'ema12', label: 'EMA 12', description: 'Moyenne mobile exponentielle 12' },
-                { id: 'bb', label: 'Bollinger', description: 'Bandes de Bollinger' },
-                { id: 'volume', label: 'Volume', description: 'Afficher le volume' },
-              ].map((indicator) => (
-                <button
-                  key={indicator.id}
-                  onClick={() => toggleIndicator(indicator.id)}
-                  className={`px-3 py-2 text-xs font-medium rounded-md transition-all text-left ${
-                    activeIndicators.includes(indicator.id)
-                      ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                      : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
-                  }`}
-                  title={indicator.description}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>{indicator.label}</span>
-                    {activeIndicators.includes(indicator.id) && (
-                      <span className="text-blue-600">✓</span>
-                    )}
-                  </div>
-                </button>
-              ))}
+                { id: 'volume', label: 'Volume', description: 'Afficher le volume', premium: false },
+                { id: 'ma20', label: 'MA 20', description: 'Moyenne mobile 20 périodes', premium: true },
+                { id: 'ma50', label: 'MA 50', description: 'Moyenne mobile 50 périodes', premium: true },
+                { id: 'ma200', label: 'MA 200', description: 'Moyenne mobile 200 périodes', premium: true },
+                { id: 'ema12', label: 'EMA 12', description: 'Moyenne mobile exponentielle 12', premium: true },
+                { id: 'bb', label: 'Bollinger', description: 'Bandes de Bollinger', premium: true },
+              ].map((indicator) => {
+                const isLocked = indicator.premium && !isPremium;
+                return (
+                  <button
+                    key={indicator.id}
+                    onClick={() => {
+                      if (isLocked) return;
+                      toggleIndicator(indicator.id);
+                    }}
+                    className={`px-3 py-2 text-xs font-medium rounded-md transition-all text-left ${
+                      isLocked
+                        ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed opacity-60'
+                        : activeIndicators.includes(indicator.id)
+                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                          : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
+                    }`}
+                    title={isLocked ? 'Disponible avec un abonnement Premium' : indicator.description}
+                    disabled={isLocked}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>{indicator.label}</span>
+                      {isLocked ? (
+                        <Lock className="w-3.5 h-3.5 text-gray-400" />
+                      ) : activeIndicators.includes(indicator.id) ? (
+                        <span className="text-blue-600">✓</span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            <p className={`text-xs ${mutedTextClasses} mt-2`}>
-              💡 Cliquez pour activer/désactiver les indicateurs
-            </p>
+            {!isPremium && (
+              <p className={`text-xs text-amber-600 mt-2`}>
+                Les indicateurs techniques (MA, EMA, Bollinger) sont réservés aux abonnés Premium
+              </p>
+            )}
           </div>
         )}
       </div>
