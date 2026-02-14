@@ -545,9 +545,9 @@ export default function LearnPage() {
         const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5;
 
         return (
-            <div className="min-h-screen bg-slate-50">
+            <div className="min-h-screen bg-slate-50 overflow-x-hidden">
                 {/* Header immersif */}
-                <div className="bg-slate-900 text-white pt-8 pb-16 px-4 relative overflow-hidden">
+                <div className="bg-slate-900 text-white pt-6 sm:pt-8 pb-12 sm:pb-16 px-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2" />
 
@@ -608,18 +608,18 @@ export default function LearnPage() {
                             )}
                         </div>
 
-                        <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                        <h1 className="text-xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
                             {selectedModule.title}
                         </h1>
-                        <p className="text-slate-300 text-lg leading-relaxed max-w-2xl">
+                        <p className="text-slate-300 text-sm sm:text-lg leading-relaxed max-w-2xl">
                             {selectedModule.description}
                         </p>
                     </div>
                 </div>
 
                 {/* Contenu principal */}
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20 pb-24">
-                    <article className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                <div className="max-w-4xl mx-auto px-2 sm:px-6 lg:px-8 -mt-8 relative z-20 pb-24">
+                    <article className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden max-w-full">
 
                         {/* Progress bar de lecture */}
                         <div className="sticky top-0 z-30 bg-white">
@@ -633,7 +633,7 @@ export default function LearnPage() {
 
                         {/* Barre de progression quiz */}
                         {moduleProgress?.quiz_score !== null && moduleProgress?.quiz_score !== undefined && (
-                            <div className="bg-slate-50 px-8 py-4 border-b border-slate-100">
+                            <div className="bg-slate-50 px-4 sm:px-8 py-3 sm:py-4 border-b border-slate-100">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-sm font-medium text-slate-700">Meilleur score au quiz</span>
                                     <span className={`text-lg font-bold ${moduleProgress.quiz_score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
@@ -669,7 +669,7 @@ export default function LearnPage() {
 
                         {/* Navigation Slides - Cachée pendant le quiz */}
                         {totalSlides > 1 && !quizState.isActive && !quizState.showResults && (
-                            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-6 py-4 flex items-center justify-between shadow-lg">
+                            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-lg">
                                 <button
                                     onClick={() => setCurrentSlide(prev => Math.max(1, prev - 1))}
                                     disabled={currentSlide === 1}
@@ -716,7 +716,7 @@ export default function LearnPage() {
 
                         {/* Section Quiz */}
                         {hasQuiz && !isCompleted && (
-                            <div className="px-8 py-10 bg-gradient-to-br from-indigo-50 to-purple-50 border-t-4 border-indigo-500">
+                            <div className="px-4 sm:px-8 py-6 sm:py-10 bg-gradient-to-br from-indigo-50 to-purple-50 border-t-4 border-indigo-500">
                                 <div className="max-w-3xl mx-auto">
                                     {!quizState.isActive && !quizState.showResults && (
                                         <div className="text-center">
@@ -757,7 +757,7 @@ export default function LearnPage() {
                                     {(() => {
                                         const currentIndex = Object.keys(quizState.answers).length;
                                         return quizState.isActive && currentIndex < quizQuestions.length && (
-                                            <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-8 border-2 border-indigo-200">
+                                            <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border-2 border-indigo-200">
                                                 <div className="mb-6">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <span className="text-sm font-medium text-gray-600">
@@ -992,7 +992,7 @@ export default function LearnPage() {
 
                         {/* Bouton d'aide IA - Caché pendant le quiz et les résultats */}
                         {!quizState.isActive && !quizState.showResults && (
-                        <div className="px-8 py-4 bg-blue-50 border-t border-blue-100">
+                        <div className="px-4 sm:px-8 py-3 sm:py-4 bg-blue-50 border-t border-blue-100">
                             <button
                                 onClick={() => setShowPremiumPaywall(true)}
                                 className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
@@ -1005,7 +1005,7 @@ export default function LearnPage() {
 
                         {/* Footer du module - Caché pendant le quiz et les résultats */}
                         {!quizState.isActive && !quizState.showResults && (
-                        <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
+                        <div className="px-4 sm:px-8 py-4 sm:py-6 bg-gray-50 border-t border-gray-200">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                                 {!hasQuiz && !isCompleted && (
                                     <button

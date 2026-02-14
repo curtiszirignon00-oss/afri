@@ -6,6 +6,23 @@
 .module-content {
   line-height: 1.8;
   color: #1f2937;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Tous les enfants directs ne doivent pas deborder */
+.module-content * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Exception pour les tableaux dans un wrapper scrollable */
+.module-content .table-wrapper *,
+.module-content .overflow-x-auto * {
+  max-width: none;
 }
 
 /* ========================================
@@ -122,14 +139,32 @@
 /* ========================================
    TABLEAUX
    ======================================== */
+/* Wrapper scrollable automatique pour les tableaux sur mobile */
+.module-content .table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+}
+
 .module-content table {
   width: 100%;
+  min-width: 400px; /* Force le scroll horizontal si le tableau est large */
   border-collapse: collapse;
-  margin: 1.5rem 0;
+  margin: 0; /* Gere par le wrapper ou directement */
   background: white;
   border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Si le tableau n'est pas dans un wrapper, auto-gerer l'overflow */
+.module-content > table,
+.module-content > div > table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
 }
 
 .module-content table thead {
@@ -383,25 +418,98 @@
    RESPONSIVE
    ======================================== */
 @media (max-width: 768px) {
-  .module-content h1 {
-    font-size: 2rem;
+  .module-content {
+    padding: 1rem !important;
   }
 
-  .module-content h2 {
+  .module-content h1 {
     font-size: 1.5rem;
   }
 
-  .module-content h3 {
+  .module-content h2 {
     font-size: 1.25rem;
   }
 
+  .module-content h3 {
+    font-size: 1.125rem;
+  }
+
+  .module-content h4 {
+    font-size: 1rem;
+  }
+
+  /* Tables: reduire le padding et la taille */
   .module-content table {
-    font-size: 0.875rem;
+    font-size: 0.8rem;
+    min-width: 320px;
   }
 
   .module-content table th,
   .module-content table td {
-    padding: 0.75rem;
+    padding: 0.5rem 0.625rem;
+  }
+
+  /* Reduire le padding des divs colorees */
+  .module-content div[class*="bg-blue"],
+  .module-content div[class*="bg-green"],
+  .module-content div[class*="bg-amber"],
+  .module-content div[class*="bg-yellow"],
+  .module-content div[class*="bg-red"],
+  .module-content div[class*="bg-slate"],
+  .module-content div[class*="bg-gray"] {
+    padding: 1rem !important;
+  }
+
+  .module-content div.bg-blue-600 {
+    padding: 1rem !important;
+  }
+
+  /* Padding utilitaire reduit sur mobile */
+  .module-content .p-8 { padding: 1rem; }
+  .module-content .p-6 { padding: 1rem; }
+  .module-content .px-6 { padding-left: 1rem; padding-right: 1rem; }
+
+  /* Grilles en une colonne sur mobile */
+  .module-content .grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  .module-content .grid-cols-2,
+  .module-content .grid-cols-3,
+  .module-content .grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Flex wrap sur mobile pour eviter l'overflow */
+  .module-content .flex {
+    flex-wrap: wrap;
+  }
+
+  /* Images ne depassent jamais */
+  .module-content img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Blockquotes */
+  .module-content blockquote {
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+  }
+
+  /* Paragraphes */
+  .module-content p {
+    font-size: 0.9375rem;
+  }
+
+  .module-content p.text-xl {
+    font-size: 1.0625rem;
+  }
+
+  .module-content p.text-lg {
+    font-size: 1rem;
   }
 }
 
