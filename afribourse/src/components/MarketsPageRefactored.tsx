@@ -245,12 +245,12 @@ export default function MarketsPageRefactored() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Marchés BRVM</h1>
-          <p className="text-gray-600">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Marchés BRVM</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             {stocks.length} action{stocks.length > 1 ? 's' : ''} disponible{stocks.length > 1 ? 's' : ''}
           </p>
         </div>
@@ -465,6 +465,14 @@ export default function MarketsPageRefactored() {
           />
         )}
 
+        {/* Indication de défilement horizontal sur mobile */}
+        <div className="flex md:hidden items-center gap-2 mb-2 text-xs text-gray-500 px-1">
+          <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          <span>Glissez pour voir P/E, Dividende, Cap. Boursière</span>
+        </div>
+
         {/* Tableau des actions */}
         <Card padding="none">
           {stocks.length === 0 ? (
@@ -476,35 +484,32 @@ export default function MarketsPageRefactored() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-hide">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Comparer
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <span className="sr-only">Actions</span>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Watchlist
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 min-w-[120px] after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-200 md:after:hidden">
                       Action
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Prix
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Variation
                     </th>
-                    <th className="hidden md:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       Volume
                     </th>
-                    <th className="hidden lg:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cap. Boursière
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      Cap. Bours.
                     </th>
-                    <th className="hidden xl:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1 group relative">
-                        <span>P/E Ratio</span>
-                        <div className="relative">
+                        <span>P/E</span>
+                        <div className="relative hidden sm:block">
                           <Info className="w-4 h-4 text-gray-400 cursor-help" />
                           <div className="invisible group-hover:visible absolute right-0 top-6 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
                             <div className="font-semibold mb-1">Price to Earnings Ratio</div>
@@ -514,10 +519,10 @@ export default function MarketsPageRefactored() {
                         </div>
                       </div>
                     </th>
-                    <th className="hidden xl:table-cell px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1 group relative">
-                        <span>Dividende (%)</span>
-                        <div className="relative">
+                        <span>Div. (%)</span>
+                        <div className="relative hidden sm:block">
                           <Info className="w-4 h-4 text-gray-400 cursor-help" />
                           <div className="invisible group-hover:visible absolute right-0 top-6 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
                             <div className="font-semibold mb-1">Rendement du Dividende</div>
@@ -533,61 +538,58 @@ export default function MarketsPageRefactored() {
                   {stocks.map((stock) => (
                     <tr
                       key={stock.id}
-                      className="cursor-pointer hover:bg-gray-50 transition-colors"
+                      className="cursor-pointer hover:bg-gray-50 transition-colors group/row"
                     >
-                      {/* Compare Button */}
-                      <td className="hidden sm:table-cell px-6 py-4">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isInComparison(stock)) {
-                              removeFromComparison(stock.id);
-                            } else {
-                              addToComparison(stock);
-                            }
-                          }}
-                          className="text-gray-400 hover:text-blue-600 transition-colors"
-                          title={isInComparison(stock) ? "Retirer de la comparaison" : "Ajouter à la comparaison"}
-                        >
-                          {isInComparison(stock) ? (
-                            <CheckCircle className="w-5 h-5 text-blue-600" />
-                          ) : (
-                            <PlusCircle className="w-5 h-5" />
-                          )}
-                        </button>
+                      {/* Compare + Watchlist buttons */}
+                      <td className="px-2 sm:px-4 py-3 sm:py-4">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isInComparison(stock)) {
+                                removeFromComparison(stock.id);
+                              } else {
+                                addToComparison(stock);
+                              }
+                            }}
+                            className="text-gray-400 hover:text-blue-600 transition-colors p-0.5"
+                            title={isInComparison(stock) ? "Retirer de la comparaison" : "Ajouter à la comparaison"}
+                          >
+                            {isInComparison(stock) ? (
+                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                            ) : (
+                              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleWatchlist(stock.symbol);
+                            }}
+                            className="p-0.5 hover:scale-110 transition-transform"
+                          >
+                            <Star
+                              className={`w-4 h-4 sm:w-5 sm:h-5 ${watchlistTickers.has(stock.symbol)
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-gray-300'
+                                }`}
+                            />
+                          </button>
+                        </div>
                       </td>
 
-                      {/* Watchlist Star */}
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleWatchlist(stock.symbol);
-                          }}
-                          className="p-1 hover:scale-110 transition-transform"
-                        >
-                          <Star
-                            className={`w-5 h-5 ${watchlistTickers.has(stock.symbol)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
-                              }`}
-                          />
-                        </button>
-                      </td>
-
-                      {/* Info action */}
+                      {/* Info action - Sticky column */}
                       <td
-                        className="px-6 py-4"
+                        className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 bg-white group-hover/row:bg-gray-50 z-10 min-w-[120px] after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-200 md:after:hidden"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         <div>
-                          <div className="font-bold text-gray-900">{stock.symbol}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                          <div className="font-bold text-gray-900 text-sm sm:text-base">{stock.symbol}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[100px] sm:max-w-xs">
                             {stock.company_name}
                           </div>
-                          {/* <-- AJOUT : Badge de secteur avec couleur dynamique */}
                           {stock.sector && (
-                            <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded font-medium ${getSectorColor(stock.sector)}`}>
+                            <span className={`hidden sm:inline-block mt-1 px-2 py-0.5 text-xs rounded font-medium ${getSectorColor(stock.sector)}`}>
                               {stock.sector}
                             </span>
                           )}
@@ -596,7 +598,7 @@ export default function MarketsPageRefactored() {
 
                       {/* Prix */}
                       <td
-                        className="px-6 py-4 text-right font-semibold"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-right font-semibold text-sm sm:text-base whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.current_price)} F
@@ -604,11 +606,11 @@ export default function MarketsPageRefactored() {
 
                       {/* Variation */}
                       <td
-                        className="px-6 py-4 text-right"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-right whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         <span
-                          className={`font-semibold ${stock.daily_change_percent >= 0
+                          className={`font-semibold text-sm sm:text-base ${stock.daily_change_percent >= 0
                             ? 'text-green-600'
                             : 'text-red-600'
                             }`}
@@ -620,7 +622,7 @@ export default function MarketsPageRefactored() {
 
                       {/* Volume */}
                       <td
-                        className="hidden md:table-cell px-6 py-4 text-right text-gray-600"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.volume)}
@@ -628,7 +630,7 @@ export default function MarketsPageRefactored() {
 
                       {/* Cap. Boursière */}
                       <td
-                        className="hidden lg:table-cell px-6 py-4 text-right text-gray-600"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {formatNumber(stock.market_cap / 1000000)} M
@@ -636,7 +638,7 @@ export default function MarketsPageRefactored() {
 
                       {/* P/E Ratio */}
                       <td
-                        className="hidden xl:table-cell px-6 py-4 text-right text-gray-600"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {stock.pe_ratio ? formatNumber(stock.pe_ratio, 2) : '-'}
@@ -644,7 +646,7 @@ export default function MarketsPageRefactored() {
 
                       {/* Dividend Yield */}
                       <td
-                        className="hidden xl:table-cell px-6 py-4 text-right text-gray-600"
+                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
                         {stock.dividend_yield ? `${formatNumber(stock.dividend_yield, 2)}%` : '-'}
@@ -658,23 +660,23 @@ export default function MarketsPageRefactored() {
         </Card>
 
         {/* Stats rapides */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-6 sm:mt-8 grid grid-cols-3 gap-3 sm:gap-6">
           <Card>
             <div className="text-center">
-              <p className="text-gray-600 text-sm mb-1">Actions disponibles</p>
-              <p className="text-3xl font-bold text-gray-900">{stocks.length}</p>
+              <p className="text-gray-600 text-xs sm:text-sm mb-1">Actions</p>
+              <p className="text-xl sm:text-3xl font-bold text-gray-900">{stocks.length}</p>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <p className="text-gray-600 text-sm mb-1">Secteurs</p>
-              <p className="text-3xl font-bold text-gray-900">{sectors.length - 1}</p>
+              <p className="text-gray-600 text-xs sm:text-sm mb-1">Secteurs</p>
+              <p className="text-xl sm:text-3xl font-bold text-gray-900">{sectors.length - 1}</p>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <p className="text-gray-600 text-sm mb-1">Dans ma watchlist</p>
-              <p className="text-3xl font-bold text-gray-900">{watchlist.length}</p>
+              <p className="text-gray-600 text-xs sm:text-sm mb-1">Watchlist</p>
+              <p className="text-xl sm:text-3xl font-bold text-gray-900">{watchlist.length}</p>
             </div>
           </Card>
         </div>
