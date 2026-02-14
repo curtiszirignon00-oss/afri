@@ -370,14 +370,14 @@ const TableBlock: React.FC<TableBlockProps> = ({
   highlightFirstRow = false
 }) => {
   return (
-    <div className="overflow-x-auto bg-white rounded-lg border border-slate-200">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto -webkit-overflow-scrolling-touch bg-white rounded-lg border border-slate-200">
+      <table className="w-full text-sm min-w-[320px]">
         <thead>
           <tr className="bg-slate-100 text-slate-700">
             {headers.map((header, i) => (
               <th
                 key={i}
-                className="p-4 text-left font-semibold border-b border-slate-200"
+                className="p-2.5 sm:p-4 text-left font-semibold border-b border-slate-200 whitespace-nowrap text-xs sm:text-sm"
               >
                 {header}
               </th>
@@ -403,7 +403,7 @@ const TableBlock: React.FC<TableBlockProps> = ({
                 return (
                   <td
                     key={cellIndex}
-                    className={`p-4 border-b border-slate-100 ${
+                    className={`p-2.5 sm:p-4 border-b border-slate-100 text-xs sm:text-sm ${
                       isEmphasis ? 'font-semibold text-blue-800' : 'text-slate-600'
                     } ${cellIndex === 0 && rowIndex === 0 ? 'font-bold' : ''}`}
                   >
