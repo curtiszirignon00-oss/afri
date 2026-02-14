@@ -86,10 +86,7 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
             gainLossPercent: summary.gainLossPercent,
             positionsCount: summary.positionsCount,
           };
-          positions = [
-            ...summary.topPerformers,
-            ...summary.topLosers,
-          ].sort((a, b) => b.value - a.value);
+          positions = summary.positions || [];
         }
       } catch (e) { /* ignore */ }
 
@@ -176,10 +173,7 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
             };
           }
           if (profile.show_positions) {
-            filtered.positions = [
-              ...summary.topPerformers,
-              ...summary.topLosers,
-            ].sort((a, b) => b.value - a.value);
+            filtered.positions = summary.positions || [];
           }
         }
       } catch (e) { /* ignore */ }

@@ -547,6 +547,7 @@ export async function getPortfolioSummary(userId: string) {
       gainLoss: totalGainLoss,
       gainLossPercent: totalGainLossPercent,
       positionsCount: portfolio.positions.length,
+      positions: positionsDetails.sort((a, b) => b.value - a.value),
       topPerformers: positionsDetails
         .filter(p => p.gainLossPercent > 0)
         .sort((a, b) => b.gainLossPercent - a.gainLossPercent)
