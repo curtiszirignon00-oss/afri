@@ -121,18 +121,18 @@ export default function ComparisonCard({ stock, onRemove, isBest = {}, isWorst =
                     </span>
                 </div>
 
-                {/* Volume - Hidden on mobile */}
-                <div className="hidden sm:flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Volume</span>
-                    <span className="text-sm font-medium text-gray-700">
+                {/* Volume */}
+                <div className="flex justify-between items-center">
+                    <span className="text-xs sm:text-sm text-gray-600">Volume</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                         {formatNumber(stock.volume)}
                     </span>
                 </div>
 
-                {/* Cap. Boursière - Hidden on mobile */}
-                <div className="hidden sm:flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Cap. Bours.</span>
-                    <span className="text-sm font-medium text-gray-700">
+                {/* Cap. Boursière */}
+                <div className="flex justify-between items-center">
+                    <span className="text-xs sm:text-sm text-gray-600">Cap. Bours.</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                         {formatNumber(stock.market_cap / 1000000)} M
                     </span>
                 </div>
