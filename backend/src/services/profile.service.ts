@@ -310,7 +310,7 @@ export async function updatePrivacySettings(userId: string, settings: any) {
       'is_public',
       'show_avatar', 'show_bio', 'show_country', 'show_birth_date',
       'show_level', 'show_xp', 'show_rank', 'show_streak',
-      'show_portfolio_value', 'show_roi', 'show_positions', 'show_transactions',
+      'show_portfolio_value', 'show_roi', 'show_positions', 'show_transactions', 'show_watchlist',
       'show_achievements', 'show_badges', 'show_completed_modules', 'show_quiz_scores',
       'show_followers_count', 'show_following_count', 'show_followers_list', 'show_following_list', 'show_activity_feed',
       'appear_in_search', 'appear_in_suggestions', 'allow_follow_requests'
