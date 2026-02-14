@@ -91,6 +91,53 @@ export default function LearnPage() {
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
 
+    // Mobile horizontal scroll for module cards
+    const modulesScrollRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [activeCardIndex, setActiveCardIndex] = useState(0);
+
+    const updateScrollState = useCallback(() => {
+        const el = modulesScrollRef.current;
+        if (!el) return;
+        setCanScrollLeft(el.scrollLeft > 10);
+        setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+
+        // Calculate active card index based on scroll position
+        const cardWidth = el.firstElementChild
+            ? (el.firstElementChild as HTMLElement).offsetWidth + 12 // 12 = gap
+            : 1;
+        const idx = Math.round(el.scrollLeft / cardWidth);
+        setActiveCardIndex(idx);
+    }, []);
+
+    useEffect(() => {
+        const el = modulesScrollRef.current;
+        if (!el) return;
+
+        // Initial check
+        updateScrollState();
+
+        el.addEventListener('scroll', updateScrollState, { passive: true });
+        window.addEventListener('resize', updateScrollState);
+        return () => {
+            el.removeEventListener('scroll', updateScrollState);
+            window.removeEventListener('resize', updateScrollState);
+        };
+    }, [modules, loading, updateScrollState]);
+
+    const scrollModules = useCallback((direction: 'left' | 'right') => {
+        const el = modulesScrollRef.current;
+        if (!el) return;
+        const cardWidth = el.firstElementChild
+            ? (el.firstElementChild as HTMLElement).offsetWidth + 12
+            : 300;
+        el.scrollBy({
+            left: direction === 'left' ? -cardWidth : cardWidth,
+            behavior: 'smooth',
+        });
+    }, []);
+
     // --- Fonctions Helper ---
     const getDifficultyColor = (level: string): string => {
         switch (level) {
@@ -1046,13 +1093,13 @@ export default function LearnPage() {
     const progressPercentage = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="mb-12">
-                <div className="text-center max-w-3xl mx-auto mb-8">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+            <div className="mb-8 sm:mb-12">
+                <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
                         Académie de l'Investissement
                     </h1>
-                    <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
+                    <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed">
                         Apprenez à investir intelligemment avec nos modules interactifs. Quiz, contenu progressif et audio pour une expérience d'apprentissage complète.
                     </p>
                 </div>
@@ -1061,9 +1108,9 @@ export default function LearnPage() {
                     <div className="max-w-4xl mx-auto mb-8">
                         {/* Gamification Stats */}
                         {gamificationSummary && (
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                            <div className="flex sm:grid sm:grid-cols-3 gap-3 sm:gap-4 mb-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
                                 {/* Level & XP */}
-                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4">
+                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 min-w-[220px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
                                     <div className="flex items-center gap-3 mb-3">
                                         <LevelBadge level={gamificationSummary.xp.level} size="md" />
                                         <div>
@@ -1079,7 +1126,7 @@ export default function LearnPage() {
                                 </div>
 
                                 {/* Streak */}
-                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 flex items-center justify-center">
+                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 flex items-center justify-center min-w-[180px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
                                     <StreakCounter
                                         streak={gamificationSummary.streak}
                                         size="md"
@@ -1088,7 +1135,7 @@ export default function LearnPage() {
                                 </div>
 
                                 {/* Total XP */}
-                                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl shadow-lg border-2 border-amber-200 p-4 flex flex-col items-center justify-center">
+                                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl shadow-lg border-2 border-amber-200 p-4 flex flex-col items-center justify-center min-w-[160px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
                                     <Zap className="w-8 h-8 text-amber-600 mb-2" />
                                     <p className="text-2xl font-bold text-amber-700">{gamificationSummary.xp.total_xp.toLocaleString()}</p>
                                     <p className="text-sm text-amber-600">XP Total</p>
@@ -1097,19 +1144,19 @@ export default function LearnPage() {
                         )}
 
                         {/* Learning Progress */}
-                        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6">
+                        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 sm:p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
-                                        <TrendingUp className="w-6 h-6 text-white" />
+                                <div className="flex items-center space-x-2 sm:space-x-3">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                                        <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-900">Votre Progression</h3>
-                                        <p className="text-sm text-gray-600">{completedCount} / {totalModules} modules complétés</p>
+                                        <h3 className="font-bold text-gray-900 text-sm sm:text-base">Votre Progression</h3>
+                                        <p className="text-xs sm:text-sm text-gray-600">{completedCount} / {totalModules} modules</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
+                                    <span className="text-2xl sm:text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
                                 </div>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
@@ -1140,18 +1187,18 @@ export default function LearnPage() {
             </div>
 
             {/* Filtres */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-10 sticky top-20 z-10">
-                <div className="flex flex-wrap gap-3">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-10 sticky top-20 z-10">
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
                     {['all', 'debutant', 'intermediaire', 'avance'].map((difficulty) => (
                         <button
                             key={difficulty}
                             onClick={() => setSelectedDifficulty(difficulty)}
-                            className={`px-5 py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 ${selectedDifficulty === difficulty
+                            className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start ${selectedDifficulty === difficulty
                                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
-                            {difficulty === 'all' ? '📚 Tous les modules' : `${getDifficultyLabel(difficulty)}`}
+                            {difficulty === 'all' ? '📚 Tous' : `${getDifficultyLabel(difficulty)}`}
                         </button>
                     ))}
                 </div>
@@ -1181,123 +1228,184 @@ export default function LearnPage() {
             )}
 
             {!loading && !error && (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {modules.map((module, index) => {
-                        const isCompleted = isModuleCompleted(module.slug);
-                        const isUnlocked = isModuleUnlocked(module);
-                        const previousModule = getPreviousIncompleteModule(module);
-                        const hasQuiz = (module.order_index ?? 0) >= 1 && (module.order_index ?? 0) !== 4 && (module.order_index ?? 0) !== 5;
+                <div className="relative">
+                    {/* Fleche gauche - visible seulement sur mobile quand on peut scroller */}
+                    {canScrollLeft && (
+                        <button
+                            onClick={() => scrollModules('left')}
+                            className="md:hidden absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full flex items-center justify-center border border-gray-200 text-gray-700 active:scale-95 transition-transform"
+                            aria-label="Défiler vers la gauche"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                    )}
 
-                        return (
-                            <button
-                                key={module.id}
-                                onClick={() => {
-                                    if (!isUnlocked) {
-                                        toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
-                                        return;
-                                    }
+                    {/* Fleche droite - visible seulement sur mobile quand on peut scroller */}
+                    {canScrollRight && (
+                        <button
+                            onClick={() => scrollModules('right')}
+                            className="md:hidden absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-full flex items-center justify-center border border-gray-200 text-gray-700 active:scale-95 transition-transform"
+                            aria-label="Défiler vers la droite"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    )}
 
-                                    // Track l'ouverture du module
-                                    trackAction(ACTION_TYPES.START_MODULE, 'Ouverture de module', {
-                                        moduleSlug: module.slug,
-                                        moduleTitle: module.title,
-                                        moduleLevel: module.difficulty_level
-                                    });
+                    {/* Gradient de fondu gauche sur mobile */}
+                    {canScrollLeft && (
+                        <div className="md:hidden absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-[5] pointer-events-none" />
+                    )}
 
-                                    setSelectedModule(module);
-                                }}
-                                disabled={!isUnlocked}
-                                className={`bg-white rounded-2xl shadow-lg border-2 p-6 transition-all text-left flex flex-col h-full group relative overflow-hidden ${isCompleted
-                                    ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl hover:-translate-y-1'
-                                    : isUnlocked
-                                        ? 'border-gray-200 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1'
-                                        : 'border-gray-200 opacity-60 cursor-not-allowed'
-                                    }`}
-                            >
-                                {!isUnlocked && (
-                                    <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] flex items-center justify-center z-10">
-                                        <div className="bg-white rounded-full p-4 shadow-xl">
-                                            <Lock className="w-8 h-8 text-gray-600" />
+                    {/* Gradient de fondu droite sur mobile */}
+                    {canScrollRight && (
+                        <div className="md:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-[5] pointer-events-none" />
+                    )}
+
+                    {/* Module cards - horizontal scroll on mobile, grid on desktop */}
+                    <div
+                        ref={modulesScrollRef}
+                        className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory scrollbar-hide pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0"
+                    >
+                        {modules.map((module, index) => {
+                            const isCompleted = isModuleCompleted(module.slug);
+                            const isUnlocked = isModuleUnlocked(module);
+                            const previousModule = getPreviousIncompleteModule(module);
+                            const hasQuiz = (module.order_index ?? 0) >= 1 && (module.order_index ?? 0) !== 4 && (module.order_index ?? 0) !== 5;
+
+                            return (
+                                <button
+                                    key={module.id}
+                                    onClick={() => {
+                                        if (!isUnlocked) {
+                                            toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
+                                            return;
+                                        }
+
+                                        // Track l'ouverture du module
+                                        trackAction(ACTION_TYPES.START_MODULE, 'Ouverture de module', {
+                                            moduleSlug: module.slug,
+                                            moduleTitle: module.title,
+                                            moduleLevel: module.difficulty_level
+                                        });
+
+                                        setSelectedModule(module);
+                                    }}
+                                    disabled={!isUnlocked}
+                                    className={`bg-white rounded-2xl shadow-lg border-2 p-5 sm:p-6 transition-all text-left flex flex-col h-full group relative overflow-hidden w-[280px] sm:w-[320px] md:w-auto flex-shrink-0 md:flex-shrink snap-start ${isCompleted
+                                        ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl hover:-translate-y-1'
+                                        : isUnlocked
+                                            ? 'border-gray-200 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1'
+                                            : 'border-gray-200 opacity-60 cursor-not-allowed'
+                                        }`}
+                                >
+                                    {!isUnlocked && (
+                                        <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] flex items-center justify-center z-10">
+                                            <div className="bg-white rounded-full p-4 shadow-xl">
+                                                <Lock className="w-8 h-8 text-gray-600" />
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg shadow-md">
-                                        {module.order_index ?? index + 1}
-                                    </div>
-
-                                    <div className="flex flex-col items-end space-y-2">
-                                        <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 ${getDifficultyColor(module.difficulty_level)}`}>
-                                            {getDifficultyLabel(module.difficulty_level)}
-                                        </span>
-
-                                        {isCompleted && (
-                                            <div className="flex items-center space-x-1 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
-                                                <CheckCircle className="w-3.5 h-3.5" />
-                                                <span>Terminé</span>
-                                            </div>
-                                        )}
-
-                                        {!isUnlocked && (
-                                            <div className="flex items-center space-x-1 bg-gray-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                                                <Lock className="w-3.5 h-3.5" />
-                                                <span>Verrouillé</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col flex-grow mb-4">
-                                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
-                                        {module.title}
-                                    </h3>
-                                    {module.description && (
-                                        <p className="text-sm text-gray-600 line-clamp-3 flex-grow leading-relaxed">
-                                            {module.description}
-                                        </p>
                                     )}
-                                </div>
 
-                                <div className="pt-4 border-t-2 border-gray-100 space-y-3">
-                                    <div className="flex items-center justify-between text-xs text-gray-600">
-                                        <div className="flex items-center space-x-1.5">
-                                            <Clock className="w-4 h-4" />
-                                            <span className="font-medium">{module.duration_minutes || '15'} min</span>
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-base sm:text-lg shadow-md">
+                                            {module.order_index ?? index + 1}
                                         </div>
-                                        <div className="flex items-center space-x-1.5">
-                                            <BookOpen className="w-4 h-4" />
-                                            <span className="font-medium">
-                                                {module.content_type === 'video' ? 'Vidéo' : 'Article'}
+
+                                        <div className="flex flex-col items-end space-y-2">
+                                            <span className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold border-2 ${getDifficultyColor(module.difficulty_level)}`}>
+                                                {getDifficultyLabel(module.difficulty_level)}
                                             </span>
+
+                                            {isCompleted && (
+                                                <div className="flex items-center space-x-1 bg-green-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold shadow-md">
+                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                    <span>Terminé</span>
+                                                </div>
+                                            )}
+
+                                            {!isUnlocked && (
+                                                <div className="flex items-center space-x-1 bg-gray-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
+                                                    <Lock className="w-3.5 h-3.5" />
+                                                    <span>Verrouillé</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        {hasQuiz && (
-                                            <div className="flex items-center space-x-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold">
-                                                <Brain className="w-3.5 h-3.5" />
-                                                <span>Quiz</span>
-                                            </div>
+                                    <div className="flex flex-col flex-grow mb-4">
+                                        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+                                            {module.title}
+                                        </h3>
+                                        {module.description && (
+                                            <p className="text-sm text-gray-600 line-clamp-3 flex-grow leading-relaxed">
+                                                {module.description}
+                                            </p>
                                         )}
+                                    </div>
 
-                                        <div className="flex items-center space-x-1 bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-medium opacity-50">
-                                            <Volume2 className="w-3.5 h-3.5" />
-                                            <span>Audio</span>
+                                    <div className="pt-4 border-t-2 border-gray-100 space-y-3">
+                                        <div className="flex items-center justify-between text-xs text-gray-600">
+                                            <div className="flex items-center space-x-1.5">
+                                                <Clock className="w-4 h-4" />
+                                                <span className="font-medium">{module.duration_minutes || '15'} min</span>
+                                            </div>
+                                            <div className="flex items-center space-x-1.5">
+                                                <BookOpen className="w-4 h-4" />
+                                                <span className="font-medium">
+                                                    {module.content_type === 'video' ? 'Vidéo' : 'Article'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {hasQuiz && (
+                                                <div className="flex items-center space-x-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold">
+                                                    <Brain className="w-3.5 h-3.5" />
+                                                    <span>Quiz</span>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center space-x-1 bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-medium opacity-50">
+                                                <Volume2 className="w-3.5 h-3.5" />
+                                                <span>Audio</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {!isUnlocked && previousModule && (
-                                    <div className="mt-3 pt-3 border-t-2 border-gray-200">
-                                        <p className="text-xs text-gray-600 font-medium">
-                                            🔒 Complétez d'abord "{previousModule.title}"
-                                        </p>
-                                    </div>
-                                )}
-                            </button>
-                        );
-                    })}
+                                    {!isUnlocked && previousModule && (
+                                        <div className="mt-3 pt-3 border-t-2 border-gray-200">
+                                            <p className="text-xs text-gray-600 font-medium">
+                                                🔒 Complétez d'abord "{previousModule.title}"
+                                            </p>
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Indicateurs de position (dots) - mobile seulement */}
+                    {modules.length > 1 && (
+                        <div className="flex md:hidden items-center justify-center gap-1.5 mt-4">
+                            {modules.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => {
+                                        const el = modulesScrollRef.current;
+                                        if (!el || !el.firstElementChild) return;
+                                        const cardWidth = (el.firstElementChild as HTMLElement).offsetWidth + 12;
+                                        el.scrollTo({ left: cardWidth * idx, behavior: 'smooth' });
+                                    }}
+                                    className={`rounded-full transition-all duration-300 ${
+                                        activeCardIndex === idx
+                                            ? 'w-6 h-2 bg-blue-600'
+                                            : 'w-2 h-2 bg-gray-300'
+                                    }`}
+                                    aria-label={`Aller au module ${idx + 1}`}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
