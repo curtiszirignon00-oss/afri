@@ -34,6 +34,15 @@ interface StockDataRow {
  */
 function parseExcelDate(excelDate: number | string): Date {
   if (typeof excelDate === 'string') {
+    // Handle DD/MM/YYYY format (European/French)
+    const ddmmyyyy = excelDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (ddmmyyyy) {
+      const day = parseInt(ddmmyyyy[1], 10);
+      const month = parseInt(ddmmyyyy[2], 10) - 1; // 0-indexed
+      const year = parseInt(ddmmyyyy[3], 10);
+      return new Date(year, month, day);
+    }
+    // Handle YYYY-MM-DD or other standard formats
     const parsed = Date.parse(excelDate);
     if (!isNaN(parsed)) {
       return new Date(parsed);
@@ -155,7 +164,7 @@ export async function importStockHistoryFromExcel(
         }
 
         // Extraire les valeurs OHLCV avec support de multiples formats de colonnes
-        const closeValue = extractValue(row, ['Close', 'close', 'Clôture', 'Cloture', 'Dernier']);
+        const closeValue = extractValue(row, ['Close', 'close', 'Clôture', 'Cloture', 'Dernier', 'fermeture', 'Fermeture']);
         const close = parseNumericValue(closeValue, 0);
 
         if (close <= 0) {
@@ -163,16 +172,16 @@ export async function importStockHistoryFromExcel(
           continue;
         }
 
-        const openValue = extractValue(row, ['Open', 'open', 'Ouverture', 'Ouv.']);
+        const openValue = extractValue(row, ['Open', 'open', 'Ouverture', 'Ouv.', 'ouverture']);
         const open = parseNumericValue(openValue, close);
 
-        const highValue = extractValue(row, ['High', 'high', 'Plus haut', 'Plus Haut']);
+        const highValue = extractValue(row, ['High', 'high', 'Plus haut', 'Plus Haut', '+Haut', '+haut']);
         const high = parseNumericValue(highValue, close);
 
-        const lowValue = extractValue(row, ['Low', 'low', 'Plus bas', 'Plus Bas']);
+        const lowValue = extractValue(row, ['Low', 'low', 'Plus bas', 'Plus Bas', '+Bas', '+bas']);
         const low = parseNumericValue(lowValue, close);
 
-        const volumeValue = extractValue(row, ['Volume', 'volume', 'Volume Titres', 'Volume FCFA']);
+        const volumeValue = extractValue(row, ['Volume', 'volume', 'Volume Titres', 'Volume FCFA', 'Vol.']);
         const volume = Math.floor(parseNumericValue(volumeValue, 0));
 
         // Vérifier si la donnée existe déjà
