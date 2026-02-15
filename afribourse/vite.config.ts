@@ -23,51 +23,94 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'robots.txt'],
-      manifest: {
-        name: 'AfriBourse - Simulateur Bourse BRVM',
-        short_name: 'AfriBourse',
-        description: 'Apprenez a investir en bourse avec AfriBourse',
-        theme_color: '#10B981',
-        background_color: '#0F172A',
-        display: 'standalone',
-        orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
-        icons: [
-          { src: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        ],
-        categories: ['finance', 'education'],
-        lang: 'fr',
-      },
+      includeAssets: [
+        'images/logo_afribourse.png',
+        'AppImages/android/android-launchericon-192-192.png',
+        'AppImages/android/android-launchericon-512-512.png',
+      ],
+      // manifest.json is in /public, no need to generate one
+      manifest: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff2,woff,ttf}'],
+        // Exclude large images from precache, they'll be cached at runtime
+        globIgnores: ['**/screenshot/**', '**/AppImages/**'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB
+        // SPA: route all navigation to index.html
+        navigateFallback: 'index.html',
+        navigateFallbackAllowlist: [/^(?!\/(api|__)).*$/],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
+          // Google Fonts stylesheets
           {
-            urlPattern: /^https:\/\/api\.afribourse\.com\/api\/stocks/,
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          // Google Fonts webfont files
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Images (logos, avatars, screenshots)
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // API: Stocks (stale-while-revalidate for fast display + background refresh)
+          {
+            urlPattern: /^https:\/\/api\.africbourse\.com\/api\/stocks/,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'stocks-cache',
               expiration: { maxEntries: 50, maxAgeSeconds: 3600 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
+          // API: Learning modules (cache-first, rarely changes)
           {
-            urlPattern: /^https:\/\/api\.afribourse\.com\/api\/learning/,
+            urlPattern: /^https:\/\/api\.africbourse\.com\/api\/learning/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'learning-cache',
               expiration: { maxEntries: 100, maxAgeSeconds: 86400 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
+          // API: Leaderboard (network-first, changes often)
           {
-            urlPattern: /^https:\/\/api\.afribourse\.com\/api\//,
+            urlPattern: /^https:\/\/api\.africbourse\.com\/api\/leaderboard/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'leaderboard-cache',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 20, maxAgeSeconds: 300 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // API: All other endpoints (network-first with fallback)
+          {
+            urlPattern: /^https:\/\/api\.africbourse\.com\/api\//,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               networkTimeoutSeconds: 10,
               expiration: { maxEntries: 100, maxAgeSeconds: 300 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
         ],
