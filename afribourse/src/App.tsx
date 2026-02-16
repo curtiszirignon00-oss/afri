@@ -57,6 +57,7 @@ import WelcomePopup from './components/WelcomePopup';
 import { UpdatePrompt } from './components/pwa/UpdatePrompt';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { PushNotificationPrompt } from './components/pwa/PushNotificationPrompt';
+import { InstallPrompt } from './components/pwa/InstallPrompt';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -326,6 +327,9 @@ function Layout() {
 
       {/* Push Notification Prompt */}
       <PushNotificationPrompt />
+
+      {/* PWA Install Prompt (mobile) */}
+      <InstallPrompt />
     </div>
   );
 }
