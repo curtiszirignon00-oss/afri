@@ -13,6 +13,7 @@ export { StreakFreezeIndicator } from './StreakFreezeIndicator';
 export { AchievementCard } from './AchievementCard';
 export { AchievementGallery } from './AchievementGallery';
 export { AchievementUnlockModal } from './AchievementUnlockModal';
+export { NextAchievements } from './NextAchievements';
 
 // Weekly Challenges
 export { WeeklyChallengeCard } from './WeeklyChallengeCard';

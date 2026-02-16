@@ -107,6 +107,27 @@ export async function checkMyAchievements(req: Request, res: Response, next: Nex
 }
 
 /**
+ * GET /api/achievements/me/next
+ * Retourne les 3 prochains badges les plus proches d'être débloqués
+ */
+export async function getNextAchievements(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+
+    const limit = parseInt(req.query.limit as string) || 3;
+    const nextBadges = await achievementService.getNextAchievements(userId, limit);
+    return res.status(200).json(nextBadges);
+
+  } catch (error) {
+    console.error('❌ Erreur getNextAchievements:', error);
+    return next(error);
+  }
+}
+
+/**
  * POST /api/achievements/check/:category
  * Vérifie les achievements d'une catégorie spécifique
  */
