@@ -30,8 +30,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0",
-    "react-onesignal": "^3.4.6",
-    "react-router-dom": "^7.9.6",
+"react-router-dom": "^7.9.6",
     "recharts": "^3.6.0",
     "uuid": "^13.0.0"
   },
