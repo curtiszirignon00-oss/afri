@@ -300,29 +300,30 @@ export async function getStockHistory(
 
     switch (period) {
       case '1M':
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, now.getUTCDate()));
         break;
       case '3M':
-        startDate = new Date(now.setMonth(now.getMonth() - 3));
+        startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 3, now.getUTCDate()));
         break;
       case '6M':
-        startDate = new Date(now.setMonth(now.getMonth() - 6));
+        startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 6, now.getUTCDate()));
         break;
       case '1Y':
-        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        startDate = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth(), now.getUTCDate()));
         break;
       case 'ALL':
-        startDate = new Date(0); // Depuis l'origine
+        startDate = new Date(0);
         break;
       default:
-        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        startDate = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth(), now.getUTCDate()));
     }
 
     const history = await prisma.stockHistory.findMany({
       where: {
         stock_ticker: symbol,
         date: {
-          gte: startDate
+          gte: startDate,
+          lte: now // Ne jamais retourner de dates futures
         }
       },
       orderBy: {
@@ -330,7 +331,37 @@ export async function getStockHistory(
       }
     });
 
-    return history;
+    // Normaliser les dates et dédupliquer
+    // Les imports Excel ont créé des dates à 22:00/23:00 UTC (timezone locale)
+    // On normalise en prenant la date calendaire locale (jour suivant pour 22:00/23:00 UTC)
+    const dateMap = new Map<string, typeof history[0]>();
+
+    for (const record of history) {
+      const utcHours = record.date.getUTCHours();
+      let dateKey: string;
+
+      if (utcHours >= 22) {
+        // 22:00 ou 23:00 UTC = lendemain en timezone locale (UTC+1/+2)
+        const nextDay = new Date(record.date);
+        nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+        dateKey = `${nextDay.getUTCFullYear()}-${String(nextDay.getUTCMonth() + 1).padStart(2, '0')}-${String(nextDay.getUTCDate()).padStart(2, '0')}`;
+      } else {
+        dateKey = `${record.date.getUTCFullYear()}-${String(record.date.getUTCMonth() + 1).padStart(2, '0')}-${String(record.date.getUTCDate()).padStart(2, '0')}`;
+      }
+
+      // Garder l'entree la plus recente (la plus precise, souvent du scraper)
+      if (!dateMap.has(dateKey) || record.date > dateMap.get(dateKey)!.date) {
+        dateMap.set(dateKey, record);
+      }
+    }
+
+    // Retourner avec des dates normalisées (YYYY-MM-DD à minuit UTC)
+    return Array.from(dateMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dateKey, record]) => ({
+        ...record,
+        date: new Date(dateKey + 'T00:00:00.000Z')
+      }));
   } catch (error) {
     console.error(`❌ Erreur lors de la récupération de l'historique de ${symbol}:`, error);
     throw error;
