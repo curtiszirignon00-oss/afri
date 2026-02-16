@@ -15,7 +15,7 @@ import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake } from 'lucide-react
 
 // Gamification imports
 import { useMyAchievements, useStreak } from '../hooks/useGamification';
-import { AchievementCard, StreakFreezeIndicator } from '../components/gamification';
+import { AchievementCard, StreakFreezeIndicator, NextAchievements } from '../components/gamification';
 
 export default function ProfilePage() {
     const { userId } = useParams();
@@ -363,6 +363,9 @@ export default function ProfilePage() {
                                         )}
                                     </div>
                                 )}
+
+                                {/* Prochains Badges - objectifs les plus proches */}
+                                <NextAchievements />
                             </>
                         )}
 
