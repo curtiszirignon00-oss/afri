@@ -5,6 +5,8 @@
 import { PrismaClient } from '@prisma/client';
 import * as achievementService from './achievement.service';
 import * as activityService from './activity.service';
+import { createNotification } from './notification.service';
+import { sendPushToUser } from './push-notification.service';
 import {
   XP_REWARDS,
   LEVEL_TITLES,
@@ -231,7 +233,26 @@ async function handleLevelUp(userId: string, oldLevel: number, newLevel: number)
     // Vérifier déblocage de features selon le niveau
     await checkFeatureUnlocks(userId, newLevel);
 
-    // TODO: Envoyer une notification
+    // Notification in-app level-up
+    try {
+      await createNotification({
+        userId,
+        type: 'LEVEL_UP',
+        title: `Niveau ${newLevel} atteint !`,
+        message: `Bravo ! Vous êtes passé du niveau ${oldLevel} au niveau ${newLevel}. Continuez comme ça !`,
+        metadata: { old_level: oldLevel, new_level: newLevel }
+      });
+    } catch (e) { /* non-bloquant */ }
+
+    // Push notification level-up
+    try {
+      await sendPushToUser(userId, {
+        title: `Niveau ${newLevel} atteint !`,
+        body: `Félicitations ! Vous êtes maintenant niveau ${newLevel} sur AfriBourse.`,
+        url: '/profile',
+        tag: 'level-up',
+      });
+    } catch (e) { /* push optionnel */ }
 
   } catch (error) {
     console.error('❌ Erreur handleLevelUp:', error);
