@@ -1,14 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+type Platform = 'ios' | 'android' | 'desktop';
+
+function detectPlatform(): Platform {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+
 export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const platform = detectPlatform();
 
   useEffect(() => {
     // Vérifier si l'app est déjà installée (standalone mode)
@@ -25,13 +35,11 @@ export function useInstallPrompt() {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setIsInstallable(true);
     };
 
     // Détecter quand l'app est installée
     const handleAppInstalled = () => {
       setIsInstalled(true);
-      setIsInstallable(false);
       setDeferredPrompt(null);
     };
 
@@ -44,39 +52,36 @@ export function useInstallPrompt() {
     };
   }, []);
 
-  const installApp = async (): Promise<boolean> => {
-    if (!deferredPrompt) return false;
-
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-      setIsInstallable(false);
-      return true;
+  const installApp = useCallback(async (): Promise<boolean> => {
+    // Si le navigateur supporte le prompt natif, l'utiliser
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        return true;
+      }
+      return false;
     }
 
+    // Sinon, afficher les instructions manuelles
+    setShowInstructions(true);
     return false;
-  };
+  }, [deferredPrompt]);
 
-  const dismiss = () => {
-    setIsInstallable(false);
-    localStorage.setItem('install-prompt-dismissed', Date.now().toString());
-  };
+  const closeInstructions = useCallback(() => {
+    setShowInstructions(false);
+  }, []);
 
-  // Ne pas afficher si l'utilisateur a dismiss récemment (7 jours)
-  const wasDismissed = () => {
-    const dismissed = localStorage.getItem('install-prompt-dismissed');
-    if (!dismissed) return false;
-    const dismissedAt = parseInt(dismissed, 10);
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    return Date.now() - dismissedAt < sevenDays;
-  };
+  // Le bouton est visible si l'app n'est PAS déjà installée
+  const canShow = !isInstalled;
 
   return {
-    isInstallable: isInstallable && !wasDismissed(),
+    isInstallable: canShow,
     isInstalled,
     installApp,
-    dismiss,
+    showInstructions,
+    closeInstructions,
+    platform,
   };
 }

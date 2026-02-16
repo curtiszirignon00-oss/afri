@@ -184,6 +184,9 @@ model User {
   createdEvents      Event[]
   eventRegistrations EventRegistration[]
 
+  // --- Push Subscriptions ---
+  pushSubscriptions PushSubscription[]
+
   @@map("users")
 }
 
@@ -1787,4 +1790,25 @@ model AuditLog {
   @@index([created_at])
   @@index([success])
   @@map("audit_logs")
+}
+
+// ================================= //
+// === PUSH SUBSCRIPTIONS ========== //
+// ================================= //
+
+model PushSubscription {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  endpoint String @unique
+  p256dh   String // Clé publique du client
+  auth     String // Secret d'authentification
+
+  // Métadonnées
+  user_agent String?
+  created_at DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

@@ -1,60 +1,47 @@
 // afribourse/src/components/pwa/PushNotificationPrompt.tsx
+// Push notification prompt natif (Web Push API, sans OneSignal)
 import { useState, useEffect } from 'react';
 import { Bell, X } from 'lucide-react';
 import {
   isPushSupported,
   getPermissionStatus,
-  requestNotificationPermission,
-  getPlayerId,
-  setExternalUserId,
+  subscribeToPush,
+  isSubscribed,
 } from '../../services/pushNotifications';
 import { useAuth } from '../../contexts/AuthContext';
 
 export function PushNotificationPrompt() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { user, isLoggedIn } = useAuth();
+  const { token, isLoggedIn } = useAuth();
 
   useEffect(() => {
-    // Afficher seulement si:
-    // - Push supporte
-    // - Permission pas encore demandee
-    // - Utilisateur connecte
-    // - Pas deja dismiss (localStorage)
     const dismissed = localStorage.getItem('push-prompt-dismissed');
     if (
       isPushSupported() &&
       getPermissionStatus() === 'default' &&
       isLoggedIn &&
-      user &&
+      token &&
       !dismissed
     ) {
-      // Attendre 30 secondes avant d'afficher
-      const timer = setTimeout(() => setShow(true), 30000);
-      return () => clearTimeout(timer);
+      // Vérifier si déjà abonné
+      isSubscribed().then((subscribed) => {
+        if (!subscribed) {
+          // Attendre 30 secondes avant d'afficher
+          const timer = setTimeout(() => setShow(true), 30000);
+          return () => clearTimeout(timer);
+        }
+      });
     }
-  }, [user, isLoggedIn]);
+  }, [token, isLoggedIn]);
 
   const handleEnable = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const granted = await requestNotificationPermission();
-      if (granted && user?.id) {
-        await setExternalUserId(user.id);
-        const playerId = await getPlayerId();
-        if (playerId) {
-          // Enregistrer le playerId dans le backend
-          try {
-            await fetch('/api/users/me/push-token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ playerId }),
-            });
-          } catch (error) {
-            console.error('[Push] Failed to save player ID to backend:', error);
-          }
-        }
-      }
+      await subscribeToPush(token);
+    } catch (error) {
+      console.error('[Push] Subscribe error:', error);
     } finally {
       setLoading(false);
       setShow(false);
