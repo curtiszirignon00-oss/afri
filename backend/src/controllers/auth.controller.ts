@@ -200,7 +200,14 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             // 1. Enregistrer activité de streak (login compte comme visite profil)
             await streakService.recordActivity(userId, 'profile_visit');
 
-            // 2. Récupérer les stats gamification pour la réponse
+            // 2. Vérifier et débloquer les badges automatiquement
+            const achievementResults = await achievementService.checkAllAchievements(userId);
+            if (achievementResults.total > 0) {
+                gamificationData.newAchievements = achievementResults;
+                console.log(`🏆 [LOGIN] ${achievementResults.total} badge(s) débloqué(s) pour ${userAsAny.email}`);
+            }
+
+            // 3. Récupérer les stats gamification pour la réponse
             const userGamificationStats = await prisma.userProfile.findUnique({
                 where: { userId },
                 select: {
