@@ -31,6 +31,7 @@ export default defineConfig({
       // manifest.json is in /public, no need to generate one
       manifest: false,
       workbox: {
+        importScripts: ['/push-handler.js'],
         globPatterns: ['**/*.{js,css,html,ico,svg,woff2,woff,ttf}'],
         // Exclude large images from precache, they'll be cached at runtime
         globIgnores: ['**/screenshot/**', '**/AppImages/**'],

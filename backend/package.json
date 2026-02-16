@@ -92,6 +92,7 @@
     "tailwind-scrollbar-hide": "^4.0.0",
     "ts-node": "^10.9.2",
     "uuid": "^13.0.0",
+    "web-push": "^3.6.7",
     "xlsx": "^0.18.5",
     "zod": "^4.1.12"
   },
