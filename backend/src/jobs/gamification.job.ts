@@ -11,6 +11,7 @@
 import cron from 'node-cron';
 import { PrismaClient } from '@prisma/client';
 import * as streakService from '../services/streak.service';
+import * as achievementService from '../services/achievement.service';
 
 const prisma = new PrismaClient();
 
@@ -20,6 +21,7 @@ const prisma = new PrismaClient();
 
 const SCHEDULES = {
   CHECK_STREAKS: '0 1 * * *',        // Tous les jours à 01h00
+  CHECK_ACHIEVEMENTS: '30 1 * * *',  // Tous les jours à 01h30 (après les streaks)
   CALCULATE_RANKINGS: '0 2 * * *',   // Tous les jours à 02h00
   WEEKLY_CHALLENGES: '0 0 * * 1',    // Lundi à 00h00
   CLEANUP: '0 3 1 * *'               // 1er du mois à 03h00
@@ -253,6 +255,57 @@ async function runCleanup() {
 }
 
 // =====================================
+// JOB 5: VÉRIFICATION DES BADGES (01h30)
+// =====================================
+
+async function runAchievementsCheck() {
+  console.log('\n' + '='.repeat(60));
+  console.log('🏆 [GAMIFICATION] Vérification des badges...');
+  console.log('='.repeat(60));
+
+  try {
+    // Récupérer tous les utilisateurs actifs (connectés dans les 30 derniers jours)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const activeUsers = await prisma.userProfile.findMany({
+      where: {
+        last_activity_date: { gte: thirtyDaysAgo }
+      },
+      select: { userId: true }
+    });
+
+    console.log(`📊 ${activeUsers.length} utilisateurs actifs à vérifier`);
+
+    let totalUnlocked = 0;
+    let usersChecked = 0;
+
+    for (const user of activeUsers) {
+      try {
+        const result = await achievementService.checkAllAchievements(user.userId);
+        if (result.total > 0) {
+          totalUnlocked += result.total;
+          console.log(`   🏆 ${user.userId}: ${result.total} badge(s) débloqué(s)`);
+        }
+        usersChecked++;
+      } catch (err) {
+        // Continuer même si un utilisateur échoue
+        console.error(`   ❌ Erreur pour ${user.userId}:`, err instanceof Error ? err.message : err);
+      }
+    }
+
+    console.log(`✅ [GAMIFICATION] Badges vérifiés:`);
+    console.log(`   - Utilisateurs vérifiés: ${usersChecked}`);
+    console.log(`   - Badges débloqués: ${totalUnlocked}`);
+    return { checked: usersChecked, unlocked: totalUnlocked };
+
+  } catch (error: any) {
+    console.error('❌ [GAMIFICATION] Erreur vérification badges:', error.message);
+    throw error;
+  }
+}
+
+// =====================================
 // INITIALISATION DES JOBS
 // =====================================
 
@@ -282,6 +335,12 @@ cron.schedule(SCHEDULES.CLEANUP, runCleanup, {
 });
 console.log('   ✅ Job nettoyage activé (1er du mois 03h00)');
 
+// Job 5: Vérification des badges (01h30)
+cron.schedule(SCHEDULES.CHECK_ACHIEVEMENTS, runAchievementsCheck, {
+  timezone: 'Africa/Abidjan'
+});
+console.log('   ✅ Job badges activé (01h30 quotidien)');
+
 console.log('🎮 [GAMIFICATION JOBS] Tous les jobs sont actifs!');
 
 // =====================================
@@ -292,12 +351,14 @@ export {
   runStreakCheck,
   runRankingsCalculation,
   runWeeklyChallengesGeneration,
-  runCleanup
+  runCleanup,
+  runAchievementsCheck
 };
 
 export default {
   runStreakCheck,
   runRankingsCalculation,
   runWeeklyChallengesGeneration,
-  runCleanup
+  runCleanup,
+  runAchievementsCheck
 };

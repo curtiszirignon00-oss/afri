@@ -300,6 +300,47 @@ export function useClaimReward() {
   });
 }
 
+/**
+ * Vérifier et débloquer les badges (appel au login/dashboard)
+ */
+export function useCheckAchievements() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post('/achievements/check');
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.total > 0) {
+        queryClient.invalidateQueries({ queryKey: ['gamification', 'achievements'] });
+        queryClient.invalidateQueries({ queryKey: ['gamification', 'xp'] });
+        queryClient.invalidateQueries({ queryKey: ['nextAchievements'] });
+      }
+    },
+  });
+}
+
+/**
+ * Récupère les 3 prochains badges les plus proches
+ */
+export function useNextAchievements(limit: number = 3) {
+  return useQuery({
+    queryKey: ['nextAchievements', limit],
+    queryFn: async () => {
+      const response = await apiClient.get(`/achievements/me/next?limit=${limit}`);
+      return response.data as Array<{
+        achievement: Achievement;
+        current: number;
+        target: number;
+        percent: number;
+        remaining: string;
+      }>;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 // ============= SUMMARY HOOK =============
 
 /**
