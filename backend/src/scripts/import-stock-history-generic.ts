@@ -40,20 +40,21 @@ function parseExcelDate(excelDate: number | string): Date {
       const day = parseInt(ddmmyyyy[1], 10);
       const month = parseInt(ddmmyyyy[2], 10) - 1; // 0-indexed
       const year = parseInt(ddmmyyyy[3], 10);
-      return new Date(year, month, day);
+      return new Date(Date.UTC(year, month, day)); // UTC pour eviter les decalages timezone
     }
     // Handle YYYY-MM-DD or other standard formats
     const parsed = Date.parse(excelDate);
     if (!isNaN(parsed)) {
-      return new Date(parsed);
+      // Normaliser a minuit UTC
+      const d = new Date(parsed);
+      return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
     }
     return new Date(excelDate);
   }
 
   // Excel date: number of days since 1900-01-01
-  // Adjusted for Excel's 1900 leap year bug
   const parsedDate = XLSX.SSF.parse_date_code(excelDate) as any;
-  return new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
+  return new Date(Date.UTC(parsedDate.y, parsedDate.m - 1, parsedDate.d)); // UTC
 }
 
 /**
