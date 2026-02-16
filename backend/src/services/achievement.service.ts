@@ -5,6 +5,8 @@
 import { PrismaClient } from '@prisma/client';
 import * as xpService from './xp.service';
 import * as activityService from './activity.service';
+import { createNotification } from './notification.service';
+import { sendAchievementUnlockedNotification } from './push-notification.service';
 
 const prisma = new PrismaClient();
 
@@ -157,6 +159,33 @@ export async function unlockAchievement(userId: string, achievementCode: string)
     }
 
     console.log(`🏆 ${userId} a débloqué "${achievement.name}" (+${achievement.xp_reward} XP)`);
+
+    // Notification in-app
+    const xpText = achievement.xp_reward > 0 ? ` (+${achievement.xp_reward} XP)` : '';
+    try {
+      await createNotification({
+        userId,
+        type: 'ACHIEVEMENT',
+        title: `${achievement.icon} Badge débloqué !`,
+        message: `Félicitations ! Vous avez obtenu le badge "${achievement.name}"${xpText}. ${achievement.description}`,
+        metadata: {
+          achievementId: achievement.id,
+          achievementCode: achievement.code,
+          icon: achievement.icon,
+          rarity: achievement.rarity,
+          xp_reward: achievement.xp_reward
+        }
+      });
+    } catch (notifError) {
+      console.error('⚠️ Erreur notification in-app badge:', notifError instanceof Error ? notifError.message : notifError);
+    }
+
+    // Push notification
+    try {
+      await sendAchievementUnlockedNotification(userId, achievement.name, achievement.xp_reward);
+    } catch (pushError) {
+      // Push peut échouer silencieusement (user pas abonné)
+    }
 
     return {
       alreadyUnlocked: false,
