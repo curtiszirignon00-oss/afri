@@ -12,6 +12,7 @@ import {
     TrendingDown,
     CheckCircle,
     Flag,
+    Zap,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -225,6 +226,54 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
 
                 {/* Content */}
                 <p className="text-gray-800 mt-2 whitespace-pre-wrap">{post.content}</p>
+
+                {/* Badge Embed for ACHIEVEMENT posts */}
+                {post.type === 'ACHIEVEMENT' && (post as any).metadata?.achievement && (
+                    <div
+                        className="mt-3 p-4 rounded-xl border-2"
+                        style={{
+                            borderColor: (post as any).metadata.achievement.rarity === 'legendary' ? '#F59E0B' :
+                                (post as any).metadata.achievement.rarity === 'epic' ? '#8B5CF6' :
+                                (post as any).metadata.achievement.rarity === 'rare' ? '#3B82F6' : '#9CA3AF',
+                            background: (post as any).metadata.achievement.rarity === 'legendary' ? 'linear-gradient(135deg, #FFFBEB, #FEF3C7)' :
+                                (post as any).metadata.achievement.rarity === 'epic' ? 'linear-gradient(135deg, #F5F3FF, #EDE9FE)' :
+                                (post as any).metadata.achievement.rarity === 'rare' ? 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' :
+                                'linear-gradient(135deg, #F9FAFB, #F3F4F6)',
+                        }}
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="text-5xl flex-shrink-0">
+                                {(post as any).metadata.achievement.icon || '🏆'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-bold text-gray-900 truncate">
+                                        {(post as any).metadata.achievement.name}
+                                    </h4>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                        (post as any).metadata.achievement.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' :
+                                        (post as any).metadata.achievement.rarity === 'epic' ? 'bg-purple-100 text-purple-700' :
+                                        (post as any).metadata.achievement.rarity === 'rare' ? 'bg-blue-100 text-blue-700' :
+                                        'bg-gray-100 text-gray-700'
+                                    }`}>
+                                        {(post as any).metadata.achievement.rarity === 'legendary' ? 'Legendaire' :
+                                         (post as any).metadata.achievement.rarity === 'epic' ? 'Epique' :
+                                         (post as any).metadata.achievement.rarity === 'rare' ? 'Rare' : 'Commun'}
+                                    </span>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-2">
+                                    {(post as any).metadata.achievement.description}
+                                </p>
+                                {(post as any).metadata.achievement.xp_reward > 0 && (
+                                    <div className="flex items-center gap-1 text-amber-600">
+                                        <Zap className="w-4 h-4" />
+                                        <span className="text-sm font-semibold">+{(post as any).metadata.achievement.xp_reward} XP</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Stock Info */}
                 {post.stock_symbol && (
