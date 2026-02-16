@@ -24,10 +24,12 @@ import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 import { useAuth } from '../contexts/AuthContext';
 import { ChallengeCTA } from './challenge';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+  const { isInstallable, installApp } = useInstallPrompt();
   const newsContainerRef = useRef<HTMLDivElement>(null);
 
   // <-- AJOUT: État pour rotation des images de fond
@@ -308,6 +310,18 @@ export default function HomePage() {
                 <BookOpen className="w-5 h-5 mr-2" />
                 Apprendre à investir
               </Button>
+
+              {isInstallable && (
+                <button
+                  onClick={() => installApp()}
+                  className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-xl text-sm font-semibold hover:bg-white/20 transition-all duration-300"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Installer l'application
+                </button>
+              )}
             </div>
           </div>
         </div>
