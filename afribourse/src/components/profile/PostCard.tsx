@@ -6,6 +6,7 @@ import CommentSection from './CommentSection';
 import ReportModal from '../moderation/ReportModal';
 import { Card } from '../ui';
 import { ShareablePortfolioCard, ShareablePerformanceCard, ShareablePositionCard } from '../share';
+import { Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -375,6 +376,55 @@ export default function PostCard({ post }: PostCardProps) {
                     ) : post.tags.includes('share-position') ? (
                         <ShareablePositionCard data={post.metadata.shareData} />
                     ) : null}
+                </div>
+            )}
+
+            {/* Badge Embed for ACHIEVEMENT posts */}
+            {post.type === 'ACHIEVEMENT' && post.metadata?.achievement && (
+                <div
+                    onClick={() => setShowComments(true)}
+                    className="mb-4 p-4 rounded-xl border-2 cursor-pointer hover:shadow-md transition-shadow"
+                    style={{
+                        borderColor: post.metadata.achievement.rarity === 'legendary' ? '#F59E0B' :
+                            post.metadata.achievement.rarity === 'epic' ? '#8B5CF6' :
+                            post.metadata.achievement.rarity === 'rare' ? '#3B82F6' : '#9CA3AF',
+                        background: post.metadata.achievement.rarity === 'legendary' ? 'linear-gradient(135deg, #FFFBEB, #FEF3C7)' :
+                            post.metadata.achievement.rarity === 'epic' ? 'linear-gradient(135deg, #F5F3FF, #EDE9FE)' :
+                            post.metadata.achievement.rarity === 'rare' ? 'linear-gradient(135deg, #EFF6FF, #DBEAFE)' :
+                            'linear-gradient(135deg, #F9FAFB, #F3F4F6)',
+                    }}
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="text-5xl flex-shrink-0">
+                            {post.metadata.achievement.icon || '🏆'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-bold text-gray-900 truncate">
+                                    {post.metadata.achievement.name}
+                                </h4>
+                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                    post.metadata.achievement.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' :
+                                    post.metadata.achievement.rarity === 'epic' ? 'bg-purple-100 text-purple-700' :
+                                    post.metadata.achievement.rarity === 'rare' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-gray-100 text-gray-700'
+                                }`}>
+                                    {post.metadata.achievement.rarity === 'legendary' ? 'Legendaire' :
+                                     post.metadata.achievement.rarity === 'epic' ? 'Epique' :
+                                     post.metadata.achievement.rarity === 'rare' ? 'Rare' : 'Commun'}
+                                </span>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">
+                                {post.metadata.achievement.description}
+                            </p>
+                            {post.metadata.achievement.xp_reward > 0 && (
+                                <div className="flex items-center gap-1 text-amber-600">
+                                    <Zap className="w-4 h-4" />
+                                    <span className="text-sm font-semibold">+{post.metadata.achievement.xp_reward} XP</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
 

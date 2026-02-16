@@ -12,10 +12,13 @@ import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Gamification imports
 import { useMyAchievements, useStreak } from '../hooks/useGamification';
 import { AchievementCard, StreakFreezeIndicator, NextAchievements } from '../components/gamification';
+import { useCreatePost } from '../hooks/useSocial';
+import type { Achievement } from '../types';
 
 export default function ProfilePage() {
     const { userId } = useParams();
@@ -24,6 +27,47 @@ export default function ProfilePage() {
     const { userProfile } = useAuth();
     const { mutate: syncStats } = useSyncSocialStats();
     const [showCreateCommunityModal, setShowCreateCommunityModal] = useState(false);
+    const [sharingBadgeId, setSharingBadgeId] = useState<string | null>(null);
+    const createPost = useCreatePost();
+
+    // Partager un badge dans la communauté
+    const handleShareBadge = (achievement: Achievement) => {
+        setSharingBadgeId(achievement.id);
+
+        const rarityLabels: Record<string, string> = {
+            common: 'Commun', rare: 'Rare', epic: 'Epique', legendary: 'Legendaire'
+        };
+
+        createPost.mutate(
+            {
+                type: 'ACHIEVEMENT',
+                content: `${achievement.icon || '🏆'} J'ai debloque le badge "${achievement.name}" (${rarityLabels[achievement.rarity] || achievement.rarity}) !\n\n${achievement.description}${achievement.xp_reward > 0 ? `\n\n⚡ +${achievement.xp_reward} XP gagnes !` : ''}`,
+                tags: ['badge', achievement.category],
+                metadata: {
+                    achievement: {
+                        id: achievement.id,
+                        code: achievement.code,
+                        name: achievement.name,
+                        description: achievement.description,
+                        icon: achievement.icon,
+                        rarity: achievement.rarity,
+                        category: achievement.category,
+                        xp_reward: achievement.xp_reward,
+                    }
+                },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Badge partage dans la communaute !');
+                    setSharingBadgeId(null);
+                },
+                onError: () => {
+                    toast.error('Erreur lors du partage');
+                    setSharingBadgeId(null);
+                },
+            }
+        );
+    };
 
     // Determiner si c'est son propre profil
     const isLoggedIn = !!userProfile?.id;
@@ -349,6 +393,8 @@ export default function ProfilePage() {
                                                     achievement={ua.achievement}
                                                     userAchievement={ua}
                                                     isUnlocked={true}
+                                                    onShare={handleShareBadge}
+                                                    isSharing={sharingBadgeId === ua.achievement.id}
                                                     size="sm"
                                                 />
                                             ))}

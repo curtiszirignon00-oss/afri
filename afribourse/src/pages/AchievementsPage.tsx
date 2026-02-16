@@ -9,7 +9,9 @@ import {
   Target, Award, Gift, Clock, Sparkles
 } from 'lucide-react';
 import { useAllAchievements, useMyAchievements } from '../hooks/useGamification';
+import { useCreatePost } from '../hooks/useSocial';
 import { useAuth } from '../contexts/AuthContext';
+import toast from 'react-hot-toast';
 import type { Achievement, UserAchievement, AchievementCategory, AchievementRarity } from '../types';
 import { RARITY_COLORS } from '../types';
 
@@ -149,12 +151,16 @@ function BadgeDetailModal({
   achievement,
   userAchievement,
   isUnlocked,
-  onClose
+  onClose,
+  onShare,
+  isSharing
 }: {
   achievement: Achievement;
   userAchievement?: UserAchievement;
   isUnlocked: boolean;
   onClose: () => void;
+  onShare?: (achievement: Achievement) => void;
+  isSharing?: boolean;
 }) {
   const rarityColors = RARITY_COLORS[achievement.rarity as AchievementRarity] || RARITY_COLORS.common;
   const isSecret = achievement.is_hidden || achievement.is_secret;
@@ -250,6 +256,27 @@ function BadgeDetailModal({
               </span>
             </div>
           </div>
+
+          {/* Bouton Partager */}
+          {isUnlocked && onShare && (
+            <button
+              onClick={() => onShare(achievement)}
+              disabled={isSharing}
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isSharing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Partage en cours...
+                </>
+              ) : (
+                <>
+                  <Award className="w-5 h-5" />
+                  Partager dans la communaute
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -348,6 +375,46 @@ export default function AchievementsPage() {
 
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
   const [selectedBadge, setSelectedBadge] = useState<Achievement | null>(null);
+  const [sharingBadgeId, setSharingBadgeId] = useState<string | null>(null);
+  const createPost = useCreatePost();
+
+  const handleShareBadge = (achievement: Achievement) => {
+    setSharingBadgeId(achievement.id);
+
+    const rarityLabels: Record<string, string> = {
+      common: 'Commun', rare: 'Rare', epic: 'Epique', legendary: 'Legendaire'
+    };
+
+    createPost.mutate(
+      {
+        type: 'ACHIEVEMENT',
+        content: `${achievement.icon || '🏆'} J'ai debloque le badge "${achievement.name}" (${rarityLabels[achievement.rarity] || achievement.rarity}) !\n\n${achievement.description}${achievement.xp_reward > 0 ? `\n\n⚡ +${achievement.xp_reward} XP gagnes !` : ''}`,
+        tags: ['badge', achievement.category],
+        metadata: {
+          achievement: {
+            id: achievement.id,
+            code: achievement.code,
+            name: achievement.name,
+            description: achievement.description,
+            icon: achievement.icon,
+            rarity: achievement.rarity,
+            category: achievement.category,
+            xp_reward: achievement.xp_reward,
+          }
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Badge partage dans la communaute !');
+          setSharingBadgeId(null);
+        },
+        onError: () => {
+          toast.error('Erreur lors du partage');
+          setSharingBadgeId(null);
+        },
+      }
+    );
+  };
 
   // Map des badges débloqués
   const unlockedMap = useMemo(() => {
@@ -623,6 +690,8 @@ export default function AchievementsPage() {
           userAchievement={unlockedMap.get(selectedBadge.code)}
           isUnlocked={unlockedMap.has(selectedBadge.code)}
           onClose={() => setSelectedBadge(null)}
+          onShare={isLoggedIn ? handleShareBadge : undefined}
+          isSharing={sharingBadgeId === selectedBadge.id}
         />
       )}
     </div>
