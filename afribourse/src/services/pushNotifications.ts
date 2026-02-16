@@ -1,82 +1,139 @@
 // afribourse/src/services/pushNotifications.ts
-import OneSignal from 'react-onesignal';
+// Push notifications natif avec Web Push API (sans OneSignal)
 
-const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
-let initialized = false;
+let vapidPublicKey: string | null = null;
 
+/**
+ * Initialiser les push notifications (récupérer la clé VAPID)
+ */
 export async function initPushNotifications() {
-  if (initialized || !ONESIGNAL_APP_ID) {
-    if (!ONESIGNAL_APP_ID) {
-      console.warn('[OneSignal] APP_ID not configured, push notifications disabled');
-    }
+  if (!isPushSupported()) {
+    console.warn('[Push] Push notifications not supported in this browser');
     return;
   }
 
   try {
-    await OneSignal.init({
-      appId: ONESIGNAL_APP_ID,
-      safari_web_id: 'web.onesignal.auto.68a9d4a9-72e3-41ba-a788-4f8badeb71ae',
-      allowLocalhostAsSecureOrigin: true,
-    });
-    initialized = true;
-    console.log('[OneSignal] Initialized successfully');
+    const res = await fetch(`${API_BASE}/api/push/vapid-key`);
+    if (res.ok) {
+      const data = await res.json();
+      vapidPublicKey = data.publicKey;
+      console.log('[Push] VAPID key loaded');
+    }
   } catch (error) {
-    console.error('[OneSignal] Init error:', error);
+    console.warn('[Push] Failed to load VAPID key:', error);
   }
 }
 
-export async function requestNotificationPermission(): Promise<boolean> {
+/**
+ * S'abonner aux notifications push
+ */
+export async function subscribeToPush(authToken: string): Promise<boolean> {
+  if (!vapidPublicKey || !isPushSupported()) return false;
+
   try {
-    const permission = await OneSignal.Notifications.requestPermission();
-    return permission;
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return false;
+
+    const registration = await navigator.serviceWorker.ready;
+
+    // Vérifier si déjà abonné
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
+    }
+
+    // Envoyer l'abonnement au backend
+    const res = await fetch(`${API_BASE}/api/push/subscribe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({ subscription: subscription.toJSON() }),
+    });
+
+    if (res.ok) {
+      console.log('[Push] Subscribed successfully');
+      return true;
+    }
+
+    return false;
   } catch (error) {
-    console.error('[OneSignal] Permission request error:', error);
+    console.error('[Push] Subscribe error:', error);
     return false;
   }
 }
 
-export async function getPlayerId(): Promise<string | null> {
+/**
+ * Se désabonner des notifications push
+ */
+export async function unsubscribeFromPush(authToken: string): Promise<boolean> {
   try {
-    const playerId = OneSignal.User.onesignalId;
-    return playerId ?? null;
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+      await fetch(`${API_BASE}/api/push/unsubscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ endpoint: subscription.endpoint }),
+      }).catch(() => {});
+
+      await subscription.unsubscribe();
+    }
+
+    return true;
   } catch (error) {
-    console.error('[OneSignal] Get player ID error:', error);
-    return null;
+    console.error('[Push] Unsubscribe error:', error);
+    return false;
   }
 }
 
-export async function setUserTags(tags: Record<string, string>) {
-  try {
-    OneSignal.User.addTags(tags);
-  } catch (error) {
-    console.error('[OneSignal] Set tags error:', error);
-  }
-}
-
-export async function setExternalUserId(userId: string) {
-  try {
-    await OneSignal.login(userId);
-  } catch (error) {
-    console.error('[OneSignal] Set external user ID error:', error);
-  }
-}
-
-export async function logout() {
-  try {
-    await OneSignal.logout();
-  } catch (error) {
-    console.error('[OneSignal] Logout error:', error);
-  }
-}
-
+/**
+ * Vérifier si les push sont supportées
+ */
 export function isPushSupported(): boolean {
-  return 'Notification' in window && 'serviceWorker' in navigator;
+  return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 }
 
+/**
+ * Obtenir le statut de la permission
+ */
 export function getPermissionStatus(): NotificationPermission {
-  if (!isPushSupported()) {
-    return 'denied';
-  }
+  if (!isPushSupported()) return 'denied';
   return Notification.permission;
+}
+
+/**
+ * Vérifier si l'utilisateur est déjà abonné
+ */
+export async function isSubscribed(): Promise<boolean> {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    return subscription !== null;
+  } catch {
+    return false;
+  }
+}
+
+// Utilitaire: convertir une clé base64url en Uint8Array
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 }
