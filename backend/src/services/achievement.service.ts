@@ -209,11 +209,16 @@ export async function checkFormationAchievements(userId: string) {
     if (perfectQuizzes >= 5) toUnlock.push('quiz_master');
     if (perfectQuizzes >= 10) toUnlock.push('quiz_goat');
 
-    // Vérifier modules par niveau (TODO: comparer au nombre total de modules par niveau)
-    // Pour l'instant, on suppose qu'il y a 10 modules par niveau
-    if (completedByLevel.debutant >= 10) toUnlock.push('beginner_investor');
-    if (completedByLevel.intermediaire >= 10) toUnlock.push('intermediate_investor');
-    if (completedByLevel.avance >= 10) toUnlock.push('advanced_investor');
+    // Vérifier modules par niveau (comparaison au nombre réel de modules publiés)
+    const [totalDebutant, totalIntermediaire, totalAvance] = await Promise.all([
+      prisma.learningModule.count({ where: { difficulty_level: 'debutant', is_published: true } }),
+      prisma.learningModule.count({ where: { difficulty_level: 'intermediaire', is_published: true } }),
+      prisma.learningModule.count({ where: { difficulty_level: 'avance', is_published: true } })
+    ]);
+
+    if (totalDebutant > 0 && completedByLevel.debutant >= totalDebutant) toUnlock.push('beginner_investor');
+    if (totalIntermediaire > 0 && completedByLevel.intermediaire >= totalIntermediaire) toUnlock.push('intermediate_investor');
+    if (totalAvance > 0 && completedByLevel.avance >= totalAvance) toUnlock.push('advanced_investor');
 
     // Débloquer les achievements
     const unlocked = [];
@@ -424,6 +429,202 @@ export async function checkSpecialAchievements(userId: string) {
 
   } catch (error) {
     console.error('❌ Erreur checkSpecialAchievements:', error);
+    throw error;
+  }
+}
+
+/**
+ * Calcule la progression vers les badges non encore débloqués
+ * et retourne les 3 badges les plus proches d'être obtenus
+ */
+export async function getNextAchievements(userId: string, limit: number = 3) {
+  try {
+    // 1. Récupérer tous les achievements et ceux déjà débloqués
+    const [allAchievements, userAchievements] = await Promise.all([
+      prisma.achievement.findMany({ where: { is_hidden: false } }),
+      prisma.userAchievement.findMany({
+        where: { userId },
+        select: { achievementId: true }
+      })
+    ]);
+
+    const unlockedIds = new Set(userAchievements.map(ua => ua.achievementId));
+    const lockedAchievements = allAchievements.filter(a => !unlockedIds.has(a.id));
+
+    if (lockedAchievements.length === 0) {
+      return [];
+    }
+
+    // 2. Récupérer les données utilisateur en parallèle
+    const [
+      learningProgress,
+      portfolio,
+      followersCount,
+      profile,
+      user,
+      moduleCounts
+    ] = await Promise.all([
+      prisma.learningProgress.findMany({
+        where: { userId, is_completed: true },
+        include: { module: { select: { difficulty_level: true } } }
+      }),
+      prisma.portfolio.findFirst({
+        where: { userId },
+        include: { transactions: true, positions: true }
+      }),
+      prisma.follow.count({ where: { followingId: userId } }),
+      prisma.userProfile.findUnique({
+        where: { userId },
+        select: { current_streak: true, longest_streak: true, total_xp: true, global_rank: true }
+      }),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { created_at: true }
+      }),
+      Promise.all([
+        prisma.learningModule.count({ where: { difficulty_level: 'debutant', is_published: true } }),
+        prisma.learningModule.count({ where: { difficulty_level: 'intermediaire', is_published: true } }),
+        prisma.learningModule.count({ where: { difficulty_level: 'avance', is_published: true } }),
+        prisma.learningModule.count({ where: { is_published: true } })
+      ])
+    ]);
+
+    const [totalDebutant, totalIntermediaire, totalAvance, totalModules] = moduleCounts;
+
+    // 3. Calculer les métriques utilisateur
+    const completedCount = learningProgress.length;
+    const completedByLevel = {
+      debutant: learningProgress.filter(p => p.module.difficulty_level === 'debutant').length,
+      intermediaire: learningProgress.filter(p => p.module.difficulty_level === 'intermediaire').length,
+      avance: learningProgress.filter(p => p.module.difficulty_level === 'avance').length
+    };
+    const perfectQuizzes = learningProgress.filter(p => p.quiz_score === 100).length;
+    const transactionsCount = portfolio?.transactions.length || 0;
+    const positionsCount = portfolio?.positions.length || 0;
+    const maxStreak = Math.max(profile?.current_streak || 0, profile?.longest_streak || 0);
+    const totalXP = profile?.total_xp || 0;
+
+    let roi = 0;
+    if (portfolio) {
+      const totalValue = portfolio.cash_balance +
+        portfolio.positions.reduce((sum, p) => sum + (p.quantity * p.average_buy_price), 0);
+      roi = ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100;
+    }
+
+    const accountAgeDays = user
+      ? (Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      : 0;
+
+    // 4. Calculer la progression pour chaque badge verrouillé
+    const progressList: Array<{
+      achievement: typeof allAchievements[0];
+      current: number;
+      target: number;
+      percent: number;
+      remaining: string;
+    }> = [];
+
+    for (const achievement of lockedAchievements) {
+      const criteria = achievement.criteria as any;
+      if (!criteria || !criteria.type) continue;
+
+      let current = 0;
+      let target = 0;
+      let remaining = '';
+
+      switch (criteria.type) {
+        case 'modules_completed':
+          target = criteria.target === 'all' ? totalModules : criteria.target;
+          current = completedCount;
+          remaining = `${Math.max(0, target - current)} module(s) restant(s)`;
+          break;
+
+        case 'modules_level':
+          if (criteria.level === 'debutant') {
+            target = totalDebutant;
+            current = completedByLevel.debutant;
+          } else if (criteria.level === 'intermediaire') {
+            target = totalIntermediaire;
+            current = completedByLevel.intermediaire;
+          } else if (criteria.level === 'avance') {
+            target = totalAvance;
+            current = completedByLevel.avance;
+          }
+          remaining = `${Math.max(0, target - current)} module(s) ${criteria.level} restant(s)`;
+          break;
+
+        case 'perfect_quizzes':
+          target = criteria.target;
+          current = perfectQuizzes;
+          remaining = `${Math.max(0, target - current)} quiz parfait(s) restant(s)`;
+          break;
+
+        case 'transactions':
+          target = criteria.target;
+          current = transactionsCount;
+          remaining = `${Math.max(0, target - current)} transaction(s) restante(s)`;
+          break;
+
+        case 'roi':
+          target = criteria.target;
+          current = Math.max(0, roi);
+          remaining = `${Math.max(0, target - current).toFixed(1)}% de ROI restant`;
+          break;
+
+        case 'positions':
+          target = criteria.target;
+          current = positionsCount;
+          remaining = `${Math.max(0, target - current)} position(s) restante(s)`;
+          break;
+
+        case 'followers':
+          target = criteria.target;
+          current = followersCount;
+          remaining = `${Math.max(0, target - current)} abonné(s) restant(s)`;
+          break;
+
+        case 'streak':
+          target = criteria.target;
+          current = maxStreak;
+          remaining = `${Math.max(0, target - current)} jour(s) de série restant(s)`;
+          break;
+
+        case 'total_xp':
+          target = criteria.target;
+          current = totalXP;
+          remaining = `${Math.max(0, target - current)} XP restant(s)`;
+          break;
+
+        case 'account_age_days':
+          target = criteria.target;
+          current = Math.floor(accountAgeDays);
+          remaining = `${Math.max(0, target - current)} jour(s) restant(s)`;
+          break;
+
+        default:
+          // Badges qu'on ne peut pas calculer (referrals, login times, etc.)
+          continue;
+      }
+
+      if (target > 0) {
+        const percent = Math.min(100, Math.round((current / target) * 100));
+        progressList.push({
+          achievement,
+          current,
+          target,
+          percent,
+          remaining
+        });
+      }
+    }
+
+    // 5. Trier par pourcentage décroissant (les plus proches d'abord)
+    progressList.sort((a, b) => b.percent - a.percent);
+
+    return progressList.slice(0, limit);
+
+  } catch (error) {
+    console.error('❌ Erreur getNextAchievements:', error);
     throw error;
   }
 }

@@ -9,7 +9,8 @@ import {
   getMyAchievementsProgress,
   getUserAchievements,
   checkMyAchievements,
-  checkCategoryAchievements
+  checkCategoryAchievements,
+  getNextAchievements
 } from '../controllers/achievement.controller';
 
 const router = Router();
@@ -45,6 +46,12 @@ router.get('/me', auth, getMyAchievements);
  * Tous les achievements avec statut (débloqué/verrouillé)
  */
 router.get('/me/progress', auth, getMyAchievementsProgress);
+
+/**
+ * GET /api/achievements/me/next
+ * Les 3 prochains badges les plus proches
+ */
+router.get('/me/next', auth, getNextAchievements);
 
 /**
  * POST /api/achievements/check
