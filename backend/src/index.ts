@@ -54,6 +54,7 @@ import eventsRoutes from './routes/events.routes'; // Événements Challenge
 import gamificationRoutes from './routes/gamification.routes'; // Système de gamification
 import cronRoutes from './routes/cron.routes'; // Endpoints CRON securises (QStash/Bearer)
 import healthRoutes from './routes/health.routes'; // Health check endpoints
+import pushRoutes from './routes/push.routes'; // Push notifications (Web Push API)
 
 class App {
   private app: Application | null = null;
@@ -184,6 +185,7 @@ class App {
     this.app?.use('/api/events', eventsRoutes);                      // Événements Challenge
     this.app?.use('/api/gamification', gamificationRoutes);          // Système de gamification (XP, niveaux, streaks, badges)
     this.app?.use('/api/cron', cronRoutes);                            // Endpoints CRON securises (QStash/Bearer)
+    this.app?.use('/api/push', pushRoutes);                              // Push notifications (Web Push API)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

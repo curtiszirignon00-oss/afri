@@ -29,7 +29,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 export default function HomePage() {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
-  const { isInstallable, installApp } = useInstallPrompt();
+  const { isInstallable, installApp, showInstructions, closeInstructions, platform } = useInstallPrompt();
   const newsContainerRef = useRef<HTMLDivElement>(null);
 
   // <-- AJOUT: État pour rotation des images de fond
