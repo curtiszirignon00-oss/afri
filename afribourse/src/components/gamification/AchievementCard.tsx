@@ -1,7 +1,7 @@
 // src/components/gamification/AchievementCard.tsx
 // Carte badge individuel
 
-import { Lock, Zap, CheckCircle } from 'lucide-react';
+import { Lock, Zap, CheckCircle, Share2, Loader2 } from 'lucide-react';
 import type { Achievement, UserAchievement, AchievementRarity } from '../../types';
 import { RARITY_COLORS } from '../../types';
 
@@ -10,6 +10,8 @@ interface AchievementCardProps {
   userAchievement?: UserAchievement;
   isUnlocked?: boolean;
   onClick?: () => void;
+  onShare?: (achievement: Achievement) => void;
+  isSharing?: boolean;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
@@ -19,6 +21,8 @@ export function AchievementCard({
   userAchievement,
   isUnlocked = !!userAchievement,
   onClick,
+  onShare,
+  isSharing = false,
   size = 'md',
   className = ''
 }: AchievementCardProps) {
@@ -121,6 +125,25 @@ export function AchievementCard({
             <CheckCircle className="w-3 h-3" />
             <span>Débloqué le {formatDate(userAchievement.unlocked_at)}</span>
           </div>
+        )}
+
+        {/* Bouton Partager */}
+        {isUnlocked && onShare && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onShare(achievement);
+            }}
+            disabled={isSharing}
+            className="mt-2 flex items-center justify-center gap-1.5 w-full px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
+          >
+            {isSharing ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Share2 className="w-3 h-3" />
+            )}
+            Partager
+          </button>
         )}
       </div>
     </div>
