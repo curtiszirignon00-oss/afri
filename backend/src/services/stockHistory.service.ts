@@ -15,9 +15,9 @@ export async function saveCurrentDayHistory() {
     // Récupérer les données du scraper existant
     const stocks = await scrapeStock();
 
-    // Date d'aujourd'hui à minuit (pour éviter les doublons)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Date d'aujourd'hui à minuit UTC (évite les doublons timezone)
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
     let savedCount = 0;
     let errorCount = 0;
@@ -122,9 +122,8 @@ export async function saveStockHistory(symbol: string, date: Date, data: {
       throw new Error(`Stock ${symbol} n'existe pas`);
     }
 
-    // Normaliser la date (minuit)
-    const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
+    // Normaliser la date (minuit UTC)
+    const normalizedDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 
     // Sauvegarder avec upsert
     const history = await prisma.stockHistory.upsert({
