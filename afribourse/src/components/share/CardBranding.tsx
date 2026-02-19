@@ -1,7 +1,5 @@
 // src/components/share/CardBranding.tsx
-import { QRCodeSVG } from 'qrcode.react';
-
-const SITE_URL = 'https://afribourse.com';
+// Uses a pre-generated static QR code image (no dynamic generation per render)
 
 export default function CardBranding() {
     return (
@@ -15,22 +13,19 @@ export default function CardBranding() {
                 />
                 <div>
                     <p className="text-sm font-bold text-gray-900 leading-tight">AfriBourse</p>
-                    <p className="text-[10px] text-gray-500 leading-tight">afribourse.com</p>
+                    <p className="text-[10px] text-gray-500 leading-tight">africbourse.com</p>
                 </div>
             </div>
 
-            {/* QR Code */}
+            {/* QR Code - static pre-generated image */}
             <div className="flex items-center gap-2">
                 <p className="text-[10px] text-gray-400 max-w-[80px] text-right leading-tight">
                     Scannez pour investir
                 </p>
-                <QRCodeSVG
-                    value={SITE_URL}
-                    size={48}
-                    bgColor="transparent"
-                    fgColor="#1e40af"
-                    level="M"
-                    includeMargin={false}
+                <img
+                    src="/images/qr-africbourse.svg"
+                    alt="QR Code africbourse.com"
+                    className="w-12 h-12"
                 />
             </div>
         </div>
