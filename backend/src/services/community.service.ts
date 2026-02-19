@@ -1400,6 +1400,40 @@ export async function deleteCommunityPost(postId: string, userId: string) {
 }
 
 /**
+ * Get unseen community posts count for a user
+ * Counts all approved, non-hidden posts across all communities created after user's last visit
+ */
+export async function getUnseenCommunityPostsCount(userId: string): Promise<number> {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { last_community_visit: true },
+    });
+
+    const lastVisit = user?.last_community_visit;
+
+    // Count all community posts created after last visit (or all if never visited)
+    const count = await prisma.communityPost.count({
+        where: {
+            is_approved: true,
+            is_hidden: false,
+            ...(lastVisit ? { created_at: { gt: lastVisit } } : {}),
+        },
+    });
+
+    return count;
+}
+
+/**
+ * Mark community as visited - updates user's last_community_visit timestamp
+ */
+export async function markCommunityVisited(userId: string): Promise<void> {
+    await prisma.user.update({
+        where: { id: userId },
+        data: { last_community_visit: new Date() },
+    });
+}
+
+/**
  * Pin/Unpin a community post
  */
 export async function togglePinPost(postId: string, userId: string) {
