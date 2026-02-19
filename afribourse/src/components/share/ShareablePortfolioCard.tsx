@@ -1,6 +1,7 @@
 // src/components/share/ShareablePortfolioCard.tsx
 import { Wallet, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
 import type { ShareablePortfolioData } from '../../types/share';
+import CardBranding from './CardBranding';
 
 interface ShareablePortfolioCardProps {
     data: ShareablePortfolioData;
@@ -92,6 +93,9 @@ export default function ShareablePortfolioCard({ data }: ShareablePortfolioCardP
                     </div>
                 </div>
             )}
+
+            {/* Branding */}
+            <CardBranding />
         </div>
     );
 }
