@@ -53,6 +53,7 @@ import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import NotificationsPage from './pages/NotificationsPage';
 import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
 import AchievementsPage from './pages/AchievementsPage';
+import LeaderboardPage from './pages/LeaderboardPage';
 import WelcomePopup from './components/WelcomePopup';
 import { UpdatePrompt } from './components/pwa/UpdatePrompt';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
@@ -146,6 +147,9 @@ function Layout() {
               </ProtectedRoute>
             }
           />
+
+          {/* Classement - Public */}
+          <Route path="/classement" element={<LeaderboardPage />} />
 
           {/* Onboarding - Protégé mais ne vérifie PAS le statut d'onboarding (évite la boucle) */}
           <Route
