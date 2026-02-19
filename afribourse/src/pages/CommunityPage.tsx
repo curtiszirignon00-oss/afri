@@ -11,6 +11,7 @@ import { useFollowSuggestions, useFollowUser } from '../hooks/useSocial';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 import CommunityRulesModal from '../components/community/CommunityRulesModal';
 import { useMarkCommunityVisited } from '../hooks/useCommunityUnseen';
+import WeeklyLeaderboard from '../components/community/WeeklyLeaderboard';
 
 interface CommunityPost {
     id: string;
@@ -321,6 +322,9 @@ export default function CommunityPage() {
                                 )}
                             </div>
                         )}
+
+                        {/* Weekly Top 5 Leaderboard */}
+                        <WeeklyLeaderboard />
                     </div>
 
                     {/* Main Content - Posts */}
