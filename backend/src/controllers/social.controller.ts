@@ -305,8 +305,15 @@ export async function getPublicPosts(req: AuthRequest, res: Response) {
         const viewerId = req.user?.id; // Optional - for like status
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
+        const type = req.query.type as string | undefined;
+        const dateRange = req.query.date as string | undefined; // today, week, month
+        const followingOnly = req.query.following === 'true';
 
-        const result = await socialService.getPublicPosts(page, limit, viewerId);
+        const result = await socialService.getPublicPosts(page, limit, viewerId, {
+            type,
+            dateRange,
+            followingOnly,
+        });
         res.status(200).json({ success: true, ...result });
     } catch (error: any) {
         res.status(400).json({ error: error.message });

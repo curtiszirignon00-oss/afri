@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck } from 'lucide-react';
+import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck, Filter, X, Calendar, Tag, UserRound } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
 import { useAuth } from '../contexts/AuthContext';
@@ -41,6 +41,23 @@ interface CommunityPost {
     hasLiked?: boolean;
 }
 
+const POST_TYPES = [
+    { value: '', label: 'Tous' },
+    { value: 'ANALYSIS', label: 'Analyses' },
+    { value: 'OPINION', label: 'Opinions' },
+    { value: 'QUESTION', label: 'Questions' },
+    { value: 'TRANSACTION', label: 'Transactions' },
+    { value: 'ACHIEVEMENT', label: 'Badges' },
+    { value: 'ARTICLE', label: 'Articles' },
+];
+
+const DATE_RANGES = [
+    { value: '', label: 'Toutes' },
+    { value: 'today', label: "Aujourd'hui" },
+    { value: 'week', label: 'Cette semaine' },
+    { value: 'month', label: 'Ce mois' },
+];
+
 export default function CommunityPage() {
     const { isLoggedIn } = useAuth();
     const [page, setPage] = useState(1);
@@ -50,6 +67,20 @@ export default function CommunityPage() {
         return !localStorage.getItem('hasSeenCommunityRules');
     });
 
+    // Filters
+    const [filterType, setFilterType] = useState('');
+    const [filterDate, setFilterDate] = useState('');
+    const [filterFollowing, setFilterFollowing] = useState(false);
+
+    const hasActiveFilters = filterType !== '' || filterDate !== '' || filterFollowing;
+
+    const clearFilters = () => {
+        setFilterType('');
+        setFilterDate('');
+        setFilterFollowing(false);
+        setPage(1);
+    };
+
     // Mark community as visited to reset unseen badge
     const markVisited = useMarkCommunityVisited();
     useEffect(() => {
@@ -58,10 +89,19 @@ export default function CommunityPage() {
         }
     }, [isLoggedIn]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Reset page when filters change
+    useEffect(() => {
+        setPage(1);
+    }, [filterType, filterDate, filterFollowing]);
+
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        queryKey: ['community-posts', page],
+        queryKey: ['community-posts', page, filterType, filterDate, filterFollowing],
         queryFn: async () => {
-            const response = await apiClient.get(`/social/community?page=${page}&limit=10`);
+            const params = new URLSearchParams({ page: String(page), limit: '10' });
+            if (filterType) params.set('type', filterType);
+            if (filterDate) params.set('date', filterDate);
+            if (filterFollowing) params.set('following', 'true');
+            const response = await apiClient.get(`/social/community?${params.toString()}`);
             return response.data;
         },
     });
@@ -329,8 +369,8 @@ export default function CommunityPage() {
 
                     {/* Main Content - Posts */}
                     <div className="lg:col-span-3">
-                        {/* Refresh Button */}
-                        <div className="flex justify-between items-center mb-6">
+                        {/* Header + Refresh */}
+                        <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-semibold text-gray-900">
                                 Publications recentes
                             </h2>
@@ -342,6 +382,65 @@ export default function CommunityPage() {
                                 <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
                                 Actualiser
                             </button>
+                        </div>
+
+                        {/* Filters */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
+                            <div className="flex flex-wrap items-center gap-3">
+                                {/* Type filter */}
+                                <div className="flex items-center gap-1.5">
+                                    <Tag className="w-3.5 h-3.5 text-gray-400" />
+                                    <select
+                                        value={filterType}
+                                        onChange={(e) => setFilterType(e.target.value)}
+                                        className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        {POST_TYPES.map(t => (
+                                            <option key={t.value} value={t.value}>{t.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Date filter */}
+                                <div className="flex items-center gap-1.5">
+                                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                    <select
+                                        value={filterDate}
+                                        onChange={(e) => setFilterDate(e.target.value)}
+                                        className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        {DATE_RANGES.map(d => (
+                                            <option key={d.value} value={d.value}>{d.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Following only toggle */}
+                                {isLoggedIn && (
+                                    <button
+                                        onClick={() => setFilterFollowing(!filterFollowing)}
+                                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                                            filterFollowing
+                                                ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                                : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <UserRound className="w-3.5 h-3.5" />
+                                        Abonnements
+                                    </button>
+                                )}
+
+                                {/* Clear filters */}
+                                {hasActiveFilters && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                        Effacer
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Loading State */}
