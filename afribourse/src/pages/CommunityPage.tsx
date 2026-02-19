@@ -10,6 +10,7 @@ import { useCommunities } from '../hooks/useCommunity';
 import { useFollowSuggestions, useFollowUser } from '../hooks/useSocial';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 import CommunityRulesModal from '../components/community/CommunityRulesModal';
+import { useMarkCommunityVisited } from '../hooks/useCommunityUnseen';
 
 interface CommunityPost {
     id: string;
@@ -47,6 +48,14 @@ export default function CommunityPage() {
         // Check if user has seen the rules before
         return !localStorage.getItem('hasSeenCommunityRules');
     });
+
+    // Mark community as visited to reset unseen badge
+    const markVisited = useMarkCommunityVisited();
+    useEffect(() => {
+        if (isLoggedIn) {
+            markVisited.mutate();
+        }
+    }, [isLoggedIn]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const { data, isLoading, error, refetch, isFetching } = useQuery({
         queryKey: ['community-posts', page],
