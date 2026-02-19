@@ -4,3 +4,4 @@ export { default as ShareModal } from './ShareModal';
 export { default as ShareablePortfolioCard } from './ShareablePortfolioCard';
 export { default as ShareablePerformanceCard } from './ShareablePerformanceCard';
 export { default as ShareablePositionCard } from './ShareablePositionCard';
+export { default as CardBranding } from './CardBranding';

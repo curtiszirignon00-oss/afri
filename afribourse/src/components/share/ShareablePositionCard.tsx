@@ -1,6 +1,7 @@
 // src/components/share/ShareablePositionCard.tsx
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import type { ShareablePositionData } from '../../types/share';
+import CardBranding from './CardBranding';
 
 interface ShareablePositionCardProps {
     data: ShareablePositionData;
@@ -78,6 +79,9 @@ export default function ShareablePositionCard({ data }: ShareablePositionCardPro
                     </div>
                 </div>
             </div>
+
+            {/* Branding */}
+            <CardBranding />
         </div>
     );
 }
