@@ -354,7 +354,9 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
       include: {
         positions: true,
         user: {
-          include: {
+          select: {
+            name: true,
+            lastname: true,
             profile: {
               select: {
                 username: true,
@@ -385,9 +387,13 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
         const totalValue = portfolio.cash_balance + positionsValue;
         const roi = ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100;
 
+        const displayName = portfolio.user
+          ? `${portfolio.user.name} ${portfolio.user.lastname}`.trim()
+          : null;
+
         return {
           userId: portfolio.userId,
-          username: portfolio.user?.profile?.username || 'Utilisateur',
+          username: displayName || portfolio.user?.profile?.username || 'Utilisateur',
           avatar_url: portfolio.user?.profile?.avatar_url || null,
           level: portfolio.user?.profile?.level || 1,
           roi,
