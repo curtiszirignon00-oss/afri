@@ -9,9 +9,8 @@ import {
   Target, Award, Gift, Clock, Sparkles
 } from 'lucide-react';
 import { useAllAchievements, useMyAchievements } from '../hooks/useGamification';
-import { useCreatePost } from '../hooks/useSocial';
 import { useAuth } from '../contexts/AuthContext';
-import toast from 'react-hot-toast';
+import BadgeShareModal from '../components/share/BadgeShareModal';
 import type { Achievement, UserAchievement, AchievementCategory, AchievementRarity } from '../types';
 import { RARITY_COLORS } from '../types';
 
@@ -375,45 +374,10 @@ export default function AchievementsPage() {
 
   const [selectedCategory, setSelectedCategory] = useState<AchievementCategory | 'all'>('all');
   const [selectedBadge, setSelectedBadge] = useState<Achievement | null>(null);
-  const [sharingBadgeId, setSharingBadgeId] = useState<string | null>(null);
-  const createPost = useCreatePost();
+  const [sharingBadge, setSharingBadge] = useState<Achievement | null>(null);
 
   const handleShareBadge = (achievement: Achievement) => {
-    setSharingBadgeId(achievement.id);
-
-    const rarityLabels: Record<string, string> = {
-      common: 'Commun', rare: 'Rare', epic: 'Epique', legendary: 'Legendaire'
-    };
-
-    createPost.mutate(
-      {
-        type: 'ACHIEVEMENT',
-        content: `${achievement.icon || '🏆'} J'ai debloque le badge "${achievement.name}" (${rarityLabels[achievement.rarity] || achievement.rarity}) !\n\n${achievement.description}${achievement.xp_reward > 0 ? `\n\n⚡ +${achievement.xp_reward} XP gagnes !` : ''}`,
-        tags: ['badge', achievement.category],
-        metadata: {
-          achievement: {
-            id: achievement.id,
-            code: achievement.code,
-            name: achievement.name,
-            description: achievement.description,
-            icon: achievement.icon,
-            rarity: achievement.rarity,
-            category: achievement.category,
-            xp_reward: achievement.xp_reward,
-          }
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success('Badge partage dans la communaute !');
-          setSharingBadgeId(null);
-        },
-        onError: () => {
-          toast.error('Erreur lors du partage');
-          setSharingBadgeId(null);
-        },
-      }
-    );
+    setSharingBadge(achievement);
   };
 
   // Map des badges débloqués
@@ -691,9 +655,17 @@ export default function AchievementsPage() {
           isUnlocked={unlockedMap.has(selectedBadge.code)}
           onClose={() => setSelectedBadge(null)}
           onShare={isLoggedIn ? handleShareBadge : undefined}
-          isSharing={sharingBadgeId === selectedBadge.id}
+          isSharing={false}
         />
       )}
+
+      {/* Modal de partage badge (réseaux sociaux + communauté) */}
+      <BadgeShareModal
+        isOpen={!!sharingBadge}
+        onClose={() => setSharingBadge(null)}
+        achievement={sharingBadge}
+        unlockedDate={sharingBadge ? unlockedMap.get(sharingBadge.code)?.unlocked_at : undefined}
+      />
     </div>
   );
 }
