@@ -187,6 +187,9 @@ model User {
   // --- Push Subscriptions ---
   pushSubscriptions PushSubscription[]
 
+  // --- Community visit tracking ---
+  last_community_visit DateTime?
+
   @@map("users")
 }
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
+import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
 
 // --- MegaMenu Mapping ---
 const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
@@ -25,6 +26,9 @@ export default function Header() {
 
   // ✅ Utilisation du hook useAuth
   const { isLoggedIn, logout, loading, userProfile } = useAuth();
+
+  // Unseen community posts count
+  const { data: unseenCount } = useUnseenCommunityCount();
 
   // ✅ Fonction de déconnexion simplifiée
   const handleLogout = async () => {
@@ -95,6 +99,11 @@ export default function Header() {
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.name}</span>
+                      {item.id === 'community' && isLoggedIn && !!unseenCount && unseenCount > 0 && (
+                        <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
+                          {unseenCount > 99 ? '99+' : unseenCount}
+                        </span>
+                      )}
                     </button>
                   </div>
                 );
@@ -244,6 +253,11 @@ export default function Header() {
                   >
                     <Icon className="w-5 h-5" />
                     <span>{item.name}</span>
+                    {item.id === 'community' && isLoggedIn && !!unseenCount && unseenCount > 0 && (
+                      <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
+                        {unseenCount > 99 ? '99+' : unseenCount}
+                      </span>
+                    )}
                   </button>
                 );
               })}
