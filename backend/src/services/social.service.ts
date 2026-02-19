@@ -851,15 +851,58 @@ export async function getPostById(postId: string, viewerId?: string) {
 /**
  * Get public posts for community feed (no auth required)
  */
-export async function getPublicPosts(page: number = 1, limit: number = 10, viewerId?: string) {
+export async function getPublicPosts(
+    page: number = 1,
+    limit: number = 10,
+    viewerId?: string,
+    filters?: { type?: string; dateRange?: string; followingOnly?: boolean }
+) {
     const skip = (page - 1) * limit;
+
+    // Build where clause with filters
+    const where: any = {
+        visibility: 'PUBLIC',
+        is_hidden: false,
+    };
+
+    // Filter by post type
+    if (filters?.type) {
+        where.type = filters.type;
+    }
+
+    // Filter by date range
+    if (filters?.dateRange) {
+        const now = new Date();
+        let dateFrom: Date;
+        switch (filters.dateRange) {
+            case 'today':
+                dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                break;
+            case 'week':
+                dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            case 'month':
+                dateFrom = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                break;
+            default:
+                dateFrom = new Date(0);
+        }
+        where.created_at = { gte: dateFrom };
+    }
+
+    // Filter by following only (requires viewerId)
+    if (filters?.followingOnly && viewerId) {
+        const following = await prisma.follow.findMany({
+            where: { followerId: viewerId },
+            select: { followingId: true },
+        });
+        const followingIds = following.map(f => f.followingId);
+        where.author_id = { in: followingIds };
+    }
 
     const [posts, total] = await Promise.all([
         prisma.post.findMany({
-            where: {
-                visibility: 'PUBLIC',
-                is_hidden: false,
-            },
+            where,
             skip,
             take: limit,
             orderBy: { created_at: 'desc' },
@@ -887,12 +930,7 @@ export async function getPublicPosts(page: number = 1, limit: number = 10, viewe
                 },
             },
         }),
-        prisma.post.count({
-            where: {
-                visibility: 'PUBLIC',
-                is_hidden: false,
-            },
-        }),
+        prisma.post.count({ where }),
     ]);
 
     // Check if viewer has liked posts and is following authors
