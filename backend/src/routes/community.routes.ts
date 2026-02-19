@@ -6,6 +6,10 @@ import { communityPostCreationLimiter, commentCreationLimiter } from '../middlew
 
 const router = Router();
 
+// ============= UNSEEN POSTS =============
+router.get('/unseen-count', auth, communityController.getUnseenPostsCount); // Get unseen post count
+router.post('/mark-visited', auth, communityController.markCommunityVisited); // Mark community as visited
+
 // ============= COMMUNITY CRUD =============
 router.get('/', optionalAuth, communityController.listCommunities); // List all communities
 router.get('/my', auth, communityController.getUserCommunities); // Get user's communities

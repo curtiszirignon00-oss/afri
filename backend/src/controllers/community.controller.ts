@@ -358,6 +358,36 @@ export async function deleteCommunityPost(req: AuthRequest, res: Response) {
     }
 }
 
+export async function getUnseenPostsCount(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const count = await communityService.getUnseenCommunityPostsCount(userId);
+        res.status(200).json({ success: true, count });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function markCommunityVisited(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        await communityService.markCommunityVisited(userId);
+        res.status(200).json({ success: true });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 export async function togglePinPost(req: AuthRequest, res: Response) {
     try {
         const userId = req.user?.id;
