@@ -1,6 +1,7 @@
 // src/components/share/ShareablePerformanceCard.tsx
 import { TrendingUp, TrendingDown, Activity, Trophy, AlertCircle } from 'lucide-react';
 import type { ShareablePerformanceData } from '../../types/share';
+import CardBranding from './CardBranding';
 
 interface ShareablePerformanceCardProps {
     data: ShareablePerformanceData;
@@ -93,6 +94,9 @@ export default function ShareablePerformanceCard({ data }: ShareablePerformanceC
                     </div>
                 )}
             </div>
+
+            {/* Branding */}
+            <CardBranding />
         </div>
     );
 }
