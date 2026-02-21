@@ -120,7 +120,12 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     };
 
     // Appliquer les filtres
-    if (profile.show_avatar) filtered.avatar_url = profile.avatar_url;
+    if (profile.show_avatar) {
+      filtered.avatar_url = profile.avatar_url;
+      filtered.avatar_color = profile.avatar_color;
+    }
+    filtered.banner_url = profile.banner_url;
+    filtered.banner_color = profile.banner_color;
     if (profile.show_bio) filtered.bio = profile.bio;
     if (profile.show_country) filtered.country = profile.country;
 
