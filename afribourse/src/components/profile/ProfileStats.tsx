@@ -19,6 +19,7 @@ import {
     Bookmark,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Card } from '../ui';
 import { ShareButton, ShareModal } from '../share';
 import { useShare } from '../../hooks/useShare';
@@ -533,7 +534,13 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
 
     const handleSave = () => {
         updatePrivacy(settings, {
-            onSuccess: () => onClose(),
+            onSuccess: () => {
+                toast.success('Parametres de visibilite mis a jour');
+                onClose();
+            },
+            onError: () => {
+                toast.error('Erreur lors de la mise a jour');
+            },
         });
     };
 

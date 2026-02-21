@@ -1519,11 +1519,462 @@ export async function sendLearningSummaryEmail({
   });
 }
 
+/**
+ * Envoie un email de félicitations aux top performers du classement
+ */
+interface SendLeaderboardCongratulationParams {
+  email: string;
+  name: string;
+  rank: number;
+  roi: number;
+}
+
+export async function sendLeaderboardCongratulationEmail({
+  email,
+  name,
+  rank,
+  roi,
+}: SendLeaderboardCongratulationParams): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const classementUrl = `${config.app.frontendUrl}/classement`;
+
+  const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
+  const rankLabel = rank === 1 ? '1er' : `${rank}ème`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Félicitations ! Vous êtes dans le Top 5 - AfriBourse</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 10px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .logo-text {
+          font-size: 28px;
+          font-weight: bold;
+          color: #f97316;
+        }
+        .rank-badge {
+          display: inline-block;
+          font-size: 48px;
+          margin: 20px 0;
+        }
+        .rank-text {
+          font-size: 24px;
+          font-weight: bold;
+          color: #1e293b;
+          margin: 10px 0;
+        }
+        .roi-badge {
+          display: inline-block;
+          background-color: ${roi >= 0 ? '#ecfdf5' : '#fef2f2'};
+          color: ${roi >= 0 ? '#059669' : '#dc2626'};
+          padding: 8px 20px;
+          border-radius: 20px;
+          font-size: 18px;
+          font-weight: bold;
+          margin: 10px 0;
+        }
+        .button {
+          display: inline-block;
+          background: linear-gradient(135deg, #6366f1, #8b5cf6);
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 30px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 16px;
+          margin: 20px 0;
+        }
+        .new-badge {
+          display: inline-block;
+          background-color: #dbeafe;
+          color: #2563eb;
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: bold;
+          margin-bottom: 15px;
+        }
+        .feature-box {
+          background-color: #f8fafc;
+          border-radius: 10px;
+          padding: 20px;
+          margin: 20px 0;
+          border-left: 4px solid #6366f1;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #999;
+          font-size: 12px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-container">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="logo-text">AfriBourse</span>
+          </div>
+        </div>
+
+        <div style="text-align: center;">
+          <div class="rank-badge">${rankEmoji}</div>
+          <h1 style="color: #1e293b; margin: 0;">Félicitations ${displayName} !</h1>
+          <p class="rank-text">Vous êtes ${rankLabel} du classement !</p>
+          <div class="roi-badge">${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% de rendement</div>
+        </div>
+
+        <p style="text-align: center; font-size: 16px; color: #64748b; margin-top: 20px;">
+          Votre stratégie d'investissement porte ses fruits. Vous faites partie des <strong>5 meilleurs portfolios simulés</strong> sur AfriBourse. Bravo !
+        </p>
+
+        <div class="feature-box">
+          <span class="new-badge">🆕 NOUVEAU</span>
+          <h3 style="margin: 0 0 10px 0; color: #1e293b;">Le classement est maintenant public !</h3>
+          <p style="margin: 0; color: #64748b; font-size: 14px;">
+            Nous avons lancé une nouvelle page <strong>Classement</strong> visible par toute la communauté. Votre performance est désormais affichée dans la section communauté et sur la page classement dédiée. Continuez à investir intelligemment pour garder votre place au sommet !
+          </p>
+        </div>
+
+        <div style="text-align: center;">
+          <a href="${classementUrl}" class="button">🏆 Voir le classement</a>
+        </div>
+
+        <p style="text-align: center; font-size: 14px; color: #94a3b8;">
+          Continuez à analyser, diversifier et prendre des décisions éclairées.<br/>
+          La communauté AfriBourse vous observe ! 💪
+        </p>
+
+        <div class="footer">
+          <p>Cet email a été envoyé par AfriBourse</p>
+          <p>Si vous avez des questions, contactez-nous à contact@africbourse.com</p>
+          <p style="margin-top: 10px;">© ${new Date().getFullYear()} AfriBourse. Tous droits réservés.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Félicitations ${displayName} ! ${rankEmoji}
+
+Vous êtes ${rankLabel} du classement des meilleurs portfolios simulés sur AfriBourse avec un rendement de ${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% !
+
+🆕 NOUVEAU : Le classement est maintenant public !
+Nous avons lancé une nouvelle page Classement visible par toute la communauté. Votre performance est affichée dans la section communauté et sur la page classement dédiée.
+
+Voir le classement : ${classementUrl}
+
+Continuez à analyser, diversifier et prendre des décisions éclairées.
+La communauté AfriBourse vous observe !
+
+---
+AfriBourse - Apprenez, simulez et investissez en toute confiance.
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: `${rankEmoji} Félicitations ! Vous êtes ${rankLabel} du classement AfriBourse`,
+    html,
+    text,
+  });
+}
+
+/**
+ * Envoie un email d'annonce de l'application installable (PWA)
+ */
+export async function sendPWAAnnouncementEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const appUrl = config.app.frontendUrl;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>AfriBourse est maintenant une application ! 📱</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 10px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .logo-text {
+          font-size: 28px;
+          font-weight: bold;
+          color: #f97316;
+        }
+        .hero-emoji {
+          font-size: 56px;
+          text-align: center;
+          margin: 20px 0;
+        }
+        .button {
+          display: inline-block;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 30px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 16px;
+          margin: 15px 0;
+        }
+        .step-card {
+          background-color: #f8fafc;
+          border-radius: 10px;
+          padding: 16px 20px;
+          margin: 12px 0;
+          border-left: 4px solid #f97316;
+        }
+        .step-number {
+          display: inline-block;
+          width: 28px;
+          height: 28px;
+          background-color: #f97316;
+          color: white;
+          border-radius: 50%;
+          text-align: center;
+          line-height: 28px;
+          font-weight: bold;
+          font-size: 14px;
+          margin-right: 10px;
+        }
+        .platform-section {
+          margin: 25px 0;
+        }
+        .platform-title {
+          font-size: 16px;
+          font-weight: bold;
+          color: #1e293b;
+          margin-bottom: 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .advantage-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          margin: 8px 0;
+        }
+        .advantage-icon {
+          font-size: 18px;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #999;
+          font-size: 12px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-container">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="logo-text">AfriBourse</span>
+          </div>
+        </div>
+
+        <div class="hero-emoji">📱💻</div>
+
+        <h1 style="text-align: center; color: #1e293b; margin: 0 0 10px 0;">
+          AfriBourse est maintenant une application !
+        </h1>
+        <p style="text-align: center; color: #64748b; font-size: 16px;">
+          Bonjour ${displayName}, bonne nouvelle ! Vous pouvez maintenant installer AfriBourse directement sur votre téléphone ou votre ordinateur, comme une vraie application.
+        </p>
+
+        <!-- Avantages -->
+        <div style="margin: 25px 0;">
+          <h3 style="color: #1e293b; margin-bottom: 12px;">Pourquoi installer l'application ?</h3>
+          <div class="advantage-item">
+            <span class="advantage-icon">⚡</span>
+            <span><strong>Accès rapide</strong> – Lancez AfriBourse en un clic depuis votre écran d'accueil</span>
+          </div>
+          <div class="advantage-item">
+            <span class="advantage-icon">🔔</span>
+            <span><strong>Notifications</strong> – Recevez des alertes en temps réel sur vos investissements</span>
+          </div>
+          <div class="advantage-item">
+            <span class="advantage-icon">📊</span>
+            <span><strong>Plein écran</strong> – Une expérience immersive sans barre de navigateur</span>
+          </div>
+          <div class="advantage-item">
+            <span class="advantage-icon">🚀</span>
+            <span><strong>Plus rapide</strong> – Chargement quasi instantané après l'installation</span>
+          </div>
+        </div>
+
+        <!-- Mobile -->
+        <div class="platform-section">
+          <div class="platform-title">📱 Sur mobile (Android / iPhone)</div>
+          <div class="step-card">
+            <span class="step-number">1</span>
+            Ouvrez <strong>${appUrl.replace('https://', '')}</strong> dans votre navigateur (Chrome ou Safari)
+          </div>
+          <div class="step-card">
+            <span class="step-number">2</span>
+            <strong>Sur Android :</strong> Appuyez sur le menu ⋮ puis <strong>"Installer l'application"</strong> ou <strong>"Ajouter à l'écran d'accueil"</strong>
+          </div>
+          <div class="step-card">
+            <span class="step-number">2</span>
+            <strong>Sur iPhone :</strong> Appuyez sur le bouton de partage <strong>↑</strong> puis <strong>"Sur l'écran d'accueil"</strong>
+          </div>
+          <div class="step-card">
+            <span class="step-number">3</span>
+            Confirmez et l'icône AfriBourse apparaîtra sur votre écran d'accueil !
+          </div>
+        </div>
+
+        <!-- PC -->
+        <div class="platform-section">
+          <div class="platform-title">💻 Sur PC (Windows / Mac)</div>
+          <div class="step-card">
+            <span class="step-number">1</span>
+            Ouvrez <strong>${appUrl.replace('https://', '')}</strong> dans Chrome ou Edge
+          </div>
+          <div class="step-card">
+            <span class="step-number">2</span>
+            Cliquez sur l'icône d'installation <strong>⊕</strong> dans la barre d'adresse (à droite)
+          </div>
+          <div class="step-card">
+            <span class="step-number">3</span>
+            Cliquez sur <strong>"Installer"</strong> et AfriBourse s'ouvre comme une application de bureau !
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${appUrl}" class="button">📱 Installer AfriBourse</a>
+        </div>
+
+        <p style="text-align: center; font-size: 14px; color: #94a3b8;">
+          Pas besoin de passer par l'App Store ou le Play Store.<br/>
+          L'installation se fait directement depuis votre navigateur en 30 secondes !
+        </p>
+
+        <div class="footer">
+          <p>Cet email a été envoyé par AfriBourse</p>
+          <p>Si vous avez des questions, contactez-nous à contact@africbourse.com</p>
+          <p style="margin-top: 10px;">© ${new Date().getFullYear()} AfriBourse. Tous droits réservés.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Bonjour ${displayName} !
+
+AfriBourse est maintenant une application installable sur mobile et PC !
+
+POURQUOI INSTALLER L'APPLICATION ?
+⚡ Accès rapide – Lancez AfriBourse en un clic depuis votre écran d'accueil
+🔔 Notifications – Recevez des alertes en temps réel
+📊 Plein écran – Une expérience immersive
+🚀 Plus rapide – Chargement quasi instantané
+
+📱 SUR MOBILE (Android / iPhone) :
+1. Ouvrez ${appUrl.replace('https://', '')} dans votre navigateur
+2. Android : Menu ⋮ > "Installer l'application" ou "Ajouter à l'écran d'accueil"
+   iPhone : Bouton partage ↑ > "Sur l'écran d'accueil"
+3. Confirmez et c'est fait !
+
+💻 SUR PC (Windows / Mac) :
+1. Ouvrez ${appUrl.replace('https://', '')} dans Chrome ou Edge
+2. Cliquez sur l'icône d'installation dans la barre d'adresse
+3. Cliquez sur "Installer"
+
+Pas besoin de passer par l'App Store ou le Play Store.
+L'installation se fait directement depuis votre navigateur en 30 secondes !
+
+---
+AfriBourse - Apprenez, simulez et investissez en toute confiance.
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: '📱 AfriBourse est maintenant une application ! Installez-la en 30 secondes',
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
   sendPriceAlertEmail,
   sendPortfolioSummaryEmail,
   sendLearningSummaryEmail,
+  sendLeaderboardCongratulationEmail,
+  sendPWAAnnouncementEmail,
   sendEmail,
 };
