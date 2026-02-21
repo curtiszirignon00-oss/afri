@@ -1,6 +1,6 @@
 // src/pages/NotificationsPage.tsx
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Heart, MessageCircle, UserPlus, TrendingUp, Award, Star, AlertTriangle, ArrowLeft, Filter } from 'lucide-react';
+import { Bell, Check, CheckCheck, Heart, MessageCircle, UserPlus, TrendingUp, Award, Star, AlertTriangle, ArrowLeft, Filter, Users, UserCheck, UserX, Mail, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
     useNotifications,
@@ -20,6 +20,13 @@ const notificationIcons: Record<string, { icon: typeof Bell; color: string; bgCo
     ACHIEVEMENT: { icon: Award, color: 'text-amber-600', bgColor: 'bg-amber-100' },
     LEVEL_UP: { icon: Award, color: 'text-emerald-600', bgColor: 'bg-emerald-100' },
     PRICE_ALERT: { icon: AlertTriangle, color: 'text-orange-600', bgColor: 'bg-orange-100' },
+    COMMUNITY_INVITE: { icon: Mail, color: 'text-cyan-600', bgColor: 'bg-cyan-100' },
+    COMMUNITY_JOIN: { icon: Users, color: 'text-teal-600', bgColor: 'bg-teal-100' },
+    COMMUNITY_POST: { icon: MessageCircle, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+    JOIN_REQUEST: { icon: UserPlus, color: 'text-violet-600', bgColor: 'bg-violet-100' },
+    JOIN_APPROVED: { icon: UserCheck, color: 'text-green-600', bgColor: 'bg-green-100' },
+    JOIN_REJECTED: { icon: UserX, color: 'text-red-600', bgColor: 'bg-red-100' },
+    SYSTEM: { icon: Info, color: 'text-gray-600', bgColor: 'bg-gray-100' },
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -100,11 +107,19 @@ export default function NotificationsPage() {
 
     const handleNotificationClick = (notification: Notification) => {
         // Navigate based on notification type
-        if (notification.post_id) {
-            navigate(`/community?post=${notification.post_id}`);
-        } else if (notification.actor_id && notification.type === 'NEW_FOLLOWER') {
+        const meta = notification.metadata;
+
+        if (notification.type === 'NEW_FOLLOWER' && notification.actor_id) {
             navigate(`/investor/${notification.actor_id}`);
         } else if (notification.type === 'PRICE_ALERT') {
+            navigate('/dashboard');
+        } else if (['COMMUNITY_INVITE', 'JOIN_APPROVED', 'COMMUNITY_POST', 'COMMUNITY_JOIN'].includes(notification.type) && meta?.communitySlug) {
+            navigate(`/community/${meta.communitySlug}`);
+        } else if (notification.type === 'JOIN_REQUEST' && meta?.communitySlug) {
+            navigate(`/community/${meta.communitySlug}`);
+        } else if (notification.post_id) {
+            navigate(`/community?post=${notification.post_id}`);
+        } else if (notification.type === 'ACHIEVEMENT' || notification.type === 'LEVEL_UP') {
             navigate('/dashboard');
         }
     };
