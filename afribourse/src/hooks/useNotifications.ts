@@ -4,7 +4,7 @@ import { apiClient } from '../lib/api-client';
 
 export interface Notification {
     id: string;
-    type: 'NEW_POST' | 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'MENTION' | 'ACHIEVEMENT' | 'LEVEL_UP' | 'PRICE_ALERT';
+    type: 'NEW_POST' | 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'MENTION' | 'ACHIEVEMENT' | 'LEVEL_UP' | 'PRICE_ALERT' | 'COMMUNITY_INVITE' | 'COMMUNITY_JOIN' | 'COMMUNITY_POST' | 'JOIN_REQUEST' | 'JOIN_APPROVED' | 'JOIN_REJECTED' | 'SYSTEM';
     title: string;
     message: string;
     is_read: boolean;
@@ -36,7 +36,7 @@ export function useNotifications(page: number = 1, unreadOnly: boolean = false) 
         queryKey: ['notifications', page, unreadOnly],
         queryFn: async () => {
             const response = await apiClient.get<NotificationsResponse>(
-                `/notifications?page=${page}&unreadOnly=${unreadOnly}`
+                `/notifications?page=${page}&unread=${unreadOnly}`
             );
             return response.data;
         },

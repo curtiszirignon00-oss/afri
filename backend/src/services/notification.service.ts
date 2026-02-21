@@ -468,7 +468,7 @@ export async function notifyAdminsNewCommunityPost(
     const recentNotifications = await prisma.notification.groupBy({
         by: ['user_id'],
         where: {
-            type: 'COMMUNITY_POST_CREATED',
+            type: 'SYSTEM',
             created_at: { gte: fiveMinutesAgo },
             user_id: { in: admins.map(a => a.id) },
         },
@@ -492,7 +492,7 @@ export async function notifyAdminsNewCommunityPost(
 
     const notifications = adminsToNotify.map(admin => ({
         user_id: admin.id,
-        type: 'COMMUNITY_POST_CREATED' as NotificationType,
+        type: 'SYSTEM' as NotificationType,
         title,
         message,
         actor_id: authorId,
