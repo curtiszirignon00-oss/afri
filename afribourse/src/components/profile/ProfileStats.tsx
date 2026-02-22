@@ -114,6 +114,8 @@ export default function ProfileStats({
     const [showVisibilityModal, setShowVisibilityModal] = useState(false);
 
     // Visibility settings from profile
+    // Pour les autres utilisateurs, les flags show_* viennent du backend
+    // Pour son propre profil, ils viennent du investorProfile complet
     const showLevel = investorProfile?.show_level !== false;
     const showXp = investorProfile?.show_xp === true;
     const showStreak = investorProfile?.show_streak !== false;
@@ -126,8 +128,8 @@ export default function ProfileStats({
     const currentStreak = investorProfile?.current_streak || 0;
     const longestStreak = investorProfile?.longest_streak || 0;
 
-    // Recalculer le niveau à partir du XP total pour éviter les incohérences
-    const level = calculateLevelFromXP(totalXp);
+    // Utiliser le niveau de l'API si disponible, sinon recalculer depuis XP
+    const level = investorProfile?.level || calculateLevelFromXP(totalXp);
 
     // Formule Duolingo-style: seuil niveau N = 50 * N * (N + 1)
     const getXPRequired = (n: number) => 50 * n * (n + 1);
