@@ -1,5 +1,5 @@
 // src/components/profile/SocialStats.tsx
-import { Users, UserPlus, FileText } from 'lucide-react';
+import { Users, UserPlus, FileText, Lock } from 'lucide-react';
 import { Card } from '../ui';
 
 interface SocialStatsProps {
@@ -7,24 +7,31 @@ interface SocialStatsProps {
 }
 
 export default function SocialStats({ profile }: SocialStatsProps) {
+    const investorProfile = profile.investorProfile;
+    const showFollowers = investorProfile?.show_followers_count !== false;
+    const showFollowing = investorProfile?.show_following_count !== false;
+
     const stats = [
         {
             label: 'Abonnés',
             value: profile.stats?.followers_count || 0,
             icon: Users,
             color: 'blue',
+            visible: showFollowers,
         },
         {
             label: 'Abonnements',
             value: profile.stats?.following_count || 0,
             icon: UserPlus,
             color: 'purple',
+            visible: showFollowing,
         },
         {
             label: 'Publications',
             value: profile.stats?.posts_count || 0,
             icon: FileText,
             color: 'green',
+            visible: true,
         },
     ];
 
@@ -42,7 +49,11 @@ export default function SocialStats({ profile }: SocialStatsProps) {
                                 </div>
                                 <span className="text-sm text-gray-600">{stat.label}</span>
                             </div>
-                            <span className="font-semibold text-gray-900">{stat.value}</span>
+                            {stat.visible ? (
+                                <span className="font-semibold text-gray-900">{stat.value}</span>
+                            ) : (
+                                <Lock className="w-4 h-4 text-gray-400" />
+                            )}
                         </div>
                     );
                 })}
