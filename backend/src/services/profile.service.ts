@@ -117,6 +117,9 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
       // Le nom est toujours public
       name: profile.user.name,
       lastname: profile.user.lastname,
+      // Liens sociaux et vérification toujours publics
+      social_links: profile.social_links || null,
+      verified_investor: profile.verified_investor || false,
     };
 
     // Appliquer les filtres
@@ -128,6 +131,16 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     filtered.banner_color = profile.banner_color;
     if (profile.show_bio) filtered.bio = profile.bio;
     if (profile.show_country) filtered.country = profile.country;
+
+    // Inclure les flags de visibilité pour que le frontend sache quoi afficher
+    filtered.show_level = profile.show_level;
+    filtered.show_xp = profile.show_xp;
+    filtered.show_streak = profile.show_streak;
+    filtered.show_portfolio_value = profile.show_portfolio_value;
+    filtered.show_positions = profile.show_positions;
+    filtered.show_watchlist = profile.show_watchlist;
+    filtered.show_followers_count = profile.show_followers_count;
+    filtered.show_following_count = profile.show_following_count;
 
     // Recalculer le niveau depuis le XP pour éviter les incohérences
     const correctLevel = calculateLevelFromXP(profile.total_xp || 0);

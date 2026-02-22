@@ -1968,6 +1968,187 @@ AfriBourse - Apprenez, simulez et investissez en toute confiance.
   });
 }
 
+/**
+ * Envoie un email pour inviter les utilisateurs à compléter leur profil
+ */
+export async function sendCompleteProfileEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const profileUrl = `${config.app.frontendUrl}/profile`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Complétez votre profil AfriBourse</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 10px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .logo-text {
+          font-size: 28px;
+          font-weight: bold;
+          color: #f97316;
+        }
+        .hero-emoji {
+          font-size: 56px;
+          text-align: center;
+          margin: 20px 0;
+        }
+        .button {
+          display: inline-block;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 30px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 16px;
+          margin: 15px 0;
+        }
+        .checklist {
+          margin: 20px 0;
+          padding: 0;
+          list-style: none;
+        }
+        .checklist li {
+          padding: 10px 15px;
+          margin: 8px 0;
+          background-color: #f8fafc;
+          border-radius: 8px;
+          border-left: 4px solid #f97316;
+          font-size: 15px;
+        }
+        .checklist li span.icon {
+          margin-right: 8px;
+        }
+        .benefit-box {
+          background: linear-gradient(135deg, #fef3c7, #fff7ed);
+          border-radius: 10px;
+          padding: 20px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #999;
+          font-size: 12px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-container">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="logo-text">AfriBourse</span>
+          </div>
+        </div>
+
+        <div class="hero-emoji">👤✨</div>
+
+        <h1 style="text-align: center; color: #1e293b; margin: 0 0 10px 0;">
+          Complétez votre profil !
+        </h1>
+        <p style="text-align: center; color: #64748b; font-size: 16px;">
+          Bonjour ${displayName}, votre profil AfriBourse n'est pas encore complet. Un profil complet vous permet de profiter pleinement de la plateforme et d'être plus visible dans la communauté.
+        </p>
+
+        <h3 style="color: #1e293b; margin-top: 25px;">Ce que vous pouvez ajouter :</h3>
+        <ul class="checklist">
+          <li><span class="icon">📝</span> <strong>Lien vers vos reseaux sociaux</strong> – Montrez qui vous êtes à la communauté</li>
+          <li><span class="icon">🏷️</span> <strong>Nom d'utilisateur</strong> – Choisissez un @ unique et mémorable</li>
+          <li><span class="icon">📝</span> <strong>Bio</strong> – Partagez votre parcours et vos centres d'intérêt</li>
+          <li><span class="icon">🌍</span> <strong>Pays</strong> – Rejoignez le classement de votre pays</li>
+          <li><span class="icon">📈</span> <strong>Objectifs d'investissement</strong> – Personnalisez votre expérience</li>
+        </ul>
+
+        <div class="benefit-box">
+          <p style="margin: 0; font-size: 15px; color: #92400e;">
+            🏆 <strong>Un profil complet vous donne de l'XP</strong> et vous aide à débloquer des badges exclusifs !
+          </p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${profileUrl}" class="button">👤 Compléter mon profil</a>
+        </div>
+
+        <p style="text-align: center; font-size: 14px; color: #94a3b8;">
+          Ça ne prend que 2 minutes et ça fait toute la différence !
+        </p>
+
+        <div class="footer">
+          <p>Cet email a été envoyé par AfriBourse</p>
+          <p>Si vous avez des questions, contactez-nous à contact@africbourse.com</p>
+          <p style="margin-top: 10px;">© ${new Date().getFullYear()} AfriBourse. Tous droits réservés.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Bonjour ${displayName} !
+
+Votre profil AfriBourse n'est pas encore complet. Un profil complet vous permet de profiter pleinement de la plateforme et d'être plus visible dans la communauté.
+
+CE QUE VOUS POUVEZ AJOUTER :
+🏷️ Nom d'utilisateur – Choisissez un @ unique
+📝 Bio – Partagez votre parcours
+🌍 Pays – Rejoignez le classement de votre pays
+📈 Objectifs d'investissement – Personnalisez votre expérience
+📝 Lien vers vos reseaux sociaux
+🏆 Un profil complet vous donne de l'XP et vous aide à débloquer des badges exclusifs !
+
+Compléter mon profil : ${profileUrl}
+
+Ça ne prend que 2 minutes et ça fait toute la différence !
+
+---
+AfriBourse - Apprenez, simulez et investissez en toute confiance.
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: '👤 Complétez votre profil AfriBourse – Débloquez des récompenses !',
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -1976,5 +2157,6 @@ export default {
   sendLearningSummaryEmail,
   sendLeaderboardCongratulationEmail,
   sendPWAAnnouncementEmail,
+  sendCompleteProfileEmail,
   sendEmail,
 };

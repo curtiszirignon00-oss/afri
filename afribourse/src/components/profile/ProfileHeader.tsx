@@ -18,6 +18,9 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
     // Couleur de la bannière (par défaut gradient bleu-violet)
     const bannerColor = profile.profile?.banner_color || 'from-blue-600 via-indigo-600 to-purple-700';
 
+    const showFollowers = profile.investorProfile?.show_followers_count !== false;
+    const showFollowing = profile.investorProfile?.show_following_count !== false;
+
     const socialLinks = profile.profile?.social_links;
     const hasSocialLinks = socialLinks && (socialLinks.linkedin || socialLinks.twitter || socialLinks.instagram || socialLinks.facebook || socialLinks.website);
 
@@ -49,11 +52,11 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                         <div className="hidden sm:flex items-center gap-3 flex-1 mt-4 sm:mt-0">
                             <div className="flex-1 grid grid-cols-3 gap-2">
                                 <div className="bg-gray-50 hover:bg-gray-100 rounded-xl p-3 sm:p-4 text-center cursor-pointer transition-colors">
-                                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{profile.stats?.following_count || 0}</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{showFollowing ? (profile.stats?.following_count || 0) : '-'}</p>
                                     <p className="text-xs sm:text-sm text-gray-500 font-medium">Abonnements</p>
                                 </div>
                                 <div className="bg-gray-50 hover:bg-gray-100 rounded-xl p-3 sm:p-4 text-center cursor-pointer transition-colors">
-                                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{profile.stats?.followers_count || 0}</p>
+                                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{showFollowers ? (profile.stats?.followers_count || 0) : '-'}</p>
                                     <p className="text-xs sm:text-sm text-gray-500 font-medium">Abonnés</p>
                                 </div>
                                 <div className="bg-gray-50 hover:bg-gray-100 rounded-xl p-3 sm:p-4 text-center cursor-pointer transition-colors">
@@ -113,11 +116,11 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                     <div className="sm:hidden mt-4">
                         <div className="grid grid-cols-3 gap-2">
                             <div className="bg-gray-50 rounded-xl p-3 text-center">
-                                <p className="text-lg font-bold text-gray-900">{profile.stats?.following_count || 0}</p>
+                                <p className="text-lg font-bold text-gray-900">{showFollowing ? (profile.stats?.following_count || 0) : '-'}</p>
                                 <p className="text-xs text-gray-500">Abonnements</p>
                             </div>
                             <div className="bg-gray-50 rounded-xl p-3 text-center">
-                                <p className="text-lg font-bold text-gray-900">{profile.stats?.followers_count || 0}</p>
+                                <p className="text-lg font-bold text-gray-900">{showFollowers ? (profile.stats?.followers_count || 0) : '-'}</p>
                                 <p className="text-xs text-gray-500">Abonnés</p>
                             </div>
                             <div className="bg-gray-50 rounded-xl p-3 text-center">
