@@ -86,7 +86,7 @@ export default function CheckoutPage() {
 
     // Logger l'intention d'abonnement avec la méthode de paiement sélectionnée
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/subscriptions/intent`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

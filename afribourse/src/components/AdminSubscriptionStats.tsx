@@ -63,7 +63,7 @@ export default function AdminSubscriptionStats() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/subscriptions/stats`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/stats`, {
         method: 'GET',
         headers,
         credentials: 'include', // Important: envoie les cookies

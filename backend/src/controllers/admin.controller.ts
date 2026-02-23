@@ -88,16 +88,22 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
       select: {
         planId: true,
         userId: true,
+        paymentMethod: true,
       },
     });
 
     // Calculer les stats manuellement
     const intentsByPlanMap = new Map<string, number>();
+    const intentsByPaymentMethodMap = new Map<string, number>();
     const uniqueUserIds = new Set<string>();
 
     allIntents.forEach((intent) => {
       // Count par plan
       intentsByPlanMap.set(intent.planId, (intentsByPlanMap.get(intent.planId) || 0) + 1);
+
+      // Count par méthode de paiement
+      const method = intent.paymentMethod || 'Non spécifié';
+      intentsByPaymentMethodMap.set(method, (intentsByPaymentMethodMap.get(method) || 0) + 1);
 
       // Utilisateurs uniques
       uniqueUserIds.add(intent.userId);
@@ -108,8 +114,85 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
       count,
     }));
 
+    const intentsByPaymentMethod = Array.from(intentsByPaymentMethodMap.entries()).map(([method, count]) => ({
+      method,
+      count,
+    }));
+
     // Taux de conversion
     const conversionRate = totalUsers > 0 ? (uniqueUserIds.size / totalUsers) * 100 : 0;
+
+    // 5. TRANSACTIONS - Volume et 30 derniers jours
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const transactionsLast30Days = await prisma.transaction.count({
+      where: {
+        created_at: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+
+    const allTransactions = await prisma.transaction.findMany({
+      select: {
+        type: true,
+        quantity: true,
+        price_per_share: true,
+      },
+    });
+
+    const transactionsByTypeMap = new Map<string, number>();
+    let totalVolume = 0;
+
+    allTransactions.forEach((tx) => {
+      transactionsByTypeMap.set(tx.type, (transactionsByTypeMap.get(tx.type) || 0) + 1);
+      totalVolume += tx.quantity * tx.price_per_share;
+    });
+
+    const transactionsByType = Array.from(transactionsByTypeMap.entries()).map(([type, count]) => ({
+      type,
+      count,
+    }));
+
+    // 6. TOP UTILISATEURS (par nombre de transactions)
+    const topUsersData = await prisma.portfolio.findMany({
+      select: {
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            lastname: true,
+            email: true,
+            created_at: true,
+          },
+        },
+        _count: {
+          select: {
+            transactions: true,
+          },
+        },
+      },
+    });
+
+    // Agréger par utilisateur
+    const userTransactionMap = new Map<string, { user: any; transactionCount: number }>();
+    topUsersData.forEach((portfolio) => {
+      const existing = userTransactionMap.get(portfolio.userId);
+      if (existing) {
+        existing.transactionCount += portfolio._count.transactions;
+      } else {
+        userTransactionMap.set(portfolio.userId, {
+          user: portfolio.user,
+          transactionCount: portfolio._count.transactions,
+        });
+      }
+    });
+
+    const topUsers = Array.from(userTransactionMap.values())
+      .sort((a, b) => b.transactionCount - a.transactionCount)
+      .slice(0, 10);
 
     return res.status(200).json({
       success: true,
@@ -129,18 +212,18 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
         },
         transactions: {
           total: totalTransactions,
-          byType: [],
-          totalVolume: 0,
-          last30Days: 0,
+          byType: transactionsByType,
+          totalVolume: Math.round(totalVolume),
+          last30Days: transactionsLast30Days,
         },
         subscriptions: {
           totalIntents,
           uniqueUsers: uniqueUserIds.size,
           conversionRate: parseFloat(conversionRate.toFixed(2)),
           byPlan: intentsByPlan,
-          byPaymentMethod: [], // Payment method not tracked yet
+          byPaymentMethod: intentsByPaymentMethod,
         },
-        topUsers: [],
+        topUsers,
       },
     });
   } catch (error) {
