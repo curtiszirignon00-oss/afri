@@ -941,6 +941,7 @@ model SubscriptionIntent {
   price      String // "9 900 XOF" ou "300 000 XOF"
   feature    String? // Fonctionnalité qui a déclenché l'intention (ex: "Coach IA")
   source     String? // "paywall" ou "subscriptions_page"
+  paymentMethod String? // "wave", "orange-money", "mtn-momo", etc.
   created_at DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

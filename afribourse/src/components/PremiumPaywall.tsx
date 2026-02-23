@@ -60,7 +60,7 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
 
     // Envoyer les données au backend pour tracking
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/subscriptions/intent`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
