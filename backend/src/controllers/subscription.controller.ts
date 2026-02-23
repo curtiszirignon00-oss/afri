@@ -16,7 +16,7 @@ interface AuthRequest extends Request {
  */
 export const logSubscriptionIntent = async (req: AuthRequest, res: Response) => {
   try {
-    const { planId, planName, price, feature, source } = req.body;
+    const { planId, planName, price, feature, source, paymentMethod } = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -41,6 +41,7 @@ export const logSubscriptionIntent = async (req: AuthRequest, res: Response) => 
         price,
         feature: feature || null,
         source: source || 'unknown',
+        paymentMethod: paymentMethod || null,
         userId,
       },
     });
