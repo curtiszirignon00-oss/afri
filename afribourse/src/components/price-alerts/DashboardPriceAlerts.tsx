@@ -31,7 +31,7 @@ export default function DashboardPriceAlerts() {
   };
 
   const handleViewStock = (ticker: string) => {
-    navigate(`/stocks/${ticker}`);
+    navigate(`/stock/${ticker}`);
   };
 
   if (isLoading) {
