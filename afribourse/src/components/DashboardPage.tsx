@@ -947,6 +947,7 @@ export default function DashboardPage() {
                     <div
                       key={stock.id}
                       className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      onClick={() => navigate(`/stock/${stock.symbol}`)}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
