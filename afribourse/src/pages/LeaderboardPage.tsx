@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
     Trophy, TrendingUp, Crown, Medal,
-    Loader2, ArrowLeft, Users
+    Loader2, ArrowLeft, Users, Flame
 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 
@@ -16,6 +16,7 @@ interface LeaderboardEntry {
     total_xp: number;
     title: string;
     title_emoji: string;
+    rank_streak_days?: number;
 }
 
 interface LeaderboardResponse {
@@ -125,9 +126,17 @@ export default function LeaderboardPage() {
                                         <p className="font-semibold text-gray-900 truncate text-sm">
                                             {entry.username}
                                         </p>
-                                        <p className="text-xs text-gray-400">
-                                            {entry.title_emoji} Niv. {entry.level} · {entry.title}
-                                        </p>
+                                        <div className="flex items-center gap-1.5">
+                                            <p className="text-xs text-gray-400">
+                                                {entry.title_emoji} Niv. {entry.level} · {entry.title}
+                                            </p>
+                                            {decoration && entry.rank_streak_days !== undefined && (
+                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-500 text-xs font-semibold">
+                                                    <Flame className="w-3 h-3" />
+                                                    {entry.rank_streak_days}j
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* ROI */}

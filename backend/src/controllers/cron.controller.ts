@@ -10,6 +10,7 @@ import {
     createPriceAlertNotification
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
+import { notifyPriceAlert } from '../services/notification.service';
 import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
 import { sendWeeklyLearningSummaries } from '../services/learning-summary.service';
 import { runFullBackup } from '../services/backup.service';
@@ -19,6 +20,7 @@ import {
     runWeeklyChallengesGeneration,
     runCleanup
 } from '../jobs/gamification.job';
+import { updateROIRankStreaks } from '../services/gamification-leaderboard.service';
 import prisma from '../config/prisma';
 import { cacheInvalidatePattern } from '../services/cache.service';
 
@@ -39,6 +41,9 @@ export async function cronScrapeStocks(req: Request, res: Response) {
 
         // Verifier les alertes de prix
         await checkPriceAlerts();
+
+        // Mettre à jour les streaks de position ROI (top 3)
+        await updateROIRankStreaks();
 
         const duration = Date.now() - startTime;
         console.log(`[CRON API] Scraping termine en ${duration}ms`);
@@ -295,6 +300,22 @@ async function checkPriceAlerts() {
                         notificationMethod,
                         emailSent
                     );
+
+                    // Créer la notification inapp (cloche)
+                    if (alert.notify_in_app) {
+                        try {
+                            await notifyPriceAlert(
+                                alert.userId,
+                                alert.stock_ticker,
+                                stock.name || alert.stock_ticker,
+                                currentPrice,
+                                alert.target_price,
+                                alert.alert_type as 'ABOVE' | 'BELOW'
+                            );
+                        } catch (notifError) {
+                            console.error(`[CRON] Erreur notif inapp alerte ${alert.id}:`, notifError);
+                        }
+                    }
 
                     triggeredCount++;
                 }

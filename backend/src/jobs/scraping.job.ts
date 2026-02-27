@@ -10,6 +10,7 @@ import {
     createPriceAlertNotification
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
+import { notifyPriceAlert } from '../services/notification.service';
 import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
 import { sendWeeklyLearningSummaries } from '../services/learning-summary.service';
 import prisma from '../config/prisma';
@@ -116,6 +117,22 @@ async function checkPriceAlerts() {
                         notificationMethod,
                         emailSent
                     );
+
+                    // Créer la notification inapp (cloche)
+                    if (alert.notify_in_app) {
+                        try {
+                            await notifyPriceAlert(
+                                alert.userId,
+                                alert.stock_ticker,
+                                stock.name || alert.stock_ticker,
+                                currentPrice,
+                                alert.target_price,
+                                alert.alert_type as 'ABOVE' | 'BELOW'
+                            );
+                        } catch (notifError) {
+                            console.error(`❌ Erreur notif inapp alerte ${alert.id}:`, notifError);
+                        }
+                    }
 
                     triggeredCount++;
                 } else {

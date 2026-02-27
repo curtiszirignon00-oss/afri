@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -19,6 +20,32 @@ export default function DashboardPriceAlerts() {
   const { data: alerts, isLoading } = usePriceAlerts();
   const toggleMutation = useTogglePriceAlert();
   const deleteMutation = useDeletePriceAlert();
+
+  // Détecter les alertes nouvellement déclenchées et afficher un toast
+  const prevNotifiedRef = useRef<Map<string, boolean>>(new Map());
+  useEffect(() => {
+    if (!alerts) return;
+    const prevMap = prevNotifiedRef.current;
+
+    // Premier chargement : enregistrer l'état actuel sans toast
+    if (prevMap.size === 0) {
+      alerts.forEach(a => prevMap.set(a.id, a.is_notified));
+      return;
+    }
+
+    // Détecter les transitions false → true
+    alerts.forEach(alert => {
+      const wasNotified = prevMap.get(alert.id);
+      if (wasNotified === false && alert.is_notified) {
+        const direction = alert.alert_type === 'ABOVE' ? 'au-dessus de' : 'en-dessous de';
+        toast.success(
+          `Alerte ${alert.stock_ticker} déclenchée ! Prix ${direction} ${alert.target_price.toLocaleString('fr-FR')} FCFA`,
+          { icon: '🔔', duration: 8000 }
+        );
+      }
+      prevMap.set(alert.id, alert.is_notified);
+    });
+  }, [alerts]);
 
   const handleToggle = (alertId: string, isActive: boolean) => {
     toggleMutation.mutate({ alertId, isActive });
