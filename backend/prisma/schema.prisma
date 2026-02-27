@@ -244,6 +244,10 @@ model UserProfile {
   global_rank  Int?
   country_rank Int?
 
+  // Classement ROI (portfolio performance)
+  roi_rank            Int?      // Position actuelle dans le top 3 ROI (1, 2 ou 3)
+  roi_rank_held_since DateTime? // Depuis quand l'utilisateur tient cette position (pour calcul du streak)
+
   // Compteurs de connexion (pour badges early_bird/night_owl)
   early_logins_count Int @default(0) // Connexions avant 8h
   night_logins_count Int @default(0) // Connexions après 22h
