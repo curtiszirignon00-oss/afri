@@ -18,6 +18,7 @@ export function usePriceAlerts() {
     queryKey: ['price-alerts'],
     queryFn: () => fetchPriceAlerts(),
     staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchInterval: 30 * 1000, // 30 secondes pour détecter les alertes déclenchées
   });
 }
 
