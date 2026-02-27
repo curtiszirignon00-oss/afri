@@ -112,7 +112,8 @@ export default function NotificationsPage() {
         if (notification.type === 'NEW_FOLLOWER' && notification.actor_id) {
             navigate(`/investor/${notification.actor_id}`);
         } else if (notification.type === 'PRICE_ALERT') {
-            navigate('/dashboard');
+            const stockSymbol = notification.metadata?.stockSymbol;
+            navigate(stockSymbol ? `/stock/${stockSymbol}` : '/dashboard');
         } else if (['COMMUNITY_INVITE', 'JOIN_APPROVED', 'COMMUNITY_POST', 'COMMUNITY_JOIN'].includes(notification.type) && meta?.communitySlug) {
             navigate(`/community/${meta.communitySlug}`);
         } else if (notification.type === 'JOIN_REQUEST' && meta?.communitySlug) {
