@@ -1,12 +1,13 @@
 // src/components/MarketsPageRefactored.tsx
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Filter, Star, Info, PlusCircle, CheckCircle } from 'lucide-react';
+import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import StockComparison from './markets/StockComparison';
+import BRVMMarketMap from './markets/BRVMMarketMap';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -42,6 +43,9 @@ export default function MarketsPageRefactored() {
   const [maxPE, setMaxPE] = useState<number | undefined>(undefined);
   const [minDividend, setMinDividend] = useState<number | undefined>(undefined);
   const [maxDividend, setMaxDividend] = useState<number | undefined>(undefined);
+
+  // Vue : liste ou carte de marché
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Stock comparison
   const [comparisonStocks, setComparisonStocks] = useState<Stock[]>([]);
@@ -465,16 +469,51 @@ export default function MarketsPageRefactored() {
           />
         )}
 
-        {/* Indication de défilement horizontal sur mobile */}
-        <div className="flex md:hidden items-center gap-2 mb-2 text-xs text-gray-500 px-1">
-          <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-          </svg>
-          <span>Glissez pour voir P/E, Dividende, Cap. Boursière</span>
+        {/* Bascule vue liste / carte de marché */}
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'list'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">Liste</span>
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'map'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span className="hidden sm:inline">Carte de marché</span>
+            </button>
+          </div>
+
+          {/* Indication scroll (visible uniquement en vue liste sur mobile) */}
+          {viewMode === 'list' && (
+            <div className="flex md:hidden items-center gap-2 text-xs text-gray-500 px-1">
+              <svg className="w-4 h-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <span>Glissez pour voir P/E, Dividende, Cap. Boursière</span>
+            </div>
+          )}
         </div>
 
-        {/* Tableau des actions */}
-        <Card padding="none">
+        {/* Vue Carte de marché */}
+        {viewMode === 'map' && (
+          <BRVMMarketMap stocks={stocks} loading={isLoading} />
+        )}
+
+        {/* Tableau des actions (vue liste) */}
+        {viewMode === 'list' && <Card padding="none">
           {stocks.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">
@@ -657,7 +696,7 @@ export default function MarketsPageRefactored() {
               </table>
             </div>
           )}
-        </Card>
+        </Card>}
 
         {/* Stats rapides */}
         <div className="mt-6 sm:mt-8 grid grid-cols-3 gap-3 sm:gap-6">
