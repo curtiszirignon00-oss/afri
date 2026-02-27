@@ -23,6 +23,7 @@ export interface GamificationLeaderboardEntry {
   title_emoji: string;
   country?: string;
   badges_count?: number;
+  rank_streak_days?: number; // Nombre de jours consécutifs à cette position (top 3 uniquement)
 }
 
 export interface LeaderboardResponse {
@@ -361,7 +362,9 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
               select: {
                 username: true,
                 avatar_url: true,
-                level: true
+                level: true,
+                roi_rank: true,
+                roi_rank_held_since: true
               }
             }
           }
@@ -396,6 +399,7 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
           username: displayName || portfolio.user?.profile?.username || 'Utilisateur',
           avatar_url: portfolio.user?.profile?.avatar_url || null,
           level: portfolio.user?.profile?.level || 1,
+          roi_rank_held_since: portfolio.user?.profile?.roi_rank_held_since || null,
           roi,
           total_value: totalValue
         };
@@ -403,6 +407,7 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
     );
 
     // Trier par ROI et prendre le top
+    const now = new Date();
     const sortedPerformances = performances
       .filter(p => p.roi !== null && !isNaN(p.roi))
       .sort((a, b) => b.roi - a.roi)
@@ -410,15 +415,30 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
 
     const entries: GamificationLeaderboardEntry[] = sortedPerformances.map((perf, index) => {
       const { title, emoji } = xpService.getLevelTitle(perf.level);
+      const rank = index + 1;
+
+      // Calculer le nombre de jours consécutifs à cette position (top 3 uniquement)
+      // +1 : le jour où on prend la place compte comme jour 1
+      // null → 1j par défaut (première exécution avant le cron)
+      let rank_streak_days: number | undefined;
+      if (rank <= 3) {
+        if (perf.roi_rank_held_since) {
+          rank_streak_days = Math.floor((now.getTime() - new Date(perf.roi_rank_held_since).getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        } else {
+          rank_streak_days = 1; // Fallback avant la première initialisation par le cron
+        }
+      }
+
       return {
-        rank: index + 1,
+        rank,
         userId: perf.userId,
         username: perf.username,
         avatar_url: perf.avatar_url,
         level: perf.level,
         total_xp: Math.round(perf.roi * 100), // Utiliser ROI comme "XP" pour l'affichage
         title,
-        title_emoji: emoji
+        title_emoji: emoji,
+        rank_streak_days
       };
     });
 
@@ -604,6 +624,65 @@ export async function getStreakLeaderboard(limit: number = 50): Promise<Leaderbo
 
   } catch (error) {
     console.error('❌ Erreur getStreakLeaderboard:', error);
+    throw error;
+  }
+}
+
+// =====================================
+// MISE À JOUR DES STREAKS DE POSITION ROI
+// =====================================
+
+/**
+ * Met à jour les streaks de position pour le top 3 du classement ROI.
+ * Appelé après chaque mise à jour des prix (scraping horaire).
+ * - Si un utilisateur garde la même position → roi_rank_held_since inchangé (streak continue)
+ * - Si un utilisateur change de position ou sort du top 3 → reset
+ */
+export async function updateROIRankStreaks(): Promise<void> {
+  try {
+    // 1. Calculer le top 3 actuel
+    const leaderboard = await getMonthlyROILeaderboard(3);
+    const newTop3 = leaderboard.entries.slice(0, 3);
+    const newTop3UserIds = newTop3.map(e => e.userId);
+    const now = new Date();
+
+    // 2. Récupérer les anciens détenteurs du top 3
+    const previousTop3 = await prisma.userProfile.findMany({
+      where: { roi_rank: { not: null } },
+      select: { userId: true, roi_rank: true }
+    });
+
+    // 3. Réinitialiser ceux qui ne sont plus dans le top 3
+    for (const prev of previousTop3) {
+      if (!newTop3UserIds.includes(prev.userId)) {
+        await prisma.userProfile.update({
+          where: { userId: prev.userId },
+          data: { roi_rank: null, roi_rank_held_since: null }
+        });
+      }
+    }
+
+    // 4. Mettre à jour chaque utilisateur du nouveau top 3
+    for (const entry of newTop3) {
+      const existing = previousTop3.find(p => p.userId === entry.userId);
+
+      if (existing?.roi_rank === entry.rank) {
+        // Même position → streak continue, on ne touche pas roi_rank_held_since
+      } else {
+        // Nouvelle position ou arrivée dans le top 3 → reset du streak
+        await prisma.userProfile.update({
+          where: { userId: entry.userId },
+          data: {
+            roi_rank: entry.rank,
+            roi_rank_held_since: now
+          }
+        });
+      }
+    }
+
+    console.log(`✅ ROI rank streaks mis à jour (top ${newTop3.length})`);
+  } catch (error) {
+    console.error('❌ Erreur updateROIRankStreaks:', error);
     throw error;
   }
 }
