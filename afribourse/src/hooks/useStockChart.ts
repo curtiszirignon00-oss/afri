@@ -334,7 +334,10 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       const chartApi = chartRef.current as any;
 
       if (chartTypeChanged) {
-        // ── Type de graphique changé : recréer la série principale ──
+        // ── Type de graphique changé : sortir du mode dessin d'abord ──
+        cancelActiveDrawing();
+
+        // ── Recréer la série principale ──
         if (seriesRef.current) {
           chartRef.current.removeSeries(seriesRef.current);
           seriesRef.current = null;
@@ -654,6 +657,16 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
   };
 
   // ── Outils de dessin (ligne-outils) ──────────────────────────────────────
+
+  /** Annule un tracé en cours (non finalisé) sans supprimer les tracés existants. */
+  const cancelActiveDrawing = () => {
+    if (!chartContainerRef.current) return;
+    // L'Escape est le signal standard pour interrompre un tracé en cours
+    chartContainerRef.current.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+    );
+  };
+
   const startDrawing = (toolType: string) => {
     if (!chartRef.current) return;
     (chartRef.current as any).addLineTool(toolType, [], {});
@@ -676,6 +689,7 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     volumeSeries: volumeSeriesRef.current,
     isReady,
     takeScreenshot,
+    cancelActiveDrawing,
     startDrawing,
     deleteSelectedTools,
     clearAllDrawings,
