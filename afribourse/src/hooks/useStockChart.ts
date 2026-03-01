@@ -9,7 +9,7 @@ import {
   HistogramSeriesPartialOptions,
   ColorType,
   CrosshairMode,
-} from 'lightweight-charts';
+} from 'lightweight-charts-line-tools';
 import type {
   ChartType,
   OHLCVData,
@@ -247,29 +247,39 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     chartRef.current = chart;
     console.log('useStockChart: Chart created');
 
-    // Gestionnaire de redimensionnement
-    const handleResize = () => {
-      if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-        });
+    // ResizeObserver : couvre le premier rendu (clientWidth peut être 0) + tous les redimensionnements
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry || !chartRef.current) return;
+      const width = entry.contentRect.width;
+      if (width > 0) {
+        chartRef.current.applyOptions({ width });
+        // fitContent à chaque resize pour maintenir la vue complète
+        chartRef.current.timeScale().fitContent();
       }
-    };
+    });
 
-    // Redimensionner aussi quand on sort du plein écran
+    if (chartContainerRef.current) {
+      resizeObserver.observe(chartContainerRef.current);
+    }
+
+    // Plein écran : petit délai pour laisser le DOM se stabiliser
     const handleFullscreenChange = () => {
-      // Petit délai pour laisser le DOM se stabiliser après la sortie du plein écran
-      setTimeout(handleResize, 100);
+      setTimeout(() => {
+        if (chartContainerRef.current && chartRef.current) {
+          chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
+          chartRef.current.timeScale().fitContent();
+        }
+      }, 100);
     };
 
-    window.addEventListener('resize', handleResize);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     setIsReady(true);
     console.log('useStockChart: Chart ready');
 
     // Cleanup
     return () => {
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       if (chartRef.current) {
         chartRef.current.remove();
@@ -370,7 +380,11 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         console.log('useStockChart: Setting data', data.length, 'points');
         const chartData = convertData();
         mainSeries.setData(chartData as any);
-        chartRef.current.timeScale().fitContent();
+        // fitContent dans rAF : attend que le browser ait peint les données
+        // avant d'ajuster la plage visible → toute la période est visible par défaut
+        requestAnimationFrame(() => {
+          chartRef.current?.timeScale().fitContent();
+        });
         console.log('useStockChart: Data set successfully');
       }
 
@@ -562,11 +576,96 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     }
   }, [indicators, isReady, data.length]);
 
+  const takeScreenshot = async (symbol?: string): Promise<string | null> => {
+    if (!chartRef.current) return null;
+    try {
+      const chartCanvas: HTMLCanvasElement = (chartRef.current as any).takeScreenshot();
+
+      // Bande de branding en bas (48px)
+      const FOOTER_H = 48;
+      const composited = document.createElement('canvas');
+      composited.width = chartCanvas.width;
+      composited.height = chartCanvas.height + FOOTER_H;
+
+      const ctx = composited.getContext('2d');
+      if (!ctx) return chartCanvas.toDataURL('image/png');
+
+      // Dessiner le graphique
+      ctx.drawImage(chartCanvas, 0, 0);
+
+      // Footer blanc
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, chartCanvas.height, composited.width, FOOTER_H);
+
+      // Ligne de séparation
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, chartCanvas.height);
+      ctx.lineTo(composited.width, chartCanvas.height);
+      ctx.stroke();
+
+      // Nom du symbole à gauche
+      if (symbol) {
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 15px Inter, system-ui, sans-serif';
+        ctx.fillText(symbol, 16, chartCanvas.height + 30);
+      }
+
+      // Logo AfriBourse à droite
+      await new Promise<void>((resolve) => {
+        const logo = new Image();
+        logo.onload = () => {
+          const logoH = 28;
+          const logoW = Math.round((logo.naturalWidth / logo.naturalHeight) * logoH);
+          const x = composited.width - logoW - 16;
+          const y = chartCanvas.height + (FOOTER_H - logoH) / 2;
+          ctx.drawImage(logo, x, y, logoW, logoH);
+          resolve();
+        };
+        logo.onerror = () => {
+          // Fallback texte si le logo ne charge pas
+          ctx.fillStyle = '#1d4ed8';
+          ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+          const text = 'AfriBourse';
+          const tw = ctx.measureText(text).width;
+          ctx.fillText(text, composited.width - tw - 16, chartCanvas.height + 30);
+          resolve();
+        };
+        logo.src = '/images/logo_afribourse.png';
+      });
+
+      return composited.toDataURL('image/png');
+    } catch {
+      return null;
+    }
+  };
+
+  // ── Outils de dessin (ligne-outils) ──────────────────────────────────────
+  const startDrawing = (toolType: string) => {
+    if (!chartRef.current) return;
+    (chartRef.current as any).addLineTool(toolType, [], {});
+  };
+
+  const deleteSelectedTools = () => {
+    if (!chartRef.current) return;
+    (chartRef.current as any).removeSelectedLineTools();
+  };
+
+  const clearAllDrawings = () => {
+    if (!chartRef.current) return;
+    (chartRef.current as any).removeAllLineTools();
+  };
+
   return {
     chartContainerRef,
     chart: chartRef.current,
     series: seriesRef.current,
     volumeSeries: volumeSeriesRef.current,
     isReady,
+    takeScreenshot,
+    startDrawing,
+    deleteSelectedTools,
+    clearAllDrawings,
   };
 };

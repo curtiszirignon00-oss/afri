@@ -123,6 +123,6 @@ export default defineConfig({
   ],
   optimizeDeps: {
     exclude: ['lucide-react'],
-    include: ['lightweight-charts'],
+    include: ['lightweight-charts', 'lightweight-charts-line-tools'],
   },
 });
