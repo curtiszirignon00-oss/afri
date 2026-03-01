@@ -1,8 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
+import type { CandleResolution } from '../../utils/chartDataAdapter';
+import { applyResolution, RESOLUTION_LABEL } from '../../utils/chartDataAdapter';
+import ChartShareModal from './ChartShareModal';
+import ChartDrawingToolbar from './ChartDrawingToolbar';
 
 interface StockChartProps {
   symbol: string;
@@ -13,14 +17,28 @@ interface StockChartProps {
   theme?: 'light' | 'dark';
 }
 
-const TIME_INTERVALS: { value: TimeInterval; label: string }[] = [
-  { value: '1D', label: '1J' },
-  { value: '5D', label: '5J' },
-  { value: '1M', label: '1M' },
-  { value: '3M', label: '3M' },
-  { value: '6M', label: '6M' },
-  { value: '1Y', label: '1A' },
-  { value: 'ALL', label: 'Max' },
+// Chaque entrée définit :
+//   label          → texte affiché sur le bouton
+//   resolution     → granularité de chaque bougie
+//   backendPeriod  → période envoyée au backend pour récupérer les données
+//   resolutionInfo → texte descriptif affiché dans le badge
+type DisplayInterval = '1H' | '1D' | '1W' | '1M' | '3M' | '6M' | '1Y';
+
+interface IntervalConfig {
+  value: DisplayInterval;
+  label: string;
+  resolution: CandleResolution;
+  backendPeriod: TimeInterval;  // période demandée au backend
+}
+
+const DISPLAY_INTERVALS: IntervalConfig[] = [
+  { value: '1H', label: '1H',  resolution: 'hourly',     backendPeriod: '5D'  },
+  { value: '1D', label: '1J',  resolution: 'daily',      backendPeriod: 'ALL' },
+  { value: '1W', label: '5J',  resolution: 'weekly',     backendPeriod: 'ALL' },
+  { value: '1M', label: '1M',  resolution: 'monthly',    backendPeriod: 'ALL' },
+  { value: '3M', label: '3M',  resolution: 'quarterly',  backendPeriod: 'ALL' },
+  { value: '6M', label: '6M',  resolution: 'semiannual', backendPeriod: 'ALL' },
+  { value: '1Y', label: '1A',  resolution: 'annual',     backendPeriod: 'ALL' },
 ];
 
 const CHART_TYPES: { value: ChartType; label: string; icon: string }[] = [
@@ -41,18 +59,31 @@ export default function StockChartNew({
   const { userProfile } = useAuth();
   const isPremium = userProfile?.subscriptionTier && userProfile.subscriptionTier !== 'free';
 
-  const [selectedInterval, setSelectedInterval] = useState<TimeInterval>(currentInterval);
+  // Intervalle d'affichage (résolution des bougies)
+  const [selectedDisplay, setSelectedDisplay] = useState<DisplayInterval>('1D');
   const [selectedChartType, setSelectedChartType] = useState<ChartType>('candlestick');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showIndicators, setShowIndicators] = useState(false);
   const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [chartScreenshot, setChartScreenshot] = useState<string | null>(null);
+  const [showDrawingToolbar, setShowDrawingToolbar] = useState(false);
+  const [activeDrawingTool, setActiveDrawingTool] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { chartContainerRef, isReady } = useStockChart({
+  const activeConfig = DISPLAY_INTERVALS.find(i => i.value === selectedDisplay)!;
+
+  // Données agrégées selon la résolution de bougie sélectionnée
+  const displayData = useMemo(() => {
+    if (!data || data.length === 0) return data;
+    return applyResolution(data, activeConfig.resolution);
+  }, [data, activeConfig.resolution]);
+
+  const { chartContainerRef, isReady, takeScreenshot, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
     chartType: selectedChartType,
     theme,
-    data, // Passer data directement
-    indicators: activeIndicators, // Passer les indicateurs actifs
+    data: displayData,
+    indicators: activeIndicators,
   });
 
   // Synchroniser l'état isFullscreen avec le vrai état du navigateur
@@ -84,33 +115,46 @@ export default function StockChartNew({
     );
   };
 
-  // Calculer la variation sur la période
+  // Calculer la variation sur la période (données brutes = toute la période disponible)
   const periodChange = useMemo((): PriceChange => {
     if (!data || data.length < 2) {
       return { value: 0, percent: 0, isPositive: true };
     }
-
     const firstPrice = data[0].close;
     const lastPrice = data[data.length - 1].close;
     const change = lastPrice - firstPrice;
     const changePercent = (change / firstPrice) * 100;
-
-    return {
-      value: change,
-      percent: changePercent,
-      isPositive: change >= 0,
-    };
+    return { value: change, percent: changePercent, isPositive: change >= 0 };
   }, [data]);
 
-  const handleIntervalChange = (interval: TimeInterval) => {
-    setSelectedInterval(interval);
+  const resolutionLabel = RESOLUTION_LABEL[activeConfig.resolution];
+
+  const handleDisplayIntervalChange = (display: DisplayInterval) => {
+    const config = DISPLAY_INTERVALS.find(i => i.value === display)!;
+    setSelectedDisplay(display);
+    // Notifier le parent du backend period à fetcher
     if (onIntervalChange) {
-      onIntervalChange(interval);
+      onIntervalChange(config.backendPeriod);
     }
   };
 
   const handleChartTypeChange = (chartType: ChartType) => {
     setSelectedChartType(chartType);
+  };
+
+  const handleShare = async () => {
+    const screenshot = await takeScreenshot(symbol);
+    setChartScreenshot(screenshot);
+    setShowShareModal(true);
+  };
+
+  const handleDrawingToolSelect = (toolType: string) => {
+    if (toolType === 'cursor') {
+      setActiveDrawingTool(null);
+      return;
+    }
+    setActiveDrawingTool(toolType);
+    startDrawing(toolType);
   };
 
   // Formatter pour afficher les prix
@@ -187,18 +231,19 @@ export default function StockChartNew({
             )}
           </div>
 
-          {/* Sélecteur d'intervalle + Boutons d'action */}
+          {/* Sélecteur d'intervalle (résolution de bougie) + Boutons d'action */}
           <div className="flex items-center gap-2">
             <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-              {TIME_INTERVALS.map((interval) => (
+              {DISPLAY_INTERVALS.map((interval) => (
                 <button
                   key={interval.value}
-                  onClick={() => handleIntervalChange(interval.value)}
+                  onClick={() => handleDisplayIntervalChange(interval.value)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                    selectedInterval === interval.value
+                    selectedDisplay === interval.value
                       ? `${buttonActiveBgClasses} shadow-sm`
                       : `${mutedTextClasses} ${buttonHoverBgClasses}`
                   }`}
+                  title={RESOLUTION_LABEL[interval.resolution]}
                 >
                   {interval.label}
                 </button>
@@ -219,6 +264,34 @@ export default function StockChartNew({
               <span className="hidden sm:inline">Indicateurs</span>
             </button>
 
+            {/* Bouton Outils de dessin */}
+            <button
+              onClick={() => {
+                setShowDrawingToolbar(!showDrawingToolbar);
+                if (showDrawingToolbar) setActiveDrawingTool(null);
+              }}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
+                showDrawingToolbar
+                  ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                  : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
+              }`}
+              title="Outils de dessin"
+            >
+              <PenLine className="w-4 h-4" />
+              <span className="hidden sm:inline">Dessiner</span>
+            </button>
+
+            {/* Bouton Partager */}
+            <button
+              onClick={handleShare}
+              disabled={!isReady || data.length === 0}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent disabled:opacity-40`}
+              title="Partager le graphique"
+            >
+              <Share2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Partager</span>
+            </button>
+
             {/* Bouton Plein écran */}
             <button
               onClick={toggleFullscreen}
@@ -230,26 +303,51 @@ export default function StockChartNew({
           </div>
         </div>
 
-        {/* Sélecteur de type de graphique */}
-        <div className="flex items-center space-x-2">
-          <span className={`text-sm font-medium ${mutedTextClasses}`}>Type:</span>
-          <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-            {CHART_TYPES.map((type) => (
-              <button
-                key={type.value}
-                onClick={() => handleChartTypeChange(type.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center space-x-1 ${
-                  selectedChartType === type.value
-                    ? `${buttonActiveBgClasses} shadow-sm`
-                    : `${mutedTextClasses} ${buttonHoverBgClasses}`
-                }`}
-                title={type.label}
-              >
-                <span>{type.icon}</span>
-                <span className="hidden sm:inline">{type.label}</span>
-              </button>
-            ))}
+        {/* Sélecteur de type de graphique + badge résolution */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className={`text-sm font-medium ${mutedTextClasses}`}>Type:</span>
+            <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
+              {CHART_TYPES.map((type) => (
+                <button
+                  key={type.value}
+                  onClick={() => handleChartTypeChange(type.value)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center space-x-1 ${
+                    selectedChartType === type.value
+                      ? `${buttonActiveBgClasses} shadow-sm`
+                      : `${mutedTextClasses} ${buttonHoverBgClasses}`
+                  }`}
+                  title={type.label}
+                >
+                  <span>{type.icon}</span>
+                  <span className="hidden sm:inline">{type.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Badge résolution — visible uniquement en mode chandelier ou barre */}
+          {(selectedChartType === 'candlestick' || selectedChartType === 'bar') && (
+            <div className="flex items-center gap-2">
+              {activeConfig.resolution === 'hourly' && (
+                <span className="hidden sm:inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-200">
+                  <Info className="w-3 h-3" />
+                  Données journalières (horaire bientôt disponible)
+                </span>
+              )}
+              <span className={`hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${
+                activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily'
+                  ? 'bg-blue-50 text-blue-600'
+                  : activeConfig.resolution === 'weekly'
+                    ? 'bg-violet-50 text-violet-600'
+                    : activeConfig.resolution === 'monthly'
+                      ? 'bg-amber-50 text-amber-600'
+                      : 'bg-emerald-50 text-emerald-600'
+              }`}>
+                {resolutionLabel}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Menu Indicateurs techniques */}
@@ -306,16 +404,28 @@ export default function StockChartNew({
 
       {/* Graphique */}
       {data.length > 0 ? (
-        <div>
+        <div className="relative">
           <div
             ref={chartContainerRef}
-            className="w-full relative"
+            className="w-full"
             style={{
               height: isFullscreen ? 'calc(100vh - 180px)' : '500px',
               minHeight: isFullscreen ? 'calc(100vh - 180px)' : '500px',
               backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff'
             }}
           />
+          {/* Barre d'outils de dessin flottante (gauche) */}
+          {showDrawingToolbar && isReady && (
+            <div className="absolute left-2 top-2 z-10">
+              <ChartDrawingToolbar
+                onToolSelect={handleDrawingToolSelect}
+                onDeleteSelected={deleteSelectedTools}
+                onClearAll={clearAllDrawings}
+                activeTool={activeDrawingTool}
+                theme={theme}
+              />
+            </div>
+          )}
           {!isReady && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
@@ -356,6 +466,17 @@ export default function StockChartNew({
           <span>Indicateurs</span>
         </div>
       </div>
+
+      {/* Modal de partage du graphique */}
+      <ChartShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        symbol={symbol}
+        dataUrl={chartScreenshot}
+        periodLabel={activeConfig.label}
+        changePercent={periodChange.percent}
+        changeValue={periodChange.value}
+      />
     </div>
   );
 }
