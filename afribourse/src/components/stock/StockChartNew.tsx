@@ -29,10 +29,11 @@ interface IntervalConfig {
   label: string;
   resolution: CandleResolution;
   backendPeriod: TimeInterval;  // période demandée au backend
+  premium?: boolean;
 }
 
 const DISPLAY_INTERVALS: IntervalConfig[] = [
-  { value: '1H', label: '1H',  resolution: 'hourly',     backendPeriod: '5D'  },
+  { value: '1H', label: '1H',  resolution: 'hourly',     backendPeriod: '5D',  premium: true },
   { value: '1D', label: '1J',  resolution: 'daily',      backendPeriod: 'ALL' },
   { value: '1W', label: '5J',  resolution: 'weekly',     backendPeriod: 'ALL' },
   { value: '1M', label: '1M',  resolution: 'monthly',    backendPeriod: 'ALL' },
@@ -235,20 +236,26 @@ export default function StockChartNew({
         {/* Ligne 2 : Timeframes + badge résolution */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-            {DISPLAY_INTERVALS.map((interval) => (
-              <button
-                key={interval.value}
-                onClick={() => handleDisplayIntervalChange(interval.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  selectedDisplay === interval.value
-                    ? `${buttonActiveBgClasses} shadow-sm`
-                    : `${mutedTextClasses} ${buttonHoverBgClasses}`
-                }`}
-                title={RESOLUTION_LABEL[interval.resolution]}
-              >
-                {interval.label}
-              </button>
-            ))}
+            {DISPLAY_INTERVALS.map((interval) => {
+              const isLocked = !!interval.premium && !isPremium;
+              return (
+                <button
+                  key={interval.value}
+                  onClick={() => { if (!isLocked) handleDisplayIntervalChange(interval.value); }}
+                  className={`relative px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+                    isLocked
+                      ? 'text-gray-400 cursor-not-allowed opacity-60'
+                      : selectedDisplay === interval.value
+                        ? `${buttonActiveBgClasses} shadow-sm`
+                        : `${mutedTextClasses} ${buttonHoverBgClasses}`
+                  }`}
+                  title={isLocked ? 'Disponible avec un abonnement Premium' : RESOLUTION_LABEL[interval.resolution]}
+                >
+                  {interval.label}
+                  {isLocked && <Lock className="w-2.5 h-2.5" />}
+                </button>
+              );
+            })}
           </div>
 
           {/* Badge résolution — visible uniquement en mode chandelier ou barre */}
