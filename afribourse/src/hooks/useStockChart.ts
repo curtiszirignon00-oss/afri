@@ -333,8 +333,9 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     try {
       const chartApi = chartRef.current as any;
 
-      if (chartTypeChanged) {
-        // ── Type de graphique changé : sortir du mode dessin d'abord ──
+      // Créer/recréer la série si le type a changé OU si elle n'existe pas encore (premier rendu)
+      if (chartTypeChanged || !seriesRef.current) {
+        // ── Type de graphique changé ou série absente : sortir du mode dessin ──
         cancelActiveDrawing();
 
         // ── Recréer la série principale ──
