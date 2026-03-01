@@ -80,7 +80,7 @@ export default function StockChartNew({
     return applyResolution(data, activeConfig.resolution);
   }, [data, activeConfig.resolution]);
 
-  const { chartContainerRef, isReady, takeScreenshot, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
+  const { chartContainerRef, isReady, takeScreenshot, cancelActiveDrawing, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
     chartType: selectedChartType,
     theme,
     data: displayData,
@@ -140,6 +140,9 @@ export default function StockChartNew({
   };
 
   const handleChartTypeChange = (chartType: ChartType) => {
+    // Sortir du mode dessin avant de changer de type (évite le blocage)
+    cancelActiveDrawing();
+    setActiveDrawingTool(null);
     setSelectedChartType(chartType);
   };
 
