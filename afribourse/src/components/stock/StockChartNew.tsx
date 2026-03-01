@@ -131,6 +131,9 @@ export default function StockChartNew({
   const resolutionLabel = RESOLUTION_LABEL[activeConfig.resolution];
 
   const handleDisplayIntervalChange = (display: DisplayInterval) => {
+    // Sortir du mode dessin avant de changer de timeframe
+    cancelActiveDrawing();
+    setActiveDrawingTool(null);
     const config = DISPLAY_INTERVALS.find(i => i.value === display)!;
     setSelectedDisplay(display);
     // Notifier le parent du backend period à fetcher
