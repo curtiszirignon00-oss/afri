@@ -55,6 +55,16 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
   const [isReady, setIsReady] = useState(false);
 
+  // ── Suivi de session de dessin (API publique uniquement) ──────────────────
+  /** IDs des outils présents AVANT de commencer la session de dessin */
+  const preSessionIdsRef = useRef<Set<string>>(new Set());
+  /** IDs des outils COMPLÉTÉS pendant la session (via subscribeLineToolsAfterEdit) */
+  const completedDrawingIdsRef = useRef<Set<string>>(new Set());
+  /** Fonction de désabonnement à subscribeLineToolsAfterEdit */
+  const drawingSubscriptionRef = useRef<(() => void) | null>(null);
+  /** Vrai si une session de dessin est active */
+  const inDrawingSessionRef = useRef<boolean>(false);
+
   // Utiliser une clé pour détecter les vrais changements de données
   const dataKey = data.length > 0
     ? `${data.length}-${data[0]?.time}-${data[data.length - 1]?.time}`
@@ -338,6 +348,15 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         // ── Type de graphique changé ou série absente : sortir du mode dessin ──
         cancelActiveDrawing();
 
+        // ── Exporter et retirer temporairement les line tools avant de supprimer les séries ──
+        // Raison : quand removeSeries() retire la série principale, les line tools deviennent
+        // dataSources[0], faisant planter _internal_minMove() → "unexpected base" dans le RAF.
+        const savedLineTools: string | undefined = chartApi.exportLineTools?.();
+        const hasLineTools = savedLineTools && savedLineTools !== '[]';
+        if (hasLineTools) {
+          chartApi.removeAllLineTools?.();
+        }
+
         // ── Recréer la série principale ──
         if (seriesRef.current) {
           chartRef.current.removeSeries(seriesRef.current);
@@ -372,6 +391,11 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         }
         seriesRef.current = mainSeries;
         mainSeries.setData(convertData() as any);
+
+        // ── Réimporter les line tools une fois la nouvelle série en place ──
+        if (hasLineTools) {
+          chartApi.importLineTools?.(savedLineTools);
+        }
 
       } else {
         // ── Seules les données ont changé (changement de timeframe) ──
@@ -661,23 +685,92 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
   // ── Outils de dessin (ligne-outils) ──────────────────────────────────────
 
-  /** Annule un tracé en cours (non finalisé) sans supprimer les tracés existants. */
+  /**
+   * Annule un tracé en cours (non finalisé) sans supprimer les tracés finalisés.
+   * Utilise uniquement l'API publique : exportLineTools / removeLineToolsById /
+   * subscribeLineToolsAfterEdit — compatibles avec le build de production minifié.
+   */
   const cancelActiveDrawing = () => {
-    // La library écoute les keydown sur le document (pas sur le container)
-    document.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true, composed: true })
-    );
-    // Fallback : aussi sur le container au cas où
-    chartContainerRef.current?.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
-    );
-    // Fallback API directe si la library l'expose
-    try { (chartRef.current as any)?.finishEditingAction?.(); } catch {}
+    if (!chartRef.current || !inDrawingSessionRef.current) return;
+    try {
+      const chartApi = chartRef.current as any;
+
+      // 1. Sortir du mode dessin (efface _activeType côté bibliothèque)
+      chartApi.setActiveLineTool?.(null, {});
+
+      // 2. Supprimer les outils interrompus (commencés mais jamais finalisés)
+      const exported: string | undefined = chartApi.exportLineTools?.();
+      if (exported) {
+        try {
+          const tools = JSON.parse(exported) as Array<{ id?: string }>;
+          const toRemove = tools
+            .map(t => t.id)
+            .filter((id): id is string => typeof id === 'string' && id.length > 0)
+            .filter(id =>
+              // Garder les outils pré-session ET les outils complétés durant la session
+              !preSessionIdsRef.current.has(id) &&
+              !completedDrawingIdsRef.current.has(id)
+            );
+
+          if (toRemove.length > 0) {
+            chartApi.removeLineToolsById?.(toRemove);
+          }
+        } catch (e) {
+          console.warn('[cancelActiveDrawing] parse error', e);
+        }
+      }
+
+      // Fin de session : nettoyer l'abonnement et remettre les refs à zéro
+      drawingSubscriptionRef.current?.();
+      drawingSubscriptionRef.current = null;
+      inDrawingSessionRef.current = false;
+      preSessionIdsRef.current = new Set();
+      completedDrawingIdsRef.current = new Set();
+    } catch (e) {
+      console.warn('[cancelActiveDrawing]', e);
+    }
   };
 
   const startDrawing = (toolType: string) => {
     if (!chartRef.current) return;
-    (chartRef.current as any).addLineTool(toolType, [], {});
+    try {
+      const chartApi = chartRef.current as any;
+
+      // Démarrer une nouvelle session de dessin si ce n'est pas déjà fait
+      if (!inDrawingSessionRef.current) {
+        // Snapshot des IDs existants AVANT de commencer à dessiner
+        const exported: string | undefined = chartApi.exportLineTools?.();
+        preSessionIdsRef.current = new Set();
+        if (exported) {
+          try {
+            const tools = JSON.parse(exported) as Array<{ id?: string }>;
+            tools.forEach(t => { if (t.id) preSessionIdsRef.current.add(t.id); });
+          } catch { /* ignore */ }
+        }
+        completedDrawingIdsRef.current = new Set();
+
+        // S'abonner pour capturer les IDs des outils finalisés
+        // L'événement reçu : { selectedLineTool: { id, toolType, options, points }, stage }
+        // stage = 'lineToolFinished' | 'pathFinished' | 'lineToolEdited'
+        const handler = (event: { selectedLineTool?: { id?: string }; stage?: string }) => {
+          const stage = event?.stage;
+          const id = event?.selectedLineTool?.id;
+          // Capturer uniquement les nouvelles créations (pas les éditions d'anciens outils)
+          if (id && (stage === 'lineToolFinished' || stage === 'pathFinished')) {
+            completedDrawingIdsRef.current.add(id);
+          }
+        };
+
+        chartApi.subscribeLineToolsAfterEdit?.(handler);
+        drawingSubscriptionRef.current = () => chartApi.unsubscribeLineToolsAfterEdit?.(handler);
+        inDrawingSessionRef.current = true;
+      }
+
+      // Activer le mode dessin interactif pour cet outil
+      chartApi.setActiveLineTool?.(toolType, {});
+    } catch (e) {
+      console.warn('[startDrawing]', e);
+    }
   };
 
   const deleteSelectedTools = () => {
