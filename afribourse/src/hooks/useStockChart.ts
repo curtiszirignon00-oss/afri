@@ -331,64 +331,76 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     });
 
     try {
-      // Supprimer l'ancienne série si elle existe
-      if (seriesRef.current) {
-        console.log('useStockChart: Removing old main series');
-        chartRef.current.removeSeries(seriesRef.current);
-        seriesRef.current = null;
+      const chartApi = chartRef.current as any;
+
+      if (chartTypeChanged) {
+        // ── Type de graphique changé : recréer la série principale ──
+        if (seriesRef.current) {
+          chartRef.current.removeSeries(seriesRef.current);
+          seriesRef.current = null;
+        }
+        if (volumeSeriesRef.current) {
+          chartRef.current.removeSeries(volumeSeriesRef.current);
+          volumeSeriesRef.current = null;
+        }
+        // Supprimer les indicateurs (ils seront recréés par l'effet indicateurs)
+        for (const ref of [ma20SeriesRef, ma50SeriesRef, ma200SeriesRef, ema12SeriesRef,
+                            bbUpperSeriesRef, bbMiddleSeriesRef, bbLowerSeriesRef]) {
+          if (ref.current) { chartRef.current.removeSeries(ref.current); ref.current = null; }
+        }
+
+        let mainSeries: ISeriesApi<any>;
+        switch (chartType) {
+          case 'candlestick':
+            mainSeries = chartApi.addCandlestickSeries(getSeriesOptions() as CandlestickSeriesPartialOptions);
+            break;
+          case 'bar':
+            mainSeries = chartApi.addBarSeries(getSeriesOptions() as CandlestickSeriesPartialOptions);
+            break;
+          case 'line':
+            mainSeries = chartApi.addLineSeries(getSeriesOptions() as LineSeriesPartialOptions);
+            break;
+          case 'area':
+            mainSeries = chartApi.addAreaSeries(getSeriesOptions() as AreaSeriesPartialOptions);
+            break;
+          default:
+            mainSeries = chartApi.addCandlestickSeries(getSeriesOptions() as CandlestickSeriesPartialOptions);
+        }
+        seriesRef.current = mainSeries;
+        mainSeries.setData(convertData() as any);
+
+      } else {
+        // ── Seules les données ont changé (changement de timeframe) ──
+        // On met à jour les données SANS supprimer la série existante
+        // → les line tools (dessins) sont préservés
+        if (seriesRef.current) {
+          seriesRef.current.setData(convertData() as any);
+        }
+
+        // Mettre à jour le volume en place
+        if (volumeSeriesRef.current) {
+          volumeSeriesRef.current.setData(convertVolumeData());
+        }
+
+        // Mettre à jour les indicateurs actifs avec les nouvelles données
+        const chartData = data.map(d => ({ time: d.time, close: d.close }));
+        if (ma20SeriesRef.current)  ma20SeriesRef.current.setData(calculateSMA(chartData, 20));
+        if (ma50SeriesRef.current)  ma50SeriesRef.current.setData(calculateSMA(chartData, 50));
+        if (ma200SeriesRef.current) ma200SeriesRef.current.setData(calculateSMA(chartData, 200));
+        if (ema12SeriesRef.current) ema12SeriesRef.current.setData(calculateEMA(chartData, 12));
+        if (bbUpperSeriesRef.current || bbMiddleSeriesRef.current || bbLowerSeriesRef.current) {
+          const bbData = calculateBollingerBands(chartData, 20, 2);
+          if (bbUpperSeriesRef.current)  bbUpperSeriesRef.current.setData(bbData.upper);
+          if (bbMiddleSeriesRef.current) bbMiddleSeriesRef.current.setData(bbData.middle);
+          if (bbLowerSeriesRef.current)  bbLowerSeriesRef.current.setData(bbData.lower);
+        }
       }
 
-      // Supprimer l'ancienne série de volume si elle existe
-      if (volumeSeriesRef.current) {
-        console.log('useStockChart: Removing old volume series');
-        chartRef.current.removeSeries(volumeSeriesRef.current);
-        volumeSeriesRef.current = null;
-      }
+      // fitContent après mise à jour des données
+      requestAnimationFrame(() => {
+        chartRef.current?.timeScale().fitContent();
+      });
 
-      // Créer la nouvelle série selon le type (API v4)
-      console.log('useStockChart: Creating new series, type:', chartType);
-      let mainSeries: ISeriesApi<any>;
-      const chartApi = chartRef.current as any; // Cast pour API v4
-
-      switch (chartType) {
-      case 'candlestick':
-        mainSeries = chartApi.addCandlestickSeries(
-          getSeriesOptions() as CandlestickSeriesPartialOptions
-        );
-        break;
-      case 'bar':
-        mainSeries = chartApi.addBarSeries(
-          getSeriesOptions() as CandlestickSeriesPartialOptions
-        );
-        break;
-      case 'line':
-        mainSeries = chartApi.addLineSeries(getSeriesOptions() as LineSeriesPartialOptions);
-        break;
-      case 'area':
-        mainSeries = chartApi.addAreaSeries(getSeriesOptions() as AreaSeriesPartialOptions);
-        break;
-      default:
-        mainSeries = chartApi.addCandlestickSeries(
-          getSeriesOptions() as CandlestickSeriesPartialOptions
-        );
-    }
-
-    seriesRef.current = mainSeries;
-
-      // Appliquer les données
-      if (data.length > 0) {
-        console.log('useStockChart: Setting data', data.length, 'points');
-        const chartData = convertData();
-        mainSeries.setData(chartData as any);
-        // fitContent dans rAF : attend que le browser ait peint les données
-        // avant d'ajuster la plage visible → toute la période est visible par défaut
-        requestAnimationFrame(() => {
-          chartRef.current?.timeScale().fitContent();
-        });
-        console.log('useStockChart: Data set successfully');
-      }
-
-      // Mettre à jour les références pour le prochain rendu
       prevChartTypeRef.current = chartType;
       prevDataKeyRef.current = dataKey;
     } catch (error) {
