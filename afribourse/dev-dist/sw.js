@@ -67,8 +67,9 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-a9dc06e2'], (function (workbox) { 'use strict';
+define(['./workbox-c84425d6'], (function (workbox) { 'use strict';
 
+  importScripts("/push-handler.js");
   self.skipWaiting();
   workbox.clientsClaim();
 
@@ -79,32 +80,73 @@ define(['./workbox-a9dc06e2'], (function (workbox) { 'use strict';
    */
   workbox.precacheAndRoute([{
     "url": "index.html",
-    "revision": "0.de6r4ccgnao"
+    "revision": "0.fffdr7mlt3o"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
-  workbox.registerRoute(/^https:\/\/api\.afribourse\.com\/api\/stocks/, new workbox.StaleWhileRevalidate({
+  workbox.registerRoute(/^https:\/\/fonts\.googleapis\.com\/.*/i, new workbox.StaleWhileRevalidate({
+    "cacheName": "google-fonts-stylesheets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 10,
+      maxAgeSeconds: 31536000
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/fonts\.gstatic\.com\/.*/i, new workbox.CacheFirst({
+    "cacheName": "google-fonts-webfonts",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 30,
+      maxAgeSeconds: 31536000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i, new workbox.CacheFirst({
+    "cacheName": "images-cache",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 100,
+      maxAgeSeconds: 2592000
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/api\.africbourse\.com\/api\/stocks/, new workbox.StaleWhileRevalidate({
     "cacheName": "stocks-cache",
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 50,
       maxAgeSeconds: 3600
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
     })]
   }), 'GET');
-  workbox.registerRoute(/^https:\/\/api\.afribourse\.com\/api\/learning/, new workbox.CacheFirst({
+  workbox.registerRoute(/^https:\/\/api\.africbourse\.com\/api\/learning/, new workbox.CacheFirst({
     "cacheName": "learning-cache",
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 100,
       maxAgeSeconds: 86400
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
     })]
   }), 'GET');
-  workbox.registerRoute(/^https:\/\/api\.afribourse\.com\/api\//, new workbox.NetworkFirst({
+  workbox.registerRoute(/^https:\/\/api\.africbourse\.com\/api\/leaderboard/, new workbox.NetworkFirst({
+    "cacheName": "leaderboard-cache",
+    "networkTimeoutSeconds": 5,
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 20,
+      maxAgeSeconds: 300
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/api\.africbourse\.com\/api\//, new workbox.NetworkFirst({
     "cacheName": "api-cache",
     "networkTimeoutSeconds": 10,
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 100,
       maxAgeSeconds: 300
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
     })]
   }), 'GET');
 
