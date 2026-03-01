@@ -201,56 +201,103 @@ export default function StockChartNew({
 
   return (
     <div ref={containerRef} className={`${containerClasses} rounded-xl shadow-sm border p-4 md:p-6 ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
-      {/* Header avec sélecteurs */}
-      <div className="flex flex-col space-y-4 mb-6">
-        {/* Titre et variation + Boutons d'action */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h3 className={`text-xl md:text-2xl font-bold ${textClasses} mb-1`}>
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3 mb-4">
+
+        {/* Ligne 1 : Symbole + variation | Plein écran */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3 className={`text-xl md:text-2xl font-bold ${textClasses} mb-1 truncate`}>
               {symbol}
             </h3>
             {data.length > 0 && (
-              <div
-                className={`flex items-center space-x-2 text-sm ${
-                  periodChange.isPositive ? 'text-green-600' : 'text-red-600'
-                }`}
-              >
-                {periodChange.isPositive ? (
-                  <TrendingUp className="w-4 h-4" />
-                ) : (
-                  <TrendingDown className="w-4 h-4" />
-                )}
-                <span className="font-semibold">
-                  {periodChange.isPositive ? '+' : ''}
-                  {formatPrice(periodChange.value)} FCFA (
-                  {periodChange.isPositive ? '+' : ''}
-                  {periodChange.percent.toFixed(2)}%)
+              <div className={`flex items-center flex-wrap gap-x-2 gap-y-0.5 text-sm ${
+                periodChange.isPositive ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {periodChange.isPositive ? <TrendingUp className="w-4 h-4 flex-shrink-0" /> : <TrendingDown className="w-4 h-4 flex-shrink-0" />}
+                <span className="font-semibold whitespace-nowrap">
+                  {periodChange.isPositive ? '+' : ''}{formatPrice(periodChange.value)} FCFA
+                  ({periodChange.isPositive ? '+' : ''}{periodChange.percent.toFixed(2)}%)
                 </span>
-                <span className={mutedTextClasses}>sur la période</span>
+                <span className={`${mutedTextClasses} whitespace-nowrap`}>sur la période</span>
               </div>
             )}
           </div>
+          <button
+            onClick={toggleFullscreen}
+            className={`flex-shrink-0 p-2 ${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} rounded-lg transition-all`}
+            title={isFullscreen ? 'Quitter le plein écran' : 'Plein écran'}
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
 
-          {/* Sélecteur d'intervalle (résolution de bougie) + Boutons d'action */}
-          <div className="flex items-center gap-2">
-            <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-              {DISPLAY_INTERVALS.map((interval) => (
-                <button
-                  key={interval.value}
-                  onClick={() => handleDisplayIntervalChange(interval.value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                    selectedDisplay === interval.value
-                      ? `${buttonActiveBgClasses} shadow-sm`
-                      : `${mutedTextClasses} ${buttonHoverBgClasses}`
-                  }`}
-                  title={RESOLUTION_LABEL[interval.resolution]}
-                >
-                  {interval.label}
-                </button>
-              ))}
+        {/* Ligne 2 : Timeframes + badge résolution */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
+            {DISPLAY_INTERVALS.map((interval) => (
+              <button
+                key={interval.value}
+                onClick={() => handleDisplayIntervalChange(interval.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  selectedDisplay === interval.value
+                    ? `${buttonActiveBgClasses} shadow-sm`
+                    : `${mutedTextClasses} ${buttonHoverBgClasses}`
+                }`}
+                title={RESOLUTION_LABEL[interval.resolution]}
+              >
+                {interval.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Badge résolution — visible uniquement en mode chandelier ou barre */}
+          {(selectedChartType === 'candlestick' || selectedChartType === 'bar') && (
+            <div className="flex items-center gap-2">
+              {activeConfig.resolution === 'hourly' && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-200">
+                  <Info className="w-3 h-3" />
+                  <span className="hidden sm:inline">Données journalières</span>
+                </span>
+              )}
+              <span className={`inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium ${
+                activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily'
+                  ? 'bg-blue-50 text-blue-600'
+                  : activeConfig.resolution === 'weekly'
+                    ? 'bg-violet-50 text-violet-600'
+                    : activeConfig.resolution === 'monthly'
+                      ? 'bg-amber-50 text-amber-600'
+                      : 'bg-emerald-50 text-emerald-600'
+              }`}>
+                {resolutionLabel}
+              </span>
             </div>
+          )}
+        </div>
 
-            {/* Bouton Indicateurs */}
+        {/* Ligne 3 : Type de graphique | Indicateurs · Dessiner · Partager */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          {/* Type selector */}
+          <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
+            {CHART_TYPES.map((type) => (
+              <button
+                key={type.value}
+                onClick={() => handleChartTypeChange(type.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+                  selectedChartType === type.value
+                    ? `${buttonActiveBgClasses} shadow-sm`
+                    : `${mutedTextClasses} ${buttonHoverBgClasses}`
+                }`}
+                title={type.label}
+              >
+                <span>{type.icon}</span>
+                <span className="hidden sm:inline">{type.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Boutons d'action */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setShowIndicators(!showIndicators)}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
@@ -261,10 +308,9 @@ export default function StockChartNew({
               title="Indicateurs techniques"
             >
               <Indicator className="w-4 h-4" />
-              <span className="hidden sm:inline">Indicateurs</span>
+              <span>Indicateurs</span>
             </button>
 
-            {/* Bouton Outils de dessin */}
             <button
               onClick={() => {
                 setShowDrawingToolbar(!showDrawingToolbar);
@@ -278,10 +324,9 @@ export default function StockChartNew({
               title="Outils de dessin"
             >
               <PenLine className="w-4 h-4" />
-              <span className="hidden sm:inline">Dessiner</span>
+              <span>Dessiner</span>
             </button>
 
-            {/* Bouton Partager */}
             <button
               onClick={handleShare}
               disabled={!isReady || data.length === 0}
@@ -289,65 +334,9 @@ export default function StockChartNew({
               title="Partager le graphique"
             >
               <Share2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Partager</span>
-            </button>
-
-            {/* Bouton Plein écran */}
-            <button
-              onClick={toggleFullscreen}
-              className={`p-2 ${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} rounded-lg transition-all`}
-              title={isFullscreen ? 'Quitter le plein écran' : 'Plein écran'}
-            >
-              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <span>Partager</span>
             </button>
           </div>
-        </div>
-
-        {/* Sélecteur de type de graphique + badge résolution */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className={`text-sm font-medium ${mutedTextClasses}`}>Type:</span>
-            <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-              {CHART_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() => handleChartTypeChange(type.value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center space-x-1 ${
-                    selectedChartType === type.value
-                      ? `${buttonActiveBgClasses} shadow-sm`
-                      : `${mutedTextClasses} ${buttonHoverBgClasses}`
-                  }`}
-                  title={type.label}
-                >
-                  <span>{type.icon}</span>
-                  <span className="hidden sm:inline">{type.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Badge résolution — visible uniquement en mode chandelier ou barre */}
-          {(selectedChartType === 'candlestick' || selectedChartType === 'bar') && (
-            <div className="flex items-center gap-2">
-              {activeConfig.resolution === 'hourly' && (
-                <span className="hidden sm:inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-200">
-                  <Info className="w-3 h-3" />
-                  Données journalières (horaire bientôt disponible)
-                </span>
-              )}
-              <span className={`hidden sm:inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${
-                activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily'
-                  ? 'bg-blue-50 text-blue-600'
-                  : activeConfig.resolution === 'weekly'
-                    ? 'bg-violet-50 text-violet-600'
-                    : activeConfig.resolution === 'monthly'
-                      ? 'bg-amber-50 text-amber-600'
-                      : 'bg-emerald-50 text-emerald-600'
-              }`}>
-                {resolutionLabel}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Menu Indicateurs techniques */}
