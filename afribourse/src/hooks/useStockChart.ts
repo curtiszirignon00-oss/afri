@@ -375,8 +375,10 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
       } else {
         // ── Seules les données ont changé (changement de timeframe) ──
+        // Sortir du mode dessin pour libérer le chart avant setData
+        cancelActiveDrawing();
         // On met à jour les données SANS supprimer la série existante
-        // → les line tools (dessins) sont préservés
+        // → les line tools (dessins) finalisés sont préservés
         if (seriesRef.current) {
           seriesRef.current.setData(convertData() as any);
         }
@@ -661,11 +663,16 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
   /** Annule un tracé en cours (non finalisé) sans supprimer les tracés existants. */
   const cancelActiveDrawing = () => {
-    if (!chartContainerRef.current) return;
-    // L'Escape est le signal standard pour interrompre un tracé en cours
-    chartContainerRef.current.dispatchEvent(
+    // La library écoute les keydown sur le document (pas sur le container)
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true, composed: true })
+    );
+    // Fallback : aussi sur le container au cas où
+    chartContainerRef.current?.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
     );
+    // Fallback API directe si la library l'expose
+    try { (chartRef.current as any)?.finishEditingAction?.(); } catch {}
   };
 
   const startDrawing = (toolType: string) => {
