@@ -157,6 +157,7 @@ export default function StockChartNew({
 
   const handleDrawingToolSelect = (toolType: string) => {
     if (toolType === 'cursor') {
+      cancelActiveDrawing();
       setActiveDrawingTool(null);
       return;
     }
