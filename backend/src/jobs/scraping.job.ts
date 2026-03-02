@@ -13,6 +13,7 @@ import { sendPriceAlertEmail } from '../services/email.service';
 import { notifyPriceAlert } from '../services/notification.service';
 import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
 import { sendWeeklyLearningSummaries } from '../services/learning-summary.service';
+import { updateROIRankStreaks } from '../services/gamification-leaderboard.service';
 import prisma from '../config/prisma';
 
 // Tâche cron pour exécuter le scraping toutes les heures
@@ -34,6 +35,8 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
             console.log('📊 Sauvegarde de l\'historique du jour (actions + indices)...');
             await saveCurrentDayHistory();
             await saveCurrentDayIndexHistory();
+            // Mettre à jour les streaks de position ROI sandbox (1x/jour après clôture)
+            await updateROIRankStreaks();
         }
 
         console.log('✅ Scraping et sauvegarde terminés avec succès');
