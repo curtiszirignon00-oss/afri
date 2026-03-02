@@ -77,6 +77,21 @@ export function useStocks(options: UseStocksOptions = {}): UseStocksReturn {
     loadStocks();
   }, [loadStocks]);
 
+  // Rafraîchissement automatique toutes les 15 minutes pendant les heures de marché BRVM (8h-16h UTC)
+  useEffect(() => {
+    const FIFTEEN_MIN = 15 * 60 * 1000;
+    const interval = setInterval(() => {
+      const hour = new Date().getUTCHours();
+      const day = new Date().getUTCDay();
+      const isWeekday = day >= 1 && day <= 5;
+      const isMarketHours = hour >= 8 && hour < 16;
+      if (isWeekday && isMarketHours) {
+        loadStocks();
+      }
+    }, FIFTEEN_MIN);
+    return () => clearInterval(interval);
+  }, [loadStocks]);
+
   return {
     stocks,
     loading,
