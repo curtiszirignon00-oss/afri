@@ -83,11 +83,21 @@ export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps)
                     >
                         <div className="col-rank">
                             {entry.rank <= 3 ? (
-                                <span className="medal">
-                                    {entry.rank === 1 && '🥇'}
-                                    {entry.rank === 2 && '🥈'}
-                                    {entry.rank === 3 && '🥉'}
-                                </span>
+                                <div className="rank-top3">
+                                    <span className="medal">
+                                        {entry.rank === 1 && '🥇'}
+                                        {entry.rank === 2 && '🥈'}
+                                        {entry.rank === 3 && '🥉'}
+                                    </span>
+                                    {entry.top3Streak >= 2 && (
+                                        <span
+                                            className="streak-badge"
+                                            title={`${entry.top3Streak} jours consécutifs en top ${entry.streakRank}`}
+                                        >
+                                            🔥{entry.top3Streak}j
+                                        </span>
+                                    )}
+                                </div>
                             ) : (
                                 `#${entry.rank}`
                             )}

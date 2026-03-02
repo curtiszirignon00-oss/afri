@@ -35,6 +35,8 @@ export interface LeaderboardEntry {
     gainLossPercent: number;
     validTransactions: number;
     isEligible: boolean;
+    top3Streak: number;        // jours consécutifs dans le top 3
+    streakRank: number | null; // rang tenu lors du streak
 }
 
 export interface ChallengeStats {
