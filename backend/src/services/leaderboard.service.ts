@@ -26,64 +26,16 @@ export interface UserRankInfo {
     percentile?: number;
 }
 
-// ============= HELPER FUNCTIONS =============
-
-/**
- * Calcule la performance d'un portfolio Challenge
- */
-async function calculatePortfolioPerformance(userId: string) {
-    const wallet = await prisma.portfolio.findFirst({
-        where: {
-            userId,
-            wallet_type: 'CONCOURS',
-            status: 'ACTIVE',
-        },
-        include: {
-            positions: true,
-        },
-    });
-
-    if (!wallet) {
-        return null;
-    }
-
-    // Calculer la valeur totale (cash + positions)
-    let totalPositionValue = 0;
-
-    // Récupérer les prix actuels des actions
-    for (const position of wallet.positions) {
-        const stock = await prisma.stock.findUnique({
-            where: { symbol: position.stock_ticker },
-        });
-
-        if (stock) {
-            totalPositionValue += position.quantity * stock.current_price;
-        }
-    }
-
-    const totalValue = wallet.cash_balance + totalPositionValue;
-    const gainLoss = totalValue - wallet.initial_balance;
-    const gainLossPercent = (gainLoss / wallet.initial_balance) * 100;
-
-    return {
-        userId,
-        totalValue,
-        gainLoss,
-        gainLossPercent,
-    };
-}
-
 // ============= LEADERBOARD =============
 
 /**
- * Calcule et retourne le leaderboard complet
+ * Calcule et retourne le leaderboard complet.
+ * Utilise 2 requêtes DB au total (participants+portfolios+positions en une, puis batch stocks).
  */
 export async function calculateWeeklyRankings(limit: number = 100) {
-    // Récupérer tous les participants actifs, triés par date d'inscription (tie-breaker stable)
+    // Requête unique : participants + portfolios CONCOURS + positions
     const participants = await prisma.challengeParticipant.findMany({
-        where: {
-            status: 'ACTIVE',
-        },
+        where: { status: 'ACTIVE' },
         orderBy: { enrollment_date: 'asc' },
         include: {
             user: {
@@ -92,9 +44,17 @@ export async function calculateWeeklyRankings(limit: number = 100) {
                     name: true,
                     lastname: true,
                     profile: {
+                        select: { username: true, avatar_url: true },
+                    },
+                    portfolios: {
+                        where: { wallet_type: 'CONCOURS', status: 'ACTIVE' },
+                        take: 1,
                         select: {
-                            username: true,
-                            avatar_url: true,
+                            cash_balance: true,
+                            initial_balance: true,
+                            positions: {
+                                select: { stock_ticker: true, quantity: true },
+                            },
                         },
                     },
                 },
@@ -102,35 +62,57 @@ export async function calculateWeeklyRankings(limit: number = 100) {
         },
     });
 
-    // Calculer la performance de chaque participant
-    const performances = await Promise.all(
-        participants.map(async (participant) => {
-            // Guard: participant sans utilisateur associé (donnée orpheline)
-            if (!participant.user) {
-                console.warn(`[Leaderboard] Participant orphelin ignoré: ${participant.userId}`);
-                return null;
-            }
+    // Collecter tous les tickers uniques puis charger les prix en une seule requête
+    const allTickers = [...new Set(
+        participants.flatMap(p =>
+            (p.user?.portfolios[0]?.positions ?? []).map(pos => pos.stock_ticker)
+        )
+    )];
 
-            const perf = await calculatePortfolioPerformance(participant.userId);
-
-            // Si pas de wallet trouvé, afficher le participant à 0% (état Jour 1 ou wallet manquant)
-            return {
-                userId: participant.userId,
-                name: participant.user.name,
-                lastname: participant.user.lastname,
-                username: participant.user.profile?.username,
-                avatar_url: participant.user.profile?.avatar_url,
-                totalValue: perf?.totalValue ?? 1_000_000,
-                gainLoss: perf?.gainLoss ?? 0,
-                gainLossPercent: perf?.gainLossPercent ?? 0,
-                validTransactions: participant.valid_transactions,
-                isEligible: participant.is_eligible,
-                // Streak : uniquement affiché si le participant est en top 3 ET a un streak actif
-                top3Streak: (participant as any).top3_streak ?? 0,
-                streakRank: (participant as any).top3_rank ?? null,
-            };
+    const stockRows = allTickers.length > 0
+        ? await prisma.stock.findMany({
+            where: { symbol: { in: allTickers } },
+            select: { symbol: true, current_price: true },
         })
-    );
+        : [];
+    const priceMap = new Map(stockRows.map(s => [s.symbol, s.current_price]));
+
+    // Calculer toutes les performances en mémoire (aucune requête DB supplémentaire)
+    const performances = participants.map((participant) => {
+        if (!participant.user) {
+            console.warn(`[Leaderboard] Participant orphelin ignoré: ${participant.userId}`);
+            return null;
+        }
+
+        const wallet = participant.user.portfolios[0];
+        let totalPositionValue = 0;
+        if (wallet) {
+            for (const position of wallet.positions) {
+                const price = priceMap.get(position.stock_ticker);
+                if (price !== undefined) totalPositionValue += position.quantity * price;
+            }
+        }
+
+        const initialBalance = wallet?.initial_balance ?? 1_000_000;
+        const totalValue = wallet ? (wallet.cash_balance + totalPositionValue) : 1_000_000;
+        const gainLoss = totalValue - initialBalance;
+        const gainLossPercent = (gainLoss / initialBalance) * 100;
+
+        return {
+            userId: participant.userId,
+            name: participant.user.name,
+            lastname: participant.user.lastname,
+            username: participant.user.profile?.username,
+            avatar_url: participant.user.profile?.avatar_url,
+            totalValue,
+            gainLoss,
+            gainLossPercent,
+            validTransactions: participant.valid_transactions,
+            isEligible: participant.is_eligible,
+            top3Streak: (participant as any).top3_streak ?? 0,
+            streakRank: (participant as any).top3_rank ?? null,
+        };
+    });
 
     // Filtrer les participants orphelins
     const validPerformances = performances.filter((p): p is NonNullable<typeof p> => p !== null);
