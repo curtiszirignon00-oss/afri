@@ -2,11 +2,9 @@
 // Service pour les classements gamification (XP, pays, amis, ROI)
 // Système de gamification AfriBourse
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import * as xpService from './xp.service';
 import * as achievementService from './achievement.service';
-
-const prisma = new PrismaClient();
 
 // =====================================
 // TYPES
@@ -372,39 +370,39 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
       }
     });
 
-    // Calculer le ROI pour chaque portfolio
-    const performances = await Promise.all(
-      portfolios.map(async (portfolio) => {
-        // Calculer la valeur des positions
-        let positionsValue = 0;
-        for (const position of portfolio.positions) {
-          const stock = await prisma.stock.findUnique({
-            where: { symbol: position.stock_ticker },
-            select: { current_price: true }
-          });
-          if (stock) {
-            positionsValue += position.quantity * stock.current_price;
-          }
-        }
+    // Récupérer tous les prix en une seule requête (évite le N+1)
+    const allTickers = [...new Set(portfolios.flatMap(p => p.positions.map(pos => pos.stock_ticker)))];
+    const stockRows = await prisma.stock.findMany({
+      where: { symbol: { in: allTickers } },
+      select: { symbol: true, current_price: true }
+    });
+    const priceMap = new Map(stockRows.map(s => [s.symbol, s.current_price]));
 
-        const totalValue = portfolio.cash_balance + positionsValue;
-        const roi = ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100;
+    // Calculer le ROI pour chaque portfolio (sans requête DB supplémentaire)
+    const performances = portfolios.map((portfolio) => {
+      let positionsValue = 0;
+      for (const position of portfolio.positions) {
+        const price = priceMap.get(position.stock_ticker);
+        if (price !== undefined) positionsValue += position.quantity * price;
+      }
 
-        const displayName = portfolio.user
-          ? `${portfolio.user.name} ${portfolio.user.lastname}`.trim()
-          : null;
+      const totalValue = portfolio.cash_balance + positionsValue;
+      const roi = ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100;
 
-        return {
-          userId: portfolio.userId,
-          username: displayName || portfolio.user?.profile?.username || 'Utilisateur',
-          avatar_url: portfolio.user?.profile?.avatar_url || null,
-          level: portfolio.user?.profile?.level || 1,
-          roi_rank_held_since: portfolio.user?.profile?.roi_rank_held_since || null,
-          roi,
-          total_value: totalValue
-        };
-      })
-    );
+      const displayName = portfolio.user
+        ? `${portfolio.user.name} ${portfolio.user.lastname}`.trim()
+        : null;
+
+      return {
+        userId: portfolio.userId,
+        username: displayName || portfolio.user?.profile?.username || 'Utilisateur',
+        avatar_url: portfolio.user?.profile?.avatar_url || null,
+        level: portfolio.user?.profile?.level || 1,
+        roi_rank_held_since: portfolio.user?.profile?.roi_rank_held_since || null,
+        roi,
+        total_value: totalValue
+      };
+    });
 
     // Trier par ROI et prendre le top
     const now = new Date();
@@ -474,17 +472,21 @@ export async function updateROITopRanks(): Promise<{ updated: number; reset: num
       include: { positions: true },
     });
 
-    // 2. Calculer le ROI de chaque portfolio
+    // 2. Calculer le ROI de chaque portfolio (batch stock prices — pas de N+1)
+    const allTickers = [...new Set(portfolios.flatMap(p => p.positions.map(pos => pos.stock_ticker)))];
+    const stockRows = await prisma.stock.findMany({
+      where: { symbol: { in: allTickers } },
+      select: { symbol: true, current_price: true },
+    });
+    const priceMap = new Map(stockRows.map(s => [s.symbol, s.current_price]));
+
     const performances: { userId: string; roi: number }[] = [];
 
     for (const portfolio of portfolios) {
       let positionsValue = 0;
       for (const position of portfolio.positions) {
-        const stock = await prisma.stock.findUnique({
-          where: { symbol: position.stock_ticker },
-          select: { current_price: true },
-        });
-        if (stock) positionsValue += position.quantity * stock.current_price;
+        const price = priceMap.get(position.stock_ticker);
+        if (price !== undefined) positionsValue += position.quantity * price;
       }
       const totalValue = portfolio.cash_balance + positionsValue;
       const roi = ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100;
