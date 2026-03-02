@@ -8,7 +8,7 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps) {
-    const { data: rankings, isLoading, isError } = useLeaderboard(limit);
+    const { data: rankings, isLoading, isError, refetch } = useLeaderboard(limit);
     const { data: myRank } = useMyRank();
     const { data: stats } = useChallengeStats();
 
@@ -24,7 +24,10 @@ export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps)
     if (isError) {
         return (
             <div className="leaderboard-empty">
-                <p>⚠️ Impossible de charger le classement. Veuillez réessayer.</p>
+                <p>⚠️ Impossible de charger le classement.</p>
+                <button className="leaderboard-retry-btn" onClick={() => refetch()}>
+                    Réessayer
+                </button>
             </div>
         );
     }
