@@ -9,12 +9,10 @@
  */
 
 import cron from 'node-cron';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import * as streakService from '../services/streak.service';
 import * as achievementService from '../services/achievement.service';
 import * as leaderboardService from '../services/gamification-leaderboard.service';
-
-const prisma = new PrismaClient();
 
 // =====================================
 // CONFIGURATION DES SCHEDULES
