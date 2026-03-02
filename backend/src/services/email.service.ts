@@ -1969,6 +1969,292 @@ AfriBourse - Apprenez, simulez et investissez en toute confiance.
 }
 
 /**
+ * Envoie un email d'annonce du Grand Challenge AfriBourse
+ */
+export async function sendGrandChallengeAnnouncementEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const appUrl = config.app.frontendUrl;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Le Grand Challenge AfriBourse a commencé !</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 12px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-text {
+          font-size: 28px;
+          font-weight: bold;
+          color: #f97316;
+        }
+        .hero-banner {
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          border-radius: 12px;
+          padding: 30px 20px;
+          text-align: center;
+          margin: 20px 0 30px;
+        }
+        .hero-trophy {
+          font-size: 60px;
+          display: block;
+          margin-bottom: 10px;
+        }
+        .hero-title {
+          font-size: 24px;
+          font-weight: bold;
+          color: #f97316;
+          margin: 0 0 8px;
+          letter-spacing: 0.5px;
+        }
+        .hero-subtitle {
+          font-size: 14px;
+          color: #94a3b8;
+          margin: 0;
+        }
+        .greeting {
+          font-size: 16px;
+          color: #1e293b;
+          margin-bottom: 16px;
+        }
+        .intro-text {
+          font-size: 15px;
+          color: #475569;
+          margin-bottom: 24px;
+        }
+        .highlight-box {
+          background: linear-gradient(135deg, #fff7ed, #ffedd5);
+          border: 1px solid #fed7aa;
+          border-radius: 10px;
+          padding: 20px 24px;
+          margin: 20px 0;
+        }
+        .highlight-box h3 {
+          font-size: 16px;
+          color: #c2410c;
+          margin: 0 0 12px;
+        }
+        .info-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          margin: 10px 0;
+          font-size: 14px;
+          color: #374151;
+        }
+        .info-icon {
+          font-size: 18px;
+          flex-shrink: 0;
+        }
+        .community-box {
+          background-color: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          border-radius: 10px;
+          padding: 20px 24px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .community-box h3 {
+          font-size: 16px;
+          color: #166534;
+          margin: 0 0 8px;
+        }
+        .community-box p {
+          font-size: 14px;
+          color: #166534;
+          margin: 0 0 14px;
+        }
+        .button {
+          display: inline-block;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 32px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 16px;
+          margin: 8px 0;
+        }
+        .button-secondary {
+          display: inline-block;
+          background: linear-gradient(135deg, #16a34a, #15803d);
+          color: white !important;
+          text-decoration: none;
+          padding: 12px 28px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 14px;
+          margin: 8px 0;
+        }
+        .divider {
+          border: none;
+          border-top: 1px solid #e2e8f0;
+          margin: 28px 0;
+        }
+        .good-luck {
+          text-align: center;
+          padding: 20px;
+          background: linear-gradient(135deg, #1e293b, #0f172a);
+          border-radius: 10px;
+          margin: 20px 0;
+        }
+        .good-luck p {
+          color: #f8fafc;
+          font-size: 16px;
+          margin: 0 0 4px;
+          font-weight: 600;
+        }
+        .good-luck .sub {
+          color: #94a3b8;
+          font-size: 13px;
+          font-style: italic;
+        }
+        .footer {
+          text-align: center;
+          color: #94a3b8;
+          font-size: 12px;
+          margin-top: 30px;
+        }
+        .footer a {
+          color: #f97316;
+          text-decoration: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-text">AfriBourse</div>
+        </div>
+
+        <div class="hero-banner">
+          <span class="hero-trophy">🏆</span>
+          <h1 class="hero-title">Le Grand Challenge AfriBourse</h1>
+          <p class="hero-subtitle">Le défi qui va révéler les meilleurs investisseurs d'Afrique</p>
+        </div>
+
+        <p class="greeting">Bonjour <strong>${displayName}</strong>,</p>
+
+        <p class="intro-text">
+          Le moment est venu. Le <strong>Grand Challenge AfriBourse</strong> est officiellement lancé !
+          C'est votre chance de prouver que vous êtes parmi les meilleurs investisseurs de notre communauté.
+        </p>
+
+        <div class="highlight-box">
+          <h3>📋 Ce que vous devez savoir</h3>
+          <div class="info-item">
+            <span class="info-icon">📅</span>
+            <span><strong>Échéances :</strong> Toutes les dates importantes sont disponibles dans la communauté</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📜</span>
+            <span><strong>Règles :</strong> Consultez les règles complètes dans la section communauté</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">🏅</span>
+            <span><strong>Classement :</strong> Suivez votre progression en temps réel, tout est visible et transparent</span>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">🎁</span>
+            <span><strong>Prix :</strong> Des récompenses exceptionnelles attendent les meilleurs — découvrez-les dans la communauté</span>
+          </div>
+        </div>
+
+        <div class="community-box">
+          <h3>🌍 Tout se passe dans la Communauté</h3>
+          <p>
+            Les annonces, les mises à jour du classement, les règles et les prix sont tous publiés dans notre espace communautaire.
+            Restez connecté pour ne rien manquer !
+          </p>
+          <a href="${appUrl}/communaute" class="button-secondary">Rejoindre la Communauté</a>
+        </div>
+
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${appUrl}/challenge" class="button">🚀 Participer au Challenge</a>
+        </div>
+
+        <hr class="divider" />
+
+        <p style="font-size: 15px; color: #475569; text-align: center; margin-bottom: 20px;">
+          Merci de faire partie de cette aventure. Votre confiance et votre engagement font d'AfriBourse une communauté unique et exceptionnelle.
+          <strong style="color: #1e293b;">Vous êtes l'âme de ce projet.</strong>
+        </p>
+
+        <div class="good-luck">
+          <p>Bonne chance à tous !</p>
+          <p class="sub">Que les meilleurs gagnent 🌟</p>
+        </div>
+
+        <div class="footer">
+          <p>L'équipe AfriBourse</p>
+          <p>
+            <a href="${appUrl}">afribourse.com</a> ·
+            <a href="${appUrl}/communaute">Communauté</a>
+          </p>
+          <p style="margin-top: 12px; color: #cbd5e1;">
+            AfriBourse — Apprenez, simulez et investissez en toute confiance.
+          </p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Le Grand Challenge AfriBourse a commencé !
+
+Bonjour ${displayName},
+
+Le Grand Challenge AfriBourse est officiellement lancé ! C'est votre chance de prouver que vous êtes parmi les meilleurs investisseurs de notre communauté.
+
+Ce que vous devez savoir :
+- Échéances : Disponibles dans la communauté
+- Règles : Consultez la section communauté
+- Classement : Visible en temps réel, tout est transparent
+- Prix : Découvrez les récompenses dans la communauté
+
+Rendez-vous sur : ${appUrl}/challenge
+
+Merci de faire partie de cette aventure.
+Bonne chance à tous — que les meilleurs gagnent !
+
+L'équipe AfriBourse
+${appUrl}
+---
+AfriBourse - Apprenez, simulez et investissez en toute confiance.
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: '🏆 Le Grand Challenge AfriBourse a commencé — Bonne chance !',
+    html,
+    text,
+  });
+}
+
+/**
  * Envoie un email pour inviter les utilisateurs à compléter leur profil
  */
 export async function sendCompleteProfileEmail({
@@ -2157,6 +2443,7 @@ export default {
   sendLearningSummaryEmail,
   sendLeaderboardCongratulationEmail,
   sendPWAAnnouncementEmail,
+  sendGrandChallengeAnnouncementEmail,
   sendCompleteProfileEmail,
   sendEmail,
 };

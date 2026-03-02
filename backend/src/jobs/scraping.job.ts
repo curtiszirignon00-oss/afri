@@ -17,8 +17,8 @@ import prisma from '../config/prisma';
 
 // Tâche cron pour exécuter le scraping toutes les heures
 
-cron.schedule('0 * * * *', async () => { // Exécute toutes les heures
-    console.log('🔄 Tâche de scraping exécutée toutes les heures');
+cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
+    console.log('🔄 Tâche de scraping exécutée toutes les 15 minutes');
 
     try {
         const stocks = await scrapeStock();
