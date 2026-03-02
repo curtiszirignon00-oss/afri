@@ -456,6 +456,96 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
 }
 
 // =====================================
+// MISE À JOUR STREAK ROI TOP 3
+// =====================================
+
+/**
+ * Met à jour roi_rank et roi_rank_held_since pour le top 3 ROI (SANDBOX).
+ * - Si même rang qu'hier → roi_rank_held_since inchangé (streak continue)
+ * - Si rang différent ou première fois → roi_rank_held_since = maintenant
+ * - Si sorti du top 3 → roi_rank et roi_rank_held_since remis à null
+ * Appelé par le CRON job à 02h00 après updateRankings.
+ */
+export async function updateROITopRanks(): Promise<{ updated: number; reset: number }> {
+  try {
+    // 1. Récupérer tous les portfolios SANDBOX actifs avec positions
+    const portfolios = await prisma.portfolio.findMany({
+      where: { wallet_type: 'SANDBOX', status: 'ACTIVE' },
+      include: { positions: true },
+    });
+
+    // 2. Calculer le ROI de chaque portfolio
+    const performances: { userId: string; roi: number }[] = [];
+
+    for (const portfolio of portfolios) {
+      let positionsValue = 0;
+      for (const position of portfolio.positions) {
+        const stock = await prisma.stock.findUnique({
+          where: { symbol: position.stock_ticker },
+          select: { current_price: true },
+        });
+        if (stock) positionsValue += position.quantity * stock.current_price;
+      }
+      const totalValue = portfolio.cash_balance + positionsValue;
+      const roi = ((totalValue - portfolio.initial_balance) / portfolio.initial_balance) * 100;
+      if (!isNaN(roi)) {
+        performances.push({ userId: portfolio.userId, roi });
+      }
+    }
+
+    // 3. Trier par ROI décroissant et garder le top 3
+    performances.sort((a, b) => b.roi - a.roi);
+    const top3 = performances.slice(0, 3);
+    const top3UserIds = top3.map((p) => p.userId);
+
+    // 4. Récupérer les profils qui étaient dans le top 3
+    const prevTop3Profiles = await prisma.userProfile.findMany({
+      where: { roi_rank: { not: null } },
+      select: { userId: true, roi_rank: true, roi_rank_held_since: true },
+    });
+
+    const now = new Date();
+    let updated = 0;
+    let reset = 0;
+
+    // 5. Mettre à jour les rangs des 3 premiers
+    for (let i = 0; i < top3.length; i++) {
+      const rank = i + 1;
+      const { userId } = top3[i];
+      const prevProfile = prevTop3Profiles.find((p) => p.userId === userId);
+      const keepSince = prevProfile?.roi_rank === rank && prevProfile.roi_rank_held_since != null;
+
+      await prisma.userProfile.update({
+        where: { userId },
+        data: {
+          roi_rank: rank,
+          roi_rank_held_since: keepSince ? prevProfile!.roi_rank_held_since : now,
+        },
+      });
+      updated++;
+    }
+
+    // 6. Réinitialiser les profils qui ne sont plus dans le top 3
+    for (const prev of prevTop3Profiles) {
+      if (!top3UserIds.includes(prev.userId)) {
+        await prisma.userProfile.update({
+          where: { userId: prev.userId },
+          data: { roi_rank: null, roi_rank_held_since: null },
+        });
+        reset++;
+      }
+    }
+
+    console.log(`✅ ROI top 3 mis à jour: ${updated} mis à jour, ${reset} réinitialisés`);
+    return { updated, reset };
+
+  } catch (error) {
+    console.error('❌ Erreur updateROITopRanks:', error);
+    throw error;
+  }
+}
+
+// =====================================
 // CALCUL DES RANGS (CRON JOB)
 // =====================================
 
