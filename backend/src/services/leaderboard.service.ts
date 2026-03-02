@@ -16,6 +16,8 @@ export interface LeaderboardEntry {
     gainLossPercent: number;
     validTransactions: number;
     isEligible: boolean;
+    top3Streak: number;        // jours consécutifs dans le top 3 (0 si hors top 3)
+    streakRank: number | null; // rang tenu lors du streak (1, 2, 3), null si hors top 3
 }
 
 export interface UserRankInfo {
@@ -119,6 +121,9 @@ export async function calculateWeeklyRankings(limit: number = 100) {
                 gainLossPercent: perf?.gainLossPercent ?? 0,
                 validTransactions: participant.valid_transactions,
                 isEligible: participant.is_eligible,
+                // Streak : uniquement affiché si le participant est en top 3 ET a un streak actif
+                top3Streak: participant.top3_streak ?? 0,
+                streakRank: participant.top3_rank ?? null,
             };
         })
     );
@@ -126,11 +131,18 @@ export async function calculateWeeklyRankings(limit: number = 100) {
     // Trier par performance décroissante (à égalité : ordre stable par date d'inscription)
     const sorted = performances.sort((a, b) => b.gainLossPercent - a.gainLossPercent);
 
-    // Assigner les rangs
-    const rankings: LeaderboardEntry[] = sorted.map((perf, index) => ({
-        rank: index + 1,
-        ...perf,
-    }));
+    // Assigner les rangs et masquer le streak si le participant n'est plus dans le top 3
+    const rankings: LeaderboardEntry[] = sorted.map((perf, index) => {
+        const currentRank = index + 1;
+        const isInTop3 = currentRank <= 3;
+        return {
+            rank: currentRank,
+            ...perf,
+            // N'afficher le streak que si la personne est actuellement dans le top 3
+            top3Streak: isInTop3 ? perf.top3Streak : 0,
+            streakRank: isInTop3 ? currentRank : null,
+        };
+    });
 
     return rankings.slice(0, limit);
 }

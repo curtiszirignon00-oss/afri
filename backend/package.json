@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "init-challenge": "ts-node src/scripts/init-challenge-classement.ts",
+    "update-streaks": "ts-node src/scripts/update-leaderboard-streaks.ts",
     "count-challenge": "ts-node src/scripts/count-challenge-participants.ts",
     "update-sectors": "ts-node src/scripts/update-sectors.ts",
     "create-quiz": "ts-node scripts/create-quiz.ts",
