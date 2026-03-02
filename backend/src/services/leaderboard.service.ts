@@ -91,8 +91,6 @@ export async function calculateWeeklyRankings(limit: number = 100) {
                     id: true,
                     name: true,
                     lastname: true,
-                },
-                include: {
                     profile: {
                         select: {
                             username: true,
