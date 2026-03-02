@@ -4,6 +4,8 @@
   "description": "node-express-typescript-boilerplate",
   "main": "dist/index.js",
   "scripts": {
+    "init-challenge": "ts-node src/scripts/init-challenge-classement.ts",
+    "count-challenge": "ts-node src/scripts/count-challenge-participants.ts",
     "update-sectors": "ts-node src/scripts/update-sectors.ts",
     "create-quiz": "ts-node scripts/create-quiz.ts",
     "import-stock-data": "ts-node scripts/importStockData.ts",

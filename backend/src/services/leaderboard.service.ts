@@ -77,12 +77,12 @@ async function calculatePortfolioPerformance(userId: string) {
  * Calcule et retourne le leaderboard complet
  */
 export async function calculateWeeklyRankings(limit: number = 100) {
-    // Récupérer tous les participants actifs et éligibles
+    // Récupérer tous les participants actifs, triés par date d'inscription (tie-breaker stable)
     const participants = await prisma.challengeParticipant.findMany({
         where: {
             status: 'ACTIVE',
-            // is_eligible: true, // Optionnel: uniquement les éligibles
         },
+        orderBy: { enrollment_date: 'asc' },
         include: {
             user: {
                 select: {
@@ -107,34 +107,29 @@ export async function calculateWeeklyRankings(limit: number = 100) {
         participants.map(async (participant) => {
             const perf = await calculatePortfolioPerformance(participant.userId);
 
-            if (!perf) {
-                return null;
-            }
-
+            // Si pas de wallet trouvé, afficher le participant à 0% (état Jour 1 ou wallet manquant)
             return {
                 userId: participant.userId,
                 name: participant.user.name,
                 lastname: participant.user.lastname,
                 username: participant.user.profile?.username,
                 avatar_url: participant.user.profile?.avatar_url,
-                totalValue: perf.totalValue,
-                gainLoss: perf.gainLoss,
-                gainLossPercent: perf.gainLossPercent,
+                totalValue: perf?.totalValue ?? 1_000_000,
+                gainLoss: perf?.gainLoss ?? 0,
+                gainLossPercent: perf?.gainLossPercent ?? 0,
                 validTransactions: participant.valid_transactions,
                 isEligible: participant.is_eligible,
             };
         })
     );
 
-    // Filtrer les nulls et trier par performance
-    const validPerformances = performances
-        .filter((p) => p !== null)
-        .sort((a, b) => b!.gainLossPercent - a!.gainLossPercent);
+    // Trier par performance décroissante (à égalité : ordre stable par date d'inscription)
+    const sorted = performances.sort((a, b) => b.gainLossPercent - a.gainLossPercent);
 
     // Assigner les rangs
-    const rankings: LeaderboardEntry[] = validPerformances.map((perf, index) => ({
+    const rankings: LeaderboardEntry[] = sorted.map((perf, index) => ({
         rank: index + 1,
-        ...perf!,
+        ...perf,
     }));
 
     return rankings.slice(0, limit);
