@@ -80,7 +80,7 @@ export default function ChallengeCommunityPage() {
 
             {/* Leaderboard */}
             <section className="leaderboard-section">
-                <Leaderboard limit={20} showMyRank={true} />
+                <Leaderboard limit={10} showMyRank={true} />
             </section>
 
             {/* Baromètre du Marché */}
@@ -146,7 +146,7 @@ export default function ChallengeCommunityPage() {
                             <div
                                 className="progress-fill"
                                 style={{
-                                    width: `${(challengeStatus.validTransactions / 5) * 100}%`,
+                                    width: `${((challengeStatus.validTransactions ?? 0) / 5) * 100}%`,
                                 }}
                             />
                         </div>
@@ -156,7 +156,7 @@ export default function ChallengeCommunityPage() {
                             </div>
                         ) : (
                             <div className="not-eligible-badge">
-                                Effectuez {5 - challengeStatus.validTransactions} transactions
+                                Effectuez {5 - (challengeStatus.validTransactions ?? 0)} transactions
                                 sur des tickers différents pour devenir éligible
                             </div>
                         )}
