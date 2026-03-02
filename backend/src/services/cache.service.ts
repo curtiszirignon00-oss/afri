@@ -2,8 +2,8 @@ import { getRedisClient } from '../config/redis';
 
 // TTLs en secondes
 export const CACHE_TTL = {
-  STOCKS: 3600,            // 1 heure
-  STOCK_DETAIL: 1800,      // 30 minutes
+  STOCKS: 900,             // 15 minutes (aligné avec le cron de scraping)
+  STOCK_DETAIL: 900,       // 15 minutes
   LEADERBOARD: 300,        // 5 minutes
   CHALLENGE_STATS: 600,    // 10 minutes
   LEARNING_MODULES: 86400, // 24 heures

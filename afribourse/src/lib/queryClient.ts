@@ -7,7 +7,7 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // Les données restent "fraîches" pendant 5 minutes
       gcTime: 1000 * 60 * 30, // Les données en cache pendant 30 minutes
       retry: 1, // Réessayer 1 fois en cas d'échec
-      refetchOnWindowFocus: false, // Ne pas recharger quand on revient sur l'onglet
+      refetchOnWindowFocus: true, // Recharger quand on revient sur l'onglet
       refetchOnReconnect: true, // Recharger quand la connexion internet revient
     },
     mutations: {
