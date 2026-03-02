@@ -1655,6 +1655,12 @@ model ChallengeParticipant {
   valid_transactions Int     @default(0)
   is_eligible        Boolean @default(false)
 
+  // ============= STREAK TOP 3 =============
+  // Jours consécutifs dans le même top rang (1, 2 ou 3)
+  top3_streak  Int      @default(0) // nb de jours consécutifs
+  top3_rank    Int?                  // rang actuel dans le top 3, null si hors top 3
+  streak_since DateTime?             // date de début du streak en cours
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
