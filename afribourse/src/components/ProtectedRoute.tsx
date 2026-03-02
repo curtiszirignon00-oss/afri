@@ -12,7 +12,7 @@ export default function ProtectedRoute({ children, requireOnboarding = true }: P
   const { isLoggedIn, loading: authLoading } = useAuth();
 
   // Check onboarding status only if user is authenticated
-  const { isLoading: onboardingLoading, needsOnboarding } = useOnboardingRedirect({
+  const { isLoading: onboardingLoading, needsOnboarding, error: onboardingError } = useOnboardingRedirect({
     enabled: isLoggedIn && requireOnboarding,
     redirectTo: '/onboarding'
   });
@@ -28,8 +28,8 @@ export default function ProtectedRoute({ children, requireOnboarding = true }: P
     return <Navigate to="/login" replace />;
   }
 
-  // Affiche un spinner pendant la vérification de l'onboarding
-  if (requireOnboarding && onboardingLoading) {
+  // Affiche un spinner pendant la vérification de l'onboarding (pas si erreur réseau)
+  if (requireOnboarding && onboardingLoading && !onboardingError) {
     return <LoadingSpinner fullScreen text="Chargement de votre profil..." />;
   }
 

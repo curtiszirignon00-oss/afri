@@ -46,7 +46,7 @@
     "verify-neic": "ts-node src/scripts/verify-neic-data.ts",
     "verify-sdcc": "ts-node src/scripts/verify-sdcc-data.ts",
     "export-users": "ts-node src/scripts/export-users-to-excel-direct.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && node --max-old-space-size=400 ./node_modules/.bin/tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "dev:ts": "ts-node src/index.ts",
