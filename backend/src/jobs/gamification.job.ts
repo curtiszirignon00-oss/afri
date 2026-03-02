@@ -12,6 +12,7 @@ import cron from 'node-cron';
 import { PrismaClient } from '@prisma/client';
 import * as streakService from '../services/streak.service';
 import * as achievementService from '../services/achievement.service';
+import * as leaderboardService from '../services/gamification-leaderboard.service';
 
 const prisma = new PrismaClient();
 
@@ -98,9 +99,13 @@ async function runRankingsCalculation() {
     }
 
     const countriesCount = Object.keys(countryRanks).length;
-    console.log(`✅ [GAMIFICATION] Classements calculés:`);
+    console.log(`✅ [GAMIFICATION] Classements XP calculés:`);
     console.log(`   - Profils classés: ${profiles.length}`);
     console.log(`   - Pays: ${countriesCount}`);
+
+    // Mettre à jour le top 3 ROI (streak classement simulateur)
+    const roiResult = await leaderboardService.updateROITopRanks();
+    console.log(`   - Top 3 ROI streak mis à jour: ${roiResult.updated} actifs, ${roiResult.reset} réinitialisés`);
 
     return { profiles_ranked: profiles.length, countries: countriesCount };
 
