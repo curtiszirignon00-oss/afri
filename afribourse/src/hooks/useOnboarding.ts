@@ -20,13 +20,14 @@ export interface OnboardingData {
 /**
  * Check if user has completed onboarding
  */
-export function useOnboardingStatus() {
+export function useOnboardingStatus(enabled = true) {
     return useQuery({
         queryKey: ['onboarding', 'status'],
         queryFn: async () => {
             const response = await apiClient.get('/investor-profile/onboarding/status');
             return response.data.data;
         },
+        enabled,
     });
 }
 
@@ -137,13 +138,14 @@ export function useOnboardingRedirect(options?: {
     allowedPaths?: string[];
 }) {
     const navigate = useNavigate();
-    const { data: status, isLoading, error } = useOnboardingStatus();
 
     const {
         enabled = true,
         redirectTo = '/onboarding',
         allowedPaths = ['/onboarding', '/logout', '/login', '/signup']
     } = options || {};
+
+    const { data: status, isLoading, error } = useOnboardingStatus(enabled);
 
     useEffect(() => {
         // Don't redirect if disabled or still loading

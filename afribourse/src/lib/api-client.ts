@@ -11,6 +11,7 @@ const getAuthToken = (): string | null => {
 export const apiClient = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true, // Important pour les cookies JWT
+    timeout: 15000, // 15s timeout — évite le chargement infini si le serveur ne répond pas
     headers: {
         'Content-Type': 'application/json',
     },
