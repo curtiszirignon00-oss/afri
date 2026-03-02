@@ -1,6 +1,5 @@
 // src/components/challenge/Leaderboard.tsx
-import React from 'react';
-import { useLeaderboard, useMyRank } from '../../hooks/useChallenge';
+import { useLeaderboard, useMyRank, useChallengeStats } from '../../hooks/useChallenge';
 import './Leaderboard.css';
 
 interface LeaderboardProps {
@@ -9,8 +8,9 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps) {
-    const { data: rankings, isLoading } = useLeaderboard(limit);
+    const { data: rankings, isLoading, isError } = useLeaderboard(limit);
     const { data: myRank } = useMyRank();
+    const { data: stats } = useChallengeStats();
 
     if (isLoading) {
         return (
@@ -21,13 +21,29 @@ export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps)
         );
     }
 
-    if (!rankings || rankings.length === 0) {
+    if (isError) {
         return (
             <div className="leaderboard-empty">
-                <p>📊 Aucun classement disponible pour le moment</p>
+                <p>⚠️ Impossible de charger le classement. Veuillez réessayer.</p>
             </div>
         );
     }
+
+    if (!rankings || rankings.length === 0) {
+        return (
+            <div className="leaderboard-empty">
+                <p>🚀 Le classement s'affichera dès les premières transactions.</p>
+                {stats && (
+                    <p className="leaderboard-empty-sub">
+                        {stats.activeParticipants} participant{stats.activeParticipants > 1 ? 's' : ''} inscrit{stats.activeParticipants > 1 ? 's' : ''} — à vos ordres !
+                    </p>
+                )}
+            </div>
+        );
+    }
+
+    // Jour 1 : tous les participants sont encore à 0%
+    const isDay1 = rankings.every((e) => e.gainLossPercent === 0);
 
     return (
         <div className="leaderboard">
@@ -36,12 +52,18 @@ export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps)
                 {showMyRank && myRank && myRank.rank && (
                     <div className="my-rank-badge">
                         Votre rang : <strong>#{myRank.rank}</strong> / {myRank.totalParticipants}
-                        {myRank.percentile && (
+                        {myRank.percentile !== undefined && (
                             <span className="percentile">(Top {(100 - myRank.percentile).toFixed(1)}%)</span>
                         )}
                     </div>
                 )}
             </div>
+
+            {isDay1 && (
+                <div className="leaderboard-day1-banner">
+                    🚀 Challenge lancé aujourd'hui ! Le classement évoluera dès les premières transactions.
+                </div>
+            )}
 
             <div className="leaderboard-table">
                 <div className="table-header">
@@ -84,22 +106,30 @@ export function Leaderboard({ limit = 20, showMyRank = true }: LeaderboardProps)
                         </div>
 
                         <div className="col-performance">
-                            <span className={`performance ${entry.gainLossPercent >= 0 ? 'positive' : 'negative'}`}>
-                                {entry.gainLossPercent >= 0 ? '+' : ''}
+                            <span className={`performance ${entry.gainLossPercent > 0 ? 'positive' : entry.gainLossPercent < 0 ? 'negative' : 'neutral'}`}>
+                                {entry.gainLossPercent > 0 ? '+' : ''}
                                 {entry.gainLossPercent.toFixed(2)}%
                             </span>
                             <div className="gain-loss">
-                                {entry.gainLoss >= 0 ? '+' : ''}
-                                {entry.gainLoss.toLocaleString()} FCFA
+                                {entry.gainLoss > 0 ? '+' : entry.gainLoss < 0 ? '' : ''}
+                                {entry.gainLoss.toLocaleString('fr-FR')} FCFA
                             </div>
                         </div>
 
                         <div className="col-value">
-                            {entry.totalValue.toLocaleString()} FCFA
+                            {entry.totalValue.toLocaleString('fr-FR')} FCFA
                         </div>
                     </div>
                 ))}
             </div>
+
+            {stats && (
+                <div className="leaderboard-footer">
+                    {stats.activeParticipants} participant{stats.activeParticipants > 1 ? 's' : ''} actif{stats.activeParticipants > 1 ? 's' : ''} •{' '}
+                    {stats.eligibleParticipants} éligible{stats.eligibleParticipants > 1 ? 's' : ''} •{' '}
+                    {stats.totalTransactions} transaction{stats.totalTransactions > 1 ? 's' : ''}
+                </div>
+            )}
         </div>
     );
 }
