@@ -105,6 +105,12 @@ export async function calculateWeeklyRankings(limit: number = 100) {
     // Calculer la performance de chaque participant
     const performances = await Promise.all(
         participants.map(async (participant) => {
+            // Guard: participant sans utilisateur associé (donnée orpheline)
+            if (!participant.user) {
+                console.warn(`[Leaderboard] Participant orphelin ignoré: ${participant.userId}`);
+                return null;
+            }
+
             const perf = await calculatePortfolioPerformance(participant.userId);
 
             // Si pas de wallet trouvé, afficher le participant à 0% (état Jour 1 ou wallet manquant)
@@ -120,14 +126,17 @@ export async function calculateWeeklyRankings(limit: number = 100) {
                 validTransactions: participant.valid_transactions,
                 isEligible: participant.is_eligible,
                 // Streak : uniquement affiché si le participant est en top 3 ET a un streak actif
-                top3Streak: participant.top3_streak ?? 0,
-                streakRank: participant.top3_rank ?? null,
+                top3Streak: (participant as any).top3_streak ?? 0,
+                streakRank: (participant as any).top3_rank ?? null,
             };
         })
     );
 
+    // Filtrer les participants orphelins
+    const validPerformances = performances.filter((p): p is NonNullable<typeof p> => p !== null);
+
     // Trier par performance décroissante (à égalité : ordre stable par date d'inscription)
-    const sorted = performances.sort((a, b) => b.gainLossPercent - a.gainLossPercent);
+    const sorted = validPerformances.sort((a, b) => b.gainLossPercent - a.gainLossPercent);
 
     // Assigner les rangs et masquer le streak si le participant n'est plus dans le top 3
     const rankings: LeaderboardEntry[] = sorted.map((perf, index) => {
