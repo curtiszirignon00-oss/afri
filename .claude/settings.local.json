@@ -86,7 +86,8 @@
       "Bash(npm show lightweight-charts-line-tools dist-tags)",
       "Bash(npm show lightweight-charts-line-tools versions)",
       "Bash(npm show lightweight-charts-line-tools@4.1.1 peerDependencies)",
-      "Bash(npm show lightweight-charts-line-tools@4.1.1 description)"
+      "Bash(npm show lightweight-charts-line-tools@4.1.1 description)",
+      "Bash(xargs grep -l \"credentials.*include\")"
     ],
     "deny": [],
     "ask": []

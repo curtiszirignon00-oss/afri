@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, authFetch } from '../config/api';
 
 export type Period = '1D' | '5D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'ALL';
 
@@ -98,7 +98,7 @@ export async function fetchStockHistory(
   symbol: string,
   period: Period = '1Y'
 ): Promise<StockHistoryResponse> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/stocks/${symbol}/history?period=${period}`,
     { credentials: 'include' }
   );
@@ -114,7 +114,7 @@ export async function fetchStockHistory(
  * Récupère les données fondamentales d'une action
  */
 export async function fetchStockFundamentals(symbol: string): Promise<StockFundamental | null> {
-  const response = await fetch(`${API_BASE_URL}/stocks/${symbol}/fundamentals`, {
+  const response = await authFetch(`${API_BASE_URL}/stocks/${symbol}/fundamentals`, {
     credentials: 'include'
   });
 
@@ -133,7 +133,7 @@ export async function fetchStockFundamentals(symbol: string): Promise<StockFunda
  * Récupère les informations sur la compagnie
  */
 export async function fetchCompanyInfo(symbol: string): Promise<CompanyInfo | null> {
-  const response = await fetch(`${API_BASE_URL}/stocks/${symbol}/company`, {
+  const response = await authFetch(`${API_BASE_URL}/stocks/${symbol}/company`, {
     credentials: 'include'
   });
 
@@ -155,7 +155,7 @@ export async function fetchStockNews(
   symbol: string,
   limit: number = 10
 ): Promise<StockNewsItem[]> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/stocks/${symbol}/news?limit=${limit}`,
     { credentials: 'include' }
   );
@@ -171,7 +171,7 @@ export async function fetchStockNews(
  * Récupère les actionnaires d'une action
  */
 export async function fetchShareholders(symbol: string): Promise<Shareholder[]> {
-  const response = await fetch(`${API_BASE_URL}/stocks/${symbol}/shareholders`, {
+  const response = await authFetch(`${API_BASE_URL}/stocks/${symbol}/shareholders`, {
     credentials: 'include'
   });
 
@@ -189,7 +189,7 @@ export async function fetchAnnualFinancials(
   symbol: string,
   years: number = 5
 ): Promise<AnnualFinancialsResponse> {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/stocks/${symbol}/financials?years=${years}`,
     { credentials: 'include' }
   );
@@ -220,7 +220,7 @@ export async function fetchPriceAlerts(stockTicker?: string): Promise<PriceAlert
     ? `${API_BASE_URL}/price-alerts?stockTicker=${stockTicker}`
     : `${API_BASE_URL}/price-alerts`;
 
-  const response = await fetch(url, {
+  const response = await authFetch(url, {
     credentials: 'include'
   });
 
@@ -235,7 +235,7 @@ export async function fetchPriceAlerts(stockTicker?: string): Promise<PriceAlert
  * Crée une nouvelle alerte de prix
  */
 export async function createPriceAlert(payload: CreatePriceAlertPayload): Promise<PriceAlert> {
-  const response = await fetch(`${API_BASE_URL}/price-alerts`, {
+  const response = await authFetch(`${API_BASE_URL}/price-alerts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -259,7 +259,7 @@ export async function updatePriceAlert(
   alertId: string,
   payload: UpdatePriceAlertPayload
 ): Promise<PriceAlert> {
-  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}`, {
+  const response = await authFetch(`${API_BASE_URL}/price-alerts/${alertId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
@@ -280,7 +280,7 @@ export async function updatePriceAlert(
  * Active ou désactive une alerte de prix
  */
 export async function togglePriceAlert(alertId: string, isActive: boolean): Promise<PriceAlert> {
-  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}/toggle`, {
+  const response = await authFetch(`${API_BASE_URL}/price-alerts/${alertId}/toggle`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json'
@@ -301,7 +301,7 @@ export async function togglePriceAlert(alertId: string, isActive: boolean): Prom
  * Supprime une alerte de prix
  */
 export async function deletePriceAlert(alertId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}`, {
+  const response = await authFetch(`${API_BASE_URL}/price-alerts/${alertId}`, {
     method: 'DELETE',
     credentials: 'include'
   });
@@ -316,7 +316,7 @@ export async function deletePriceAlert(alertId: string): Promise<void> {
  * Récupère l'historique des notifications d'une alerte
  */
 export async function fetchAlertNotifications(alertId: string): Promise<PriceAlertNotification[]> {
-  const response = await fetch(`${API_BASE_URL}/price-alerts/${alertId}/notifications`, {
+  const response = await authFetch(`${API_BASE_URL}/price-alerts/${alertId}/notifications`, {
     credentials: 'include'
   });
 
