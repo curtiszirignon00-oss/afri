@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { X, Download, Send, Loader2, Smartphone } from 'lucide-react';
 import { useCreatePost } from '../../hooks/useSocial';
+import { useUploadPostImages } from '../../hooks/useUpload';
 import toast from 'react-hot-toast';
 
 interface ChartShareModalProps {
@@ -28,6 +29,8 @@ export default function ChartShareModal({
   const [customMessage, setCustomMessage] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
   const { mutate: createPost, isPending } = useCreatePost();
+  const { mutateAsync: uploadImages, isPending: isUploading } = useUploadPostImages();
+  const isBusy = isPending || isUploading;
 
   if (!isOpen) return null;
 
@@ -121,7 +124,30 @@ export default function ChartShareModal({
     }
   };
 
-  const handleShareCommunity = () => {
+  const handleShareCommunity = async () => {
+    let imageUrls: string[] = [];
+
+    // 1. Uploader l'image du graphique si disponible
+    if (dataUrl) {
+      try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File(
+          [blob],
+          `afribourse-${symbol.toLowerCase()}-chart.png`,
+          { type: 'image/png' }
+        );
+        const uploadResult = await uploadImages([file]);
+        if (uploadResult.data.images?.length) {
+          imageUrls = uploadResult.data.images;
+        }
+      } catch {
+        // Le hook affiche déjà le toast d'erreur, on annule le partage
+        return;
+      }
+    }
+
+    // 2. Créer le post avec l'image uploadée
     createPost(
       {
         type: 'ANALYSIS',
@@ -131,6 +157,7 @@ export default function ChartShareModal({
         visibility: 'PUBLIC',
         tags: ['graphique', 'chart', symbol.toLowerCase()],
         metadata: { shareType: 'CHART', symbol, changePercent, changeValue, periodLabel },
+        images: imageUrls.length > 0 ? imageUrls : undefined,
       },
       {
         onSuccess: () => {
@@ -307,20 +334,20 @@ export default function ChartShareModal({
         <div className="flex items-center justify-between gap-3 p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            disabled={isPending}
+            disabled={isBusy}
             className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
           >
             Annuler
           </button>
           <button
             onClick={handleShareCommunity}
-            disabled={isPending}
+            disabled={isBusy}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
-            {isPending ? (
+            {isBusy ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Partage...
+                {isUploading ? 'Upload...' : 'Partage...'}
               </>
             ) : (
               <>
