@@ -56,7 +56,7 @@ interface QuizState {
 }
 
 export default function LearnPage() {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, token } = useAuth();
     const navigate = useNavigate();
     const { trackAction } = useAnalytics();
     const { mutate: createPost, isPending: isSharing } = useCreatePost();
@@ -224,6 +224,7 @@ export default function LearnPage() {
 
             const progressPromise = fetch(progressUrl, {
                 credentials: 'include',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
             }).then(res => {
                 if (res.status === 401) return [];
                 if (!res.ok) throw new Error(`Erreur ${res.status}`);
@@ -368,7 +369,8 @@ export default function LearnPage() {
             const response = await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
                 },
                 credentials: 'include',
                 body: JSON.stringify({ answers: quizState.answers })
@@ -489,7 +491,10 @@ export default function LearnPage() {
         try {
             const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token && { 'Authorization': `Bearer ${token}` })
+                },
                 credentials: 'include',
             });
 
