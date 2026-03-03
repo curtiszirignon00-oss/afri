@@ -21,11 +21,6 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
-// --- Helper pour détecter si on est sur mobile ---
-const isMobileDevice = (): boolean => {
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-};
-
 // --- Création du Context ---
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -35,30 +30,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(() => {
-    // Initialiser le token depuis localStorage (tous les appareils)
     return localStorage.getItem('auth_token');
   });
 
   // Fonction pour vérifier l'authentification
   const checkAuth = async (customToken?: string | null) => {
-    setLoading(true); // <-- AJOUT : Reset loading à chaque vérification
+    setLoading(true);
     try {
-      const isMobile = isMobileDevice();
+      const authToken = customToken !== undefined ? customToken : token;
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };
 
-      // Utiliser customToken si fourni, sinon utiliser token du state
-      const authToken = customToken !== undefined ? customToken : token;
-
-      // Sur mobile, ajouter le token dans le header Authorization
-      if (isMobile && authToken) {
+      // Toujours envoyer le token si disponible — tous navigateurs, tous appareils
+      if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
-        console.log('🔐 [AUTH] Using token for mobile request');
       }
 
       const response = await fetch(`${API_BASE_URL}/me`, {
-        credentials: 'include', // ✅ Envoie automatiquement le cookie (desktop)
+        credentials: 'include',
         headers,
       });
 
@@ -68,18 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await response.json();
         console.log('✅ [AUTH] User authenticated:', data.user?.email);
         const profile = data.user;
-        // Admin gets full pro/max access
         if (profile?.role === 'admin') {
           profile.subscriptionTier = 'max';
         }
-        setUserProfile(profile); // <-- Met à jour le profil (le backend retourne { user: {...} })
-        setIsLoggedIn(true); // <-- CRITIQUE : Met à jour isLoggedIn
+        setUserProfile(profile);
+        setIsLoggedIn(true);
       } else {
         console.log('❌ [AUTH] Authentication failed');
         setIsLoggedIn(false);
         setUserProfile(null);
-        // Si la requête échoue sur mobile, supprimer le token
-        if (isMobile) {
+        // Token invalide/expiré — nettoyer sur tous les appareils
+        if (authToken) {
           localStorage.removeItem('auth_token');
           setToken(null);
         }
@@ -89,20 +78,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(false);
       setUserProfile(null);
     } finally {
-      setLoading(false); // <-- CRITIQUE : Arrête le chargement
+      setLoading(false);
     }
   };
 
   // Fonction de déconnexion
   const logout = async () => {
     try {
-      const isMobile = isMobileDevice();
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };
 
-      // Sur mobile, ajouter le token dans le header Authorization
-      if (isMobile && token) {
+      // Toujours envoyer le token — tous navigateurs, tous appareils
+      if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
@@ -116,15 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoggedIn(false);
       setUserProfile(null);
-      // Supprimer le token du localStorage sur mobile
-      if (isMobileDevice()) {
-        localStorage.removeItem('auth_token');
-      }
+      localStorage.removeItem('auth_token');
       setToken(null);
     }
   };
 
-  // Sauvegarder le token dans localStorage quand il change (tous les appareils)
+  // Sauvegarder le token dans localStorage quand il change
   useEffect(() => {
     if (token) {
       localStorage.setItem('auth_token', token);
