@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, authFetch } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
 import PriceAlertModal from './price-alerts/PriceAlertModal';
 import PriceAlertList from './price-alerts/PriceAlertList';
@@ -103,8 +103,8 @@ export default function StockDetailPageEnhanced() {
       setError(null);
       try {
         const [portfolioRes, watchlistRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/watchlist/my`, { credentials: 'include' })
+          authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`),
+          authFetch(`${API_BASE_URL}/watchlist/my`)
         ]);
 
         // Portfolio
@@ -211,7 +211,7 @@ export default function StockDetailPageEnhanced() {
     const method = currentStatus ? 'DELETE' : 'POST';
 
     try {
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method: method,
         headers: currentStatus ? {} : { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -257,7 +257,7 @@ export default function StockDetailPageEnhanced() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/portfolios/my/buy`, {
+      const response = await authFetch(`${API_BASE_URL}/portfolios/my/buy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
