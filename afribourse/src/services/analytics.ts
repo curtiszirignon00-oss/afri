@@ -1,5 +1,6 @@
 // Service pour tracker les analytics
 import { v4 as uuidv4 } from 'uuid';
+import { authFetch } from '../config/api';
 
 // Générer ou récupérer l'ID de session
 const getSessionId = (): string => {
@@ -62,7 +63,7 @@ class AnalyticsService {
       const browser = getBrowser();
       const os = getOS();
 
-      const response = await fetch(`${this.baseUrl}/analytics/page-view`, {
+      const response = await authFetch(`${this.baseUrl}/analytics/page-view`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ class AnalyticsService {
     try {
       const duration = Math.floor((Date.now() - this.pageStartTime) / 1000); // en secondes
 
-      await fetch(`${this.baseUrl}/analytics/page-duration`, {
+      await authFetch(`${this.baseUrl}/analytics/page-duration`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ class AnalyticsService {
     try {
       const pagePath = window.location.pathname;
 
-      await fetch(`${this.baseUrl}/analytics/action`, {
+      await authFetch(`${this.baseUrl}/analytics/action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +155,7 @@ class AnalyticsService {
     try {
       const pagePath = window.location.pathname;
 
-      await fetch(`${this.baseUrl}/analytics/feature`, {
+      await authFetch(`${this.baseUrl}/analytics/feature`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
