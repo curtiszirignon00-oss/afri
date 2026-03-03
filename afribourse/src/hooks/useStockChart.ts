@@ -409,20 +409,20 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
         // Mettre à jour le volume en place
         if (volumeSeriesRef.current) {
-          volumeSeriesRef.current.setData(convertVolumeData());
+          volumeSeriesRef.current.setData(convertVolumeData() as any);
         }
 
         // Mettre à jour les indicateurs actifs avec les nouvelles données
         const chartData = data.map(d => ({ time: d.time, close: d.close }));
-        if (ma20SeriesRef.current)  ma20SeriesRef.current.setData(calculateSMA(chartData, 20));
-        if (ma50SeriesRef.current)  ma50SeriesRef.current.setData(calculateSMA(chartData, 50));
-        if (ma200SeriesRef.current) ma200SeriesRef.current.setData(calculateSMA(chartData, 200));
-        if (ema12SeriesRef.current) ema12SeriesRef.current.setData(calculateEMA(chartData, 12));
+        if (ma20SeriesRef.current)  ma20SeriesRef.current.setData(calculateSMA(chartData, 20) as any);
+        if (ma50SeriesRef.current)  ma50SeriesRef.current.setData(calculateSMA(chartData, 50) as any);
+        if (ma200SeriesRef.current) ma200SeriesRef.current.setData(calculateSMA(chartData, 200) as any);
+        if (ema12SeriesRef.current) ema12SeriesRef.current.setData(calculateEMA(chartData, 12) as any);
         if (bbUpperSeriesRef.current || bbMiddleSeriesRef.current || bbLowerSeriesRef.current) {
           const bbData = calculateBollingerBands(chartData, 20, 2);
-          if (bbUpperSeriesRef.current)  bbUpperSeriesRef.current.setData(bbData.upper);
-          if (bbMiddleSeriesRef.current) bbMiddleSeriesRef.current.setData(bbData.middle);
-          if (bbLowerSeriesRef.current)  bbLowerSeriesRef.current.setData(bbData.lower);
+          if (bbUpperSeriesRef.current)  bbUpperSeriesRef.current.setData(bbData.upper as any);
+          if (bbMiddleSeriesRef.current) bbMiddleSeriesRef.current.setData(bbData.middle as any);
+          if (bbLowerSeriesRef.current)  bbLowerSeriesRef.current.setData(bbData.lower as any);
         }
       }
 
@@ -731,7 +731,13 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     }
   };
 
-  const startDrawing = (toolType: string) => {
+  interface FibLevelInput { coeff: number; color: string; opacity: number }
+
+  const startDrawing = (
+    toolType: string,
+    textValue?: string,
+    fibLevels?: FibLevelInput[],
+  ) => {
     if (!chartRef.current) return;
     try {
       const chartApi = chartRef.current as any;
@@ -766,8 +772,29 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         inDrawingSessionRef.current = true;
       }
 
-      // Activer le mode dessin interactif pour cet outil
-      chartApi.setActiveLineTool?.(toolType, {});
+      // Options de base (Text uniquement — les autres outils utilisent leurs defaults)
+      const options: Record<string, unknown> = {};
+      if (toolType === 'Text' && textValue) {
+        options.text = { value: textValue };
+      }
+
+      // Créer l'outil en mode placement (points vides = attend les clics de l'utilisateur)
+      const toolApi = chartApi.addLineTool?.(toolType, [], options) as any;
+
+      // Pour FibRetracement : la fonction merge() de la bibliothèque fusionne les tableaux
+      // par index et laisse les éléments par défaut au-delà de notre longueur (niveaux 1.618 à 4.236).
+      // On contourne ce problème en remplaçant directement le tableau après création.
+      if (toolType === 'FibRetracement' && fibLevels && toolApi?._internal_lineTool?._internal__options) {
+        toolApi._internal_lineTool._internal__options.levels = fibLevels.map(
+          (l: FibLevelInput) => ({
+            coeff: l.coeff,
+            color: l.color,
+            opacity: l.opacity,
+            distanceFromCoeffEnabled: false,
+            distanceFromCoeff: 0,
+          })
+        );
+      }
     } catch (e) {
       console.warn('[startDrawing]', e);
     }
