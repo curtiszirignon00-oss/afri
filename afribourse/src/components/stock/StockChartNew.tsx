@@ -49,6 +49,23 @@ const CHART_TYPES: { value: ChartType; label: string; icon: string }[] = [
   { value: 'bar', label: 'Barres', icon: '📊' },
 ];
 
+interface FibLevel {
+  coeff: number;
+  color: string;
+  opacity: number;
+  enabled: boolean;
+}
+
+const DEFAULT_FIB_LEVELS: FibLevel[] = [
+  { coeff: 0,     color: '#787b86', opacity: 0.25, enabled: true },
+  { coeff: 0.236, color: '#f7931e', opacity: 0.25, enabled: true },
+  { coeff: 0.382, color: '#e91e63', opacity: 0.25, enabled: true },
+  { coeff: 0.5,   color: '#2196f3', opacity: 0.25, enabled: true },
+  { coeff: 0.618, color: '#4caf50', opacity: 0.25, enabled: true },
+  { coeff: 0.786, color: '#9c27b0', opacity: 0.25, enabled: true },
+  { coeff: 1,     color: '#787b86', opacity: 0.25, enabled: true },
+];
+
 export default function StockChartNew({
   symbol,
   data,
@@ -70,6 +87,12 @@ export default function StockChartNew({
   const [chartScreenshot, setChartScreenshot] = useState<string | null>(null);
   const [showDrawingToolbar, setShowDrawingToolbar] = useState(false);
   const [activeDrawingTool, setActiveDrawingTool] = useState<string | null>(null);
+  const [showTextModal, setShowTextModal] = useState(false);
+  const [textInput, setTextInput] = useState('');
+  const [showFibModal, setShowFibModal] = useState(false);
+  const [fibLevels, setFibLevels] = useState<FibLevel[]>(() => DEFAULT_FIB_LEVELS);
+  const [newFibCoeff, setNewFibCoeff] = useState('');
+  const [newFibColor, setNewFibColor] = useState('#ff0000');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const activeConfig = DISPLAY_INTERVALS.find(i => i.value === selectedDisplay)!;
@@ -161,8 +184,39 @@ export default function StockChartNew({
       setActiveDrawingTool(null);
       return;
     }
+    if (toolType === 'Text') {
+      setActiveDrawingTool('Text');
+      setTextInput('');
+      setShowTextModal(true);
+      return;
+    }
+    if (toolType === 'FibRetracement') {
+      setActiveDrawingTool('FibRetracement');
+      setShowFibModal(true);
+      return;
+    }
     setActiveDrawingTool(toolType);
     startDrawing(toolType);
+  };
+
+  const handleTextConfirm = () => {
+    if (!textInput.trim()) return;
+    startDrawing('Text', textInput.trim());
+    setShowTextModal(false);
+  };
+
+  const handleFibConfirm = () => {
+    const activeLevels = fibLevels.filter(l => l.enabled);
+    startDrawing('FibRetracement', undefined, activeLevels);
+    setShowFibModal(false);
+  };
+
+  const addFibLevel = () => {
+    const coeff = parseFloat(newFibCoeff);
+    if (isNaN(coeff) || coeff < 0 || coeff > 2) return;
+    if (fibLevels.some(l => l.coeff === coeff)) return;
+    setFibLevels(prev => [...prev, { coeff, color: newFibColor, opacity: 0.25, enabled: true }].sort((a, b) => a.coeff - b.coeff));
+    setNewFibCoeff('');
   };
 
   // Formatter pour afficher les prix
@@ -480,6 +534,161 @@ export default function StockChartNew({
         changePercent={periodChange.percent}
         changeValue={periodChange.value}
       />
+
+      {/* Modal de saisie pour l'outil Texte */}
+      {showTextModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => { setShowTextModal(false); setActiveDrawingTool(null); }}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl p-5 w-80 max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 className="text-sm font-semibold text-gray-800 mb-3">Ajouter une annotation</h4>
+            <input
+              autoFocus
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleTextConfirm();
+                else if (e.key === 'Escape') { setShowTextModal(false); setActiveDrawingTool(null); }
+              }}
+              placeholder="Votre texte..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 mb-3"
+            />
+            <p className="text-xs text-gray-400 mb-3">Cliquez sur le graphique pour placer l'annotation.</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => { setShowTextModal(false); setActiveDrawingTool(null); }}
+                className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleTextConfirm}
+                disabled={!textInput.trim()}
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40"
+              >
+                Placer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de configuration Fibonacci */}
+      {showFibModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => { setShowFibModal(false); setActiveDrawingTool(null); }}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-[95vw] max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-gray-800">Niveaux Fibonacci</h4>
+              <button
+                onClick={() => setFibLevels(DEFAULT_FIB_LEVELS)}
+                className="text-xs text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                Réinitialiser
+              </button>
+            </div>
+
+            {/* Liste des niveaux */}
+            <div className="overflow-y-auto flex-1 space-y-1.5 mb-4 pr-1">
+              {fibLevels.map((level, idx) => (
+                <div key={level.coeff} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={level.enabled}
+                    onChange={(e) => setFibLevels(prev => prev.map((l, i) => i === idx ? { ...l, enabled: e.target.checked } : l))}
+                    className="w-3.5 h-3.5 accent-blue-600 flex-shrink-0"
+                  />
+                  <input
+                    type="color"
+                    value={level.color}
+                    onChange={(e) => setFibLevels(prev => prev.map((l, i) => i === idx ? { ...l, color: e.target.value } : l))}
+                    className="w-6 h-6 rounded cursor-pointer border-0 p-0 flex-shrink-0"
+                    title="Couleur du niveau"
+                  />
+                  <span className={`text-xs font-mono flex-1 ${level.enabled ? 'text-gray-800' : 'text-gray-400'}`}>
+                    {(level.coeff * 100).toFixed(1)}%
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={level.opacity}
+                    onChange={(e) => setFibLevels(prev => prev.map((l, i) => i === idx ? { ...l, opacity: parseFloat(e.target.value) } : l))}
+                    className="w-16 flex-shrink-0"
+                    title={`Opacité : ${Math.round(level.opacity * 100)}%`}
+                  />
+                  <button
+                    onClick={() => setFibLevels(prev => prev.filter((_, i) => i !== idx))}
+                    className="text-gray-300 hover:text-red-500 transition-colors text-xs flex-shrink-0"
+                    title="Supprimer ce niveau"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Ajouter un niveau personnalisé */}
+            <div className="border-t border-gray-100 pt-3 mb-4">
+              <p className="text-xs text-gray-500 mb-2">Ajouter un niveau personnalisé (0 – 2)</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={newFibCoeff}
+                  onChange={(e) => setNewFibCoeff(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addFibLevel()}
+                  placeholder="ex: 1.618"
+                  step="0.001"
+                  min="0"
+                  max="2"
+                  className="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <input
+                  type="color"
+                  value={newFibColor}
+                  onChange={(e) => setNewFibColor(e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer border border-gray-300 p-0.5 flex-shrink-0"
+                />
+                <button
+                  onClick={addFibLevel}
+                  disabled={!newFibCoeff || isNaN(parseFloat(newFibCoeff))}
+                  className="px-3 py-1.5 text-xs bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-40"
+                >
+                  + Ajouter
+                </button>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => { setShowFibModal(false); setActiveDrawingTool(null); }}
+                className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleFibConfirm}
+                disabled={!fibLevels.some(l => l.enabled)}
+                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40"
+              >
+                Tracer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

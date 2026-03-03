@@ -14,6 +14,7 @@ import {
   Type,
   Trash2,
   Eraser,
+  Ruler,
 } from 'lucide-react';
 
 interface DrawingTool {
@@ -40,10 +41,11 @@ const LINE_TOOLS: DrawingTool[] = [
 ];
 
 const SHAPE_TOOLS: DrawingTool[] = [
-  { type: 'FibRetracement', icon: BarChart2,   label: 'Fibonacci'   },
-  { type: 'Rectangle',      icon: Square,      label: 'Rectangle'   },
-  { type: 'Circle',         icon: Circle,      label: 'Cercle'      },
-  { type: 'Highlighter',    icon: Highlighter, label: 'Surbrillance'},
+  { type: 'FibRetracement', icon: BarChart2,   label: 'Fibonacci (configurable)' },
+  { type: 'Rectangle',      icon: Square,      label: 'Rectangle'                },
+  { type: 'Circle',         icon: Circle,      label: 'Cercle'                   },
+  { type: 'Highlighter',    icon: Highlighter, label: 'Surbrillance'             },
+  { type: 'PriceRange',     icon: Ruler,       label: 'Mesure de prix (%)'       },
 ];
 
 const TEXT_TOOLS: DrawingTool[] = [
