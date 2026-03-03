@@ -11,11 +11,6 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
 
-// Helper pour détecter si on est sur mobile
-const isMobileDevice = (): boolean => {
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-};
-
 // Helper pour récupérer le token depuis localStorage
 const getAuthToken = (): string | null => {
   // Essayer d'abord 'auth_token', puis 'token' comme fallback
