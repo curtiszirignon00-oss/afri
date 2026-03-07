@@ -476,24 +476,31 @@ export async function getPortfolioSummary(userId: string) {
   try {
     const portfolio = await prisma.portfolio.findFirst({
       where: { userId: userId },
-      include: {
-        positions: {
-          include: {
-            stock: {
-              select: {
-                ticker: true,
-                name: true,
-                current_price: true,
-              },
-            },
-          },
-        },
-      },
+      include: { positions: true },
     });
 
     if (!portfolio) {
       return null;
     }
+
+    // Type cast needed due to Prisma inference limitation with findFirst + include
+    const positions = (portfolio as any).positions as Array<{
+      id: string;
+      stock_ticker: string;
+      quantity: number;
+      average_buy_price: number;
+      portfolioId: string;
+    }>;
+
+    // Récupérer les prix actuels des stocks en position
+    const tickers = positions.map(p => p.stock_ticker);
+    const stocks = tickers.length > 0
+      ? await prisma.stock.findMany({
+          where: { symbol: { in: tickers } },
+          select: { symbol: true, company_name: true, current_price: true },
+        })
+      : [];
+    const stockMap = new Map(stocks.map(s => [s.symbol, s]));
 
     // Calculate positions value
     let positionsValue = 0;
@@ -508,20 +515,21 @@ export async function getPortfolioSummary(userId: string) {
       gainLossPercent: number;
     }> = [];
 
-    for (const position of portfolio.positions) {
-      const currentPrice = position.stock?.current_price || position.average_price;
+    for (const position of positions) {
+      const stock = stockMap.get(position.stock_ticker);
+      const currentPrice = stock?.current_price || position.average_buy_price;
       const positionValue = position.quantity * currentPrice;
-      const costBasis = position.quantity * position.average_price;
+      const costBasis = position.quantity * position.average_buy_price;
       const positionGainLoss = positionValue - costBasis;
       const positionGainLossPercent = costBasis > 0 ? ((positionValue - costBasis) / costBasis) * 100 : 0;
 
       positionsValue += positionValue;
 
       positionsDetails.push({
-        ticker: position.stockTicker,
-        name: position.stock?.name || position.stockTicker,
+        ticker: position.stock_ticker,
+        name: stock?.company_name || position.stock_ticker,
         quantity: position.quantity,
-        avgPrice: position.average_price,
+        avgPrice: position.average_buy_price,
         currentPrice: currentPrice,
         value: positionValue,
         gainLoss: positionGainLoss,
@@ -546,7 +554,7 @@ export async function getPortfolioSummary(userId: string) {
       initialBalance: portfolio.initial_balance,
       gainLoss: totalGainLoss,
       gainLossPercent: totalGainLossPercent,
-      positionsCount: portfolio.positions.length,
+      positionsCount: positionsDetails.length,
       positions: positionsDetails.sort((a, b) => b.value - a.value),
       topPerformers: positionsDetails
         .filter(p => p.gainLossPercent > 0)
