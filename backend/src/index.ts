@@ -55,6 +55,8 @@ import gamificationRoutes from './routes/gamification.routes'; // Système de ga
 import cronRoutes from './routes/cron.routes'; // Endpoints CRON securises (QStash/Bearer)
 import healthRoutes from './routes/health.routes'; // Health check endpoints
 import pushRoutes from './routes/push.routes'; // Push notifications (Web Push API)
+import passportConfig from './config/passport'; // OAuth Passport
+import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
 
 class App {
   private app: Application | null = null;
@@ -125,6 +127,7 @@ class App {
     // Other Middlewares
     this.app?.use(compression());
     this.app?.use(cookieParser());
+    this.app?.use(passportConfig.initialize()); // Passport OAuth (sans session, JWT uniquement)
 
 
     // Rate Limiting
@@ -152,6 +155,9 @@ class App {
   }
 
   private initializeRoutes() {
+    // OAuth Social Login (HORS /api — redirections navigateur)
+    this.app?.use('/auth', oauthRoutes); // /auth/google, /auth/facebook, /auth/linkedin
+
     // Health Check Routes (liveness, readiness, deep)
     this.app?.use('/health', healthRoutes);
     this.app?.use('/api/health', healthRoutes); // Also expose at /api/health for backwards compatibility

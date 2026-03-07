@@ -1,9 +1,10 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
+import { useAuth } from '../contexts/AuthContext';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
 import toast from 'react-hot-toast';
@@ -33,6 +34,40 @@ type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { checkAuth, setToken } = useAuth();
+
+  // Gérer le retour OAuth (token en query param + toast)
+  useEffect(() => {
+    const oauthStatus = searchParams.get('oauth');
+    const provider = searchParams.get('provider');
+    const oauthToken = searchParams.get('token');
+
+    if (oauthStatus === 'success') {
+      const providerNames: Record<string, string> = {
+        google: 'Google',
+        facebook: 'Facebook',
+        linkedin: 'LinkedIn',
+      };
+      // Stocker le token JWT reçu depuis le backend
+      if (oauthToken) {
+        setToken(oauthToken);
+        checkAuth(oauthToken).then(() => {
+          toast.success(`Connecté via ${providerNames[provider!] || 'OAuth'} !`);
+        });
+      } else {
+        checkAuth().then(() => {
+          toast.success(`Connecté via ${providerNames[provider!] || 'OAuth'} !`);
+        });
+      }
+      setSearchParams({}, { replace: true }); // Nettoyer l'URL
+    }
+
+    if (oauthStatus === 'error') {
+      toast.error('Échec de la connexion OAuth. Réessayez.');
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Challenge wallet mode context
   const { walletMode, setWalletMode } = useChallengeContext();

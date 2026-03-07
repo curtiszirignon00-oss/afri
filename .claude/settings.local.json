@@ -87,7 +87,9 @@
       "Bash(npm show lightweight-charts-line-tools versions)",
       "Bash(npm show lightweight-charts-line-tools@4.1.1 peerDependencies)",
       "Bash(npm show lightweight-charts-line-tools@4.1.1 description)",
-      "Bash(xargs grep -l \"credentials.*include\")"
+      "Bash(xargs grep -l \"credentials.*include\")",
+      "Bash(ls -la c:UsersHPOneDriveDesktopafribackend.env*)",
+      "Bash(ls c:/Users/HP/OneDrive/Desktop/afri/backend/.env*)"
     ],
     "deny": [],
     "ask": []
