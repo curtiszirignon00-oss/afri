@@ -46,7 +46,7 @@ export default function DashboardPage() {
     if (oauthStatus === 'success') {
       const providerNames: Record<string, string> = {
         google: 'Google',
-        facebook: 'Facebook',
+        twitter: 'X',
         linkedin: 'LinkedIn',
       };
       // Stocker le token JWT reçu depuis le backend

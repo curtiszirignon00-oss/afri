@@ -6,6 +6,7 @@ import path from 'path';
 import Express, { Application, json, urlencoded } from 'express';
 import { Server } from 'http';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import cors from 'cors';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
@@ -127,7 +128,15 @@ class App {
     // Other Middlewares
     this.app?.use(compression());
     this.app?.use(cookieParser());
-    this.app?.use(passportConfig.initialize()); // Passport OAuth (sans session, JWT uniquement)
+    // Session minimale pour Twitter OAuth 1.0a (stockage temporaire du oauth_token)
+    this.app?.use(session({
+      secret: process.env.JWT_SECRET || 'oauth-session-secret',
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: config.nodeEnv === 'production', maxAge: 5 * 60 * 1000 }, // 5 min
+    }));
+    this.app?.use(passportConfig.initialize());
+    this.app?.use(passportConfig.session());
 
 
     // Rate Limiting

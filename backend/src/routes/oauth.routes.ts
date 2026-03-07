@@ -47,21 +47,17 @@ router.get(
   handleOAuthCallback('google')
 );
 
-// ─── FACEBOOK ─────────────────────────────────────────────────────────────────
+// ─── X / TWITTER (OAuth 1.0a — pas de session: false, Twitter l'exige) ───────
 router.get(
-  '/facebook',
-  passport.authenticate('facebook', {
-    session: false,
-    scope: ['email', 'public_profile'],
-  })
+  '/twitter',
+  passport.authenticate('twitter')
 );
 router.get(
-  '/facebook/callback',
-  passport.authenticate('facebook', {
-    session: false,
-    failureRedirect: `${config.app.frontendUrl}/login?error=facebook_failed`,
+  '/twitter/callback',
+  passport.authenticate('twitter', {
+    failureRedirect: `${config.app.frontendUrl}/login?error=twitter_failed`,
   }),
-  handleOAuthCallback('facebook')
+  handleOAuthCallback('twitter')
 );
 
 // ─── LINKEDIN ─────────────────────────────────────────────────────────────────
