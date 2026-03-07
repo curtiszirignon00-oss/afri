@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
+import OAuthButtons from './auth/OAuthButtons';
 
 type LoginPageProps = {
 };
@@ -189,6 +190,11 @@ export default function LoginPage() {
               {loading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </form>
+
+          {/* OAuth Social Login */}
+          <div className="mt-6">
+            <OAuthButtons mode="login" />
+          </div>
 
           {/* Link to Signup */}
           <div className="mt-6 text-center">
