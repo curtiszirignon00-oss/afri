@@ -1,5 +1,5 @@
 // src/middleware/rateLimiter.ts
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 /**
  * Rate limiter for creating posts
@@ -16,7 +16,7 @@ export const postCreationLimiter = rateLimit({
     legacyHeaders: false,
     // Use user ID as key instead of IP
     keyGenerator: (req: any) => {
-        return req.user?.id || req.ip;
+        return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
         const resetTime = (req as any).rateLimit?.resetTime;
@@ -46,7 +46,7 @@ export const commentCreationLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: any) => {
-        return req.user?.id || req.ip;
+        return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
         const resetTime = (req as any).rateLimit?.resetTime;
@@ -75,7 +75,7 @@ export const communityPostCreationLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: any) => {
-        return req.user?.id || req.ip;
+        return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
         const resetTime = (req as any).rateLimit?.resetTime;
@@ -103,7 +103,7 @@ export const generalApiLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: any) => {
-        return req.user?.id || req.ip;
+        return req.user?.id || ipKeyGenerator(req);
     },
     skip: (req: any) => {
         return req.user?.role === 'ADMIN' || req.user?.role === 'MODERATOR';
@@ -151,7 +151,7 @@ export const tradingLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req: any) => req.user?.id || req.ip,
+    keyGenerator: (req: any) => req.user?.id || ipKeyGenerator(req),
     skip: (req: any) => {
         return req.user?.role === 'ADMIN';
     }
@@ -170,7 +170,7 @@ export const reportLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: any) => {
-        return req.user?.id || req.ip;
+        return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
         const resetTime = (req as any).rateLimit?.resetTime;
