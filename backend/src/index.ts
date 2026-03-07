@@ -1,7 +1,3 @@
-// IMPORTANT: Sentry MUST be initialized before any other imports
-import { initSentry, Sentry } from './config/sentry';
-initSentry();
-
 import path from 'path';
 import Express, { Application, json, urlencoded } from 'express';
 import { Server } from 'http';
@@ -73,9 +69,6 @@ class App {
   }
 
   private initializeMiddlewares() {
-    // Note: Sentry v8+ auto-instruments Express via Sentry.init() integrations
-    // No need for manual requestHandler/tracingHandler
-
     // --- Security Headers (Helmet) ---
     this.app?.use(helmet({
       contentSecurityPolicy: {
@@ -209,14 +202,8 @@ class App {
   }
 
   private initializeErrorsHandling() {
-    // Sentry v8+ error handler (MUST come before custom error handlers)
-    if (process.env.SENTRY_DSN && this.app) {
-      Sentry.setupExpressErrorHandler(this.app);
-    }
-
-    // These should come AFTER Sentry error handler
-    this.app?.use(notFoundHandler); // Handle 404s first
-    this.app?.use(errorHandler);    // Then handle other errors
+    this.app?.use(notFoundHandler);
+    this.app?.use(errorHandler);
     logger.info('Error handlers initialized');
   }
 
