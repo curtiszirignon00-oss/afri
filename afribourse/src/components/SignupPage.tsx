@@ -4,6 +4,7 @@ import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-r
 import { Button, Input, Card } from './ui';
 import { API_BASE_URL } from '../config/api';
 import { useNavigate } from 'react-router-dom';
+import OAuthButtons from './auth/OAuthButtons';
 type SignupPageProps = {};
 
 export default function SignupPage() {
@@ -182,6 +183,11 @@ export default function SignupPage() {
               {loading ? 'Création du compte...' : 'Créer mon compte'}
             </Button>
           </form>
+
+          {/* OAuth Social Login */}
+          <div className="mt-2">
+            <OAuthButtons mode="register" />
+          </div>
 
           {/* Lien vers connexion */}
           <div className="mt-6 text-center text-sm text-gray-600">
