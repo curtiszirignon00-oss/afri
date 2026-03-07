@@ -52,7 +52,8 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
       data: {
         userId: (user as any).id,
         name: 'Mon Portefeuille',
-        balance: 1000000,
+        cash_balance: 1000000,
+        initial_balance: 1000000,
       },
     });
   }
@@ -87,7 +88,8 @@ passport.use(
         const user = await findOrCreateOAuthUser(profile, 'google');
         done(null, user as any);
       } catch (err) {
-        done(err as Error);
+        console.error('[OAuth] Google error:', err);
+        done(null, false as any);
       }
     }
   )
@@ -154,7 +156,8 @@ passport.use(
         const user = await findOrCreateOAuthUser(profile, 'twitter');
         done(null, user as any);
       } catch (err) {
-        done(err as Error);
+        console.error('[OAuth] Twitter error:', err);
+        done(null, false);
       }
     }
   )
@@ -176,7 +179,8 @@ passport.use(
         const user = await findOrCreateOAuthUser(profile, 'linkedin');
         done(null, user as any);
       } catch (err) {
-        done(err as Error);
+        console.error('[OAuth] LinkedIn error:', err);
+        done(null, false);
       }
     }
   )
