@@ -121,12 +121,17 @@ class App {
     // Other Middlewares
     this.app?.use(compression());
     this.app?.use(cookieParser());
-    // Session minimale pour Twitter OAuth 1.0a (stockage temporaire du oauth_token)
+    // Session pour OAuth state/PKCE (Twitter, LinkedIn). sameSite:'none' requis
+    // pour que le cookie soit renvoyé lors de la redirection cross-site OAuth.
     this.app?.use(session({
       secret: process.env.JWT_SECRET || 'oauth-session-secret',
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: config.nodeEnv === 'production', maxAge: 5 * 60 * 1000 }, // 5 min
+      cookie: {
+        secure: config.nodeEnv === 'production',
+        sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
+        maxAge: 10 * 60 * 1000, // 10 min (OAuth flow peut prendre du temps)
+      },
     }));
     this.app?.use(passportConfig.initialize());
     this.app?.use(passportConfig.session());
