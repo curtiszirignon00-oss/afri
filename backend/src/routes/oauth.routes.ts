@@ -63,10 +63,19 @@ router.get(
   }
 );
 
-// ─── X / TWITTER (OAuth 1.0a — pas de session: false, Twitter l'exige) ───────
+// ─── X / TWITTER ──────────────────────────────────────────────────────────────
 router.get(
   '/twitter',
-  passport.authenticate('twitter')
+  (req, res, next) => {
+    console.log('[OAuth] Twitter init. session id:', req.session?.id, 'TWITTER_CLIENT_ID set:', !!process.env.TWITTER_CLIENT_ID, 'TWITTER_CALLBACK_URL:', process.env.TWITTER_CALLBACK_URL);
+    // Intercept the redirect to log the authorization URL
+    const originalRedirect = res.redirect.bind(res);
+    (res as any).redirect = (url: string) => {
+      console.log('[OAuth] Twitter redirect URL:', url);
+      return originalRedirect(url);
+    };
+    passport.authenticate('twitter')(req, res, next);
+  }
 );
 router.get(
   '/twitter/callback',
