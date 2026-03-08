@@ -154,6 +154,24 @@ class XStrategy extends OAuth2Strategy {
       verify
     );
     this.name = 'twitter';
+
+    // Twitter token endpoint requires Authorization: Basic (not credentials in POST body)
+    const tokenURL = 'https://api.x.com/2/oauth2/token';
+    const basicAuth = Buffer.from(`${options.clientID}:${options.clientSecret}`).toString('base64');
+    const qs = require('querystring');
+    const origRequest = (this._oauth2 as any)._request.bind(this._oauth2);
+    (this._oauth2 as any)._request = function(
+      method: string, url: string, headers: any, postBody: string, accessToken: any, callback: Function
+    ) {
+      if (method === 'POST' && url === tokenURL) {
+        const params = qs.parse(postBody);
+        delete params.client_id;
+        delete params.client_secret;
+        headers = { ...headers, Authorization: `Basic ${basicAuth}` };
+        postBody = qs.stringify(params);
+      }
+      return origRequest(method, url, headers, postBody, accessToken, callback);
+    };
   }
 
   // Récupérer le profil depuis l'API X v2
