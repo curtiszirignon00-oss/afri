@@ -33,6 +33,11 @@ function handleOAuthCallback(provider: string) {
   };
 }
 
+// ─── TEST (diagnostic) ────────────────────────────────────────────────────────
+router.get('/test', (_req, res) => {
+  res.json({ status: 'oauth router ok', ts: new Date().toISOString() });
+});
+
 // ─── GOOGLE ───────────────────────────────────────────────────────────────────
 router.get(
   '/google',
@@ -40,6 +45,10 @@ router.get(
 );
 router.get(
   '/google/callback',
+  (req, _res, next) => {
+    console.log('[OAuth] Google callback received. query:', JSON.stringify(req.query));
+    next();
+  },
   passport.authenticate('google', {
     session: false,
     failureRedirect: `${config.app.frontendUrl}/login?error=google_failed`,
