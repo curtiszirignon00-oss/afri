@@ -149,7 +149,7 @@ passport.use(
       callbackURL: process.env.TWITTER_CALLBACK_URL!,
       scope: ['tweet.read', 'users.read'],
       state: true,   // CSRF protection (stocké en session)
-      pkce: false,   // Désactivé pour les clients confidentiels (avec secret)
+      pkce: true,    // X/Twitter exige PKCE pour tous les clients OAuth 2.0
     },
     async (_accessToken: string, _refreshToken: string, profile: any, done: any) => {
       try {
