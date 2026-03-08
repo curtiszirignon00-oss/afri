@@ -80,6 +80,7 @@ router.get(
   '/twitter/callback',
   (req, res, next) => {
     console.log('[OAuth] Twitter callback query:', JSON.stringify(req.query));
+    console.log('[OAuth] Twitter callback session keys:', req.session ? Object.keys(req.session) : 'NO SESSION');
     passport.authenticate('twitter', {}, (err: any, user: any, info: any) => {
       console.log('[OAuth] Twitter authenticate result:', {
         err: err ? String(err) : null,
