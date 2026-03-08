@@ -98,15 +98,25 @@ router.get(
 // ─── LINKEDIN ─────────────────────────────────────────────────────────────────
 router.get(
   '/linkedin',
-  passport.authenticate('linkedin', { session: false })
+  passport.authenticate('linkedin')
 );
 router.get(
   '/linkedin/callback',
-  passport.authenticate('linkedin', {
-    session: false,
-    failureRedirect: `${config.app.frontendUrl}/login?error=linkedin_failed`,
-  }),
-  handleOAuthCallback('linkedin')
+  (req, res, next) => {
+    console.log('[OAuth] LinkedIn callback query:', JSON.stringify(req.query));
+    passport.authenticate('linkedin', {}, (err: any, user: any, info: any) => {
+      console.log('[OAuth] LinkedIn authenticate result:', {
+        err: err ? String(err) : null,
+        user: user ? `id=${user.id}` : null,
+        info: info ? String(info) : null,
+      });
+      if (err || !user) {
+        return res.redirect(`${config.app.frontendUrl}/login?error=linkedin_failed&detail=${encodeURIComponent(err?.message || info?.message || req.query.error || 'unknown')}`);
+      }
+      req.user = user;
+      return handleOAuthCallback('linkedin')(req, res);
+    })(req, res, next);
+  }
 );
 
 export default router;
