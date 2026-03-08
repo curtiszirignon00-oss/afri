@@ -67,7 +67,7 @@ router.get(
 router.get(
   '/twitter',
   (req, res, next) => {
-    console.log('[OAuth] Twitter init. CLIENT_ID set:', !!process.env.TWITTER_CLIENT_ID, 'CALLBACK_URL:', process.env.TWITTER_CALLBACK_URL);
+    console.log('[OAuth] Twitter init. sessionID:', (req as any).sessionID, 'CLIENT_ID set:', !!process.env.TWITTER_CLIENT_ID);
     const originalRedirect = res.redirect.bind(res);
     (res as any).redirect = (url: string) => {
       console.log('[OAuth] Twitter redirect URL:', url);
@@ -80,7 +80,7 @@ router.get(
   '/twitter/callback',
   (req, res, next) => {
     console.log('[OAuth] Twitter callback query:', JSON.stringify(req.query));
-    console.log('[OAuth] Twitter callback session keys:', req.session ? Object.keys(req.session) : 'NO SESSION');
+    console.log('[OAuth] Twitter callback sessionID:', (req as any).sessionID, 'session keys:', req.session ? Object.keys(req.session) : 'NO SESSION');
     passport.authenticate('twitter', {}, (err: any, user: any, info: any) => {
       console.log('[OAuth] Twitter authenticate result:', {
         err: err ? String(err) : null,
