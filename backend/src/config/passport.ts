@@ -4,6 +4,47 @@ import { Strategy as OAuth2Strategy } from 'passport-oauth2';
 import prisma from './prisma';
 
 // ═══════════════════════════════════════════════════════
+// STATE STORE IN-MEMORY (remplace le store basé session)
+// Le cookie de session n'est pas transmis de manière
+// fiable lors des redirections OAuth cross-site sur Render.
+// Ce store utilise une Map Node.js, valide pour single-instance.
+// ═══════════════════════════════════════════════════════
+class MemoryStateStore {
+  private _states = new Map<string, { codeVerifier?: string; expires: number }>();
+
+  constructor() {
+    // Nettoyage des états expirés toutes les 5 minutes
+    setInterval(() => {
+      const now = Date.now();
+      for (const [key, val] of this._states.entries()) {
+        if (val.expires < now) this._states.delete(key);
+      }
+    }, 5 * 60 * 1000).unref();
+  }
+
+  store(_req: any, state: string, meta: any, callback: (err: any) => void) {
+    this._states.set(state, {
+      codeVerifier: meta?.codeVerifier,
+      expires: Date.now() + 10 * 60 * 1000, // 10 min
+    });
+    callback(null);
+  }
+
+  verify(_req: any, providedState: string, callback: (err: any, ok: boolean, state?: any) => void) {
+    const data = this._states.get(providedState);
+    if (!data || data.expires < Date.now()) {
+      this._states.delete(providedState);
+      return callback(null, false, { message: 'Invalid or expired OAuth state' });
+    }
+    this._states.delete(providedState);
+    callback(null, true, { codeVerifier: data.codeVerifier });
+  }
+}
+
+const twitterStateStore = new MemoryStateStore();
+const linkedinStateStore = new MemoryStateStore();
+
+// ═══════════════════════════════════════════════════════
 // HELPER : Trouver ou créer un user OAuth
 // ═══════════════════════════════════════════════════════
 export async function findOrCreateOAuthUser(profile: any, provider: string) {
@@ -147,8 +188,8 @@ passport.use(
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
       callbackURL: process.env.TWITTER_CALLBACK_URL!,
       scope: ['tweet.read', 'users.read'],
-      state: true,   // CSRF protection (stocké en session)
-      pkce: true,    // X/Twitter exige PKCE pour tous les clients OAuth 2.0
+      pkce: true,    // X/Twitter exige PKCE (code_challenge S256)
+      store: twitterStateStore, // State store en mémoire (pas de sessions)
     },
     async (_accessToken: string, _refreshToken: string, profile: any, done: any) => {
       try {
@@ -212,7 +253,7 @@ passport.use(
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
       callbackURL: process.env.LINKEDIN_CALLBACK_URL!,
       scope: ['openid', 'profile', 'email'],
-      state: true,
+      store: linkedinStateStore, // State store en mémoire (pas de sessions)
     },
     async (_accessToken: string, _refreshToken: string, profile: any, done: any) => {
       try {
