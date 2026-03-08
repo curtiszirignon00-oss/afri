@@ -125,8 +125,8 @@ class App {
     // pour que le cookie soit renvoyé lors de la redirection cross-site OAuth.
     this.app?.use(session({
       secret: process.env.JWT_SECRET || 'oauth-session-secret',
-      resave: false,
-      saveUninitialized: false,
+      resave: true,
+      saveUninitialized: true,
       cookie: {
         secure: config.nodeEnv === 'production',
         sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
