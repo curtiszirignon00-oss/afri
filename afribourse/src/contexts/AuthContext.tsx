@@ -120,7 +120,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Vérification initiale au montage du composant seulement
   useEffect(() => {
-    checkAuth();
+    // Si c'est un retour OAuth, extraire le token de l'URL avant de vérifier l'auth
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthToken = urlParams.get('token');
+    const oauthStatus = urlParams.get('oauth');
+
+    if (oauthStatus === 'success' && oauthToken) {
+      localStorage.setItem('auth_token', oauthToken);
+      setToken(oauthToken);
+      checkAuth(oauthToken);
+    } else {
+      checkAuth();
+    }
   }, []);
 
   return (
