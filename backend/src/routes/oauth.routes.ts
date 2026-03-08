@@ -67,8 +67,7 @@ router.get(
 router.get(
   '/twitter',
   (req, res, next) => {
-    console.log('[OAuth] Twitter init. session id:', req.session?.id, 'TWITTER_CLIENT_ID set:', !!process.env.TWITTER_CLIENT_ID, 'TWITTER_CALLBACK_URL:', process.env.TWITTER_CALLBACK_URL);
-    // Intercept the redirect to log the authorization URL
+    console.log('[OAuth] Twitter init. CLIENT_ID set:', !!process.env.TWITTER_CLIENT_ID, 'CALLBACK_URL:', process.env.TWITTER_CALLBACK_URL);
     const originalRedirect = res.redirect.bind(res);
     (res as any).redirect = (url: string) => {
       console.log('[OAuth] Twitter redirect URL:', url);
@@ -79,10 +78,21 @@ router.get(
 );
 router.get(
   '/twitter/callback',
-  passport.authenticate('twitter', {
-    failureRedirect: `${config.app.frontendUrl}/login?error=twitter_failed`,
-  }),
-  handleOAuthCallback('twitter')
+  (req, res, next) => {
+    console.log('[OAuth] Twitter callback query:', JSON.stringify(req.query));
+    passport.authenticate('twitter', {}, (err: any, user: any, info: any) => {
+      console.log('[OAuth] Twitter authenticate result:', {
+        err: err ? String(err) : null,
+        user: user ? `id=${user.id}` : null,
+        info: info ? String(info) : null,
+      });
+      if (err || !user) {
+        return res.redirect(`${config.app.frontendUrl}/login?error=twitter_failed&detail=${encodeURIComponent(err?.message || info?.message || req.query.error || 'unknown')}`);
+      }
+      req.user = user;
+      return handleOAuthCallback('twitter')(req, res);
+    })(req, res, next);
+  }
 );
 
 // ─── LINKEDIN ─────────────────────────────────────────────────────────────────
