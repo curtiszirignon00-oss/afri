@@ -1,7 +1,6 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
-import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2';
 import prisma from './prisma';
 
 // ═══════════════════════════════════════════════════════
@@ -164,15 +163,56 @@ passport.use(
 );
 
 // ═══════════════════════════════════════════════════════
-// STRATÉGIE LINKEDIN (OpenID Connect depuis 2023)
+// STRATÉGIE LINKEDIN (OpenID Connect 2023+ — /v2/userinfo)
+// passport-linkedin-oauth2 utilise l'ancienne API /v2/me (dépréciée).
+// Strategy custom sur OAuth2Strategy + endpoint OIDC /v2/userinfo.
 // ═══════════════════════════════════════════════════════
+class LinkedInOIDCStrategy extends OAuth2Strategy {
+  constructor(options: any, verify: any) {
+    super(
+      {
+        authorizationURL: 'https://www.linkedin.com/oauth/v2/authorization',
+        tokenURL: 'https://www.linkedin.com/oauth/v2/accessToken',
+        ...options,
+      },
+      verify
+    );
+    this.name = 'linkedin';
+  }
+
+  userProfile(accessToken: string, done: (err: any, profile?: any) => void) {
+    this._oauth2.get(
+      'https://api.linkedin.com/v2/userinfo',
+      accessToken,
+      (err: any, body: any) => {
+        if (err) return done(new Error('Failed to fetch LinkedIn profile: ' + JSON.stringify(err)));
+        try {
+          const json = JSON.parse(body);
+          const profile = {
+            provider: 'linkedin',
+            id: json.sub,
+            displayName: json.name || `${json.given_name || ''} ${json.family_name || ''}`.trim(),
+            name: { givenName: json.given_name || '', familyName: json.family_name || '' },
+            emails: json.email ? [{ value: json.email }] : [],
+            photos: json.picture ? [{ value: json.picture }] : [],
+          };
+          done(null, profile);
+        } catch (e) {
+          done(e);
+        }
+      }
+    );
+  }
+}
+
 passport.use(
-  new LinkedInStrategy(
+  new LinkedInOIDCStrategy(
     {
       clientID: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
       callbackURL: process.env.LINKEDIN_CALLBACK_URL!,
       scope: ['openid', 'profile', 'email'],
+      state: true,
     },
     async (_accessToken: string, _refreshToken: string, profile: any, done: any) => {
       try {
