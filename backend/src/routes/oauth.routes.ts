@@ -9,6 +9,7 @@ const router = Router();
 function handleOAuthCallback(provider: string) {
   return (req: Request, res: Response) => {
     const user = req.user as any;
+    console.log(`[OAuth] handleOAuthCallback ${provider}, req.user:`, user ? `id=${user.id} email=${user.email}` : 'NULL');
     if (!user) {
       return res.redirect(
         `${config.app.frontendUrl}/login?error=oauth_failed`
@@ -45,15 +46,21 @@ router.get(
 );
 router.get(
   '/google/callback',
-  (req, _res, next) => {
+  (req, res, next) => {
     console.log('[OAuth] Google callback received. query:', JSON.stringify(req.query));
-    next();
-  },
-  passport.authenticate('google', {
-    session: false,
-    failureRedirect: `${config.app.frontendUrl}/login?error=google_failed`,
-  }),
-  handleOAuthCallback('google')
+    passport.authenticate('google', { session: false }, (err: any, user: any, info: any) => {
+      console.log('[OAuth] Google authenticate result:', {
+        err: err ? String(err) : null,
+        user: user ? `id=${user.id}` : null,
+        info: info ? String(info) : null,
+      });
+      if (err || !user) {
+        return res.redirect(`${config.app.frontendUrl}/login?error=google_failed&detail=${encodeURIComponent(err?.message || info?.message || 'unknown')}`);
+      }
+      req.user = user;
+      return handleOAuthCallback('google')(req, res);
+    })(req, res, next);
+  }
 );
 
 // ─── X / TWITTER (OAuth 1.0a — pas de session: false, Twitter l'exige) ───────
