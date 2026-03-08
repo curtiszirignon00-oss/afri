@@ -244,6 +244,8 @@ class LinkedInOIDCStrategy extends OAuth2Strategy {
       verify
     );
     this.name = 'linkedin';
+    // LinkedIn /v2/userinfo (OIDC) requires Authorization: Bearer header, not query param
+    (this._oauth2 as any).useAuthorizationHeaderforGET(true);
   }
 
   userProfile(accessToken: string, done: (err: any, profile?: any) => void) {
