@@ -22,22 +22,26 @@ class MemoryStateStore {
     }, 5 * 60 * 1000).unref();
   }
 
-  store(_req: any, state: string, meta: any, callback: (err: any, state?: string) => void) {
-    this._states.set(state, {
-      codeVerifier: meta?.codeVerifier,
+  // arity=5 : passport-oauth2 passe (req, verifier, state, meta, callback) quand PKCE est actif
+  store(_req: any, verifier: string, _state: any, _meta: any, callback: (err: any, state?: string) => void) {
+    const handle = require('crypto').randomBytes(16).toString('hex');
+    this._states.set(handle, {
+      codeVerifier: verifier,
       expires: Date.now() + 10 * 60 * 1000, // 10 min
     });
-    callback(null, state); // retourner state pour qu'il soit ajouté à l'URL
+    callback(null, handle); // handle devient le ?state= dans l'URL du provider
   }
 
-  verify(_req: any, providedState: string, callback: (err: any, ok: boolean, state?: any) => void) {
+  // arity=3 : passport-oauth2 passe (req, providedState, callback)
+  // callback(null, codeVerifier) → passport-oauth2 envoie code_verifier dans l'échange de token
+  verify(_req: any, providedState: string, callback: (err: any, codeVerifier: any, state?: any) => void) {
     const data = this._states.get(providedState);
     if (!data || data.expires < Date.now()) {
       this._states.delete(providedState);
-      return callback(null, false, { message: 'Invalid or expired OAuth state' });
+      return callback(null, false);
     }
     this._states.delete(providedState);
-    callback(null, true, { codeVerifier: data.codeVerifier });
+    callback(null, data.codeVerifier ?? true);
   }
 }
 
