@@ -22,12 +22,12 @@ class MemoryStateStore {
     }, 5 * 60 * 1000).unref();
   }
 
-  store(_req: any, state: string, meta: any, callback: (err: any) => void) {
+  store(_req: any, state: string, meta: any, callback: (err: any, state?: string) => void) {
     this._states.set(state, {
       codeVerifier: meta?.codeVerifier,
       expires: Date.now() + 10 * 60 * 1000, // 10 min
     });
-    callback(null);
+    callback(null, state); // retourner state pour qu'il soit ajouté à l'URL
   }
 
   verify(_req: any, providedState: string, callback: (err: any, ok: boolean, state?: any) => void) {
