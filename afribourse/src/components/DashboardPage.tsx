@@ -17,7 +17,7 @@ import { ShareButton, ShareModal } from './share';
 import { useShare } from '../hooks/useShare';
 import type { ShareablePortfolioData, ShareablePerformanceData, ShareablePositionData } from '../types/share';
 import { WalletSwitcher } from './challenge';
-import { useChallengeContext } from '../context/ChallengeContext';
+import { useChallengeContext } from '../contexts/ChallengeContext';
 import { useCanTrade } from '../hooks/useChallenge';
 // Gamification imports
 import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward } from '../hooks/useGamification';

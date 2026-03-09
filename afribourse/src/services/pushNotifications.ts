@@ -9,20 +9,16 @@ let vapidPublicKey: string | null = null;
  * Initialiser les push notifications (récupérer la clé VAPID)
  */
 export async function initPushNotifications() {
-  if (!isPushSupported()) {
-    console.warn('[Push] Push notifications not supported in this browser');
-    return;
-  }
+  if (!isPushSupported()) return;
 
   try {
-    const res = await fetch(`${API_BASE}/api/push/vapid-key`);
+    const res = await fetch(`${API_BASE}/push/vapid-key`);
     if (res.ok) {
       const data = await res.json();
       vapidPublicKey = data.publicKey;
-      console.log('[Push] VAPID key loaded');
     }
-  } catch (error) {
-    console.warn('[Push] Failed to load VAPID key:', error);
+  } catch {
+    // Silencieux — les push ne seront pas disponibles
   }
 }
 
@@ -44,12 +40,12 @@ export async function subscribeToPush(authToken: string): Promise<boolean> {
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as Uint8Array<ArrayBuffer>,
       });
     }
 
     // Envoyer l'abonnement au backend
-    const res = await fetch(`${API_BASE}/api/push/subscribe`, {
+    const res = await fetch(`${API_BASE}/push/subscribe`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,8 +60,7 @@ export async function subscribeToPush(authToken: string): Promise<boolean> {
     }
 
     return false;
-  } catch (error) {
-    console.error('[Push] Subscribe error:', error);
+  } catch {
     return false;
   }
 }
@@ -79,7 +74,7 @@ export async function unsubscribeFromPush(authToken: string): Promise<boolean> {
     const subscription = await registration.pushManager.getSubscription();
 
     if (subscription) {
-      await fetch(`${API_BASE}/api/push/unsubscribe`, {
+      await fetch(`${API_BASE}/push/unsubscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,8 +87,7 @@ export async function unsubscribeFromPush(authToken: string): Promise<boolean> {
     }
 
     return true;
-  } catch (error) {
-    console.error('[Push] Unsubscribe error:', error);
+  } catch {
     return false;
   }
 }
