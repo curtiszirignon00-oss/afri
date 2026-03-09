@@ -36,7 +36,6 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401) {
             // Ne pas rediriger si on est déjà sur la page de login
             if (!window.location.pathname.includes('/login')) {
-                console.warn('🔒 Session expirée, redirection vers login');
                 // window.location.href = '/login';
             }
         }
