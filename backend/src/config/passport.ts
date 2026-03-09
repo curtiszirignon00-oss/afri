@@ -70,7 +70,16 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
     },
     include: { user: true },
   });
-  if (existingOAuth) return existingOAuth.user;
+  if (existingOAuth) {
+    // S'assurer que les utilisateurs OAuth sans email sont bien confirmés
+    if (!existingOAuth.user.email_verified_at) {
+      await prisma.user.update({
+        where: { id: existingOAuth.user.id },
+        data: { email_verified_at: new Date() },
+      });
+    }
+    return existingOAuth.user;
+  }
 
   // 2. Email déjà utilisé → fusionner les comptes
   let user = email
@@ -88,7 +97,7 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
         lastname: lastName,
         password: '',
         role: 'user',
-        email_verified_at: email ? new Date() : null,
+        email_verified_at: new Date(), // OAuth = identité vérifiée par le provider
       },
     });
 
