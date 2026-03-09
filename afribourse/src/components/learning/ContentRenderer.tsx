@@ -1,9 +1,16 @@
 // src/components/learning/ContentRenderer.tsx
 import React from 'react';
+import DOMPurify from 'dompurify';
 import {
   Lightbulb, Globe, Book, ArrowRightLeft,
   CheckCircle, AlertCircle, Info
 } from 'lucide-react';
+
+// Sanitizer centralisé — utilisé pour tout dangerouslySetInnerHTML
+const sanitize = (html: string): string => DOMPurify.sanitize(html, {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'span', 'u'],
+  ALLOWED_ATTR: ['class'],
+});
 
 // ============================================
 // TYPES
@@ -324,7 +331,7 @@ const AnalogyBox: React.FC<AnalogyBoxProps> = ({
         // Si on a du contenu HTML brut
         <p
           className="text-amber-800 text-sm leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
+          dangerouslySetInnerHTML={{ __html: sanitize(htmlContent) }}
         />
       ) : (
         // Sinon on utilise la structure zones
@@ -443,7 +450,7 @@ const InfoBox: React.FC<InfoBoxProps> = ({ icon = 'arrow', content }) => {
       </div>
       <p
         className="text-sm text-slate-600 leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitize(content) }}
       />
     </div>
   );
@@ -572,13 +579,13 @@ const ListBlock: React.FC<ListBlockProps> = ({ items, ordered = false, title }) 
       {ordered ? (
         <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600">
           {items.map((item, i) => (
-            <li key={i} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: item }} />
+            <li key={i} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitize(item) }} />
           ))}
         </ol>
       ) : (
         <ul className="space-y-2 list-disc list-inside text-slate-600">
           {items.map((item, i) => (
-            <li key={i} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: item }} />
+            <li key={i} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitize(item) }} />
           ))}
         </ul>
       )}

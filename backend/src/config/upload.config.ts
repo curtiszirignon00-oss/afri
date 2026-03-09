@@ -35,6 +35,9 @@ const ALLOWED_MIME_TYPES = [
     'image/webp'
 ];
 
+// Extensions autorisées (double validation MIME + extension)
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
 // Tailles maximales par type (en bytes)
 const MAX_FILE_SIZES = {
     avatar: 5 * 1024 * 1024,    // 5MB
@@ -67,12 +70,16 @@ const storage = multer.diskStorage({
     }
 });
 
-// Filtre de fichiers
+// Filtre de fichiers — double validation MIME + extension
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mimeOk = ALLOWED_MIME_TYPES.includes(file.mimetype);
+    const extOk = ALLOWED_EXTENSIONS.includes(ext);
+
+    if (mimeOk && extOk) {
         cb(null, true);
     } else {
-        cb(new Error(`Type de fichier non autorisé. Types acceptés: ${ALLOWED_MIME_TYPES.join(', ')}`));
+        cb(new Error(`Type de fichier non autorisé. Extensions acceptées: ${ALLOWED_EXTENSIONS.join(', ')}`));
     }
 };
 

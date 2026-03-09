@@ -4,7 +4,7 @@ import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../config/api';
+import { apiClient } from '../lib/api-client';
 import OAuthButtons from './auth/OAuthButtons';
 
 type LoginPageProps = {
@@ -22,7 +22,6 @@ export default function LoginPage() {
   // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
   useEffect(() => {
     if (isLoggedIn) {
-      console.log('✅ Utilisateur déjà connecté, redirection vers dashboard');
       navigate('/dashboard');
     }
   }, [isLoggedIn, navigate]);
@@ -33,47 +32,21 @@ export default function LoginPage() {
     setError('');
 
     try {
-      console.log('🔑 Tentative de connexion à:', `${API_BASE_URL}/login`);
-      console.log('🌐 API_BASE_URL:', API_BASE_URL);
+      const { data } = await apiClient.post('/login', { email, password });
 
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-
-      console.log('📥 Response status:', response.status);
-      console.log('📥 Response headers:', response.headers);
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || data.error || 'Identifiants incorrects');
-      }
-
-      // ✅ Connexion réussie
       toast.success('Connexion réussie !');
 
-      // Stocker le token et vérifier l'authentification
       if (data.token) {
-        console.log('💾 [LOGIN] Storing token and checking auth');
         setToken(data.token);
-        // Passer le token directement à checkAuth pour éviter les problèmes de closure
         await checkAuth(data.token);
       } else {
-        // Sur desktop, pas de token dans la réponse, utiliser les cookies
         await checkAuth();
       }
 
-      // Redirection vers le dashboard
       navigate('/dashboard');
 
     } catch (err: any) {
-      console.error("Login error:", err);
-      const errorMessage = err.message || 'Une erreur est survenue lors de la connexion.';
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || 'Une erreur est survenue lors de la connexion.';
 
       // Vérifier si l'erreur est due à un email non vérifié
       if (errorMessage.includes('confirmer votre adresse email') ||

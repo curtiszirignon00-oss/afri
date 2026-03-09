@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { API_BASE_URL } from '../config/api';
+import { apiClient } from '../lib/api-client';
 
 // --- Types ---
 interface UserProfile {
@@ -33,74 +33,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem('auth_token');
   });
 
-  // Fonction pour vérifier l'authentification
+  // Vérifier l'authentification via apiClient (gère le token automatiquement)
   const checkAuth = async (customToken?: string | null) => {
     setLoading(true);
     try {
-      const authToken = customToken !== undefined ? customToken : token;
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      // Toujours envoyer le token si disponible — tous navigateurs, tous appareils
-      if (authToken) {
-        headers['Authorization'] = `Bearer ${authToken}`;
+      // Si un token custom est fourni (ex: retour OAuth), l'injecter temporairement
+      const headers: Record<string, string> = {};
+      if (customToken !== undefined && customToken !== null) {
+        headers['Authorization'] = `Bearer ${customToken}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/me`, {
-        credentials: 'include',
-        headers,
-      });
+      const response = await apiClient.get('/me', { headers });
+      const profile = response.data?.user;
 
-      console.log('📥 [AUTH] Response status:', response.status);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ [AUTH] User authenticated:', data.user?.email);
-        const profile = data.user;
-        if (profile?.role === 'admin') {
-          profile.subscriptionTier = 'max';
-        }
-        setUserProfile(profile);
-        setIsLoggedIn(true);
-      } else {
-        console.log('❌ [AUTH] Authentication failed');
-        setIsLoggedIn(false);
-        setUserProfile(null);
-        // Token invalide/expiré — nettoyer sur tous les appareils
-        if (authToken) {
-          localStorage.removeItem('auth_token');
-          setToken(null);
-        }
+      if (profile?.role === 'admin') {
+        profile.subscriptionTier = 'max';
       }
-    } catch (error) {
-      console.error('❌ [AUTH] Error checking auth:', error);
+      setUserProfile(profile);
+      setIsLoggedIn(true);
+    } catch {
       setIsLoggedIn(false);
       setUserProfile(null);
+      // Token invalide/expiré — nettoyer
+      if (token || customToken) {
+        localStorage.removeItem('auth_token');
+        setToken(null);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Fonction de déconnexion
+  // Déconnexion
   const logout = async () => {
     try {
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      // Toujours envoyer le token — tous navigateurs, tous appareils
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      await fetch(`${API_BASE_URL}/logout`, {
-        method: 'POST',
-        credentials: 'include',
-        headers,
-      });
-    } catch (error) {
-      console.error('Erreur logout:', error);
+      await apiClient.post('/logout');
+    } catch {
+      // Ignorer les erreurs réseau au logout
     } finally {
       setIsLoggedIn(false);
       setUserProfile(null);
@@ -118,9 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  // Vérification initiale au montage du composant seulement
+  // Vérification initiale au montage — gère le retour OAuth
   useEffect(() => {
-    // Si c'est un retour OAuth, extraire le token de l'URL avant de vérifier l'auth
     const urlParams = new URLSearchParams(window.location.search);
     const oauthToken = urlParams.get('token');
     const oauthStatus = urlParams.get('oauth');

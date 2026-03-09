@@ -75,15 +75,17 @@ class App {
         directives: {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", "data:", "https:"],
+          styleSrc: ["'self'"],          // unsafe-inline supprimé
+          imgSrc: ["'self'", "https:"],  // data: supprimé (risque XSS via URI)
           connectSrc: ["'self'"],
           fontSrc: ["'self'"],
           objectSrc: ["'none'"],
           frameSrc: ["'none'"],
+          upgradeInsecureRequests: [],
         },
       },
       crossOriginEmbedderPolicy: false, // Permettre les ressources cross-origin
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
       hsts: {
         maxAge: 31536000, // 1 an
         includeSubDomains: true,
@@ -92,8 +94,12 @@ class App {
     }));
 
     // --- CORS Configuration ---
-    // Supporter plusieurs origines pour le développement et la production
-    const allowedOrigins = config.cors.origin.split(',').map((origin: string) => origin.trim());
+    // En production, filtrer les origines localhost pour réduire la surface d'attaque
+    const isProduction = config.nodeEnv === 'production';
+    const allowedOrigins = config.cors.origin
+      .split(',')
+      .map((o: string) => o.trim())
+      .filter((o: string) => !isProduction || !o.startsWith('http://localhost'));
 
     this.app?.use(cors({
       origin: (origin, callback) => {
@@ -124,10 +130,11 @@ class App {
     // Session pour OAuth state/PKCE (Twitter, LinkedIn). sameSite:'none' requis
     // pour que le cookie soit renvoyé lors de la redirection cross-site OAuth.
     this.app?.use(session({
-      secret: process.env.JWT_SECRET || 'oauth-session-secret',
-      resave: true,
-      saveUninitialized: true,
+      secret: process.env.SESSION_SECRET || process.env.JWT_SECRET as string,
+      resave: false,
+      saveUninitialized: false,
       cookie: {
+        httpOnly: true,
         secure: config.nodeEnv === 'production',
         sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
         maxAge: 10 * 60 * 1000, // 10 min (OAuth flow peut prendre du temps)

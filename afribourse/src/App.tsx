@@ -11,7 +11,7 @@ import { queryClient } from './lib/queryClient';
 
 // Context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ChallengeProvider } from './context/ChallengeContext';
+import { ChallengeProvider } from './contexts/ChallengeContext';
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';

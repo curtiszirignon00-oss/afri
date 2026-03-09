@@ -260,6 +260,14 @@ export async function handleDeleteImage(req: Request, res: Response, next: NextF
             });
         }
 
+        // Prevent path traversal attacks
+        if (/[/\\.]\./.test(filename) || filename.includes('..')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nom de fichier invalide'
+            });
+        }
+
         const filePath = `uploads/${type}/${filename}`;
         await deleteFile(filePath);
 
