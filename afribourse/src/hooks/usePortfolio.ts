@@ -40,34 +40,20 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
     setPortfolioHistory([]);
 
     try {
-      console.log(`📊 [PORTFOLIO] Loading portfolio data for wallet type: ${walletType}...`);
-
-      // ✅ OPTIMISATION: Charger TOUS les appels en parallèle
       const [portfolioData, historyData, allStocks] = await Promise.all([
         apiFetch<Portfolio>(`/portfolios/my?wallet_type=${walletType}`).catch(err => {
-          console.warn('Portfolio fetch error:', err);
           const msg = err.message?.toLowerCase() || '';
-          // Gérer les cas de portfolio non trouvé (404 ou message spécifique)
           if (msg.includes('404') || msg.includes('non trouvé') || msg.includes('not found')) {
-            return null; // Pas de portfolio - pas une erreur critique
+            return null;
           }
           if (msg.includes('401') || msg.includes('unauthorized') || msg.includes('non autorisé')) {
             throw new Error("Non authentifié");
           }
           throw err;
         }),
-        apiFetch<PortfolioHistoryPoint[]>(`/portfolios/my/history?wallet_type=${walletType}`).catch(err => {
-          console.warn('History fetch error:', err);
-          return []; // Retourner un array vide en cas d'erreur
-        }),
-        // ✅ Charger les stocks en parallèle avec le portfolio
-        apiFetch<Stock[]>('/stocks').catch(err => {
-          console.warn('Stocks fetch error:', err);
-          return [];
-        })
+        apiFetch<PortfolioHistoryPoint[]>(`/portfolios/my/history?wallet_type=${walletType}`).catch(() => []),
+        apiFetch<Stock[]>('/stocks').catch(() => []),
       ]);
-
-      console.log(`✅ [PORTFOLIO] All data loaded in parallel for ${walletType}`);
 
       // Créer le map des stocks immédiatement
       if (allStocks && allStocks.length > 0) {
@@ -78,19 +64,7 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
         setStocksData(stockDataMap);
       }
 
-      if (portfolioData) {
-        console.log(`✅ [PORTFOLIO] Found ${walletType} portfolio:`, {
-          id: portfolioData.id,
-          wallet_type: portfolioData.wallet_type,
-          cash_balance: portfolioData.cash_balance,
-          initial_balance: portfolioData.initial_balance,
-          positions: portfolioData.positions?.length || 0
-        });
-        setPortfolio(portfolioData);
-      } else {
-        setPortfolio(null);
-        console.log(`ℹ️ [PORTFOLIO] No ${walletType} portfolio found`);
-      }
+      setPortfolio(portfolioData ?? null);
 
       // Gérer l'historique - toujours mettre à jour, même si vide
       if (historyData && historyData.length > 0) {
@@ -101,7 +75,6 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
       }
 
     } catch (err: any) {
-      console.error(`❌ [PORTFOLIO] Error loading ${walletType} portfolio:`, err);
       setError(err.message || "Erreur lors du chargement");
     } finally {
       setLoading(false);
@@ -113,19 +86,14 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
     const toastId = toast.loading('Création du portfolio...');
 
     try {
-      console.log(`🆕 [PORTFOLIO] Creating ${walletType} portfolio...`);
-
-      // Utiliser apiFetch qui gère automatiquement le token sur mobile
       await apiFetch('/portfolios/my', {
         method: 'POST',
         body: JSON.stringify({ wallet_type: walletType })
       });
 
-      console.log(`✅ [PORTFOLIO] ${walletType} portfolio created`);
       toast.success('Portfolio créé !', { id: toastId });
-      await loadPortfolio(); // Recharger après création
+      await loadPortfolio();
     } catch (err: any) {
-      console.error(`❌ [PORTFOLIO] Error creating ${walletType} portfolio:`, err);
       toast.error(`Erreur : ${err.message}`, { id: toastId });
       throw err;
     }

@@ -60,21 +60,14 @@ export function errorHandler(error: any, req: Request, res: Response, next: Next
   //   return res.status(statusCode).sendFile(path.join(__dirname, '../html/500.html'));
   // }
 
-  // Réponse d'erreur
-  const errorResponse: { error: string; code: string; timestamp: string; path: string; method: string; stack?: string } = {
+  // Stack trace: serveur uniquement, jamais exposée au client
+  // (déjà loggée via console.error ci-dessus)
+
+  res.status(statusCode).json({
     error: message,
     code,
     timestamp: new Date().toISOString(),
-    path: req.url,
-    method: req.method,
-  };
-
-  // En développement, inclure la stack trace
-  if (process.env.NODE_ENV === "development") {
-    errorResponse.stack = error.stack;
-  }
-
-  res.status(statusCode).json(errorResponse);
+  });
 };
 
 /**

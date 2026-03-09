@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 import { getPendingTransactions, removePendingTransaction } from '../services/offlineStorage';
+import { apiClient } from '../lib/api-client';
 
 export function useSyncPendingTransactions() {
   const isOnline = useOnlineStatus();
@@ -19,32 +20,21 @@ export function useSyncPendingTransactions() {
       for (const tx of pending) {
         try {
           const endpoint = tx.type === 'BUY' ? 'buy' : 'sell';
-          const response = await fetch(`/api/portfolios/my/${endpoint}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              // Note: Auth token should be handled by your API interceptor
-            },
-            body: JSON.stringify({
-              stockTicker: tx.ticker,
-              quantity: tx.quantity,
-              pricePerShare: tx.price,
-            }),
+          const response = await apiClient.post(`/portfolios/my/${endpoint}`, {
+            stockTicker: tx.ticker,
+            quantity: tx.quantity,
+            pricePerShare: tx.price,
           });
 
-          if (response.ok) {
+          if (response.status === 200 || response.status === 201) {
             await removePendingTransaction(tx.id);
-            console.log(`[Sync] Transaction ${tx.id} synchronized successfully`);
-          } else {
-            console.error(`[Sync] Failed to sync transaction ${tx.id}:`, await response.text());
           }
-        } catch (error) {
-          console.error(`[Sync] Error syncing transaction ${tx.id}:`, error);
-          // Keep the transaction in pending for next sync attempt
+        } catch {
+          // Conserver la transaction en attente pour la prochaine tentative
         }
       }
-    } catch (error) {
-      console.error('[Sync] Error getting pending transactions:', error);
+    } catch {
+      // Silencieux — la synchro sera retentée à la prochaine connexion
     }
   }
 

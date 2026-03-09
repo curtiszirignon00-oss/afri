@@ -44,11 +44,9 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     ...(fetchOptions.headers as Record<string, string>),
   };
 
-  // Ajouter le token dans le header Authorization s'il existe
   const token = getAuthToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-    console.log('🔐 [API] Using auth token for request to', endpoint);
   }
 
   const response = await fetch(url, {
