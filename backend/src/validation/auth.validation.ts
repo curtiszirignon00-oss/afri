@@ -10,13 +10,23 @@ const BLOCKED_EMAIL_DOMAINS = new Set([
     'tempr.email', 'discard.email', 'spamgourmet.com', 'mailnull.com',
 ]);
 
+// Validation email stricte : TLD obligatoire (min 2 chars), pas d'espaces
+// zod.email() seul accepte "a@b" sans TLD — on ajoute une vérification de domaine réel
+const strictEmail = zod.string()
+    .max(254)
+    .email({ message: 'Adresse email invalide' })
+    .refine(
+        (e) => /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(e),
+        { message: 'Adresse email invalide : un domaine avec extension est requis' }
+    );
+
 export const loginSchema = zod.object({
-    email: zod.email(),
+    email: strictEmail,
     password: zod.string().min(1).max(100), // Login: pas de min strict (utilisateurs existants)
 });
 
 export const registerSchema = zod.object({
-    email: zod.email().max(254).refine(
+    email: strictEmail.refine(
         (email) => !BLOCKED_EMAIL_DOMAINS.has(email.split('@')[1]?.toLowerCase() ?? ''),
         "Ce fournisseur d'email n'est pas autorisé. Utilisez une adresse email permanente."
     ),

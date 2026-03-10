@@ -79,10 +79,15 @@ class App {
           scriptSrc: ["'self'"],
           styleSrc: ["'self'"],          // unsafe-inline supprimé
           imgSrc: ["'self'", "https:"],  // data: supprimé (risque XSS via URI)
-          connectSrc: ["'self'"],
+          // connectSrc : autoriser les services tiers appelés côté backend (APIs externes)
+          connectSrc: ["'self'", "https://api.x.com", "https://www.linkedin.com", "https://accounts.google.com"],
           fontSrc: ["'self'"],
           objectSrc: ["'none'"],
           frameSrc: ["'none'"],
+          // formAction: restreindre les cibles de soumission de formulaires
+          formAction: ["'self'"],
+          // baseUri: empêcher les injections de base URI
+          baseUri: ["'self'"],
           upgradeInsecureRequests: [],
         },
       },
