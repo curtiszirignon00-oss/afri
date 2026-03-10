@@ -131,6 +131,7 @@ export const authLimiter = rateLimit({
  * Rate limiter for password reset requests
  * Limit: 3 attempts per hour (prevent email enumeration attacks)
  */
+// Rate limiter par IP (3/h) — première barrière
 export const resetPasswordLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 3,
@@ -140,6 +141,23 @@ export const resetPasswordLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'no-ip',
+});
+
+// Rate limiter par email (5/h) — empêche l'énumération multi-IP sur un même email
+export const resetPasswordEmailLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5,
+    message: {
+        error: 'Trop de demandes de réinitialisation pour cette adresse. Réessayez dans une heure.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // Clé = email normalisé (lowercase) — stable même depuis des IPs différentes
+    keyGenerator: (req) => {
+        const email = req.body?.email;
+        return typeof email === 'string' ? `reset:${email.toLowerCase().trim()}` : `reset:ip:${req.ip}`;
+    },
+    skip: (req) => !req.body?.email, // Si pas d'email dans le body, le limiter par IP suffit
 });
 
 /**

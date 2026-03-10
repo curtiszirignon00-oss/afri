@@ -35,7 +35,16 @@ const ALLOWED_MIME_TYPES = [
     'image/webp'
 ];
 
-// Extensions autorisées (double validation MIME + extension)
+// Extension canonique dérivée du MIME type — ne jamais faire confiance au nom original
+const MIME_TO_EXT: Record<string, string> = {
+    'image/jpeg': '.jpg',
+    'image/jpg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/webp': '.webp',
+};
+
+// Extensions autorisées (pour validation en entrée uniquement)
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
 // Tailles maximales par type (en bytes)
@@ -63,10 +72,9 @@ const storage = multer.diskStorage({
         cb(null, fullPath);
     },
     filename: (req, file, cb) => {
-        // Générer un nom unique
-        const uniqueSuffix = uuidv4();
-        const ext = path.extname(file.originalname).toLowerCase();
-        cb(null, `${uniqueSuffix}${ext}`);
+        // Extension dérivée du MIME type — jamais du nom original fourni par le client
+        const ext = MIME_TO_EXT[file.mimetype] ?? '.jpg';
+        cb(null, `${uuidv4()}${ext}`);
     }
 });
 

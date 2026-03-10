@@ -254,24 +254,48 @@ export async function handleDeleteImage(req: Request, res: Response, next: NextF
 
         const validTypes = ['avatars', 'banners', 'posts'];
         if (!validTypes.includes(type)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Type de fichier invalide'
-            });
+            return res.status(400).json({ success: false, message: 'Type de fichier invalide' });
         }
 
-        // Prevent path traversal attacks
-        if (/[/\\.]\./.test(filename) || filename.includes('..')) {
-            return res.status(400).json({
-                success: false,
-                message: 'Nom de fichier invalide'
-            });
+        // Valider que le filename est strictement UUID + extension — élimine tout path traversal possible
+        const UUID_FILE_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|jpeg|png|gif|webp)$/i;
+        if (!UUID_FILE_RE.test(filename)) {
+            return res.status(400).json({ success: false, message: 'Nom de fichier invalide' });
         }
+
+        // ─── IDOR : vérifier que le fichier appartient bien à cet utilisateur ───
+        const profile = await prisma.userProfile.findUnique({
+            where: { userId },
+            select: { avatar_url: true, banner_url: true }
+        });
+
+        if (type === 'avatars') {
+            if (!profile?.avatar_url?.includes(filename)) {
+                return res.status(403).json({ success: false, message: 'Accès refusé' });
+            }
+        } else if (type === 'banners') {
+            if (!profile?.banner_url?.includes(filename)) {
+                return res.status(403).json({ success: false, message: 'Accès refusé' });
+            }
+        } else if (type === 'posts') {
+            // Les images sont stockées comme URLs complètes — vérifier en JS
+            const userPosts = await (prisma as any).post.findMany({
+                where: { author_id: userId },
+                select: { images: true }
+            });
+            const ownsFile = userPosts.some((p: any) =>
+                Array.isArray(p.images) && p.images.some((img: string) => img.includes(filename))
+            );
+            if (!ownsFile) {
+                return res.status(403).json({ success: false, message: 'Accès refusé' });
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         const filePath = `uploads/${type}/${filename}`;
         await deleteFile(filePath);
 
-        // Si c'est un avatar ou une bannière, mettre à jour le profil
+        // Mettre à jour le profil si avatar ou bannière
         if (type === 'avatars') {
             await prisma.userProfile.update({
                 where: { userId },

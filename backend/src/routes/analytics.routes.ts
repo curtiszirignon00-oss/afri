@@ -6,7 +6,7 @@ import {
   updatePageDuration,
   getAnalyticsStats,
 } from '../controllers/analytics.controller';
-import { auth } from '../middlewares/auth.middleware';
+import { auth, admin } from '../middlewares/auth.middleware';
 import { generalApiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
@@ -18,6 +18,6 @@ router.post('/feature', auth, trackFeatureUsage); // Nécessite auth
 router.put('/page-duration', generalApiLimiter, updatePageDuration); // Visiteurs: rate limited
 
 // Analytics stats (GET) - ADMIN ONLY
-router.get('/stats', auth, getAnalyticsStats);
+router.get('/stats', admin, getAnalyticsStats);
 
 export default router;
