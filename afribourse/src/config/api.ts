@@ -9,6 +9,11 @@ export function getCsrfToken(): string | null {
   return csrfToken;
 }
 
+/** Invalide le token en cache pour forcer un re-fetch */
+export function invalidateCsrfToken(): void {
+  csrfToken = null;
+}
+
 /**
  * Récupère le token CSRF depuis le backend et le met en cache en mémoire.
  * À appeler au démarrage de l'app et après chaque login.
@@ -31,27 +36,31 @@ export async function fetchCsrfToken(): Promise<void> {
  * Wrapper fetch avec credentials:include et token CSRF automatique.
  * Le cookie httpOnly JWT est envoyé automatiquement par le navigateur.
  * Le token CSRF est ajouté en header X-CSRF-Token pour les mutations.
+ * En cas de 403 (token expiré/invalide), renouvelle le token et retente une fois.
  */
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const method = (options.method ?? 'GET').toUpperCase();
   const isMutation = !['GET', 'HEAD', 'OPTIONS'].includes(method);
 
-  // Si on n'a pas encore de token CSRF et qu'on est sur une mutation, le récupérer d'abord
   if (isMutation && !csrfToken) {
     await fetchCsrfToken();
   }
 
-  const csrfHeaders: Record<string, string> =
-    isMutation && csrfToken ? { 'X-CSRF-Token': csrfToken } : {};
-
-  return fetch(url, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      ...(options.headers as Record<string, string>),
-      ...csrfHeaders,
-    },
+  const buildHeaders = () => ({
+    ...(options.headers as Record<string, string>),
+    ...(isMutation && csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
   });
+
+  const res = await fetch(url, { ...options, credentials: 'include', headers: buildHeaders() });
+
+  // Si 403 CSRF, renouveler le token et retenter une seule fois
+  if (res.status === 403 && isMutation) {
+    csrfToken = null;
+    await fetchCsrfToken();
+    return fetch(url, { ...options, credentials: 'include', headers: buildHeaders() });
+  }
+
+  return res;
 }
 
 // Configuration de l'application
