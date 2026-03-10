@@ -1,7 +1,7 @@
 // src/routes/events.routes.ts
 import { Router } from 'express';
 import { eventsController } from '../controllers/events.controller';
-import { auth, optionalAuth } from '../middlewares/auth.middleware';
+import { auth, admin, optionalAuth } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -31,34 +31,34 @@ router.get('/my/registrations', auth, eventsController.getMyRegistrations);
 // =============================================
 
 // Vérifier si l'utilisateur est admin des événements
-router.get('/admin/check', auth, eventsController.checkAdminAccess);
+router.get('/admin/check', admin, eventsController.checkAdminAccess);
 
 // Récupérer tous les événements (incluant brouillons)
-router.get('/admin/all', auth, eventsController.getAllEvents);
+router.get('/admin/all', admin, eventsController.getAllEvents);
 
 // Créer un nouvel événement
-router.post('/admin/create', auth, eventsController.createEvent);
+router.post('/admin/create', admin, eventsController.createEvent);
 
 // Mettre à jour un événement
-router.put('/admin/:eventId', auth, eventsController.updateEvent);
+router.put('/admin/:eventId', admin, eventsController.updateEvent);
 
 // Supprimer un événement
-router.delete('/admin/:eventId', auth, eventsController.deleteEvent);
+router.delete('/admin/:eventId', admin, eventsController.deleteEvent);
 
 // Publier un événement
-router.post('/admin/:eventId/publish', auth, eventsController.publishEvent);
+router.post('/admin/:eventId/publish', admin, eventsController.publishEvent);
 
 // Annuler un événement
-router.post('/admin/:eventId/cancel', auth, eventsController.cancelEvent);
+router.post('/admin/:eventId/cancel', admin, eventsController.cancelEvent);
 
 // Marquer un événement comme terminé
-router.post('/admin/:eventId/complete', auth, eventsController.completeEvent);
+router.post('/admin/:eventId/complete', admin, eventsController.completeEvent);
 
 // Récupérer les participants d'un événement
-router.get('/admin/:eventId/participants', auth, eventsController.getEventParticipants);
+router.get('/admin/:eventId/participants', admin, eventsController.getEventParticipants);
 
 // Marquer la présence d'un participant
-router.patch('/admin/attendance/:registrationId', auth, eventsController.markAttendance);
+router.patch('/admin/attendance/:registrationId', admin, eventsController.markAttendance);
 
 // =============================================
 // ROUTES AVEC PARAMÈTRES DYNAMIQUES (à la fin)

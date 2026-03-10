@@ -48,3 +48,6 @@ createRoot(document.getElementById('root')!).render(
 
 // Init push notifications (non-blocking)
 initPushNotifications()
+
+// Pré-charger le token CSRF dès le démarrage (non-bloquant)
+import('./config/api').then(({ fetchCsrfToken }) => fetchCsrfToken())

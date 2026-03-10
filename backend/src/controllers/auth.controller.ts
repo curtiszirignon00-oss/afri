@@ -413,7 +413,7 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
         // 3. Mettre à jour le token dans la base de données
         await usersServicePrisma.updatePasswordResetToken(user.id, resetToken, tokenExpiration);
 
-        // 4. Envoyer l'email de réinitialisation
+        // 4. Envoyer l'email — erreur silencieuse pour ne pas révéler si l'email existe
         try {
             await sendPasswordResetEmail({
                 email: user.email,
@@ -421,12 +421,13 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
                 resetToken,
             });
         } catch (emailError) {
-            return next(createError.internal("Échec de l'envoi de l'email de réinitialisation"));
+            console.error('Échec envoi email reset (user existe):', emailError);
+            // On continue — même réponse que si l'email n'existait pas
         }
 
+        // Réponse identique que l'email existe ou non (anti-énumération)
         return res.status(200).json({
             message: "Si cette adresse email existe dans notre système, un email de réinitialisation a été envoyé.",
-            emailSent: true,
         });
     } catch (error) {
         next(error);

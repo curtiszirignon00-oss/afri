@@ -9,6 +9,7 @@ import bodyParser from 'body-parser';
 import config from './config/environnement';
 import rateLimit from 'express-rate-limit';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandlers';
+import { doubleCsrfProtection, generateCsrfToken } from './middlewares/csrf.middleware';
 // Seule l'importation de la connexion Prisma est conservée
 import { connectPrismaDatabase, disconnectPrismaDatabase } from './config/database.prisma';
 import { getRedisClient } from './config/redis';
@@ -54,6 +55,7 @@ import healthRoutes from './routes/health.routes'; // Health check endpoints
 import pushRoutes from './routes/push.routes'; // Push notifications (Web Push API)
 import passportConfig from './config/passport'; // OAuth Passport
 import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
+import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
 
 class App {
   private app: Application | null = null;
@@ -119,7 +121,8 @@ class App {
       },
       credentials: true,
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      // X-CSRF-Token requis pour que le middleware CSRF accepte les requêtes cross-origin
+      allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
     }));
     // --- END CORS Configuration ---
 
@@ -166,6 +169,12 @@ class App {
       })
     );
 
+    // --- CSRF Protection (Double Submit Cookie Pattern) ---
+    // Appliqué sur toutes les routes /api/ sauf GET/HEAD/OPTIONS (ignorés par le middleware)
+    // Les endpoints publics de tracking analytics (page-view, page-duration) sont exemptés
+    // car ils sont appelés par des visiteurs non authentifiés sans token CSRF.
+    this.app?.use('/api/', doubleCsrfProtection);
+
     // Request Logger (Pino with structured logging)
     this.app?.use(attachRequestId);
     this.app?.use(requestLogger);
@@ -183,6 +192,13 @@ class App {
     // Health Check Routes (liveness, readiness, deep)
     this.app?.use('/health', healthRoutes);
     this.app?.use('/api/health', healthRoutes); // Also expose at /api/health for backwards compatibility
+
+    // CSRF Token endpoint — appelé par le frontend au démarrage et après login
+    // Retourne le token dans le body ET pose le cookie CSRF (httpOnly)
+    this.app?.get('/api/csrf-token', (req, res) => {
+      const token = generateCsrfToken(req, res);
+      res.json({ csrfToken: token });
+    });
 
     // API Routes
     this.app?.use('/api/users', userRoutes);
@@ -214,6 +230,7 @@ class App {
     this.app?.use('/api/gamification', gamificationRoutes);          // Système de gamification (XP, niveaux, streaks, badges)
     this.app?.use('/api/cron', cronRoutes);                            // Endpoints CRON securises (QStash/Bearer)
     this.app?.use('/api/push', pushRoutes);                              // Push notifications (Web Push API)
+    this.app?.use('/api/ai', aiRoutes);                                   // IA Proxy — Gemini (clé côté serveur uniquement)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));
