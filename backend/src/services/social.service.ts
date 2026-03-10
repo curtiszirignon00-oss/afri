@@ -752,7 +752,7 @@ export async function updatePost(postId: string, authorId: string, updateData: P
 /**
  * Delete a post
  */
-export async function deletePost(postId: string, authorId: string) {
+export async function deletePost(postId: string, authorId: string, isAdmin: boolean = false) {
     // Check if post exists and belongs to user
     const post = await prisma.post.findUnique({
         where: { id: postId },
@@ -762,7 +762,7 @@ export async function deletePost(postId: string, authorId: string) {
         throw new Error('Post not found');
     }
 
-    if (post.author_id !== authorId) {
+    if (post.author_id !== authorId && !isAdmin) {
         throw new Error('You can only delete your own posts');
     }
 
@@ -780,16 +780,17 @@ export async function deletePost(postId: string, authorId: string) {
         where: { id: postId },
     });
 
-    // Decrement user posts count
+    // Decrement original author's posts count
+    const ownerId = post.author_id;
     await prisma.user.update({
-        where: { id: authorId },
+        where: { id: ownerId },
         data: { posts_count: { decrement: 1 } },
     });
 
     await prisma.userProfile.upsert({
-        where: { userId: authorId },
+        where: { userId: ownerId },
         update: { posts_count: { decrement: 1 } },
-        create: { userId: authorId, posts_count: 0, followers_count: 0, following_count: 0 },
+        create: { userId: ownerId, posts_count: 0, followers_count: 0, following_count: 0 },
     });
 
     return { success: true };

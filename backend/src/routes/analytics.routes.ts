@@ -7,14 +7,15 @@ import {
   getAnalyticsStats,
 } from '../controllers/analytics.controller';
 import { auth } from '../middlewares/auth.middleware';
+import { generalApiLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
 // Tracking endpoints (POST)
-router.post('/page-view', trackPageView); // Peut être appelé sans auth (pour les visiteurs)
+router.post('/page-view', generalApiLimiter, trackPageView); // Visiteurs: rate limited
 router.post('/action', auth, trackAction); // Nécessite auth
 router.post('/feature', auth, trackFeatureUsage); // Nécessite auth
-router.put('/page-duration', updatePageDuration); // Peut être appelé sans auth
+router.put('/page-duration', generalApiLimiter, updatePageDuration); // Visiteurs: rate limited
 
 // Analytics stats (GET) - ADMIN ONLY
 router.get('/stats', auth, getAnalyticsStats);
