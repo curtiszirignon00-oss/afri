@@ -128,6 +128,26 @@ export const authLimiter = rateLimit({
 });
 
 /**
+ * Rate limiter for login by email (account lockout)
+ * Limit: 10 failed attempts per 15 minutes per email — complète le limiter par IP
+ * Empêche le brute-force d'un compte depuis plusieurs IPs simultanément
+ */
+export const loginEmailLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    message: {
+        error: 'Trop de tentatives de connexion sur ce compte. Réessayez dans 15 minutes.',
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+        const email = req.body?.email;
+        return typeof email === 'string' ? `login:${email.toLowerCase().trim()}` : `login:ip:${req.ip}`;
+    },
+    skip: (req) => !req.body?.email,
+});
+
+/**
  * Rate limiter for password reset requests
  * Limit: 3 attempts per hour (prevent email enumeration attacks)
  */

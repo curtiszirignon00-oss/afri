@@ -15,8 +15,12 @@ export function errorHandler(error: any, req: Request, res: Response, next: Next
 
   // Erreur par défaut
   let statusCode = error.statusCode || 500;
-  let message = error.message || "Internal Server Error";
   let code = error.code || "INTERNAL_ERROR";
+  // En production, ne jamais exposer les détails des erreurs serveur (5xx) au client
+  const isProduction = process.env.NODE_ENV === 'production';
+  let message = (statusCode >= 500 && isProduction)
+    ? "Internal Server Error"
+    : (error.message || "Internal Server Error");
 
   // Gestion des erreurs spécifiques de MongoDB
   if (error.name === "ValidationError") {

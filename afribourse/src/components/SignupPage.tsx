@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button, Input, Card } from './ui';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, authFetch } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import OAuthButtons from './auth/OAuthButtons';
 type SignupPageProps = {};
@@ -68,11 +68,10 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
+      const response = await authFetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, lastname, email, password }),
-        credentials: 'include',
       });
 
       const data = await response.json();
