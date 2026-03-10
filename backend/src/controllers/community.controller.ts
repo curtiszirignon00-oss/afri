@@ -1,6 +1,7 @@
 // src/controllers/community.controller.ts
 import { Request, Response } from 'express';
 import * as communityService from '../services/community.service';
+import { parsePagination } from '../utils/pagination.util';
 
 // Plans autorisés à créer des communautés
 const ALLOWED_TIERS_FOR_COMMUNITY = ['premium', 'pro', 'max'];

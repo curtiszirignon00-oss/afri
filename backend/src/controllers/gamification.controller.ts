@@ -13,6 +13,7 @@ import {
   XP_REWARDS,
   WEEKLY_CHALLENGES
 } from '../types/gamification.types';
+import { parsePagination } from '../utils/pagination.util';
 
 // =====================================
 // XP ENDPOINTS
