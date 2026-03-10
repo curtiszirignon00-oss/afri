@@ -13,7 +13,7 @@ import {
 import { auth } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validate.util";
 import { registerSchema, loginSchema } from "../validation/auth.validation";
-import { authLimiter, resetPasswordLimiter } from "../middleware/rateLimiter";
+import { authLimiter, resetPasswordLimiter, resetPasswordEmailLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
@@ -35,8 +35,8 @@ router.get('/confirm-email', confirmEmail);
 // Route pour renvoyer l'email de confirmation - limite: 3 / heure
 router.post('/resend-confirmation', resetPasswordLimiter, resendConfirmationEmail);
 
-// Route pour demander la réinitialisation du mot de passe - limite: 3 / heure
-router.post('/request-password-reset', resetPasswordLimiter, requestPasswordReset);
+// Route pour demander la réinitialisation du mot de passe — double limite: 3/h par IP + 5/h par email
+router.post('/request-password-reset', resetPasswordLimiter, resetPasswordEmailLimiter, requestPasswordReset);
 
 // Route pour réinitialiser le mot de passe - limite: 3 / heure
 router.post('/reset-password', resetPasswordLimiter, resetPassword);
