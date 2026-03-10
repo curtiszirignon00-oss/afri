@@ -3,10 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { API_BASE_URL } from '../config/api';
 import toast from 'react-hot-toast';
 
-// Helper pour récupérer le token
-const getAuthToken = (): string | null => {
-    return localStorage.getItem('auth_token') || localStorage.getItem('token');
-};
 
 // Types
 interface UploadResponse {
@@ -33,13 +29,11 @@ export function useUploadAvatar() {
             const formData = new FormData();
             formData.append('avatar', file);
 
-            const token = getAuthToken();
+
             const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                },
+                headers: {},
                 body: formData
             });
 
@@ -75,13 +69,11 @@ export function useUploadBanner() {
             const formData = new FormData();
             formData.append('banner', file);
 
-            const token = getAuthToken();
+
             const response = await fetch(`${API_BASE_URL}/upload/banner`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                },
+                headers: {},
                 body: formData
             });
 
@@ -116,13 +108,11 @@ export function useUploadPostImages() {
                 formData.append('images', file);
             });
 
-            const token = getAuthToken();
+
             const response = await fetch(`${API_BASE_URL}/upload/post-images`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                },
+                headers: {},
                 body: formData
             });
 
@@ -148,13 +138,10 @@ export function useDeleteImage() {
 
     return useMutation({
         mutationFn: async ({ type, filename }: { type: string; filename: string }) => {
-            const token = getAuthToken();
+
             const response = await fetch(`${API_BASE_URL}/upload/${type}/${filename}`, {
                 method: 'DELETE',
                 credentials: 'include',
-                headers: {
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                }
             });
 
             if (!response.ok) {
@@ -201,12 +188,11 @@ export function useUpdateProfile() {
 
     return useMutation({
         mutationFn: async (data: ProfileUpdateData) => {
-            const token = getAuthToken();
+
             const response = await fetch(`${API_BASE_URL}/profile/me`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
-                    ...(token && { 'Authorization': `Bearer ${token}` }),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)

@@ -19,7 +19,7 @@ export async function getMyActivities(req: Request, res: Response, next: NextFun
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const limit = parseInt(req.query.limit as string) || 20;
+    const limit = parsePagination(req.query.limit, undefined, 20).limit;
 
     const activities = await activityService.getUserActivities(userId, limit);
     return res.status(200).json(activities);
@@ -41,7 +41,7 @@ export async function getActivityFeed(req: Request, res: Response, next: NextFun
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
 
     const feed = await activityService.getActivityFeed(userId, limit);
     return res.status(200).json(feed);
@@ -62,8 +62,8 @@ export async function getActivityFeed(req: Request, res: Response, next: NextFun
  */
 export async function getGlobalLeaderboard(req: Request, res: Response, next: NextFunction) {
   try {
-    const limit = parseInt(req.query.limit as string) || 100;
-    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parsePagination(req.query.limit, undefined, 100).limit;
+    const offset = Math.max(0, parseInt(req.query.offset as string) || 0);
 
     const leaderboard = await activityService.getGlobalLeaderboard(limit, offset);
     return res.status(200).json(leaderboard);
@@ -81,7 +81,7 @@ export async function getGlobalLeaderboard(req: Request, res: Response, next: Ne
 export async function getCountryLeaderboard(req: Request, res: Response, next: NextFunction) {
   try {
     const { code } = req.params;
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
 
     const leaderboard = await activityService.getCountryLeaderboard(code, limit);
     return res.status(200).json(leaderboard);
@@ -103,7 +103,7 @@ export async function getFriendsLeaderboard(req: Request, res: Response, next: N
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
 
     const leaderboard = await activityService.getFriendsLeaderboard(userId, limit);
     return res.status(200).json(leaderboard);

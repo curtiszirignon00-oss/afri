@@ -25,7 +25,7 @@ export async function initPushNotifications() {
 /**
  * S'abonner aux notifications push
  */
-export async function subscribeToPush(authToken: string): Promise<boolean> {
+export async function subscribeToPush(): Promise<boolean> {
   if (!vapidPublicKey || !isPushSupported()) return false;
 
   try {
@@ -44,13 +44,11 @@ export async function subscribeToPush(authToken: string): Promise<boolean> {
       });
     }
 
-    // Envoyer l'abonnement au backend
+    // Envoyer l'abonnement au backend — cookie httpOnly envoyé automatiquement
     const res = await fetch(`${API_BASE}/push/subscribe`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription: subscription.toJSON() }),
     });
 

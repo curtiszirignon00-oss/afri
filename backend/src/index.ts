@@ -103,8 +103,12 @@ class App {
 
     this.app?.use(cors({
       origin: (origin, callback) => {
-        // Permettre les requêtes sans origine (comme curl, Postman, etc.)
-        if (!origin) return callback(null, true);
+        // En production, bloquer les requêtes sans origine (curl, scripts, iframes)
+        // En développement, les autoriser pour faciliter les tests locaux
+        if (!origin) {
+          if (config.nodeEnv !== 'production') return callback(null, true);
+          return callback(new Error('Not allowed by CORS: origin required'));
+        }
 
         if (allowedOrigins.includes(origin)) {
           callback(null, true);
@@ -130,7 +134,11 @@ class App {
     // Session pour OAuth state/PKCE (Twitter, LinkedIn). sameSite:'none' requis
     // pour que le cookie soit renvoyé lors de la redirection cross-site OAuth.
     this.app?.use(session({
-      secret: process.env.SESSION_SECRET || process.env.JWT_SECRET as string,
+      secret: (() => {
+        const s = process.env.SESSION_SECRET;
+        if (!s) throw new Error('SESSION_SECRET environment variable is required');
+        return s;
+      })(),
       resave: false,
       saveUninitialized: false,
       cookie: {

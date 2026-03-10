@@ -62,13 +62,13 @@ interface IConfig {
     },
 }
 
-const getEnvVar = (name : String, defaultValue: String) => {
-  const value = process.env[name as string];
-  if (value === undefined) {
-    if (defaultValue !== undefined) {
-      return defaultValue as string;
+const getEnvVar = (name: string, defaultValue?: string): string => {
+  const value = process.env[name];
+  if (value === undefined || value === '') {
+    if (process.env.NODE_ENV === 'production' || defaultValue === undefined) {
+      throw new Error(`Environment variable ${name} is required but not set`);
     }
-    throw new Error(`Environment variable ${name} is required`);
+    return defaultValue;
   }
   return value;
 };
@@ -78,7 +78,7 @@ const config : IConfig = {
   port: parseInt(getEnvVar('PORT', '3001') as string, 10),
   host: getEnvVar('HOST', '0.0.0.0'),
 
-  apiKey: getEnvVar('API_KEY', 'default-api-key-change-in-production'),
+  apiKey: getEnvVar('API_KEY'),
 
   app: {
     frontendUrl: getEnvVar('FRONTEND_URL', 'http://localhost:5173'),
@@ -105,7 +105,7 @@ const config : IConfig = {
   },
   
   jwt: {
-    secret: getEnvVar('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production'),
+    secret: getEnvVar('JWT_SECRET'),
     expiresIn: getEnvVar('JWT_EXPIRES_IN', '7d'),
   },
   

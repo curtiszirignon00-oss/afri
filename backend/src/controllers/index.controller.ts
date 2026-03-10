@@ -29,7 +29,7 @@ export async function getIndices(req: Request, res: Response, next: NextFunction
 // Controller for GET /api/indices/latest
 export async function getLatestIndices(req: Request, res: Response, next: NextFunction) {
     try {
-        const limit = parseInt(req.query.limit as string || '2', 10); // Default limit 2
+        const limit = parsePagination(req.query.limit, undefined, 2).limit;
         const indices = await indexService.getLatestIndices(limit);
         return res.status(200).json(indices);
     } catch (error) {

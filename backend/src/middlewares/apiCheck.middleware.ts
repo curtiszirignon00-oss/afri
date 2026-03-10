@@ -14,8 +14,6 @@ export function verifyApiKey(req: Request, res: Response, next: NextFunction) {
         res.status(403).json({
             message: "Forbidden",
             error: "Invalid or missing API key",
-            receivedApiKey: apiKey,
-            expectedApiKey: process.env.API_KEY ? "Configured" : "Not configured"
         });
     }
 }
@@ -29,7 +27,6 @@ export function verifyOrigin(req: Request, res: Response, next: NextFunction) {
         res.status(403).json({
             message: "Forbidden",
             error: "Origin not allowed",
-            receivedOrigin: origin,
         });
     }
 }

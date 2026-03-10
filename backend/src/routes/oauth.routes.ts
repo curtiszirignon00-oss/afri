@@ -27,9 +27,9 @@ function handleOAuthCallback(provider: string) {
       path: '/',
     });
 
-    // Rediriger vers le dashboard avec le token en query param (pour mobile/localStorage)
+    // Le JWT est dans le cookie httpOnly — pas besoin de le mettre dans l'URL
     res.redirect(
-      `${config.app.frontendUrl}/dashboard?oauth=success&provider=${provider}&token=${token}`
+      `${config.app.frontendUrl}/dashboard?oauth=success&provider=${provider}`
     );
   };
 }
