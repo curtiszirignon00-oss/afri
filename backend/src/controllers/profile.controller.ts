@@ -206,7 +206,8 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
     if (error.message?.includes('Profil non trouvé')) {
       return res.status(404).json({ message: error.message });
     }
-    return res.status(500).json({ message: error.message || 'Erreur lors de la mise à jour du profil' });
+    // Ne jamais exposer error.message brut pour les erreurs 500 (pourrait contenir des détails internes)
+    return res.status(500).json({ message: 'Erreur lors de la mise à jour du profil' });
   }
 }
 

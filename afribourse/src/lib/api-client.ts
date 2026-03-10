@@ -1,5 +1,6 @@
 // src/lib/api-client.ts
 import axios from 'axios';
+import { fetchCsrfToken, getCsrfToken } from '../config/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -10,6 +11,22 @@ export const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+});
+
+// Intercepteur CSRF — ajoute X-CSRF-Token sur toutes les mutations
+const MUTATION_METHODS = ['post', 'put', 'patch', 'delete'];
+apiClient.interceptors.request.use(async (config) => {
+    if (config.method && MUTATION_METHODS.includes(config.method.toLowerCase())) {
+        let token = getCsrfToken();
+        if (!token) {
+            await fetchCsrfToken();
+            token = getCsrfToken();
+        }
+        if (token) {
+            config.headers['X-CSRF-Token'] = token;
+        }
+    }
+    return config;
 });
 
 // Intercepteur pour gérer les erreurs globalement

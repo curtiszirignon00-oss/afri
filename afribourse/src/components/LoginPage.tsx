@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
 import { apiClient } from '../lib/api-client';
+import { fetchCsrfToken } from '../config/api';
 import OAuthButtons from './auth/OAuthButtons';
 
 type LoginPageProps = {
@@ -35,6 +36,10 @@ export default function LoginPage() {
       await apiClient.post('/login', { email, password });
 
       toast.success('Connexion réussie !');
+
+      // Rafraîchir le token CSRF après login : l'identifiant de session passe
+      // de 'anonymous' à l'ID utilisateur, ce qui invalide l'ancien token.
+      await fetchCsrfToken();
 
       await checkAuth();
 

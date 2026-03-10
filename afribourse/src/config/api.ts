@@ -4,6 +4,11 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:30
 // Token CSRF en mémoire (jamais exposé dans le DOM ni dans le localStorage)
 let csrfToken: string | null = null;
 
+/** Expose le token CSRF en cache (lecture seule) */
+export function getCsrfToken(): string | null {
+  return csrfToken;
+}
+
 /**
  * Récupère le token CSRF depuis le backend et le met en cache en mémoire.
  * À appeler au démarrage de l'app et après chaque login.

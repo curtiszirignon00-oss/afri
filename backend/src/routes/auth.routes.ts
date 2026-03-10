@@ -13,15 +13,15 @@ import {
 import { auth } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validate.util";
 import { registerSchema, loginSchema } from "../validation/auth.validation";
-import { authLimiter, resetPasswordLimiter, resetPasswordEmailLimiter } from "../middleware/rateLimiter";
+import { authLimiter, loginEmailLimiter, resetPasswordLimiter, resetPasswordEmailLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
 // Route d'INSCRIPTION (REGISTER) - limite: 5 tentatives / 15 min
 router.post('/register', authLimiter, validate(registerSchema), register);
 
-// Route de CONNEXION (LOGIN) - limite: 5 tentatives / 15 min
-router.post('/login', authLimiter, validate(loginSchema), login);
+// Route de CONNEXION (LOGIN) — double limite: 10/15min par IP + 10/15min par email (anti brute-force multi-IP)
+router.post('/login', authLimiter, loginEmailLimiter, validate(loginSchema), login);
 
 // Route de DÉCONNEXION
 router.post('/logout', logout);
