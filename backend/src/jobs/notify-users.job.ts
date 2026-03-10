@@ -213,13 +213,6 @@ async function sendNotificationEmails(): Promise<void> {
   console.log('='.repeat(60));
 
   try {
-    // D'abord, marquer tous les emails comme confirmés
-    const confirmResult = await prisma.user.updateMany({
-      where: { email_verified_at: null },
-      data: { email_verified_at: new Date() },
-    });
-    console.log(`✅ ${confirmResult.count} emails marqués comme confirmés`);
-
     // Récupérer tous les utilisateurs
     const users = await prisma.user.findMany({
       select: {
@@ -244,7 +237,7 @@ async function sendNotificationEmails(): Promise<void> {
         const emailContent = generateRecoveryEmail(name);
 
         await transporter.sendMail({
-          from: `"AfriBourse" <${config.mail.from}>`,
+          from: `"AfriBourse" <${config.email.from}>`,
           to: user.email,
           subject: emailContent.subject,
           html: emailContent.html,
