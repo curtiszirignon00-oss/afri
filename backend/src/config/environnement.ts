@@ -8,7 +8,7 @@ interface IConfig {
     host: number | string,
 
     apiKey: string,
-    geminiApiKey: string,
+    geminiApiKey: string | undefined,
 
     app: {
       frontendUrl: string,
@@ -80,7 +80,7 @@ const config : IConfig = {
   host: getEnvVar('HOST', '0.0.0.0'),
 
   apiKey: getEnvVar('API_KEY'),
-  geminiApiKey: getEnvVar('GEMINI_API_KEY'),
+  geminiApiKey: process.env.GEMINI_API_KEY,
 
   app: {
     frontendUrl: getEnvVar('FRONTEND_URL', 'http://localhost:5173'),
