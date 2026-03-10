@@ -2,6 +2,7 @@
 
 import { Response, Request, NextFunction } from "express";
 import * as stockService from "../services/stock.service.prisma"; // <-- On utilise le service Prisma
+import { parsePagination } from '../utils/pagination.util';
 
 // Pour la route: GET /api/stocks
 export async function getStocks(req: Request, res: Response, next: NextFunction) {

@@ -2,6 +2,7 @@
 
 import * as indexService from '../services/index.service.prisma';
 import { Request, Response, NextFunction } from 'express';
+import { parsePagination } from '../utils/pagination.util';
 
 export async function createOrUpdateIndices(req: Request, res: Response, next: NextFunction) {
     const indicesData = req.body;

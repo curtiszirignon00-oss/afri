@@ -3,6 +3,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import * as activityService from '../services/activity.service';
+import { parsePagination } from '../utils/pagination.util';
 
 // =====================================
 // ACTIVITÉS

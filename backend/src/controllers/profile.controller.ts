@@ -9,6 +9,7 @@ import * as streakService from '../services/streak.service';
 import * as achievementService from '../services/achievement.service';
 import * as weeklyChallengeService from '../services/weekly-challenge.service';
 import { prisma } from '../config/database';
+import { parsePagination } from '../utils/pagination.util';
 
 // =====================================
 // PROFIL PUBLIC
