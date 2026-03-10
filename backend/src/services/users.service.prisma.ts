@@ -138,14 +138,17 @@ export const getUserByResetToken = async (token: string) => {
 
 /**
  * Réinitialise le mot de passe d'un utilisateur.
+ * Régénère also le remember_token pour invalider tous les JWT émis avant ce reset.
  */
 export const resetUserPassword = async (userId: string, hashedPassword: string) => {
+    const crypto = require('crypto');
     const user = await prisma.user.update({
         where: { id: userId },
         data: {
             password: hashedPassword,
             password_reset_token: null,
             password_reset_expires: null,
+            remember_token: crypto.randomBytes(16).toString('hex'), // invalide les JWT précédents
         },
     });
     return user;
