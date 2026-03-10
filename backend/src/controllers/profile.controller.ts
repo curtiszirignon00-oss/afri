@@ -383,7 +383,7 @@ export async function getSuggestions(req: Request, res: Response, next: NextFunc
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parsePagination(req.query.limit, undefined, 10).limit;
 
     const suggestions = await profileService.getSuggestions(userId, limit);
     return res.status(200).json(suggestions);

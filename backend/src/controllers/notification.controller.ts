@@ -13,8 +13,7 @@ export async function getNotifications(req: AuthRequest, res: Response) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
         const unreadOnly = req.query.unread === 'true';
 
         const result = await notificationService.getUserNotifications(userId, page, limit, unreadOnly);

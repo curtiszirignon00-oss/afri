@@ -88,8 +88,7 @@ export async function unfollowUser(req: AuthRequest, res: Response) {
 export async function getFollowers(req: Request, res: Response) {
     try {
         const { userId } = req.params;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await socialService.getFollowers(userId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -101,8 +100,7 @@ export async function getFollowers(req: Request, res: Response) {
 export async function getFollowing(req: Request, res: Response) {
     try {
         const { userId } = req.params;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await socialService.getFollowing(userId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -216,8 +214,7 @@ export async function getFeed(req: AuthRequest, res: Response) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 10);
 
         const result = await socialService.getFeed(userId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -230,8 +227,7 @@ export async function getUserPosts(req: AuthRequest, res: Response) {
     try {
         const { userId } = req.params;
         const viewerId = req.user?.id;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 10);
 
         const result = await socialService.getUserPosts(userId, viewerId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -243,8 +239,7 @@ export async function getUserPosts(req: AuthRequest, res: Response) {
 export async function getPostComments(req: Request, res: Response) {
     try {
         const { postId } = req.params;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await socialService.getPostComments(postId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -304,8 +299,7 @@ export async function getPost(req: AuthRequest, res: Response) {
 export async function getPublicPosts(req: AuthRequest, res: Response) {
     try {
         const viewerId = req.user?.id; // Optional - for like status
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 10);
         const type = req.query.type as string | undefined;
         const dateRange = req.query.date as string | undefined; // today, week, month
         const followingOnly = req.query.following === 'true';

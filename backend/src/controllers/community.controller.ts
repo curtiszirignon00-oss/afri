@@ -89,8 +89,7 @@ export async function getCommunity(req: AuthRequest, res: Response) {
 
 export async function listCommunities(req: AuthRequest, res: Response) {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
         const category = req.query.category as string | undefined;
         const search = req.query.search as string | undefined;
         const featured = req.query.featured === 'true';
@@ -117,8 +116,7 @@ export async function getUserCommunities(req: AuthRequest, res: Response) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await communityService.getUserCommunities(userId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -191,8 +189,7 @@ export async function getPendingJoinRequests(req: AuthRequest, res: Response) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await communityService.getPendingJoinRequests(communityId, userId, page, limit);
         res.status(200).json({ success: true, ...result });
@@ -237,8 +234,7 @@ export async function removeMember(req: AuthRequest, res: Response) {
 export async function getCommunityMembers(req: AuthRequest, res: Response) {
     try {
         const { communityId } = req.params;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
         const role = req.query.role as any;
 
         const result = await communityService.getCommunityMembers(communityId, page, limit, role);
@@ -270,8 +266,7 @@ export async function getCommunityPosts(req: AuthRequest, res: Response) {
     try {
         const { communityId } = req.params;
         const viewerId = req.user?.id;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 10);
 
         const result = await communityService.getCommunityPosts(communityId, page, limit, viewerId);
         res.status(200).json({ success: true, ...result });
@@ -332,8 +327,7 @@ export async function commentCommunityPost(req: AuthRequest, res: Response) {
 export async function getCommunityPostComments(req: AuthRequest, res: Response) {
     try {
         const { postId } = req.params;
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await communityService.getCommunityPostComments(postId, page, limit);
         res.status(200).json({ success: true, ...result });

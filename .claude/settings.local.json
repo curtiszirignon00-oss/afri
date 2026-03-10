@@ -89,7 +89,8 @@
       "Bash(npm show lightweight-charts-line-tools@4.1.1 description)",
       "Bash(xargs grep -l \"credentials.*include\")",
       "Bash(ls -la c:UsersHPOneDriveDesktopafribackend.env*)",
-      "Bash(ls c:/Users/HP/OneDrive/Desktop/afri/backend/.env*)"
+      "Bash(ls c:/Users/HP/OneDrive/Desktop/afri/backend/.env*)",
+      "Bash(grep -r \"$where\\\\|ObjectId\\\\|vulnerable\\\\|injection\" /c/Users/HP/OneDrive/Desktop/afri/backend/src --include=\"*.ts\")"
     ],
     "deny": [],
     "ask": []

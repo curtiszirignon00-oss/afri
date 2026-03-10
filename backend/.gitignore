@@ -36,3 +36,15 @@ exports/
 # Fichiers de recovery/backup JSON
 *.json.backup
 oplog-recovery.json
+
+# Scripts d'incident response (données sensibles / credentials)
+src/scripts/audit-*.ts
+src/scripts/delete-*.ts
+src/scripts/restore-*.ts
+src/scripts/reset-*.ts
+src/scripts/find-hacker-data.ts
+src/scripts/check-fake-accounts.ts
+src/scripts/check-names.ts
+src/scripts/check_attack_accounts.ts
+src/scripts/search-hacked-names.ts
+src/scripts/emergency-response.ts

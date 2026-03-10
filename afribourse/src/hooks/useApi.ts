@@ -11,47 +11,23 @@ interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
 
-// Helper pour récupérer le token depuis localStorage
-const getAuthToken = (): string | null => {
-  // Essayer d'abord 'auth_token', puis 'token' comme fallback
-  const authToken = localStorage.getItem('auth_token');
-  if (authToken) {
-    return authToken;
-  }
-
-  // Fallback pour compatibilité
-  const token = localStorage.getItem('token');
-  if (token) {
-    return token;
-  }
-
-  return null;
-};
-
 export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { params, ...fetchOptions } = options;
 
-  // Construire l'URL avec les paramètres de requête
   let url = `${API_BASE_URL}${endpoint}`;
   if (params) {
     const searchParams = new URLSearchParams(params);
     url += `?${searchParams.toString()}`;
   }
 
-  // Préparer les headers
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>),
   };
 
-  const token = getAuthToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   const response = await fetch(url, {
     ...fetchOptions,
-    credentials: 'include', // Toujours envoyer les cookies (desktop)
+    credentials: 'include', // Cookie httpOnly envoyé automatiquement
     headers,
   });
 
