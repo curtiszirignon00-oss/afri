@@ -116,18 +116,15 @@ export const generalApiLimiter = rateLimit({
  */
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5,
+    max: 10,
     message: {
-        error: 'Trop de tentatives de connexion. Veuillez réessayer plus tard.',
+        error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.',
     },
     standardHeaders: true,
     legacyHeaders: false,
-    skipSuccessfulRequests: true,
-    keyGenerator: (req) => {
-        const forwarded = req.headers['x-forwarded-for'];
-        const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim();
-        return ip || req.ip || 'unknown';
-    },
+    // req.ip est déjà résolu correctement par Express grâce à "trust proxy 1" dans index.ts
+    // Ne pas parser x-forwarded-for manuellement (spoofable et redondant)
+    keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'no-ip',
 });
 
 /**
@@ -142,12 +139,7 @@ export const resetPasswordLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-        // Utiliser l'IP réelle (derrière le proxy Render)
-        const forwarded = req.headers['x-forwarded-for'];
-        const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim();
-        return ip || req.ip || 'unknown';
-    },
+    keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'no-ip',
 });
 
 /**

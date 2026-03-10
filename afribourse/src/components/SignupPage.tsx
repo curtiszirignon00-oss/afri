@@ -7,6 +7,29 @@ import { useNavigate } from 'react-router-dom';
 import OAuthButtons from './auth/OAuthButtons';
 type SignupPageProps = {};
 
+const passwordRules = [
+  { label: '8 caractères minimum', test: (p: string) => p.length >= 8 },
+  { label: 'Une majuscule minimum', test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'Un caractère spécial minimum (!@#$%...)', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+function PasswordStrengthIndicator({ password }: { password: string }) {
+  if (!password) return null;
+  return (
+    <ul className="mt-2 space-y-1">
+      {passwordRules.map((rule) => {
+        const valid = rule.test(password);
+        return (
+          <li key={rule.label} className={`flex items-center gap-2 text-xs font-medium transition-colors ${valid ? 'text-green-600' : 'text-red-500'}`}>
+            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${valid ? 'bg-green-500' : 'bg-red-400'}`} />
+            {rule.label}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export default function SignupPage() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -17,6 +40,8 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const passwordValid = passwordRules.every((r) => r.test(password));
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -30,8 +55,8 @@ export default function SignupPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.');
+    if (!passwordValid) {
+      setError('Le mot de passe ne respecte pas les conditions requises.');
       setLoading(false);
       return;
     }
@@ -43,9 +68,6 @@ export default function SignupPage() {
     }
 
     try {
-      console.log('📝 Tentative d\'inscription à:', `${API_BASE_URL}/register`);
-      console.log('🌐 API_BASE_URL:', API_BASE_URL);
-
       const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,24 +75,18 @@ export default function SignupPage() {
         credentials: 'include',
       });
 
-      console.log('📥 Response status:', response.status);
-
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || data.message || "Erreur lors de l'inscription");
       }
 
-      // ✅ Inscription réussie - Email de confirmation envoyé
-      console.log('✅ [SIGNUP] Registration successful, email sent');
       setSuccess(true);
 
-      // Rediriger vers la page de vérification d'email
       setTimeout(() => {
         navigate('/verifier-email', { state: { email } });
       }, 1000);
     } catch (err: any) {
-      console.error('Signup error:', err);
       setError(err.message || "Une erreur est survenue lors de l'inscription.");
     } finally {
       setLoading(false);
@@ -93,10 +109,8 @@ export default function SignupPage() {
           <p className="text-gray-600">Commencez votre aventure d'investissement</p>
         </div>
 
-        {/* ✅ Card remplace div bg-white */}
         <Card>
           <form onSubmit={handleSignup} className="space-y-6">
-            {/* ✅ Input remplace input manuel */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="text"
@@ -132,17 +146,19 @@ export default function SignupPage() {
               required
             />
 
-            <Input
-              type="password"
-              label="Mot de passe"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              icon={<Lock className="w-5 h-5 text-gray-400" />}
-              helperText="Au moins 6 caractères"
-              disabled={loading}
-              required
-            />
+            <div>
+              <Input
+                type="password"
+                label="Mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                icon={<Lock className="w-5 h-5 text-gray-400" />}
+                disabled={loading}
+                required
+              />
+              <PasswordStrengthIndicator password={password} />
+            </div>
 
             <Input
               type="password"
@@ -171,13 +187,12 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* ✅ Button remplace button manuel */}
             <Button
               type="submit"
               variant="primary"
               size="lg"
               isLoading={loading}
-              disabled={loading}
+              disabled={loading || !passwordValid}
               className="w-full"
             >
               {loading ? 'Création du compte...' : 'Créer mon compte'}

@@ -35,13 +35,12 @@ type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { checkAuth, setToken } = useAuth();
+  const { checkAuth } = useAuth();
 
-  // Gérer le retour OAuth (token en query param + toast)
+  // Gérer le retour OAuth — le cookie httpOnly est déjà set par le backend
   useEffect(() => {
     const oauthStatus = searchParams.get('oauth');
     const provider = searchParams.get('provider');
-    const oauthToken = searchParams.get('token');
 
     if (oauthStatus === 'success') {
       const providerNames: Record<string, string> = {
@@ -49,18 +48,10 @@ export default function DashboardPage() {
         twitter: 'X',
         linkedin: 'LinkedIn',
       };
-      // Stocker le token JWT reçu depuis le backend
-      if (oauthToken) {
-        setToken(oauthToken);
-        checkAuth(oauthToken).then(() => {
-          toast.success(`Connecté via ${providerNames[provider!] || 'OAuth'} !`);
-        });
-      } else {
-        checkAuth().then(() => {
-          toast.success(`Connecté via ${providerNames[provider!] || 'OAuth'} !`);
-        });
-      }
-      setSearchParams({}, { replace: true }); // Nettoyer l'URL
+      checkAuth().then(() => {
+        toast.success(`Connecté via ${providerNames[provider!] || 'OAuth'} !`);
+      });
+      setSearchParams({}, { replace: true });
     }
 
     if (oauthStatus === 'error') {

@@ -126,7 +126,7 @@ export async function getChallengeStatus(req: AuthRequest, res: Response) {
  */
 export async function getLeaderboard(req: AuthRequest, res: Response) {
     try {
-        const limit = parseInt(req.query.limit as string) || 20;
+        const limit = parsePagination(req.query.limit, undefined, 20).limit;
 
         const rankings = await leaderboardService.getLeaderboard(limit);
 
@@ -258,8 +258,7 @@ export async function unbanParticipant(req: AuthRequest, res: Response) {
  */
 export async function getParticipants(req: AuthRequest, res: Response) {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 50;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 50);
 
         const result = await challengeService.getParticipants(page, limit);
 

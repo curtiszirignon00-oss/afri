@@ -57,8 +57,7 @@ export async function getReports(req: AuthRequest, res: Response) {
             return res.status(403).json({ error: 'Accès refusé' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
         const status = req.query.status as any;
         const contentType = req.query.contentType as any;
         const reason = req.query.reason as any;
@@ -114,8 +113,7 @@ export async function getBannedKeywords(req: AuthRequest, res: Response) {
             return res.status(403).json({ error: 'Accès refusé' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 50;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 50);
 
         const result = await moderationService.getBannedKeywords(page, limit);
         res.status(200).json({ success: true, ...result });
@@ -274,8 +272,7 @@ export async function getActiveBans(req: AuthRequest, res: Response) {
             return res.status(403).json({ error: 'Accès refusé' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 20;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
 
         const result = await moderationService.getActiveBans(page, limit);
         res.status(200).json({ success: true, ...result });
@@ -327,8 +324,7 @@ export async function getModerationLogs(req: AuthRequest, res: Response) {
             return res.status(403).json({ error: 'Accès refusé' });
         }
 
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 50;
+        const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 50);
         const moderatorId = req.query.moderatorId as string;
         const action = req.query.action as any;
         const targetType = req.query.targetType as any;

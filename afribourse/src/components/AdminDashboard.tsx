@@ -106,20 +106,11 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/admin/platform-stats`,
         {
           method: 'GET',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         }
       );
@@ -142,20 +133,11 @@ export default function AdminDashboard() {
 
   const fetchAnalytics = async () => {
     try {
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/analytics/stats?days=7`,
         {
           method: 'GET',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         }
       );

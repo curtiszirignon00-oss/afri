@@ -13,7 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 export function PushNotificationPrompt() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { token, isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     const dismissed = localStorage.getItem('push-prompt-dismissed');
@@ -21,25 +21,21 @@ export function PushNotificationPrompt() {
       isPushSupported() &&
       getPermissionStatus() === 'default' &&
       isLoggedIn &&
-      token &&
       !dismissed
     ) {
-      // Vérifier si déjà abonné
       isSubscribed().then((subscribed) => {
         if (!subscribed) {
-          // Attendre 30 secondes avant d'afficher
           const timer = setTimeout(() => setShow(true), 30000);
           return () => clearTimeout(timer);
         }
       });
     }
-  }, [token, isLoggedIn]);
+  }, [isLoggedIn]);
 
   const handleEnable = async () => {
-    if (!token) return;
     setLoading(true);
     try {
-      await subscribeToPush(token);
+      await subscribeToPush();
     } catch (error) {
       console.error('[Push] Subscribe error:', error);
     } finally {

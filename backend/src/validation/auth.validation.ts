@@ -24,7 +24,7 @@ export const registerSchema = zod.object({
         .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
         .max(100)
         .refine(p => /[A-Z]/.test(p), 'Doit contenir au moins une majuscule')
-        .refine(p => /[0-9]/.test(p), 'Doit contenir au moins un chiffre'),
+        .refine(p => /[^A-Za-z0-9]/.test(p), 'Doit contenir au moins un caractère spécial (!@#$%...)'),
     name: zod.string().min(2).max(100),
     lastname: zod.string().min(2).max(100),
 });

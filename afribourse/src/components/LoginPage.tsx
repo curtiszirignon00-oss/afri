@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { checkAuth, isLoggedIn, setToken } = useAuth(); // <-- AJOUT : récupération de setToken
+  const { checkAuth, isLoggedIn } = useAuth();
 
   // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
   useEffect(() => {
@@ -32,16 +32,11 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { data } = await apiClient.post('/login', { email, password });
+      await apiClient.post('/login', { email, password });
 
       toast.success('Connexion réussie !');
 
-      if (data.token) {
-        setToken(data.token);
-        await checkAuth(data.token);
-      } else {
-        await checkAuth();
-      }
+      await checkAuth();
 
       navigate('/dashboard');
 
