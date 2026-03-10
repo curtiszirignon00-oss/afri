@@ -53,20 +53,10 @@ export default function AdminSubscriptionStats() {
 
   const fetchStats = async () => {
     try {
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      // Ajouter le token si disponible (pour mobile)
-      const token = localStorage.getItem('token');
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
       const response = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/stats`, {
         method: 'GET',
-        headers,
-        credentials: 'include', // Important: envoie les cookies
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
 
       if (!response.ok) {

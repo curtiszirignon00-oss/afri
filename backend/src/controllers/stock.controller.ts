@@ -102,7 +102,7 @@ export async function getCompanyInfo(req: Request, res: Response, next: NextFunc
 export async function getStockNews(req: Request, res: Response, next: NextFunction) {
   try {
     const symbol = req.params.symbol.toUpperCase();
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parsePagination(req.query.limit, undefined, 10).limit;
 
     const news = await stockService.getStockNews(symbol, limit);
 

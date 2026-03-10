@@ -236,7 +236,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             userAgent: getUserAgent(req),
         });
 
-        return res.status(200).json({ token, user: userWithoutPassword, gamification: gamificationData });
+        return res.status(200).json({ user: userWithoutPassword, gamification: gamificationData });
     } catch (error) {
         next(error);
         return;

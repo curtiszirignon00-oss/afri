@@ -15,9 +15,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   userProfile: UserProfile | null;
   loading: boolean;
-  token: string | null;
-  setToken: (token: string | null) => void;
-  checkAuth: (customToken?: string | null) => Promise<void>;
+  checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -29,21 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('auth_token');
-  });
 
-  // Vérifier l'authentification via apiClient (gère le token automatiquement)
-  const checkAuth = async (customToken?: string | null) => {
+  // Vérifier l'authentification via le cookie httpOnly (envoyé automatiquement)
+  const checkAuth = async () => {
     setLoading(true);
     try {
-      // Si un token custom est fourni (ex: retour OAuth), l'injecter temporairement
-      const headers: Record<string, string> = {};
-      if (customToken !== undefined && customToken !== null) {
-        headers['Authorization'] = `Bearer ${customToken}`;
-      }
-
-      const response = await apiClient.get('/me', { headers });
+      const response = await apiClient.get('/me');
       const profile = response.data?.user;
 
       if (profile?.role === 'admin') {
@@ -54,17 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       setIsLoggedIn(false);
       setUserProfile(null);
-      // Token invalide/expiré — nettoyer
-      if (token || customToken) {
-        localStorage.removeItem('auth_token');
-        setToken(null);
-      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Déconnexion
+  // Déconnexion — le backend efface le cookie httpOnly
   const logout = async () => {
     try {
       await apiClient.post('/logout');
@@ -73,37 +57,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoggedIn(false);
       setUserProfile(null);
-      localStorage.removeItem('auth_token');
-      setToken(null);
     }
   };
 
-  // Sauvegarder le token dans localStorage quand il change
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('auth_token', token);
-    } else {
-      localStorage.removeItem('auth_token');
-    }
-  }, [token]);
-
-  // Vérification initiale au montage — gère le retour OAuth
+  // Vérification initiale au montage — le cookie OAuth est déjà set par le backend
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const oauthToken = urlParams.get('token');
     const oauthStatus = urlParams.get('oauth');
 
-    if (oauthStatus === 'success' && oauthToken) {
-      localStorage.setItem('auth_token', oauthToken);
-      setToken(oauthToken);
-      checkAuth(oauthToken);
-    } else {
-      checkAuth();
+    checkAuth();
+
+    // Nettoyer les paramètres OAuth de l'URL après le retour OAuth
+    if (oauthStatus === 'success') {
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userProfile, loading, token, setToken, checkAuth, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, userProfile, loading, checkAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );

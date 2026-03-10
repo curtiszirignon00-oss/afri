@@ -117,7 +117,7 @@ export async function getNextAchievements(req: Request, res: Response, next: Nex
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    const limit = parseInt(req.query.limit as string) || 3;
+    const limit = parsePagination(req.query.limit, undefined, 3).limit;
     const nextBadges = await achievementService.getNextAchievements(userId, limit);
     return res.status(200).json(nextBadges);
 

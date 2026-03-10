@@ -47,7 +47,7 @@ export async function getXPHistory(req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ error: 'Non authentifié' });
     }
 
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
     const history = await xpService.getXPHistory(userId, limit);
     res.json(history);
   } catch (error) {
@@ -492,7 +492,7 @@ export async function claimAllChallengeRewards(req: Request, res: Response, next
 export async function getGlobalLeaderboard(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
-    const limit = parseInt(req.query.limit as string) || 100;
+    const limit = parsePagination(req.query.limit, undefined, 100).limit;
 
     let leaderboard;
     if (userId) {
@@ -515,7 +515,7 @@ export async function getCountryLeaderboard(req: Request, res: Response, next: N
   try {
     const userId = req.user?.id;
     const countryCode = req.query.country as string;
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
 
     let leaderboard;
     if (countryCode) {
@@ -556,7 +556,7 @@ export async function getFriendsLeaderboard(req: Request, res: Response, next: N
  */
 export async function getROILeaderboard(req: Request, res: Response, next: NextFunction) {
   try {
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
     const leaderboard = await gamificationLeaderboardService.getMonthlyROILeaderboard(limit);
     res.json(leaderboard);
   } catch (error) {
@@ -570,7 +570,7 @@ export async function getROILeaderboard(req: Request, res: Response, next: NextF
  */
 export async function getStreakLeaderboard(req: Request, res: Response, next: NextFunction) {
   try {
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parsePagination(req.query.limit, undefined, 50).limit;
     const leaderboard = await gamificationLeaderboardService.getStreakLeaderboard(limit);
     res.json(leaderboard);
   } catch (error) {
