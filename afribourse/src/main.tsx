@@ -25,6 +25,14 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   })
 }
 
+import * as amplitude from '@amplitude/unified'
+
+amplitude.initAll('445eb89bf34759faaed0372e035fdbff', {
+  serverZone: 'EU',
+  analytics: { autocapture: true },
+  sessionReplay: { sampleRate: 1 },
+})
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
