@@ -1,52 +1,71 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as OAuth2Strategy } from 'passport-oauth2';
+import crypto from 'crypto';
 import prisma from './prisma';
 
 // ═══════════════════════════════════════════════════════
-// STATE STORE IN-MEMORY (remplace le store basé session)
-// Le cookie de session n'est pas transmis de manière
-// fiable lors des redirections OAuth cross-site sur Render.
-// Ce store utilise une Map Node.js, valide pour single-instance.
+// STATE STORE OAUTH — MongoDB (collection oauth_states)
+// Utilise la connexion MongoDB existante via Prisma.
+// TTL géré par un index MongoDB expireAfterSeconds.
+// Multi-instance, survit aux redémarrages.
 // ═══════════════════════════════════════════════════════
-class MemoryStateStore {
-  private _states = new Map<string, { codeVerifier?: string; expires: number }>();
 
-  constructor() {
-    // Nettoyage des états expirés toutes les 5 minutes
-    setInterval(() => {
-      const now = Date.now();
-      for (const [key, val] of this._states.entries()) {
-        if (val.expires < now) this._states.delete(key);
-      }
-    }, 5 * 60 * 1000).unref();
-  }
-
-  // arity=5 : passport-oauth2 passe (req, verifier, state, meta, callback) quand PKCE est actif
-  store(_req: any, verifier: string, _state: any, _meta: any, callback: (err: any, state?: string) => void) {
-    const handle = require('crypto').randomBytes(16).toString('hex');
-    this._states.set(handle, {
-      codeVerifier: verifier,
-      expires: Date.now() + 10 * 60 * 1000, // 10 min
+// Crée l'index TTL sur la collection oauth_states au démarrage (idempotent)
+async function ensureOAuthStatesTTLIndex() {
+  try {
+    await (prisma as any).$runCommandRaw({
+      createIndexes: 'oauth_states',
+      indexes: [{ key: { expireAt: 1 }, name: 'ttl_expireAt', expireAfterSeconds: 0 }],
     });
-    callback(null, handle); // handle devient le ?state= dans l'URL du provider
+  } catch {
+    // Index déjà existant ou erreur non-bloquante
+  }
+}
+ensureOAuthStatesTTLIndex();
+
+class MongoStateStore {
+  // arity=5 : passport-oauth2 passe (req, verifier, state, meta, callback) quand PKCE est actif
+  async store(_req: any, verifier: string, _state: any, _meta: any, callback: (err: any, state?: string) => void) {
+    try {
+      const handle = crypto.randomBytes(16).toString('hex');
+      const expireAt = new Date(Date.now() + 10 * 60 * 1000); // TTL 10 min
+
+      await (prisma as any).$runCommandRaw({
+        insert: 'oauth_states',
+        documents: [{ _id: handle, codeVerifier: verifier, expireAt }],
+      });
+
+      callback(null, handle);
+    } catch (err) {
+      callback(err);
+    }
   }
 
   // arity=3 : passport-oauth2 passe (req, providedState, callback)
-  // callback(null, codeVerifier) → passport-oauth2 envoie code_verifier dans l'échange de token
-  verify(_req: any, providedState: string, callback: (err: any, codeVerifier: any, state?: any) => void) {
-    const data = this._states.get(providedState);
-    if (!data || data.expires < Date.now()) {
-      this._states.delete(providedState);
-      return callback(null, false);
+  async verify(_req: any, providedState: string, callback: (err: any, codeVerifier: any, state?: any) => void) {
+    try {
+      // Trouver ET supprimer en une seule opération (findAndModify atomique)
+      const result: any = await (prisma as any).$runCommandRaw({
+        findAndModify: 'oauth_states',
+        query: { _id: providedState, expireAt: { $gt: new Date() } },
+        remove: true,
+      });
+
+      const doc = result?.value;
+      if (!doc) return callback(null, false);
+
+      callback(null, doc.codeVerifier ?? true);
+    } catch (err) {
+      callback(err, false);
     }
-    this._states.delete(providedState);
-    callback(null, data.codeVerifier ?? true);
   }
 }
 
-const twitterStateStore = new MemoryStateStore();
-const linkedinStateStore = new MemoryStateStore();
+console.info('[OAuth] State store: MongoDB (multi-instance, TTL index)');
+
+const twitterStateStore = new MongoStateStore();
+const linkedinStateStore = new MongoStateStore();
 
 // ═══════════════════════════════════════════════════════
 // HELPER : Trouver ou créer un user OAuth
