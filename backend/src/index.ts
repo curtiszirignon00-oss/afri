@@ -175,10 +175,19 @@ class App {
     );
 
     // --- CSRF Protection (Double Submit Cookie Pattern) ---
-    // Appliqué sur toutes les routes /api/ sauf GET/HEAD/OPTIONS (ignorés par le middleware)
-    // Les endpoints publics de tracking analytics (page-view, page-duration) sont exemptés
-    // car ils sont appelés par des visiteurs non authentifiés sans token CSRF.
-    this.app?.use('/api/', doubleCsrfProtection);
+    // Routes publiques exemptées : pas d'état authentifié à protéger + CORS + Content-Type JSON
+    // suffisent à bloquer les attaques cross-site sur ces endpoints.
+    const CSRF_PUBLIC_PATHS = new Set([
+      '/login', '/register', '/request-password-reset', '/reset-password',
+      '/confirm-email', '/resend-confirmation', '/csrf-token',
+      // Analytics visiteurs non-authentifiés
+      '/analytics/page-view', '/analytics/page-duration',
+    ]);
+    this.app?.use('/api/', (req, res, next) => {
+      // req.path est relatif au préfixe /api/ (ex: /login pour /api/login)
+      if (CSRF_PUBLIC_PATHS.has(req.path)) return next();
+      return doubleCsrfProtection(req, res, next);
+    });
 
     // Request Logger (Pino with structured logging)
     this.app?.use(attachRequestId);
