@@ -2,7 +2,7 @@
 // Routes pour la gestion des achievements
 
 import { Router } from 'express';
-import { auth } from '../middlewares/auth.middleware';
+import { auth, optionalAuth } from '../middlewares/auth.middleware';
 import {
   getAllAchievements,
   getMyAchievements,
@@ -29,7 +29,7 @@ router.get('/', getAllAchievements);
  * GET /api/achievements/user/:userId
  * Achievements publics d'un utilisateur
  */
-router.get('/user/:userId', getUserAchievements);
+router.get('/user/:userId', optionalAuth, getUserAchievements);
 
 // =====================================
 // ROUTES PROTÉGÉES

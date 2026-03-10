@@ -3,7 +3,7 @@ import zod from "zod";
 import { validate } from "../utils/validate.util";
 
 const BLOCKED_EMAIL_DOMAINS = new Set([
-    'dollicons.com', 'virgilian.com', 'mailinator.com', 'guerrillamail.com',
+    'dollicons.com', 'virgilian.com', 'fake-afribourse.com', 'mailinator.com', 'guerrillamail.com',
     'tempmail.com', 'throwam.com', 'yopmail.com', 'trashmail.com',
     'sharklasers.com', 'guerrillamail.info', 'spam4.me', 'maildrop.cc',
     'dispostable.com', 'fakeinbox.com', 'throwaway.email', 'getnada.com',

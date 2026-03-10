@@ -21,7 +21,7 @@ router.delete('/:communityId', auth, communityController.deleteCommunity); // De
 // ============= MEMBERSHIP =============
 router.post('/:communityId/join', auth, communityController.joinCommunity); // Join community
 router.delete('/:communityId/leave', auth, communityController.leaveCommunity); // Leave community
-router.get('/:communityId/members', communityController.getCommunityMembers); // Get members
+router.get('/:communityId/members', optionalAuth, communityController.getCommunityMembers); // Get members
 router.put('/:communityId/members/:memberId/role', auth, communityController.updateMemberRole); // Update member role
 router.delete('/:communityId/members/:memberId', auth, communityController.removeMember); // Remove member
 
@@ -37,7 +37,7 @@ router.post('/:communityId/posts', auth, communityPostCreationLimiter, community
 router.post('/posts/:postId/like', auth, communityController.likeCommunityPost); // Like post
 router.delete('/posts/:postId/like', auth, communityController.unlikeCommunityPost); // Unlike post
 router.post('/posts/:postId/comments', auth, commentCreationLimiter, communityController.commentCommunityPost); // Comment - Rate limited
-router.get('/posts/:postId/comments', communityController.getCommunityPostComments); // Get comments
+router.get('/posts/:postId/comments', optionalAuth, communityController.getCommunityPostComments); // Get comments
 router.delete('/posts/:postId', auth, communityController.deleteCommunityPost); // Delete post
 router.post('/posts/:postId/pin', auth, communityController.togglePinPost); // Pin/unpin post
 
