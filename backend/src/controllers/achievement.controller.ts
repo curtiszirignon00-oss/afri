@@ -3,6 +3,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import * as achievementService from '../services/achievement.service';
+import { parsePagination } from '../utils/pagination.util';
 
 // =====================================
 // RÉCUPÉRATION ACHIEVEMENTS
