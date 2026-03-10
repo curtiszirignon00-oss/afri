@@ -66,7 +66,7 @@ interface IConfig {
 const getEnvVar = (name: string, defaultValue?: string): string => {
   const value = process.env[name];
   if (value === undefined || value === '') {
-    if (process.env.NODE_ENV === 'production' || defaultValue === undefined) {
+    if (defaultValue === undefined) {
       throw new Error(`Environment variable ${name} is required but not set`);
     }
     return defaultValue;
