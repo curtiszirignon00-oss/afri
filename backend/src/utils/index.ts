@@ -20,6 +20,7 @@ export function signJWT(data : object) {
 
 interface DecodedToken extends jwt.JwtPayload {
     id: string;
+    rtk?: string; // remember_token snapshot — invalide si changé (ex: reset mot de passe)
 }
 
 export const getUserFromToken = async (req: Request) => {
@@ -40,6 +41,14 @@ export const getUserFromToken = async (req: Request) => {
         }
         const user = await prisma.user.findUnique({where: {id: (decoded as DecodedToken).id}})
         if(!user) throw createError.notFound("L'utilisateur n'existe pas.")
+
+        // Valider le remember_token : si le token JWT contient un rtk qui ne correspond
+        // plus à la DB (ex: après reset de mot de passe), rejeter la session
+        const decodedRtk = (decoded as DecodedToken).rtk;
+        if (decodedRtk && user.remember_token && decodedRtk !== user.remember_token) {
+            throw createError.unauthorized("Session invalidée. Veuillez vous reconnecter.");
+        }
+
         return {user};
     } catch (error) {
         return {error}

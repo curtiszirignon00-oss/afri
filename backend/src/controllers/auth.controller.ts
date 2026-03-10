@@ -22,7 +22,14 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         // Le frontend doit envoyer : name, lastname, email, password
         const { name, lastname, email, password } = req.body;
 
-        // 1. Vérifier si l'utilisateur existe déjà
+        // 1. Bloquer les domaines d'emails jetables connus
+        const BLOCKED_DOMAINS = ['dollicons.com', 'virgilian.com', 'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwam.com', 'yopmail.com', 'trashmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la', 'guerrillamail.info', 'spam4.me', 'maildrop.cc'];
+        const emailDomain = email.split('@')[1]?.toLowerCase();
+        if (emailDomain && BLOCKED_DOMAINS.includes(emailDomain)) {
+            return next(createError.badRequest("Ce fournisseur d'email n'est pas autorisé. Utilisez une adresse email permanente."));
+        }
+
+        // 2. Vérifier si l'utilisateur existe déjà
         const existingUser = await usersServicePrisma.getUserByEmail(email);
 
         if (existingUser) {
@@ -52,10 +59,6 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         }
 
         // 5. Envoyer l'email de confirmation
-        console.log(`📧 [REGISTER] Préparation de l'envoi de l'email de confirmation pour ${email}`);
-        console.log(`   → Token: ${confirmationToken.substring(0, 10)}...`);
-        console.log(`   → Expire le: ${tokenExpiration.toISOString()}`);
-
         let emailSent = false;
         let emailError: any = null;
 
@@ -66,14 +69,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
                 confirmationToken,
             });
             emailSent = true;
-            console.log(`✅ [REGISTER] Email de confirmation envoyé avec succès à ${email}`);
         } catch (error) {
             emailError = error;
             emailSent = false;
-            console.error('❌ [REGISTER] ÉCHEC de l\'envoi de l\'email de confirmation!');
-            console.error('   → Erreur:', error);
-            // On ne bloque pas l'inscription, mais on informe l'utilisateur
-            // L'utilisateur pourra renvoyer l'email plus tard via /api/resend-confirmation
         }
 
         // 6. Créer automatiquement un portfolio pour le nouvel utilisateur
@@ -81,22 +79,16 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             const user = newUser as any;
             await portfolioService.createPortfolio(user.id, {
                 name: 'Mon Portefeuille',
-                initial_balance: 1000000, // 1,000,000 FCFA de départ pour la simulation
+                initial_balance: 1000000,
                 is_virtual: true,
             });
-            console.log('✅ [REGISTER] Portfolio créé automatiquement pour:', user.email);
         } catch (portfolioError) {
-            console.error('❌ [REGISTER] Erreur lors de la création du portfolio:', portfolioError);
             // Ne pas bloquer l'inscription si la création du portfolio échoue
-            // L'utilisateur pourra le créer manuellement plus tard
         }
 
         // 7. Répondre avec un message de succès (sans créer de session)
         const user = newUser as any;
         const { password: _, email_confirmation_token: __, email_confirmation_expires: ___, ...userWithoutSensitiveData } = user;
-
-        console.log('✅ [REGISTER] Utilisateur créé avec succès:', user.email);
-        console.log(`   → Email envoyé: ${emailSent ? 'OUI ✅' : 'NON ❌'}`);
 
         // Audit log - Inscription réussie
         await writeAuditLog({
@@ -173,7 +165,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         
         // 3. Création du token et réponse
         const userAsAny = user as any;
-        const token = signJWT({ id: userAsAny.id, email: userAsAny.email, role: userAsAny.role });
+
+        // Régénérer le remember_token à chaque connexion (invalide les sessions parallèles suspectes)
+        const crypto = await import('crypto');
+        const newRememberToken = crypto.randomBytes(16).toString('hex');
+        await prisma.user.update({
+            where: { id: userAsAny.id },
+            data: { remember_token: newRememberToken },
+        });
+
+        const token = signJWT({ id: userAsAny.id, email: userAsAny.email, role: userAsAny.role, rtk: newRememberToken });
 
         const {password: _, ...userWithoutPassword} = userAsAny;
 
@@ -184,10 +185,6 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
             path: '/', // Ensure cookie is available on all paths
         };
-
-        console.log('🍪 [LOGIN] Setting cookie with options:', JSON.stringify(cookieOptions));
-        console.log('🌍 [LOGIN] NODE_ENV:', config.nodeEnv);
-        console.log('🔐 [LOGIN] Token created for user:', userAsAny.email);
 
         res.cookie("token", token, cookieOptions as any);
 
@@ -204,7 +201,6 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             const achievementResults = await achievementService.checkAllAchievements(userId);
             if (achievementResults.total > 0) {
                 gamificationData.newAchievements = achievementResults;
-                console.log(`🏆 [LOGIN] ${achievementResults.total} badge(s) débloqué(s) pour ${userAsAny.email}`);
             }
 
             // 3. Récupérer les stats gamification pour la réponse
@@ -225,7 +221,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             // Les champs early_logins_count et night_logins_count ont été ajoutés au schema
 
         } catch (gamificationError) {
-            console.error('Erreur gamification (login):', gamificationError);
+            // Non-blocking gamification error
         }
         // ========== FIN GAMIFICATION ==========
 
@@ -240,7 +236,6 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             userAgent: getUserAgent(req),
         });
 
-        console.log('✅ [LOGIN] Cookie set, sending response');
         return res.status(200).json({ token, user: userWithoutPassword, gamification: gamificationData });
     } catch (error) {
         next(error);
@@ -329,7 +324,6 @@ export async function confirmEmail(req: Request, res: Response, next: NextFuncti
         // 4. Confirmer l'email
         await usersServicePrisma.confirmUserEmail(user.id);
 
-        console.log(`✅ [CONFIRM_EMAIL] Email confirmé pour l'utilisateur: ${user.email}`);
 
         return res.status(200).json({
             message: "Votre email a été confirmé avec succès ! Vous pouvez maintenant vous connecter.",
@@ -379,9 +373,7 @@ export async function resendConfirmationEmail(req: Request, res: Response, next:
                 name: user.name,
                 confirmationToken,
             });
-            console.log(`✅ [RESEND_CONFIRMATION] Email de confirmation renvoyé à ${user.email}`);
         } catch (emailError) {
-            console.error('❌ [RESEND_CONFIRMATION] Erreur lors de l\'envoi de l\'email:', emailError);
             return next(createError.internal("Échec de l'envoi de l'email de confirmation"));
         }
 
@@ -428,9 +420,7 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
                 name: user.name,
                 resetToken,
             });
-            console.log(`✅ [PASSWORD_RESET] Email de réinitialisation envoyé à ${user.email}`);
         } catch (emailError) {
-            console.error('❌ [PASSWORD_RESET] Erreur lors de l\'envoi de l\'email:', emailError);
             return next(createError.internal("Échec de l'envoi de l'email de réinitialisation"));
         }
 
@@ -476,7 +466,6 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
         // 5. Mettre à jour le mot de passe et supprimer le token
         await usersServicePrisma.resetUserPassword(user.id, hashedPassword);
 
-        console.log(`✅ [PASSWORD_RESET] Mot de passe réinitialisé pour l'utilisateur: ${user.email}`);
 
         // Audit log - Reinitialisation du mot de passe
         await writeAuditLog({

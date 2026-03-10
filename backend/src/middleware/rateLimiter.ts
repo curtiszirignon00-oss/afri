@@ -122,7 +122,12 @@ export const authLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    skipSuccessfulRequests: true, // Don't count successful requests
+    skipSuccessfulRequests: true,
+    keyGenerator: (req) => {
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim();
+        return ip || req.ip || 'unknown';
+    },
 });
 
 /**
@@ -137,6 +142,12 @@ export const resetPasswordLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req) => {
+        // Utiliser l'IP réelle (derrière le proxy Render)
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim();
+        return ip || req.ip || 'unknown';
+    },
 });
 
 /**
