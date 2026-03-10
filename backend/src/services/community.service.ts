@@ -1354,7 +1354,7 @@ export async function getCommunityPostComments(postId: string, page: number = 1,
 /**
  * Delete a community post
  */
-export async function deleteCommunityPost(postId: string, userId: string) {
+export async function deleteCommunityPost(postId: string, userId: string, isAdmin: boolean = false) {
     const post = await prisma.communityPost.findUnique({
         where: { id: postId },
     });
@@ -1363,20 +1363,23 @@ export async function deleteCommunityPost(postId: string, userId: string) {
         throw new Error('Post not found');
     }
 
-    // Check permissions
-    const membership = await prisma.communityMember.findUnique({
-        where: {
-            community_id_user_id: {
-                community_id: post.community_id,
-                user_id: userId,
+    // Platform admins can delete any post
+    if (!isAdmin) {
+        // Check permissions via community membership
+        const membership = await prisma.communityMember.findUnique({
+            where: {
+                community_id_user_id: {
+                    community_id: post.community_id,
+                    user_id: userId,
+                },
             },
-        },
-    });
+        });
 
-    const canDelete = post.author_id === userId || (membership && ['OWNER', 'ADMIN', 'MODERATOR'].includes(membership.role));
+        const canDelete = post.author_id === userId || (membership && ['OWNER', 'ADMIN', 'MODERATOR'].includes(membership.role));
 
-    if (!canDelete) {
-        throw new Error('You do not have permission to delete this post');
+        if (!canDelete) {
+            throw new Error('You do not have permission to delete this post');
+        }
     }
 
     // Delete comments and likes

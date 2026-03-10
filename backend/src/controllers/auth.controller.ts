@@ -23,7 +23,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         const { name, lastname, email, password } = req.body;
 
         // 1. Bloquer les domaines d'emails jetables connus
-        const BLOCKED_DOMAINS = ['dollicons.com', 'virgilian.com', 'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwam.com', 'yopmail.com', 'trashmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la', 'guerrillamail.info', 'spam4.me', 'maildrop.cc'];
+        const BLOCKED_DOMAINS = ['dollicons.com', 'virgilian.com', 'fake-afribourse.com', 'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwam.com', 'yopmail.com', 'trashmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la', 'guerrillamail.info', 'spam4.me', 'maildrop.cc'];
         const emailDomain = email.split('@')[1]?.toLowerCase();
         if (emailDomain && BLOCKED_DOMAINS.includes(emailDomain)) {
             return next(createError.badRequest("Ce fournisseur d'email n'est pas autorisé. Utilisez une adresse email permanente."));

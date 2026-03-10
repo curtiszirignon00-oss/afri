@@ -67,13 +67,13 @@ router.get('/:userId', optionalAuth, getPublicProfile);
  * GET /api/profile/:userId/followers
  * Liste des abonnés (selon confidentialité)
  */
-router.get('/:userId/followers', getFollowers);
+router.get('/:userId/followers', optionalAuth, getFollowers);
 
 /**
  * GET /api/profile/:userId/following
  * Liste des abonnements (selon confidentialité)
  */
-router.get('/:userId/following', getFollowing);
+router.get('/:userId/following', optionalAuth, getFollowing);
 
 /**
  * POST /api/profile/:userId/follow
