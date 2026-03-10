@@ -351,7 +351,8 @@ export async function deleteCommunityPost(req: AuthRequest, res: Response) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        await communityService.deleteCommunityPost(postId, userId);
+        const isAdmin = req.user?.role === 'admin';
+        await communityService.deleteCommunityPost(postId, userId, isAdmin);
         res.status(200).json({ success: true, message: 'Post deleted successfully' });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
