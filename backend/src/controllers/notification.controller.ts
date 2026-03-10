@@ -2,6 +2,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as notificationService from '../services/notification.service';
+import { parsePagination } from '../utils/pagination.util';
 
 /**
  * Get user notifications

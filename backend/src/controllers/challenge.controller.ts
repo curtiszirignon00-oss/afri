@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import * as challengeService from '../services/challenge.service';
 import * as leaderboardService from '../services/leaderboard.service';
+import { parsePagination } from '../utils/pagination.util';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {

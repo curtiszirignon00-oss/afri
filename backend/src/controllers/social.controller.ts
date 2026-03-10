@@ -1,6 +1,7 @@
 // src/controllers/social.controller.ts
 import { Request, Response } from 'express';
 import * as socialService from '../services/social.service';
+import { parsePagination } from '../utils/pagination.util';
 // Import gamification services
 import * as xpService from '../services/xp.service';
 import * as streakService from '../services/streak.service';
