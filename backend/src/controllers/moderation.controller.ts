@@ -138,6 +138,23 @@ export async function addBannedKeyword(req: AuthRequest, res: Response) {
             return res.status(400).json({ error: 'Mot-clé requis' });
         }
 
+        // Validation regex : syntaxe valide + protection ReDoS
+        if (isRegex) {
+            if (typeof keyword !== 'string' || keyword.length > 200) {
+                return res.status(400).json({ error: 'Le pattern regex ne peut pas dépasser 200 caractères' });
+            }
+            try {
+                new RegExp(keyword);
+            } catch {
+                return res.status(400).json({ error: 'Pattern regex invalide' });
+            }
+            // Détecter les quantificateurs imbriqués — source principale de ReDoS
+            // ex: (a+)+, (.*)*, ([a-z]+)+, (a|b+)+
+            if (/\([^)]*[+*?]\)[+*?]/.test(keyword) || /\([^)]*\|[^)]*\)[+*?]/.test(keyword)) {
+                return res.status(400).json({ error: 'Pattern regex trop complexe : quantificateurs imbriqués interdits (risque ReDoS)' });
+            }
+        }
+
         const kw = await moderationService.addBannedKeyword({
             keyword,
             severity,

@@ -10,10 +10,13 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
     if (!secret) throw new Error('SESSION_SECRET is required for CSRF protection');
     return secret;
   },
-  // Lier le token à l'identité de l'utilisateur (user ID si connecté, sinon session ID)
+  // Lier le token à l'identité de l'utilisateur.
+  // Pour les utilisateurs non authentifiés, on utilise 'anonymous' (fixe) plutôt que
+  // req.sessionID car express-session avec saveUninitialized:false ne pose pas de cookie
+  // de session pour les visiteurs non authentifiés → sessionID change à chaque requête.
   getSessionIdentifier: (req: Request) => {
     const authReq = req as AuthenticatedRequest;
-    return authReq.user?.id ?? req.sessionID ?? 'anonymous';
+    return authReq.user?.id ?? 'anonymous';
   },
   cookieName: isProduction ? '__Host-x-csrf-token' : 'x-csrf-token',
   cookieOptions: {
