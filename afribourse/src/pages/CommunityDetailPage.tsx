@@ -1,5 +1,4 @@
 // src/pages/CommunityDetailPage.tsx
-// TODO: Re-enable post creation when ready
 const POSTS_DISABLED = true;
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
