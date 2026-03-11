@@ -88,7 +88,15 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
         // 7. Répondre avec un message de succès (sans créer de session)
         const user = newUser as any;
-        const { password: _, email_confirmation_token: __, email_confirmation_expires: ___, ...userWithoutSensitiveData } = user;
+        const {
+            password: _,
+            email_confirmation_token: __,
+            email_confirmation_expires: ___,
+            remember_token: _rt2,
+            password_reset_token: _prt2,
+            password_reset_expires: _pre2,
+            ...userWithoutSensitiveData
+        } = user;
 
         // Audit log - Inscription réussie
         await writeAuditLog({
@@ -176,7 +184,15 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
         const token = signJWT({ id: userAsAny.id, email: userAsAny.email, role: userAsAny.role, rtk: newRememberToken });
 
-        const {password: _, ...userWithoutPassword} = userAsAny;
+        const {
+            password: _,
+            remember_token: _rt,
+            password_reset_token: _prt,
+            password_reset_expires: _pre,
+            email_confirmation_token: _ect,
+            email_confirmation_expires: _ece,
+            ...userWithoutPassword
+        } = userAsAny;
 
         const cookieOptions = {
             httpOnly: true,
