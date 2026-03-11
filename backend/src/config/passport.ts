@@ -147,7 +147,8 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
 // ═══════════════════════════════════════════════════════
 // CALLBACK URLs — dérivées de BACKEND_URL (pas de var séparée à maintenir)
 // ═══════════════════════════════════════════════════════
-const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '');
+const rawBackendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = (rawBackendUrl.startsWith('http') ? rawBackendUrl : `https://${rawBackendUrl}`).replace(/\/$/, '');
 
 // ═══════════════════════════════════════════════════════
 // STRATÉGIE GOOGLE
