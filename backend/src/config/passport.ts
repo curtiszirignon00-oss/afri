@@ -145,18 +145,19 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
 }
 
 // ═══════════════════════════════════════════════════════
+// CALLBACK URLs — dérivées de BACKEND_URL (pas de var séparée à maintenir)
+// ═══════════════════════════════════════════════════════
+const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:3001').replace(/\/$/, '');
+
+// ═══════════════════════════════════════════════════════
 // STRATÉGIE GOOGLE
 // ═══════════════════════════════════════════════════════
-const isProd = process.env.NODE_ENV === 'production';
-
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: isProd
-        ? process.env.GOOGLE_CALLBACK_URL_PROD!
-        : process.env.GOOGLE_CALLBACK_URL!,
+      callbackURL: `${BACKEND_URL}/auth/google/callback`,
       scope: ['email', 'profile'],
     },
     async (_accessToken, _refreshToken, profile, done) => {
@@ -243,9 +244,7 @@ passport.use(
     {
       clientID: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
-      callbackURL: isProd
-        ? process.env.TWITTER_CALLBACK_URL_PROD!
-        : process.env.TWITTER_CALLBACK_URL!,
+      callbackURL: `${BACKEND_URL}/auth/twitter/callback`,
       scope: ['tweet.read', 'users.read'],
       pkce: true,    // X/Twitter exige PKCE (code_challenge S256)
       store: twitterStateStore, // State store en mémoire (pas de sessions)
@@ -312,9 +311,7 @@ passport.use(
     {
       clientID: process.env.LINKEDIN_CLIENT_ID!,
       clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-      callbackURL: isProd
-        ? process.env.LINKEDIN_CALLBACK_URL_PROD!
-        : process.env.LINKEDIN_CALLBACK_URL!,
+      callbackURL: `${BACKEND_URL}/auth/linkedin/callback`,
       scope: ['openid', 'profile', 'email'],
       store: linkedinStateStore, // State store en mémoire (pas de sessions)
     },
