@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, authFetch } from '../config/api';
 import { useCreatePost } from '../hooks/useSocial';
 import confetti from 'canvas-confetti';
 import PremiumPaywall from './PremiumPaywall';
@@ -366,13 +366,12 @@ export default function LearnPage() {
         const toastId = toast.loading('Validation du quiz en cours...');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
+            const response = await authFetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...(token && { 'Authorization': `Bearer ${token}` })
                 },
-                credentials: 'include',
                 body: JSON.stringify({ answers: quizState.answers })
             });
 
@@ -489,13 +488,12 @@ export default function LearnPage() {
         const toastId = toast.loading('Marquage en cours...');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
+            const response = await authFetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...(token && { 'Authorization': `Bearer ${token}` })
                 },
-                credentials: 'include',
             });
 
             if (!response.ok) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { authFetch, API_BASE_URL } from '../config/api';
 
 interface PaymentMethod {
   id: string;
@@ -86,9 +87,8 @@ export default function CheckoutPage() {
 
     // Logger l'intention d'abonnement avec la méthode de paiement sélectionnée
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/intent`, {
+      const response = await authFetch(`${API_BASE_URL}/subscriptions/intent`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
