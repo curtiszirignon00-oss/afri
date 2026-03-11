@@ -1,6 +1,5 @@
 import { doubleCsrf } from 'csrf-csrf';
 import { Request } from 'express';
-import { AuthenticatedRequest } from './auth.middleware';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -10,14 +9,13 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
     if (!secret) throw new Error('SESSION_SECRET is required for CSRF protection');
     return secret;
   },
-  // Lier le token à l'identité de l'utilisateur.
-  // Pour les utilisateurs non authentifiés, on utilise 'anonymous' (fixe) plutôt que
-  // req.sessionID car express-session avec saveUninitialized:false ne pose pas de cookie
-  // de session pour les visiteurs non authentifiés → sessionID change à chaque requête.
-  getSessionIdentifier: (req: Request) => {
-    const authReq = req as AuthenticatedRequest;
-    return authReq.user?.id ?? 'anonymous';
-  },
+  // Identifiant fixe 'anonymous' pour tous les utilisateurs (authentifiés ou non).
+  // La route /csrf-token ne passe pas par le middleware auth, donc req.user est
+  // toujours undefined lors de la génération du token. Si on retournait req.user?.id,
+  // le token serait généré pour 'anonymous' mais validé avec le user ID sur les routes
+  // protégées → mismatch → 403. La sécurité CSRF repose sur l'impossibilité pour
+  // l'attaquant de lire le cookie (same-origin), pas sur le binding par utilisateur.
+  getSessionIdentifier: (_req: Request) => 'anonymous',
   cookieName: isProduction ? '__Host-x-csrf-token' : 'x-csrf-token',
   cookieOptions: {
     httpOnly: true,
