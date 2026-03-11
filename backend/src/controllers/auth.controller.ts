@@ -406,14 +406,24 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
             });
         }
 
-        // 2. Générer un token de réinitialisation (expire dans 1 heure)
+        // 2. Générer un token de réinitialisation (expire dans 15 minutes)
         const resetToken = generateConfirmationToken();
-        const tokenExpiration = getTokenExpirationDate(1); // 1 heure
+        const tokenExpiration = getTokenExpirationDate(0.25); // 15 minutes
 
         // 3. Mettre à jour le token dans la base de données
         await usersServicePrisma.updatePasswordResetToken(user.id, resetToken, tokenExpiration);
 
-        // 4. Envoyer l'email — erreur silencieuse pour ne pas révéler si l'email existe
+        // 4. Audit log de la demande de reset
+        await writeAuditLog({
+            userId: user.id,
+            userEmail: user.email,
+            action: 'PASSWORD_RESET_REQUEST' as any,
+            details: `Demande de réinitialisation de mot de passe depuis IP: ${getClientIp(req)}`,
+            ip: getClientIp(req),
+            userAgent: getUserAgent(req),
+        });
+
+        // 5. Envoyer l'email — erreur silencieuse pour ne pas révéler si l'email existe
         try {
             await sendPasswordResetEmail({
                 email: user.email,
@@ -421,7 +431,6 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
                 resetToken,
             });
         } catch (emailError) {
-            console.error('Échec envoi email reset (user existe):', emailError);
             // On continue — même réponse que si l'email n'existait pas
         }
 
