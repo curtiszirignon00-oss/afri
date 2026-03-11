@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { signJWT } from "../utils";
 import { createError } from "../middlewares/errorHandlers";
 import config from "../config/environnement";
-import { generateConfirmationToken, getTokenExpirationDate, isTokenExpired } from "../utils/token.utils";
+import { generateConfirmationToken, getTokenExpirationDate, isTokenExpired, hashToken } from "../utils/token.utils";
 import { sendConfirmationEmail, sendPasswordResetEmail } from "../services/email.service";
 
 // --- CONSOLIDATION : N'IMPORTER QUE LE SERVICE PRISMA ---
@@ -408,10 +408,11 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
 
         // 2. Générer un token de réinitialisation (expire dans 15 minutes)
         const resetToken = generateConfirmationToken();
-        const tokenExpiration = getTokenExpirationDate(0.25); // 15 minutes
+        const hashedToken = hashToken(resetToken); // On stocke le hash, pas le token brut
+        const tokenExpiration = getTokenExpirationDate(15); // 15 minutes
 
-        // 3. Mettre à jour le token dans la base de données
-        await usersServicePrisma.updatePasswordResetToken(user.id, resetToken, tokenExpiration);
+        // 3. Mettre à jour le token (hashé) dans la base de données
+        await usersServicePrisma.updatePasswordResetToken(user.id, hashedToken, tokenExpiration);
 
         // 4. Audit log de la demande de reset
         await writeAuditLog({
@@ -458,8 +459,8 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
             return next(createError.badRequest("Le mot de passe doit contenir au moins 8 caractères"));
         }
 
-        // 2. Trouver l'utilisateur par token
-        const user = await usersServicePrisma.getUserByResetToken(token);
+        // 2. Trouver l'utilisateur par token (on compare le hash du token reçu)
+        const user = await usersServicePrisma.getUserByResetToken(hashToken(token));
 
         if (!user) {
             return next(createError.badRequest("Token de réinitialisation invalide ou expiré"));
