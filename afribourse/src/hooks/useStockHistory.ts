@@ -1,5 +1,6 @@
 // src/hooks/useStockHistory.ts
 import { useQuery } from '@tanstack/react-query';
+import { API_BASE_URL } from '../config/api';
 
 interface StockHistoryData {
     date: string;
@@ -15,7 +16,7 @@ export function useStockHistory(symbols: string[], period: 7 | 30 | 90) {
                 period: period.toString(),
             });
 
-            const response = await fetch(`http://localhost:3001/api/stocks/comparison-history?${params}`);
+            const response = await fetch(`${API_BASE_URL}/stocks/comparison-history?${params}`, { credentials: 'include' });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch stock history');
