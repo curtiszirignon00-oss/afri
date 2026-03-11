@@ -7,7 +7,10 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    sourcemap: true, // Required for Sentry source maps
+    // Source maps uniquement si le plugin Sentry est actif (il les upload puis les supprime).
+    // Sans SENTRY_AUTH_TOKEN, on désactive complètement les source maps pour ne pas
+    // exposer le code source dans les DevTools du navigateur en production.
+    sourcemap: !!process.env.SENTRY_AUTH_TOKEN,
   },
   plugins: [
     react(),
