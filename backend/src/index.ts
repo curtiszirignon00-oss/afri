@@ -178,7 +178,7 @@ class App {
       })
     );
 
-    // --- CSRF Protection (Double Submit Cookie Pattern) ---
+    // --- CSRF Protection (HMAC stateless — sans cookie) ---
     // Routes publiques exemptées : pas d'état authentifié à protéger + CORS + Content-Type JSON
     // suffisent à bloquer les attaques cross-site sur ces endpoints.
     const CSRF_PUBLIC_PATHS = new Set([
