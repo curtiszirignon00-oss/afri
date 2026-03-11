@@ -2,21 +2,28 @@ import crypto from 'crypto';
 
 /**
  * Génère un token de confirmation unique et sécurisé
- * @returns Token aléatoire de 32 caractères hexadécimaux
+ * @returns Token aléatoire de 64 caractères hexadécimaux (32 bytes)
  */
 export function generateConfirmationToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
 /**
- * Calcule la date d'expiration du token (24 heures par défaut)
- * @param hours Nombre d'heures avant expiration (défaut: 24)
+ * Hash un token pour stockage sécurisé en base de données.
+ * Le token brut est envoyé à l'utilisateur, le hash est stocké en DB.
+ * Même avec un accès direct à la DB, le hash seul est inutilisable.
+ */
+export function hashToken(rawToken: string): string {
+  return crypto.createHash('sha256').update(rawToken).digest('hex');
+}
+
+/**
+ * Calcule la date d'expiration du token
+ * @param minutes Nombre de minutes avant expiration (défaut: 15)
  * @returns Date d'expiration
  */
-export function getTokenExpirationDate(hours: number = 24): Date {
-  const expirationDate = new Date();
-  expirationDate.setHours(expirationDate.getHours() + hours);
-  return expirationDate;
+export function getTokenExpirationDate(minutes: number = 15): Date {
+  return new Date(Date.now() + minutes * 60 * 1000);
 }
 
 /**
