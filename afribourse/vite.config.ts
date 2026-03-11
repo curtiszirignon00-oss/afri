@@ -2,28 +2,64 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { imagetools } from 'vite-imagetools';
 import { VitePWA } from 'vite-plugin-pwa';
-import { sentryVitePlugin } from '@sentry/vite-plugin';
+import type { Plugin, ResolvedConfig } from 'vite';
+import { readFileSync, writeFileSync, readdirSync } from 'fs';
+import { join } from 'path';
+
+// Plugin qui supprime tous les commentaires sourceMappingURL des bundles finaux.
+// Nécessaire car certains packages tiers (ex: rrweb via Amplitude) embarquent leurs
+// propres références de source maps, même quand sourcemap:false est configuré.
+// generateBundle couvre les chunks Rollup ; writeBundle couvre les workers rrweb
+// émis en dehors du cycle principal de bundling.
+function stripSourceMappingUrls(): Plugin {
+  let resolvedOutDir = '';
+  return {
+    name: 'strip-source-mapping-urls',
+    enforce: 'post',
+    configResolved(config: ResolvedConfig) {
+      resolvedOutDir = join(config.root, config.build.outDir ?? 'dist');
+    },
+    generateBundle(_options, bundle) {
+      for (const chunk of Object.values(bundle)) {
+        if (chunk.type === 'chunk' && typeof chunk.code === 'string') {
+          chunk.code = chunk.code.replace(/^\/\/# sourceMappingURL=.+$/gm, '');
+        }
+        if (chunk.type === 'asset' && typeof chunk.source === 'string' && chunk.fileName.endsWith('.js')) {
+          chunk.source = (chunk.source as string).replace(/^\/\/# sourceMappingURL=.+$/gm, '');
+        }
+      }
+    },
+    closeBundle() {
+      // Post-process any JS files written to disk that still contain sourceMappingURL
+      // (e.g. rrweb web worker scripts emitted outside Rollup's generateBundle scope)
+      const assetsDir = join(resolvedOutDir, 'assets');
+      let files: string[];
+      try {
+        files = readdirSync(assetsDir).filter(f => f.endsWith('.js'));
+      } catch {
+        return;
+      }
+      for (const file of files) {
+        const filePath = join(assetsDir, file);
+        const content = readFileSync(filePath, 'utf8');
+        if (content.includes('sourceMappingURL')) {
+          const cleaned = content.replace(/^\/\/# sourceMappingURL=.+$/gm, '');
+          writeFileSync(filePath, cleaned, 'utf8');
+        }
+      }
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    // Source maps uniquement si le plugin Sentry est actif (il les upload puis les supprime).
-    // Sans SENTRY_AUTH_TOKEN, on désactive complètement les source maps pour ne pas
-    // exposer le code source dans les DevTools du navigateur en production.
-    sourcemap: !!process.env.SENTRY_AUTH_TOKEN,
+    sourcemap: false, // Ne jamais générer de source maps en production
   },
   plugins: [
     react(),
     imagetools(),
-    // Sentry source maps upload (only in production build with auth token)
-    process.env.SENTRY_AUTH_TOKEN && sentryVitePlugin({
-      org: process.env.SENTRY_ORG,
-      project: process.env.SENTRY_PROJECT,
-      authToken: process.env.SENTRY_AUTH_TOKEN,
-      sourcemaps: {
-        filesToDeleteAfterUpload: ['./dist/**/*.map'], // Don't deploy source maps
-      },
-    }),
+    stripSourceMappingUrls(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
