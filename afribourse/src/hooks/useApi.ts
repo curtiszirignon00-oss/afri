@@ -1,7 +1,7 @@
 // src/hooks/useApi.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, getCsrfToken, fetchCsrfToken } from '../config/api';
 
 // ========================================
 // 🔧 FONCTION UTILITAIRE FETCH
@@ -10,6 +10,8 @@ import { API_BASE_URL } from '../config/api';
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
+
+const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { params, ...fetchOptions } = options;
@@ -20,9 +22,19 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     url += `?${searchParams.toString()}`;
   }
 
+  const method = (fetchOptions.method ?? 'GET').toUpperCase();
+  const isMutation = MUTATION_METHODS.has(method);
+
+  // Récupérer le token CSRF pour les mutations si pas encore en cache
+  if (isMutation && !getCsrfToken()) {
+    await fetchCsrfToken();
+  }
+
+  const csrfToken = getCsrfToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>),
+    ...(isMutation && csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
   };
 
   const response = await fetch(url, {
@@ -30,6 +42,19 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     credentials: 'include', // Cookie httpOnly envoyé automatiquement
     headers,
   });
+
+  // Retry automatique si token CSRF expiré (403) — renouvelle et retente une fois
+  if (response.status === 403 && isMutation) {
+    await fetchCsrfToken();
+    const newToken = getCsrfToken();
+    if (newToken) headers['X-CSRF-Token'] = newToken;
+    const retryResponse = await fetch(url, { ...fetchOptions, credentials: 'include', headers });
+    if (!retryResponse.ok) {
+      const errorData = await retryResponse.json().catch(() => ({}));
+      throw new Error(errorData.error || errorData.message || `Erreur ${retryResponse.status}`);
+    }
+    return retryResponse.json();
+  }
 
   // Gestion des erreurs HTTP
   if (!response.ok) {
