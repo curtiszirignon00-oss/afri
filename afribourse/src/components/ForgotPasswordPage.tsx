@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Mail, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { Mail, CheckCircle, XCircle, ArrowLeft, Lock } from 'lucide-react';
+
+// TODO: Re-enable password reset when ready
+const RESET_PASSWORD_DISABLED = true;
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -40,6 +43,28 @@ const ForgotPasswordPage = () => {
       );
     }
   };
+
+  if (RESET_PASSWORD_DISABLED) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+        <div className="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 text-center">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 mb-4">
+            <Lock className="h-8 w-8 text-orange-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Fonctionnalité indisponible</h2>
+          <p className="text-gray-600 mb-6">
+            La réinitialisation de mot de passe est temporairement désactivée. Veuillez réessayer ultérieurement.
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full bg-orange-600 text-white rounded-lg px-6 py-3 hover:bg-orange-700 transition-colors font-semibold"
+          >
+            Retour à la connexion
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">

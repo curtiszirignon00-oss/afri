@@ -76,8 +76,6 @@ async function main() {
     });
 
     console.log(`✅ Email envoyé avec succès à ${email}!`);
-    console.log(`\n📝 Lien de réinitialisation (valable 1 heure):`);
-    console.log(`   http://localhost:5173/reinitialiser-mot-de-passe?token=${resetToken}\n`);
     console.log(`📬 Vérifiez votre boîte email (y compris les spams)`);
 
   } catch (error) {

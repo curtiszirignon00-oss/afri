@@ -30,16 +30,38 @@ export const requestLogger = pinoHttp({
     responseTime: 'duration',
   },
   // Redact sensitive data
-  redact: ['req.headers.authorization', 'req.headers.cookie', 'req.body.password'],
+  redact: [
+    'req.headers.authorization',
+    'req.headers.cookie',
+    'req.body.password',
+    'req.body.token',
+    'req.body.newPassword',
+  ],
   // Serialize request
   serializers: {
-    req: (req) => ({
-      method: req.method,
-      url: req.url,
-      query: req.query,
-      params: req.params,
-      // Don't log body by default (can contain sensitive data)
-    }),
+    req: (req) => {
+      // Supprimer le token de l'URL avant de logger (ex: /confirm-email?token=xxx)
+      let safeUrl = req.url || '';
+      try {
+        const urlObj = new URL(safeUrl, 'http://localhost');
+        if (urlObj.searchParams.has('token')) {
+          urlObj.searchParams.set('token', '[REDACTED]');
+          safeUrl = urlObj.pathname + urlObj.search;
+        }
+      } catch (_) { /* URL invalide, on garde telle quelle */ }
+
+      // Supprimer le token des query params loggés
+      const safeQuery = { ...(req.query || {}) };
+      if (safeQuery.token) safeQuery.token = '[REDACTED]';
+
+      return {
+        method: req.method,
+        url: safeUrl,
+        query: safeQuery,
+        params: req.params,
+        // Don't log body by default (can contain sensitive data)
+      };
+    },
     res: (res) => ({
       statusCode: res.statusCode,
     }),
