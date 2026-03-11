@@ -126,7 +126,7 @@ const config : IConfig = {
   
   rateLimit: {
     windowMs: parseInt(getEnvVar('RATE_LIMIT_WINDOW_MS', '900000'), 10),
-    maxRequests: parseInt(getEnvVar('RATE_LIMIT_MAX_REQUESTS', '100'), 10),
+    maxRequests: parseInt(getEnvVar('RATE_LIMIT_MAX_REQUESTS', '500'), 10),
   },
   
   upload: {

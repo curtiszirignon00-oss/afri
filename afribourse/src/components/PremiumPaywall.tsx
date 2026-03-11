@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Zap, Crown, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { authFetch, API_BASE_URL } from '../config/api';
 
 interface PremiumPaywallProps {
   isOpen: boolean;
@@ -60,9 +61,8 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
 
     // Envoyer les données au backend pour tracking
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/subscriptions/intent`, {
+      const response = await authFetch(`${API_BASE_URL}/subscriptions/intent`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
