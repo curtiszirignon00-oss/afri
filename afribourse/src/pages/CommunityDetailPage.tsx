@@ -1,4 +1,6 @@
 // src/pages/CommunityDetailPage.tsx
+// TODO: Re-enable post creation when ready
+const POSTS_DISABLED = true;
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
@@ -766,7 +768,7 @@ export default function CommunityDetailPage() {
                 {activeTab === 'posts' && (
                     <div className="max-w-2xl mx-auto">
                         {/* Post Composer */}
-                        {community.isMember && (
+                        {!POSTS_DISABLED && community.isMember && (
                             <div className="mb-6">
                                 <CommunityPostComposer communityId={community.id} />
                             </div>
