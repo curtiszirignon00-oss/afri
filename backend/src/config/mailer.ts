@@ -7,10 +7,6 @@ import nodemailer from "nodemailer";
 const port = config.email.port || 587;
 const isPort465 = port === 465;
 
-console.log(`📧 [MAILER] Configuration SMTP:`);
-console.log(`   → Serveur: ${config.email.host}:${port}`);
-console.log(`   → Mode: ${isPort465 ? 'SSL (Port 465)' : 'TLS (Port 587)'}`);
-console.log(`   → Utilisateur: ${config.email.user}`);
 
 const transporter = nodemailer.createTransport({
   host: config.email.host,
