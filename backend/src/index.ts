@@ -160,17 +160,21 @@ class App {
     this.app?.use(passportConfig.session());
 
 
-    // Rate Limiting
+    // Rate Limiting global — seuil généreux pour une SPA (nombreux appels simultanés par page)
+    // Clé = user ID si authentifié (évite que plusieurs utilisateurs partagent le même compteur
+    // derrière un NAT/proxy), sinon IP pour protéger les routes publiques.
     this.app?.use(
       '/api/',
       rateLimit({
         windowMs: config.rateLimit.windowMs,
         max: config.rateLimit.maxRequests,
         message: {
-          error: 'Trop de requêtes pour cette adresse IP. Réessayez plus tard.',
+          error: 'Trop de requêtes. Réessayez dans quelques instants.',
         },
         standardHeaders: true,
         legacyHeaders: false,
+        keyGenerator: (req: any) => req.user?.id ?? req.ip ?? 'unknown',
+        skip: (req: any) => req.user?.role === 'ADMIN',
       })
     );
 
