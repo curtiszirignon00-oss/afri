@@ -399,7 +399,10 @@ export async function createPost(authorId: string, postData: CreatePostDto) {
         },
         include: {
             author: {
-                include: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
                     profile: {
                         select: {
                             username: true,
@@ -513,7 +516,10 @@ export async function commentPost(userId: string, postId: string, content: strin
         },
         include: {
             author: {
-                include: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
                     profile: {
                         select: {
                             username: true,
@@ -590,7 +596,10 @@ export async function getFeed(userId: string, page: number = 1, limit: number = 
             orderBy: { created_at: 'desc' },
             include: {
                 author: {
-                    include: {
+                    select: {
+                        id: true,
+                        name: true,
+                        lastname: true,
                         profile: {
                             select: {
                                 username: true,
@@ -671,7 +680,10 @@ export async function getUserPosts(
             orderBy: { created_at: 'desc' },
             include: {
                 author: {
-                    include: {
+                    select: {
+                        id: true,
+                        name: true,
+                        lastname: true,
                         profile: {
                             select: {
                                 username: true,
@@ -733,7 +745,10 @@ export async function updatePost(postId: string, authorId: string, updateData: P
         },
         include: {
             author: {
-                include: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
                     profile: {
                         select: {
                             username: true,
@@ -804,7 +819,10 @@ export async function getPostById(postId: string, viewerId?: string) {
         where: { id: postId },
         include: {
             author: {
-                include: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
                     profile: {
                         select: {
                             username: true,
@@ -907,7 +925,10 @@ export async function getPublicPosts(
             orderBy: { created_at: 'desc' },
             include: {
                 author: {
-                    include: {
+                    select: {
+                        id: true,
+                        name: true,
+                        lastname: true,
                         profile: {
                             select: {
                                 username: true,
@@ -986,7 +1007,10 @@ export async function getPostComments(postId: string, page: number = 1, limit: n
         orderBy: { created_at: 'desc' },
         include: {
             author: {
-                include: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
                     profile: {
                         select: {
                             username: true,
