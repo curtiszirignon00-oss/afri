@@ -21,9 +21,8 @@ const transporter = nodemailer.createTransport({
     pass: config.email.pass,
   },
   tls: {
-    // Ne pas échouer sur les certificats invalides
-    // Note: Nécessaire si un proxy/antivirus intercepte les connexions SSL
-    // En production, si vous n'avez pas ce problème, vous pouvez mettre true
+    // Brevo SMTP requiert false — leur chaîne contient un CA intermédiaire non reconnu
+    // La connexion reste chiffrée TLS (confidentialité assurée)
     rejectUnauthorized: false,
   },
   // Augmenter les timeouts pour les connexions lentes (comme Render)

@@ -163,10 +163,10 @@ export const resetPasswordLimiter = rateLimit({
     keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'no-ip',
 });
 
-// Rate limiter par email (5/h) — empêche l'énumération multi-IP sur un même email
+// Rate limiter par email (2/h) — max 2 tentatives par email par heure
 export const resetPasswordEmailLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5,
+    max: 2,
     message: {
         error: 'Trop de demandes de réinitialisation pour cette adresse. Réessayez dans une heure.',
     },
