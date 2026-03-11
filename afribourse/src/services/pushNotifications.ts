@@ -1,7 +1,15 @@
 // afribourse/src/services/pushNotifications.ts
 // Push notifications natif avec Web Push API (sans OneSignal)
 
+import { getCsrfToken, fetchCsrfToken } from '../config/api';
+
 const API_BASE = import.meta.env.VITE_API_URL || '';
+
+async function getCsrfHeader(): Promise<Record<string, string>> {
+  if (!getCsrfToken()) await fetchCsrfToken();
+  const token = getCsrfToken();
+  return token ? { 'X-CSRF-Token': token } : {};
+}
 
 let vapidPublicKey: string | null = null;
 
@@ -48,7 +56,7 @@ export async function subscribeToPush(): Promise<boolean> {
     const res = await fetch(`${API_BASE}/push/subscribe`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...await getCsrfHeader() },
       body: JSON.stringify({ subscription: subscription.toJSON() }),
     });
 
@@ -74,9 +82,11 @@ export async function unsubscribeFromPush(authToken: string): Promise<boolean> {
     if (subscription) {
       await fetch(`${API_BASE}/push/unsubscribe`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
+          ...await getCsrfHeader(),
         },
         body: JSON.stringify({ endpoint: subscription.endpoint }),
       }).catch(() => {});

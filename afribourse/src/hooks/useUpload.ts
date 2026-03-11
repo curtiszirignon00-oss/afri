@@ -1,7 +1,13 @@
 // src/hooks/useUpload.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, getCsrfToken, fetchCsrfToken } from '../config/api';
 import toast from 'react-hot-toast';
+
+async function getCsrfHeader(): Promise<Record<string, string>> {
+    if (!getCsrfToken()) await fetchCsrfToken();
+    const token = getCsrfToken();
+    return token ? { 'X-CSRF-Token': token } : {};
+}
 
 
 // Types
@@ -29,11 +35,10 @@ export function useUploadAvatar() {
             const formData = new FormData();
             formData.append('avatar', file);
 
-
             const response = await fetch(`${API_BASE_URL}/upload/avatar`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {},
+                headers: await getCsrfHeader(),
                 body: formData
             });
 
@@ -69,11 +74,10 @@ export function useUploadBanner() {
             const formData = new FormData();
             formData.append('banner', file);
 
-
             const response = await fetch(`${API_BASE_URL}/upload/banner`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {},
+                headers: await getCsrfHeader(),
                 body: formData
             });
 
@@ -108,11 +112,10 @@ export function useUploadPostImages() {
                 formData.append('images', file);
             });
 
-
             const response = await fetch(`${API_BASE_URL}/upload/post-images`, {
                 method: 'POST',
                 credentials: 'include',
-                headers: {},
+                headers: await getCsrfHeader(),
                 body: formData
             });
 
@@ -142,6 +145,7 @@ export function useDeleteImage() {
             const response = await fetch(`${API_BASE_URL}/upload/${type}/${filename}`, {
                 method: 'DELETE',
                 credentials: 'include',
+                headers: await getCsrfHeader(),
             });
 
             if (!response.ok) {
@@ -193,7 +197,8 @@ export function useUpdateProfile() {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...await getCsrfHeader(),
                 },
                 body: JSON.stringify(data)
             });
