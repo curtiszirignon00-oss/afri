@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Mail, CheckCircle, XCircle, ArrowLeft, Lock } from 'lucide-react';
 
-// TODO: Re-enable password reset when ready
-const RESET_PASSWORD_DISABLED = true;
+const RESET_PASSWORD_DISABLED = false;
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
