@@ -113,8 +113,9 @@ class App {
         // En production, bloquer les requêtes sans origine (curl, scripts, iframes)
         // En développement, les autoriser pour faciliter les tests locaux
         if (!origin) {
-          if (config.nodeEnv !== 'production') return callback(null, true);
-          return callback(new Error('Not allowed by CORS: origin required'));
+          // Pas d'Origin = navigation browser directe (OAuth redirect, curl, etc.)
+          // On laisse passer sans header CORS — pas de risque CSRF car CSRF est géré séparément
+          return callback(null, false);
         }
 
         if (allowedOrigins.includes(origin)) {
