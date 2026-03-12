@@ -27,6 +27,7 @@ import CommunityPage from './pages/CommunityPage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CommunityDetailPage from './pages/CommunityDetailPage';
 import StockDetailPageEnhanced from './components/StockDetailPageEnhanced';
+import UniWaxDashboardPage from './pages/UniWaxDashboardPage';
 import LearnPage from './components/LearnPage';
 import NewsPage from './components/NewsPage';
 import GlossaryPage from './components/GlossaryPage';
@@ -115,6 +116,7 @@ function Layout() {
           <Route path="/" element={<HomePage />} />
           <Route path="/markets" element={<MarketsPageRefactored />} />
           <Route path="/indices" element={<IndicesPage />} />
+          <Route path="/stock/UNXC/UNIWAX_Dashboard_Analytique" element={<UniWaxDashboardPage />} />
           <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
