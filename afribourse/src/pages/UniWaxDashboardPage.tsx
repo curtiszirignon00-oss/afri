@@ -111,6 +111,76 @@ const HTML = `<!DOCTYPE html>
     margin-bottom: 16px; display: flex; align-items: center; gap: 12px;
   }
   .section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .tip {
+    border-bottom: 1px dashed rgba(200,148,10,0.5);
+    cursor: help;
+    display: inline;
+    transition: border-color 0.15s;
+  }
+  .tip:hover { border-bottom-color: var(--gold-lt); }
+  #ttip {
+    position: fixed; z-index: 9999; max-width: 300px; padding: 12px 16px;
+    background: rgba(13,15,26,0.97); border: 1px solid rgba(200,148,10,0.5);
+    border-radius: 10px; color: #E8EAF0; font-size: 0.78rem; line-height: 1.6;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s;
+    backdrop-filter: blur(8px); box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    font-family: 'DM Sans', sans-serif;
+  }
+  #ttip b { color: var(--gold-lt); display: block; margin-bottom: 4px; font-size: 0.82rem; }
+  #ttip .ts { color: var(--gray); margin-top: 4px; }
+  /* ── THEME TOGGLE BUTTON ── */
+  #theme-btn {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    color: var(--gray); font-size: 1rem; cursor: pointer; padding: 6px 14px;
+    display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem; font-weight: 500; transition: all 0.2s; white-space: nowrap;
+  }
+  #theme-btn:hover { border-color: var(--gold-lt); color: var(--gold-lt); }
+  /* ── LIGHT MODE ── */
+  body.light {
+    background: #F4EFE6; color: #1A202E;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 10% 0%, rgba(200,148,10,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 90% 100%, rgba(13,115,119,0.07) 0%, transparent 60%);
+  }
+  body.light .header { background: rgba(244,239,230,0.96); border-bottom-color: rgba(200,148,10,0.3); }
+  body.light .kpi { background: rgba(255,255,255,0.75); border-color: rgba(200,148,10,0.2); }
+  body.light .card { background: rgba(255,255,255,0.8); border-color: rgba(200,148,10,0.2); }
+  body.light .wacc-card { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.1); }
+  body.light .wacc-result.gold { background: rgba(200,148,10,0.1); }
+  body.light .wacc-result.red { background: rgba(192,57,43,0.08); }
+  body.light .wacc-result.teal { background: rgba(13,115,119,0.08); }
+  body.light .timeline { border-color: rgba(200,148,10,0.3); }
+  body.light .timeline-period:hover { background: rgba(0,0,0,0.03); }
+  body.light .scenario.bull { background: rgba(39,174,96,0.07); }
+  body.light .scenario.base { background: rgba(230,126,34,0.07); }
+  body.light .scenario.bear { background: rgba(192,57,43,0.07); }
+  body.light .sc-items li { color: #2A3545; border-bottom-color: rgba(0,0,0,0.07); }
+  body.light .wacc-row { border-bottom-color: rgba(0,0,0,0.07); }
+  body.light .section-divider { border-top-color: rgba(200,148,10,0.2); }
+  body.light .section-header::after { background: rgba(200,148,10,0.2); }
+  body.light .footer-strip { border-top-color: rgba(200,148,10,0.2); }
+  body.light .kpi-label,
+  body.light .card-sub,
+  body.light .tp-note,
+  body.light .tp-year,
+  body.light .header-left .sub,
+  body.light .cours-label,
+  body.light .sc-subtitle,
+  body.light .sc-range,
+  body.light .footer-strip span,
+  body.light .wacc-key,
+  body.light .wacc-title,
+  body.light #theme-btn { color: #556677; }
+  body.light #theme-btn { border-color: rgba(200,148,10,0.3); }
+  body.light #theme-btn:hover { color: var(--gold); border-color: var(--gold); }
+  body.light .delta-pos { color: #1E8B4D; }
+  body.light .delta-neg { color: #B03020; }
+  body.light .badge-gold { color: #9A6E05; }
+  body.light .badge-teal { color: #0A5D61; }
+  body.light #ttip { background: rgba(255,255,255,0.98); color: #1A202E; box-shadow: 0 4px 24px rgba(0,0,0,0.15); }
+  body.light #ttip b { color: var(--gold); }
+  body.light #ttip .ts { color: #556677; }
   @media (max-width: 1200px) {
     .kpi-strip { grid-template-columns: repeat(3, 1fr); }
     .charts-grid, .charts-bottom { grid-template-columns: 1fr; }
@@ -128,6 +198,7 @@ const HTML = `<!DOCTYPE html>
     <div class="sub">Dashboard Analytique · AfriBourse · BRVM · Rapport Mars 2026</div>
   </div>
   <div class="header-right">
+    <button id="theme-btn" onclick="toggleTheme()" title="Changer le thème">☀️ Fond clair</button>
     <span class="badge badge-gold">BRVM – Zone UEMOA</span>
     <span class="badge badge-teal">Textile · Wax</span>
     <div class="cours-badge">
@@ -142,7 +213,7 @@ const HTML = `<!DOCTYPE html>
     <div class="kpi red"><div class="kpi-label">CA actuel (T3 2025)</div><div class="kpi-value">22,5 Mds</div><div class="kpi-delta delta-neg">↓ -44% vs record</div></div>
     <div class="kpi green"><div class="kpi-label">Résultat Net T3 2025</div><div class="kpi-value">8,14 Mds</div><div class="kpi-delta delta-pos">↑ Cession terrain +9,99 Mds</div></div>
     <div class="kpi red"><div class="kpi-label">EBIT opérationnel 2024</div><div class="kpi-value">-2,14 Mds</div><div class="kpi-delta delta-neg">↓ Destruction valeur</div></div>
-    <div class="kpi orange"><div class="kpi-label">WACC estimé</div><div class="kpi-value">~16%</div><div class="kpi-delta delta-neg">↑ Bêta 1,75 – très risqué</div></div>
+    <div class="kpi orange"><div class="kpi-label"><span class="tip" data-key="wacc">WACC</span> estimé</div><div class="kpi-value">~16%</div><div class="kpi-delta delta-neg">↑ <span class="tip" data-key="beta">Bêta</span> 1,75 – très risqué</div></div>
     <div class="kpi teal"><div class="kpi-label">Taux BCEAO (mars 2026)</div><div class="kpi-value">3,00%</div><div class="kpi-delta delta-pos">↓ Favorable relance</div></div>
   </div>
   <div class="section-header">Épopée Financière 2018 – 2025</div>
@@ -151,7 +222,7 @@ const HTML = `<!DOCTYPE html>
       <div class="tp-year">2018–2019</div><div class="tp-label" style="color:#2ECC71">L'Âge d'Or</div>
       <div class="tp-bar" style="background:linear-gradient(90deg,#27AE60,#2ECC71)"></div>
       <div class="tp-result" style="color:#2ECC71">+4,19 Mds</div>
-      <div class="tp-note">CA record 40,2 Mds<br>ROIC > WACC ✓<br>Dividende 202 FCFA</div>
+      <div class="tp-note">CA record 40,2 Mds<br><span class="tip" data-key="roic">ROIC</span> > <span class="tip" data-key="wacc">WACC</span> ✓<br>Dividende 202 FCFA</div>
     </div>
     <div class="timeline-period" style="background:linear-gradient(180deg,rgba(230,126,34,0.1),transparent)">
       <div class="tp-year">2020</div><div class="tp-label" style="color:#F39C12">Choc COVID</div>
@@ -163,7 +234,7 @@ const HTML = `<!DOCTYPE html>
       <div class="tp-year">2021</div><div class="tp-label" style="color:#F2C94C">Faux Rebond</div>
       <div class="tp-bar" style="background:linear-gradient(90deg,#C8940A,#F2C94C)"></div>
       <div class="tp-result" style="color:#F2C94C">+1,40 Mds</div>
-      <div class="tp-note">Stocks 13,9 Mds ⚠<br>100% payout<br>BFR explose</div>
+      <div class="tp-note">Stocks 13,9 Mds ⚠<br>100% payout<br><span class="tip" data-key="bfr">BFR</span> explose</div>
     </div>
     <div class="timeline-period" style="background:linear-gradient(180deg,rgba(192,57,43,0.12),transparent)">
       <div class="tp-year">2022</div><div class="tp-label" style="color:#E74C3C">Enfer Opérationnel</div>
@@ -175,13 +246,13 @@ const HTML = `<!DOCTYPE html>
       <div class="tp-year">2023</div><div class="tp-label" style="color:#E74C3C">Crise Créances</div>
       <div class="tp-bar" style="background:linear-gradient(90deg,#922B21,#E74C3C); width:80%"></div>
       <div class="tp-result" style="color:#E74C3C">-2,04 Mds</div>
-      <div class="tp-note">CA &lt; 30 Mds<br>Créances +29%<br>EBITDA 325 M</div>
+      <div class="tp-note">CA &lt; 30 Mds<br>Créances +29%<br><span class="tip" data-key="ebitda">EBITDA</span> 325 M</div>
     </div>
     <div class="timeline-period" style="background:linear-gradient(180deg,rgba(192,57,43,0.25),transparent)">
       <div class="tp-year">2024</div><div class="tp-label" style="color:#E74C3C">Point de Rupture</div>
       <div class="tp-bar" style="background:linear-gradient(90deg,#7B241C,#C0392B); width:60%"></div>
       <div class="tp-result" style="color:#E74C3C">-2,19 Mds</div>
-      <div class="tp-note">EBITDA négatif!<br>Cours → 410 FCFA<br>Plancher historique</div>
+      <div class="tp-note"><span class="tip" data-key="ebitda">EBITDA</span> négatif!<br>Cours → 410 FCFA<br>Plancher historique</div>
     </div>
     <div class="timeline-period" style="background:linear-gradient(180deg,rgba(13,115,119,0.15),transparent)">
       <div class="tp-year">2025 (T3)</div><div class="tp-label" style="color:#14BDBB">Miracle Immobilier</div>
@@ -198,24 +269,24 @@ const HTML = `<!DOCTYPE html>
     </div>
     <div class="card">
       <div class="card-title">Évolution des Marges</div>
-      <div class="card-sub">EBITDA · Opérationnelle · Nette (%)</div>
+      <div class="card-sub"><span class="tip" data-key="marge_ebitda">EBITDA</span> · <span class="tip" data-key="marge_ope">Opérationnelle</span> · <span class="tip" data-key="marge_nette">Nette</span> (%)</div>
       <div class="chart-container" style="height:280px"><canvas id="chartMarges"></canvas></div>
     </div>
   </div>
   <div class="charts-bottom">
     <div class="card">
-      <div class="card-title">BFR : Stocks &amp; Créances Clients</div>
+      <div class="card-title"><span class="tip" data-key="bfr">BFR</span> : Stocks &amp; Créances Clients</div>
       <div class="card-sub">Immobilisation de trésorerie · en milliards FCFA</div>
       <div class="chart-container" style="height:260px"><canvas id="chartBFR"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">Dynamique ROIC vs WACC</div>
+      <div class="card-title">Dynamique <span class="tip" data-key="roic">ROIC</span> vs <span class="tip" data-key="wacc">WACC</span></div>
       <div class="card-sub">Création vs Destruction de Valeur Économique</div>
       <div class="chart-container" style="height:260px"><canvas id="chartROIC"></canvas></div>
     </div>
   </div>
   <hr class="section-divider">
-  <div class="section-header">Paramétrage du Coût du Capital (WACC)</div>
+  <div class="section-header">Paramétrage du Coût du Capital (<span class="tip" data-key="wacc">WACC</span>)</div>
   <div class="wacc-block">
     <div class="wacc-card">
       <div class="wacc-title">Coût de la Dette — Kd</div>
@@ -227,18 +298,18 @@ const HTML = `<!DOCTYPE html>
     <div class="wacc-card">
       <div class="wacc-title">Coût des Capitaux Propres — Ke (MEDAF)</div>
       <div class="wacc-row"><span class="wacc-key">Taux sans risque Rf (UEMOA)</span><span class="wacc-val">6,00%</span></div>
-      <div class="wacc-row"><span class="wacc-key">Bêta (β) estimé UNXC</span><span class="wacc-val" style="color:var(--red-lt)">1,75</span></div>
+      <div class="wacc-row"><span class="wacc-key"><span class="tip" data-key="beta">Bêta (β)</span> estimé UNXC</span><span class="wacc-val" style="color:var(--red-lt)">1,75</span></div>
       <div class="wacc-row"><span class="wacc-key">Prime de risque marché Pm</span><span class="wacc-val">6,00%</span></div>
       <div class="wacc-row"><span class="wacc-key">Ke = Rf + β × Pm</span><span class="wacc-val" style="color:var(--red-lt)">16,50%</span></div>
       <div class="wacc-result red"><span class="wacc-result-key">Ke = 6% + 1,75 × 6%</span><span class="wacc-result-val">16,5%</span></div>
     </div>
     <div class="wacc-card">
-      <div class="wacc-title">WACC Consolidé</div>
+      <div class="wacc-title"><span class="tip" data-key="wacc">WACC</span> Consolidé</div>
       <div class="wacc-row"><span class="wacc-key">Capitaux propres</span><span class="wacc-val">&gt; 90%</span></div>
       <div class="wacc-row"><span class="wacc-key">Dette financière</span><span class="wacc-val" style="color:var(--green-lt)">&lt; 10%</span></div>
       <div class="wacc-row"><span class="wacc-key">Ke (pondération dominante)</span><span class="wacc-val" style="color:var(--red-lt)">16,5%</span></div>
       <div class="wacc-row"><span class="wacc-key">Kd net (pondération mineure)</span><span class="wacc-val" style="color:var(--teal-lt)">5,07%</span></div>
-      <div class="wacc-result gold"><span class="wacc-result-key">WACC estimé</span><span class="wacc-result-val">~16%</span></div>
+      <div class="wacc-result gold"><span class="wacc-result-key"><span class="tip" data-key="wacc">WACC</span> estimé</span><span class="wacc-result-val">~16%</span></div>
     </div>
   </div>
   <hr class="section-divider">
@@ -251,10 +322,10 @@ const HTML = `<!DOCTYPE html>
       <div class="sc-target">3 000 – 3 500</div>
       <div class="sc-range">FCFA · +50% à +75% vs cours actuel</div>
       <ul class="sc-items">
-        <li>Utilisation des 10 Mds pour réformer le BFR</li>
-        <li>EBITDA &gt; 3 Mds FCFA d'ici 2027</li>
-        <li>ROIC redevient positif, bêta recule vers 1,2</li>
-        <li>WACC diminue vers ~13%, spread se referme</li>
+        <li>Utilisation des 10 Mds pour réformer le <span class="tip" data-key="bfr">BFR</span></li>
+        <li><span class="tip" data-key="ebitda">EBITDA</span> &gt; 3 Mds FCFA d'ici 2027</li>
+        <li><span class="tip" data-key="roic">ROIC</span> redevient positif, <span class="tip" data-key="beta">bêta</span> recule vers 1,2</li>
+        <li><span class="tip" data-key="wacc">WACC</span> diminue vers ~13%, spread se referme</li>
         <li>Synergies intégration verticale COIC</li>
       </ul>
     </div>
@@ -267,7 +338,7 @@ const HTML = `<!DOCTYPE html>
       <ul class="sc-items">
         <li>Cash terrain absorbé par charges courantes</li>
         <li>Pas de réforme structure de coûts</li>
-        <li>Bêta reste à 1,75, destruction de valeur continue</li>
+        <li><span class="tip" data-key="beta">Bêta</span> reste à 1,75, destruction de valeur continue</li>
         <li>Pics spéculatifs + corrections violentes</li>
         <li>Attente publication T4 2025 et orientations 2026</li>
       </ul>
@@ -281,7 +352,7 @@ const HTML = `<!DOCTYPE html>
       <ul class="sc-items">
         <li>10 Mds brûlés en &lt; 3 ans face concurrence asiatique</li>
         <li>Créances irrécouvrables, cash-burn extrême</li>
-        <li>ROIC chroniquement négatif, valeur terminale → 0</li>
+        <li><span class="tip" data-key="roic">ROIC</span> chroniquement négatif, valeur terminale → 0</li>
         <li>Rupture support psychologique 1 000 FCFA</li>
         <li>Désaffection totale des investisseurs institutionnels</li>
       </ul>
@@ -294,63 +365,124 @@ const HTML = `<!DOCTYPE html>
   </div>
 </div>
 <script>
+// ── TOOLTIPS ──
+const TIPS = {
+  ebitda: '<b>EBITDA</b>Earnings Before Interest, Taxes, Depreciation & Amortization<div class="ts">Ce que l\'entreprise gagne avec son activité industrielle pure, avant les charges financières et amortissements.</div>',
+  bfr: '<b>BFR — Besoin en Fonds de Roulement</b><div class="ts">L\'argent que l\'entreprise doit avancer pour faire tourner son activité avant d\'être payée. Des stocks et créances élevés = BFR qui explose.</div>',
+  roic: '<b>ROIC — Return On Invested Capital</b>Retour sur Capital Investi<div class="ts">Ce que l\'entreprise gagne (en %) sur chaque franc investi dans son outil industriel. ROIC > WACC = création de valeur.</div>',
+  wacc: '<b>WACC — Weighted Average Cost of Capital</b>Coût Moyen Pondéré du Capital<div class="ts">Taux minimum qu\'Uniwax DOIT générer pour satisfaire ses investisseurs et créanciers. C\'est le seuil de rentabilité du capital (~16% ici).</div>',
+  beta: '<b>Bêta (β = 1,75)</b><div class="ts">Mesure la volatilité d\'une action par rapport au marché. β > 1 = plus volatile. Ici, Uniwax amplifie les mouvements de marché × 1,75. Un β élevé = risque perçu plus fort = WACC plus élevé.</div>',
+  marge_ebitda: '<b>Marge EBITDA</b><div class="ts">% du CA converti en cash opérationnel brut. Exclut intérêts, impôts et amortissements. Mesure l\'efficacité industrielle pure.</div>',
+  marge_ope: '<b>Marge Opérationnelle</b><div class="ts">% du CA restant après toutes les charges d\'exploitation (incluant amortissements). Reflète la rentabilité réelle de l\'activité.</div>',
+  marge_nette: '<b>Marge Nette</b><div class="ts">% du CA qui devient bénéfice final pour les actionnaires, après impôts et charges financières. Le résultat ultime.</div>'
+};
+const ttip = document.createElement('div');
+ttip.id = 'ttip';
+document.body.appendChild(ttip);
+document.querySelectorAll('.tip').forEach(el => {
+  el.addEventListener('mouseenter', e => {
+    const t = TIPS[el.dataset.key];
+    if (!t) return;
+    ttip.innerHTML = t;
+    ttip.style.opacity = '1';
+    mv(e);
+  });
+  el.addEventListener('mousemove', mv);
+  el.addEventListener('mouseleave', () => { ttip.style.opacity = '0'; });
+});
+function mv(e) {
+  const tw = ttip.offsetWidth || 300, th = ttip.offsetHeight || 100;
+  let x = e.clientX + 14, y = e.clientY - th - 12;
+  if (x + tw > window.innerWidth - 10) x = e.clientX - tw - 14;
+  if (y < 10) y = e.clientY + 20;
+  ttip.style.left = x + 'px';
+  ttip.style.top = y + 'px';
+}
+
+// ── THEME TOGGLE ──
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  const btn = document.getElementById('theme-btn');
+  btn.textContent = isLight ? '🌙 Fond sombre' : '☀️ Fond clair';
+  localStorage.setItem('afribourse-theme', isLight ? 'light' : 'dark');
+  rebuildCharts(isLight);
+}
+if (localStorage.getItem('afribourse-theme') === 'light') {
+  document.body.classList.add('light');
+  document.getElementById('theme-btn').textContent = '🌙 Fond sombre';
+}
+
+// ── CHARTS ──
 const years = ['2018','2019','2020','2021','2022','2023','2024','2025 T3'];
 const gold = '#C8940A', goldlt = '#F2C94C', teal = '#14BDBB', red = '#E74C3C', green = '#2ECC71', orange = '#F39C12';
-const gridColor = 'rgba(255,255,255,0.06)', tickColor = '#8899AA';
-const baseOpts = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { labels: { color: tickColor, font: { family: 'DM Sans', size: 11 }, boxWidth: 14 } } },
-  scales: {
-    x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
-    y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } }
-  }
-};
-new Chart(document.getElementById('chartCA'), {
-  type: 'bar',
-  data: {
-    labels: years,
-    datasets: [
-      { label: "Chiffre d'Affaires (Mds FCFA)", data: [38.97,40.16,34.92,38.19,36.37,29.69,27.33,22.47], backgroundColor: 'rgba(200,148,10,0.3)', borderColor: goldlt, borderWidth: 1.5, borderRadius: 4, yAxisID: 'y' },
-      { label: 'Résultat Net (Mds FCFA)', data: [4.19,3.09,0.23,1.40,-1.30,-2.04,-2.19,8.14], type: 'line', borderColor: teal, backgroundColor: 'rgba(20,189,187,0.1)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: ctx => ctx.raw >= 0 ? green : red, tension: 0.3, fill: false, yAxisID: 'y2' }
-    ]
-  },
-  options: { ...baseOpts, scales: { x: { grid:{color:gridColor}, ticks:{color:tickColor,font:{size:10}} }, y: { grid:{color:gridColor}, ticks:{color:tickColor,font:{size:10},callback:v=>v+' Mds'}, title:{display:true,text:'CA (Mds)',color:tickColor,font:{size:10}} }, y2: { position:'right', grid:{display:false}, ticks:{color:tickColor,font:{size:10},callback:v=>v+' Mds'}, title:{display:true,text:'RN (Mds)',color:tickColor,font:{size:10}} } } }
-});
-new Chart(document.getElementById('chartMarges'), {
-  type: 'line',
-  data: {
-    labels: years,
-    datasets: [
-      { label: 'Marge EBITDA (%)', data: [16.5,16.3,7.7,10.5,3.1,1.1,null,null], borderColor: goldlt, backgroundColor: 'rgba(200,148,10,0.08)', borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: true },
-      { label: 'Marge Opérationnelle (%)', data: [14.1,10.7,1.5,5.2,-3.3,-6.1,-7.8,-1.6], borderColor: teal, backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4, tension: 0.3, pointBackgroundColor: ctx => ctx.raw >= 0 ? teal : red },
-      { label: 'Marge Nette (%)', data: [10.8,7.7,0.7,3.7,-3.6,-6.9,-8.0,null], borderColor: orange, backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4, tension: 0.3, borderDash: [5,3], pointBackgroundColor: ctx => ctx.raw >= 0 ? orange : red }
-    ]
-  },
-  options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}}}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+'%'},min:-12} } }
-});
-new Chart(document.getElementById('chartBFR'), {
-  type: 'bar',
-  data: {
-    labels: ['2018','2019','2020','2021','2022','2023','2024'],
-    datasets: [
-      { label: 'Stocks (Mds FCFA)', data: [9.94,12.92,10.98,13.91,14.79,13.52,11.41], backgroundColor: 'rgba(200,148,10,0.5)', borderColor: goldlt, borderWidth: 1.5, borderRadius: 3, stack: 'bfr' },
-      { label: 'Créances Clients (Mds FCFA)', data: [7.12,7.33,3.64,5.21,8.13,10.50,8.12], backgroundColor: 'rgba(20,189,187,0.35)', borderColor: teal, borderWidth: 1.5, borderRadius: 3, stack: 'bfr' }
-    ]
-  },
-  options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}},stacked:true}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+' Mds'},stacked:true} } }
-});
 const roicValues = [19.1,14.5,1.5,4.2,-4.5,-8.2,-10.5,-1.6];
-new Chart(document.getElementById('chartROIC'), {
-  type: 'bar',
-  data: {
-    labels: years,
-    datasets: [
-      { label: 'ROIC estimé (%)', data: roicValues, backgroundColor: roicValues.map(v=>v>16?'rgba(39,174,96,0.55)':v>0?'rgba(230,126,34,0.55)':'rgba(192,57,43,0.55)'), borderColor: roicValues.map(v=>v>16?green:v>0?orange:red), borderWidth: 1.5, borderRadius: 4 },
-      { label: 'WACC ~16% (seuil création valeur)', data: [16,16,16,16,16,16,16,16], type: 'line', borderColor: goldlt, borderWidth: 2.5, borderDash: [8,4], pointRadius: 0, fill: false }
-    ]
-  },
-  options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}}}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+'%'},min:-14} } }
-});
+let chartInstances = {};
+
+function rebuildCharts(isLight) {
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+  const tickColor = isLight ? '#556677' : '#8899AA';
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: tickColor, font: { family: 'DM Sans', size: 11 }, boxWidth: 14 } } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
+      y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } }
+    }
+  };
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+
+  chartInstances.ca = new Chart(document.getElementById('chartCA'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [
+        { label: "Chiffre d'Affaires (Mds FCFA)", data: [38.97,40.16,34.92,38.19,36.37,29.69,27.33,22.47], backgroundColor: isLight?'rgba(200,148,10,0.25)':'rgba(200,148,10,0.3)', borderColor: goldlt, borderWidth: 1.5, borderRadius: 4, yAxisID: 'y' },
+        { label: 'Résultat Net (Mds FCFA)', data: [4.19,3.09,0.23,1.40,-1.30,-2.04,-2.19,8.14], type: 'line', borderColor: teal, backgroundColor: 'rgba(20,189,187,0.1)', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: ctx => ctx.raw >= 0 ? green : red, tension: 0.3, fill: false, yAxisID: 'y2' }
+      ]
+    },
+    options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}}}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+' Mds'},title:{display:true,text:'CA (Mds)',color:tickColor,font:{size:10}}}, y2:{position:'right',grid:{display:false},ticks:{color:tickColor,font:{size:10},callback:v=>v+' Mds'},title:{display:true,text:'RN (Mds)',color:tickColor,font:{size:10}}} } }
+  });
+
+  chartInstances.marges = new Chart(document.getElementById('chartMarges'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Marge EBITDA (%)', data: [16.5,16.3,7.7,10.5,3.1,1.1,null,null], borderColor: goldlt, backgroundColor: isLight?'rgba(200,148,10,0.06)':'rgba(200,148,10,0.08)', borderWidth: 2.5, pointRadius: 5, tension: 0.3, fill: true },
+        { label: 'Marge Opérationnelle (%)', data: [14.1,10.7,1.5,5.2,-3.3,-6.1,-7.8,-1.6], borderColor: teal, backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4, tension: 0.3, pointBackgroundColor: ctx => ctx.raw >= 0 ? teal : red },
+        { label: 'Marge Nette (%)', data: [10.8,7.7,0.7,3.7,-3.6,-6.9,-8.0,null], borderColor: orange, backgroundColor: 'transparent', borderWidth: 2, pointRadius: 4, tension: 0.3, borderDash: [5,3], pointBackgroundColor: ctx => ctx.raw >= 0 ? orange : red }
+      ]
+    },
+    options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}}}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+'%'},min:-12} } }
+  });
+
+  chartInstances.bfr = new Chart(document.getElementById('chartBFR'), {
+    type: 'bar',
+    data: {
+      labels: ['2018','2019','2020','2021','2022','2023','2024'],
+      datasets: [
+        { label: 'Stocks (Mds FCFA)', data: [9.94,12.92,10.98,13.91,14.79,13.52,11.41], backgroundColor: isLight?'rgba(200,148,10,0.45)':'rgba(200,148,10,0.5)', borderColor: goldlt, borderWidth: 1.5, borderRadius: 3, stack: 'bfr' },
+        { label: 'Créances Clients (Mds FCFA)', data: [7.12,7.33,3.64,5.21,8.13,10.50,8.12], backgroundColor: isLight?'rgba(20,189,187,0.3)':'rgba(20,189,187,0.35)', borderColor: teal, borderWidth: 1.5, borderRadius: 3, stack: 'bfr' }
+      ]
+    },
+    options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}},stacked:true}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+' Mds'},stacked:true} } }
+  });
+
+  chartInstances.roic = new Chart(document.getElementById('chartROIC'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'ROIC estimé (%)', data: roicValues, backgroundColor: roicValues.map(v=>v>16?'rgba(39,174,96,0.55)':v>0?'rgba(230,126,34,0.55)':'rgba(192,57,43,0.55)'), borderColor: roicValues.map(v=>v>16?green:v>0?orange:red), borderWidth: 1.5, borderRadius: 4 },
+        { label: 'WACC ~16% (seuil création valeur)', data: [16,16,16,16,16,16,16,16], type: 'line', borderColor: goldlt, borderWidth: 2.5, borderDash: [8,4], pointRadius: 0, fill: false }
+      ]
+    },
+    options: { ...baseOpts, scales: { x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10}}}, y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>v+'%'},min:-14} } }
+  });
+}
+
+rebuildCharts(document.body.classList.contains('light'));
 <\/script>
 </body>
 </html>`;
