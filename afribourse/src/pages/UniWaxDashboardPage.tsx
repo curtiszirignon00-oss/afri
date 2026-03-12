@@ -367,13 +367,13 @@ const HTML = `<!DOCTYPE html>
 <script>
 // ── TOOLTIPS ──
 const TIPS = {
-  ebitda: '<b>EBITDA</b>Earnings Before Interest, Taxes, Depreciation & Amortization<div class="ts">Ce que l\'entreprise gagne avec son activité industrielle pure, avant les charges financières et amortissements.</div>',
-  bfr: '<b>BFR — Besoin en Fonds de Roulement</b><div class="ts">L\'argent que l\'entreprise doit avancer pour faire tourner son activité avant d\'être payée. Des stocks et créances élevés = BFR qui explose.</div>',
-  roic: '<b>ROIC — Return On Invested Capital</b>Retour sur Capital Investi<div class="ts">Ce que l\'entreprise gagne (en %) sur chaque franc investi dans son outil industriel. ROIC > WACC = création de valeur.</div>',
-  wacc: '<b>WACC — Weighted Average Cost of Capital</b>Coût Moyen Pondéré du Capital<div class="ts">Taux minimum qu\'Uniwax DOIT générer pour satisfaire ses investisseurs et créanciers. C\'est le seuil de rentabilité du capital (~16% ici).</div>',
-  beta: '<b>Bêta (β = 1,75)</b><div class="ts">Mesure la volatilité d\'une action par rapport au marché. β > 1 = plus volatile. Ici, Uniwax amplifie les mouvements de marché × 1,75. Un β élevé = risque perçu plus fort = WACC plus élevé.</div>',
-  marge_ebitda: '<b>Marge EBITDA</b><div class="ts">% du CA converti en cash opérationnel brut. Exclut intérêts, impôts et amortissements. Mesure l\'efficacité industrielle pure.</div>',
-  marge_ope: '<b>Marge Opérationnelle</b><div class="ts">% du CA restant après toutes les charges d\'exploitation (incluant amortissements). Reflète la rentabilité réelle de l\'activité.</div>',
+  ebitda: '<b>EBITDA</b> — Earnings Before Interest, Taxes, Depreciation & Amortization<div class="ts">Ce que l&#39;entreprise gagne avec son activité industrielle pure, avant les charges financières et amortissements.</div>',
+  bfr: '<b>BFR — Besoin en Fonds de Roulement</b><div class="ts">L&#39;argent que l&#39;entreprise doit avancer pour faire tourner son activité avant d&#39;être payée. Des stocks et créances élevés = BFR qui explose.</div>',
+  roic: '<b>ROIC — Return On Invested Capital</b> — Retour sur Capital Investi<div class="ts">Ce que l&#39;entreprise gagne (en %) sur chaque franc investi dans son outil industriel. ROIC > WACC = création de valeur.</div>',
+  wacc: '<b>WACC — Weighted Average Cost of Capital</b> — Coût Moyen Pondéré du Capital<div class="ts">Taux minimum qu&#39;Uniwax DOIT générer pour satisfaire ses investisseurs et créanciers. C&#39;est le seuil de rentabilité du capital (~16% ici).</div>',
+  beta: '<b>Bêta (β = 1,75)</b><div class="ts">Mesure la volatilité d&#39;une action par rapport au marché. β > 1 = plus volatile. Ici, Uniwax amplifie les mouvements de marché × 1,75. Un β élevé = risque perçu plus fort = WACC plus élevé.</div>',
+  marge_ebitda: '<b>Marge EBITDA</b><div class="ts">% du CA converti en cash opérationnel brut. Exclut intérêts, impôts et amortissements. Mesure l&#39;efficacité industrielle pure.</div>',
+  marge_ope: '<b>Marge Opérationnelle</b><div class="ts">% du CA restant après toutes les charges d&#39;exploitation (incluant amortissements). Reflète la rentabilité réelle de l&#39;activité.</div>',
   marge_nette: '<b>Marge Nette</b><div class="ts">% du CA qui devient bénéfice final pour les actionnaires, après impôts et charges financières. Le résultat ultime.</div>'
 };
 const ttip = document.createElement('div');
