@@ -165,12 +165,21 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         borderColor: isDark ? '#374151' : '#e2e8f0',
         timeVisible: true,
         secondsVisible: false,
-        tickMarkFormatter: (time: number) => {
+        tickMarkFormatter: (time: number, tickMarkType: number) => {
           const date = new Date(time * 1000);
-          return date.toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: 'short',
-          });
+          switch (tickMarkType) {
+            case 0: // Year
+              return String(date.getUTCFullYear());
+            case 1: // Month
+              return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+            case 2: // DayOfMonth
+              return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+            case 3: // Time
+            case 4: // TimeWithSeconds
+              return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            default:
+              return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+          }
         },
       },
       localization: {
