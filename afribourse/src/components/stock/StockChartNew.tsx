@@ -141,15 +141,15 @@ export default function StockChartNew({
 
   // Calculer la variation sur la période (données brutes = toute la période disponible)
   const periodChange = useMemo((): PriceChange => {
-    if (!data || data.length < 2) {
+    if (!displayData || displayData.length < 2) {
       return { value: 0, percent: 0, isPositive: true };
     }
-    const firstPrice = data[0].close;
-    const lastPrice = data[data.length - 1].close;
+    const firstPrice = displayData[0].close;
+    const lastPrice = displayData[displayData.length - 1].close;
     const change = lastPrice - firstPrice;
     const changePercent = (change / firstPrice) * 100;
     return { value: change, percent: changePercent, isPositive: change >= 0 };
-  }, [data]);
+  }, [displayData]);
 
   const resolutionLabel = RESOLUTION_LABEL[activeConfig.resolution];
 
