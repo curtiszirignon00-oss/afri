@@ -9,7 +9,9 @@ type Platform = 'ios' | 'android' | 'desktop';
 
 function detectPlatform(): Platform {
   const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  // iPadOS 13+ envoie un UA "Macintosh" — détecter via maxTouchPoints
+  const isIPadOS = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+  if (/iPhone|iPad|iPod/.test(ua) || isIPadOS) return 'ios';
   if (/Android/.test(ua)) return 'android';
   return 'desktop';
 }

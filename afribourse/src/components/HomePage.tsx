@@ -25,6 +25,7 @@ import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 import { useAuth } from '../contexts/AuthContext';
 import { ChallengeCTA } from './challenge';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { InstallInstructions } from './pwa/InstallPrompt';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -253,6 +254,7 @@ export default function HomePage() {
   }
 
   return (
+    <>
     <div className="pb-16 md:pb-24">
       {/* === Section Héros AMÉLIORÉE === */}
       <section className="relative bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
@@ -777,5 +779,9 @@ export default function HomePage() {
         </div>
       )}
     </div>
+    {showInstructions && (
+      <InstallInstructions platform={platform} onClose={closeInstructions} />
+    )}
+    </>
   );
 }
