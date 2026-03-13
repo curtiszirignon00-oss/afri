@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Download, X, Smartphone, Share, MoreVertical } from 'lucide-react';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 
-function InstallInstructions({ platform, onClose }: { platform: 'ios' | 'android' | 'desktop'; onClose: () => void }) {
+export function InstallInstructions({ platform, onClose }: { platform: 'ios' | 'android' | 'desktop'; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div
