@@ -1,6 +1,17 @@
 // Configuration centralisée de l'API
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
+// Token JWT en mémoire — fallback pour Safari iOS qui bloque les cookies cross-site
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+}
+
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
 // Token CSRF en mémoire (jamais exposé dans le DOM ni dans le localStorage)
 let csrfToken: string | null = null;
 
@@ -48,6 +59,7 @@ export async function authFetch(url: string, options: RequestInit = {}): Promise
 
   const buildHeaders = () => ({
     ...(options.headers as Record<string, string>),
+    ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
     ...(isMutation && csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
   });
 
