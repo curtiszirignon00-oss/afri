@@ -56,7 +56,7 @@ interface QuizState {
 }
 
 export default function LearnPage() {
-    const { isLoggedIn, token } = useAuth();
+    const { isLoggedIn } = useAuth();
     const navigate = useNavigate();
     const { trackAction } = useAnalytics();
     const { mutate: createPost, isPending: isSharing } = useCreatePost();
@@ -368,12 +368,16 @@ export default function LearnPage() {
         try {
             const response = await authFetch(`${API_BASE_URL}/learning-modules/${selectedModule.slug}/submit-quiz`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ answers: quizState.answers })
             });
+
+            if (response.status === 401) {
+                toast.dismiss(toastId);
+                toast.error('Session expirée. Veuillez vous reconnecter.');
+                navigate('/login');
+                return;
+            }
 
             if (!response.ok) {
                 const errorData = await response.json();
