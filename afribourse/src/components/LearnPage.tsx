@@ -222,10 +222,7 @@ export default function LearnPage() {
                 return res.json();
             });
 
-            const progressPromise = fetch(progressUrl, {
-                credentials: 'include',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-            }).then(res => {
+            const progressPromise = authFetch(progressUrl).then(res => {
                 if (res.status === 401) return [];
                 if (!res.ok) throw new Error(`Erreur ${res.status}`);
                 return res.json();
@@ -494,10 +491,7 @@ export default function LearnPage() {
         try {
             const response = await authFetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token && { 'Authorization': `Bearer ${token}` })
-                },
+                headers: { 'Content-Type': 'application/json' },
             });
 
             if (!response.ok) {
