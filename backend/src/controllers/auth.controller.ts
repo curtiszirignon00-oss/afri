@@ -252,7 +252,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             userAgent: getUserAgent(req),
         });
 
-        return res.status(200).json({ user: userWithoutPassword, gamification: gamificationData });
+        return res.status(200).json({ user: userWithoutPassword, token, gamification: gamificationData });
     } catch (error) {
         next(error);
         return;
@@ -263,17 +263,21 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 export async function getMe(req: Request, res: Response, next: NextFunction) {
     try {
         const userId = (req as any).user.id;
-        
+
         // Requête UNIQUEMENT au service Prisma
-        const user = await usersServicePrisma.getUserById(userId); 
+        const user = await usersServicePrisma.getUserById(userId);
 
         if (!user) {
             return next(createError.notFound("Utilisateur non trouvé"));
         }
-        
-        const userAsAny = user as any; 
-        
-        return res.status(200).json({ user: userAsAny });
+
+        const userAsAny = user as any;
+
+        // Renvoyer le token dans le body pour les clients qui ne peuvent pas lire les cookies
+        // (ex: Safari iOS avec ITP qui bloque les cookies cross-site)
+        const rawToken = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
+
+        return res.status(200).json({ user: userAsAny, token: rawToken ?? null });
     } catch (error) {
         next(error);
         return;

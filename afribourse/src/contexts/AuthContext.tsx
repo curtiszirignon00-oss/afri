@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiClient } from '../lib/api-client';
+import { setAuthToken } from '../config/api';
 
 // --- Types ---
 interface UserProfile {
@@ -34,15 +35,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.get('/me');
       const profile = response.data?.user;
+      const token = response.data?.token;
 
       if (profile?.role === 'admin') {
         profile.subscriptionTier = 'max';
       }
       setUserProfile(profile);
       setIsLoggedIn(true);
+      // Stocker le token en mémoire pour les clients Safari iOS (ITP bloque les cookies cross-site)
+      if (token) setAuthToken(token);
     } catch {
       setIsLoggedIn(false);
       setUserProfile(null);
+      setAuthToken(null);
     } finally {
       setLoading(false);
     }
@@ -57,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoggedIn(false);
       setUserProfile(null);
+      setAuthToken(null);
     }
   };
 
