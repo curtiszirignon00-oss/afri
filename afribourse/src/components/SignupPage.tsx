@@ -5,7 +5,6 @@ import { Button, Input, Card } from './ui';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import OAuthButtons from './auth/OAuthButtons';
-type SignupPageProps = {};
 
 const passwordRules = [
   { label: '8 caractères minimum', test: (p: string) => p.length >= 8 },
@@ -109,7 +108,7 @@ export default function SignupPage() {
         </div>
 
         <Card>
-          <form onSubmit={handleSignup} className="space-y-6">
+          <form onSubmit={handleSignup} className="space-y-6" translate="no">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="text"
