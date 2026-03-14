@@ -43,7 +43,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               Une erreur est survenue
             </h2>
             <p className="text-gray-600 mb-6 text-sm">
-              {this.state.error?.message || "L'application a rencontré un problème inattendu."}
+              Un problème temporaire est apparu. Cela peut être causé par une extension de navigateur (traducteur, gestionnaire de mots de passe). Rechargez la page pour continuer.
             </p>
             <button
               onClick={() => {
