@@ -279,7 +279,22 @@ export default function StockDetailPageEnhanced() {
 
       const walletLabel = walletMode === 'CONCOURS' ? '(Challenge)' : '(Simulation)';
       toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi ! ${walletLabel}`, { id: toastId });
-      setTimeout(() => navigate('/dashboard'), 1500);
+
+      // Rafraîchir le portfolio pour mettre à jour le solde sans quitter la page
+      const portfolioRes = await authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`);
+      if (portfolioRes.ok) {
+        const portfolioData = await portfolioRes.json();
+        setPortfolio({
+          id: portfolioData.id,
+          userId: portfolioData.userId || '',
+          name: portfolioData.name || 'Mon Portfolio',
+          initial_balance: portfolioData.initial_balance || 0,
+          cash_balance: portfolioData.cash_balance,
+          wallet_type: portfolioData.wallet_type,
+          positions: portfolioData.positions || []
+        });
+      }
+      setIsBuying(false);
     } catch (error: any) {
       console.error("Erreur achat:", error);
       toast.error(error.message, { id: toastId });
