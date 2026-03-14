@@ -35,7 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Vérifier l'authentification via le cookie httpOnly (envoyé automatiquement)
   // Retourne true si l'utilisateur est authentifié, false sinon
   const checkAuth = async (): Promise<boolean> => {
-    setLoading(true);
+    // Si un login manuel a déjà alimenté l'état, ne pas écraser le loading
+    if (!initialCheckAborted.current) setLoading(true);
     try {
       const response = await apiClient.get('/me');
       const profile = response.data?.user;

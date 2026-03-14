@@ -47,7 +47,7 @@ export default function Header() {
   const ActiveMegaMenuComponent = activeMegaMenu ? MEGA_MENU_COMPONENTS[activeMegaMenu] : null;
 
   return (
-    <div className="sticky top-0 z-50">
+    <div className="sticky top-0 z-50" translate="no">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
