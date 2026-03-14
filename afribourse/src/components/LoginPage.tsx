@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { checkAuth, isLoggedIn } = useAuth();
+  const { initAuthFromLogin, isLoggedIn } = useAuth();
 
   // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
   useEffect(() => {
@@ -32,18 +32,21 @@ export default function LoginPage() {
     try {
       const loginResponse = await apiClient.post('/login', { email, password });
 
-      // Stocker le token en mémoire immédiatement (fallback Safari iOS ITP)
-      if (loginResponse.data?.token) {
-        setAuthToken(loginResponse.data.token);
-      }
+      const { user, token } = loginResponse.data;
 
-      toast.success('Connexion réussie !');
+      // Stocker le token en mémoire immédiatement (fallback Safari iOS ITP)
+      if (token) {
+        setAuthToken(token);
+      }
 
       // Rafraîchir le token CSRF après login
       await fetchCsrfToken();
 
-      await checkAuth();
+      // Alimenter l'état auth directement depuis la réponse — sans second appel réseau
+      // Évite la race condition avec le checkAuth() initial du AuthContext
+      initAuthFromLogin(user, token);
 
+      toast.success('Connexion réussie !');
       navigate('/dashboard');
 
     } catch (err: any) {
@@ -91,7 +94,7 @@ export default function LoginPage() {
 
         {/* --- Login Form --- */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6" translate="no">
             {/* Email Input */}
             <Input
               id="email"
