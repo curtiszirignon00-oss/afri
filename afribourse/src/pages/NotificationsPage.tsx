@@ -1,6 +1,6 @@
 // src/pages/NotificationsPage.tsx
 import { useState } from 'react';
-import { Bell, Check, CheckCheck, Heart, MessageCircle, UserPlus, TrendingUp, Award, Star, AlertTriangle, ArrowLeft, Filter, Users, UserCheck, UserX, Mail, Info } from 'lucide-react';
+import { Bell, Check, CheckCheck, Heart, MessageCircle, UserPlus, TrendingUp, Award, Star, AlertTriangle, ArrowLeft, Filter, Users, UserCheck, UserX, Mail, Info, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
     useNotifications,
@@ -41,6 +41,20 @@ function formatTimeAgo(dateString: string): string {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+const NAVIGABLE_TYPES = new Set([
+    'NEW_FOLLOWER', 'ACHIEVEMENT', 'LEVEL_UP', 'PRICE_ALERT',
+    'POST_LIKE', 'POST_COMMENT', 'COMMENT_REPLY', 'MENTION', 'NEW_POST',
+    'COMMUNITY_INVITE', 'COMMUNITY_JOIN', 'COMMUNITY_POST',
+    'JOIN_REQUEST', 'JOIN_APPROVED', 'JOIN_REJECTED',
+]);
+
+function isNavigable(notification: Notification): boolean {
+    if (!NAVIGABLE_TYPES.has(notification.type)) return false;
+    if (notification.type === 'NEW_FOLLOWER') return !!notification.actor_id;
+    if (notification.type === 'PRICE_ALERT') return !!(notification.metadata?.stockSymbol || notification.metadata?.symbol);
+    return true;
+}
+
 interface NotificationCardProps {
     notification: Notification;
     onMarkAsRead: (id: string) => void;
@@ -50,6 +64,7 @@ interface NotificationCardProps {
 function NotificationCard({ notification, onMarkAsRead, onClick }: NotificationCardProps) {
     const iconConfig = notificationIcons[notification.type] || { icon: Bell, color: 'text-gray-600', bgColor: 'bg-gray-100' };
     const IconComponent = iconConfig.icon;
+    const navigable = isNavigable(notification);
 
     const handleClick = () => {
         if (!notification.is_read) {
@@ -61,7 +76,9 @@ function NotificationCard({ notification, onMarkAsRead, onClick }: NotificationC
     return (
         <div
             onClick={handleClick}
-            className={`flex items-start gap-4 p-4 rounded-xl cursor-pointer transition-all hover:shadow-md ${
+            className={`flex items-start gap-4 p-4 rounded-xl transition-all hover:shadow-md ${
+                navigable ? 'cursor-pointer' : 'cursor-default'
+            } ${
                 !notification.is_read ? 'bg-blue-50 border border-blue-100' : 'bg-white border border-gray-100'
             }`}
         >
@@ -80,18 +97,23 @@ function NotificationCard({ notification, onMarkAsRead, onClick }: NotificationC
                 <p className="text-sm text-gray-500 mt-1">{notification.message}</p>
                 <p className="text-xs text-gray-400 mt-2">{formatTimeAgo(notification.created_at)}</p>
             </div>
-            {!notification.is_read && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onMarkAsRead(notification.id);
-                    }}
-                    className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Marquer comme lu"
-                >
-                    <Check className="w-4 h-4 text-gray-400 hover:text-green-600" />
-                </button>
-            )}
+            <div className="flex-shrink-0 flex items-center gap-1">
+                {!notification.is_read && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onMarkAsRead(notification.id);
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Marquer comme lu"
+                    >
+                        <Check className="w-4 h-4 text-gray-400 hover:text-green-600" />
+                    </button>
+                )}
+                {navigable && (
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                )}
+            </div>
         </div>
     );
 }
@@ -106,22 +128,60 @@ export default function NotificationsPage() {
     const markAllAsRead = useMarkAllNotificationsAsRead();
 
     const handleNotificationClick = (notification: Notification) => {
-        // Navigate based on notification type
         const meta = notification.metadata;
 
-        if (notification.type === 'NEW_FOLLOWER' && notification.actor_id) {
-            navigate(`/investor/${notification.actor_id}`);
-        } else if (notification.type === 'PRICE_ALERT') {
-            const stockSymbol = notification.metadata?.stockSymbol;
-            navigate(stockSymbol ? `/stock/${stockSymbol}` : '/dashboard');
-        } else if (['COMMUNITY_INVITE', 'JOIN_APPROVED', 'COMMUNITY_POST', 'COMMUNITY_JOIN'].includes(notification.type) && meta?.communitySlug) {
-            navigate(`/community/${meta.communitySlug}`);
-        } else if (notification.type === 'JOIN_REQUEST' && meta?.communitySlug) {
-            navigate(`/community/${meta.communitySlug}`);
-        } else if (notification.post_id) {
-            navigate(`/community?post=${notification.post_id}`);
-        } else if (notification.type === 'ACHIEVEMENT' || notification.type === 'LEVEL_UP') {
-            navigate('/dashboard');
+        switch (notification.type) {
+            // Nouveau follower → profil de la personne
+            case 'NEW_FOLLOWER':
+                if (notification.actor_id) {
+                    navigate(`/profile/${notification.actor_id}`);
+                }
+                break;
+
+            // Badge / niveau → page achievements
+            case 'ACHIEVEMENT':
+            case 'LEVEL_UP':
+                navigate('/achievements');
+                break;
+
+            // Alerte prix → page de l'action
+            case 'PRICE_ALERT': {
+                const stockSymbol = meta?.stockSymbol || meta?.symbol;
+                navigate(stockSymbol ? `/stock/${stockSymbol}` : '/markets');
+                break;
+            }
+
+            // Post liké / commenté / réponse / mention → post de la communauté
+            case 'POST_LIKE':
+            case 'POST_COMMENT':
+            case 'COMMENT_REPLY':
+            case 'MENTION':
+            case 'NEW_POST':
+                if (notification.post_id) {
+                    navigate(`/community?post=${notification.post_id}`);
+                } else if (meta?.communitySlug) {
+                    navigate(`/community/${meta.communitySlug}`);
+                }
+                break;
+
+            // Communauté
+            case 'COMMUNITY_INVITE':
+            case 'COMMUNITY_JOIN':
+            case 'COMMUNITY_POST':
+            case 'JOIN_REQUEST':
+            case 'JOIN_APPROVED':
+            case 'JOIN_REJECTED':
+                if (meta?.communitySlug) {
+                    navigate(`/community/${meta.communitySlug}`);
+                } else if (meta?.communityId) {
+                    navigate(`/community/${meta.communityId}`);
+                }
+                break;
+
+            // Système → rien (reste sur la page)
+            case 'SYSTEM':
+            default:
+                break;
         }
     };
 
