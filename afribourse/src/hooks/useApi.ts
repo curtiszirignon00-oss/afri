@@ -1,7 +1,7 @@
 // src/hooks/useApi.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { API_BASE_URL, getCsrfToken, fetchCsrfToken } from '../config/api';
+import { API_BASE_URL, getCsrfToken, fetchCsrfToken, getAuthToken } from '../config/api';
 
 // ========================================
 // 🔧 FONCTION UTILITAIRE FETCH
@@ -31,10 +31,13 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
   }
 
   const csrfToken = getCsrfToken();
+  const authToken = getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>),
     ...(isMutation && csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+    // Fallback Safari iOS ITP : les cookies cross-site sont bloqués, on utilise le Bearer token en mémoire
+    ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
   };
 
   const response = await fetch(url, {
