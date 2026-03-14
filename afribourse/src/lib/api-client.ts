@@ -1,6 +1,6 @@
 // src/lib/api-client.ts
 import axios from 'axios';
-import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken } from '../config/api';
+import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken } from '../config/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -13,9 +13,10 @@ export const apiClient = axios.create({
     },
 });
 
-// Intercepteur CSRF — ajoute X-CSRF-Token sur toutes les mutations
+// Intercepteur requête — CSRF + Authorization Bearer (fallback Safari iOS ITP)
 const MUTATION_METHODS = ['post', 'put', 'patch', 'delete'];
 apiClient.interceptors.request.use(async (config) => {
+    // CSRF sur toutes les mutations
     if (config.method && MUTATION_METHODS.includes(config.method.toLowerCase())) {
         let token = getCsrfToken();
         if (!token) {
@@ -25,6 +26,11 @@ apiClient.interceptors.request.use(async (config) => {
         if (token) {
             config.headers['X-CSRF-Token'] = token;
         }
+    }
+    // Authorization Bearer si token en mémoire (Safari iOS bloque les cookies cross-site)
+    const authToken = getAuthToken();
+    if (authToken && !config.headers['Authorization']) {
+        config.headers['Authorization'] = `Bearer ${authToken}`;
     }
     return config;
 });
