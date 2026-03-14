@@ -5,11 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
 import toast from 'react-hot-toast';
 import { apiClient } from '../lib/api-client';
-import { fetchCsrfToken } from '../config/api';
+import { fetchCsrfToken, setAuthToken } from '../config/api';
 import OAuthButtons from './auth/OAuthButtons';
-
-type LoginPageProps = {
-};
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -33,12 +30,16 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await apiClient.post('/login', { email, password });
+      const loginResponse = await apiClient.post('/login', { email, password });
+
+      // Stocker le token en mémoire immédiatement (fallback Safari iOS ITP)
+      if (loginResponse.data?.token) {
+        setAuthToken(loginResponse.data.token);
+      }
 
       toast.success('Connexion réussie !');
 
-      // Rafraîchir le token CSRF après login : l'identifiant de session passe
-      // de 'anonymous' à l'ID utilisateur, ce qui invalide l'ancien token.
+      // Rafraîchir le token CSRF après login
       await fetchCsrfToken();
 
       await checkAuth();
