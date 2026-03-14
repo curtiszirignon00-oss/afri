@@ -13,6 +13,97 @@ interface AuthRequest extends Request {
 }
 
 /**
+ * Forcer la vérification d'email d'un utilisateur (admin uniquement)
+ */
+export const forceVerifyUser = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    const admin = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!admin || admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Accès refusé. Admin uniquement.' });
+    }
+
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email requis.' });
+    }
+
+    const target = await prisma.user.findUnique({ where: { email } });
+    if (!target) {
+      return res.status(404).json({ success: false, message: 'Utilisateur introuvable.' });
+    }
+
+    if (target.email_verified_at) {
+      return res.status(200).json({ success: true, message: 'Email déjà vérifié.', alreadyVerified: true });
+    }
+
+    await prisma.user.update({
+      where: { email },
+      data: {
+        email_verified_at: new Date(),
+        email_confirmation_token: null,
+        email_confirmation_expires: null,
+      },
+    });
+
+    return res.status(200).json({ success: true, message: `Email de ${email} vérifié avec succès.` });
+  } catch (error) {
+    console.error('Erreur forceVerifyUser:', error);
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+/**
+ * Obtenir la liste des utilisateurs avec des intentions premium (admin uniquement)
+ */
+export const getPremiumIntents = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Accès refusé. Admin uniquement.' });
+    }
+
+    const intents = await prisma.subscriptionIntent.findMany({
+      orderBy: { created_at: 'desc' },
+      select: {
+        id: true,
+        planId: true,
+        planName: true,
+        price: true,
+        paymentMethod: true,
+        feature: true,
+        source: true,
+        created_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            lastname: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({ success: true, data: intents });
+  } catch (error) {
+    console.error('Erreur getPremiumIntents:', error);
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+/**
  * Obtenir toutes les statistiques de la plateforme (admin uniquement) - VERSION SIMPLIFIÉE
  */
 export const getPlatformStats = async (req: AuthRequest, res: Response) => {
