@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   Ban,
   FileText,
+  Download,
 } from 'lucide-react';
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
@@ -93,15 +94,37 @@ interface AnalyticsData {
   overview: AnalyticsOverview;
 }
 
+interface PremiumIntent {
+  id: string;
+  planId: string;
+  planName: string;
+  price: string;
+  paymentMethod: string | null;
+  feature: string | null;
+  source: string | null;
+  created_at: string;
+  user: {
+    id: string;
+    name: string;
+    lastname: string;
+    email: string;
+  };
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [premiumIntents, setPremiumIntents] = useState<PremiumIntent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [verifyStatus, setVerifyStatus] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [verifyLoading, setVerifyLoading] = useState(false);
 
   useEffect(() => {
     fetchStats();
     fetchAnalytics();
+    fetchPremiumIntents();
   }, []);
 
   const fetchStats = async () => {
@@ -148,8 +171,64 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Erreur analytics:', err);
-      // Ne pas bloquer le dashboard si les analytics échouent
     }
+  };
+
+  const fetchPremiumIntents = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/premium-intents`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        setPremiumIntents(result.data);
+      }
+    } catch (err) {
+      console.error('Erreur premium intents:', err);
+    }
+  };
+
+  const handleForceVerify = async () => {
+    if (!verifyEmail.trim()) return;
+    setVerifyLoading(true);
+    setVerifyStatus(null);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/force-verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: verifyEmail.trim() }),
+      });
+      const data = await res.json();
+      setVerifyStatus({ ok: data.success, msg: data.message });
+      if (data.success) setVerifyEmail('');
+    } catch {
+      setVerifyStatus({ ok: false, msg: 'Erreur réseau' });
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const exportEmailsCSV = () => {
+    const uniqueUsers = Array.from(
+      new Map(premiumIntents.map((i) => [i.user.id, i.user])).values()
+    );
+    const csv = [
+      'Nom,Prénom,Email',
+      ...uniqueUsers.map((u) => `${u.name},${u.lastname},${u.email}`),
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'intentions_premium.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -635,6 +714,108 @@ export default function AdminDashboard() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Débloquer un utilisateur - Forcer la vérification email */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8 border-l-4 border-orange-400">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-orange-500" />
+            Débloquer un utilisateur
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Si un utilisateur ne peut pas se connecter à cause de son email non confirmé, forcez la vérification ici.
+          </p>
+          <div className="flex gap-3">
+            <input
+              type="email"
+              value={verifyEmail}
+              onChange={(e) => setVerifyEmail(e.target.value)}
+              placeholder="email@exemple.com"
+              className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              onKeyDown={(e) => e.key === 'Enter' && handleForceVerify()}
+            />
+            <button
+              onClick={handleForceVerify}
+              disabled={verifyLoading || !verifyEmail.trim()}
+              className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+            >
+              {verifyLoading ? 'En cours...' : 'Vérifier email'}
+            </button>
+          </div>
+          {verifyStatus && (
+            <p className={`mt-3 text-sm font-medium ${verifyStatus.ok ? 'text-green-600' : 'text-red-600'}`}>
+              {verifyStatus.msg}
+            </p>
+          )}
+        </div>
+
+        {/* Premium Intents - Liste des emails */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Crown className="w-5 h-5 text-yellow-500 mr-2" />
+              Intentions Premium — Emails ({premiumIntents.length} intentions,{' '}
+              {new Set(premiumIntents.map((i) => i.user.id)).size} utilisateurs uniques)
+            </h3>
+            <button
+              onClick={exportEmailsCSV}
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Exporter CSV
+            </button>
+          </div>
+          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Utilisateur</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paiement</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {premiumIntents.map((intent) => (
+                  <tr key={intent.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {intent.user.name} {intent.user.lastname}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-blue-600">
+                      {intent.user.email}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        intent.planId === 'pro'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {intent.planName}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500 capitalize">
+                      {intent.paymentMethod || '—'}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(intent.created_at).toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </td>
+                  </tr>
+                ))}
+                {premiumIntents.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-400">
+                      Aucune intention premium enregistrée
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
