@@ -4,6 +4,7 @@ import { MapPin, Link as LinkIcon, Calendar, CheckCircle, Edit2, Linkedin, Twitt
 import FollowButton from './FollowButton';
 import EditProfileModal from './EditProfileModal';
 import toast from 'react-hot-toast';
+import RareBadgeIcon, { getRareBadge } from '../common/RareBadgeIcon';
 
 interface ProfileHeaderProps {
     profile: any;
@@ -23,6 +24,8 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
 
     const socialLinks = profile.profile?.social_links;
     const hasSocialLinks = socialLinks && (socialLinks.linkedin || socialLinks.twitter || socialLinks.instagram || socialLinks.facebook || socialLinks.website);
+
+    const rareBadge = getRareBadge(profile.achievements);
 
     return (
         <div className="bg-white shadow-sm">
@@ -136,6 +139,7 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                                 {profile.name} {profile.lastname}
                             </h1>
+                            <RareBadgeIcon badge={rareBadge} size="sm" />
                             {profile.role === 'admin' && (
                                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium" title="Administrateur">
                                     <ShieldCheck className="w-4 h-4" />

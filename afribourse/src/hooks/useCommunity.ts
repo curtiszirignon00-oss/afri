@@ -124,6 +124,7 @@ export interface CommunityPost {
             avatar_url?: string;
             verified_investor?: boolean;
             level?: number;
+            rare_badge?: { icon: string; rarity: string; name: string } | null;
         };
     };
     hasLiked?: boolean;

@@ -471,6 +471,12 @@ export interface ChallengeProgress {
 }
 
 // --- Gamification Leaderboard ---
+export interface RareBadge {
+  icon: string;
+  rarity: AchievementRarity;
+  name: string;
+}
+
 export interface GamificationLeaderboardEntry {
   rank: number;
   userId: string;
@@ -482,6 +488,7 @@ export interface GamificationLeaderboardEntry {
   title_emoji: string;
   country?: string;
   badges_count?: number;
+  rare_badge?: RareBadge | null;
 }
 
 export interface GamificationLeaderboardResponse {

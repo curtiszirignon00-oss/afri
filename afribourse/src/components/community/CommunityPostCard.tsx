@@ -27,6 +27,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import CommunityCommentSection from './CommunityCommentSection';
 import ReportModal from '../moderation/ReportModal';
+import RareBadgeIcon from '../common/RareBadgeIcon';
 
 interface Props {
     post: CommunityPost;
@@ -137,6 +138,7 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
                                 {post.author.profile?.verified_investor && (
                                     <CheckCircle className="w-4 h-4 text-blue-500" />
                                 )}
+                                <RareBadgeIcon badge={post.author.profile?.rare_badge as any} />
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
                                 {post.author.profile?.username && (
