@@ -7,6 +7,7 @@ import { fr } from 'date-fns/locale';
 import { toast } from 'react-hot-toast';
 import { useCommunityPostComments, useCommentCommunityPost } from '../../hooks/useCommunity';
 import { useAuth } from '../../contexts/AuthContext';
+import RareBadgeIcon from '../common/RareBadgeIcon';
 
 interface Props {
     postId: string;
@@ -132,12 +133,15 @@ export default function CommunityCommentSection({ postId }: Props) {
 
                                 <div className="flex-1">
                                     <div className="bg-gray-50 rounded-lg p-3">
-                                        <Link
-                                            to={`/profile/${comment.author.id}`}
-                                            className="font-medium text-gray-900 hover:underline"
-                                        >
-                                            {comment.author.name} {comment.author.lastname}
-                                        </Link>
+                                        <span className="inline-flex items-center gap-1.5">
+                                            <Link
+                                                to={`/profile/${comment.author.id}`}
+                                                className="font-medium text-gray-900 hover:underline"
+                                            >
+                                                {comment.author.name} {comment.author.lastname}
+                                            </Link>
+                                            <RareBadgeIcon badge={comment.author.profile?.rare_badge as any} size="xs" />
+                                        </span>
                                         <p className="text-gray-700 mt-1">{comment.content}</p>
                                     </div>
 
@@ -203,12 +207,15 @@ export default function CommunityCommentSection({ postId }: Props) {
                                                             </Link>
                                                             <div className="flex-1">
                                                                 <div className="bg-gray-50 rounded-lg p-2">
-                                                                    <Link
-                                                                        to={`/profile/${reply.author.id}`}
-                                                                        className="font-medium text-sm text-gray-900 hover:underline"
-                                                                    >
-                                                                        {reply.author.name} {reply.author.lastname}
-                                                                    </Link>
+                                                                    <span className="inline-flex items-center gap-1.5">
+                                                                        <Link
+                                                                            to={`/profile/${reply.author.id}`}
+                                                                            className="font-medium text-sm text-gray-900 hover:underline"
+                                                                        >
+                                                                            {reply.author.name} {reply.author.lastname}
+                                                                        </Link>
+                                                                        <RareBadgeIcon badge={reply.author.profile?.rare_badge as any} size="xs" />
+                                                                    </span>
                                                                     <p className="text-sm text-gray-700 mt-1">
                                                                         {reply.content}
                                                                     </p>

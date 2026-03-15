@@ -3,6 +3,54 @@ import { prisma } from '../config/database';
 import type { CommunityVisibility, CommunityMemberRole, PostType } from '@prisma/client';
 import * as notificationService from './notification.service';
 
+// ============= HELPERS =============
+
+const RARITY_RANK: Record<string, number> = {
+    legendary: 4,
+    epic: 3,
+    rare: 2,
+    common: 1,
+};
+
+function extractRareBadge(achievements: any[]): any {
+    if (!achievements || achievements.length === 0) return null;
+    const best = achievements.reduce((prev: any, cur: any) => {
+        const pr = RARITY_RANK[prev?.achievement?.rarity] ?? 0;
+        const cr = RARITY_RANK[cur?.achievement?.rarity] ?? 0;
+        return cr > pr ? cur : prev;
+    });
+    if (!best?.achievement) return null;
+    return { icon: best.achievement.icon, rarity: best.achievement.rarity, name: best.achievement.name };
+}
+
+/** Select fragment for author profile that includes achievements for badge computation. */
+const AUTHOR_PROFILE_SELECT = {
+    username: true,
+    avatar_url: true,
+    verified_investor: true,
+    level: true,
+    achievements: {
+        select: {
+            achievement: {
+                select: { icon: true, rarity: true, name: true },
+            },
+        },
+    },
+};
+
+/** Replaces the achievements array with a single rare_badge field. */
+function withRareBadge(author: any): any {
+    if (!author?.profile) return author;
+    const { achievements, ...profileRest } = author.profile;
+    return {
+        ...author,
+        profile: {
+            ...profileRest,
+            rare_badge: extractRareBadge(achievements ?? []),
+        },
+    };
+}
+
 // ============= TYPES =============
 
 export interface CreateCommunityDto {
@@ -1000,13 +1048,7 @@ export async function createCommunityPost(communityId: string, authorId: string,
                     id: true,
                     name: true,
                     lastname: true,
-                    profile: {
-                        select: {
-                            username: true,
-                            avatar_url: true,
-                            verified_investor: true,
-                        },
-                    },
+                    profile: { select: AUTHOR_PROFILE_SELECT },
                 },
             },
             community: {
@@ -1018,6 +1060,8 @@ export async function createCommunityPost(communityId: string, authorId: string,
             },
         },
     });
+
+    const postWithBadge = { ...post, author: withRareBadge(post.author) };
 
     // Update post count
     await prisma.community.update({
@@ -1053,7 +1097,7 @@ export async function createCommunityPost(communityId: string, authorId: string,
         )
         .catch((err) => console.error('Error notifying admins:', err));
 
-    return post;
+    return postWithBadge;
 }
 
 /**
@@ -1109,14 +1153,7 @@ export async function getCommunityPosts(
                         id: true,
                         name: true,
                         lastname: true,
-                        profile: {
-                            select: {
-                                username: true,
-                                avatar_url: true,
-                                verified_investor: true,
-                                level: true,
-                            },
-                        },
+                        profile: { select: AUTHOR_PROFILE_SELECT },
                     },
                 },
                 _count: {
@@ -1137,7 +1174,7 @@ export async function getCommunityPosts(
     ]);
 
     // Check if viewer has liked posts
-    let postsWithLikeStatus = posts;
+    let postsWithLikeStatus = posts.map((post) => ({ ...post, author: withRareBadge(post.author) }));
     if (viewerId) {
         const likedPostIds = await prisma.communityPostLike.findMany({
             where: {
@@ -1148,7 +1185,7 @@ export async function getCommunityPosts(
         });
         const likedSet = new Set(likedPostIds.map((l) => l.post_id));
 
-        postsWithLikeStatus = posts.map((post) => ({
+        postsWithLikeStatus = postsWithLikeStatus.map((post) => ({
             ...post,
             hasLiked: likedSet.has(post.id),
         }));
@@ -1280,13 +1317,7 @@ export async function commentCommunityPost(postId: string, userId: string, conte
                     id: true,
                     name: true,
                     lastname: true,
-                    profile: {
-                        select: {
-                            username: true,
-                            avatar_url: true,
-                            verified_investor: true,
-                        },
-                    },
+                    profile: { select: AUTHOR_PROFILE_SELECT },
                 },
             },
         },
@@ -1297,7 +1328,7 @@ export async function commentCommunityPost(postId: string, userId: string, conte
         data: { comments_count: { increment: 1 } },
     });
 
-    return comment;
+    return { ...comment, author: withRareBadge(comment.author) };
 }
 
 /**
@@ -1318,13 +1349,7 @@ export async function getCommunityPostComments(postId: string, page: number = 1,
                     id: true,
                     name: true,
                     lastname: true,
-                    profile: {
-                        select: {
-                            username: true,
-                            avatar_url: true,
-                            verified_investor: true,
-                        },
-                    },
+                    profile: { select: AUTHOR_PROFILE_SELECT },
                 },
             },
         },
@@ -1335,9 +1360,11 @@ export async function getCommunityPostComments(postId: string, page: number = 1,
 
     const commentsWithReplies = topLevelComments.map((comment) => ({
         ...comment,
+        author: withRareBadge(comment.author),
         replies: replies
             .filter((r) => r.parent_id === comment.id)
-            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+            .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+            .map((r) => ({ ...r, author: withRareBadge(r.author) })),
     }));
 
     const paginatedComments = commentsWithReplies.slice(skip, skip + limit);

@@ -1,5 +1,5 @@
 // src/pages/CommunityDetailPage.tsx
-const POSTS_DISABLED = true;
+const POSTS_DISABLED = false;
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
@@ -67,7 +67,7 @@ const CHALLENGE_COMMUNITY_SLUG = '-challenge-afribourse-le-hub-de-lelite';
 
 export default function CommunityDetailPage() {
     const { slug } = useParams<{ slug: string }>();
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, userProfile } = useAuth();
 
     // Détecter si c'est la communauté du challenge
     const isChallengeCommunity = slug === CHALLENGE_COMMUNITY_SLUG;
@@ -147,7 +147,7 @@ export default function CommunityDetailPage() {
         }
     };
 
-    const canManage = community?.memberRole === 'OWNER' || community?.memberRole === 'ADMIN';
+    const canManage = community?.memberRole === 'OWNER' || community?.memberRole === 'ADMIN' || userProfile?.role === 'admin';
 
     if (isLoading) {
         return (
