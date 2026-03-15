@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { Trophy, Globe, MapPin, Users, Flame, Zap, Medal, Crown, Award } from 'lucide-react';
 import { LevelBadge } from './LevelBadge';
+import RareBadgeIcon from '../common/RareBadgeIcon';
 import type { GamificationLeaderboardResponse, GamificationLeaderboardEntry } from '../../types';
 
 type LeaderboardType = 'global' | 'country' | 'friends' | 'streak';
@@ -174,10 +175,13 @@ export function GamificationLeaderboard({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className={`font-medium truncate ${isCurrentUser ? 'text-blue-700' : 'text-gray-800'}`}>
-                      {entry.username || 'Anonyme'}
-                      {isCurrentUser && <span className="ml-1 text-xs text-blue-500">(vous)</span>}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className={`font-medium truncate ${isCurrentUser ? 'text-blue-700' : 'text-gray-800'}`}>
+                        {entry.username || 'Anonyme'}
+                        {isCurrentUser && <span className="ml-1 text-xs text-blue-500">(vous)</span>}
+                      </p>
+                      <RareBadgeIcon badge={entry.rare_badge} size="xs" />
+                    </div>
                     <p className="text-xs text-gray-500">
                       {entry.title_emoji} {entry.title}
                     </p>

@@ -10,6 +10,12 @@ import * as achievementService from './achievement.service';
 // TYPES
 // =====================================
 
+export interface RareBadge {
+  icon: string;
+  rarity: string;
+  name: string;
+}
+
 export interface GamificationLeaderboardEntry {
   rank: number;
   userId: string;
@@ -21,8 +27,32 @@ export interface GamificationLeaderboardEntry {
   title_emoji: string;
   country?: string;
   badges_count?: number;
-  rank_streak_days?: number; // Nombre de jours consécutifs à cette position (top 3 uniquement)
+  rank_streak_days?: number;
+  rare_badge?: RareBadge | null;
 }
+
+// =====================================
+// HELPERS
+// =====================================
+
+const RARITY_RANK: Record<string, number> = { legendary: 4, epic: 3, rare: 2, common: 1 };
+
+function extractRareBadge(achievements: any[]): RareBadge | null {
+  if (!achievements || achievements.length === 0) return null;
+  const best = achievements.reduce((prev: any, cur: any) =>
+    (RARITY_RANK[cur?.achievement?.rarity] ?? 0) > (RARITY_RANK[prev?.achievement?.rarity] ?? 0) ? cur : prev
+  );
+  if (!best?.achievement) return null;
+  return { icon: best.achievement.icon, rarity: best.achievement.rarity, name: best.achievement.name };
+}
+
+const ACHIEVEMENT_SELECT = {
+  achievements: {
+    select: {
+      achievement: { select: { icon: true, rarity: true, name: true } },
+    },
+  },
+};
 
 export interface LeaderboardResponse {
   type: 'global' | 'country' | 'friends' | 'roi';
@@ -58,7 +88,8 @@ export async function getGlobalLeaderboard(
         level: true,
         total_xp: true,
         global_rank: true,
-        country: true
+        country: true,
+        ...ACHIEVEMENT_SELECT,
       }
     });
 
@@ -77,7 +108,8 @@ export async function getGlobalLeaderboard(
         total_xp: profile.total_xp,
         title,
         title_emoji: emoji,
-        country: profile.country || undefined
+        country: profile.country || undefined,
+        rare_badge: extractRareBadge(profile.achievements),
       };
     });
 
@@ -169,7 +201,8 @@ export async function getCountryLeaderboard(
         avatar_url: true,
         level: true,
         total_xp: true,
-        country_rank: true
+        country_rank: true,
+        ...ACHIEVEMENT_SELECT,
       }
     });
 
@@ -191,7 +224,8 @@ export async function getCountryLeaderboard(
         total_xp: profile.total_xp,
         title,
         title_emoji: emoji,
-        country: countryCode
+        country: countryCode,
+        rare_badge: extractRareBadge(profile.achievements),
       };
     });
 
@@ -298,7 +332,8 @@ export async function getFriendsLeaderboard(userId: string): Promise<Leaderboard
         username: true,
         avatar_url: true,
         level: true,
-        total_xp: true
+        total_xp: true,
+        ...ACHIEVEMENT_SELECT,
       }
     });
 
@@ -312,7 +347,8 @@ export async function getFriendsLeaderboard(userId: string): Promise<Leaderboard
         level: profile.level,
         total_xp: profile.total_xp,
         title,
-        title_emoji: emoji
+        title_emoji: emoji,
+        rare_badge: extractRareBadge(profile.achievements),
       };
     });
 

@@ -193,6 +193,7 @@ export default function ProfilePage() {
             email: userProfile?.email || 'user@africbourse.com',
             created_at: investorProfile?.created_at || new Date().toISOString(),
             investorProfile: investorProfile,
+            achievements: myAchievements?.data || [],
             stats: {
                 followers_count: investorProfile?.followers_count || 0,
                 following_count: investorProfile?.following_count || 0,
@@ -224,6 +225,7 @@ export default function ProfilePage() {
             created_at: otherUserProfile?.created_at || new Date().toISOString(),
             investorProfile: otherUserProfile, // Données du profil public
             isFollowing: otherUserProfile?.isFollowing || false,
+            achievements: otherUserProfile?.achievements || [],
             stats: {
                 followers_count: otherUserProfile?.followersCount || otherUserProfile?.followers_count || 0,
                 following_count: otherUserProfile?.followingCount || otherUserProfile?.following_count || 0,
