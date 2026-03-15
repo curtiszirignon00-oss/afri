@@ -58,7 +58,8 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
     const togglePin = useTogglePinPost();
 
     const isOwner = userProfile?.id === post.author_id;
-    const canDelete = isOwner || canModerate;
+    const isAdmin = userProfile?.role === 'admin';
+    const canDelete = isOwner || canModerate || isAdmin;
 
     const handleLike = async () => {
         if (!isLoggedIn) {
