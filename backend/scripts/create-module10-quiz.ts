@@ -1,22 +1,22 @@
 /// <reference types="node" />
-// backend/scripts/create-module10-quiz.ts
-// Script pour créer le quiz du Module 10 - L’Art du Timing – Analyse Technique
+// backend/scripts/create-module10-quiz-consolidation.ts
+// Script pour créer le quiz de Consolidation du Module 10 - L’Art du Timing – Analyse Technique
 
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function createModule10Quiz() {
+async function createModule10ConsolidationQuiz() {
     try {
         console.log('🔍 Recherche du Module 10...');
 
-        // Le slug est basé sur le titre du module : L’Art du Timing – Analyse Technique
+        // Le slug est basé sur le titre du module. À ADAPTER selon votre base de données.
         const module = await prisma.learningModule.findFirst({
             where: { slug: 'passage-a-l-action' } 
         });
 
         if (!module) {
-            console.error('❌ Module 10 non trouvé. Vérifiez le slug: lart-du-timing');
+            console.error('❌ Module non trouvé. Vérifiez le slug.');
             return;
         }
 
@@ -33,8 +33,8 @@ async function createModule10Quiz() {
             console.log('🗑️  Ancien quiz supprimé');
         }
 
-        // Créer le quiz avec 15 questions
-        console.log('📝 Création du quiz avec 15 questions...');
+        // Créer le quiz avec 20 questions
+        console.log('📝 Création du quiz avec 19 questions...');
 
         const quiz = await prisma.quiz.create({
             data: {
@@ -52,11 +52,11 @@ async function createModule10Quiz() {
                             "L'analyse technique est plus importante que l'analyse fondamentale."
                         ],
                         correct_answer: 3,
-                        explanation: "L'AT repose sur l'idée que le marché est efficient et que toute information (connue ou anticipée) est déjà dans le prix."
+                        explanation: "L'Analyse Technique repose sur l'efficience du marché : tout ce qu'on sait ou anticipe sur l'entreprise est déjà intégré dans la courbe des prix."
                     },
                     {
                         id: 'q2',
-                        question: "Quel est le rôle de l'Analyse Technique pour l'investisseur long terme (Mamadou) ?",
+                        question: "Quel est le rôle de l'Analyse Technique pour l'investisseur long terme ?",
                         options: [
                             "Remplacer l'Analyse Fondamentale.",
                             "Seul outil pour spéculer à court terme.",
@@ -65,7 +65,7 @@ async function createModule10Quiz() {
                             "Calculer le Gearing et le PER."
                         ],
                         correct_answer: 2,
-                        explanation: "Pour le long terme, l'AT sert uniquement à optimiser le moment d'achat d'une entreprise de qualité."
+                        explanation: "Pour l'investisseur de long terme, l'AT vient en second plan pour optimiser l'achat (le timing) d'une entreprise dont la qualité a déjà été validée."
                     },
                     {
                         id: 'q3',
@@ -78,115 +78,167 @@ async function createModule10Quiz() {
                             "Le niveau de prix qui agit comme un plafond psychologique."
                         ],
                         correct_answer: 1,
-                        explanation: "La Moyenne Mobile est un indicateur de tendance qui lisse la volatilité pour rendre la direction des prix plus claire."
+                        explanation: "La Moyenne Mobile filtre le 'bruit' quotidien du marché pour dégager une tendance claire sur une période spécifique."
                     },
                     {
                         id: 'q4',
-                        question: "Dans l'AT, que représente le **Support** ?",
+                        question: "Que représente la Mèche (ou ombre) supérieure d'un Chandelier Japonais ?",
                         options: [
-                            "Le niveau de prix où les vendeurs dominent, agissant comme un plafond psychologique.",
-                            "Le niveau de prix où les acheteurs dominent, agissant comme un plancher psychologique.",
-                            "Un indicateur de volume de transactions.",
-                            "Le ratio d'endettement (Gearing) de l'entreprise.",
-                            "Le PER de l'entreprise."
+                            "Le prix de clôture de la période.",
+                            "Le prix d'ouverture de la période.",
+                            "Le prix de l'action à la fin de la séance.",
+                            "Le prix le plus bas atteint.",
+                            "Le prix le plus haut atteint pendant la période du chandelier."
                         ],
-                        correct_answer: 1,
-                        explanation: "Le Support est un prix où la demande est suffisamment forte pour stopper une baisse."
+                        correct_answer: 4,
+                        explanation: "La pointe de la mèche supérieure indique le plus haut niveau de prix échangé par les acheteurs et vendeurs durant cette période précise."
                     },
                     {
                         id: 'q5',
-                        question: "Dans l'AT, que représente la **Résistance** ?",
+                        question: "Dans un graphique, un niveau de Support agit comme :",
                         options: [
-                            "Le niveau de prix où les vendeurs dominent, agissant comme un plafond psychologique.",
-                            "Le niveau de prix où les acheteurs dominent, agissant comme un plancher psychologique.",
-                            "Le ratio ROE (Return on Equity).",
-                            "La Marge Nette de l'entreprise.",
-                            "Le Bilan de l'entreprise."
+                            "Un plafond psychologique qui arrête la hausse. (Résistance)",
+                            "Une garantie de capital.",
+                            "L'inverse du RSI.",
+                            "La Moyenne Mobile 50 jours.",
+                            "Un plancher psychologique où le prix a tendance à rebondir."
                         ],
-                        correct_answer: 0,
-                        explanation: "La Résistance est un prix où l'offre est suffisamment forte pour stopper une hausse."
+                        correct_answer: 4,
+                        explanation: "Le Support est un niveau où les acheteurs estiment que l'action n'est pas chère, créant une force d'achat qui freine la baisse."
                     },
                     {
                         id: 'q6',
-                        question: "Comment se définit une **Tendance Haussière** sur un graphique de prix ?",
+                        question: "Un prix qui se négocie au-dessus d'une Moyenne Mobile 200 jours signale généralement :",
                         options: [
-                            "Le cours reste stable dans un canal horizontal.",
-                            "Les hauts et les bas des prix sont de plus en plus bas.",
-                            "Les hauts et les bas des prix sont de plus en plus hauts (structure en escalier montant).",
-                            "Le cours de l'action est sous sa Moyenne Mobile 200 jours.",
-                            "Le RSI est toujours inférieur à 30."
+                            "Une tendance baissière forte.",
+                            "Une tendance haussière de long terme.",
+                            "Une zone de survente.",
+                            "Un Biais d'Ancrage.",
+                            "L'atteinte d'un niveau de Résistance."
                         ],
-                        correct_answer: 2,
-                        explanation: "Une tendance haussière est caractérisée par une succession de sommets et de creux ascendants."
+                        correct_answer: 1,
+                        explanation: "La Moyenne Mobile à 200 jours est l'indicateur roi de la tendance de long terme. Au-dessus, le marché est globalement haussier."
                     },
                     {
                         id: 'q7',
-                        question: "Le RSI (Relative Strength Index) est un oscillateur de momentum. Que mesure-t-il ?",
+                        question: "Que mesure le RSI (Relative Strength Index) ?",
                         options: [
-                            "Le Gearing (endettement).",
-                            "La Force et la Vitesse (Momentum) des mouvements de prix pour identifier le surachat ou la survente.",
+                            "La volatilité absolue du titre.",
                             "Le niveau d'endettement de l'entreprise.",
-                            "L'écart entre le prix et la Moyenne Mobile 200 jours.",
-                            "La Marge de Sécurité."
+                            "Le prix moyen de l'action.",
+                            "Le momentum qui indique si un titre est suracheté ou survendu.",
+                            "La différence entre le cours de clôture et le cours d'ouverture."
                         ],
-                        correct_answer: 1,
-                        explanation: "Le RSI est un indicateur de vitesse et de changement de mouvement des prix, variant entre 0 et 100."
+                        correct_answer: 3,
+                        explanation: "Le RSI est un oscillateur de momentum qui permet de voir la vitesse des mouvements de prix pour détecter des excès du marché."
                     },
                     {
                         id: 'q8',
-                        question: "Quel niveau du **RSI** signale que le titre est potentiellement **suracheté** et qu'une correction pourrait se produire ?",
+                        question: "Si l'indicateur RSI affiche une valeur inférieure à 30, qu'est-ce que cela signale généralement ?",
                         options: [
-                            "Inférieur à 30.",
-                            "Égal à 50.",
-                            "Égal à 0.",
-                            "Supérieur à 70.",
-                            "Égal au Gearing."
+                            "Le titre est trop cher (suracheté).",
+                            "Le titre est en forte tendance haussière.",
+                            "Le titre vient de dépasser un niveau de Résistance.",
+                            "Le titre est survendu et pourrait être un bon point d'entrée pour un investisseur de long terme.",
+                            "Le titre est peu liquide."
                         ],
                         correct_answer: 3,
-                        explanation: "Un RSI au-dessus de 70 est souvent considéré comme une zone de surachat, signalant que le prix pourrait être temporairement trop élevé."
+                        explanation: "Un RSI sous 30 indique que le marché a probablement trop vendu le titre dans l'urgence, offrant une potentielle opportunité d'achat."
                     },
                     {
                         id: 'q9',
-                        question: "Quel niveau du **RSI** signale que le titre est potentiellement **survendu** et peut rebondir ?",
+                        question: "Quel est l'un des risques principaux de l'Analyse Technique sur le marché de la BRVM ?",
                         options: [
-                            "Supérieur à 70.",
-                            "Inférieur à 30.",
-                            "Égal à 100.",
-                            "Égal au PER.",
-                            "Égal à 50."
+                            "Le marché actualise trop les informations.",
+                            "L'absence de moyenne mobile.",
+                            "La faible liquidité de nombreux titres qui rend les graphiques erratiques (difficiles à interpréter).",
+                            "La présence trop forte de spéculateurs.",
+                            "L'impossibilité d'acheter des actions."
                         ],
-                        correct_answer: 1,
-                        explanation: "Un RSI en dessous de 30 est souvent considéré comme une zone de survente, signalant une possible opportunité de rebond (point d'entrée)."
+                        correct_answer: 2,
+                        explanation: "L'Analyse Technique repose sur la psychologie des masses. Sur un marché peu liquide comme la BRVM, un seul gros ordre peut déformer le graphique."
                     },
                     {
                         id: 'q10',
-                        question: "Si un titre est au-dessus de sa **Moyenne Mobile 200 jours** (MM200), cela indique généralement une tendance :",
+                        question: "Le concept selon lequel \"L'histoire se répète\" en Analyse Technique fait référence à :",
                         options: [
-                            "Neutre.",
-                            "Baissière de long terme.",
-                            "Haussière de long terme.",
-                            "Latérale.",
-                            "Stable."
+                            "La récurrence des résultats financiers des entreprises.",
+                            "Le retour systématique de l'inflation.",
+                            "La récurrence des schémas de comportement humain (peur, avidité) qui crée des configurations graphiques répétitives.",
+                            "L'utilisation du même Gearing.",
+                            "La nécessité d'utiliser le DCF."
                         ],
                         correct_answer: 2,
-                        explanation: "La MM200 est l'indicateur principal de la tendance de long terme. Un prix au-dessus est considéré comme haussier."
+                        explanation: "Les émotions humaines (peur et avidité) ne changent pas. Elles produisent donc les mêmes figures graphiques au fil des années."
                     },
                     {
                         id: 'q11',
-                        question: "Un signal d'achat fort, selon l'AT, se produit souvent lorsque le cours d'une action franchit :",
+                        question: "Qu'est-ce qu'une Résistance sur un graphique de prix ?",
                         options: [
-                            "Son niveau de Support à la baisse.",
-                            "Son prix d'achat initial.",
-                            "Sa Résistance à la hausse.",
-                            "Le niveau 50 du RSI.",
-                            "Le niveau 70 du RSI."
+                            "Un plancher psychologique. (Support)",
+                            "Un plafond psychologique qui bloque temporairement la hausse du prix.",
+                            "Le prix le plus bas de la période.",
+                            "Le point d'intersection de deux Moyennes Mobiles.",
+                            "Un indicateur de survente."
                         ],
-                        correct_answer: 2,
-                        explanation: "Franchir une résistance avec force (volume) est souvent interprété comme une confirmation de la poursuite de la tendance haussière."
+                        correct_answer: 1,
+                        explanation: "La Résistance est le niveau où les vendeurs prennent le dessus sur les acheteurs, empêchant le prix de monter plus haut à court terme."
                     },
                     {
                         id: 'q12',
-                        question: "Pourquoi la stratégie de **Market Timing pur** est déconseillée aux débutants ?",
+                        question: "Si le prix d'une action chute après avoir touché un niveau de Résistance, cela indique :",
+                        options: [
+                            "Un signal d'achat immédiat.",
+                            "Une forte croissance du BPA.",
+                            "La Résistance agit comme un plafond psychologique que les acheteurs n'ont pas réussi à dépasser.",
+                            "Que l'analyse fondamentale est fausse.",
+                            "Que le RSI est inférieur à 30."
+                        ],
+                        correct_answer: 2,
+                        explanation: "Cela confirme que la zone de résistance est valide : la pression vendeuse a été plus forte que la conviction des acheteurs."
+                    },
+                    {
+                        id: 'q13',
+                        question: "Pour l'investisseur long terme, l'Analyse Technique devrait être utilisée principalement pour :",
+                        options: [
+                            "Faire du trading intra-journalier.",
+                            "Déterminer la valeur fondamentale d'une entreprise.",
+                            "Confirmer l'existence d'une tendance de fond (haussière ou baissière).",
+                            "Calculer les intérêts composés.",
+                            "Modifier son allocation d'actifs."
+                        ],
+                        correct_answer: 2,
+                        explanation: "Il s'agit de s'assurer que l'on achète dans le sens du marché (ou à un point de retournement pertinent), et non contre lui."
+                    },
+                    {
+                        id: 'q14',
+                        question: "Quel indicateur est utilisé pour mesurer si une action est en train de prendre de la vitesse (momentum) ?",
+                        options: [
+                            "Le Gearing.",
+                            "Le PER.",
+                            "La Moyenne Mobile 200 jours.",
+                            "Le RSI ou le MACD.",
+                            "Le niveau de Support."
+                        ],
+                        correct_answer: 3,
+                        explanation: "Le RSI (Relative Strength Index) et le MACD sont les oscillateurs de référence pour capter l'accélération d'une tendance."
+                    },
+                    {
+                        id: 'q15',
+                        question: "Une Tendance Baissière est caractérisée par :",
+                        options: [
+                            "Des hauts et des bas de plus en plus élevés. (Tendance Haussière)",
+                            "Des sommets et des creux de plus en plus bas.",
+                            "Une ligne qui reste parfaitement plate. (Tendance Neutre)",
+                            "Le prix qui évolue au-dessus de la MM 200 jours.",
+                            "Un RSI constamment supérieur à 70."
+                        ],
+                        correct_answer: 1,
+                        explanation: "C'est la définition classique de la théorie de Dow : chaque nouveau rebond est plus bas que le précédent, confirmant le contrôle des vendeurs."
+                    },
+                    {
+                        id: 'q16',
+                        question: "Pourquoi la stratégie du Market Timing (tenter de deviner les prix futurs) est-elle déconseillée aux investisseurs débutants ?",
                         options: [
                             "Car elle ne fonctionne qu'avec les obligations.",
                             "Car elle exige une précision impossible et mène souvent à des décisions émotionnelles (Biais de Récence).",
@@ -195,37 +247,24 @@ async function createModule10Quiz() {
                             "Car elle élimine le risque spécifique."
                         ],
                         correct_answer: 1,
-                        explanation: "Tenter de deviner le marché est quasiment impossible et contraire au principe de discipline (Module 6)."
+                        explanation: "Essayer d'acheter au plus bas exact et de vendre au plus haut relève de la chance. Cela pousse souvent à des erreurs sous le coup de l'émotion."
                     },
                     {
-                        id: 'q13',
-                        question: "Le but de l'Atelier Pratique de ce module était d'élaborer une règle de timing prudente combinant AT et :",
+                        id: 'q17',
+                        question: "Quel niveau du RSI signale que le titre est potentiellement suracheté et qu'une correction pourrait se produire ?",
                         options: [
-                            "Market Timing.",
-                            "Biais de Récence.",
-                            "Analyse Fondamentale.",
-                            "Spéculation.",
-                            "MM 50."
-                        ],
-                        correct_answer: 2,
-                        explanation: "L'Analyse Fondamentale détermine quoi acheter et l'Analyse Technique détermine quand acheter pour l'investisseur long terme."
-                    },
-                    {
-                        id: 'q14',
-                        question: "Quel est l'indicateur de volume qui renforce la fiabilité d'une tendance ou d'une cassure ?",
-                        options: [
-                            "Le RSI.",
-                            "Le Gearing.",
-                            "Le Compte de Résultat.",
-                            "Le Volume des transactions.",
-                            "La Moyenne Mobile 50."
+                            "Inférieur à 30.",
+                            "Égal à 50.",
+                            "Égal à 0.",
+                            "Supérieur à 70.",
+                            "Égal au Gearing."
                         ],
                         correct_answer: 3,
-                        explanation: "Un mouvement de prix (cassure de Résistance ou Support) est plus fiable s'il est confirmé par un volume de transactions élevé."
+                        explanation: "Un RSI au-dessus de 70 signale une frénésie d'achat. Le prix a monté trop vite et risque de corriger."
                     },
                     {
-                        id: 'q15',
-                        question: "Un investisseur long terme utilise l'Analyse Technique pour **éviter** :",
+                        id: 'q18',
+                        question: "Un investisseur long terme utilise l'Analyse Technique pour éviter :",
                         options: [
                             "D'acheter une bonne entreprise.",
                             "De réinvestir son dividende.",
@@ -234,7 +273,20 @@ async function createModule10Quiz() {
                             "D'analyser le ROE."
                         ],
                         correct_answer: 3,
-                        explanation: "L'AT vise à patienter pour obtenir un meilleur prix d'entrée, sans remettre en cause la qualité de l'entreprise."
+                        explanation: "Même la meilleure entreprise du monde devient un mauvais investissement si on la paie trop cher lors d'un pic d'euphorie du marché."
+                    },
+                    {
+                        id: 'q19',
+                        question: "Quelle est la définition d'une Tendance en Analyse Technique ?",
+                        options: [
+                            "La volatilité quotidienne du prix.",
+                            "La direction générale des mouvements de prix sur une période donnée (haussière, baissière, neutre).",
+                            "Le prix moyen pondéré en fonction du volume.",
+                            "Le niveau d'endettement.",
+                            "Le niveau de surachat."
+                        ],
+                        correct_answer: 1,
+                        explanation: "La tendance, c'est le 'courant' du marché. Il est toujours plus rentable de nager dans le sens du courant plutôt qu'à contre-courant."
                     }
                 ]
             }
@@ -251,7 +303,7 @@ async function createModule10Quiz() {
         console.log(`  - Nombre de questions: ${(quiz.questions as any[])?.length || 0}`);
         console.log(`  - Score de passage: ${quiz.passing_score}%`);
         console.log('');
-        console.log('📝 Note: Le système sélectionnera automatiquement 10 questions aléatoires parmi les 15 lors de chaque test.');
+        console.log('📝 Note: Le système sélectionnera automatiquement un nombre défini de questions aléatoires lors de chaque test.');
 
     } catch (error) {
         console.error('❌ Erreur lors de la création du quiz:', error);
@@ -261,4 +313,4 @@ async function createModule10Quiz() {
 }
 
 // Exécuter le script
-createModule10Quiz();
+createModule10ConsolidationQuiz();
