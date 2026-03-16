@@ -2524,298 +2524,276 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     order_index: 10,
     is_published: true,
     content: `
- <div class="space-y-8 max-w-5xl mx-auto font-sans text-gray-900">
+<div class="module-content">
 
-  <div class="p-8 rounded-2xl shadow-lg" style="background-color: #0f172a; color: #ffffff;">
-    <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
+  <div class="bg-blue-600 text-white">
+    <h2 class="text-white flex items-center gap-3 mt-0">
       🎯 Objectif Pédagogique du Module
     </h2>
-    <p class="text-lg mb-6" style="color: #94a3b8;">
+    <p class="text-white text-lg">
       À la fin de ce module, vous serez capable de :
     </p>
-    <ul class="space-y-4 text-lg">
-      <li class="flex items-start gap-3">
-        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Comprendre la philosophie de l'Analyse Technique (AT) et son rôle complémentaire à l'Analyse Fondamentale.
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Décoder les graphiques de prix (chandeliers, tendances, support/résistance).
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Utiliser les indicateurs techniques clés (Moyennes Mobiles, RSI, MACD, Bandes de Bollinger) pour identifier les points d'entrée et de sortie.
-      </li>
-      <li class="flex items-start gap-3">
-        <span class="bg-blue-500 rounded-full p-1 mt-1 shrink-0">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-        </span>
-        Élaborer une stratégie de timing prudente et adaptée au contexte de la BRVM.
-      </li>
+    <div class="space-y-4 text-lg">
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Comprendre la philosophie de l'Analyse Technique (AT) et son rôle complémentaire à l'Analyse Fondamentale.</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Décoder les graphiques de prix (chandeliers, tendances, support/résistance).</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Utiliser les indicateurs techniques clés (Moyennes Mobiles, RSI, MACD, Bandes de Bollinger) pour identifier les points d'entrée et de sortie.</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Élaborer une stratégie de timing prudente et adaptée au contexte de la BRVM.</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>10.1 Philosophie et Théorie de Dow</h2>
+  <p>
+    L'Analyse Technique (AT) est l'étude des mouvements de prix historiques d'un titre, généralement représentés par des graphiques. Elle repose sur des postulats clés formalisés par la Théorie de Dow, le père de l'analyse technique.
+  </p>
+
+  <div class="bg-slate-50">
+    <h3>10.1.1 Les Postulats Fondamentaux de l'AT</h3>
+    <ul>
+      <li><strong>Le marché actualise tout :</strong> Le prix actuel de l'action reflète déjà toutes les informations fondamentales, économiques et psychologiques connues (bénéfices, crises, rumeurs).</li>
+      <li><strong>Les prix évoluent en tendances :</strong> Les mouvements de prix ne sont pas aléatoires ; ils suivent des directions identifiables (tendance haussière, baissière, neutre).</li>
+      <li><strong>L'histoire se répète :</strong> Les schémas de comportement humain (peur, avidité, Module 6) se répètent, menant à la récurrence de certaines configurations graphiques.</li>
     </ul>
   </div>
-
-  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-    <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b-2 border-blue-600 pb-2">
-      10.1 Philosophie et Théorie de Dow
-    </h2>
-    <p class="text-gray-700 mb-6 leading-relaxed">
-      L'Analyse Technique (AT) est l'étude des mouvements de prix historiques d'un titre, généralement représentés par des graphiques. Elle repose sur des postulats clés formalisés par la Théorie de Dow, le père de l'analyse technique.
-    </p>
-
-    <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
-      <h3 class="text-xl font-bold text-blue-900 mb-4 italic">10.1.1 Les Postulats Fondamentaux de l'AT</h3>
-      <ul class="space-y-4 text-gray-700">
-        <li>• <strong>Le marché actualise tout :</strong> Le prix actuel de l'action reflète déjà toutes les informations fondamentales, économiques et psychologiques connues (bénéfices, crises, rumeurs).</li>
-        <li>• <strong>Les prix évoluent en tendances :</strong> Les mouvements de prix ne sont pas aléatoires ; ils suivent des directions identifiables (tendance haussière, baissière, neutre).</li>
-        <li>• <strong>L'histoire se répète :</strong> Les schémas de comportement humain (peur, avidité, Module 6) se répètent, menant à la récurrence de certaines configurations graphiques.</li>
-      </ul>
-    </div>
-    
-    <div class="mt-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500 text-blue-900">
+  
+  <div class="bg-blue-50">
+    <p class="mb-0">
       <strong>Rôle l'Investisseur Débutant :</strong> Alors que l'Analyse Fondamentale (M7/M9) vous dit quoi acheter (la valeur), l'Analyse Technique vous aide à déterminer quand acheter ou vendre (le timing).
+    </p>
+  </div>
+
+  <h2>10.2 Chartisme et Lecture de Graphiques</h2>
+
+  <h3>10.2.1 Un Graphique, une Histoire : Les Chandeliers Japonais</h3>
+  <p>
+    Le graphique en chandeliers est le plus utilisé. Chaque chandelier représente une période de temps (jour, semaine, etc.) et raconte l'histoire de la confrontation entre acheteurs et vendeurs.
+  </p>
+
+  
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="bg-green-50">
+      <p class="font-bold text-green-700 mb-1">Le Corps Vert/Blanc :</p>
+      <p class="text-sm mb-0">Prix a augmenté (Clôture > Ouverture) – Domination des Acheteurs.</p>
+    </div>
+    <div class="bg-red-50">
+      <p class="font-bold text-red-700 mb-1">Le Corps Rouge/Noir :</p>
+      <p class="text-sm mb-0">Prix a diminué (Clôture < Ouverture) – Domination des Vendeurs.</p>
+    </div>
+  </div>
+  
+  <blockquote>
+    <strong>Les Mèches (ou Ombres) :</strong> Indiquent les prix les plus hauts et les plus bas atteints pendant la période.
+  </blockquote>
+
+  <h3>10.2.2 Identifier les Tendances (Le Concept Clé)</h3>
+  <p>Le concept le plus important est la tendance, la direction générale des prix.</p>
+
+  
+
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="bg-slate-50">
+      <strong class="text-blue-700 block mb-2">Tendance Haussière (Bullish) :</strong> 
+      <p class="text-sm mb-0">Succession de sommets et de creux de plus en plus hauts.</p>
+    </div>
+    <div class="bg-slate-50">
+      <strong class="text-red-700 block mb-2">Tendance Baissière (Bearish) :</strong> 
+      <p class="text-sm mb-0">Succession de sommets et de creux de plus en plus bas.</p>
+    </div>
+    <div class="bg-slate-50">
+      <strong class="text-gray-700 block mb-2">Tendance Neutre (Latérale) :</strong> 
+      <p class="text-sm mb-0">Prix se déplaçant horizontalement dans une fourchette limitée.</p>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2">
-      10.2 Chartisme et Lecture de Graphiques
-    </h2>
+  <h3>10.2.3 Support et Résistance (Niveaux Psychologiques)</h3>
+  <p>Ce sont des niveaux de prix importants qui agissent comme des barrières.</p>
 
-    <div class="space-y-8">
-      <div>
-        <h3 class="text-lg font-bold text-blue-800 mb-4">10.2.1 Un Graphique, une Histoire : Les Chandeliers Japonais</h3>
-        <p class="text-gray-700 mb-4">Le graphique en chandeliers est le plus utilisé. Chaque chandelier représente une période de temps (jour, semaine, etc.) et raconte l'histoire de la confrontation entre acheteurs et vendeurs.</p>
-        
-        
+  
 
-        <div class="grid md:grid-cols-2 gap-4 mt-4">
-          <div class="p-4 border rounded-lg bg-green-50">
-            <p class="font-bold text-green-700">Le Corps Vert/Blanc :</p>
-            <p class="text-sm">Prix a augmenté (Clôture > Ouverture) – Domination des Acheteurs.</p>
-          </div>
-          <div class="p-4 border rounded-lg bg-red-50">
-            <p class="font-bold text-red-700">Le Corps Rouge/Noir :</p>
-            <p class="text-sm">Prix a diminué (Clôture < Ouverture) – Domination des Vendeurs.</p>
-          </div>
-        </div>
-        <p class="mt-3 text-sm text-gray-600 italic">• <strong>Les Mèches (ou Ombres) :</strong> Indiquent les prix les plus hauts et les plus bas atteints pendant la période.</p>
-      </div>
-
-      <hr class="border-slate-100">
-
-      <div>
-        <h3 class="text-lg font-bold text-blue-800 mb-4">10.2.2 Identifier les Tendances (Le Concept Clé)</h3>
-        <p class="text-gray-700 mb-4">Le concept le plus important est la tendance, la direction générale des prix.</p>
-        
-        
-
-        <div class="grid md:grid-cols-3 gap-4 text-sm text-center">
-          <div class="p-3 bg-slate-50 border rounded font-medium">Tendance Haussière (Bullish) : Succession de sommets et de creux de plus en plus hauts.</div>
-          <div class="p-3 bg-slate-50 border rounded font-medium">Tendance Baissière (Bearish) : Succession de sommets et de creux de plus en plus bas.</div>
-          <div class="p-3 bg-slate-50 border rounded font-medium">Tendance Neutre (Latérale) : Prix se déplaçant horizontalement dans une fourchette limitée.</div>
-        </div>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-bold text-blue-800 mb-4">10.2.3 Support et Résistance (Niveaux Psychologiques)</h3>
-        <p class="text-gray-700 mb-4">Ce sont des niveaux de prix importants qui agissent comme des barrières.</p>
-        
-        
-
-        <div class="grid md:grid-cols-2 gap-6">
-          <div class="p-5 bg-blue-900 text-white rounded-xl">
-            <h4 class="font-bold mb-2">Support (Le Plancher)</h4>
-            <p class="text-sm opacity-90">Niveau où l'intérêt d'achat est suffisamment fort pour empêcher le prix de baisser davantage.</p>
-          </div>
-          <div class="p-5 bg-slate-800 text-white rounded-xl">
-            <h4 class="font-bold mb-2">Résistance (Le Plafond)</h4>
-            <p class="text-sm opacity-90">Niveau où la pression de vente est forte, empêchant le prix de monter.</p>
-          </div>
-        </div>
-
-        <div class="mt-6 p-5 bg-amber-50 rounded-lg border border-amber-200">
-          <h4 class="font-bold text-amber-800 mb-2 italic">L'Analogie à Retenir : Le Prix du Sac de Riz au Marché</h4>
-          <p class="text-sm text-amber-950">Le prix du sac de riz peut fluctuer, mais il y a toujours un prix minimal (le Support) en dessous duquel les producteurs refusent de vendre, et un prix maximal (la Résistance) au-delà duquel les clients refusent d'acheter.</p>
-        </div>
-      </div>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-blue-50">
+      <h4 class="mt-0 text-blue-800">Support (Le Plancher)</h4>
+      <p class="text-sm mb-0">Niveau où l'intérêt d'achat est suffisamment fort pour empêcher le prix de baisser davantage.</p>
+    </div>
+    <div class="bg-slate-50">
+      <h4 class="mt-0 text-gray-800">Résistance (Le Plafond)</h4>
+      <p class="text-sm mb-0">Niveau où la pression de vente est forte, empêchant le prix de monter.</p>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2">
-      10.3 Indicateurs Clés : Lisser, Mesurer la Force et le Momentum
-    </h2>
-    <p class="text-gray-700 mb-6">Les indicateurs sont des formules mathématiques appliquées aux prix pour donner des signaux plus clairs.</p>
+  <div class="bg-amber-50">
+    <h4 class="mt-0 text-yellow-800">💡 L'Analogie à Retenir : Le Prix du Sac de Riz au Marché</h4>
+    <p class="text-sm mb-0">Le prix du sac de riz peut fluctuer, mais il y a toujours un prix minimal (le Support) en dessous duquel les producteurs refusent de vendre, et un prix maximal (la Résistance) au-delà duquel les clients refusent d'acheter.</p>
+  </div>
 
-    <div class="space-y-8">
-      <div>
-        <h3 class="font-bold text-blue-900">10.3.1 Moyennes Mobiles (MM) : Lisser la Tendance</h3>
-        <p class="text-sm text-gray-600 mb-4">Les Moyennes Mobiles (MM) sont des lignes qui représentent le prix moyen sur une période donnée (ex: MM 50 jours, MM 200 jours).</p>
-        
-        
+  <h2>10.3 Indicateurs Clés : Lisser, Mesurer la Force et le Momentum</h2>
+  <p>Les indicateurs sont des formules mathématiques appliquées aux prix pour donner des signaux plus clairs.</p>
 
-        <ul class="text-sm space-y-2 ml-4 mt-4">
-          <li>• <strong>Rôle :</strong> Lisser les fluctuations quotidiennes et identifier la tendance sous-jacente.</li>
-          <li>• <strong>Règles Simples :</strong> Si le prix de l'action est au-dessus de sa MM 200 jours, c'est un signal de force à long terme. Le croisement de deux MM (ex: MM 50 qui croise la MM 200 par le bas) donne des signaux d'achat (Golden Cross).</li>
-        </ul>
-      </div>
+  <h3>10.3.1 Moyennes Mobiles (MM) : Lisser la Tendance</h3>
+  <p>Les Moyennes Mobiles (MM) sont des lignes qui représentent le prix moyen sur une période donnée (ex: MM 50 jours, MM 200 jours).</p>
 
-      <div>
-        <h3 class="font-bold text-blue-900">10.3.2 RSI (Relative Strength Index) : Mesurer la Force</h3>
-        <p class="text-sm text-gray-600 mb-4">Indicateur de momentum qui mesure la vitesse et le changement des mouvements de prix. Il indique si l'actif est suracheté ou survendu.</p>
-        
-        
+  
 
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="p-3 bg-red-50 border-l-4 border-red-500 text-sm"><strong>RSI > 70 :</strong> Le titre est suracheté (trop d'acheteurs) et une correction (baisse) pourrait être imminente.</div>
-          <div class="p-3 bg-green-50 border-l-4 border-green-500 text-sm"><strong>RSI < 30 :</strong> Le titre est survendu (trop de vendeurs) et un rebond pourrait être proche.</div>
-        </div>
-      </div>
+  <ul>
+    <li><strong>Rôle :</strong> Lisser les fluctuations quotidiennes et identifier la tendance sous-jacente.</li>
+    <li><strong>Règles Simples :</strong> Si le prix de l'action est au-dessus de sa MM 200 jours, c'est un signal de force à long terme. Le croisement de deux MM (ex: MM 50 qui croise la MM 200 par le bas) donne des signaux d'achat (Golden Cross).</li>
+  </ul>
 
-      <div class="grid md:grid-cols-2 gap-8">
-        <div>
-          <h3 class="font-bold text-blue-900">10.3.3 MACD : Mesurer l'Impulsion</h3>
-          <p class="text-xs text-gray-600 mb-2">Indicateur de tendance qui montre la relation entre deux moyennes mobiles du prix d'un titre.</p>
-          <p class="text-xs text-gray-700 italic">Signal : Les croisements entre la ligne MACD et sa ligne de signal sont des points d'achat ou de vente potentiels.</p>
-          <div class="mt-2"></div>
-        </div>
-        <div>
-          <h3 class="font-bold text-blue-900">10.3.4 Bandes de Bollinger : Mesurer la Volatilité</h3>
-          <p class="text-xs text-gray-600 mb-2">Lignes tracées au-dessus et en dessous d'une moyenne mobile. Elles mesurent la volatilité du prix.</p>
-          <p class="text-xs text-gray-700 italic">Interprétation : Lorsque les bandes se resserrent, cela signale une faible volatilité et l'anticipation d'un mouvement important.</p>
-          <div class="mt-2"></div>
-        </div>
-      </div>
+  <h3>10.3.2 RSI (Relative Strength Index) : Mesurer la Force</h3>
+  <p>Indicateur de momentum qui mesure la vitesse et le changement des mouvements de prix. Il indique si l'actif est suracheté ou survendu.</p>
 
-      <div class="p-6 bg-slate-900 text-white rounded-xl">
-        <h3 class="font-bold text-blue-400 mb-2">10.3.5 Les Volumes : Le Détecteur de Mensonges</h3>
-        <p class="text-sm mb-4">Les barres verticales en bas du graphique qui montrent combien d'actions ont été échangées.</p>
-        
-        
+  
 
-        <div class="space-y-2 text-sm mt-4">
-          <p>• <strong>Règle d'Or :</strong> Le volume doit confirmer la tendance.</p>
-          <p>• <strong>Interprétation :</strong> Si le prix casse une Résistance avec de gros volumes, c'est un signal validé. Si le prix monte avec de faibles volumes, méfiance : c'est peut-être un piège haussier sans conviction.</p>
-        </div>
-      </div>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="bg-red-50">
+      <strong class="text-red-700 block mb-2">RSI > 70 :</strong> 
+      <p class="text-sm mb-0">Le titre est suracheté (trop d'acheteurs) et une correction (baisse) pourrait être imminente.</p>
+    </div>
+    <div class="bg-green-50">
+      <strong class="text-green-700 block mb-2">RSI < 30 :</strong> 
+      <p class="text-sm mb-0">Le titre est survendu (trop de vendeurs) et un rebond pourrait être proche.</p>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl border border-slate-200">
-    <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b-2 border-blue-600 pb-2">
-      10.4 Comprendre et Utiliser la Volatilité
-    </h2>
-    <p class="text-gray-700 mb-6">La volatilité est l'intensité et la fréquence des variations de prix (déjà abordé en M5). En Analyse Technique, la volatilité est une opportunité.</p>
-    <div class="grid md:grid-cols-2 gap-4 text-sm">
-      <div class="p-4 bg-gray-50 rounded"><strong>Forte Volatilité :</strong> Risque élevé, mais potentiel de gain rapide. Le timing est crucial.</div>
-      <div class="p-4 bg-gray-50 rounded"><strong>Faible Volatilité :</strong> Risque faible, mais faible potentiel de gain rapide. Idéal pour l'accumulation par l'investisseur à long terme.</div>
+  <div class="grid md:grid-cols-2 gap-6 mt-6">
+    <div class="bg-slate-50">
+      <h4 class="mt-0">10.3.3 MACD : Mesurer l'Impulsion</h4>
+      <p class="text-sm">Indicateur de tendance qui montre la relation entre deux moyennes mobiles du prix d'un titre.</p>
+      <p class="text-sm text-blue-600 font-medium mb-0">Signal : Les croisements entre la ligne MACD et sa ligne de signal sont des points d'achat ou de vente potentiels.</p>
     </div>
-    <div class="mt-6 p-4 bg-indigo-50 border border-indigo-100 rounded text-indigo-900">
+    <div class="bg-slate-50">
+      <h4 class="mt-0">10.3.4 Bandes de Bollinger : Mesurer la Volatilité</h4>
+      <p class="text-sm">Lignes tracées au-dessus et en dessous d'une moyenne mobile. Elles mesurent la volatilité du prix.</p>
+      <p class="text-sm text-blue-600 font-medium mb-0">Interprétation : Lorsque les bandes se resserrent, cela signale une faible volatilité et l'anticipation d'un mouvement important.</p>
+    </div>
+  </div>
+
+  <div class="bg-blue-600 text-white mt-8">
+    <h3 class="text-white mt-0">📊 10.3.5 Les Volumes : Le Détecteur de Mensonges</h3>
+    <p class="text-white">Les barres verticales en bas du graphique qui montrent combien d'actions ont été échangées.</p>
+
+    <div class="space-y-4 text-white mt-4">
+      <p class="mb-0">👉 <strong>Règle d'Or :</strong> Le volume doit confirmer la tendance.</p>
+      <p class="mb-0">👉 <strong>Interprétation :</strong> Si le prix casse une Résistance avec de gros volumes, c'est un signal validé. Si le prix monte avec de faibles volumes, méfiance : c'est peut-être un piège haussier sans conviction.</p>
+    </div>
+  </div>
+
+  <h2>10.4 Comprendre et Utiliser la Volatilité</h2>
+  <p>La volatilité est l'intensité et la fréquence des variations de prix (déjà abordé en M5). En Analyse Technique, la volatilité est une opportunité.</p>
+  
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="bg-slate-50">
+      <strong class="block text-lg mb-2">Forte Volatilité :</strong> 
+      <p class="text-sm mb-0">Risque élevé, mais potentiel de gain rapide. Le timing est crucial.</p>
+    </div>
+    <div class="bg-slate-50">
+      <strong class="block text-lg mb-2">Faible Volatilité :</strong> 
+      <p class="text-sm mb-0">Risque faible, mais faible potentiel de gain rapide. Idéal pour l'accumulation par l'investisseur à long terme.</p>
+    </div>
+  </div>
+  
+  <div class="bg-blue-50">
+    <p class="mb-0">
       <strong>Stratégie BRVM :</strong> Sur un marché comme la BRVM, où la liquidité peut être intermittente, la volatilité des prix peut parfois être exagérée. L'investisseur fondamentaliste utilise ces pics de volatilité (baisse) pour acheter à bas prix.
+    </p>
+  </div>
+
+  <h2>10.5 Synthèse Technique et Confirmation Multi-Signaux</h2>
+  <p class="italic">Ne jamais prendre une décision sur un seul indicateur. La puissance de l'AT réside dans la confirmation de plusieurs signaux.</p>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Signal 1 (Tendance)</th>
+          <th>Signal 2 (Momentum)</th>
+          <th>Signal 3 (Volatilité)</th>
+          <th>Décision (Confirmation)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Le prix touche un Support.</td>
+          <td>Le RSI sort de la zone de survendue (remonte au-dessus de 30).</td>
+          <td>Les Bandes de Bollinger se resserrent puis s'écartent.</td>
+          <td class="font-bold text-green-600">SIGNAL D'ACHAT FORT</td>
+        </tr>
+        <tr>
+          <td>Le prix atteint une Résistance.</td>
+          <td>Le RSI entre en zone de surachat (dépasse 70).</td>
+          <td>Le prix est loin de sa MM 200 jours.</td>
+          <td class="font-bold text-red-600">SIGNAL DE VENTE/PRISE DE PROFIT</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>10.6 Lecture en Temps Réel des Graphiques BRVM</h2>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-slate-50">
+      <h4 class="mt-0">Privilégier les Grandes Périodes</h4>
+      <p class="text-sm mb-0">Utilisez des graphiques hebdomadaires ou mensuels (vs quotidiens) pour identifier la tendance de fond. Le trading intra-journalier est risqué sur le marché UEMOA.</p>
+    </div>
+    <div class="bg-slate-50">
+      <h4 class="mt-0">Liquidity Filter</h4>
+      <p class="text-sm mb-0">Focalisez-vous sur les titres les plus liquides (Sonatel, Ecobank, SGB-CI) où l'AT est plus fiable. Les titres peu liquides ont des graphiques erratiques.</p>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2">
-      10.5 Synthèse Technique et Confirmation Multi-Signaux
-    </h2>
-    <p class="text-gray-700 mb-6 italic">Ne jamais prendre une décision sur un seul indicateur. La puissance de l'AT réside dans la confirmation de plusieurs signaux.</p>
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse border border-slate-300 text-sm">
+  <div class="bg-slate-50">
+    <h2 class="mt-0 flex items-center gap-2">🧠 Les Termes à Maîtriser</h2>
+    <div class="table-wrapper">
+      <table class="border">
         <thead>
-          <tr style="background-color: #0f172a; color: #ffffff;">
-            <th class="border border-slate-300 px-4 py-3 text-left">Signal 1 (Tendance)</th>
-            <th class="border border-slate-300 px-4 py-3 text-left">Signal 2 (Momentum)</th>
-            <th class="border border-slate-300 px-4 py-3 text-left">Signal 3 (Volatilité)</th>
-            <th class="border border-slate-300 px-4 py-3 text-left">Décision (Confirmation)</th>
+          <tr>
+            <th>Terme</th>
+            <th>Définition</th>
           </tr>
         </thead>
-        <tbody class="text-gray-800">
-          <tr class="bg-green-50">
-            <td class="border border-slate-300 px-4 py-3">Le prix touche un Support.</td>
-            <td class="border border-slate-300 px-4 py-3">Le RSI sort de la zone de survendue (remonte au-dessus de 30).</td>
-            <td class="border border-slate-300 px-4 py-3">Les Bandes de Bollinger se resserrent puis s'écartent.</td>
-            <td class="border border-slate-300 px-4 py-3 font-bold text-green-700 uppercase">SIGNAL D'ACHAT FORT</td>
+        <tbody>
+          <tr>
+            <td class="font-bold">Chandelier Japonais</td>
+            <td>Représentation graphique des mouvements de prix (ouverture, clôture, haut, bas) sur une période.</td>
           </tr>
-          <tr class="bg-red-50">
-            <td class="border border-slate-300 px-4 py-3">Le prix atteint une Résistance.</td>
-            <td class="border border-slate-300 px-4 py-3">Le RSI entre en zone de surachat (dépasse 70).</td>
-            <td class="border border-slate-300 px-4 py-3">Le prix est loin de sa MM 200 jours.</td>
-            <td class="border border-slate-300 px-4 py-3 font-bold text-red-700 uppercase">SIGNAL DE VENTE/PRISE DE PROFIT</td>
+          <tr>
+            <td class="font-bold">Support / Résistance</td>
+            <td>Niveaux de prix psychologiques qui agissent comme plancher et plafond.</td>
+          </tr>
+          <tr>
+            <td class="font-bold">Moyenne Mobile (MM)</td>
+            <td>Ligne traçant le prix moyen lissé sur une période (ex: 50 ou 200 jours).</td>
+          </tr>
+          <tr>
+            <td class="font-bold">RSI</td>
+            <td>Relative Strength Index, indicateur de momentum qui mesure si un titre est suracheté ou survendu.</td>
+          </tr>
+          <tr>
+            <td class="font-bold">Tendance</td>
+            <td>La direction générale des mouvements de prix sur une période.</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <div class="bg-white p-6 rounded-xl border border-slate-200">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b-2 border-blue-600 pb-2 text-center">
-      10.6 Lecture en Temps Réel des Graphiques BRVM
-    </h2>
-    <div class="grid md:grid-cols-2 gap-8">
-      <div class="space-y-4">
-        <h4 class="font-bold text-blue-900">Privilégier les Grandes Périodes</h4>
-        <p class="text-sm text-gray-700">Utilisez des graphiques hebdomadaires ou mensuels (vs quotidiens) pour identifier la tendance de fond. Le trading intra-journalier est risqué sur le marché UEMOA.</p>
-      </div>
-      <div class="space-y-4">
-        <h4 class="font-bold text-blue-900">Liquidity Filter</h4>
-        <p class="text-sm text-gray-700">Focalisez-vous sur les titres les plus liquides (Sonatel, Ecobank, SGB-CI) où l'AT est plus fiable. Les titres peu liquides ont des graphiques erratiques.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="bg-slate-900 text-white p-8 rounded-xl shadow-lg">
-    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 border-b border-slate-700 pb-2">
-      🧠 Les Termes à Maîtriser
-    </h2>
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm">
-        <thead>
-          <tr class="text-blue-400 uppercase text-xs">
-            <th class="px-4 py-2 text-left">Terme</th>
-            <th class="px-4 py-2 text-left">Définition</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-800">
-          <tr>
-            <td class="px-4 py-4 font-bold">Chandelier Japonais</td>
-            <td class="px-4 py-4 text-slate-300">Représentation graphique des mouvements de prix (ouverture, clôture, haut, bas) sur une période.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-4 font-bold">Support / Résistance</td>
-            <td class="px-4 py-4 text-slate-300">Niveaux de prix psychologiques qui agissent comme plancher et plafond.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-4 font-bold">Moyenne Mobile (MM)</td>
-            <td class="px-4 py-4 text-slate-300">Ligne traçant le prix moyen lissé sur une période (ex: 50 ou 200 jours).</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-4 font-bold">RSI</td>
-            <td class="px-4 py-4 text-slate-300">Relative Strength Index, indicateur de momentum qui mesure si un titre est suracheté ou survendu.</td>
-          </tr>
-          <tr>
-            <td class="px-4 py-4 font-bold">Tendance</td>
-            <td class="px-4 py-4 text-slate-300">La direction générale des mouvements de prix sur une période.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="bg-gray-50 p-8 rounded-xl text-center border border-slate-200">
-    <h3 class="text-xl font-bold text-slate-800 mb-4">🧭 Prochaine Étape</h3>
-    <p class="text-slate-600 mb-6">Vous avez le mental, l'analyse fondamentale et l'outil de timing. La dernière pièce du puzzle est la gestion du risque structurel.</p>
-    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
-      👉 Module 11 : La Maîtrise du Risque
-    </button>
+  <div class="bg-blue-50 text-center">
+    <h3 class="mt-0">🧭 Prochaine Étape</h3>
+    <p>Vous avez le mental, l'analyse fondamentale et l'outil de timing. La dernière pièce du puzzle est la gestion du risque structurel.</p>
+    <a href="#" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">
+      👉 Passer au Module 11 : La Maîtrise du Risque
+    </a>
   </div>
 
 </div>
@@ -3271,177 +3249,154 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     duration_minutes: 15,
     order_index: 13,
     is_published: true,
+    has_quiz: false,
     content: `
- <div class="space-y-8 max-w-4xl mx-auto">
+<div class="module-content">
 
- <div class="bg-gradient-to-r from-orange-700 to-red-800 text-white p-8 rounded-2xl shadow-xl">
- <h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
- ⚙️ Module 13 : Outils, Actualités et Fiscalité
- </h2>
- <p class="text-lg mb-6 text-orange-100">
- Feuille de Route pour l'Exécution. À la fin de ce module, vous serez capable de :
- </p>
- <ul class="space-y-3 text-lg">
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- **Maîtriser les plateformes numériques** pour suivre la BRVM et passer vos ordres.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- **Comprendre le régime fiscal** des revenus de portefeuille (plus-values, dividendes) dans l'UEMOA.
- </li>
- <li class="flex items-start gap-3">
- <span class="bg-white/20 rounded-full p-1 mt-1">
- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
- </span>
- **Mettre en place un système de suivi** et de reporting régulier (Journal de Performance).
- </li>
- </ul>
- </div>
-
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-orange-100 pb-2 flex items-center gap-2">
- 💻 13.1 Utilisation des Plateformes : Le Passage à l'Action
- </h2>
- 
- <h3 class="text-lg font-bold text-orange-700 mb-3">Le Rôle de la SGI : L'Intermédiaire Indispensable</h3>
- <div class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500 mb-6">
- <p class="text-gray-700 text-sm">
- Votre **SGI (Société de Gestion et d’Intermédiation)** est votre unique point d'entrée. C'est elle qui ouvre votre compte-titres. Vos titres sont conservés en toute sécurité par le **DC/BR** (Dépositaire Central / Banque de Règlement), indépendamment de la SGI.
- </p>
- </div>
- 
- <p class="font-bold text-gray-800 mb-3">Les Outils de Suivi</p>
- <div class="overflow-x-auto">
- <table class="min-w-full divide-y divide-gray-200 text-sm">
- <thead class="bg-orange-50">
- <tr>
- <th class="px-4 py-3 text-left font-bold text-orange-800">Outil</th>
- <th class="px-4 py-3 text-left font-bold text-orange-800">Rôle Principal</th>
- <th class="px-4 py-3 text-left font-bold text-orange-800">Informations Clés</th>
- </tr>
- </thead>
- <tbody class="divide-y divide-gray-200">
- <tr>
- <td class="px-4 py-3 font-medium">Site Officiel BRVM</td>
- <td class="px-4 py-3">Information Légale et Marchande</td>
- <td class="px-4 py-3">Cours officiels, indices (BRVM Composite), actualités réglementaires.</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-medium">Site ou App de votre SGI</td>
- <td class="px-4 py-3">Gestion du Portefeuille</td>
- <td class="px-4 py-3">Valorisation des titres, exécution des ordres.</td>
- </tr>
- <tr>
- <td class="px-4 py-3 font-medium">Afribourse / Média UEMOA</td>
- <td class="px-4 py-3">Analyse et Média</td>
- <td class="px-4 py-3">Rapports d'analyse sur les sociétés cotées, avis d'experts.</td>
- </tr>
- </tbody>
- </table>
- </div>
-
- <div class="mt-4 text-xs bg-red-50 p-3 rounded-lg border-l-4 border-red-500">
- **Point Clé :** Assurez-vous que votre plateforme permet de passer des **ordres au prix limite (Limit Order)** et des **ordres Stop-Loss** (M12) pour exécuter votre stratégie de risque.
- </div>
- </div>
-
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-orange-100 pb-2 flex items-center gap-2">
- 💸 13.2 Fiscalité des Revenus de Portefeuille dans l’UEMOA
- </h2>
-
- <div class="grid md:grid-cols-2 gap-4 mb-6">
- <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
- <h3 class="font-bold text-green-800 mb-2">Imposition des Dividendes (Revenus)</h3>
- <p class="text-sm text-gray-700">
- Soumis à une **Retenue à la Source (RAS)** nationale, souvent entre **7 % et 15 %** selon le pays (ex: Sénégal, Côte d'Ivoire).
- </p>
- <p class="text-xs text-green-700 mt-2 italic">La RAS est souvent libératoire (pas besoin de la redéclarer).</p>
- </div>
- <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
- <h3 class="font-bold text-blue-800 mb-2">Imposition des Plus-Values (Gains en Capital)</h3>
- <p class="text-sm text-gray-700">
- Les plus-values sont imposées, mais le taux est très variable (souvent **faible ou nul**) pour encourager l'investissement en bourse.
- </p>
- <p class="text-xs text-blue-700 mt-2 italic">Vérifiez la législation de votre pays pour les exonérations de longue durée.</p>
- </div>
- </div>
-
- <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
- <h3 class="font-bold text-yellow-800 mb-2">Conseil d'Expert :</h3>
- <p class="text-sm text-gray-700">
- Consultez toujours un expert-comptable ou le service fiscal de votre SGI pour connaître les taux et procédures spécifiques à votre pays de résidence.
- </p>
- </div>
- </div>
-
- <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-orange-100 pb-2 flex items-center gap-2">
- 📈 13.3 Suivi, Reporting, et Journal de Performance
- </h2>
-
- <h3 class="text-lg font-bold text-orange-700 mb-3">Création d'un Journal de Performance</h3>
- <p class="text-gray-600 mb-4">
- Un investisseur discipliné (M6) mesure ses résultats. Votre journal (Excel ou carnet) assure la discipline et doit contenir :
- </p>
- 
- <div class="grid md:grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-lg mb-6">
- <p class="font-bold text-gray-800">1. Date/Prix d'Achat & Raison (M7/M9)</p>
- <p class="font-bold text-gray-800">2. Stratégie de Sortie (Stop-Loss M12)</p>
- <p class="font-bold text-gray-800">3. Dividendes Reçus & Réinvestis</p>
- <p class="font-bold text-gray-800">4. Performance Réelle (Rendement Annuel)</p>
- </div>
-
- <h3 class="text-lg font-bold text-orange-700 mb-3">Mesurer la Performance (Le Rendement Annuel)</h3>
- <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 mb-4">
-  <div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;font-family:Georgia,serif;font-size:1rem;color:#1e293b;font-weight:600;">
-    <span>Rendement Annuel</span>
-    <span>=</span>
-    <span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;">
-      <span style="border-bottom:2px solid #475569;padding:2px 10px 4px;">(Valeur Finale − Valeur Initiale) + Dividendes Reçus</span>
-      <span style="padding:4px 10px 2px;">Valeur Initiale</span>
-    </span>
-    <span>× 100</span>
+  <div class="bg-blue-600 text-white p-8 rounded-xl shadow-md">
+    <h2 class="text-white mt-0">🎯 Objectif Pédagogique du Module</h2>
+    <p class="text-white text-lg">À la fin de ce module, vous serez capable de :</p>
+    <div class="space-y-4">
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Maîtriser les plateformes numériques pour suivre l'actualité de la BRVM et passer vos ordres.</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Comprendre le régime fiscal des revenus de portefeuille (plus-values, dividendes) dans l'espace UEMOA.</span>
+      </div>
+      <div class="flex items-start gap-3">
+        <span class="mt-1 shrink-0">👉</span>
+        <span>Mettre en place un système de suivi et de reporting régulier pour mesurer la performance réelle de vos investissements.</span>
+      </div>
+    </div>
   </div>
- </div>
- 
- <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
- <strong class="text-blue-800">Le Benchmark BRVM :</strong>
- <p class="text-sm text-gray-700 mt-1">Votre objectif est de surpasser l'indice de référence de la BRVM (BRVM Composite ou BRVM 10). Si l'indice fait 15% et vous 8%, vous avez sous-performé.</p>
- </div>
 
- <h3 class="font-bold text-red-700 mt-6 mb-3">L'Audit de Décision (Leçon d'Humbleté)</h3>
- <p class="text-sm text-gray-600">
- Pour chaque perte, demandez-vous : Était-ce une erreur d'analyse fondamentale (M7), ou une erreur de discipline/timing (M6/M10) ? L'investissement est un marathon, chaque erreur est une leçon.
- </p>
- </div>
+  <h2>13.1 Utilisation des Plateformes : Le Passage à l'Action</h2>
+  
+  <h3>13.1.1 Le Rôle de la SGI : L'Intermédiaire Indispensable</h3>
+  <p>Votre Société de Gestion et d’Intermédiation (SGI) est votre unique point d'entrée sur le marché.</p>
 
- <div class="bg-gray-900 text-gray-300 p-8 rounded-xl">
- <h2 class="text-2xl font-bold text-white mb-4">🧠 Les Termes à Maîtriser</h2>
- <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <p><strong class="text-orange-400">SGI :</strong> Société de Gestion et d’Intermédiation (votre courtier).</p>
- <p><strong class="text-orange-400">RAS :</strong> Retenue à la Source (impôt prélevé sur les dividendes avant versement).</p>
- <p><strong class="text-orange-400">Plus-Value :</strong> Profit réalisé lors de la vente d'un titre plus cher que son prix d'achat.</p>
- <p><strong class="text-orange-400">Benchmark BRVM :</strong> Indice de référence pour mesurer la performance de votre portefeuille.</p>
- </div>
- 
- <hr class="border-gray-700 my-6"/>
- 
- <div class="text-center">
- <h3 class="text-xl font-bold text-white mb-2">🎉 Vous avez le plan complet !</h3>
- <p class="mb-6 text-slate-300">Il est temps de passer à l'action disciplinée et éclairée.</p>
- <div class="inline-block bg-orange-600 hover:bg-orange-500 text-white px-6 py-3 rounded-lg transition-colors font-bold shadow-lg cursor-pointer">
- FIN DU PROGRAMME D'INVESTISSEMENT
- </div>
- </div>
- </div>
+  
 
- </div>
+  <div class="bg-slate-50 p-6 rounded-lg">
+    <div class="space-y-3">
+      <p class="mb-0">✅ <strong>Ouverture du Compte :</strong> Un compte-titres et un compte espèces sont ouverts à votre nom.</p>
+      <p class="mb-0">✅ <strong>Le DC/BR (Dépositaire Central / Banque de Règlement) :</strong> Il conserve vos titres en toute sécurité, indépendamment de la SGI.</p>
+      <p class="mb-0">✅ <strong>Plateforme de Trading :</strong> La plupart des SGI modernes offrent désormais des plateformes en ligne pour passer vos ordres d'achat et de vente directement.</p>
+    </div>
+  </div>
+
+  <div class="bg-blue-50 p-4 border-l-4 border-blue-500 rounded-r-lg mt-6">
+    <p class="mb-0"><strong>Point Clé :</strong> Assurez-vous que la plateforme de votre SGI permet de passer des ordres au prix limite (Limit Order) et des ordres de type Stop-Loss pour exécuter votre stratégie de timing et de gestion du risque.</p>
+  </div>
+
+  <h3>13.1.2 Les Outils de Suivi : BRVM, SGI et Afribourse</h3>
+  <div class="table-wrapper">
+    <table class="border">
+      <thead>
+        <tr>
+          <th>Outil</th>
+          <th>Rôle Principal</th>
+          <th>Informations Clés à Consulter</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-bold">Site Officiel BRVM</td>
+          <td>Information Légale et Marchande</td>
+          <td>Cours officiels du jour, indices (BRVM Composite), actualités réglementaires, calendrier des introductions en bourse.</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Site ou App de votre SGI</td>
+          <td>Gestion du Portefeuille</td>
+          <td>Solde de votre compte espèces, valorisation de vos titres en temps réel, exécution des ordres.</td>
+        </tr>
+        <tr>
+          <td class="font-bold">Plateformes d'Actualités (ex : Afribourse)</td>
+          <td>Analyse et Média</td>
+          <td>Rapports et outils d'analyse sur les sociétés cotées (M7/M9), articles de presse économique UEMOA, avis d'experts.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>13.2 Fiscalité des Revenus de Portefeuille dans l’UEMOA</h2>
+  <p>L'optimisation fiscale est essentielle, mais il est crucial de respecter les lois en vigueur. La fiscalité dans l'UEMOA est régie par les lois nationales, mais avec certaines tendances communes.</p>
+
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-slate-50 p-5 rounded-lg">
+      <h4 class="mt-0 text-blue-900">13.2.1 Imposition des Dividendes (Revenus)</h4>
+      <p class="text-sm"><strong>Principe :</strong> Les dividendes sont généralement soumis à une retenue à la source (RAS) au niveau national, souvent entre 7 % et 15 % selon le pays.</p>
+      <p class="text-sm"><strong>Rôle de la SGI :</strong> La SGI ou la banque est responsable d'opérer cette retenue avant de vous verser le montant net.</p>
+      <p class="text-sm font-bold text-blue-800 italic">Important : Dans de nombreux pays de l'UEMOA, cette RAS est libératoire (pas de nouvelle déclaration nécessaire).</p>
+    </div>
+
+    <div class="bg-slate-50 p-5 rounded-lg">
+      <h4 class="mt-0 text-blue-900">13.2.2 Imposition des Plus-Values (Gains en Capital)</h4>
+      <p class="text-sm"><strong>Plus-Value :</strong> C'est le profit réalisé lorsque vous vendez une action à un prix supérieur à son prix d'achat.</p>
+      <p class="text-sm"><strong>Régime Général :</strong> Les plus-values sont souvent soumises à une imposition, dont le taux varie d'un pays à l'autre de l'UEMOA.</p>
+      <p class="text-sm font-bold text-red-700">Vérification : Il est impératif de vérifier la législation en vigueur dans votre pays de résidence.</p>
+    </div>
+  </div>
+
+  <div class="bg-amber-50 p-4 border-l-4 border-amber-500 rounded-r-lg mt-6">
+    <p class="mb-0"><strong>Conseil d'Expert :</strong> Consultez toujours un expert-comptable ou le service fiscal de votre SGI pour connaître les taux et procédures spécifiques à votre pays de résidence.</p>
+  </div>
+
+  <h2>13.3 Suivi, Reporting, et Journal de Performance</h2>
+  <p>Un investisseur discipliné (M6) est un investisseur qui mesure et analyse ses résultats.</p>
+
+  <h3>13.3.1 Création d'un Journal de Performance</h3>
+  <p>Le journal de performance est un outil simple (un fichier Excel ou un carnet) qui assure la discipline et le reporting.</p>
+  
+  
+
+  <div class="bg-slate-50 p-6 rounded-lg">
+    <p class="font-bold">Il doit contenir :</p>
+    <div class="space-y-2 text-sm">
+      <p class="mb-0">📊 <strong>Date et Prix d'Achat :</strong> Pour chaque transaction.</p>
+      <p class="mb-0">🧠 <strong>Raison de l'Achat :</strong> (Réf. Analyse Fondamentale M7/M9, ou Timing M10).</p>
+      <p class="mb-0">📉 <strong>Stratégie de Sortie :</strong> Emplacement de votre Stop-Loss (M12) et votre objectif de vente.</p>
+      <p class="mb-0">📈 <strong>Performance Réelle :</strong> Le taux de rendement annuel du portefeuille.</p>
+    </div>
+  </div>
+
+  <h3>13.3.2 Mesurer la Performance (Le Rendement Annuel)</h3>
+  <p>Le rendement annuel (Return) est le critère clé pour évaluer votre succès.</p>
+  
+  <div class="bg-slate-800 p-6 rounded-xl text-center shadow-inner my-6 overflow-x-auto">
+    <div class="inline-flex items-center gap-3 text-white font-bold text-base md:text-lg flex-wrap justify-center">
+      <span>Rendement Annuel =</span>
+      <div class="inline-flex flex-col items-center">
+        <span class="border-b-2 border-white pb-1 px-2 text-sm md:text-base">(Valeur Finale − Valeur Initiale) + Dividendes Reçus</span>
+        <span class="pt-1 text-sm md:text-base">Valeur Initiale</span>
+      </div>
+      <span>× 100</span>
+    </div>
+  </div>
+  
+
+  <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+    <p><strong>Benchmark BRVM :</strong> Votre objectif doit être de surpasser l'indice de référence de la BRVM (BRVM Composite ou BRVM 10).</p>
+    <p class="text-sm italic">Si votre portefeuille fait 8 % mais que l'indice fait 15 %, vous avez sous-performé le marché.</p>
+    <p class="mb-0"><strong>Fréquence :</strong> Évaluez votre performance tous les trimestres ou tous les six mois. Ne laissez jamais les émotions quotidiennes influencer cette analyse structurée.</p>
+  </div>
+
+  <h3>13.3.3 L'Audit de Décision (Leçon d'Humilité)</h3>
+  <p>La dernière étape est la plus importante :</p>
+  <div class="space-y-4">
+    <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+      <p class="mb-0">🔎 <strong>Analyser les Erreurs :</strong> Pour chaque vente perdante, demandez-vous : Était-ce une erreur d'analyse fondamentale (M7), ou une erreur de discipline (M6) ?</p>
+    </div>
+    <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+      <p class="mb-0">🚀 <strong>Amélioration Continue :</strong> L'investissement est un marathon. Chaque erreur est une leçon pour ajuster votre stratégie d'architecte (M12).</p>
+    </div>
+  </div>
+
+  
+
+</div>
 `,
   });
 
