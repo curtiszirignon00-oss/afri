@@ -1277,7 +1277,7 @@ export default function LearnPage() {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Erreur de chargement</h3>
                     <p className="text-red-600 mb-6">{error}</p>
                     <button
-                        onClick={loadData}
+                        onClick={() => loadData()}
                         className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
                     >
                         Réessayer
