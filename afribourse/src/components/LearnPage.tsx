@@ -209,8 +209,8 @@ export default function LearnPage() {
     }, []);
 
     // --- Logique de Chargement (Modules + Progression) ---
-    const loadData = useCallback(async () => {
-        setLoading(true);
+    const loadData = useCallback(async (silent = false) => {
+        if (!silent) setLoading(true);
         setError(null);
 
         const allModulesUrl = `${API_BASE_URL}/learning-modules`; // Charger TOUS les modules
@@ -426,7 +426,7 @@ export default function LearnPage() {
 
             // Recharger les données en arrière-plan SANS perturber l'affichage des résultats
             // Cela met à jour la progression de l'utilisateur
-            loadData();
+            loadData(true);
 
         } catch (error: any) {
             console.error('Erreur lors de la soumission du quiz:', error);
