@@ -721,7 +721,7 @@ export default function LearnPage() {
                         )}
 
                         {/* Section Quiz */}
-                        {hasQuiz && !isCompleted && (
+                        {hasQuiz && (!isCompleted || quizState.showResults) && (
                             <div className="px-4 sm:px-8 py-6 sm:py-10 bg-gradient-to-br from-indigo-50 to-purple-50 border-t-4 border-indigo-500">
                                 <div className="max-w-3xl mx-auto">
                                     {!quizState.isActive && !quizState.showResults && (
