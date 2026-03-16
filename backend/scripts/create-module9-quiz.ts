@@ -1,22 +1,23 @@
 /// <reference types="node" />
-// backend/scripts/create-module9-quiz.ts
-// Script pour créer le quiz du Module 9 - L'Analyse Extra-Financière
+// backend/scripts/create-module9-quiz-consolidation.ts
+// Script pour créer le quiz de Consolidation du Module 9 - L'Analyse Extra-Financière
 
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function createModule9Quiz() {
+async function createModule9ConsolidationQuiz() {
     try {
         console.log('🔍 Recherche du Module 9...');
 
-        // Le slug est basé sur le titre du module : L’Analyse Extra-Financière
+        // Le slug est basé sur le titre du module : L’Analyse Extra-Financière - Comprendre le Contexte
+        // À ADAPTER selon le slug exact dans votre base de données
         const module = await prisma.learningModule.findFirst({
             where: { slug: 'contexte-economique' } 
         });
 
         if (!module) {
-            console.error('❌ Module 9 non trouvé. Vérifiez le slug: lanalyse-extra-financiere');
+            console.error('❌ Module non trouvé. Vérifiez le slug.');
             return;
         }
 
@@ -33,8 +34,8 @@ async function createModule9Quiz() {
             console.log('🗑️  Ancien quiz supprimé');
         }
 
-        // Créer le quiz avec 15 questions
-        console.log('📝 Création du quiz avec 15 questions...');
+        // Créer le quiz avec 17 questions
+        console.log('📝 Création du quiz avec 17 questions...');
 
         const quiz = await prisma.quiz.create({
             data: {
@@ -43,29 +44,29 @@ async function createModule9Quiz() {
                 questions: [
                     {
                         id: 'q1',
-                        question: "L'Analyse Qualitative, par opposition à l'Analyse Quantitative, a pour but principal de répondre à quelle question fondamentale ?",
+                        question: "L'Analyse Qualitative a pour but principal de répondre à quelle question fondamentale ?",
                         options: [
-                            "Quel est le PER de l'entreprise ?",
-                            "Quel est le niveau d'endettement ?",
+                            "Quel est le PER de l'entreprise ? (Analyse Quantitative)",
+                            "Quel est le niveau d'endettement ? (Analyse Quantitative)",
                             "L'entreprise est-elle bien gérée, bien positionnée et son modèle est-il durable ?",
                             "Quel est le prix de l'action aujourd'hui ?",
-                            "Comment calculer le Bénéfice Net ?"
+                            "Comment calculer le WACC ?"
                         ],
                         correct_answer: 2,
-                        explanation: "L'Analyse Qualitative se concentre sur l'intangible (qualité du management, avantage concurrentiel, durabilité du modèle), non mesurable directement par les chiffres."
+                        explanation: "Contrairement à l'analyse quantitative qui se base sur les chiffres, l'analyse qualitative évalue la viabilité à long terme, le positionnement et la qualité du management."
                     },
                     {
                         id: 'q2',
-                        question: "Dans l'analyse qualitative, qu'est-ce que l'on appelle le 'Moat' (Fossé) d'une entreprise ?",
+                        question: "Dans l'analyse qualitative, qu'est-ce que l'on appelle le \"Moat\" (Fossé) d'une entreprise ?",
                         options: [
                             "Le bénéfice net annuel de l'entreprise.",
                             "La dette totale à long terme.",
-                            "L'avantage concurrentiel durable qui protège l'entreprise de ses rivaux (barrière à l'entrée, marque, réseau).",
+                            "L'avantage concurrentiel durable qui protège l'entreprise de ses rivaux (barrière à l'entrée, réseau, marque).",
                             "Le bilan financier.",
                             "La somme des actifs immobilisés."
                         ],
                         correct_answer: 2,
-                        explanation: "Le 'Moat' (fossé) est une métaphore popularisée par Warren Buffett désignant une barrière qui empêche la concurrence de nuire à la rentabilité de l'entreprise."
+                        explanation: "Le 'Moat' est le rempart immatériel (image de marque, brevets, effet de réseau) qui protège les parts de marché et les marges de l'entreprise face à la concurrence."
                     },
                     {
                         id: 'q3',
@@ -73,94 +74,133 @@ async function createModule9Quiz() {
                         options: [
                             "Parce que les entreprises cotées ne paient pas d'impôts.",
                             "Parce que la diversification n'y est pas possible.",
-                            "Car le marché est moins couvert par les analystes internationaux, rendant l'information interne plus critique pour évaluer les dirigeants.",
+                            "Car le marché est moins couvert par les analystes internationaux, rendant l'information interne plus critique.",
                             "Car seul le Gearing est pertinent.",
                             "Car l'AMF-UMOA ne supervise pas les dirigeants."
                         ],
                         correct_answer: 2,
-                        explanation: "Moins d'analyses externes signifie que l'investisseur doit accorder plus de poids à l'intégrité et à la vision stratégique du management."
+                        explanation: "Sur des marchés régionaux moins suivis par la presse financière mondiale, l'intégrité et la vision du management sont les meilleures garanties pour l'investisseur."
                     },
                     {
                         id: 'q4',
-                        question: "Quels sont les trois critères du reporting ESG (Environnement, Social, Gouvernance) ?",
+                        question: "Quels sont les trois critères du reporting ESG ?",
                         options: [
-                            "Endettement, Solvabilité, Croissance.",
+                            "Émissions, Salaires, Dividendes.",
                             "Actifs, Passifs, Capitaux Propres.",
+                            "Bénéfices, Croissance, Dette.",
                             "Environnement, Social, Gouvernance.",
-                            "Bénéfice Net, Chiffre d'Affaires, Marge Nette.",
-                            "Liquidité, Rendement, Volatilité."
+                            "Éthique, Sécurité, Garantie."
                         ],
-                        correct_answer: 2,
-                        explanation: "ESG est l'acronyme pour Environnemental, Social et de Gouvernance, utilisés pour évaluer les performances extra-financières."
+                        correct_answer: 3,
+                        explanation: "ESG signifie Environnement, Social et Gouvernance. Ce sont les 3 piliers de l'analyse extra-financière d'une entreprise."
                     },
                     {
                         id: 'q5',
-                        question: "Le pilier 'Gouvernance' de l'ESG se concentre sur :",
+                        question: "Dans l'analyse ESG, que couvre principalement le pilier \"Gouvernance\" ?",
                         options: [
-                            "La consommation d'énergie de l'entreprise.",
-                            "La santé et la sécurité des employés.",
-                            "Le partage des bénéfices avec la communauté.",
-                            "L'indépendance du Conseil d'Administration et la transparence de la rémunération des dirigeants.",
-                            "Le taux d'endettement (Gearing)."
+                            "Les émissions de carbone et la gestion des déchets. (Environnement)",
+                            "Les relations avec les employés et les communautés locales. (Social)",
+                            "La transparence de la direction, l'indépendance du conseil d'administration et la lutte contre la corruption.",
+                            "La performance boursière de l'action.",
+                            "Le montant des flux de trésorerie."
                         ],
-                        correct_answer: 3,
-                        explanation: "La Gouvernance évalue la façon dont l'entreprise est dirigée et contrôlée, notamment l'équilibre des pouvoirs et l'intégrité."
+                        correct_answer: 2,
+                        explanation: "La Gouvernance s'intéresse à la façon dont l'entreprise est dirigée, à l'équilibre des pouvoirs et à l'éthique de ses dirigeants."
                     },
                     {
                         id: 'q6',
-                        question: "Quelle est la principale raison d'intégrer l'Analyse ESG dans une décision d'investissement ?",
+                        question: "Quelle est la tendance majeure observée à l'international concernant l'intégration de l'ESG dans l'investissement ?",
                         options: [
-                            "Elle garantit un rendement supérieur à 20 %.",
-                            "Elle élimine le risque systémique.",
-                            "Elle identifie des risques non financiers (ex: scandale, réglementation) qui peuvent impacter la performance et le cours de l'action à long terme.",
-                            "Elle ne s'applique qu'aux banques.",
-                            "Elle simplifie le calcul du PER."
+                            "Les investisseurs n'y prêtent plus attention.",
+                            "Il est devenu interdit par les régulateurs.",
+                            "Il est devenu un critère essentiel de sélection pour les investisseurs institutionnels mondiaux.",
+                            "Il ne s'applique qu'aux entreprises non cotées.",
+                            "Il est systématiquement ignoré par les banques centrales."
                         ],
                         correct_answer: 2,
-                        explanation: "Les risques ESG (ex: pollution, corruption) sont des facteurs à long terme qui peuvent détruire la valeur pour l'actionnaire."
+                        explanation: "L'ESG n'est plus une niche mais une norme globale. Les grands fonds d'investissement excluent de plus en plus les entreprises mal notées sur ces critères."
                     },
                     {
                         id: 'q7',
-                        question: "Le 'Management' (Leadership) d'une entreprise doit idéalement avoir deux qualités essentielles pour l'investisseur long terme :",
+                        question: "L'objectif des Investissements Socialement Responsables (ISR) est de :",
                         options: [
-                            "Être jeune et sur-diversifié.",
-                            "Être endetté et avoir un faible ROE.",
-                            "Être transparent et avoir une bonne exécution (capacité à réaliser les plans stratégiques).",
-                            "Ne verser aucun dividende.",
-                            "Être l'unique propriétaire de l'entreprise."
+                            "Prioriser le Market Timing.",
+                            "N'investir que dans des obligations d'État.",
+                            "Réaliser une performance financière tout en ayant un impact positif sur la société.",
+                            "Ignorer l'Analyse Fondamentale.",
+                            "Se concentrer uniquement sur le PER et le Gearing."
                         ],
                         correct_answer: 2,
-                        explanation: "La transparence inspire confiance, et la capacité d'exécution garantit que les promesses seront tenues (ou au moins que les erreurs seront gérées)."
+                        explanation: "L'ISR cherche à concilier rentabilité économique et impact positif (ou neutre) sur le plan éthique, social et environnemental."
                     },
                     {
                         id: 'q8',
-                        question: "L'Analyse Qualitative est particulièrement utile pour déterminer l'investissement d'une entreprise dans :",
+                        question: "Quel type de Moat est créé par l'effet de réseau des télécommunications ou des banques (ex. : plus il y a d'utilisateurs, plus le service est utile) ?",
                         options: [
-                            "Son Gearing.",
-                            "Son bénéfice passé.",
-                            "La recherche et développement (R&D) et l'innovation future.",
-                            "Son PER actuel.",
-                            "La dette nette."
+                            "L'avantage de coût.",
+                            "Les Coûts de Changement ou l'Effet de Réseau.",
+                            "L'actif matériel.",
+                            "La gestion de la dette.",
+                            "Le Biais d'Ancrage."
                         ],
-                        correct_answer: 2,
-                        explanation: "L'analyse qualitative permet d'évaluer l'engagement dans l'innovation, ce qui est un facteur clé de croissance future mais n'apparaît pas toujours directement dans les ratios financiers."
+                        correct_answer: 1,
+                        explanation: "L'effet de réseau rend un service indispensable car sa valeur croît avec le nombre d'utilisateurs, créant une barrière massive pour les nouveaux entrants."
                     },
                     {
                         id: 'q9',
-                        question: "Un Moat basé sur les 'Coûts de Transfert Élevés' signifie que :",
+                        question: "Pourquoi un investisseur doit-il analyser la stratégie de rémunération de la direction ?",
                         options: [
-                            "L'entreprise a des frais de personnel très faibles.",
-                            "Il est très facile et peu coûteux pour un client de passer à un concurrent.",
-                            "Il est difficile, coûteux ou dérangeant pour un client de quitter l'entreprise pour un concurrent.",
-                            "L'entreprise a un faible Gearing.",
-                            "L'entreprise est en situation de monopole."
+                            "Pour calculer la Valeur Intrinsèque.",
+                            "Pour s'assurer qu'elle est décorrélée de la performance.",
+                            "Pour vérifier si elle est alignée sur la performance à long terme de l'entreprise (et non les bénéfices à court terme).",
+                            "Pour déterminer la Marge Nette.",
+                            "Pour s'assurer que l'AMF-UMOA est satisfaite."
                         ],
                         correct_answer: 2,
-                        explanation: "Plus les coûts de transfert sont élevés (ex: système informatique complexe, intégration), plus l'entreprise est protégée de ses rivaux."
+                        explanation: "Si les dirigeants sont primés sur le court terme, ils pourraient prendre des risques démesurés. Leur rémunération doit encourager la croissance saine et durable."
                     },
                     {
                         id: 'q10',
-                        question: "Si la Valeur Intrinsèque d'une action est estimée à 5 000 FCFA, et que son prix en bourse est de 3 500 FCFA, qu'est-ce que cela signifie ?",
+                        question: "Le module recommande de combiner l'analyse quantitative (M7 & M8) et qualitative (M9) avant la prise de décision. Cette approche est appelée :",
+                        options: [
+                            "Market Timing.",
+                            "Biais de Récence.",
+                            "L'approche Holistique ou Complète (synthèse).",
+                            "L'approche DCF.",
+                            "L'analyse du Gearing."
+                        ],
+                        correct_answer: 2,
+                        explanation: "Une approche holistique prend en compte l'entreprise dans sa globalité (chiffres financiers ET facteurs humains/stratégiques) pour limiter les erreurs."
+                    },
+                    {
+                        id: 'q11',
+                        question: "L'un des risques principaux de la non-prise en compte des critères ESG est :",
+                        options: [
+                            "Le Biais d'Ancrage.",
+                            "Le Risque de Réputation (scandale) ou le Risque Réglementaire (amendes).",
+                            "Le Risque de Taux d'Intérêt.",
+                            "Le Risque de liquidité du titre.",
+                            "La nécessité d'utiliser le DCA."
+                        ],
+                        correct_answer: 1,
+                        explanation: "Une mauvaise gestion ESG peut entraîner des amendes sévères (pollution) ou des boycotts (scandales sociaux), détruisant rapidement la valeur de l'action."
+                    },
+                    {
+                        id: 'q12',
+                        question: "Dans la Synthèse Finale, l'étape cruciale est de comparer la Valeur Intrinsèque (V) à :",
+                        options: [
+                            "Le Bénéfice Net par Action (BPA).",
+                            "La Dette Nette de l'entreprise.",
+                            "Le rendement du PER.",
+                            "Le Cours actuel de l'action (P) en Bourse.",
+                            "Le taux de croissance du PIB."
+                        ],
+                        correct_answer: 3,
+                        explanation: "Tout le but de l'analyse est de déterminer la Valeur Intrinsèque (ce que vaut l'entreprise) pour la comparer au Prix (ce que demande le marché)."
+                    },
+                    {
+                        id: 'q13',
+                        question: "Si la Valeur Intrinsèque (V) est significativement supérieure au Cours Actuel (P) de l'action, qu'est-ce que cela signifie ?",
                         options: [
                             "Qu'il faut vendre immédiatement.",
                             "L'action est potentiellement sous-évaluée et offre une Marge de Sécurité.",
@@ -169,10 +209,10 @@ async function createModule9Quiz() {
                             "Que l'on doit augmenter le Gearing."
                         ],
                         correct_answer: 1,
-                        explanation: "Le prix inférieur à la valeur intrinsèque (Marge de Sécurité) est le principe de base du Value Investing (Module 6)."
+                        explanation: "C'est le signal d'achat idéal en investissement Value : acheter 1 000 FCFA quelque chose qui en vaut réellement 1 500 FCFA."
                     },
                     {
-                        id: 'q11',
+                        id: 'q14',
                         question: "La Marge de Sécurité pour un investisseur est :",
                         options: [
                             "Le niveau maximum de dette qu'il peut tolérer.",
@@ -182,23 +222,23 @@ async function createModule9Quiz() {
                             "L'absence totale de volatilité."
                         ],
                         correct_answer: 3,
-                        explanation: "La Marge de Sécurité sert de tampon contre les erreurs d'analyse ou les événements imprévus du marché, selon Benjamin Graham."
+                        explanation: "Plus la marge de sécurité est grande (la différence entre la valeur réelle et le prix d'achat), plus l'investisseur est protégé contre ses propres erreurs d'évaluation."
                     },
                     {
-                        id: 'q12',
-                        question: "Quel élément fait partie du pilier 'Social' de l'ESG ?",
+                        id: 'q15',
+                        question: "Quel élément fait partie du pilier Social de l'ESG ?",
                         options: [
                             "La consommation d'énergie.",
-                            "La santé, la sécurité et l'équité des employés.",
+                            "La santé et la sécurité des employés.",
                             "L'indépendance du conseil d'administration.",
                             "Le niveau d'endettement.",
                             "Le prix de l'action."
                         ],
                         correct_answer: 1,
-                        explanation: "Le pilier Social concerne l'impact de l'entreprise sur ses parties prenantes internes et externes (employés, fournisseurs, communautés)."
+                        explanation: "Le pilier Social concerne l'impact de l'entreprise sur l'humain : ses employés (santé, parité, conditions de travail) et la communauté."
                     },
                     {
-                        id: 'q13',
+                        id: 'q16',
                         question: "Le but de l'analyse qualitative est de s'assurer que l'entreprise analysée survivra et prospérera sur un horizon de :",
                         options: [
                             "Quelques jours (Market Timing).",
@@ -208,33 +248,20 @@ async function createModule9Quiz() {
                             "Un seul cycle économique."
                         ],
                         correct_answer: 3,
-                        explanation: "L'Analyse Qualitative est toujours orientée vers le très long terme, car elle évalue la durabilité du modèle économique."
+                        explanation: "L'analyse qualitative s'inscrit toujours dans une démarche de très long terme pour capter l'effet cumulé des avantages concurrentiels."
                     },
                     {
-                        id: 'q14',
+                        id: 'q17',
                         question: "Quel est le danger de fonder sa décision d'investissement uniquement sur les ratios (PER, ROE, etc.) sans analyse qualitative ?",
                         options: [
-                            "Les ratios ne s'appliquent qu'aux obligations.",
-                            "Risque d'acheter une entreprise 'pas chère' (faible PER) dont le modèle économique est en déclin ou non durable (piège de la valeur).",
-                            "Cela bloque l'effet des intérêts composés.",
-                            "Cela augmente le risque systémique.",
-                            "Cela rend le portefeuille trop diversifié."
-                        ],
-                        correct_answer: 1,
-                        explanation: "Une entreprise avec un faible PER n'est pas chère si elle est sur le point de faire faillite. L'analyse qualitative est essentielle pour éviter les 'pièges de la valeur'."
-                    },
-                    {
-                        id: 'q15',
-                        question: "Le critère 'Environnement' de l'ESG se concentre sur :",
-                        options: [
-                            "La composition du Conseil d'Administration.",
-                            "Le niveau d'endettement et de trésorerie.",
-                            "L'impact de l'entreprise sur la planète (émissions de carbone, gestion des déchets, consommation d'eau).",
-                            "La sécurité des employés.",
-                            "La croissance du Bénéfice Net."
+                            "Le Biais de Récence.",
+                            "L'Ancrage.",
+                            "Ignorer les signaux d'alerte comme une mauvaise gestion ou un avantage concurrentiel érodé, qui sont non chiffrés.",
+                            "L'augmentation des frais de SGI.",
+                            "La sur-diversification du portefeuille."
                         ],
                         correct_answer: 2,
-                        explanation: "Il mesure la performance de l'entreprise dans la gestion des ressources naturelles et des enjeux climatiques."
+                        explanation: "Un ratio exceptionnel peut cacher une entreprise dont le produit devient obsolète (ex: Kodak). Seule l'analyse qualitative permet d'anticiper la chute."
                     }
                 ]
             }
@@ -251,7 +278,7 @@ async function createModule9Quiz() {
         console.log(`  - Nombre de questions: ${(quiz.questions as any[])?.length || 0}`);
         console.log(`  - Score de passage: ${quiz.passing_score}%`);
         console.log('');
-        console.log('📝 Note: Le système sélectionnera automatiquement 10 questions aléatoires parmi les 15 lors de chaque test.');
+        console.log('📝 Note: Le système sélectionnera automatiquement un nombre défini de questions aléatoires lors de chaque test.');
 
     } catch (error) {
         console.error('❌ Erreur lors de la création du quiz:', error);
@@ -261,4 +288,4 @@ async function createModule9Quiz() {
 }
 
 // Exécuter le script
-createModule9Quiz();
+createModule9ConsolidationQuiz();
