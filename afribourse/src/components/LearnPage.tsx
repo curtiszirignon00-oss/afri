@@ -20,7 +20,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Zap,
-    Share2
+    Share2,
+    Crown
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -56,7 +57,7 @@ interface QuizState {
 }
 
 export default function LearnPage() {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, userProfile } = useAuth();
     const navigate = useNavigate();
     const { trackAction } = useAnalytics();
     const { mutate: createPost, isPending: isSharing } = useCreatePost();
@@ -92,6 +93,10 @@ export default function LearnPage() {
 
     const [showAITutor, setShowAITutor] = useState(false);
     const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
+    const [showModulePaywall, setShowModulePaywall] = useState(false);
+
+    const isPremiumModule = (orderIndex: number) => orderIndex === 14 || orderIndex === 15;
+    const userHasPremium = ['premium', 'max', 'pro'].includes(userProfile?.subscriptionTier ?? '');
 
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -192,6 +197,11 @@ export default function LearnPage() {
         setQuizLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
+            if (response.status === 404) {
+                // Pas de quiz pour ce module, pas d'erreur
+                setQuizQuestions([]);
+                return;
+            }
             if (!response.ok) {
                 throw new Error('Impossible de charger le quiz');
             }
@@ -530,7 +540,7 @@ export default function LearnPage() {
     }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
     useEffect(() => {
-        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5) {
+        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13) {
             // Réinitialiser l'état du quiz quand on ouvre un nouveau module
             setQuizState({
                 isActive: false,
@@ -548,7 +558,7 @@ export default function LearnPage() {
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5;
+        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13;
 
         return (
             <div className="min-h-screen bg-slate-50 overflow-x-hidden">
@@ -1140,6 +1150,14 @@ export default function LearnPage() {
                         feature="Poser vos questions au Coach IA. Passez à Investisseur+ et apprenez plus vite"
                         plan="investisseur-plus"
                     />
+
+                    {/* Paywall Premium pour modules avancés */}
+                    <PremiumPaywall
+                        isOpen={showModulePaywall}
+                        onClose={() => setShowModulePaywall(false)}
+                        feature="Accéder aux modules avancés (Fiscalité, Portefeuille Réel). Passez à Investisseur+ pour débloquer l'intégralité de la formation."
+                        plan="investisseur-plus"
+                    />
                 </div>
             </div>
         );
@@ -1339,6 +1357,11 @@ export default function LearnPage() {
                                             return;
                                         }
 
+                                        if (isPremiumModule(module.order_index ?? 0) && !userHasPremium) {
+                                            setShowModulePaywall(true);
+                                            return;
+                                        }
+
                                         // Track l'ouverture du module
                                         trackAction(ACTION_TYPES.START_MODULE, 'Ouverture de module', {
                                             moduleSlug: module.slug,
@@ -1364,6 +1387,14 @@ export default function LearnPage() {
                                         </div>
                                     )}
 
+                                    {isPremiumModule(module.order_index ?? 0) && !userHasPremium && isUnlocked && (
+                                        <div className="absolute inset-0 bg-amber-900/10 backdrop-blur-[1px] flex items-center justify-center z-10">
+                                            <div className="bg-white rounded-full p-4 shadow-xl">
+                                                <Crown className="w-8 h-8 text-amber-500" />
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-base sm:text-lg shadow-md">
                                             {module.order_index ?? index + 1}
@@ -1385,6 +1416,13 @@ export default function LearnPage() {
                                                 <div className="flex items-center space-x-1 bg-gray-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
                                                     <Lock className="w-3.5 h-3.5" />
                                                     <span>Verrouillé</span>
+                                                </div>
+                                            )}
+
+                                            {isPremiumModule(module.order_index ?? 0) && (
+                                                <div className="flex items-center space-x-1 bg-amber-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
+                                                    <Crown className="w-3.5 h-3.5" />
+                                                    <span>Premium</span>
                                                 </div>
                                             )}
                                         </div>
