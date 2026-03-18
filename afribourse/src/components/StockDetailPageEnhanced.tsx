@@ -7,6 +7,7 @@ import { API_BASE_URL, authFetch } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
 import PriceAlertModal from './price-alerts/PriceAlertModal';
 import PriceAlertList from './price-alerts/PriceAlertList';
+import { getStockLogo } from '../utils/stockLogos';
 
 // Import des nouveaux composants
 import {
@@ -364,9 +365,21 @@ export default function StockDetailPageEnhanced() {
 
           {/* Informations de l'action */}
           <div className="flex flex-col gap-4 sm:gap-6">
-            {/* Ligne 1: Symbole + Boutons */}
+            {/* Ligne 1: Logo + Symbole + Boutons */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 sm:space-x-3">
+                {/* Logo entreprise */}
+                {(() => {
+                  const logo = getStockLogo(stock.symbol, stock.logo_url);
+                  return logo ? (
+                    <img
+                      src={logo}
+                      alt={stock.symbol}
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain bg-white border border-gray-200 shadow-sm flex-shrink-0"
+                      onError={e => (e.target as HTMLImageElement).style.display = 'none'}
+                    />
+                  ) : null;
+                })()}
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{stock.symbol}</h1>
                 {stock.sector && (
                   <span className="hidden sm:inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, ExternalLink, TrendingUp, TrendingDown, Award } from 'lucide-react';
 import { Button } from '../ui';
 import type { Stock } from '../../hooks/useApi';
+import { getStockLogo } from '../../utils/stockLogos';
 
 interface ComparisonCardProps {
     stock: Stock;
@@ -48,16 +49,29 @@ export default function ComparisonCard({ stock, onRemove, isBest = {}, isWorst =
         <div className={`bg-white border-2 rounded-lg p-4 hover:shadow-md transition-all duration-200 ${getBorderColor()} comparison-card-enter`}>
             {/* Header */}
             <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-bold text-gray-900">{stock.symbol}</h3>
-                        {Object.values(isBest).filter(v => v).length > 0 && (
-                            <span title="Meilleure valeur">
-                                <Award className="w-4 h-4 text-green-600" />
-                            </span>
-                        )}
+                <div className="flex items-center gap-3 flex-1">
+                    {/* Logo */}
+                    {(() => {
+                        const logo = getStockLogo(stock.symbol, stock.logo_url);
+                        return logo ? (
+                            <img src={logo} alt={stock.symbol} className="w-10 h-10 rounded object-contain bg-gray-50 border border-gray-100 flex-shrink-0" onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                        ) : (
+                            <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
+                                {stock.symbol.slice(0, 2)}
+                            </div>
+                        );
+                    })()}
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-gray-900">{stock.symbol}</h3>
+                            {Object.values(isBest).filter(v => v).length > 0 && (
+                                <span title="Meilleure valeur">
+                                    <Award className="w-4 h-4 text-green-600" />
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">{stock.company_name}</p>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{stock.company_name}</p>
                 </div>
                 <button
                     onClick={onRemove}
