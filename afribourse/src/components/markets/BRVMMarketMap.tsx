@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, Share2, Check, Copy } from 'lucide-react';
 import type { Stock } from '../../hooks/useApi';
+import { getStockLogo } from '../../utils/stockLogos';
 
 // ─── Types internes ───────────────────────────────────────────────────────────
 interface TreemapCell {
@@ -148,24 +149,27 @@ function Tooltip({ cell, mouseX, mouseY }: TooltipProps) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-        {stock.logo_url ? (
-          <img
-            src={stock.logo_url}
-            alt={stock.symbol}
-            style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'contain', background: 'rgba(255,255,255,0.08)' }}
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-        ) : (
-          <div style={{
-            width: 38, height: 38, borderRadius: 8,
-            background: sectorColor + '22',
-            border: `1px solid ${sectorColor}55`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 11, fontWeight: 700, color: sectorColor,
-          }}>
-            {stock.symbol.slice(0, 4)}
-          </div>
-        )}
+        {(() => {
+          const logo = getStockLogo(stock.symbol, stock.logo_url);
+          return logo ? (
+            <img
+              src={logo}
+              alt={stock.symbol}
+              style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'contain', background: 'rgba(255,255,255,0.08)' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          ) : (
+            <div style={{
+              width: 38, height: 38, borderRadius: 8,
+              background: sectorColor + '22',
+              border: `1px solid ${sectorColor}55`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, fontWeight: 700, color: sectorColor,
+            }}>
+              {stock.symbol.slice(0, 4)}
+            </div>
+          );
+        })()}
         <div>
           <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 14 }}>{stock.symbol}</div>
           <div style={{ color: '#64748b', fontSize: 10 }}>{stock.company_name}</div>
@@ -653,7 +657,8 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           {cells.map((cell) => {
             const { stock, x, y, width: cw, height: ch } = cell;
             if (cw < 1 || ch < 1) return null;
-            const bgColor   = colorMode === 'sector'
+
+            const bgColor    = colorMode === 'sector'
               ? (SECTOR_COLORS[stock.sector || ''] || '#64748b')
               : getChangeColor(stock.daily_change_percent);
             const isHovered  = hoveredCell?.stock.symbol === stock.symbol;
@@ -661,8 +666,32 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             const showChange = cw > 60  && ch > 50;
             const showName   = cw > 110 && ch > 80;
 
+            // Logo proportionnel
+            const logoPath   = getStockLogo(stock.symbol, stock.logo_url);
+            const showLogo   = !!logoPath && cw > 55 && ch > 55;
+            const logoSize   = showLogo ? Math.min(cw * 0.38, ch * 0.42, 48) : 0;
+            const clipId     = `clip-${stock.symbol}`;
+
+            // Calcul du bloc texte + logo centré verticalement
+            const tickerFS   = Math.min(cw * 0.15, ch * 0.2, 16);
+            const changeFS   = Math.min(cw * 0.1, ch * 0.13, 12);
+            const gap        = 3;
+            const blockH     = showLogo
+              ? logoSize + (showTicker ? gap + tickerFS : 0) + (showChange ? gap + changeFS : 0)
+              : (showTicker ? tickerFS : 0) + (showChange ? gap + changeFS : 0);
+            const blockTop   = y + (ch - blockH) / 2;
+
+            const logoX      = x + (cw - logoSize) / 2;
+            const logoY      = blockTop;
+            const tickerY    = showLogo
+              ? blockTop + logoSize + gap + tickerFS
+              : blockTop + tickerFS;
+            const changeY    = tickerY + gap + changeFS;
+            const nameY      = showLogo ? logoY - 5 : tickerY - tickerFS - 5;
+
             return (
               <g key={stock.symbol} onClick={() => navigate(`/stock/${stock.symbol}`)} style={{ cursor: 'pointer' }}>
+                {/* Fond */}
                 <rect
                   className="mm-cell"
                   x={x + GAP / 2}   y={y + GAP / 2}
@@ -672,6 +701,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
                   onMouseEnter={() => setHoveredCell(cell)}
                   onMouseLeave={() => setHoveredCell(null)}
                 />
+                {/* Bordure hover */}
                 {isHovered && (
                   <rect
                     x={x + GAP / 2} y={y + GAP / 2}
@@ -680,34 +710,65 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
                     style={{ pointerEvents: 'none' }}
                   />
                 )}
+
+                {/* Logo proportionnel */}
+                {showLogo && logoPath && (
+                  <>
+                    <defs>
+                      <clipPath id={clipId}>
+                        <rect x={logoX} y={logoY} width={logoSize} height={logoSize} rx={logoSize * 0.15} />
+                      </clipPath>
+                    </defs>
+                    {/* Fond blanc semi-transparent derrière le logo */}
+                    <rect
+                      x={logoX} y={logoY} width={logoSize} height={logoSize}
+                      rx={logoSize * 0.15} fill="rgba(255,255,255,0.9)"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                    <image
+                      href={logoPath}
+                      x={logoX} y={logoY}
+                      width={logoSize} height={logoSize}
+                      clipPath={`url(#${clipId})`}
+                      preserveAspectRatio="xMidYMid meet"
+                      style={{ pointerEvents: 'none' }}
+                    />
+                  </>
+                )}
+
+                {/* Nom entreprise (grandes cases) */}
+                {showName && (
+                  <text
+                    x={x + cw / 2} y={nameY}
+                    textAnchor="middle" fill="rgba(255,255,255,0.5)"
+                    fontSize={Math.min(cw * 0.07, ch * 0.09, 9)}
+                    fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
+                  >
+                    {stock.company_name.length > 20 ? stock.company_name.slice(0, 18) + '…' : stock.company_name}
+                  </text>
+                )}
+
+                {/* Symbole */}
                 {showTicker && (
                   <text
-                    x={x + cw / 2} y={y + ch / 2 + (showChange ? 4 : 6)}
+                    x={x + cw / 2} y={tickerY}
                     textAnchor="middle" fill="white"
-                    fontSize={Math.min(cw * 0.16, ch * 0.22, 18)} fontWeight="700"
+                    fontSize={tickerFS} fontWeight="700"
                     fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
                   >
                     {stock.symbol}
                   </text>
                 )}
+
+                {/* Variation */}
                 {showChange && (
                   <text
-                    x={x + cw / 2} y={y + ch / 2 + Math.min(cw * 0.16, ch * 0.22, 18) + 8}
+                    x={x + cw / 2} y={changeY}
                     textAnchor="middle" fill="rgba(255,255,255,0.85)"
-                    fontSize={Math.min(cw * 0.11, ch * 0.15, 13)}
+                    fontSize={changeFS}
                     fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
                   >
                     {formatChange(stock.daily_change_percent)}
-                  </text>
-                )}
-                {showName && (
-                  <text
-                    x={x + cw / 2} y={y + ch / 2 - Math.min(cw * 0.16, ch * 0.22, 18) - 6}
-                    textAnchor="middle" fill="rgba(255,255,255,0.55)"
-                    fontSize={Math.min(cw * 0.08, ch * 0.1, 9)}
-                    fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
-                  >
-                    {stock.company_name.length > 20 ? stock.company_name.slice(0, 18) + '…' : stock.company_name}
                   </text>
                 )}
               </g>
