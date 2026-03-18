@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
 import { useNavigate } from 'react-router-dom';
+import { getStockLogo } from '../utils/stockLogos';
 
 // Limites de comparaison selon l'abonnement
 const COMPARISON_LIMITS: Record<string, number> = {
@@ -622,7 +623,19 @@ export default function MarketsPageRefactored() {
                         className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 bg-white group-hover/row:bg-gray-50 z-10 min-w-[120px] after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-200 md:after:hidden"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
-                        <div>
+                        <div className="flex items-center gap-2">
+                          {/* Logo */}
+                          {(() => {
+                            const logo = getStockLogo(stock.symbol, stock.logo_url);
+                            return logo ? (
+                              <img src={logo} alt={stock.symbol} className="w-8 h-8 rounded object-contain bg-gray-50 border border-gray-100 flex-shrink-0" onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 flex-shrink-0">
+                                {stock.symbol.slice(0, 2)}
+                              </div>
+                            );
+                          })()}
+                          <div>
                           <div className="font-bold text-gray-900 text-sm sm:text-base">{stock.symbol}</div>
                           <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[100px] sm:max-w-xs">
                             {stock.company_name}
@@ -632,6 +645,7 @@ export default function MarketsPageRefactored() {
                               {stock.sector}
                             </span>
                           )}
+                          </div>
                         </div>
                       </td>
 
