@@ -458,19 +458,28 @@ export default function StockDetailPageEnhanced() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Colonne principale */}
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-            {/* Graphique TradingView */}
+            {/* Graphique — StockChartNew reste monté en permanence pour éviter
+                l'accumulation d'event listeners globaux de lightweight-charts
+                lors des cycles démontage/remontage sur changement de période. */}
             <div>
-              {historyLoading ? (
+              {!historyLoading && lightweightData.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-                  <div className="flex justify-center items-center h-64 sm:h-96">
-                    <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
+                  <div className="flex flex-col justify-center items-center h-64 sm:h-96 text-gray-500">
+                    <svg className="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <p className="text-base sm:text-lg font-medium mb-2">Données de graphique indisponibles</p>
+                    <p className="text-xs sm:text-sm text-center max-w-md px-4">
+                      Les données historiques pour cette action ne sont pas disponibles pour le moment.
+                    </p>
                   </div>
                 </div>
-              ) : lightweightData.length > 0 ? (
+              ) : (
                 <StockChartNew
                   symbol={stock.symbol}
                   data={lightweightData}
-                  isLoading={false}
+                  dailyChangePercent={stock.daily_change_percent}
+                  isLoading={historyLoading}
                   theme="light"
                   onVariationChange={(change) => setChartVariation({ percent: change.percent, isPositive: change.isPositive })}
                   onIntervalChange={(interval) => {
@@ -499,18 +508,6 @@ export default function StockDetailPageEnhanced() {
                                     'ALL'
                   }
                 />
-              ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-                  <div className="flex flex-col justify-center items-center h-64 sm:h-96 text-gray-500">
-                    <svg className="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <p className="text-base sm:text-lg font-medium mb-2">Données de graphique indisponibles</p>
-                    <p className="text-xs sm:text-sm text-center max-w-md px-4">
-                      Les données historiques pour cette action ne sont pas disponibles pour le moment.
-                    </p>
-                  </div>
-                </div>
               )}
             </div>
 

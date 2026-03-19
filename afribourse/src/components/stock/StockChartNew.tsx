@@ -11,6 +11,7 @@ import ChartDrawingToolbar from './ChartDrawingToolbar';
 interface StockChartProps {
   symbol: string;
   data: OHLCVData[];
+  dailyChangePercent?: number; // variation journalière stockée en base, utilisée pour l'intervalle 1J
   onIntervalChange?: (interval: TimeInterval) => void;
   onVariationChange?: (change: PriceChange) => void;
   currentInterval?: TimeInterval;
@@ -81,6 +82,7 @@ const DEFAULT_FIB_LEVELS: FibLevel[] = [
 export default function StockChartNew({
   symbol,
   data,
+  dailyChangePercent,
   onIntervalChange,
   onVariationChange,
   currentInterval = '1Y',
@@ -162,7 +164,14 @@ export default function StockChartNew({
     let lastPrice: number;
 
     if (selectedDisplay === '1D' || selectedDisplay === '1H') {
-      // Pour 1J/1H : variation séance à séance = avant-dernière vs dernière bougie
+      // Pour 1J : utiliser directement daily_change_percent stocké en base
+      if (dailyChangePercent !== undefined) {
+        const last = data[data.length - 1].close;
+        const pct  = dailyChangePercent;
+        const val  = last * pct / 100;
+        return { value: val, percent: pct, isPositive: pct >= 0 };
+      }
+      // Fallback si non fourni
       firstPrice = data[data.length - 2].close;
       lastPrice  = data[data.length - 1].close;
     } else {
@@ -179,10 +188,15 @@ export default function StockChartNew({
     return { value: change, percent: changePercent, isPositive: change >= 0 };
   }, [data, selectedDisplay]);
 
-  // Remonter la variation calculée vers le parent
+  // Remonter la variation calculée vers le parent.
+  // On stocke le callback dans un ref pour éviter que son changement de référence
+  // (fonction inline recréée à chaque render parent) ne déclenche une boucle de renders.
+  const onVariationChangeRef = useRef(onVariationChange);
+  useEffect(() => { onVariationChangeRef.current = onVariationChange; });
+
   useEffect(() => {
-    onVariationChange?.(periodChange);
-  }, [periodChange, onVariationChange]);
+    onVariationChangeRef.current?.(periodChange);
+  }, [periodChange]); // Ne dépend PAS de onVariationChange pour briser la boucle
 
   const resolutionLabel = RESOLUTION_LABEL[activeConfig.resolution];
 
@@ -284,15 +298,8 @@ export default function StockChartNew({
     ? 'hover:bg-gray-600'
     : 'hover:bg-gray-200';
 
-  if (isLoading) {
-    return (
-      <div className={`${containerClasses} rounded-xl shadow-sm border p-6 md:p-8`}>
-        <div className="flex justify-center items-center h-96">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-        </div>
-      </div>
-    );
-  }
+  // Pas d'early return pour isLoading : chartContainerRef doit toujours être dans le DOM
+  // pour que useEffect([], []) puisse initialiser le chart correctement.
 
   return (
     <div ref={containerRef} className={`${containerClasses} rounded-xl shadow-sm border p-4 md:p-6 ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
@@ -492,54 +499,51 @@ export default function StockChartNew({
         )}
       </div>
 
-      {/* Graphique */}
-      {data.length > 0 ? (
-        <div className="relative">
-          <div
-            ref={chartContainerRef}
-            className="w-full"
-            style={{
-              height: isFullscreen ? 'calc(100vh - 180px)' : '500px',
-              minHeight: isFullscreen ? 'calc(100vh - 180px)' : '500px',
-              backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff'
-            }}
-          />
-          {/* Barre d'outils de dessin flottante (gauche) */}
-          {showDrawingToolbar && isReady && (
-            <div className="absolute left-2 top-2 z-10">
-              <ChartDrawingToolbar
-                onToolSelect={handleDrawingToolSelect}
-                onDeleteSelected={deleteSelectedTools}
-                onClearAll={clearAllDrawings}
-                activeTool={activeDrawingTool}
-                theme={theme}
-              />
-            </div>
-          )}
-          {!isReady && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className={`flex flex-col items-center justify-center h-96 ${mutedTextClasses}`}>
-          <svg
-            className="w-16 h-16 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+      {/* Graphique — chartContainerRef TOUJOURS dans le DOM pour que le chart
+          soit initialisé une seule fois et que ses listeners restent valides. */}
+      <div className="relative">
+        <div
+          ref={chartContainerRef}
+          className="w-full"
+          style={{
+            height: isFullscreen ? 'calc(100vh - 180px)' : '500px',
+            minHeight: isFullscreen ? 'calc(100vh - 180px)' : '500px',
+            backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff'
+          }}
+        />
+
+        {/* Barre d'outils de dessin flottante (gauche) */}
+        {showDrawingToolbar && isReady && data.length > 0 && (
+          <div className="absolute left-2 top-2 z-10">
+            <ChartDrawingToolbar
+              onToolSelect={handleDrawingToolSelect}
+              onDeleteSelected={deleteSelectedTools}
+              onClearAll={clearAllDrawings}
+              activeTool={activeDrawingTool}
+              theme={theme}
             />
-          </svg>
-          <p className="text-sm">Aucune donnée d'historique disponible pour cette période</p>
-        </div>
-      )}
+          </div>
+        )}
+
+        {/* Overlay : loading ou absence de données */}
+        {(isLoading || !isReady || data.length === 0) && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{ background: theme === 'dark' ? 'rgba(31,41,55,0.85)' : 'rgba(255,255,255,0.85)' }}
+          >
+            {isLoading || !isReady ? (
+              <Loader2 className={`w-10 h-10 animate-spin ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
+            ) : (
+              <>
+                <svg className={`w-16 h-16 mb-4 ${mutedTextClasses}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <p className={`text-sm ${mutedTextClasses}`}>Aucune donnée d'historique disponible pour cette période</p>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Légende */}
       <div className={`mt-4 text-xs ${mutedTextClasses} flex flex-wrap gap-4 justify-center`}>
