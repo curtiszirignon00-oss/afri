@@ -897,6 +897,8 @@ model LearningModule {
   thumbnail_url    String?
   video_url        String?
   audio_url        String?
+  attachment_url   String? // URL du fichier PDF / étude de cas
+  dashboard_url    String? // URL du dashboard analytique externe
   has_quiz         Boolean   @default(false)
   created_at       DateTime? @default(now())
   updated_at       DateTime? @updatedAt
