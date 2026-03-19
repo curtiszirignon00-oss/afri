@@ -318,21 +318,46 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     );
   }, [filteredStocks]);
 
+  // ── Inline images → base64 pour l'export (logos bloqués par CORS sinon) ──
+  async function inlineSvgImages(svgEl: SVGSVGElement): Promise<void> {
+    const images = Array.from(svgEl.querySelectorAll('image'));
+    await Promise.all(images.map(async (imgEl) => {
+      const href = imgEl.getAttribute('href') ?? imgEl.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+      if (!href || href.startsWith('data:')) return;
+      try {
+        const res  = await fetch(href, { mode: 'cors' });
+        const blob = await res.blob();
+        const b64  = await new Promise<string>((ok) => {
+          const reader = new FileReader();
+          reader.onload = () => ok(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+        imgEl.setAttribute('href', b64);
+        imgEl.removeAttributeNS('http://www.w3.org/1999/xlink', 'href');
+      } catch {
+        // logo inaccessible → on laisse le SVG sans ce logo
+      }
+    }));
+  }
+
   // ── Capture SVG → PNG canvas ──────────────────────────────────────────────
   async function captureToBlob(): Promise<Blob | null> {
     const svgEl = svgRef.current;
     if (!svgEl) return null;
 
+    const CW = 960;   // largeur canvas export
+    const CH = 590;   // hauteur = 520 treemap + 70 footer branding
+
+    // Cloner et fixer les dimensions
+    const clone = svgEl.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('width',   String(CW));
+    clone.setAttribute('height',  String(CH - 70));
+    clone.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    // Convertir tous les logos en base64 avant sérialisation
+    await inlineSvgImages(clone);
+
     return new Promise((resolve) => {
-      const CW = 960;   // largeur canvas export
-      const CH = 590;   // hauteur = 520 treemap + 70 footer branding
-
-      // Cloner et fixer les dimensions
-      const clone = svgEl.cloneNode(true) as SVGSVGElement;
-      clone.setAttribute('width',   String(CW));
-      clone.setAttribute('height',  String(CH - 70));
-      clone.setAttribute('viewBox', `0 0 ${W} ${H}`);
-
       const svgStr  = new XMLSerializer().serializeToString(clone);
       const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
       const svgUrl  = URL.createObjectURL(svgBlob);
