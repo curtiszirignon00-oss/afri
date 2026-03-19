@@ -1054,7 +1054,10 @@ export default function LearnPage() {
                                                     return nextModule ? (
                                                         <button
                                                             onClick={() => {
-                                                                // Réinitialiser le quiz seulement après que l'utilisateur a décidé de continuer
+                                                                if (isPremiumModule(nextModule.order_index ?? 0) && !userHasPremium) {
+                                                                    setShowPremiumPaywall(true);
+                                                                    return;
+                                                                }
                                                                 setSelectedModule(nextModule);
                                                                 setQuizState({
                                                                     isActive: false,
@@ -1138,16 +1141,19 @@ export default function LearnPage() {
                                         const nextModule = allModules.find(m => (m.order_index ?? 0) === currentOrder + 1);
 
                                         if (nextModule && isModuleUnlocked(nextModule)) {
-                                            // Aller au module suivant
-                                            setSelectedModule(nextModule);
-                                            setQuizState({
-                                                isActive: false,
-                                                answers: {},
-                                                score: null,
-                                                passed: null,
-                                                showResults: false
-                                            });
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            if (isPremiumModule(nextModule.order_index ?? 0) && !userHasPremium) {
+                                                setShowPremiumPaywall(true);
+                                            } else {
+                                                setSelectedModule(nextModule);
+                                                setQuizState({
+                                                    isActive: false,
+                                                    answers: {},
+                                                    score: null,
+                                                    passed: null,
+                                                    showResults: false
+                                                });
+                                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            }
                                         } else {
                                             // Retour à la liste si pas de module suivant
                                             setSelectedModule(null);
