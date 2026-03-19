@@ -198,6 +198,8 @@ export interface LearningModule {
   thumbnail_url: string | null;
   video_url: string | null;
   audio_url: string | null; // URL du podcast/audio
+  attachment_url: string | null; // URL du fichier PDF / étude de cas
+  dashboard_url: string | null; // URL du dashboard analytique externe
   has_quiz: boolean; // Indique si le module a un quiz
   created_at: string | null;
   updated_at: string | null;

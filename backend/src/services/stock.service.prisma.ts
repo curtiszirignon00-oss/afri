@@ -461,6 +461,45 @@ export async function getAnnualFinancials(symbol: string, yearsBack: number = 5)
     throw error;
   }
 }
+/**
+ * Calcule la variation % de chaque action sur une période (semaine ou mois)
+ * en comparant le prix actuel au premier prix disponible dans la fenêtre.
+ */
+export async function getMarketPeriodChanges(period: '1W' | '1M') {
+  const days = period === '1W' ? 7 : 30;
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  const stocks = await prisma.stock.findMany({
+    where: { is_active: true },
+    select: { symbol: true, current_price: true }
+  });
+
+  const histories = await prisma.stockHistory.findMany({
+    where: {
+      stock_ticker: { in: stocks.map(s => s.symbol) },
+      date: { gte: since }
+    },
+    orderBy: { date: 'asc' },
+    select: { stock_ticker: true, close: true }
+  });
+
+  // Pour chaque action, on prend le PREMIER close de la période (le plus ancien)
+  const basePrice = new Map<string, number>();
+  for (const h of histories) {
+    if (!basePrice.has(h.stock_ticker)) {
+      basePrice.set(h.stock_ticker, h.close);
+    }
+  }
+
+  return stocks.map(s => {
+    const base = basePrice.get(s.symbol);
+    if (!base || base === 0) return { symbol: s.symbol, change_percent: 0 };
+    const pct = ((s.current_price - base) / base) * 100;
+    return { symbol: s.symbol, change_percent: parseFloat(pct.toFixed(2)) };
+  });
+}
+
 export async function getHistoryForComparison(symbols: string[], period: number) {
   try {
     const startDate = new Date();

@@ -4,10 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { Download, Share2, Check, Copy } from 'lucide-react';
 import type { Stock } from '../../hooks/useApi';
 import { getStockLogo } from '../../utils/stockLogos';
+import { API_BASE_URL } from '../../config/api';
+
+type Period = '1D' | '1W' | '1M';
+const PERIOD_LABELS: Record<Period, string> = { '1D': 'JOUR', '1W': 'SEMAINE', '1M': 'MOIS' };
 
 // ─── Types internes ───────────────────────────────────────────────────────────
+type StockWithPeriod = Stock & { _period_change?: number };
+
 interface TreemapCell {
-  stock: Stock;
+  stock: StockWithPeriod;
   x: number;
   y: number;
   width: number;
@@ -18,6 +24,7 @@ interface TooltipProps {
   cell: TreemapCell;
   mouseX: number;
   mouseY: number;
+  periodLabel: string;
 }
 
 // ─── Secteurs & couleurs BRVM réels ──────────────────────────────────────────
@@ -59,12 +66,13 @@ function formatPrice(v: number): string {
 }
 
 // ─── Poids = |variation %|, minimum 0.3 pour rester visible ─────────────────
-function weight(st: Stock): number {
-  return Math.max(Math.abs(st.daily_change_percent), 0.3);
+function weight(st: Stock & { _period_change?: number }): number {
+  const v = st._period_change ?? st.daily_change_percent;
+  return Math.max(Math.abs(v), 0.3);
 }
 
 // ─── Squarified Treemap – surface ∝ |variation %| ────────────────────────────
-function squarify(stocks: Stock[], x: number, y: number, W: number, H: number): TreemapCell[] {
+function squarify(stocks: (Stock & { _period_change?: number })[], x: number, y: number, W: number, H: number): TreemapCell[] {
   if (!stocks.length) return [];
 
   const sorted = [...stocks].sort((a, b) => weight(b) - weight(a));
@@ -127,9 +135,10 @@ function squarify(stocks: Stock[], x: number, y: number, W: number, H: number): 
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
-function Tooltip({ cell, mouseX, mouseY }: TooltipProps) {
+function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
   const { stock } = cell;
   const sectorColor = SECTOR_COLORS[stock.sector || ''] || '#64748b';
+  const displayChange = stock._period_change ?? stock.daily_change_percent;
   return (
     <div
       style={{
@@ -178,9 +187,9 @@ function Tooltip({ cell, mouseX, mouseY }: TooltipProps) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
         <TooltipStat label="Prix"        value={formatPrice(stock.current_price)}        color="#f1f5f9" />
         <TooltipStat
-          label="Variation"
-          value={formatChange(stock.daily_change_percent)}
-          color={stock.daily_change_percent >= 0 ? '#22c55e' : '#ef4444'}
+          label={`Var. ${periodLabel}`}
+          value={formatChange(displayChange)}
+          color={displayChange >= 0 ? '#22c55e' : '#ef4444'}
         />
         {stock.market_cap ? (
           <TooltipStat label="Cap. Boursière" value={formatMarketCap(stock.market_cap)} color="#94a3b8" />
@@ -229,6 +238,29 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   const [hoveredCell,    setHoveredCell]    = useState<TreemapCell | null>(null);
   const [mousePos,       setMousePos]       = useState({ x: 0, y: 0 });
   const [colorMode,      setColorMode]      = useState<'change' | 'sector'>('change');
+  const [period,         setPeriod]         = useState<Period>('1D');
+  const [periodChanges,  setPeriodChanges]  = useState<Map<string, number>>(new Map());
+  const [periodLoading,  setPeriodLoading]  = useState(false);
+
+  // Fetch period changes when period != '1D'
+  useEffect(() => {
+    if (period === '1D') {
+      setPeriodChanges(new Map());
+      return;
+    }
+    let cancelled = false;
+    setPeriodLoading(true);
+    fetch(`${API_BASE_URL}/stocks/period-changes?period=${period}`)
+      .then(r => r.json())
+      .then((data: { symbol: string; change_percent: number }[]) => {
+        if (cancelled) return;
+        const map = new Map(data.map(d => [d.symbol, d.change_percent]));
+        setPeriodChanges(map);
+      })
+      .catch(() => {/* silently keep previous data */})
+      .finally(() => { if (!cancelled) setPeriodLoading(false); });
+    return () => { cancelled = true; };
+  }, [period]);
 
   // ── export / partage ──
   const svgRef          = useRef<SVGSVGElement>(null);
@@ -255,14 +287,18 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     return ['Tous', ...Array.from(set).sort()];
   }, [stocks]);
 
-  const filteredStocks = useMemo(() => {
+  const filteredStocks = useMemo((): StockWithPeriod[] => {
     const base = selectedSector === 'Tous'
       ? [...stocks]
       : stocks.filter(s => s.sector === selectedSector);
     return base
       .filter(s => s.daily_change_percent !== undefined && s.daily_change_percent !== null)
-      .sort((a, b) => Math.abs(b.daily_change_percent) - Math.abs(a.daily_change_percent));
-  }, [stocks, selectedSector]);
+      .map(s => ({
+        ...s,
+        _period_change: period !== '1D' ? (periodChanges.get(s.symbol) ?? 0) : undefined,
+      }))
+      .sort((a, b) => Math.abs((b._period_change ?? b.daily_change_percent)) - Math.abs((a._period_change ?? a.daily_change_percent)));
+  }, [stocks, selectedSector, period, periodChanges]);
 
   const W = 900;
   const H = 520;
@@ -278,7 +314,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     const total = filteredStocks.reduce((s, st) => s + (st.market_cap || 0), 0);
     if (!total) return 0;
     return filteredStocks.reduce(
-      (sum, st) => sum + st.daily_change_percent * ((st.market_cap || 0) / total), 0
+      (sum, st) => sum + (st._period_change ?? st.daily_change_percent) * ((st.market_cap || 0) / total), 0
     );
   }, [filteredStocks]);
 
@@ -426,7 +462,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   }
 
   // ── Loading / Empty states ────────────────────────────────────────────────
-  if (loading) {
+  if (loading || periodLoading) {
     return (
       <div style={{
         background: '#070b14', borderRadius: 12, padding: 40,
@@ -512,12 +548,30 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           </div>
           <div style={{ color: '#475569', fontSize: 10, marginTop: 4, letterSpacing: 1 }}>
             BRVM • {filteredStocks.length} TITRES •{' '}
-            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}
+            {period === '1D'
+              ? new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
+              : `VARIATION SUR ${period === '1W' ? '7 JOURS' : '30 JOURS'}`}
           </div>
         </div>
 
         {/* Contrôles droite */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {/* Sélecteur de période */}
+          <div style={{ display: 'flex', gap: 3 }}>
+            {(['1D', '1W', '1M'] as Period[]).map(p => (
+              <button
+                key={p}
+                className={`mm-mode-btn${period === p ? ' active' : ''}`}
+                onClick={() => setPeriod(p)}
+              >
+                {PERIOD_LABELS[p]}
+              </button>
+            ))}
+          </div>
+
+          {/* Séparateur */}
+          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
+
           {/* Mode couleur */}
           <div style={{ display: 'flex', gap: 5 }}>
             <button className={`mm-mode-btn${colorMode === 'change' ? ' active' : ''}`} onClick={() => setColorMode('change')}>
@@ -658,9 +712,10 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             const { stock, x, y, width: cw, height: ch } = cell;
             if (cw < 1 || ch < 1) return null;
 
+            const displayChange = stock._period_change ?? stock.daily_change_percent;
             const bgColor    = colorMode === 'sector'
               ? (SECTOR_COLORS[stock.sector || ''] || '#64748b')
-              : getChangeColor(stock.daily_change_percent);
+              : getChangeColor(displayChange);
             const isHovered  = hoveredCell?.stock.symbol === stock.symbol;
             const showTicker = cw > 50  && ch > 30;
             const showChange = cw > 60  && ch > 50;
@@ -768,7 +823,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
                     fontSize={changeFS}
                     fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
                   >
-                    {formatChange(stock.daily_change_percent)}
+                    {formatChange(displayChange)}
                   </text>
                 )}
               </g>
@@ -812,7 +867,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
 
       {/* ── Tooltip ── */}
       {hoveredCell && (
-        <Tooltip cell={hoveredCell} mouseX={mousePos.x} mouseY={mousePos.y} />
+        <Tooltip cell={hoveredCell} mouseX={mousePos.x} mouseY={mousePos.y} periodLabel={PERIOD_LABELS[period]} />
       )}
     </div>
   );

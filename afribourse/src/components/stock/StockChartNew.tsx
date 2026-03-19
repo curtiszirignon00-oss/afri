@@ -4,7 +4,7 @@ import { useStockChart } from '../../hooks/useStockChart';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
 import type { CandleResolution } from '../../utils/chartDataAdapter';
-import { applyResolution, RESOLUTION_LABEL } from '../../utils/chartDataAdapter';
+import { applyResolution, RESOLUTION_LABEL, filterDataByInterval } from '../../utils/chartDataAdapter';
 import ChartShareModal from './ChartShareModal';
 import ChartDrawingToolbar from './ChartDrawingToolbar';
 
@@ -12,6 +12,7 @@ interface StockChartProps {
   symbol: string;
   data: OHLCVData[];
   onIntervalChange?: (interval: TimeInterval) => void;
+  onVariationChange?: (change: PriceChange) => void;
   currentInterval?: TimeInterval;
   isLoading?: boolean;
   theme?: 'light' | 'dark';
@@ -42,6 +43,17 @@ const DISPLAY_INTERVALS: IntervalConfig[] = [
   { value: '1Y', label: '1A',  resolution: 'annual',     backendPeriod: 'ALL' },
 ];
 
+// Fenêtre temporelle à utiliser pour calculer la variation selon l'intervalle affiché
+const PERIOD_WINDOW: Record<DisplayInterval, '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL'> = {
+  '1H': '1D',  // Dernier jour (horaire non dispo → journalier)
+  '1D': '1D',  // Hier → aujourd'hui
+  '1W': '5D',  // 5 jours glissants
+  '1M': '1M',  // 1 mois glissant
+  '3M': '3M',
+  '6M': '6M',
+  '1Y': '1Y',
+};
+
 const CHART_TYPES: { value: ChartType; label: string; icon: string }[] = [
   { value: 'candlestick', label: 'Chandeliers', icon: '📊' },
   { value: 'area', label: 'Aires', icon: '📈' },
@@ -70,6 +82,7 @@ export default function StockChartNew({
   symbol,
   data,
   onIntervalChange,
+  onVariationChange,
   currentInterval = '1Y',
   isLoading = false,
   theme = 'light',
@@ -139,17 +152,37 @@ export default function StockChartNew({
     );
   };
 
-  // Calculer la variation sur la période (données brutes = toute la période disponible)
+  // Calculer la variation sur la période sélectionnée
   const periodChange = useMemo((): PriceChange => {
-    if (!displayData || displayData.length < 2) {
+    if (!data || data.length < 2) {
       return { value: 0, percent: 0, isPositive: true };
     }
-    const firstPrice = displayData[0].close;
-    const lastPrice = displayData[displayData.length - 1].close;
+
+    let firstPrice: number;
+    let lastPrice: number;
+
+    if (selectedDisplay === '1D' || selectedDisplay === '1H') {
+      // Pour 1J/1H : variation séance à séance = avant-dernière vs dernière bougie
+      firstPrice = data[data.length - 2].close;
+      lastPrice  = data[data.length - 1].close;
+    } else {
+      // Pour les autres périodes : filtrer par fenêtre temporelle glissante
+      const window = PERIOD_WINDOW[selectedDisplay];
+      const filtered = filterDataByInterval(data, window);
+      const source = filtered.length >= 2 ? filtered : data;
+      firstPrice = source[0].close;
+      lastPrice  = source[source.length - 1].close;
+    }
+
     const change = lastPrice - firstPrice;
-    const changePercent = (change / firstPrice) * 100;
+    const changePercent = firstPrice !== 0 ? (change / firstPrice) * 100 : 0;
     return { value: change, percent: changePercent, isPositive: change >= 0 };
-  }, [displayData]);
+  }, [data, selectedDisplay]);
+
+  // Remonter la variation calculée vers le parent
+  useEffect(() => {
+    onVariationChange?.(periodChange);
+  }, [periodChange, onVariationChange]);
 
   const resolutionLabel = RESOLUTION_LABEL[activeConfig.resolution];
 
