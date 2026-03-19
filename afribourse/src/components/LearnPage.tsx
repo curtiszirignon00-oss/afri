@@ -21,7 +21,9 @@ import {
     ChevronRight,
     Zap,
     Share2,
-    Crown
+    Crown,
+    FileText,
+    ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -680,6 +682,43 @@ export default function LearnPage() {
                                         <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
                                     </div>
                                 )}
+
+                                {/* Ressources du module : étude de cas PDF + dashboard */}
+                                {(selectedModule.attachment_url || selectedModule.dashboard_url) && (() => {
+                                    const backendBase = API_BASE_URL.replace(/\/api$/, '');
+                                    return (
+                                        <div className="mt-8 mx-4 sm:mx-8 mb-4 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl">
+                                            <h3 className="text-base font-semibold text-amber-900 mb-4 flex items-center gap-2">
+                                                <Star className="w-5 h-5 text-amber-500" />
+                                                Ressources exclusives – Étude de cas
+                                            </h3>
+                                            <div className="flex flex-col sm:flex-row gap-3">
+                                                {selectedModule.attachment_url && (
+                                                    <a
+                                                        href={`${backendBase}${selectedModule.attachment_url}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-2 px-5 py-3 bg-white border border-amber-300 text-amber-800 rounded-xl font-medium hover:bg-amber-50 transition-all shadow-sm hover:shadow-md"
+                                                    >
+                                                        <FileText className="w-5 h-5 text-amber-600" />
+                                                        Rapport d'analyse UNIWAX 2026
+                                                    </a>
+                                                )}
+                                                {selectedModule.dashboard_url && (
+                                                    <a
+                                                        href={selectedModule.dashboard_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-2 px-5 py-3 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-700 transition-all shadow-sm hover:shadow-md"
+                                                    >
+                                                        <ExternalLink className="w-5 h-5" />
+                                                        Dashboard Analytique
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
 

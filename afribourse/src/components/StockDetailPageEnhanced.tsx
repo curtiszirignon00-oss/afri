@@ -56,6 +56,7 @@ export default function StockDetailPageEnhanced() {
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [selectedPeriod, setSelectedPeriod] = useState<Period>('1Y');
+  const [chartVariation, setChartVariation] = useState<{ percent: number; isPositive: boolean } | null>(null);
 
   // Hooks React Query pour charger les données
   // enabled: !!symbol empêche les requêtes si symbol est vide
@@ -433,16 +434,16 @@ export default function StockDetailPageEnhanced() {
                   <p className="text-xs sm:text-sm text-gray-600 mb-1">Prix actuel</p>
                   <p className="text-2xl sm:text-4xl font-bold text-gray-900">{formatNumber(stock.current_price)} <span className="text-base sm:text-xl">FCFA</span></p>
                 </div>
-                <div
-                  className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-lg font-semibold ${stock.daily_change_percent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
-                >
-                  {stock.daily_change_percent >= 0 ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
-                  <span>
-                    {stock.daily_change_percent >= 0 ? '+' : ''}
-                    {stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
-                  </span>
-                </div>
+                {(() => {
+                  const pct = chartVariation ? chartVariation.percent : stock.daily_change_percent;
+                  const positive = chartVariation ? chartVariation.isPositive : pct >= 0;
+                  return (
+                    <div className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-lg font-semibold ${positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {positive ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
+                      <span>{positive ? '+' : ''}{pct?.toFixed(2) ?? '0.00'}%</span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -471,6 +472,7 @@ export default function StockDetailPageEnhanced() {
                   data={lightweightData}
                   isLoading={false}
                   theme="light"
+                  onVariationChange={(change) => setChartVariation({ percent: change.percent, isPositive: change.isPositive })}
                   onIntervalChange={(interval) => {
                     const periodMap: Record<string, Period> = {
                       '1D': '1D',

@@ -40,6 +40,8 @@ export interface LearningModuleExtended {
   thumbnail_url: string | null;
   video_url: string | null;
   audio_url: string | null; // <-- AJOUT: URL de l'audio
+  attachment_url: string | null; // URL du fichier PDF / étude de cas
+  dashboard_url: string | null; // URL du dashboard analytique externe
   has_quiz: boolean; // <-- AJOUT: Indique si le module a un quiz
   quiz?: ModuleQuiz; // <-- AJOUT: Quiz optionnel
   created_at: string | null;

@@ -142,6 +142,19 @@ export async function getAnnualFinancials(req: Request, res: Response, next: Nex
     return next(error);
   }
 }
+export async function getMarketPeriodChanges(req: Request, res: Response, next: NextFunction) {
+  try {
+    const period = (req.query.period as '1W' | '1M') || '1W';
+    if (!['1W', '1M'].includes(period)) {
+      return res.status(400).json({ message: "Period must be 1W or 1M" });
+    }
+    const changes = await stockService.getMarketPeriodChanges(period);
+    return res.status(200).json(changes);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function getComparisonHistory(req: Request, res: Response, next: NextFunction) {
   try {
     const symbols = (req.query.symbols as string)?.split(',');
