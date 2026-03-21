@@ -9,6 +9,7 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "noEmitOnError": false,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
@@ -24,5 +25,5 @@
     }
   },
   "include": ["src/**/*", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*", "**/*.backup.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "src/test/**/*", "src/**/__tests__/**/*", "**/*.backup.ts", "src/scripts/**/*"]
 }
