@@ -73,12 +73,13 @@ export const askSIMBAAnalyst = async (
 export const sendAnalystFeedback = async (
   messageId: string,
   rating: 'positive' | 'negative',
+  endpoint: 'analyst' | 'tutor' = 'analyst',
 ): Promise<void> => {
   try {
     await authFetch(`${API_BASE_URL}/ai/feedback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messageId, rating, endpoint: 'analyst' }),
+      body: JSON.stringify({ messageId, rating, endpoint }),
     });
   } catch {
     // fire-and-forget — ne jamais bloquer l'UX pour un feedback
@@ -122,7 +123,7 @@ export const askGeminiTutor = async (
   message: string,
   conversationHistory: ChatMessage[] = [],
   userContext: TutorUserContext = {},
-): Promise<{ reply: string; hasModuleContext?: boolean }> => {
+): Promise<{ reply: string; hasModuleContext?: boolean; messageId?: string }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/tutor`, {
       method: 'POST',
@@ -140,6 +141,7 @@ export const askGeminiTutor = async (
     return {
       reply: data?.data?.reply || 'Désolé, je n\'ai pas pu générer de réponse pour le moment.',
       hasModuleContext: data?.data?.hasModuleContext ?? false,
+      messageId: data?.data?.messageId,
     };
   } catch {
     return { reply: 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.' };

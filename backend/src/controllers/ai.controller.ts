@@ -12,7 +12,7 @@ import {
 } from '../services/ai-coach.service';
 import { UserContext, buildAnalystPrompt, TutorUserContext, buildTutorSystemPrompt } from '../ai/systemPrompt';
 import { getUserContext } from '../ai/userContext';
-import { preProcessMessage, postProcessResponse } from '../ai/guardrails';
+import { preProcessMessage, postProcessResponse, stripTutorIntro } from '../ai/guardrails';
 import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.service';
 import { ANALYST_TOOLS } from '../ai/analystTools';
 import { TOOL_EXECUTORS } from '../services/brvmDataService';
@@ -66,7 +66,8 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
       max_tokens: 700,
       temperature: 0.6,
     });
-    const text = completion.choices[0]?.message?.content ?? '';
+    const rawText = completion.choices[0]?.message?.content ?? '';
+    const text = stripTutorIntro(rawText);
     const responseTimeMs = Date.now() - t0;
 
     trackAICall({
@@ -80,12 +81,15 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
       success: true,
     }).catch(() => {});
 
+    const messageId = `${req.user!.id}-tutor-${Date.now()}`;
+
     return res.json({
       success: true,
       data: {
         reply: text || 'Désolé, je n\'ai pas pu générer de réponse.',
         hasModuleContext: !!contextBlock,
         provider: 'groq',
+        messageId,
       },
     });
   } catch (error) {

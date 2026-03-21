@@ -85,3 +85,28 @@ export function postProcessResponse(aiResponse: string): string {
 
   return aiResponse;
 }
+
+// ─── Strip intro répétitive du tuteur ────────────────────────────────────────
+// Le LLM a tendance à se réintroduire à chaque réponse malgré les instructions.
+// Ce strip est appliqué sur toutes les réponses sauf le message de bienvenue.
+
+const INTRO_PATTERNS = [
+  // "Bonjour ! Je suis SIMBA..." ou variantes
+  /^(bonjour\s*[!.]?\s*(je suis\s+)?simba[^.!?\n]*[.!?]?\s*)/i,
+  // "Bonsoir ! Je suis SIMBA..."
+  /^(bonsoir\s*[!.]?\s*(je suis\s+)?simba[^.!?\n]*[.!?]?\s*)/i,
+  // "Bonjour !" seul en début
+  /^(bonjour\s*[!.]\s*)/i,
+  // "Je suis SIMBA, votre coach..." en début (sans salutation)
+  /^(je suis simba[^.!?\n]*[.!?]\s*)/i,
+  // "SIMBA ici..." ou "En tant que SIMBA..."
+  /^(en tant que simba[^.!?\n]*[.!?]\s*)/i,
+];
+
+export function stripTutorIntro(text: string): string {
+  let result = text.trim();
+  for (const pattern of INTRO_PATTERNS) {
+    result = result.replace(pattern, '').trim();
+  }
+  return result || text.trim(); // si tout a été supprimé, retourner l'original
+}
