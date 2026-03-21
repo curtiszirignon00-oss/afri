@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2 } from 'lucide-react';
+import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
 import PremiumPaywall from '../PremiumPaywall';
+import { AITutor } from '../AITutor';
 import { getSIMBAStockAnalysis } from '../../services/geminiService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -29,6 +30,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const fetchSIMBAAnalysis = async () => {
     if (isLoadingAI || aiAnalysis) return;
@@ -100,6 +102,13 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
           {isPremium && !isLoadingAI && aiAnalysis && (
             <div className="prose prose-sm max-w-none text-slate-700">
               <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+              <button
+                onClick={() => setShowChat(true)}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Poser une question à SIMBA
+              </button>
             </div>
           )}
 
@@ -116,6 +125,13 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
             </div>
           )}
         </div>
+
+        {/* Chat SIMBA */}
+        <AITutor
+          context={`Action ${stock.company_name} (${stock.symbol}) — Secteur: ${stock.sector ?? 'N/D'} — Prix: ${stock.current_price} FCFA — Variation: ${stock.daily_change_percent?.toFixed(2)}%`}
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+        />
 
         {/* Paywall Modal */}
         <PremiumPaywall
