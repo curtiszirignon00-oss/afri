@@ -1,6 +1,65 @@
 import { API_BASE_URL, authFetch } from '../config/api';
 import { Stock } from '../types';
 
+// ─── Types SIMBA ──────────────────────────────────────────────────────────────
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+// ─── SIMBA — Coach IA (Groq) ──────────────────────────────────────────────────
+
+export const askSIMBA = async (
+  message: string,
+  conversationHistory: ChatMessage[] = [],
+): Promise<{ reply: string; provider: string }> => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/ai/coach`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, conversationHistory }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.', provider: 'fallback' };
+      if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser SIMBA.', provider: 'fallback' };
+      return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.', provider: 'fallback' };
+    }
+
+    const data = await response.json();
+    return {
+      reply: data?.data?.reply || 'Désolé, je n\'ai pas pu générer de réponse.',
+      provider: data?.data?.provider || 'groq',
+    };
+  } catch {
+    return { reply: 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.', provider: 'fallback' };
+  }
+};
+
+// ─── SIMBA — Analyste de marché (Groq) ───────────────────────────────────────
+
+export const getSIMBAStockAnalysis = async (stock: Stock): Promise<string> => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/ai/market-analysis`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stock }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) return '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.';
+      if (response.status === 401) return '⚠️ Vous devez être connecté pour utiliser l\'analyse IA.';
+      return '⚠️ Impossible de générer l\'analyse IA pour le moment. Veuillez réessayer plus tard.';
+    }
+
+    const data = await response.json();
+    return data?.data?.text || 'L\'analyse n\'est pas disponible pour le moment.';
+  } catch {
+    return '⚠️ Impossible de générer l\'analyse IA pour le moment. Veuillez réessayer plus tard.';
+  }
+};
+
 /**
  * Fonction pour demander au tuteur IA Gemini (Learning Academy)
  * La clé API Gemini est stockée uniquement côté serveur.

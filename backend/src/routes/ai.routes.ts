@@ -1,22 +1,34 @@
 import { Router } from 'express';
 import { auth } from '../middlewares/auth.middleware';
-import { askTutor, analyzeStock } from '../controllers/ai.controller';
-import rateLimit from 'express-rate-limit';
-
-// 20 appels IA par heure par utilisateur
-const aiLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 20,
-  keyGenerator: (req) => (req as any).user?.id || req.ip,
-  message: { success: false, message: 'Limite d\'appels IA atteinte. Réessayez dans une heure.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+import {
+  askTutor,
+  analyzeStock,
+  coachIA,
+  analyzeMarket,
+  explainConceptHandler,
+  analyzePortfolioHandler,
+  generateQuizHandler,
+  aiFeedbackHandler,
+  aiAnalyticsHandler,
+} from '../controllers/ai.controller';
+import { aiRateLimit } from '../middlewares/ai-rate-limiter.middleware';
+import { admin } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-// Toutes les routes IA nécessitent une authentification
-router.post('/tutor', auth, aiLimiter, askTutor);
-router.post('/stock-analysis', auth, aiLimiter, analyzeStock);
+// Toutes les routes IA nécessitent une authentification + rate limiting granulaire
+router.post('/tutor',              auth, aiRateLimit('tutor'),               askTutor);
+router.post('/stock-analysis',     auth, aiRateLimit('stock-analysis'),      analyzeStock);
+router.post('/coach',              auth, aiRateLimit('coach'),               coachIA);
+router.post('/market-analysis',    auth, aiRateLimit('market-analysis'),     analyzeMarket);
+router.post('/explain',            auth, aiRateLimit('explain'),             explainConceptHandler);
+router.post('/portfolio-analysis', auth, aiRateLimit('portfolio-analysis'),  analyzePortfolioHandler);
+router.post('/quiz',               auth, aiRateLimit('quiz'),                generateQuizHandler);
+
+// Feedback utilisateur — pas de rate limit strict (UX fluide)
+router.post('/feedback',           auth,                                     aiFeedbackHandler);
+
+// Analytics admin — accès restreint
+router.get('/analytics',           auth, admin,                              aiAnalyticsHandler);
 
 export default router;

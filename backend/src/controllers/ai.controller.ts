@@ -2,6 +2,19 @@ import { Response, NextFunction } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 import config from '../config/environnement';
+import {
+  chatService,
+  marketAnalysis,
+  explainConcept,
+  analyzePortfolio,
+  generateQuiz,
+  StockData,
+  Message,
+} from '../services/ai-coach.service';
+import { UserContext } from '../ai/systemPrompt';
+import { getUserContext } from '../ai/userContext';
+import { preProcessMessage, postProcessResponse } from '../ai/guardrails';
+import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.service';
 
 const genAI = new GoogleGenerativeAI(config.geminiApiKey);
 const MODEL = 'gemini-2.0-flash-exp';
@@ -84,6 +97,224 @@ export async function analyzeStock(req: AuthenticatedRequest, res: Response, nex
     const text = result.response.text();
 
     return res.json({ success: true, data: { text: text || 'L\'analyse n\'est pas disponible pour le moment.' } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── Coach IA SIMBA (Groq) ─────────────────────────────────────────────────────
+
+export async function coachIA(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { message, conversationHistory } = req.body as {
+      message?: string;
+      conversationHistory?: Message[];
+    };
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Le champ message est requis.' });
+    }
+    if (message.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Le message est trop long (max 1000 caractères).' });
+    }
+
+    // 1. Guardrail pre-processing
+    const preCheck = preProcessMessage(message);
+    if (preCheck.blocked) {
+      return res.json({
+        success: true,
+        data: {
+          reply: preCheck.fallbackMessage,
+          provider: 'guardrail',
+          timestamp: new Date().toISOString(),
+        },
+      });
+    }
+
+    // 2. Contexte utilisateur + historique
+    const userCtx = await getUserContext(req.user!.id);
+    const history = Array.isArray(conversationHistory) ? conversationHistory.slice(-6) : [];
+
+    // 3. Appel SIMBA avec mesure du temps de réponse
+    const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
+    const t0 = Date.now();
+    const result = await chatService.chat(cleanMessage, history, userCtx);
+    const responseTimeMs = Date.now() - t0;
+
+    // 4. Guardrail post-processing (disclaimer légal si nécessaire)
+    const safeReply = postProcessResponse(result.text || 'Désolé, je n\'ai pas pu générer de réponse.');
+
+    // 5. Analytics (fire-and-forget)
+    const sessionId = (req as any).id ?? req.ip ?? 'unknown';
+    trackAICall({
+      userId: req.user!.id,
+      sessionId,
+      endpoint: 'coach',
+      provider: result.provider,
+      responseTimeMs,
+      blocked: false,
+      question: cleanMessage,
+      success: result.success,
+    }).catch(() => {});
+
+    const messageId = `${req.user!.id}-${Date.now()}`;
+
+    return res.json({
+      success: true,
+      data: {
+        reply: safeReply,
+        provider: result.provider,
+        messageId,                          // Utilisé par le frontend pour le feedback
+        responseTimeMs,
+        timestamp: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── Analyste de marché (Groq/HuggingFace) ───────────────────────────────────
+
+export async function analyzeMarket(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { stock } = req.body as { stock?: Record<string, unknown> };
+
+    if (!stock || typeof stock !== 'object') {
+      return res.status(400).json({ success: false, message: 'Les données de l\'action sont requises.' });
+    }
+
+    const { company_name, symbol } = stock as any;
+    if (!company_name || !symbol) {
+      return res.status(400).json({ success: false, message: 'company_name et symbol sont requis.' });
+    }
+
+    const stockData: StockData = {
+      company_name: String(company_name).slice(0, 100),
+      symbol: String(symbol).slice(0, 20),
+      sector: stock.sector ? String(stock.sector).slice(0, 100) : undefined,
+      current_price: stock.current_price ? Number(stock.current_price) : undefined,
+      daily_change_percent: stock.daily_change_percent ? Number(stock.daily_change_percent) : undefined,
+      market_cap: stock.market_cap ? Number(stock.market_cap) : undefined,
+      volume: stock.volume ? Number(stock.volume) : undefined,
+      week_high: stock.week_high ? Number(stock.week_high) : undefined,
+      week_low: stock.week_low ? Number(stock.week_low) : undefined,
+      pe_ratio: stock.pe_ratio ? Number(stock.pe_ratio) : undefined,
+      description: stock.description ? String(stock.description).slice(0, 500) : undefined,
+    };
+
+    const text = await marketAnalysis(stockData);
+
+    return res.json({ success: true, data: { text: text || 'L\'analyse n\'est pas disponible pour le moment.' } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── A. Explication de Concept ────────────────────────────────────────────────
+
+export async function explainConceptHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { concept, userContext } = req.body as { concept?: string; userContext?: UserContext };
+
+    if (!concept || typeof concept !== 'string' || concept.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Le champ concept est requis.' });
+    }
+    if (concept.length > 200) {
+      return res.status(400).json({ success: false, message: 'Le concept est trop long (max 200 caractères).' });
+    }
+
+    const text = await explainConcept(concept.trim(), userContext ?? {});
+
+    return res.json({ success: true, data: { text } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── B. Analyse de Portefeuille Simulé ───────────────────────────────────────
+
+export async function analyzePortfolioHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { portfolio, userContext } = req.body as { portfolio?: unknown[]; userContext?: UserContext };
+
+    if (!Array.isArray(portfolio) || portfolio.length === 0) {
+      return res.status(400).json({ success: false, message: 'Le portefeuille est requis (tableau non vide).' });
+    }
+    if (portfolio.length > 50) {
+      return res.status(400).json({ success: false, message: 'Le portefeuille ne peut pas dépasser 50 lignes.' });
+    }
+
+    const text = await analyzePortfolio(portfolio as any, userContext ?? {});
+
+    return res.json({ success: true, data: { text } });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── C. Génération de Quiz ────────────────────────────────────────────────────
+
+export async function generateQuizHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { topic, userContext, previousScore } = req.body as {
+      topic?: string;
+      userContext?: UserContext;
+      previousScore?: number;
+    };
+
+    if (!topic || typeof topic !== 'string' || topic.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Le champ topic est requis.' });
+    }
+
+    const quiz = await generateQuiz(topic.trim(), userContext ?? {}, previousScore ?? 0);
+
+    return res.json({ success: true, data: quiz });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── Feedback utilisateur (👍 / 👎) ──────────────────────────────────────────
+
+export async function aiFeedbackHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { messageId, rating, endpoint } = req.body as {
+      messageId?: string;
+      rating?: 'positive' | 'negative';
+      endpoint?: string;
+    };
+
+    if (!messageId || !rating || !['positive', 'negative'].includes(rating)) {
+      return res.status(400).json({ success: false, message: 'messageId et rating (positive|negative) sont requis.' });
+    }
+
+    const sessionId = (req as any).id ?? req.ip ?? 'unknown';
+    await trackAIFeedback({
+      userId: req.user!.id,
+      sessionId,
+      endpoint: endpoint ?? 'coach',
+      messageId,
+      rating,
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── Analytics Admin ──────────────────────────────────────────────────────────
+
+export async function aiAnalyticsHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { days } = req.query as { days?: string };
+    const since = days
+      ? new Date(Date.now() - parseInt(days, 10) * 24 * 60 * 60 * 1000)
+      : undefined;
+
+    const summary = await getAISummary(since);
+    return res.json({ success: true, data: summary });
   } catch (error) {
     next(error);
   }

@@ -190,6 +190,7 @@ export const getUserById = async (id: string) => {
             lastname: true,
             email: true,
             role: true,
+            subscriptionTier: true,
             telephone: true,
             address: true,
             created_at: true,

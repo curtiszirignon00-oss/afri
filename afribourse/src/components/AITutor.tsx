@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Sparkles, X } from 'lucide-react';
-import { askGeminiTutor } from '../services/geminiService';
+import { askSIMBA, ChatMessage } from '../services/geminiService';
 
-interface ChatMessage {
+interface UIMessage {
   id: string;
-  role: 'user' | 'model';
+  role: 'user' | 'assistant';
   text: string;
   timestamp: number;
 }
@@ -15,61 +15,67 @@ interface AITutorProps {
   onClose: () => void;
 }
 
+const QUICK_SUGGESTIONS = [
+  "C'est quoi la BRVM ?",
+  'Comment diversifier ?',
+  'Expliquer le PER',
+];
+
 export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<UIMessage[]>([
     {
       id: 'welcome',
-      role: 'model',
-      text: "Bonjour ! Je suis ton assistant AfriBourse. Une notion te semble floue ? Pose-moi ta question sur ce module !",
-      timestamp: Date.now()
-    }
+      role: 'assistant',
+      text: "Bonjour ! Je suis SIMBA, ton coach financier Afribourse. Une notion te semble floue ? Pose-moi ta question sur ce module !",
+      timestamp: Date.now(),
+    },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll vers le bas
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Envoyer un message
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSend = async (text?: string) => {
+    const messageText = (text ?? input).trim();
+    if (!messageText || isLoading) return;
 
-    const userMsg: ChatMessage = {
+    const userMsg: UIMessage = {
       id: Date.now().toString(),
       role: 'user',
-      text: input,
-      timestamp: Date.now()
+      text: messageText,
+      timestamp: Date.now(),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
 
-    // Appel à Gemini
-    const responseText = await askGeminiTutor(userMsg.text, context);
+    // Historique au format attendu par le backend (sans le message welcome)
+    const history: ChatMessage[] = messages
+      .filter((m) => m.id !== 'welcome')
+      .map((m) => ({ role: m.role, content: m.text }));
 
-    const aiMsg: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      role: 'model',
-      text: responseText,
-      timestamp: Date.now()
-    };
+    // Injecter le contexte du module dans le premier message si pas encore présent
+    const historyWithContext: ChatMessage[] = history.length === 0 && context
+      ? [{ role: 'assistant', content: `Module en cours : ${context}` }]
+      : history;
 
-    setMessages(prev => [...prev, aiMsg]);
+    const { reply } = await askSIMBA(messageText, historyWithContext);
+
+    setMessages((prev) => [
+      ...prev,
+      { id: (Date.now() + 1).toString(), role: 'assistant', text: reply, timestamp: Date.now() },
+    ]);
     setIsLoading(false);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-[360px] h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+    <div className="fixed bottom-4 right-4 w-[360px] h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">
@@ -77,9 +83,9 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-sm">Coach AfriBourse</h3>
+            <h3 className="font-bold text-sm">SIMBA — Coach Afribourse</h3>
             <p className="text-xs text-blue-100 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> Propulsé par Gemini
+              <Sparkles className="w-3 h-3" /> Propulsé par Groq
             </p>
           </div>
         </div>
@@ -107,20 +113,35 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
           </div>
         ))}
 
-        {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-white border border-slate-100 p-3 rounded-2xl rounded-bl-sm shadow-sm">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+              <div className="flex gap-1 items-center">
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                <span className="ml-1 text-xs text-slate-400">SIMBA réfléchit...</span>
               </div>
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Suggestions rapides (masquées dès qu'il y a des messages) */}
+      {messages.length <= 1 && (
+        <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-slate-100 pt-2">
+          {QUICK_SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => handleSend(s)}
+              className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors border border-blue-100"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Input */}
       <div className="p-3 bg-white border-t border-slate-100">
@@ -130,11 +151,12 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Posez une question..."
+            placeholder="Posez une question financière..."
+            maxLength={1000}
             className="w-full pl-4 pr-12 py-3 bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl text-sm transition-all outline-none placeholder:text-slate-400"
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!input.trim() || isLoading}
             className="absolute right-2 p-1.5 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors shadow-sm"
           >

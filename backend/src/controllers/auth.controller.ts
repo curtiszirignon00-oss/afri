@@ -273,6 +273,11 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
 
         const userAsAny = user as any;
 
+        // Les admins ont accès max à toutes les fonctionnalités
+        if (userAsAny.role === 'admin') {
+            userAsAny.subscriptionTier = 'max';
+        }
+
         // Renvoyer le token dans le body pour les clients qui ne peuvent pas lire les cookies
         // (ex: Safari iOS avec ITP qui bloque les cookies cross-site)
         const rawToken = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
