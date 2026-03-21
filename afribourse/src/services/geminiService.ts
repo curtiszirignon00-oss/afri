@@ -37,18 +37,18 @@ export const askSIMBA = async (
   }
 };
 
-// ─── SIMBA — Chat Analyste de marché (Groq) ──────────────────────────────────
+// ─── SIMBA — Chat Analyste de marché (Groq + tool-calling) ───────────────────
 
 export const askSIMBAAnalyst = async (
   message: string,
   conversationHistory: ChatMessage[] = [],
-  stockContext: string = '',
-): Promise<{ reply: string; provider: string }> => {
+  symbol: string = '',
+): Promise<{ reply: string; provider: string; messageId?: string }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/analyst`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, conversationHistory, stockContext }),
+      body: JSON.stringify({ message, conversationHistory, symbol }),
     });
 
     if (!response.ok) {
@@ -61,9 +61,27 @@ export const askSIMBAAnalyst = async (
     return {
       reply: data?.data?.reply || 'Désolé, je n\'ai pas pu générer de réponse.',
       provider: data?.data?.provider || 'groq',
+      messageId: data?.data?.messageId,
     };
   } catch {
     return { reply: 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.', provider: 'fallback' };
+  }
+};
+
+// ─── SIMBA — Feedback 👍 / 👎 sur une réponse analyste ───────────────────────
+
+export const sendAnalystFeedback = async (
+  messageId: string,
+  rating: 'positive' | 'negative',
+): Promise<void> => {
+  try {
+    await authFetch(`${API_BASE_URL}/ai/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messageId, rating, endpoint: 'analyst' }),
+    });
+  } catch {
+    // fire-and-forget — ne jamais bloquer l'UX pour un feedback
   }
 };
 
