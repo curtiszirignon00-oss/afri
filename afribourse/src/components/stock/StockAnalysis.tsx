@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Gauge, ArrowUpCircle, ArrowDownCircle, MinusCircle, Activity, TrendingUp, Lock, Zap } from 'lucide-react';
 import PremiumPaywall from '../PremiumPaywall';
+import { useAuth } from '../../contexts/AuthContext';
 
 type Signal = 'Achat' | 'Vente' | 'Neutre' | 'Achat Fort' | 'Vente Forte';
 
@@ -47,12 +48,14 @@ const SignalBadge: React.FC<{ signal: Signal }> = ({ signal }) => {
 };
 
 const StockAnalysis: React.FC = () => {
+  const { userProfile } = useAuth();
+  const isPremium = ['investisseur-plus', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
 
   return (
     <div className="space-y-8">
 
-      {/* Summary Card - Premium Locked */}
+      {/* Summary Card */}
       <div className="bg-gradient-to-r from-slate-900 to-slate-800 p-8 rounded-xl shadow-lg text-white relative overflow-hidden">
         <div className="absolute right-0 top-0 p-12 opacity-5 pointer-events-none">
           <Gauge size={200} />
@@ -73,29 +76,32 @@ const StockAnalysis: React.FC = () => {
               Synthèse Technique
             </h3>
             <p className="text-slate-400 max-w-md mb-4">
-              Accédez à une synthèse complète basée sur une combinaison de moyennes mobiles et d'oscillateurs techniques.
+              Synthèse complète basée sur une combinaison de moyennes mobiles et d'oscillateurs techniques.
             </p>
-            <button
-              onClick={() => setShowPremiumPaywall(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg text-sm"
-            >
-              <Lock className="w-4 h-4" />
-              Débloquer l'analyse
-            </button>
+            {!isPremium && (
+              <button
+                onClick={() => setShowPremiumPaywall(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg text-sm"
+              >
+                <Lock className="w-4 h-4" />
+                Débloquer l'analyse
+              </button>
+            )}
           </div>
           <div className="flex flex-col items-center bg-white/10 p-6 rounded-2xl backdrop-blur-sm border border-white/10 min-w-[200px] relative">
-            {/* Overlay de flou */}
-            <div className="absolute inset-0 backdrop-blur-md bg-white/5 rounded-2xl flex items-center justify-center">
-              <Lock className="w-8 h-8 text-white/50" />
-            </div>
-            <span className="text-sm font-medium text-slate-300 uppercase tracking-wider mb-1 blur-sm">Signal Global</span>
-            <span className="text-3xl font-bold text-yellow-400 blur-sm">NEUTRE</span>
-            <span className="text-xs text-slate-400 mt-2 blur-sm">Dernière mise à jour: 14:00</span>
+            {!isPremium && (
+              <div className="absolute inset-0 backdrop-blur-md bg-white/5 rounded-2xl flex items-center justify-center">
+                <Lock className="w-8 h-8 text-white/50" />
+              </div>
+            )}
+            <span className={`text-sm font-medium text-slate-300 uppercase tracking-wider mb-1 ${!isPremium ? 'blur-sm' : ''}`}>Signal Global</span>
+            <span className={`text-3xl font-bold text-yellow-400 ${!isPremium ? 'blur-sm' : ''}`}>NEUTRE</span>
+            <span className={`text-xs text-slate-400 mt-2 ${!isPremium ? 'blur-sm' : ''}`}>Dernière mise à jour: 14:00</span>
           </div>
         </div>
       </div>
 
-      {/* Technical Indicators Table - Premium Locked */}
+      {/* Technical Indicators Table */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -108,9 +114,8 @@ const StockAnalysis: React.FC = () => {
           </span>
         </div>
 
-        {/* Aperçu flouté */}
         <div className="relative">
-          <div className="overflow-x-auto blur-sm select-none pointer-events-none">
+          <div className={`overflow-x-auto ${!isPremium ? 'blur-sm select-none pointer-events-none' : ''}`}>
             <table className="w-full text-sm text-left">
               <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                 <tr>
@@ -133,27 +138,29 @@ const StockAnalysis: React.FC = () => {
             </table>
           </div>
 
-          {/* Overlay avec call-to-action */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent flex items-center justify-center">
-            <div className="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-200 max-w-md">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full mb-3">
-                <Lock className="w-6 h-6 text-yellow-600" />
+          {/* Overlay paywall — visible uniquement pour les non-premium */}
+          {!isPremium && (
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent flex items-center justify-center">
+              <div className="text-center p-6 bg-white rounded-xl shadow-lg border border-gray-200 max-w-md">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full mb-3">
+                  <Lock className="w-6 h-6 text-yellow-600" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">
+                  Accès Premium Requis
+                </h4>
+                <p className="text-gray-600 text-sm mb-4">
+                  Débloquez l'accès complet aux indicateurs techniques avancés (RSI, MACD, Moyennes Mobiles, Bollinger, etc.)
+                </p>
+                <button
+                  onClick={() => setShowPremiumPaywall(true)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+                >
+                  <Zap className="w-4 h-4" />
+                  Voir les Indicateurs
+                </button>
               </div>
-              <h4 className="text-lg font-bold text-gray-900 mb-2">
-                Accès Premium Requis
-              </h4>
-              <p className="text-gray-600 text-sm mb-4">
-                Débloquez l'accès complet aux indicateurs techniques avancés (RSI, MACD, Moyennes Mobiles, Bollinger, etc.)
-              </p>
-              <button
-                onClick={() => setShowPremiumPaywall(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
-              >
-                <Zap className="w-4 h-4" />
-                Voir les Indicateurs
-              </button>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

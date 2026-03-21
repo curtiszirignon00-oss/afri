@@ -32,6 +32,7 @@ import { API_BASE_URL, authFetch } from '../config/api';
 import { useCreatePost } from '../hooks/useSocial';
 import confetti from 'canvas-confetti';
 import PremiumPaywall from './PremiumPaywall';
+import { AITutor } from './AITutor';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 // Gamification imports
@@ -1171,7 +1172,7 @@ export default function LearnPage() {
                     {/* Bouton flottant AI Tutor */}
                     {!showAITutor && (
                         <button
-                            onClick={() => setShowPremiumPaywall(true)}
+                            onClick={() => userHasPremium ? setShowAITutor(true) : setShowPremiumPaywall(true)}
                             className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
                         >
                             <MessageSquarePlus className="w-6 h-6" />
@@ -1181,12 +1182,12 @@ export default function LearnPage() {
                         </button>
                     )}
 
-                    {/* Composant AI Tutor - Désactivé, remplacé par paywall */}
-                    {/* <AITutor
-                        context={selectedModule.description || selectedModule.title}
+                    {/* Composant AI Tutor */}
+                    <AITutor
+                        context={selectedModule?.description || selectedModule?.title || ''}
                         isOpen={showAITutor}
                         onClose={() => setShowAITutor(false)}
-                    /> */}
+                    />
 
                     {/* Paywall Premium pour Coach IA */}
                     <PremiumPaywall

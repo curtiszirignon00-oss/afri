@@ -18,6 +18,7 @@ import { getStockLogo } from '../utils/stockLogos';
 const COMPARISON_LIMITS: Record<string, number> = {
   free: 2,
   premium: 4,
+  'investisseur-plus': Infinity,
   pro: Infinity,
   max: Infinity,
 };

@@ -189,23 +189,53 @@ export async function analyzeMarket(req: AuthenticatedRequest, res: Response, ne
       return res.status(400).json({ success: false, message: 'Les données de l\'action sont requises.' });
     }
 
-    const { company_name, symbol } = stock as any;
-    if (!company_name || !symbol) {
-      return res.status(400).json({ success: false, message: 'company_name et symbol sont requis.' });
+    const { symbol } = stock as any;
+    if (!symbol) {
+      return res.status(400).json({ success: false, message: 'symbol est requis.' });
     }
 
+    // Charger les données complètes depuis la DB (market_cap, pe_ratio, 52-week high/low)
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new (PrismaClient as any)();
+
+    const [dbStock, fundamental, history52w] = await Promise.all([
+      prisma.stock.findUnique({
+        where: { symbol: String(symbol).slice(0, 20) },
+        select: {
+          symbol: true, company_name: true, sector: true, description: true,
+          current_price: true, daily_change_percent: true, volume: true, market_cap: true,
+        },
+      }),
+      prisma.stockFundamental.findUnique({
+        where: { stock_ticker: String(symbol).slice(0, 20) },
+        select: { market_cap: true, pe_ratio: true, pb_ratio: true, dividend_yield: true, eps: true },
+      }),
+      prisma.stockHistory.findMany({
+        where: {
+          stock_ticker: String(symbol).slice(0, 20),
+          date: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
+        },
+        select: { high: true, low: true },
+      }),
+    ]);
+
+    await prisma.$disconnect();
+
+    const week_high = history52w.length > 0 ? Math.max(...history52w.map((h: any) => h.high)) : undefined;
+    const week_low  = history52w.length > 0 ? Math.min(...history52w.map((h: any) => h.low))  : undefined;
+
     const stockData: StockData = {
-      company_name: String(company_name).slice(0, 100),
-      symbol: String(symbol).slice(0, 20),
-      sector: stock.sector ? String(stock.sector).slice(0, 100) : undefined,
-      current_price: stock.current_price ? Number(stock.current_price) : undefined,
-      daily_change_percent: stock.daily_change_percent ? Number(stock.daily_change_percent) : undefined,
-      market_cap: stock.market_cap ? Number(stock.market_cap) : undefined,
-      volume: stock.volume ? Number(stock.volume) : undefined,
-      week_high: stock.week_high ? Number(stock.week_high) : undefined,
-      week_low: stock.week_low ? Number(stock.week_low) : undefined,
-      pe_ratio: stock.pe_ratio ? Number(stock.pe_ratio) : undefined,
-      description: stock.description ? String(stock.description).slice(0, 500) : undefined,
+      company_name:         String(dbStock?.company_name || (stock as any).company_name || '').slice(0, 100),
+      symbol:               String(symbol).slice(0, 20),
+      sector:               dbStock?.sector ?? undefined,
+      description:          dbStock?.description?.slice(0, 500) ?? undefined,
+      current_price:        dbStock?.current_price ?? Number((stock as any).current_price) ?? undefined,
+      daily_change_percent: dbStock?.daily_change_percent ?? undefined,
+      volume:               dbStock?.volume ?? undefined,
+      market_cap:           fundamental?.market_cap ?? dbStock?.market_cap ?? undefined,
+      pe_ratio:             fundamental?.pe_ratio ?? undefined,
+      week_high,
+      week_low,
     };
 
     const text = await marketAnalysis(stockData);
