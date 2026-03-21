@@ -47,7 +47,7 @@
     "verify-sdcc": "ts-node src/scripts/verify-sdcc-data.ts",
     "export-users": "ts-node src/scripts/export-users-to-excel-direct.ts",
     "build": "prisma generate && node --max-old-space-size=400 ./node_modules/.bin/tsc",
-    "start": "node dist/index.js",
+    "start": "node --max-old-space-size=400 dist/index.js",
     "dev": "nodemon src/index.ts",
     "dev:ts": "ts-node src/index.ts",
     "clean": "rimraf dist",
@@ -63,10 +63,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@huggingface/inference": "^4.13.15",
     "@logtail/pino": "^0.5.7",
-    "@mistralai/mistralai": "^2.1.1",
     "@prisma/client": "^6.19.0",
     "@types/express": "^5.0.5",
     "@upstash/qstash": "^2.9.0",
@@ -93,7 +91,6 @@
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.9",
-    "openai": "^6.32.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-linkedin-oauth2": "^2.0.0",

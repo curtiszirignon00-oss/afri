@@ -1,7 +1,6 @@
 import { Response, NextFunction } from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
-import config from '../config/environnement';
 import {
   chatService,
   marketAnalysis,
@@ -16,8 +15,8 @@ import { getUserContext } from '../ai/userContext';
 import { preProcessMessage, postProcessResponse } from '../ai/guardrails';
 import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.service';
 
-const genAI = new GoogleGenerativeAI(config.geminiApiKey);
-const MODEL = 'gemini-2.0-flash-exp';
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 
 export async function askTutor(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
@@ -49,9 +48,12 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
       Question de l'étudiant : "${question.trim()}"
     `;
 
-    const model = genAI.getGenerativeModel({ model: MODEL });
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const completion = await groq.chat.completions.create({
+      model: GROQ_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 400,
+    });
+    const text = completion.choices[0]?.message?.content ?? '';
 
     return res.json({ success: true, data: { text: text || 'Désolé, je n\'ai pas pu générer de réponse.' } });
   } catch (error) {
@@ -92,9 +94,12 @@ export async function analyzeStock(req: AuthenticatedRequest, res: Response, nex
       Reste neutre, professionnel, mais encourageant pour l'apprentissage. Formate la réponse en Markdown.
     `;
 
-    const model = genAI.getGenerativeModel({ model: MODEL });
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const completion = await groq.chat.completions.create({
+      model: GROQ_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 400,
+    });
+    const text = completion.choices[0]?.message?.content ?? '';
 
     return res.json({ success: true, data: { text: text || 'L\'analyse n\'est pas disponible pour le moment.' } });
   } catch (error) {
