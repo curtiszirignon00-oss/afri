@@ -353,11 +353,10 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
     ];
 
     const t0 = Date.now();
-    const groqInstance = new (await import('groq-sdk')).default({ apiKey: process.env.GROQ_API_KEY ?? '' });
 
     let text = '';
     try {
-      const completion = await groqInstance.chat.completions.create({
+      const completion = await groq.chat.completions.create({
         model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
         messages,
         max_tokens: 600,
