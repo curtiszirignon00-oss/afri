@@ -14,6 +14,8 @@ import { UserContext, buildAnalystPrompt } from '../ai/systemPrompt';
 import { getUserContext } from '../ai/userContext';
 import { preProcessMessage, postProcessResponse } from '../ai/guardrails';
 import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.service';
+import { ANALYST_TOOLS } from '../ai/analystTools';
+import { TOOL_EXECUTORS } from '../services/brvmDataService';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
@@ -310,21 +312,21 @@ export async function generateQuizHandler(req: AuthenticatedRequest, res: Respon
   }
 }
 
-// ─── SIMBA Analyste — Chat contextuel action BRVM ─────────────────────────────
+// ─── SIMBA Analyste — Chat contextuel BRVM avec tool-calling ──────────────────
 
 export async function coachAnalyst(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { message, conversationHistory, stockContext } = req.body as {
+    const { message, conversationHistory, symbol } = req.body as {
       message?: string;
       conversationHistory?: Message[];
-      stockContext?: string;
+      symbol?: string;
     };
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({ success: false, message: 'Le champ message est requis.' });
     }
-    if (message.length > 1000) {
-      return res.status(400).json({ success: false, message: 'Le message est trop long (max 1000 caractères).' });
+    if (message.length > 1500) {
+      return res.status(400).json({ success: false, message: 'Le message est trop long (max 1500 caractères).' });
     }
 
     // Guardrail pre-processing
@@ -340,29 +342,83 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
       });
     }
 
-    const history = Array.isArray(conversationHistory) ? conversationHistory.slice(-8) : [];
+    const history = Array.isArray(conversationHistory) ? conversationHistory.slice(-14) : [];
     const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
+    const currentSymbol = typeof symbol === 'string' ? symbol.toUpperCase().trim() : null;
 
-    // System prompt analyste avec contexte de l'action
-    const systemPrompt = buildAnalystPrompt(typeof stockContext === 'string' ? stockContext.slice(0, 500) : '');
+    const systemPrompt = buildAnalystPrompt(currentSymbol ?? '');
 
-    const messages: Message[] = [
+    const messages: any[] = [
       { role: 'system', content: systemPrompt },
       ...history,
       { role: 'user', content: cleanMessage },
     ];
 
     const t0 = Date.now();
+    const MAX_ITER = 6;
+    let iterations = 0;
+    let finalText = '';
+    let toolCallsCount = 0;
 
-    let text = '';
     try {
-      const completion = await groq.chat.completions.create({
-        model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
-        messages,
-        max_tokens: 600,
-        temperature: 0.4,
-      });
-      text = completion.choices[0]?.message?.content ?? '';
+      while (iterations < MAX_ITER) {
+        iterations++;
+
+        const response = await groq.chat.completions.create({
+          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+          messages,
+          tools: ANALYST_TOOLS as any,
+          tool_choice: 'auto',
+          max_tokens: 2000,
+          temperature: 0.2,
+        });
+
+        const choice = response.choices[0];
+
+        // Réponse finale — plus d'outils à appeler
+        if (choice.finish_reason === 'stop') {
+          finalText = choice.message.content ?? '';
+          break;
+        }
+
+        // Le modèle appelle des outils
+        if (choice.finish_reason === 'tool_calls' && choice.message.tool_calls?.length) {
+          messages.push(choice.message);
+          toolCallsCount += choice.message.tool_calls.length;
+
+          await Promise.all(
+            choice.message.tool_calls.map(async (toolCall: any) => {
+              const toolName = toolCall.function.name as keyof typeof TOOL_EXECUTORS;
+              let toolArgs: any = {};
+              try { toolArgs = JSON.parse(toolCall.function.arguments); } catch {}
+
+              console.log(`[SIMBA-Analyst Tool] ${toolName}(${JSON.stringify(toolArgs)})`);
+
+              let result: any;
+              try {
+                if (!TOOL_EXECUTORS[toolName]) {
+                  result = { error: `Outil "${toolName}" non disponible.` };
+                } else {
+                  result = await TOOL_EXECUTORS[toolName](toolArgs);
+                }
+              } catch (err: any) {
+                console.error(`[SIMBA-Analyst Tool Error] ${toolName}:`, err?.message);
+                result = { error: `Erreur technique sur ${toolName}: ${err?.message}` };
+              }
+
+              messages.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                content: JSON.stringify(result),
+              });
+            }),
+          );
+        } else {
+          // finish_reason inattendu — on sort
+          finalText = choice.message.content ?? '';
+          break;
+        }
+      }
     } catch (err: any) {
       console.error('[SIMBA-Analyst] Groq failed:', err?.message);
       return res.json({
@@ -375,7 +431,11 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
       });
     }
 
-    const safeReply = postProcessResponse(text || 'Désolé, je n\'ai pas pu générer de réponse.');
+    if (!finalText) {
+      finalText = 'La requête est trop complexe. Reformulez ou posez des questions plus ciblées.';
+    }
+
+    const safeReply = postProcessResponse(finalText);
     const responseTimeMs = Date.now() - t0;
     const messageId = `${req.user!.id}-analyst-${Date.now()}`;
 
@@ -396,6 +456,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
         reply: safeReply,
         provider: 'groq',
         messageId,
+        toolCallsCount,
         responseTimeMs,
         timestamp: new Date().toISOString(),
       },

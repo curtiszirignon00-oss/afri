@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BarChart2, Send, TrendingUp, ThumbsUp, ThumbsDown, X } from 'lucide-react';
-import { askSIMBAAnalyst, ChatMessage } from '../../services/geminiService';
+import { askSIMBAAnalyst, sendAnalystFeedback, ChatMessage } from '../../services/geminiService';
 import { Stock } from '../../types';
 
 interface UIMessage {
@@ -9,6 +9,7 @@ interface UIMessage {
   text: string;
   timestamp: number;
   rating?: 'up' | 'down';
+  messageId?: string; // ID backend pour persister le feedback
 }
 
 interface StockAnalystChatProps {
@@ -25,15 +26,6 @@ const ANALYST_SUGGESTIONS = [
 ];
 
 export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpen, onClose }) => {
-  const stockContext = [
-    `Action : ${stock.company_name} (${stock.symbol})`,
-    `Secteur : ${stock.sector ?? 'N/D'}`,
-    `Prix actuel : ${stock.current_price} FCFA`,
-    `Variation du jour : ${stock.daily_change_percent?.toFixed(2) ?? 'N/D'}%`,
-    `Volume : ${stock.volume?.toLocaleString('fr-FR') ?? 'N/D'}`,
-    `Capitalisation : ${stock.market_cap ? (stock.market_cap / 1_000_000_000).toFixed(2) + ' Mds FCFA' : 'N/D'}`,
-  ].join(' | ');
-
   const [messages, setMessages] = useState<UIMessage[]>([
     {
       id: 'welcome',
@@ -64,7 +56,15 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
 
   const rateMessage = (id: string, rating: 'up' | 'down') => {
     setMessages((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, rating: m.rating === rating ? undefined : rating } : m))
+      prev.map((m) => {
+        if (m.id !== id) return m;
+        const newRating = m.rating === rating ? undefined : rating;
+        // Envoi au backend (fire-and-forget) uniquement si on active un rating
+        if (newRating && m.messageId) {
+          sendAnalystFeedback(m.messageId, newRating === 'up' ? 'positive' : 'negative');
+        }
+        return { ...m, rating: newRating };
+      })
     );
   };
 
@@ -87,11 +87,17 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       .filter((m) => m.id !== 'welcome')
       .map((m) => ({ role: m.role, content: m.text }));
 
-    const { reply } = await askSIMBAAnalyst(messageText, history, stockContext);
+    const { reply, messageId } = await askSIMBAAnalyst(messageText, history, stock.symbol);
 
     setMessages((prev) => [
       ...prev,
-      { id: (Date.now() + 1).toString(), role: 'assistant', text: reply, timestamp: Date.now() },
+      {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        text: reply,
+        timestamp: Date.now(),
+        messageId,
+      },
     ]);
     setIsLoading(false);
   };
