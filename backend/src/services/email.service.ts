@@ -2435,6 +2435,281 @@ AfriBourse - Apprenez, simulez et investissez en toute confiance.
   });
 }
 
+/**
+ * Envoie la newsletter de mars 2026 : Badges, Dashboards et Challenge 10M FCFA
+ */
+export async function sendNewsletterMarch2026Email({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const appUrl = config.app.frontendUrl;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Du nouveau sur Afribourse : Badges, Dashboards et 10 000 000 FCFA à gagner !</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 12px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-text {
+          font-size: 28px;
+          font-weight: bold;
+          color: #f97316;
+        }
+        .hero-banner {
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          border-radius: 12px;
+          padding: 28px 20px;
+          text-align: center;
+          margin: 20px 0 30px;
+        }
+        .hero-title {
+          font-size: 22px;
+          font-weight: bold;
+          color: #f97316;
+          margin: 0 0 6px;
+        }
+        .hero-subtitle {
+          font-size: 14px;
+          color: #94a3b8;
+          margin: 0;
+        }
+        .greeting {
+          font-size: 16px;
+          color: #1e293b;
+          margin-bottom: 12px;
+          font-weight: 600;
+        }
+        .intro-text {
+          font-size: 15px;
+          color: #475569;
+          margin-bottom: 28px;
+        }
+        .section {
+          border-left: 4px solid #f97316;
+          padding: 16px 20px;
+          margin: 20px 0;
+          background-color: #fff7ed;
+          border-radius: 0 10px 10px 0;
+        }
+        .section h3 {
+          margin: 0 0 8px;
+          color: #1e293b;
+          font-size: 16px;
+        }
+        .section p {
+          margin: 0 0 14px;
+          font-size: 14px;
+          color: #475569;
+        }
+        .button {
+          display: inline-block;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white !important;
+          text-decoration: none;
+          padding: 11px 24px;
+          border-radius: 8px;
+          font-weight: bold;
+          font-size: 14px;
+        }
+        .button-primary {
+          display: inline-block;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 32px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 16px;
+          margin: 4px 0;
+        }
+        .leaderboard-box {
+          background-color: #f0f9ff;
+          border: 1px solid #bae6fd;
+          border-radius: 10px;
+          padding: 18px 22px;
+          margin: 20px 0;
+        }
+        .leaderboard-box h3 {
+          font-size: 16px;
+          color: #0369a1;
+          margin: 0 0 10px;
+        }
+        .leaderboard-item {
+          font-size: 14px;
+          color: #1e293b;
+          margin: 6px 0;
+        }
+        .challenge-box {
+          background: linear-gradient(135deg, #fef3c7, #fde68a);
+          border: 1px solid #fbbf24;
+          border-radius: 10px;
+          padding: 22px 24px;
+          margin: 20px 0;
+          text-align: center;
+        }
+        .challenge-box h3 {
+          font-size: 18px;
+          color: #92400e;
+          margin: 0 0 8px;
+        }
+        .challenge-box p {
+          font-size: 14px;
+          color: #78350f;
+          margin: 0 0 16px;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 36px;
+          padding-top: 24px;
+          border-top: 1px solid #e5e7eb;
+          font-size: 13px;
+          color: #9ca3af;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-text">AfriBourse</div>
+        </div>
+
+        <div class="hero-banner">
+          <div class="hero-title">🚀 Du nouveau sur Afribourse !</div>
+          <div class="hero-subtitle">Badges, Dashboards et 10 000 000 FCFA à gagner</div>
+        </div>
+
+        <p class="greeting">Bonjour ${displayName},</p>
+        <p class="intro-text">
+          L'aventure Afribourse s'accélère ! Nous travaillons sans relâche pour vous offrir l'expérience
+          d'investissement la plus immersive et pédagogique possible. Voici ce qui vous attend sur votre plateforme :
+        </p>
+
+        <!-- Section 1 : Navigation visuelle -->
+        <div class="section">
+          <h3>🖼️ Une navigation plus visuelle</h3>
+          <p>
+            Pour vous repérer en un clin d'œil, des images ont été ajoutées à chaque action.
+            Identifier vos titres favoris n'a jamais été aussi intuitif.
+          </p>
+          <a href="${appUrl}/markets" class="button">Découvrir le nouveau visuel</a>
+        </div>
+
+        <!-- Section 2 : Module 8 Uniwax -->
+        <div class="section">
+          <h3>📊 Zoom sur Uniwax (Module 8)</h3>
+          <p>
+            Le Module 8 s'enrichit ! Pour ceux d'entre vous qui ont validé les étapes précédentes,
+            vous pouvez désormais explorer les études de cas et le dashboard analytique exclusif d'Uniwax.
+            Une occasion unique d'analyser une valeur phare comme un pro.
+          </p>
+          <a href="${appUrl}/learn" class="button">Accéder au Module 8</a>
+        </div>
+
+        <!-- Section 3 : Badges -->
+        <div class="section">
+          <h3>🏆 Gamification : Gagnez bien plus que de l'expérience</h3>
+          <p>
+            Nous lançons les nouveaux badges Afribourse ! En progressant, vous gagnez de l'XP et montez en niveau
+            pour débloquer des récompenses concrètes : de l'argent virtuel pour votre Wallet Sandbox,
+            et même... vos premières vraies actions offertes !
+          </p>
+          <a href="${appUrl}/achievements" class="button">Consulter mes badges et progrès</a>
+        </div>
+
+        <!-- Section 4 : Classement -->
+        <div class="leaderboard-box">
+          <h3>🏁 Le Top 10 Sandbox est en feu !</h3>
+          <p style="font-size:14px;color:#374151;margin:0 0 10px;">
+            La compétition fait rage dans la communauté. Félicitations à nos leaders actuels :
+          </p>
+          <div class="leaderboard-item">🥉 9ème : Patrice Siaba (+22%) 📈</div>
+          <div class="leaderboard-item">🏅 10ème : Mohamed Samake (+17%) 📈</div>
+          <p style="font-size:14px;color:#374151;margin:12px 0 14px;">Qui parviendra à détrôner le sommet du classement ?</p>
+          <a href="${appUrl}/classement" class="button">Voir le classement complet</a>
+        </div>
+
+        <!-- Section 5 : Challenge -->
+        <div class="challenge-box">
+          <h3>🔥 Challenge Afribourse — 10 000 000 FCFA</h3>
+          <p>
+            Le grand challenge est toujours en cours ! Il n'est pas trop tard pour rejoindre la course
+            et tenter de remporter une part de la cagnotte de <strong>10 000 000 FCFA</strong>.
+          </p>
+          <a href="${appUrl}/communities/-challenge-afribourse-le-hub-de-lelite" class="button-primary">
+            🚀 JE M'INSCRIS AU CHALLENGE MAINTENANT
+          </a>
+        </div>
+
+        <p style="font-size:15px;color:#475569;text-align:center;margin-top:28px;">
+          Bon investissement à tous sur Afribourse !<br>
+          <strong style="color:#f97316;">L'équipe Afribourse</strong>
+        </p>
+
+        <div class="footer">
+          <p>Vous recevez cet email car vous êtes inscrit sur AfriBourse.</p>
+          <p>© 2026 AfriBourse — Tous droits réservés</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Bonjour ${displayName},
+
+L'aventure Afribourse s'accélère ! Voici les dernières nouveautés :
+
+🖼️ Navigation visuelle : Des images ont été ajoutées à chaque action.
+→ ${appUrl}/markets
+
+📊 Module 8 Uniwax : Explorez le dashboard analytique exclusif d'Uniwax.
+→ ${appUrl}/learn
+
+🏆 Nouveaux Badges : Gagnez de l'XP, montez en niveau, débloquez des récompenses.
+→ ${appUrl}/achievements
+
+🏁 Top Sandbox :
+  9ème : Patrice Siaba (+22%)
+  10ème : Mohamed Samake (+17%)
+→ ${appUrl}/classement
+
+🔥 Challenge 10 000 000 FCFA — Il n'est pas trop tard !
+→ ${appUrl}/communities/-challenge-afribourse-le-hub-de-lelite
+
+Bon investissement !
+L'équipe Afribourse
+  `.trim();
+
+  await sendEmail({
+    to: email,
+    subject: '🚀 Du nouveau sur Afribourse : Badges, Dashboards et 10 000 000 FCFA à gagner !',
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -2445,5 +2720,6 @@ export default {
   sendPWAAnnouncementEmail,
   sendGrandChallengeAnnouncementEmail,
   sendCompleteProfileEmail,
+  sendNewsletterMarch2026Email,
   sendEmail,
 };
