@@ -7,12 +7,10 @@
  * Planifié pour s'exécuter chaque dimanche à 23h
  */
 
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prisma';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as XLSX from 'xlsx';
-
-const prisma = new PrismaClient();
 
 // Dossier de sauvegarde
 const BACKUP_DIR = path.join(__dirname, '../../backups');
