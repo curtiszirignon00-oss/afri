@@ -37,7 +37,37 @@ export const askSIMBA = async (
   }
 };
 
-// ─── SIMBA — Analyste de marché (Groq) ───────────────────────────────────────
+// ─── SIMBA — Chat Analyste de marché (Groq) ──────────────────────────────────
+
+export const askSIMBAAnalyst = async (
+  message: string,
+  conversationHistory: ChatMessage[] = [],
+  stockContext: string = '',
+): Promise<{ reply: string; provider: string }> => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/ai/analyst`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, conversationHistory, stockContext }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.', provider: 'fallback' };
+      if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser SIMBA.', provider: 'fallback' };
+      return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.', provider: 'fallback' };
+    }
+
+    const data = await response.json();
+    return {
+      reply: data?.data?.reply || 'Désolé, je n\'ai pas pu générer de réponse.',
+      provider: data?.data?.provider || 'groq',
+    };
+  } catch {
+    return { reply: 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.', provider: 'fallback' };
+  }
+};
+
+// ─── SIMBA — Analyse de marché statique (Groq) ───────────────────────────────
 
 export const getSIMBAStockAnalysis = async (stock: Stock): Promise<string> => {
   try {

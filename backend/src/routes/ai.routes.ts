@@ -4,6 +4,7 @@ import {
   askTutor,
   analyzeStock,
   coachIA,
+  coachAnalyst,
   analyzeMarket,
   explainConceptHandler,
   analyzePortfolioHandler,
@@ -20,6 +21,7 @@ const router = Router();
 router.post('/tutor',              auth, aiRateLimit('tutor'),               askTutor);
 router.post('/stock-analysis',     auth, aiRateLimit('stock-analysis'),      analyzeStock);
 router.post('/coach',              auth, aiRateLimit('coach'),               coachIA);
+router.post('/analyst',            auth, aiRateLimit('coach'),               coachAnalyst);
 router.post('/market-analysis',    auth, aiRateLimit('market-analysis'),     analyzeMarket);
 router.post('/explain',            auth, aiRateLimit('explain'),             explainConceptHandler);
 router.post('/portfolio-analysis', auth, aiRateLimit('portfolio-analysis'),  analyzePortfolioHandler);

@@ -3,7 +3,7 @@ import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2
 import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
 import PremiumPaywall from '../PremiumPaywall';
-import { AITutor } from '../AITutor';
+import { StockAnalystChat } from './StockAnalystChat';
 import { getSIMBAStockAnalysis } from '../../services/geminiService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -126,9 +126,9 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
           )}
         </div>
 
-        {/* Chat SIMBA */}
-        <AITutor
-          context={`Action ${stock.company_name} (${stock.symbol}) — Secteur: ${stock.sector ?? 'N/D'} — Prix: ${stock.current_price} FCFA — Variation: ${stock.daily_change_percent?.toFixed(2)}%`}
+        {/* Chat Analyste SIMBA */}
+        <StockAnalystChat
+          stock={stock}
           isOpen={showChat}
           onClose={() => setShowChat(false)}
         />
