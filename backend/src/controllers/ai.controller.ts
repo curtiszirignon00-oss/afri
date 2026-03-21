@@ -10,7 +10,7 @@ import {
   StockData,
   Message,
 } from '../services/ai-coach.service';
-import { UserContext } from '../ai/systemPrompt';
+import { UserContext, buildAnalystPrompt } from '../ai/systemPrompt';
 import { getUserContext } from '../ai/userContext';
 import { preProcessMessage, postProcessResponse } from '../ai/guardrails';
 import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.service';
@@ -305,6 +305,102 @@ export async function generateQuizHandler(req: AuthenticatedRequest, res: Respon
     const quiz = await generateQuiz(topic.trim(), userContext ?? {}, previousScore ?? 0);
 
     return res.json({ success: true, data: quiz });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── SIMBA Analyste — Chat contextuel action BRVM ─────────────────────────────
+
+export async function coachAnalyst(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { message, conversationHistory, stockContext } = req.body as {
+      message?: string;
+      conversationHistory?: Message[];
+      stockContext?: string;
+    };
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Le champ message est requis.' });
+    }
+    if (message.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Le message est trop long (max 1000 caractères).' });
+    }
+
+    // Guardrail pre-processing
+    const preCheck = preProcessMessage(message);
+    if (preCheck.blocked) {
+      return res.json({
+        success: true,
+        data: {
+          reply: preCheck.fallbackMessage,
+          provider: 'guardrail',
+          timestamp: new Date().toISOString(),
+        },
+      });
+    }
+
+    const history = Array.isArray(conversationHistory) ? conversationHistory.slice(-8) : [];
+    const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
+
+    // System prompt analyste avec contexte de l'action
+    const systemPrompt = buildAnalystPrompt(typeof stockContext === 'string' ? stockContext.slice(0, 500) : '');
+
+    const messages: Message[] = [
+      { role: 'system', content: systemPrompt },
+      ...history,
+      { role: 'user', content: cleanMessage },
+    ];
+
+    const t0 = Date.now();
+    const groqInstance = new (await import('groq-sdk')).default({ apiKey: process.env.GROQ_API_KEY ?? '' });
+
+    let text = '';
+    try {
+      const completion = await groqInstance.chat.completions.create({
+        model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+        messages,
+        max_tokens: 600,
+        temperature: 0.4,
+      });
+      text = completion.choices[0]?.message?.content ?? '';
+    } catch (err: any) {
+      console.error('[SIMBA-Analyst] Groq failed:', err?.message);
+      return res.json({
+        success: true,
+        data: {
+          reply: 'Je suis temporairement indisponible. Veuillez réessayer dans quelques instants.',
+          provider: 'fallback',
+          timestamp: new Date().toISOString(),
+        },
+      });
+    }
+
+    const safeReply = postProcessResponse(text || 'Désolé, je n\'ai pas pu générer de réponse.');
+    const responseTimeMs = Date.now() - t0;
+    const messageId = `${req.user!.id}-analyst-${Date.now()}`;
+
+    trackAICall({
+      userId: req.user!.id,
+      sessionId: (req as any).id ?? req.ip ?? 'unknown',
+      endpoint: 'analyst',
+      provider: 'groq',
+      responseTimeMs,
+      blocked: false,
+      question: cleanMessage,
+      success: true,
+    }).catch(() => {});
+
+    return res.json({
+      success: true,
+      data: {
+        reply: safeReply,
+        provider: 'groq',
+        messageId,
+        responseTimeMs,
+        timestamp: new Date().toISOString(),
+      },
+    });
   } catch (error) {
     next(error);
   }
