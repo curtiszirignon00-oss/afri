@@ -6,11 +6,9 @@
  */
 
 import cron from 'node-cron';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../config/prisma';
 import transporter from '../config/mailer';
 import config from '../config/environnement';
-
-const prisma = new PrismaClient();
 
 // Cron expression: "0 10 25 1 *" = À 10h00, le 25 janvier 2026
 // Aujourd'hui dimanche 25 janvier 2026
