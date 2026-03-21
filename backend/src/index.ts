@@ -57,6 +57,7 @@ import pushRoutes from './routes/push.routes'; // Push notifications (Web Push A
 import passportConfig from './config/passport'; // OAuth Passport
 import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
 import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
+import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
   private app: Application | null = null;
@@ -270,6 +271,11 @@ class App {
     try {
       // CONSOLIDATION : Appel unique à la connexion Prisma
       await connectPrismaDatabase();
+
+      // Tutor RAG — chargement de la base de modules en mémoire
+      buildKnowledgeBase().catch((err) =>
+        logger.warn({ err }, '[TUTOR RAG] Échec du chargement initial (non bloquant)'),
+      );
 
       // Redis Cache
       const redis = getRedisClient();

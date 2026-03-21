@@ -108,32 +108,41 @@ export const getSIMBAStockAnalysis = async (stock: Stock): Promise<string> => {
   }
 };
 
-/**
- * Fonction pour demander au tuteur IA Gemini (Learning Academy)
- * La clé API Gemini est stockée uniquement côté serveur.
- */
+// ─── SIMBA — Tuteur pédagogique (Learning Academy) ───────────────────────────
+
+export interface TutorUserContext {
+  level?: 'débutant' | 'intermédiaire' | 'avancé';
+  currentModule?: string;
+  currentLesson?: string;
+  progress?: string;
+  lastQuizScore?: number;
+}
+
 export const askGeminiTutor = async (
-  question: string,
-  context: string
-): Promise<string> => {
+  message: string,
+  conversationHistory: ChatMessage[] = [],
+  userContext: TutorUserContext = {},
+): Promise<{ reply: string; hasModuleContext?: boolean }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/tutor`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, context }),
+      body: JSON.stringify({ message, conversationHistory, userContext }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) return '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.';
-      if (response.status === 401) return '⚠️ Vous devez être connecté pour utiliser le tuteur IA.';
-      return '⚠️ Une erreur est survenue. Réessayez plus tard.';
+      if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.' };
+      if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser le tuteur IA.' };
+      return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.' };
     }
 
     const data = await response.json();
-    return data?.data?.text || 'Désolé, je n\'ai pas pu générer de réponse pour le moment.';
-  } catch (error) {
-    console.error('Erreur Gemini Tutor:', error);
-    return 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.';
+    return {
+      reply: data?.data?.reply || 'Désolé, je n\'ai pas pu générer de réponse pour le moment.',
+      hasModuleContext: data?.data?.hasModuleContext ?? false,
+    };
+  } catch {
+    return { reply: 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.' };
   }
 };
 

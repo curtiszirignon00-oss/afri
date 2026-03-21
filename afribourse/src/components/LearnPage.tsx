@@ -1184,7 +1184,12 @@ export default function LearnPage() {
 
                     {/* Composant AI Tutor */}
                     <AITutor
-                        context={selectedModule?.description || selectedModule?.title || ''}
+                        userContext={{
+                            currentModule: selectedModule?.title,
+                            currentLesson: selectedModule?.slug,
+                            level: (selectedModule?.difficulty_level as any) ?? 'débutant',
+                            lastQuizScore: moduleProgress?.quiz_score ?? undefined,
+                        }}
                         isOpen={showAITutor}
                         onClose={() => setShowAITutor(false)}
                     />

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Sparkles, X } from 'lucide-react';
-import { askSIMBA, ChatMessage } from '../services/geminiService';
+import { askGeminiTutor, ChatMessage, TutorUserContext } from '../services/geminiService';
 
 interface UIMessage {
   id: string;
@@ -10,7 +10,7 @@ interface UIMessage {
 }
 
 interface AITutorProps {
-  context: string;
+  userContext: TutorUserContext;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -21,12 +21,14 @@ const QUICK_SUGGESTIONS = [
   'Expliquer le PER',
 ];
 
-export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) => {
+export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }) => {
+  const moduleLabel = userContext.currentModule ?? 'ce module';
+
   const [messages, setMessages] = useState<UIMessage[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      text: "Bonjour ! Je suis SIMBA, ton coach financier Afribourse. Une notion te semble floue ? Pose-moi ta question sur ce module !",
+      text: `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${moduleLabel}** — pose-moi tes questions !`,
       timestamp: Date.now(),
     },
   ]);
@@ -37,6 +39,19 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Réinitialiser quand le module change
+  useEffect(() => {
+    const label = userContext.currentModule ?? 'ce module';
+    setMessages([
+      {
+        id: 'welcome',
+        role: 'assistant',
+        text: `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${label}** — pose-moi tes questions !`,
+        timestamp: Date.now(),
+      },
+    ]);
+  }, [userContext.currentModule]);
 
   const handleSend = async (text?: string) => {
     const messageText = (text ?? input).trim();
@@ -53,17 +68,11 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
     setInput('');
     setIsLoading(true);
 
-    // Historique au format attendu par le backend (sans le message welcome)
     const history: ChatMessage[] = messages
       .filter((m) => m.id !== 'welcome')
       .map((m) => ({ role: m.role, content: m.text }));
 
-    // Injecter le contexte du module dans le premier message si pas encore présent
-    const historyWithContext: ChatMessage[] = history.length === 0 && context
-      ? [{ role: 'assistant', content: `Module en cours : ${context}` }]
-      : history;
-
-    const { reply } = await askSIMBA(messageText, historyWithContext);
+    const { reply } = await askGeminiTutor(messageText, history, userContext);
 
     setMessages((prev) => [
       ...prev,
@@ -83,9 +92,10 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-sm">SIMBA — Coach Afribourse</h3>
+            <h3 className="font-bold text-sm">SIMBA — Tuteur Afribourse</h3>
             <p className="text-xs text-blue-100 flex items-center gap-1">
-              <Sparkles className="w-3 h-3" /> Propulsé par Groq
+              <Sparkles className="w-3 h-3" />
+              {userContext.currentModule ?? 'Learning Academy'}
             </p>
           </div>
         </div>
@@ -102,7 +112,7 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+              className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
                 msg.role === 'user'
                   ? 'bg-blue-600 text-white rounded-br-sm'
                   : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
@@ -128,7 +138,7 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggestions rapides (masquées dès qu'il y a des messages) */}
+      {/* Suggestions rapides */}
       {messages.length <= 1 && (
         <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-slate-100 pt-2">
           {QUICK_SUGGESTIONS.map((s) => (
@@ -151,7 +161,7 @@ export const AITutor: React.FC<AITutorProps> = ({ context, isOpen, onClose }) =>
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Posez une question financière..."
+            placeholder="Posez une question sur ce module..."
             maxLength={1000}
             className="w-full pl-4 pr-12 py-3 bg-slate-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl text-sm transition-all outline-none placeholder:text-slate-400"
           />

@@ -10,54 +10,84 @@ import {
   StockData,
   Message,
 } from '../services/ai-coach.service';
-import { UserContext, buildAnalystPrompt } from '../ai/systemPrompt';
+import { UserContext, buildAnalystPrompt, TutorUserContext, buildTutorSystemPrompt } from '../ai/systemPrompt';
 import { getUserContext } from '../ai/userContext';
 import { preProcessMessage, postProcessResponse } from '../ai/guardrails';
 import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.service';
 import { ANALYST_TOOLS } from '../ai/analystTools';
 import { TOOL_EXECUTORS } from '../services/brvmDataService';
+import { buildContextBlock } from '../ai/tutorRAG';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 
 export async function askTutor(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { question, context } = req.body as { question?: string; context?: string };
-    if (!question || typeof question !== 'string' || question.trim().length === 0) {
-      return res.status(400).json({ success: false, message: 'Le champ question est requis.' });
+    const { message, conversationHistory, userContext } = req.body as {
+      message?: string;
+      conversationHistory?: Message[];
+      userContext?: TutorUserContext;
+    };
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Le champ message est requis.' });
     }
-    if (question.length > 1000) {
-      return res.status(400).json({ success: false, message: 'La question est trop longue (max 1000 caractères).' });
+    if (message.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Le message est trop long (max 1000 caractères).' });
     }
 
-    const safeContext = typeof context === 'string' ? context.slice(0, 2000) : '';
+    // Guardrail
+    const preCheck = preProcessMessage(message);
+    if (preCheck.blocked) {
+      return res.json({ success: true, data: { reply: preCheck.fallbackMessage, provider: 'guardrail' } });
+    }
 
-    const prompt = `
-      Tu es un expert financier pédagogique spécialisé dans la Bourse Régionale des Valeurs Mobilières (BRVM) et l'investissement en Afrique de l'Ouest.
-      Ton rôle est d'aider un étudiant qui apprend les bases de la bourse.
+    const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
+    const history = Array.isArray(conversationHistory) ? conversationHistory.slice(-12) : [];
+    const ctx: TutorUserContext = typeof userContext === 'object' && userContext !== null ? userContext : {};
 
-      Contexte actuel de la leçon :
-      "${safeContext}"
+    // RAG : recherche du contenu de module pertinent
+    const contextBlock = buildContextBlock(cleanMessage);
+    if (contextBlock) {
+      console.log(`[TUTOR RAG] Contexte injecté pour : "${cleanMessage.slice(0, 60)}"`);
+    }
 
-      Règles :
-      1. Réponds de manière concise, encourageante et simple (max 150 mots).
-      2. Utilise des analogies locales (marché, agriculture, commerce) si possible pour expliquer les concepts.
-      3. Si la question porte sur la leçon, utilise le contexte fourni.
-      4. Si la question est hors sujet, ramène poliment l'utilisateur vers l'investissement.
-      5. Ne donne pas de conseils d'investissement spécifiques (ex: "achète Sonatel"), mais explique les mécanismes.
-      6. Formate ta réponse de manière claire et lisible.
+    const systemPrompt = buildTutorSystemPrompt(ctx, contextBlock);
+    const messages: Message[] = [
+      { role: 'system', content: systemPrompt },
+      ...history,
+      { role: 'user', content: cleanMessage },
+    ];
 
-      Question de l'étudiant : "${question.trim()}"
-    `;
-
+    const t0 = Date.now();
     const completion = await groq.chat.completions.create({
       model: GROQ_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 400,
+      messages,
+      max_tokens: 700,
+      temperature: 0.6,
     });
     const text = completion.choices[0]?.message?.content ?? '';
+    const responseTimeMs = Date.now() - t0;
 
-    return res.json({ success: true, data: { text: text || 'Désolé, je n\'ai pas pu générer de réponse.' } });
+    trackAICall({
+      userId: req.user!.id,
+      sessionId: (req as any).id ?? req.ip ?? 'unknown',
+      endpoint: 'tutor',
+      provider: 'groq',
+      responseTimeMs,
+      blocked: false,
+      question: cleanMessage,
+      success: true,
+    }).catch(() => {});
+
+    return res.json({
+      success: true,
+      data: {
+        reply: text || 'Désolé, je n\'ai pas pu générer de réponse.',
+        hasModuleContext: !!contextBlock,
+        provider: 'groq',
+      },
+    });
   } catch (error) {
     next(error);
   }
