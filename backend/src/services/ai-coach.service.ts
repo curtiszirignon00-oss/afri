@@ -4,7 +4,6 @@
  * Fallback         : HuggingFace Inference API (si plan Pro actif)
  */
 
-import { InferenceClient } from '@huggingface/inference';
 import Groq from 'groq-sdk';
 import {
   buildSystemPrompt,
@@ -26,7 +25,7 @@ export interface Message {
 
 export interface ChatResult {
   text: string;
-  provider: 'groq' | 'huggingface' | 'fallback';
+  provider: 'groq' | 'fallback';
   success: boolean;
 }
 
@@ -40,11 +39,9 @@ export interface ChatOptions {
 
 class AfribourseChatService {
   private groq: Groq;
-  private hf: InferenceClient;
 
   constructor() {
     this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
-    this.hf = new InferenceClient(process.env.HF_TOKEN ?? '');
   }
 
   // ─── Routing de modèle ──────────────────────────────────────────────────────
@@ -80,22 +77,7 @@ class AfribourseChatService {
     return completion.choices[0]?.message?.content ?? '';
   }
 
-  // ─── Appel HuggingFace (fallback) ───────────────────────────────────────────
-
-  private async callHuggingFace(messages: Message[], options: ChatOptions = {}): Promise<string> {
-    if (!process.env.HF_TOKEN) throw new Error('HF_TOKEN not set');
-
-    const modelId = process.env.HF_MODEL_ID || 'mistralai/Mistral-7B-Instruct-v0.3';
-    const response = await this.hf.chatCompletion({
-      model: modelId,
-      messages: messages as any,
-      max_tokens: options.maxTokens ?? 600,
-      temperature: options.temperature ?? 0.7,
-    });
-    return response.choices[0]?.message?.content ?? '';
-  }
-
-  // ─── Méthode principale avec RAG + retry + fallback ────────────────────────
+  // ─── Méthode principale avec RAG ────────────────────────────────────────────
 
   async chat(
     userMessage: string,
@@ -112,24 +94,15 @@ class AfribourseChatService {
 
     const messages: Message[] = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-6), // 6 derniers messages max (contexte glissant)
+      ...conversationHistory.slice(-6),
       { role: 'user', content: augmentedMessage },
     ];
 
-    // 1. Essai Groq
     try {
       const text = await this.callGroq(messages, options);
       return { text, provider: 'groq', success: true };
     } catch (groqError) {
-      console.warn('[SIMBA] Groq failed, fallback HF:', (groqError as Error).message);
-    }
-
-    // 2. Fallback HuggingFace
-    try {
-      const text = await this.callHuggingFace(messages, options);
-      return { text, provider: 'huggingface', success: true };
-    } catch (hfError) {
-      console.error('[SIMBA] All providers failed:', (hfError as Error).message);
+      console.error('[SIMBA] Groq failed:', (groqError as Error).message);
       return {
         text: 'Je suis temporairement indisponible. Veuillez réessayer dans quelques instants.',
         provider: 'fallback',

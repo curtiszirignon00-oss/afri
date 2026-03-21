@@ -63,7 +63,6 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@huggingface/inference": "^4.13.15",
     "@logtail/pino": "^0.5.7",
     "@prisma/client": "^6.19.0",
     "@types/express": "^5.0.5",
