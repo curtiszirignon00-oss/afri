@@ -1169,8 +1169,8 @@ export default function LearnPage() {
                         )}
                     </article>
 
-                    {/* Bouton flottant AI Tutor */}
-                    {!showAITutor && (
+                    {/* Bouton flottant AI Tutor — masqué pendant le quiz */}
+                    {!showAITutor && !quizState.isActive && !quizState.showResults && (
                         <button
                             onClick={() => userHasPremium ? setShowAITutor(true) : setShowPremiumPaywall(true)}
                             className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
@@ -1182,7 +1182,7 @@ export default function LearnPage() {
                         </button>
                     )}
 
-                    {/* Composant AI Tutor */}
+                    {/* Composant AI Tutor — fermé automatiquement pendant le quiz */}
                     <AITutor
                         userContext={{
                             currentModule: selectedModule?.title,
@@ -1190,7 +1190,7 @@ export default function LearnPage() {
                             level: (selectedModule?.difficulty_level as any) ?? 'débutant',
                             lastQuizScore: moduleProgress?.quiz_score ?? undefined,
                         }}
-                        isOpen={showAITutor}
+                        isOpen={showAITutor && !quizState.isActive && !quizState.showResults}
                         onClose={() => setShowAITutor(false)}
                     />
 

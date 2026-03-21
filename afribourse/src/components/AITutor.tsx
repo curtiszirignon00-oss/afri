@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, X } from 'lucide-react';
-import { askGeminiTutor, ChatMessage, TutorUserContext } from '../services/geminiService';
+import { Bot, Send, Sparkles, ThumbsUp, ThumbsDown, X } from 'lucide-react';
+import { askGeminiTutor, sendAnalystFeedback, ChatMessage, TutorUserContext } from '../services/geminiService';
 
 interface UIMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
   timestamp: number;
+  messageId?: string;        // ID backend pour persister le feedback
+  rating?: 'up' | 'down';
 }
 
 interface AITutorProps {
@@ -53,6 +55,19 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
     ]);
   }, [userContext.currentModule]);
 
+  const rateMessage = (id: string, rating: 'up' | 'down') => {
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== id) return m;
+        const newRating = m.rating === rating ? undefined : rating;
+        if (newRating && m.messageId) {
+          sendAnalystFeedback(m.messageId, newRating === 'up' ? 'positive' : 'negative', 'tutor');
+        }
+        return { ...m, rating: newRating };
+      }),
+    );
+  };
+
   const handleSend = async (text?: string) => {
     const messageText = (text ?? input).trim();
     if (!messageText || isLoading) return;
@@ -72,11 +87,17 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
       .filter((m) => m.id !== 'welcome')
       .map((m) => ({ role: m.role, content: m.text }));
 
-    const { reply } = await askGeminiTutor(messageText, history, userContext);
+    const { reply, messageId } = await askGeminiTutor(messageText, history, userContext);
 
     setMessages((prev) => [
       ...prev,
-      { id: (Date.now() + 1).toString(), role: 'assistant', text: reply, timestamp: Date.now() },
+      {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        text: reply,
+        timestamp: Date.now(),
+        messageId,
+      },
     ]);
     setIsLoading(false);
   };
@@ -110,7 +131,7 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div
               className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
                 msg.role === 'user'
@@ -120,6 +141,34 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
             >
               {msg.text}
             </div>
+
+            {/* Boutons de vote — uniquement sur les réponses de SIMBA (hors welcome) */}
+            {msg.role === 'assistant' && msg.id !== 'welcome' && (
+              <div className="flex gap-1 mt-1 ml-1">
+                <button
+                  onClick={() => rateMessage(msg.id, 'up')}
+                  title="Réponse utile"
+                  className={`p-1 rounded-full transition-colors ${
+                    msg.rating === 'up'
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-slate-300 hover:text-blue-500 hover:bg-blue-50'
+                  }`}
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => rateMessage(msg.id, 'down')}
+                  title="Réponse insuffisante"
+                  className={`p-1 rounded-full transition-colors ${
+                    msg.rating === 'down'
+                      ? 'text-red-500 bg-red-50'
+                      : 'text-slate-300 hover:text-red-400 hover:bg-red-50'
+                  }`}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
