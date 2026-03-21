@@ -3,6 +3,7 @@ import Express, { Application, json, urlencoded } from 'express';
 import { Server } from 'http';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import MemoryStore from 'memorystore';
 import cors from 'cors';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
@@ -142,6 +143,7 @@ class App {
     this.app?.use(cookieParser());
     // Session pour OAuth state/PKCE (Twitter, LinkedIn). sameSite:'none' requis
     // pour que le cookie soit renvoyé lors de la redirection cross-site OAuth.
+    const SessionStore = MemoryStore(session);
     this.app?.use(session({
       secret: (() => {
         const s = process.env.SESSION_SECRET;
@@ -150,11 +152,12 @@ class App {
       })(),
       resave: false,
       saveUninitialized: false,
+      store: new SessionStore({ checkPeriod: 10 * 60 * 1000 }), // purge expirées toutes les 10 min
       cookie: {
         httpOnly: true,
         secure: config.nodeEnv === 'production',
         sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
-        maxAge: 10 * 60 * 1000, // 10 min (OAuth flow peut prendre du temps)
+        maxAge: 10 * 60 * 1000, // 10 min (OAuth flow)
       },
     }));
     this.app?.use(passportConfig.initialize());
