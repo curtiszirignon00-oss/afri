@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
 import PremiumPaywall from '../PremiumPaywall';
+import { getSIMBAStockAnalysis } from '../../services/geminiService';
+import { useAuth } from '../../contexts/AuthContext';
 
 type CompanyInfo = {
   stock_ticker: string;
@@ -20,28 +23,25 @@ type StockOverviewProps = {
 };
 
 export default function StockOverview({ stock, companyInfo }: StockOverviewProps) {
+  const { userProfile } = useAuth();
+  const isPremium = userProfile?.subscriptionTier === 'investisseur-plus' || userProfile?.subscriptionTier === 'max';
+
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
 
-  // Analyse IA désactivée - remplacée par paywall premium
-  // const [aiAnalysis, setAiAnalysis] = useState<string>('');
-  // const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const fetchSIMBAAnalysis = async () => {
+    if (isLoadingAI || aiAnalysis) return;
+    setIsLoadingAI(true);
+    const analysis = await getSIMBAStockAnalysis(stock);
+    setAiAnalysis(analysis);
+    setIsLoadingAI(false);
+  };
 
-  // useEffect(() => {
-  //   const fetchAIAnalysis = async () => {
-  //     setIsLoadingAI(true);
-  //     try {
-  //       const analysis = await getAIStockAnalysis(stock);
-  //       setAiAnalysis(analysis);
-  //     } catch (error) {
-  //       console.error('Erreur lors du chargement de l\'analyse IA:', error);
-  //       setAiAnalysis('⚠️ Impossible de charger l\'analyse IA pour le moment.');
-  //     } finally {
-  //       setIsLoadingAI(false);
-  //     }
-  //   };
-  //
-  //   fetchAIAnalysis();
-  // }, [stock.id, stock.symbol]);
+  // Charge automatiquement l'analyse pour les abonnés premium
+  useEffect(() => {
+    if (isPremium) fetchSIMBAAnalysis();
+  }, [stock.symbol, isPremium]);
   const formatNumber = (num: number) => new Intl.NumberFormat('fr-FR').format(num);
 
   const formatCurrency = (num: number) => {
@@ -53,50 +53,75 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
 
   return (
     <div className="space-y-8 py-8">
-      {/* AI Analysis Card - Premium Feature */}
+      {/* AI Analysis Card — SIMBA */}
       <section>
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 relative overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="text-blue-600" size={20} />
-            <h3 className="text-lg font-bold text-gray-900">Analyse IA par Gemini</h3>
-            <span className="ml-auto text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
-              <Zap size={12} />
-              Premium
-            </span>
+            <h3 className="text-lg font-bold text-gray-900">Analyse par SIMBA</h3>
+            {!isPremium && (
+              <span className="ml-auto text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
+                <Zap size={12} />
+                Premium
+              </span>
+            )}
           </div>
 
-          <div className="text-center py-8">
-            <div className="mb-4">
+          {/* État : non-premium → paywall */}
+          {!isPremium && (
+            <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full mb-4">
                 <Sparkles className="w-8 h-8 text-yellow-600" />
               </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-2">
-                Analyse approfondie par IA
-              </h4>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Analyse approfondie par IA</h4>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Obtenez une analyse détaillée de cette action générée par notre IA, incluant les forces, faiblesses, opportunités et recommandations d'investissement.
+                Obtenez une analyse détaillée de cette action par SIMBA, notre analyste IA spécialisé sur la BRVM.
               </p>
+              <button
+                onClick={() => setShowPremiumPaywall(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+              >
+                <Zap className="w-5 h-5" />
+                Demander à l'Analyste IA
+              </button>
+              <p className="text-sm text-gray-500 mt-4">Fonctionnalité réservée aux abonnés Investisseur+</p>
             </div>
+          )}
 
-            <button
-              onClick={() => setShowPremiumPaywall(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
-            >
-              <Zap className="w-5 h-5" />
-              Demander à l'Analyste IA
-            </button>
+          {/* État : premium + chargement */}
+          {isPremium && isLoadingAI && (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-500">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+              <p className="text-sm">SIMBA analyse l'action...</p>
+            </div>
+          )}
 
-            <p className="text-sm text-gray-500 mt-4">
-              Fonctionnalité réservée aux abonnés Investisseur+
-            </p>
-          </div>
+          {/* État : premium + analyse disponible */}
+          {isPremium && !isLoadingAI && aiAnalysis && (
+            <div className="prose prose-sm max-w-none text-slate-700">
+              <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+            </div>
+          )}
+
+          {/* État : premium + pas encore chargé */}
+          {isPremium && !isLoadingAI && !aiAnalysis && (
+            <div className="text-center py-6">
+              <button
+                onClick={fetchSIMBAAnalysis}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:opacity-90 transition-all shadow-md"
+              >
+                <Sparkles className="w-5 h-5" />
+                Demander à l'Analyste IA
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Paywall Modal */}
         <PremiumPaywall
           isOpen={showPremiumPaywall}
           onClose={() => setShowPremiumPaywall(false)}
-          feature="Obtenir l'analyse IA approfondie de cette action par Gemini"
+          feature="Obtenir l'analyse IA approfondie de cette action par SIMBA"
           plan="investisseur-plus"
         />
       </section>
