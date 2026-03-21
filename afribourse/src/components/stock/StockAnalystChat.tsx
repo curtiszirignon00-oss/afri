@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BarChart2, Send, TrendingUp, X } from 'lucide-react';
+import { BarChart2, Send, TrendingUp, ThumbsUp, ThumbsDown, X } from 'lucide-react';
 import { askSIMBAAnalyst, ChatMessage } from '../../services/geminiService';
 import { Stock } from '../../types';
 
@@ -8,6 +8,7 @@ interface UIMessage {
   role: 'user' | 'assistant';
   text: string;
   timestamp: number;
+  rating?: 'up' | 'down';
 }
 
 interface StockAnalystChatProps {
@@ -60,6 +61,12 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       },
     ]);
   }, [stock.symbol]);
+
+  const rateMessage = (id: string, rating: 'up' | 'down') => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, rating: m.rating === rating ? undefined : rating } : m))
+    );
+  };
 
   const handleSend = async (text?: string) => {
     const messageText = (text ?? input).trim();
@@ -118,7 +125,7 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div
               className={`max-w-[88%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
                 msg.role === 'user'
@@ -128,6 +135,32 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
             >
               {msg.text}
             </div>
+            {msg.role === 'assistant' && msg.id !== 'welcome' && (
+              <div className="flex gap-1 mt-1 ml-1">
+                <button
+                  onClick={() => rateMessage(msg.id, 'up')}
+                  title="Utile"
+                  className={`p-1 rounded-full transition-colors ${
+                    msg.rating === 'up'
+                      ? 'text-emerald-600 bg-emerald-50'
+                      : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50'
+                  }`}
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => rateMessage(msg.id, 'down')}
+                  title="Pas utile"
+                  className={`p-1 rounded-full transition-colors ${
+                    msg.rating === 'down'
+                      ? 'text-red-500 bg-red-50'
+                      : 'text-slate-300 hover:text-red-400 hover:bg-red-50'
+                  }`}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
