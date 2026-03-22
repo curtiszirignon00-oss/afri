@@ -93,6 +93,7 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
       },
     });
   } catch (error) {
+    console.error('[TUTOR ERROR]', error);
     next(error);
   }
 }
