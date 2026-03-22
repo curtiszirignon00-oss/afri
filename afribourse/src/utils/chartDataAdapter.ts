@@ -1,12 +1,15 @@
 import type { OHLCVData } from '../types/chart.types';
+import { isValidTradingDay } from './brvmCalendar';
 
 /**
- * Convertit une date string en timestamp unix (secondes)
+ * Retourne la date au format YYYY-MM-DD (BusinessDay string pour lightweight-charts).
+ * lightweight-charts parse ce format automatiquement et ignore les sam/dim.
  */
-export const dateToTimestamp = (dateString: string): number => {
-  const date = new Date(dateString);
-  return Math.floor(date.getTime() / 1000);
-};
+export const dateToBusinessDay = (dateStr: string): string => dateStr.slice(0, 10);
+
+/** @deprecated Utiliser dateToBusinessDay */
+export const dateToTimestamp = (dateString: string): number =>
+  Math.floor(new Date(dateString).getTime() / 1000);
 
 /**
  * Interface pour les données brutes de l'ancien format
@@ -21,26 +24,27 @@ export interface RawStockData {
 }
 
 /**
- * Convertit les données de l'ancien format (avec date string) vers le nouveau format OHLCVData
- * @param rawData - Données au format brut avec date string
- * @returns Données au format OHLCVData avec timestamp
+ * Convertit les données brutes vers OHLCVData en filtrant les jours non-ouvrés BRVM.
+ * Le champ `time` est une string YYYY-MM-DD — lightweight-charts l'interprète comme
+ * BusinessDay et ignore automatiquement les weekends.
  */
 export const convertToOHLCVData = (rawData: RawStockData[]): OHLCVData[] => {
   return rawData
+    .filter(item => isValidTradingDay(item.date))
     .map((item) => ({
       date: item.date,
-      time: dateToTimestamp(item.date),
+      time: dateToBusinessDay(item.date),
       open: item.open,
       high: item.high,
       low: item.low,
       close: item.close,
       volume: item.volume,
     }))
-    .sort((a, b) => a.time - b.time); // Trier par ordre chronologique
+    .sort((a, b) => a.time.localeCompare(b.time));
 };
 
 /**
- * Génère des données mock pour les tests (optionnel)
+ * Génère des données mock pour les tests (jours ouvrés uniquement)
  */
 export const generateMockOHLCVData = (
   days: number = 365,
@@ -53,8 +57,11 @@ export const generateMockOHLCVData = (
   for (let i = days; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
 
-    // Générer des variations aléatoires
+    // Ignorer les weekends dans les données mock
+    if (!isValidTradingDay(dateStr)) continue;
+
     const volatility = currentPrice * 0.02;
     const open = currentPrice;
     const change = (Math.random() - 0.5) * volatility;
@@ -64,8 +71,8 @@ export const generateMockOHLCVData = (
     const volume = Math.floor(Math.random() * 1000000) + 100000;
 
     data.push({
-      date: date.toISOString().split('T')[0],
-      time: Math.floor(date.getTime() / 1000),
+      date: dateStr,
+      time: dateStr,
       open: Math.round(open),
       high: Math.round(high),
       low: Math.round(low),
@@ -114,8 +121,8 @@ export const filterDataByInterval = (
       break;
   }
 
-  const startTimestamp = Math.floor(startDate.getTime() / 1000);
-  return data.filter((item) => item.time >= startTimestamp);
+  const startDateStr = startDate.toISOString().slice(0, 10);
+  return data.filter((item) => item.time >= startDateStr);
 };
 
 /**
@@ -128,10 +135,9 @@ export const aggregateToWeekly = (data: OHLCVData[]): OHLCVData[] => {
   const weeks = new Map<string, OHLCVData[]>();
 
   for (const bar of data) {
-    const d = new Date(bar.time * 1000);
-    // Ramener au lundi de la semaine (ISO week)
-    const day = d.getUTCDay(); // 0=dim, 1=lun, ...6=sam
-    const diff = (day === 0 ? -6 : 1 - day); // décalage vers lundi
+    const d = new Date(bar.date + 'T00:00:00Z');
+    const day = d.getUTCDay(); // 0=dim, 1=lun, …6=sam
+    const diff = day === 0 ? -6 : 1 - day; // décalage vers lundi
     const monday = new Date(d);
     monday.setUTCDate(d.getUTCDate() + diff);
     const key = monday.toISOString().slice(0, 10);
@@ -141,10 +147,10 @@ export const aggregateToWeekly = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(weeks.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time - b.time);
+    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
     result.push({
       date: key,
-      time: Math.floor(new Date(key + 'T00:00:00Z').getTime() / 1000),
+      time: key,
       open: sorted[0].open,
       high: Math.max(...sorted.map(b => b.high)),
       low: Math.min(...sorted.map(b => b.low)),
@@ -166,19 +172,18 @@ export const aggregateToMonthly = (data: OHLCVData[]): OHLCVData[] => {
   const months = new Map<string, OHLCVData[]>();
 
   for (const bar of data) {
-    const d = new Date(bar.time * 1000);
-    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    const key = bar.date.slice(0, 7); // "YYYY-MM"
     if (!months.has(key)) months.set(key, []);
     months.get(key)!.push(bar);
   }
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(months.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time - b.time);
+    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
     const firstDay = key + '-01';
     result.push({
       date: firstDay,
-      time: Math.floor(new Date(firstDay + 'T00:00:00Z').getTime() / 1000),
+      time: firstDay,
       open: sorted[0].open,
       high: Math.max(...sorted.map(b => b.high)),
       low: Math.min(...sorted.map(b => b.low)),
@@ -192,7 +197,6 @@ export const aggregateToMonthly = (data: OHLCVData[]): OHLCVData[] => {
 
 /**
  * Agrège des données journalières en bougies trimestrielles (Q1/Q2/Q3/Q4).
- * 1 bougie = 3 mois
  */
 export const aggregateToQuarterly = (data: OHLCVData[]): OHLCVData[] => {
   if (data.length === 0) return data;
@@ -200,9 +204,9 @@ export const aggregateToQuarterly = (data: OHLCVData[]): OHLCVData[] => {
   const quarters = new Map<string, OHLCVData[]>();
 
   for (const bar of data) {
-    const d = new Date(bar.time * 1000);
-    const year = d.getUTCFullYear();
-    const q = Math.floor(d.getUTCMonth() / 3) + 1; // 1..4
+    const month = parseInt(bar.date.slice(5, 7), 10); // 1..12
+    const year = bar.date.slice(0, 4);
+    const q = Math.floor((month - 1) / 3) + 1; // 1..4
     const key = `${year}-Q${q}`;
     if (!quarters.has(key)) quarters.set(key, []);
     quarters.get(key)!.push(bar);
@@ -210,14 +214,13 @@ export const aggregateToQuarterly = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(quarters.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time - b.time);
-    // Début du trimestre : Jan=0, Avr=3, Jul=6, Oct=9
+    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
     const [yearStr, qStr] = key.split('-Q');
-    const startMonth = (parseInt(qStr) - 1) * 3;
-    const firstDay = `${yearStr}-${String(startMonth + 1).padStart(2, '0')}-01`;
+    const startMonth = (parseInt(qStr) - 1) * 3 + 1;
+    const firstDay = `${yearStr}-${String(startMonth).padStart(2, '0')}-01`;
     result.push({
       date: firstDay,
-      time: Math.floor(new Date(firstDay + 'T00:00:00Z').getTime() / 1000),
+      time: firstDay,
       open: sorted[0].open,
       high: Math.max(...sorted.map(b => b.high)),
       low: Math.min(...sorted.map(b => b.low)),
@@ -231,7 +234,6 @@ export const aggregateToQuarterly = (data: OHLCVData[]): OHLCVData[] => {
 
 /**
  * Agrège des données journalières en bougies semestrielles (S1/S2).
- * 1 bougie = 6 mois
  */
 export const aggregateToSemiAnnual = (data: OHLCVData[]): OHLCVData[] => {
   if (data.length === 0) return data;
@@ -239,9 +241,9 @@ export const aggregateToSemiAnnual = (data: OHLCVData[]): OHLCVData[] => {
   const halves = new Map<string, OHLCVData[]>();
 
   for (const bar of data) {
-    const d = new Date(bar.time * 1000);
-    const year = d.getUTCFullYear();
-    const h = d.getUTCMonth() < 6 ? 1 : 2;
+    const month = parseInt(bar.date.slice(5, 7), 10);
+    const year = bar.date.slice(0, 4);
+    const h = month <= 6 ? 1 : 2;
     const key = `${year}-H${h}`;
     if (!halves.has(key)) halves.set(key, []);
     halves.get(key)!.push(bar);
@@ -249,13 +251,13 @@ export const aggregateToSemiAnnual = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(halves.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time - b.time);
+    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
     const [yearStr, hStr] = key.split('-H');
     const startMonth = hStr === '1' ? '01' : '07';
     const firstDay = `${yearStr}-${startMonth}-01`;
     result.push({
       date: firstDay,
-      time: Math.floor(new Date(firstDay + 'T00:00:00Z').getTime() / 1000),
+      time: firstDay,
       open: sorted[0].open,
       high: Math.max(...sorted.map(b => b.high)),
       low: Math.min(...sorted.map(b => b.low)),
@@ -269,7 +271,6 @@ export const aggregateToSemiAnnual = (data: OHLCVData[]): OHLCVData[] => {
 
 /**
  * Agrège des données journalières en bougies annuelles.
- * 1 bougie = 1 an
  */
 export const aggregateToAnnual = (data: OHLCVData[]): OHLCVData[] => {
   if (data.length === 0) return data;
@@ -277,19 +278,18 @@ export const aggregateToAnnual = (data: OHLCVData[]): OHLCVData[] => {
   const years = new Map<string, OHLCVData[]>();
 
   for (const bar of data) {
-    const d = new Date(bar.time * 1000);
-    const key = String(d.getUTCFullYear());
+    const key = bar.date.slice(0, 4); // "YYYY"
     if (!years.has(key)) years.set(key, []);
     years.get(key)!.push(bar);
   }
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(years.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time - b.time);
+    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
     const firstDay = `${key}-01-01`;
     result.push({
       date: firstDay,
-      time: Math.floor(new Date(firstDay + 'T00:00:00Z').getTime() / 1000),
+      time: firstDay,
       open: sorted[0].open,
       high: Math.max(...sorted.map(b => b.high)),
       low: Math.min(...sorted.map(b => b.low)),
@@ -324,7 +324,6 @@ export const RESOLUTION_LABEL: Record<CandleResolution, string> = {
 
 /**
  * Applique l'agrégation selon la résolution demandée.
- * Les données doivent déjà être filtrées par plage si nécessaire.
  */
 export const applyResolution = (
   data: OHLCVData[],
