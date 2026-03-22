@@ -3,14 +3,14 @@
  */
 
 export interface IndicatorData {
-  time: number;
+  time: string; // date YYYY-MM-DD (BusinessDay string pour lightweight-charts)
   value: number;
 }
 
 /**
  * Calcule la Moyenne Mobile Simple (SMA)
  */
-export function calculateSMA(data: { time: number; close: number }[], period: number): IndicatorData[] {
+export function calculateSMA(data: { time: string; close: number }[], period: number): IndicatorData[] {
   const result: IndicatorData[] = [];
 
   for (let i = period - 1; i < data.length; i++) {
@@ -30,7 +30,7 @@ export function calculateSMA(data: { time: number; close: number }[], period: nu
 /**
  * Calcule la Moyenne Mobile Exponentielle (EMA)
  */
-export function calculateEMA(data: { time: number; close: number }[], period: number): IndicatorData[] {
+export function calculateEMA(data: { time: string; close: number }[], period: number): IndicatorData[] {
   const result: IndicatorData[] = [];
   const multiplier = 2 / (period + 1);
 
@@ -62,7 +62,7 @@ export function calculateEMA(data: { time: number; close: number }[], period: nu
  * Calcule les Bandes de Bollinger
  */
 export function calculateBollingerBands(
-  data: { time: number; close: number }[],
+  data: { time: string; close: number }[],
   period: number = 20,
   stdDev: number = 2
 ): {
@@ -75,14 +75,12 @@ export function calculateBollingerBands(
   const lower: IndicatorData[] = [];
 
   for (let i = period - 1; i < data.length; i++) {
-    // Calculer la moyenne
     let sum = 0;
     for (let j = 0; j < period; j++) {
       sum += data[i - j].close;
     }
     const mean = sum / period;
 
-    // Calculer l'écart-type
     let variance = 0;
     for (let j = 0; j < period; j++) {
       variance += Math.pow(data[i - j].close - mean, 2);
@@ -106,12 +104,11 @@ export function calculateBollingerBands(
 /**
  * Calcule le RSI (Relative Strength Index)
  */
-export function calculateRSI(data: { time: number; close: number }[], period: number = 14): IndicatorData[] {
+export function calculateRSI(data: { time: string; close: number }[], period: number = 14): IndicatorData[] {
   const result: IndicatorData[] = [];
 
   if (data.length < period + 1) return result;
 
-  // Calculer les gains et pertes
   const gains: number[] = [];
   const losses: number[] = [];
 
@@ -121,7 +118,6 @@ export function calculateRSI(data: { time: number; close: number }[], period: nu
     losses.push(change < 0 ? -change : 0);
   }
 
-  // Première moyenne
   let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
   let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
 
@@ -145,7 +141,7 @@ export function calculateRSI(data: { time: number; close: number }[], period: nu
  * Calcule le MACD (Moving Average Convergence Divergence)
  */
 export function calculateMACD(
-  data: { time: number; close: number }[],
+  data: { time: string; close: number }[],
   fastPeriod: number = 12,
   slowPeriod: number = 26,
   signalPeriod: number = 9
@@ -157,7 +153,6 @@ export function calculateMACD(
   const fastEMA = calculateEMA(data, fastPeriod);
   const slowEMA = calculateEMA(data, slowPeriod);
 
-  // Calculer MACD line
   const macdLine: IndicatorData[] = [];
   const startIndex = slowPeriod - fastPeriod;
 
@@ -168,13 +163,11 @@ export function calculateMACD(
     });
   }
 
-  // Calculer signal line (EMA du MACD)
   const signalLine = calculateEMA(
     macdLine.map(d => ({ time: d.time, close: d.value })),
     signalPeriod
   );
 
-  // Calculer histogram
   const histogram: IndicatorData[] = [];
   for (let i = 0; i < signalLine.length; i++) {
     const macdIndex = macdLine.findIndex(m => m.time === signalLine[i].time);

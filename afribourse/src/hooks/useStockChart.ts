@@ -163,22 +163,19 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       },
       timeScale: {
         borderColor: isDark ? '#374151' : '#e2e8f0',
-        timeVisible: true,
+        timeVisible: false,     // inutile en daily — on n'affiche pas l'heure
         secondsVisible: false,
-        tickMarkFormatter: (time: number, tickMarkType: number) => {
-          const date = new Date(time * 1000);
+        tickMarkFormatter: (time: { year: number; month: number; day: number } | number, tickMarkType: number) => {
+          // Avec les dates YYYY-MM-DD, lightweight-charts passe un BusinessDay {year, month, day}
+          const t = time as { year: number; month: number; day: number };
+          const d = new Date(t.year, t.month - 1, t.day);
           switch (tickMarkType) {
             case 0: // Year
-              return String(date.getUTCFullYear());
+              return String(t.year);
             case 1: // Month
-              return date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-            case 2: // DayOfMonth
-              return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-            case 3: // Time
-            case 4: // TimeWithSeconds
-              return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-            default:
-              return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+              return d.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+            default: // DayOfMonth
+              return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
           }
         },
       },

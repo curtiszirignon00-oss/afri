@@ -14,7 +14,7 @@ export interface APIStockData {
 
 export interface LightweightChartData {
   date: string; // date ISO string
-  time: number; // timestamp en secondes
+  time: string; // date YYYY-MM-DD — lightweight-charts l'interprète comme BusinessDay (ignore sam/dim)
   open: number;
   high: number;
   low: number;
@@ -23,15 +23,8 @@ export interface LightweightChartData {
 }
 
 /**
- * Convertit une date ISO string en timestamp unix (secondes)
- */
-function dateToTimestamp(dateStr: string): number {
-  return Math.floor(new Date(dateStr).getTime() / 1000);
-}
-
-/**
- * Convertit les données API vers le format lightweight-charts
- * SIMPLE et DIRECT
+ * Convertit les données API vers le format lightweight-charts.
+ * Utilise le format BusinessDay string (YYYY-MM-DD) pour éliminer les weekends.
  */
 export function convertToLightweightData(apiData: APIStockData[]): LightweightChartData[] {
   console.log('convertToLightweightData: Starting conversion', {
@@ -47,14 +40,14 @@ export function convertToLightweightData(apiData: APIStockData[]): LightweightCh
   const result = apiData
     .map(item => ({
       date: item.date,
-      time: dateToTimestamp(item.date),
+      time: item.date.slice(0, 10), // YYYY-MM-DD
       open: item.open,
       high: item.high,
       low: item.low,
       close: item.close,
       volume: item.volume,
     }))
-    .sort((a, b) => a.time - b.time); // Tri chronologique IMPORTANT
+    .sort((a, b) => a.time.localeCompare(b.time)); // Tri chronologique
 
   console.log('convertToLightweightData: Conversion complete', {
     outputLength: result.length,

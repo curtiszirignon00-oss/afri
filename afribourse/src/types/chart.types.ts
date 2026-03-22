@@ -5,7 +5,7 @@ export type TimeInterval = '1D' | '5D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y'
 
 export interface OHLCVData {
   date: string;
-  time: number; // timestamp en secondes pour lightweight-charts
+  time: string; // date YYYY-MM-DD — lightweight-charts l'interprète comme BusinessDay (ignore sam/dim)
   open: number;
   high: number;
   low: number;
@@ -14,7 +14,7 @@ export interface OHLCVData {
 }
 
 export interface CandlestickData {
-  time: number; // timestamp en secondes
+  time: string; // date YYYY-MM-DD
   open: number;
   high: number;
   low: number;
@@ -22,17 +22,17 @@ export interface CandlestickData {
 }
 
 export interface LineData {
-  time: number;
+  time: string; // date YYYY-MM-DD
   value: number;
 }
 
 export interface AreaData {
-  time: number;
+  time: string; // date YYYY-MM-DD
   value: number;
 }
 
 export interface HistogramData {
-  time: number;
+  time: string; // date YYYY-MM-DD
   value: number;
   color?: string;
 }

@@ -150,20 +150,18 @@ export default function StockDetailPageEnhanced() {
     const converted = convertToLightweightData(historyData.data);
     if (stock && converted.length > 0) {
       const lastPoint = converted[converted.length - 1];
-      const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
-      const todayTimestamp = Math.floor(new Date(todayStr).getTime() / 1000);
+      const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-      if (lastPoint.time === todayTimestamp) {
+      if (lastPoint.time === todayStr) {
         // Même jour : mettre à jour le close avec le prix actuel
         lastPoint.close = stock.current_price;
         lastPoint.high = Math.max(lastPoint.high, stock.current_price);
         lastPoint.low = Math.min(lastPoint.low, stock.current_price);
-      } else if (todayTimestamp > lastPoint.time) {
+      } else if (todayStr > lastPoint.time) {
         // Jour suivant : ajouter un nouveau point avec le prix actuel
         converted.push({
           date: todayStr,
-          time: todayTimestamp,
+          time: todayStr,
           open: stock.current_price,
           high: stock.current_price,
           low: stock.current_price,
