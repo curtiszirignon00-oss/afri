@@ -1,5 +1,5 @@
 // src/hooks/usePortfolio.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Portfolio, Position, PortfolioHistoryPoint, Stock } from '../types';
 import toast from 'react-hot-toast';
 import { apiFetch } from './useApi';
@@ -111,10 +111,35 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
     return portfolio.cash_balance + stocksValue;
   }, [portfolio, stocksData]);
 
+  // Rafraîchir uniquement les prix en live (léger)
+  const refreshPrices = useCallback(async () => {
+    try {
+      const allStocks = await apiFetch<Stock[]>('/stocks');
+      if (allStocks && allStocks.length > 0) {
+        const stockDataMap = allStocks.reduce((acc, stock) => {
+          acc[stock.symbol] = stock;
+          return acc;
+        }, {} as { [key: string]: Stock });
+        setStocksData(stockDataMap);
+      }
+    } catch {
+      // silencieux — pas de toast pour un refresh en fond
+    }
+  }, []);
+
   // Charger au montage et quand walletType change
   useEffect(() => {
     loadPortfolio();
   }, [loadPortfolio]);
+
+  // Polling des prix toutes les 15 minutes (aligné sur la fréquence de scraping)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    intervalRef.current = setInterval(refreshPrices, 15 * 60_000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [refreshPrices]);
 
   return {
     portfolio,
