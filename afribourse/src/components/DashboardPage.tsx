@@ -277,6 +277,16 @@ export default function DashboardPage() {
   const filteredHistory = useMemo(() => {
     if (!portfolioHistory.length) return [];
 
+    const todayStr = new Date().toISOString().split('T')[0];
+    const liveValue = calculateTotalValue();
+
+    // Remplacer ou ajouter le point d'aujourd'hui avec la valeur live
+    // pour que le graphique soit cohérent avec la valeur totale affichée
+    let history = portfolioHistory.filter(p => p.date < todayStr);
+    if (liveValue > 0) {
+      history = [...history, { date: todayStr, value: liveValue }];
+    }
+
     const now = new Date();
     let startDate = new Date();
 
@@ -297,11 +307,11 @@ export default function DashboardPage() {
         startDate.setFullYear(now.getFullYear() - 1);
         break;
       case 'MAX':
-        return portfolioHistory;
+        return history;
     }
 
-    return portfolioHistory.filter(point => new Date(point.date) >= startDate);
-  }, [portfolioHistory, timeFilter]);
+    return history.filter(point => new Date(point.date) >= startDate);
+  }, [portfolioHistory, timeFilter, calculateTotalValue]);
 
   // ✅ OPTIMISATION: Mémoiser le calcul de la performance journalière
   const dailyPerf = useMemo(() => {
