@@ -412,11 +412,13 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
             // Si pas de prix exact, chercher le prix le plus récent avant cette date
             if (price === 0) {
               const currentDateObj = new Date(dateStr);
+              let mostRecentDate = new Date(0);
               const priceEntries = Array.from(tickerPrices.entries());
               for (let j = 0; j < priceEntries.length; j++) {
                 const [priceDate, priceValue] = priceEntries[j];
                 const priceDateObj = new Date(priceDate);
-                if (priceDateObj <= currentDateObj && priceValue > price) {
+                if (priceDateObj <= currentDateObj && priceDateObj > mostRecentDate) {
+                  mostRecentDate = priceDateObj;
                   price = priceValue;
                 }
               }
