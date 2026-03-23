@@ -305,27 +305,29 @@ export default function DashboardPage() {
 
   // ✅ OPTIMISATION: Mémoiser le calcul de la performance journalière
   const dailyPerf = useMemo(() => {
-    if (portfolioHistory.length < 2) return { value: 0, percent: 0 };
+    if (portfolioHistory.length === 0) return { value: 0, percent: 0 };
 
-    const today = portfolioHistory[portfolioHistory.length - 1];
-    const todayDate = new Date(today.date);
+    // Valeur actuelle live (current_price en temps réel)
+    const currentValue = calculateTotalValue();
+    if (currentValue === 0) return { value: 0, percent: 0 };
 
-    let previousPoint = portfolioHistory[portfolioHistory.length - 2];
-    for (let i = portfolioHistory.length - 2; i >= 0; i--) {
-      const pointDate = new Date(portfolioHistory[i].date);
-      if (pointDate < todayDate) {
+    // Trouver le dernier point historique AVANT aujourd'hui (clôture d'hier ou dernier jour de bourse)
+    const todayStr = new Date().toISOString().split('T')[0];
+    let previousPoint: { date: string; value: number } | null = null;
+    for (let i = portfolioHistory.length - 1; i >= 0; i--) {
+      if (portfolioHistory[i].date < todayStr) {
         previousPoint = portfolioHistory[i];
         break;
       }
     }
 
-    const dailyChange = today.value - previousPoint.value;
-    const dailyChangePercent = previousPoint.value > 0
-      ? (dailyChange / previousPoint.value) * 100
-      : 0;
+    if (!previousPoint || previousPoint.value === 0) return { value: 0, percent: 0 };
+
+    const dailyChange = currentValue - previousPoint.value;
+    const dailyChangePercent = (dailyChange / previousPoint.value) * 100;
 
     return { value: dailyChange, percent: dailyChangePercent };
-  }, [portfolioHistory]);
+  }, [portfolioHistory, calculateTotalValue]);
 
   // ✅ OPTIMISATION: Mémoiser les données d'allocation
   const allocationData = useMemo(() => {
