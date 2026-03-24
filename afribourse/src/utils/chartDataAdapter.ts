@@ -135,7 +135,11 @@ export const aggregateToWeekly = (data: OHLCVData[]): OHLCVData[] => {
   const weeks = new Map<string, OHLCVData[]>();
 
   for (const bar of data) {
-    const d = new Date(bar.date + 'T00:00:00Z');
+    // Utiliser bar.time (YYYY-MM-DD garanti) plutôt que bar.date qui peut être
+    // une string ISO complète "2024-01-15T00:00:00.000Z" renvoyée par le backend —
+    // concaténer 'T00:00:00Z' à une telle string produit une date invalide et
+    // toISOString() lève RangeError (= crash sur le timeframe 5J/weekly).
+    const d = new Date(bar.time + 'T00:00:00Z');
     const day = d.getUTCDay(); // 0=dim, 1=lun, …6=sam
     const diff = day === 0 ? -6 : 1 - day; // décalage vers lundi
     const monday = new Date(d);
