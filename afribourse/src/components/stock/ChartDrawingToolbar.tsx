@@ -4,6 +4,8 @@ import {
   TrendingUp,
   ArrowUpRight,
   ArrowLeftRight,
+  ArrowRight,
+  MoveRight,
   Minus,
   SeparatorVertical,
   Layers,
@@ -15,6 +17,11 @@ import {
   Trash2,
   Eraser,
   Ruler,
+  Crosshair,
+  MessageSquare,
+  Triangle,
+  Paintbrush,
+  Spline,
 } from 'lucide-react';
 
 interface DrawingTool {
@@ -32,24 +39,31 @@ interface ChartDrawingToolbarProps {
 }
 
 const LINE_TOOLS: DrawingTool[] = [
-  { type: 'TrendLine',       icon: TrendingUp,       label: 'Droite de tendance'  },
-  { type: 'Ray',             icon: ArrowUpRight,     label: 'Rayon'               },
-  { type: 'ExtendedLine',    icon: ArrowLeftRight,   label: 'Ligne étendue'       },
-  { type: 'HorizontalLine',  icon: Minus,            label: 'Ligne horizontale'   },
-  { type: 'VerticalLine',    icon: SeparatorVertical,label: 'Ligne verticale'     },
-  { type: 'ParallelChannel', icon: Layers,           label: 'Canal parallèle'     },
+  { type: 'TrendLine',       icon: TrendingUp,        label: 'Droite de tendance'  },
+  { type: 'Ray',             icon: ArrowUpRight,      label: 'Rayon'               },
+  { type: 'Arrow',           icon: ArrowRight,        label: 'Flèche'              },
+  { type: 'ExtendedLine',    icon: ArrowLeftRight,    label: 'Ligne étendue'       },
+  { type: 'HorizontalLine',  icon: Minus,             label: 'Ligne horizontale'   },
+  { type: 'HorizontalRay',   icon: MoveRight,         label: 'Rayon horizontal'    },
+  { type: 'VerticalLine',    icon: SeparatorVertical, label: 'Ligne verticale'     },
+  { type: 'ParallelChannel', icon: Layers,            label: 'Canal parallèle'     },
+  { type: 'CrossLine',       icon: Crosshair,         label: 'Réticule de prix'    },
+  { type: 'Path',            icon: Spline,            label: 'Chemin multi-points' },
 ];
 
 const SHAPE_TOOLS: DrawingTool[] = [
   { type: 'FibRetracement', icon: BarChart2,   label: 'Fibonacci (configurable)' },
   { type: 'Rectangle',      icon: Square,      label: 'Rectangle'                },
   { type: 'Circle',         icon: Circle,      label: 'Cercle'                   },
+  { type: 'Triangle',       icon: Triangle,    label: 'Triangle'                 },
   { type: 'Highlighter',    icon: Highlighter, label: 'Surbrillance'             },
   { type: 'PriceRange',     icon: Ruler,       label: 'Mesure de prix (%)'       },
 ];
 
-const TEXT_TOOLS: DrawingTool[] = [
-  { type: 'Text', icon: Type, label: 'Texte' },
+const ANNOTATION_TOOLS: DrawingTool[] = [
+  { type: 'Text',    icon: Type,          label: 'Texte'           },
+  { type: 'Callout', icon: MessageSquare, label: 'Bulle de texte'  },
+  { type: 'Brush',   icon: Paintbrush,    label: 'Pinceau libre'   },
 ];
 
 export default function ChartDrawingToolbar({
@@ -61,12 +75,12 @@ export default function ChartDrawingToolbar({
 }: ChartDrawingToolbarProps) {
   const isDark = theme === 'dark';
 
-  const bgClass   = isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200';
-  const btnClass  = isDark
+  const bgClass    = isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200';
+  const btnClass   = isDark
     ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-100'
     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900';
   const activeClass = isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-600';
-  const divClass  = isDark ? 'bg-gray-600' : 'bg-gray-200';
+  const divClass   = isDark ? 'bg-gray-600' : 'bg-gray-200';
 
   const ToolBtn = ({ tool }: { tool: DrawingTool }) => {
     const Icon = tool.icon;
@@ -105,7 +119,7 @@ export default function ChartDrawingToolbar({
 
       <div className={`w-5 h-px ${divClass} my-0.5`} />
 
-      {/* Lignes */}
+      {/* Lignes & rayons */}
       {LINE_TOOLS.map((t) => <ToolBtn key={t.type} tool={t} />)}
 
       <div className={`w-5 h-px ${divClass} my-0.5`} />
@@ -115,8 +129,8 @@ export default function ChartDrawingToolbar({
 
       <div className={`w-5 h-px ${divClass} my-0.5`} />
 
-      {/* Texte */}
-      {TEXT_TOOLS.map((t) => <ToolBtn key={t.type} tool={t} />)}
+      {/* Annotations & dessin libre */}
+      {ANNOTATION_TOOLS.map((t) => <ToolBtn key={t.type} tool={t} />)}
 
       <div className={`w-5 h-px ${divClass} my-0.5`} />
 
