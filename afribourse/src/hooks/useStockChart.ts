@@ -778,29 +778,27 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         inDrawingSessionRef.current = true;
       }
 
-      // Options de base (Text uniquement — les autres outils utilisent leurs defaults)
+      // Options de base
       const options: Record<string, unknown> = {};
-      if (toolType === 'Text' && textValue) {
+      // Text et Callout partagent la même option text.value
+      if ((toolType === 'Text' || toolType === 'Callout') && textValue) {
         options.text = { value: textValue };
+      }
+      // FibRetracement : on passe les niveaux directement dans addLineTool.
+      // La lib a été patchée pour remplacer le tableau levels au lieu de le merger
+      // par index (ce qui laissait les niveaux par défaut 1.618–4.236 intacts).
+      if (toolType === 'FibRetracement' && fibLevels) {
+        options.levels = fibLevels.map((l: FibLevelInput) => ({
+          coeff: l.coeff,
+          color: l.color,
+          opacity: l.opacity,
+          distanceFromCoeffEnabled: false,
+          distanceFromCoeff: 0,
+        }));
       }
 
       // Créer l'outil en mode placement (points vides = attend les clics de l'utilisateur)
-      const toolApi = chartApi.addLineTool?.(toolType, [], options) as any;
-
-      // Pour FibRetracement : la fonction merge() de la bibliothèque fusionne les tableaux
-      // par index et laisse les éléments par défaut au-delà de notre longueur (niveaux 1.618 à 4.236).
-      // On contourne ce problème en remplaçant directement le tableau après création.
-      if (toolType === 'FibRetracement' && fibLevels && toolApi?._internal_lineTool?._internal__options) {
-        toolApi._internal_lineTool._internal__options.levels = fibLevels.map(
-          (l: FibLevelInput) => ({
-            coeff: l.coeff,
-            color: l.color,
-            opacity: l.opacity,
-            distanceFromCoeffEnabled: false,
-            distanceFromCoeff: 0,
-          })
-        );
-      }
+      chartApi.addLineTool?.(toolType, [], options);
     } catch (e) {
       console.warn('[startDrawing]', e);
     }

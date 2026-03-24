@@ -231,8 +231,8 @@ export default function StockChartNew({
       setActiveDrawingTool(null);
       return;
     }
-    if (toolType === 'Text') {
-      setActiveDrawingTool('Text');
+    if (toolType === 'Text' || toolType === 'Callout') {
+      setActiveDrawingTool(toolType);
       setTextInput('');
       setShowTextModal(true);
       return;
@@ -248,7 +248,8 @@ export default function StockChartNew({
 
   const handleTextConfirm = () => {
     if (!textInput.trim()) return;
-    startDrawing('Text', textInput.trim());
+    // activeDrawingTool peut être 'Text' ou 'Callout' (même flux de saisie)
+    startDrawing(activeDrawingTool ?? 'Text', textInput.trim());
     setShowTextModal(false);
   };
 
