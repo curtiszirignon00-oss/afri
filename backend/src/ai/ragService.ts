@@ -164,8 +164,9 @@ async function loadStocks(symbol?: string): Promise<KnowledgeDoc[]> {
       f.roe != null ? `ROE: ${f.roe.toFixed(2)}%` : null,
       f.profit_margin != null ? `Marge nette: ${f.profit_margin.toFixed(2)}%` : null,
       f.eps != null ? `BPA: ${f.eps.toFixed(2)} FCFA` : null,
-      f.revenue != null ? `CA: ${(f.revenue / 1e9).toFixed(2)} Mds FCFA` : null,
-      f.net_income != null ? `Résultat net: ${(f.net_income / 1e9).toFixed(2)} Mds FCFA` : null,
+      // revenue & net_income sont en millions de FCFA (÷1000 = Mds)
+      f.revenue != null ? `CA: ${f.revenue >= 1000 ? (f.revenue / 1000).toFixed(0) + ' Mds' : f.revenue.toFixed(0) + ' M'} FCFA` : null,
+      f.net_income != null ? `Résultat net: ${f.net_income >= 1000 ? (f.net_income / 1000).toFixed(0) + ' Mds' : f.net_income.toFixed(0) + ' M'} FCFA` : null,
       f.year ? `Année: ${f.year}` : null,
     ].filter(Boolean).join(' | ') : 'Fondamentaux non disponibles';
 

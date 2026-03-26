@@ -43,12 +43,13 @@ export const askSIMBAAnalyst = async (
   message: string,
   conversationHistory: ChatMessage[] = [],
   symbol: string = '',
+  scoreContext?: string,
 ): Promise<{ reply: string; provider: string; messageId?: string }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/analyst`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, conversationHistory, symbol }),
+      body: JSON.stringify({ message, conversationHistory, symbol, scoreContext }),
     });
 
     if (!response.ok) {

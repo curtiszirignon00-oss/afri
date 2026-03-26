@@ -149,11 +149,14 @@ Tu es SIMBA, l'analyste financier quantitatif d'Afribourse, spécialisé sur la 
 Tout investissement comporte des risques de perte en capital.
 `;
 
-export function buildAnalystPrompt(currentSymbol: string): string {
+export function buildAnalystPrompt(currentSymbol: string, scoreContext?: string): string {
   const symbolCtx = currentSymbol
     ? `\n## CONTEXTE ACTUEL\nL'utilisateur consulte la fiche du titre : **${currentSymbol}**. Commence par ce titre sauf instruction contraire.\n`
     : '';
-  return ANALYST_SYSTEM_PROMPT.replace('{symbol_context}', symbolCtx);
+  const scoreCtx = scoreContext
+    ? `\n## SCORE DE CONFIANCE HYBRIDE (calculé en temps réel par Afribourse)\nL'utilisateur voit le score suivant sur son écran. Utilise ces données précises pour répondre à ses questions sur le score, les signaux et les piliers :\n\n${scoreContext}\n`
+    : '';
+  return ANALYST_SYSTEM_PROMPT.replace('{symbol_context}', symbolCtx + scoreCtx);
 }
 
 // ─── A. Coach Éducatif — Explication de Concepts ─────────────────────────────

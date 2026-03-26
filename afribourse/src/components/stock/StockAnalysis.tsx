@@ -119,6 +119,59 @@ const ZONE_CONFIG = [
   { range: '75–100',label: 'Achat Fort',   bg: '#dcfce7', text: '#14532d' },
 ] as const;
 
+// ── Build score context string for SIMBA ──────────────────────────────────────
+
+function buildScoreContext(
+  result: SignalScoreResult,
+  mode: AnalysisMode,
+  tech: TechnicalScoreInput,
+  fund: FundamentalScoreInput,
+  growth: GrowthScoreInput,
+): string {
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const w = result.weights;
+
+  const techLines = [
+    tech.rsi != null              ? `  · RSI(14): ${tech.rsi.toFixed(1)}` : null,
+    tech.macdHistogram != null    ? `  · MACD Histogramme: ${tech.macdHistogram > 0 ? '+' : ''}${tech.macdHistogram.toFixed(3)}` : null,
+    tech.priceVsMA20Pct != null   ? `  · Prix vs MA20: ${tech.priceVsMA20Pct > 0 ? '+' : ''}${tech.priceVsMA20Pct.toFixed(1)}%` : null,
+    tech.priceVsMA50Pct != null   ? `  · Prix vs MA50: ${tech.priceVsMA50Pct > 0 ? '+' : ''}${tech.priceVsMA50Pct.toFixed(1)}%` : null,
+    tech.bbPosition != null       ? `  · Position Bandes Bollinger: ${tech.bbPosition.toFixed(0)}%` : null,
+    tech.volumeRatio != null      ? `  · Volume relatif vs moy20: ${tech.volumeRatio}%` : null,
+  ].filter(Boolean).join('\n');
+
+  const fundLines = [
+    fund.peRatio != null       ? `  · PER: ${fund.peRatio.toFixed(2)}` : null,
+    fund.pbRatio != null       ? `  · PBR: ${fund.pbRatio.toFixed(2)}` : null,
+    fund.roe != null           ? `  · ROE: ${fund.roe.toFixed(1)}%` : null,
+    fund.profitMargin != null  ? `  · Marge nette: ${fund.profitMargin.toFixed(1)}%` : null,
+    fund.dividendYield != null ? `  · Rendement dividende: ${fund.dividendYield.toFixed(2)}%` : null,
+    fund.debtToEquity != null  ? `  · Dette/Fonds propres: ${fund.debtToEquity.toFixed(2)}` : null,
+  ].filter(Boolean).join('\n');
+
+  const growthLines = [
+    growth.revenueGrowthPct != null   ? `  · Croissance CA: ${growth.revenueGrowthPct > 0 ? '+' : ''}${growth.revenueGrowthPct.toFixed(1)}%` : null,
+    growth.netIncomeGrowthPct != null ? `  · Croissance RN: ${growth.netIncomeGrowthPct > 0 ? '+' : ''}${growth.netIncomeGrowthPct.toFixed(1)}%` : null,
+    growth.epsHistory != null         ? `  · Tendance BPA: ${growth.epsHistory.filter(Boolean).join(' → ')} FCFA` : null,
+  ].filter(Boolean).join('\n');
+
+  return `=== SCORE DE CONFIANCE HYBRIDE AFRIBOURSE ===
+Mode d'analyse : ${ANALYSIS_MODE_LABELS[mode]} (Technique ${pct(w.technical)} | Fondamental ${pct(w.fundamental)} | Croissance ${pct(w.growth)})
+Score global : ${result.score}/100 — Zone : ${result.zone}
+Signal : ${result.phrase}
+Fiabilité du signal : ${Math.round(result.reliability.coefficient * 100)}%${result.reliability.warningMessage ? ` ⚠️ ${result.reliability.warningMessage}` : ''}${result.divergenceWarning ? `\nDivergence détectée : ${result.divergenceWarning}` : ''}
+
+Pilier Technique (score: ${result.subScores.technical ?? '—'}/100)
+${techLines || '  · Données insuffisantes'}
+
+Pilier Fondamental (score: ${result.subScores.fundamental ?? '—'}/100)
+${fundLines || '  · Données insuffisantes'}
+
+Pilier Croissance (score: ${result.subScores.growth ?? '—'}/100)
+${growthLines || '  · Données insuffisantes'}
+==============================================`;
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 const MODES: AnalysisMode[] = ['balanced', 'trader', 'investor', 'dividend'];
@@ -503,6 +556,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
           stock={stock}
           isOpen={showChat}
           onClose={() => setShowChat(false)}
+          scoreContext={result ? buildScoreContext(result, mode, technicalInput, fundamentalInput, growthInput) : undefined}
         />
       )}
 
