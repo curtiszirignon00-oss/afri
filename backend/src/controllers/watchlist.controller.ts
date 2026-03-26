@@ -2,6 +2,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import * as watchlistService from '../services/watchlist.service.prisma';
+import { getWatchlistScores } from '../services/watchlist.scores';
+import * as xpService from '../services/xp.service';
 
 // Controller for GET /api/watchlist/my
 export async function getMyWatchlist(req: Request, res: Response, next: NextFunction) {
@@ -44,6 +46,67 @@ export async function addItemToMyWatchlist(req: Request, res: Response, next: Ne
     // Gérer l'erreur de limite atteinte
     if (error.message?.includes('Limite de watchlist atteinte')) {
       return res.status(403).json({ message: error.message });
+    }
+    return next(error);
+  }
+}
+
+// Controller for GET /api/watchlist/my/scores
+export async function getMyWatchlistScores(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Non autorisé' });
+
+    const scores = await getWatchlistScores(userId);
+    return res.status(200).json(scores);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Controller for GET /api/watchlist/my/enriched
+export async function getMyWatchlistEnriched(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Non autorisé' });
+
+    const enriched = await watchlistService.getWatchlistEnriched(userId);
+    return res.status(200).json(enriched);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Controller for PATCH /api/watchlist/my/:ticker
+export async function updateMyWatchlistItem(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Non autorisé' });
+
+    const stockTicker = req.params.ticker;
+    const { entry_price, note, tags } = req.body;
+
+    // Fetch current state to detect first-time entry_price set → award XP
+    const existing = await watchlistService.getWatchlistItem(userId, stockTicker.toUpperCase());
+    const isFirstEntryPrice = entry_price != null && (existing == null || (existing as any).entry_price == null);
+
+    const updated = await watchlistService.updateWatchlistItem(userId, stockTicker.toUpperCase(), {
+      entry_price: entry_price ?? undefined,
+      note: note ?? undefined,
+      tags: tags ?? undefined,
+    });
+
+    // +5 XP for setting an entry price for the first time (Investisseur précis 🎯)
+    if (isFirstEntryPrice) {
+      try {
+        await xpService.addXP(userId, 5, 'watchlist_entry_price', 'Prix d\'entrée défini sur la watchlist — Investisseur précis 🎯');
+      } catch { /* XP is non-fatal */ }
+    }
+
+    return res.status(200).json(updated);
+  } catch (error: any) {
+    if (error.message?.includes('non trouvé')) {
+      return res.status(404).json({ message: error.message });
     }
     return next(error);
   }

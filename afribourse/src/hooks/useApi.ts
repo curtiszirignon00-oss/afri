@@ -266,6 +266,15 @@ export interface WatchlistItem {
   id: string;
   stock_ticker: string;
   created_at: string;
+  entry_price?: number | null;
+  note?: string | null;
+  tags?: string[];
+}
+
+export interface WatchlistItemEnriched extends WatchlistItem {
+  current_price: number | null;
+  change_pct: number | null;
+  pnl_pct: number | null;
 }
 
 // Hook pour récupérer la watchlist
@@ -309,6 +318,65 @@ export function useRemoveFromWatchlist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['watchlist'] });
       toast.success('Retiré de la watchlist');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+// ── Signal scores per watchlist ticker ──────────────────────────────────────
+
+export type SignalZone =
+  | 'Vente Forte'
+  | 'Signal Vente'
+  | 'Neutre'
+  | 'Signal Achat'
+  | 'Achat Fort';
+
+export interface TickerScore {
+  ticker: string;
+  score: number;
+  zone: SignalZone;
+  technical: number | null;
+  fundamental: number | null;
+  reliability: number;
+  dataQuality: 'good' | 'partial' | 'low';
+}
+
+export function useWatchlistScores() {
+  return useQuery({
+    queryKey: ['watchlist', 'scores'],
+    queryFn: () => apiFetch<TickerScore[]>('/watchlist/my/scores'),
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 min cache
+  });
+}
+
+// Hook pour récupérer la watchlist enrichie (avec prix courant et P&L)
+export function useWatchlistEnriched() {
+  return useQuery({
+    queryKey: ['watchlist', 'enriched'],
+    queryFn: () => apiFetch<WatchlistItemEnriched[]>('/watchlist/my/enriched'),
+    retry: false,
+  });
+}
+
+// Hook pour mettre à jour un item de watchlist (entry_price, note, tags)
+export function useUpdateWatchlistItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ stockTicker, data }: {
+      stockTicker: string;
+      data: { entry_price?: number | null; note?: string | null; tags?: string[] }
+    }) =>
+      apiFetch<WatchlistItem>(`/watchlist/my/${stockTicker}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['watchlist'] });
     },
     onError: (error: Error) => {
       toast.error(error.message);

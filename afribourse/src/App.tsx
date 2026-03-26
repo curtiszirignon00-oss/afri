@@ -53,6 +53,7 @@ import TrialClaimPage from './pages/TrialClaimPage';
 import AdminDashboard from './components/AdminDashboard';
 import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import NotificationsPage from './pages/NotificationsPage';
+import WatchlistPage from './pages/WatchlistPage';
 import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
 import AchievementsPage from './pages/AchievementsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
@@ -222,6 +223,16 @@ function Layout() {
             element={
               <ProtectedRoute requireOnboarding={true}>
                 <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Watchlist - Protégé */}
+          <Route
+            path="/watchlist"
+            element={
+              <ProtectedRoute requireOnboarding={true}>
+                <WatchlistPage />
               </ProtectedRoute>
             }
           />

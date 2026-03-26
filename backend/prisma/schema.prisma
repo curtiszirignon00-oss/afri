@@ -874,6 +874,9 @@ model WatchlistItem {
   id           String    @id @default(auto()) @map("_id") @db.ObjectId
   stock_ticker String
   created_at   DateTime? @default(now())
+  entry_price  Float?
+  note         String?
+  tags         String[]  @default([])
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @db.ObjectId

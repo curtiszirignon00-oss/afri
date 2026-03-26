@@ -23,6 +23,8 @@ import {
 import { updateROIRankStreaks } from '../services/gamification-leaderboard.service';
 import prisma from '../config/prisma';
 import { cacheInvalidatePattern } from '../services/cache.service';
+import { checkWatchlistSignals } from '../services/watchlist-signal.service';
+import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
 
 // ============================================================
 // POST /api/cron/scrape-stocks
@@ -329,5 +331,52 @@ async function checkPriceAlerts() {
         }
     } catch (error) {
         console.error('[CRON] Erreur verification alertes de prix:', error);
+    }
+}
+
+// ============================================================
+// POST /api/cron/check-watchlist-signals
+// Vérification quotidienne des signaux watchlist (18h après clôture BRVM)
+// ============================================================
+export async function cronCheckWatchlistSignals(req: Request, res: Response) {
+    const startTime = Date.now();
+    try {
+        console.log('[CRON API] Vérification des signaux watchlist...');
+        const result = await checkWatchlistSignals();
+
+        const duration = Date.now() - startTime;
+        console.log(`[CRON API] Signaux watchlist: ${result.notificationsSent} notifications envoyées sur ${result.usersProcessed} utilisateurs`);
+        return res.status(200).json({
+            success: true,
+            message: 'Signaux watchlist vérifiés',
+            ...result,
+            duration_ms: duration,
+        });
+    } catch (error: any) {
+        console.error('[CRON API] Erreur signaux watchlist:', error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// ============================================================
+// POST /api/cron/send-watchlist-summaries
+// Résumés hebdomadaires watchlist IA (Lundi 08h00)
+// ============================================================
+export async function cronSendWatchlistSummaries(req: Request, res: Response) {
+    const startTime = Date.now();
+    try {
+        console.log('[CRON API] Envoi des résumés watchlist hebdomadaires...');
+        const result = await sendWeeklyWatchlistSummaries();
+
+        const duration = Date.now() - startTime;
+        return res.status(200).json({
+            success: true,
+            message: 'Résumés watchlist envoyés',
+            ...result,
+            duration_ms: duration,
+        });
+    } catch (error: any) {
+        console.error('[CRON API] Erreur résumés watchlist:', error.message);
+        return res.status(500).json({ success: false, error: error.message });
     }
 }

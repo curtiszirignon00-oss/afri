@@ -110,6 +110,15 @@ export interface WatchlistItem {
   stock_ticker: string;
   userId: string;
   created_at?: string | null;
+  entry_price?: number | null;
+  note?: string | null;
+  tags?: string[];
+}
+
+export interface WatchlistItemEnriched extends WatchlistItem {
+  current_price: number | null;
+  change_pct: number | null;
+  pnl_pct: number | null;
 }
 
 export interface PortfolioHistoryPoint {
