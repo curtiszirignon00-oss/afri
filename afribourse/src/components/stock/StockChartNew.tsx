@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
@@ -7,6 +7,7 @@ import type { CandleResolution } from '../../utils/chartDataAdapter';
 import { applyResolution, RESOLUTION_LABEL, filterDataByInterval } from '../../utils/chartDataAdapter';
 import ChartShareModal from './ChartShareModal';
 import ChartDrawingToolbar from './ChartDrawingToolbar';
+import MultiTimeframePanel from './MultiTimeframePanel';
 
 interface StockChartProps {
   symbol: string;
@@ -101,6 +102,7 @@ export default function StockChartNew({
   const [showShareModal, setShowShareModal] = useState(false);
   const [chartScreenshot, setChartScreenshot] = useState<string | null>(null);
   const [showDrawingToolbar, setShowDrawingToolbar] = useState(false);
+  const [showMultiTF, setShowMultiTF] = useState(false);
   const [activeDrawingTool, setActiveDrawingTool] = useState<string | null>(null);
   const [showTextModal, setShowTextModal] = useState(false);
   const [textInput, setTextInput] = useState('');
@@ -421,6 +423,19 @@ export default function StockChartNew({
             </button>
 
             <button
+              onClick={() => setShowMultiTF(!showMultiTF)}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
+                showMultiTF
+                  ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                  : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
+              }`}
+              title="Vue multi-timeframe 1J / 1S / 1M"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              <span>Multi-TF</span>
+            </button>
+
+            <button
               onClick={() => {
                 setShowDrawingToolbar(!showDrawingToolbar);
                 if (showDrawingToolbar) setActiveDrawingTool(null);
@@ -542,6 +557,13 @@ export default function StockChartNew({
           </div>
         )}
       </div>
+
+      {/* Panneau multi-timeframe */}
+      {showMultiTF && data.length > 0 && (
+        <div className="px-1 pb-3">
+          <MultiTimeframePanel data={data} theme={theme} />
+        </div>
+      )}
 
       {/* Graphique — chartContainerRef TOUJOURS dans le DOM pour que le chart
           soit initialisé une seule fois et que ses listeners restent valides. */}
