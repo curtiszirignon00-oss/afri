@@ -19,7 +19,13 @@ import type {
   HistogramData,
   ChartColors,
 } from '../types/chart.types';
-import { calculateSMA, calculateEMA, calculateBollingerBands } from '../utils/indicators';
+import {
+  calculateSMA, calculateEMA, calculateBollingerBands,
+  calculateStochastic, calculateWilliamsR, calculateCCI,
+  calculateROC, calculateMFI, calculateAroon,
+  calculateATR, calculateADX, calculateOBV, calculateVWAP,
+  calculateIchimoku, calculatePivotPoints,
+} from '../utils/indicators';
 
 interface UseStockChartProps {
   chartType: ChartType;
@@ -52,6 +58,34 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
   const bbUpperSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const bbMiddleSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const bbLowerSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+
+  // Tendance & Volume — nouveaux indicateurs
+  const atrSeriesRef    = useRef<ISeriesApi<'Line'> | null>(null);
+  const adxPlusRef      = useRef<ISeriesApi<'Line'> | null>(null);
+  const adxMinusRef     = useRef<ISeriesApi<'Line'> | null>(null);
+  const adxLineRef      = useRef<ISeriesApi<'Line'> | null>(null);
+  const obvSeriesRef    = useRef<ISeriesApi<'Line'> | null>(null);
+  const vwapSeriesRef   = useRef<ISeriesApi<'Line'> | null>(null);
+  const ichTenkanRef    = useRef<ISeriesApi<'Line'> | null>(null);
+  const ichKijunRef     = useRef<ISeriesApi<'Line'> | null>(null);
+  const ichSpanARef     = useRef<ISeriesApi<'Line'> | null>(null);
+  const ichSpanBRef     = useRef<ISeriesApi<'Line'> | null>(null);
+  const ichChikouRef    = useRef<ISeriesApi<'Line'> | null>(null);
+  const pivotPRef       = useRef<ISeriesApi<'Line'> | null>(null);
+  const pivotR1Ref      = useRef<ISeriesApi<'Line'> | null>(null);
+  const pivotR2Ref      = useRef<ISeriesApi<'Line'> | null>(null);
+  const pivotS1Ref      = useRef<ISeriesApi<'Line'> | null>(null);
+  const pivotS2Ref      = useRef<ISeriesApi<'Line'> | null>(null);
+
+  // Oscillateurs (pane inférieur — priceScaleId séparé)
+  const stochKSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const stochDSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const willrSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const cciSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const rocSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const mfiSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const aroonUpSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const aroonDownSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   const [isReady, setIsReady] = useState(false);
 
@@ -373,8 +407,16 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
           volumeSeriesRef.current = null;
         }
         // Supprimer les indicateurs (ils seront recréés par l'effet indicateurs)
-        for (const ref of [ma20SeriesRef, ma50SeriesRef, ma200SeriesRef, ema12SeriesRef,
-                            bbUpperSeriesRef, bbMiddleSeriesRef, bbLowerSeriesRef]) {
+        for (const ref of [
+          ma20SeriesRef, ma50SeriesRef, ma200SeriesRef, ema12SeriesRef,
+          bbUpperSeriesRef, bbMiddleSeriesRef, bbLowerSeriesRef,
+          stochKSeriesRef, stochDSeriesRef, willrSeriesRef, cciSeriesRef,
+          rocSeriesRef, mfiSeriesRef, aroonUpSeriesRef, aroonDownSeriesRef,
+          atrSeriesRef, adxPlusRef, adxMinusRef, adxLineRef,
+          obvSeriesRef, vwapSeriesRef,
+          ichTenkanRef, ichKijunRef, ichSpanARef, ichSpanBRef, ichChikouRef,
+          pivotPRef, pivotR1Ref, pivotR2Ref, pivotS1Ref, pivotS2Ref,
+        ]) {
           if (ref.current) { chartRef.current.removeSeries(ref.current); ref.current = null; }
         }
 
@@ -420,6 +462,7 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
         // Mettre à jour les indicateurs actifs avec les nouvelles données
         const chartData = data.map(d => ({ time: d.time, close: d.close }));
+        const ohlcvData = data.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume }));
         if (ma20SeriesRef.current)  ma20SeriesRef.current.setData(calculateSMA(chartData, 20) as any);
         if (ma50SeriesRef.current)  ma50SeriesRef.current.setData(calculateSMA(chartData, 50) as any);
         if (ma200SeriesRef.current) ma200SeriesRef.current.setData(calculateSMA(chartData, 200) as any);
@@ -429,6 +472,45 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
           if (bbUpperSeriesRef.current)  bbUpperSeriesRef.current.setData(bbData.upper as any);
           if (bbMiddleSeriesRef.current) bbMiddleSeriesRef.current.setData(bbData.middle as any);
           if (bbLowerSeriesRef.current)  bbLowerSeriesRef.current.setData(bbData.lower as any);
+        }
+        if (stochKSeriesRef.current || stochDSeriesRef.current) {
+          const stochData = calculateStochastic(ohlcvData);
+          if (stochKSeriesRef.current) stochKSeriesRef.current.setData(stochData.k as any);
+          if (stochDSeriesRef.current) stochDSeriesRef.current.setData(stochData.d as any);
+        }
+        if (willrSeriesRef.current) willrSeriesRef.current.setData(calculateWilliamsR(ohlcvData) as any);
+        if (cciSeriesRef.current)   cciSeriesRef.current.setData(calculateCCI(ohlcvData) as any);
+        if (rocSeriesRef.current)   rocSeriesRef.current.setData(calculateROC(chartData) as any);
+        if (mfiSeriesRef.current)   mfiSeriesRef.current.setData(calculateMFI(ohlcvData) as any);
+        if (aroonUpSeriesRef.current || aroonDownSeriesRef.current) {
+          const aroonData = calculateAroon(ohlcvData);
+          if (aroonUpSeriesRef.current)   aroonUpSeriesRef.current.setData(aroonData.up as any);
+          if (aroonDownSeriesRef.current) aroonDownSeriesRef.current.setData(aroonData.down as any);
+        }
+        if (atrSeriesRef.current)  atrSeriesRef.current.setData(calculateATR(ohlcvData) as any);
+        if (adxPlusRef.current || adxMinusRef.current || adxLineRef.current) {
+          const adxData = calculateADX(ohlcvData);
+          if (adxPlusRef.current)  adxPlusRef.current.setData(adxData.diPlus as any);
+          if (adxMinusRef.current) adxMinusRef.current.setData(adxData.diMinus as any);
+          if (adxLineRef.current)  adxLineRef.current.setData(adxData.adx as any);
+        }
+        if (obvSeriesRef.current)  obvSeriesRef.current.setData(calculateOBV(ohlcvData) as any);
+        if (vwapSeriesRef.current) vwapSeriesRef.current.setData(calculateVWAP(ohlcvData) as any);
+        if (ichTenkanRef.current || ichKijunRef.current) {
+          const ich = calculateIchimoku(ohlcvData);
+          if (ichTenkanRef.current)  ichTenkanRef.current.setData(ich.tenkan as any);
+          if (ichKijunRef.current)   ichKijunRef.current.setData(ich.kijun as any);
+          if (ichSpanARef.current)   ichSpanARef.current.setData(ich.spanA as any);
+          if (ichSpanBRef.current)   ichSpanBRef.current.setData(ich.spanB as any);
+          if (ichChikouRef.current)  ichChikouRef.current.setData(ich.chikou as any);
+        }
+        if (pivotPRef.current || pivotR1Ref.current) {
+          const pvt = calculatePivotPoints(ohlcvData);
+          if (pivotPRef.current)  pivotPRef.current.setData(pvt.p as any);
+          if (pivotR1Ref.current) pivotR1Ref.current.setData(pvt.r1 as any);
+          if (pivotR2Ref.current) pivotR2Ref.current.setData(pvt.r2 as any);
+          if (pivotS1Ref.current) pivotS1Ref.current.setData(pvt.s1 as any);
+          if (pivotS2Ref.current) pivotS2Ref.current.setData(pvt.s2 as any);
         }
       }
 
@@ -603,6 +685,227 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         chartRef.current.removeSeries(bbLowerSeriesRef.current);
         bbLowerSeriesRef.current = null;
       }
+    }
+
+    // Données OHLCV complètes pour les oscillateurs
+    const ohlcvData = data.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume }));
+
+    // Stochastique (%K et %D)
+    if (indicators?.includes('stoch')) {
+      if (!stochKSeriesRef.current) {
+        const stochData = calculateStochastic(ohlcvData);
+        const kSeries = chartApi.addLineSeries({
+          color: '#2962FF', lineWidth: 1, title: '%K',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'stoch', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        kSeries.setData(stochData.k);
+        stochKSeriesRef.current = kSeries;
+        const dSeries = chartApi.addLineSeries({
+          color: '#FF6D00', lineWidth: 1, title: '%D',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'stoch', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        dSeries.setData(stochData.d);
+        stochDSeriesRef.current = dSeries;
+      }
+    } else {
+      if (stochKSeriesRef.current) { chartRef.current.removeSeries(stochKSeriesRef.current); stochKSeriesRef.current = null; }
+      if (stochDSeriesRef.current) { chartRef.current.removeSeries(stochDSeriesRef.current); stochDSeriesRef.current = null; }
+    }
+
+    // Williams %R
+    if (indicators?.includes('willr')) {
+      if (!willrSeriesRef.current) {
+        const series = chartApi.addLineSeries({
+          color: '#9C27B0', lineWidth: 1, title: 'W%R',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'willr', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        series.setData(calculateWilliamsR(ohlcvData));
+        willrSeriesRef.current = series;
+      }
+    } else if (willrSeriesRef.current) {
+      chartRef.current.removeSeries(willrSeriesRef.current);
+      willrSeriesRef.current = null;
+    }
+
+    // CCI
+    if (indicators?.includes('cci')) {
+      if (!cciSeriesRef.current) {
+        const series = chartApi.addLineSeries({
+          color: '#F23645', lineWidth: 1, title: 'CCI',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'cci', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        series.setData(calculateCCI(ohlcvData));
+        cciSeriesRef.current = series;
+      }
+    } else if (cciSeriesRef.current) {
+      chartRef.current.removeSeries(cciSeriesRef.current);
+      cciSeriesRef.current = null;
+    }
+
+    // ROC
+    if (indicators?.includes('roc')) {
+      if (!rocSeriesRef.current) {
+        const series = chartApi.addLineSeries({
+          color: '#00BCD4', lineWidth: 1, title: 'ROC',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'roc', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        series.setData(calculateROC(chartData));
+        rocSeriesRef.current = series;
+      }
+    } else if (rocSeriesRef.current) {
+      chartRef.current.removeSeries(rocSeriesRef.current);
+      rocSeriesRef.current = null;
+    }
+
+    // MFI
+    if (indicators?.includes('mfi')) {
+      if (!mfiSeriesRef.current) {
+        const series = chartApi.addLineSeries({
+          color: '#4CAF50', lineWidth: 1, title: 'MFI',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'mfi', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        series.setData(calculateMFI(ohlcvData));
+        mfiSeriesRef.current = series;
+      }
+    } else if (mfiSeriesRef.current) {
+      chartRef.current.removeSeries(mfiSeriesRef.current);
+      mfiSeriesRef.current = null;
+    }
+
+    // Aroon (Up + Down)
+    if (indicators?.includes('aroon')) {
+      if (!aroonUpSeriesRef.current) {
+        const aroonData = calculateAroon(ohlcvData);
+        const upSeries = chartApi.addLineSeries({
+          color: '#10b981', lineWidth: 1, title: 'Aroon+',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'aroon', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        upSeries.setData(aroonData.up);
+        aroonUpSeriesRef.current = upSeries;
+        const downSeries = chartApi.addLineSeries({
+          color: '#ef4444', lineWidth: 1, title: 'Aroon-',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'aroon', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        downSeries.setData(aroonData.down);
+        aroonDownSeriesRef.current = downSeries;
+      }
+    } else {
+      if (aroonUpSeriesRef.current)   { chartRef.current.removeSeries(aroonUpSeriesRef.current);   aroonUpSeriesRef.current = null; }
+      if (aroonDownSeriesRef.current) { chartRef.current.removeSeries(aroonDownSeriesRef.current); aroonDownSeriesRef.current = null; }
+    }
+
+    // ── ATR ──────────────────────────────────────────────────────────────────
+    if (indicators?.includes('atr')) {
+      if (!atrSeriesRef.current) {
+        const s = chartApi.addLineSeries({
+          color: '#FF9800', lineWidth: 1, title: 'ATR',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'atr', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        s.setData(calculateATR(ohlcvData));
+        atrSeriesRef.current = s;
+      }
+    } else if (atrSeriesRef.current) {
+      chartRef.current.removeSeries(atrSeriesRef.current); atrSeriesRef.current = null;
+    }
+
+    // ── ADX / DMI ─────────────────────────────────────────────────────────────
+    if (indicators?.includes('adx')) {
+      if (!adxPlusRef.current) {
+        const adxData = calculateADX(ohlcvData);
+        const mkLine = (color: string, title: string) => chartApi.addLineSeries({
+          color, lineWidth: 1, title, lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'adx', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        const sp = mkLine('#10b981', '+DI'); sp.setData(adxData.diPlus);  adxPlusRef.current  = sp;
+        const sm = mkLine('#ef4444', '-DI'); sm.setData(adxData.diMinus); adxMinusRef.current = sm;
+        const sa = mkLine('#FF9800', 'ADX'); sa.setData(adxData.adx);     adxLineRef.current  = sa;
+      }
+    } else {
+      if (adxPlusRef.current)  { chartRef.current.removeSeries(adxPlusRef.current);  adxPlusRef.current  = null; }
+      if (adxMinusRef.current) { chartRef.current.removeSeries(adxMinusRef.current); adxMinusRef.current = null; }
+      if (adxLineRef.current)  { chartRef.current.removeSeries(adxLineRef.current);  adxLineRef.current  = null; }
+    }
+
+    // ── OBV ──────────────────────────────────────────────────────────────────
+    if (indicators?.includes('obv')) {
+      if (!obvSeriesRef.current) {
+        const s = chartApi.addLineSeries({
+          color: '#2962FF', lineWidth: 1, title: 'OBV',
+          lastValueVisible: false, priceLineVisible: false,
+          priceScaleId: 'obv', scaleMargins: { top: 0.75, bottom: 0 },
+        } as any);
+        s.setData(calculateOBV(ohlcvData));
+        obvSeriesRef.current = s;
+      }
+    } else if (obvSeriesRef.current) {
+      chartRef.current.removeSeries(obvSeriesRef.current); obvSeriesRef.current = null;
+    }
+
+    // ── VWAP (overlay sur le prix) ────────────────────────────────────────────
+    if (indicators?.includes('vwap')) {
+      if (!vwapSeriesRef.current) {
+        const s = chartApi.addLineSeries({
+          color: '#E91E63', lineWidth: 1, lineStyle: 1, title: 'VWAP',
+          lastValueVisible: false, priceLineVisible: false,
+        });
+        s.setData(calculateVWAP(ohlcvData));
+        vwapSeriesRef.current = s;
+      }
+    } else if (vwapSeriesRef.current) {
+      chartRef.current.removeSeries(vwapSeriesRef.current); vwapSeriesRef.current = null;
+    }
+
+    // ── Ichimoku (overlay) ────────────────────────────────────────────────────
+    if (indicators?.includes('ichimoku')) {
+      if (!ichTenkanRef.current) {
+        const ich = calculateIchimoku(ohlcvData);
+        const mkLine = (color: string, title: string, style = 0) => chartApi.addLineSeries({
+          color, lineWidth: 1, lineStyle: style, title,
+          lastValueVisible: false, priceLineVisible: false,
+        });
+        const t = mkLine('#ef4444', 'Tenkan');   t.setData(ich.tenkan);  ichTenkanRef.current = t;
+        const k = mkLine('#2962FF', 'Kijun');    k.setData(ich.kijun);   ichKijunRef.current  = k;
+        const a = mkLine('#10b981', 'SpanA', 2); a.setData(ich.spanA);   ichSpanARef.current  = a;
+        const b = mkLine('#ef4444', 'SpanB', 2); b.setData(ich.spanB);   ichSpanBRef.current  = b;
+        const c = mkLine('#9C27B0', 'Chikou', 1);c.setData(ich.chikou);  ichChikouRef.current = c;
+      }
+    } else {
+      if (ichTenkanRef.current)  { chartRef.current.removeSeries(ichTenkanRef.current);  ichTenkanRef.current  = null; }
+      if (ichKijunRef.current)   { chartRef.current.removeSeries(ichKijunRef.current);   ichKijunRef.current   = null; }
+      if (ichSpanARef.current)   { chartRef.current.removeSeries(ichSpanARef.current);   ichSpanARef.current   = null; }
+      if (ichSpanBRef.current)   { chartRef.current.removeSeries(ichSpanBRef.current);   ichSpanBRef.current   = null; }
+      if (ichChikouRef.current)  { chartRef.current.removeSeries(ichChikouRef.current);  ichChikouRef.current  = null; }
+    }
+
+    // ── Pivot Points (overlay) ────────────────────────────────────────────────
+    if (indicators?.includes('pivots')) {
+      if (!pivotPRef.current) {
+        const pvt = calculatePivotPoints(ohlcvData);
+        const mkLine = (color: string, title: string) => chartApi.addLineSeries({
+          color, lineWidth: 1, lineStyle: 1, title,
+          lastValueVisible: false, priceLineVisible: false,
+        });
+        const pp = mkLine('#787B86', 'P');  pp.setData(pvt.p);  pivotPRef.current  = pp;
+        const r1 = mkLine('#10b981', 'R1'); r1.setData(pvt.r1); pivotR1Ref.current = r1;
+        const r2 = mkLine('#10b981', 'R2'); r2.setData(pvt.r2); pivotR2Ref.current = r2;
+        const s1 = mkLine('#ef4444', 'S1'); s1.setData(pvt.s1); pivotS1Ref.current = s1;
+        const s2 = mkLine('#ef4444', 'S2'); s2.setData(pvt.s2); pivotS2Ref.current = s2;
+      }
+    } else {
+      if (pivotPRef.current)  { chartRef.current.removeSeries(pivotPRef.current);  pivotPRef.current  = null; }
+      if (pivotR1Ref.current) { chartRef.current.removeSeries(pivotR1Ref.current); pivotR1Ref.current = null; }
+      if (pivotR2Ref.current) { chartRef.current.removeSeries(pivotR2Ref.current); pivotR2Ref.current = null; }
+      if (pivotS1Ref.current) { chartRef.current.removeSeries(pivotS1Ref.current); pivotS1Ref.current = null; }
+      if (pivotS2Ref.current) { chartRef.current.removeSeries(pivotS2Ref.current); pivotS2Ref.current = null; }
     }
 
     // Volume - Histogramme

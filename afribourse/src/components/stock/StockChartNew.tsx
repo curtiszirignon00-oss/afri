@@ -450,50 +450,92 @@ export default function StockChartNew({
 
         {/* Menu Indicateurs techniques */}
         {showIndicators && (
-          <div className={`${containerClasses} border rounded-lg p-4 space-y-2`}>
-            <h4 className={`text-sm font-semibold ${textClasses} mb-3`}>Indicateurs Techniques</h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {[
-                { id: 'volume', label: 'Volume', description: 'Afficher le volume', premium: false },
-                { id: 'ma20', label: 'MA 20', description: 'Moyenne mobile 20 périodes', premium: true },
-                { id: 'ma50', label: 'MA 50', description: 'Moyenne mobile 50 périodes', premium: true },
-                { id: 'ma200', label: 'MA 200', description: 'Moyenne mobile 200 périodes', premium: true },
-                { id: 'ema12', label: 'EMA 12', description: 'Moyenne mobile exponentielle 12', premium: true },
-                { id: 'bb', label: 'Bollinger', description: 'Bandes de Bollinger', premium: true },
-              ].map((indicator) => {
-                const isLocked = indicator.premium && !isPremium;
-                return (
-                  <button
-                    key={indicator.id}
-                    onClick={() => {
-                      if (isLocked) return;
-                      toggleIndicator(indicator.id);
-                    }}
-                    className={`px-3 py-2 text-xs font-medium rounded-md transition-all text-left ${
-                      isLocked
-                        ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed opacity-60'
-                        : activeIndicators.includes(indicator.id)
-                          ? 'bg-blue-100 text-blue-700 border border-blue-300'
-                          : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
-                    }`}
-                    title={isLocked ? 'Disponible avec un abonnement Premium' : indicator.description}
-                    disabled={isLocked}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>{indicator.label}</span>
-                      {isLocked ? (
-                        <Lock className="w-3.5 h-3.5 text-gray-400" />
-                      ) : activeIndicators.includes(indicator.id) ? (
-                        <span className="text-blue-600">✓</span>
-                      ) : null}
-                    </div>
-                  </button>
-                );
-              })}
+          <div className={`${containerClasses} border rounded-lg p-4 space-y-3`}>
+            <h4 className={`text-sm font-semibold ${textClasses}`}>Indicateurs Techniques</h4>
+
+            {/* Tendance & Volume */}
+            <div>
+              <p className={`text-xs font-medium ${mutedTextClasses} mb-1.5`}>Tendance & Volume</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  { id: 'volume',   label: 'Volume',      description: 'Histogramme des volumes',                                 premium: false },
+                  { id: 'ma20',     label: 'MA 20',       description: 'Moyenne mobile 20 périodes',                              premium: true },
+                  { id: 'ma50',     label: 'MA 50',       description: 'Moyenne mobile 50 périodes',                              premium: true },
+                  { id: 'ma200',    label: 'MA 200',      description: 'Moyenne mobile 200 périodes',                             premium: true },
+                  { id: 'ema12',    label: 'EMA 12',      description: 'Moyenne mobile exponentielle 12',                         premium: true },
+                  { id: 'bb',       label: 'Bollinger',   description: 'Bandes de Bollinger (20, ±2σ)',                           premium: true },
+                  { id: 'atr',      label: 'ATR',         description: 'Average True Range — volatilité réelle (14)',             premium: true },
+                  { id: 'adx',      label: 'ADX / DMI',   description: 'ADX + DI+ / DI- — force de la tendance',                 premium: true },
+                  { id: 'obv',      label: 'OBV',         description: 'On-Balance Volume — anticipe les retournements',          premium: true },
+                  { id: 'vwap',     label: 'VWAP',        description: 'Prix moyen pondéré par le volume (cumulatif)',            premium: true },
+                  { id: 'ichimoku', label: 'Ichimoku',    description: 'Cloud japonais — Tenkan, Kijun, SpanA/B, Chikou',        premium: true },
+                  { id: 'pivots',   label: 'Pivots',      description: 'Pivot Points — P, R1/R2, S1/S2 (barre précédente)',      premium: true },
+                ].map((indicator) => {
+                  const isLocked = indicator.premium && !isPremium;
+                  return (
+                    <button
+                      key={indicator.id}
+                      onClick={() => { if (!isLocked) toggleIndicator(indicator.id); }}
+                      className={`px-3 py-2 text-xs font-medium rounded-md transition-all text-left ${
+                        isLocked
+                          ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed opacity-60'
+                          : activeIndicators.includes(indicator.id)
+                            ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                            : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
+                      }`}
+                      title={isLocked ? 'Disponible avec un abonnement Premium' : indicator.description}
+                      disabled={isLocked}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{indicator.label}</span>
+                        {isLocked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : activeIndicators.includes(indicator.id) ? <span className="text-blue-600">✓</span> : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Momentum & Oscillateurs */}
+            <div>
+              <p className={`text-xs font-medium ${mutedTextClasses} mb-1.5`}>Momentum & Oscillateurs</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {[
+                  { id: 'stoch', label: 'Stochastique', description: 'Stochastique %K/%D (14,3,3) — surachat/survente',   premium: true },
+                  { id: 'willr', label: 'Williams %R',  description: '%R inversé du stochastique',                         premium: true },
+                  { id: 'cci',   label: 'CCI',          description: 'Commodity Channel Index — écarts à la moyenne',      premium: true },
+                  { id: 'roc',   label: 'ROC',          description: 'Rate of Change — taux de variation sur N jours',     premium: true },
+                  { id: 'mfi',   label: 'MFI',          description: 'Money Flow Index — RSI pondéré par le volume',       premium: true },
+                  { id: 'aroon', label: 'Aroon',        description: 'Aroon Up/Down — émergence de nouvelles tendances',   premium: true },
+                ].map((indicator) => {
+                  const isLocked = indicator.premium && !isPremium;
+                  return (
+                    <button
+                      key={indicator.id}
+                      onClick={() => { if (!isLocked) toggleIndicator(indicator.id); }}
+                      className={`px-3 py-2 text-xs font-medium rounded-md transition-all text-left ${
+                        isLocked
+                          ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed opacity-60'
+                          : activeIndicators.includes(indicator.id)
+                            ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                            : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
+                      }`}
+                      title={isLocked ? 'Disponible avec un abonnement Premium' : indicator.description}
+                      disabled={isLocked}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{indicator.label}</span>
+                        {isLocked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : activeIndicators.includes(indicator.id) ? <span className="text-blue-600">✓</span> : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {!isPremium && (
-              <p className={`text-xs text-amber-600 mt-2`}>
-                Les indicateurs techniques (MA, EMA, Bollinger) sont réservés aux abonnés Premium
+              <p className="text-xs text-amber-600">
+                Les indicateurs techniques sont réservés aux abonnés Premium
               </p>
             )}
           </div>

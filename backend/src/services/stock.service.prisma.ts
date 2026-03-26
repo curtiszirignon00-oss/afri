@@ -369,6 +369,34 @@ export async function getStockHistory(
 }
 
 /**
+ * Calcule le plus haut et le plus bas sur 52 semaines (365 jours calendaires)
+ * à partir de l'historique des prix
+ */
+export async function get52WeekHighLow(symbol: string): Promise<{ high52w: number | null; low52w: number | null }> {
+  try {
+    const now = new Date();
+    const startDate = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth(), now.getUTCDate()));
+
+    const result = await prisma.stockHistory.aggregate({
+      where: {
+        stock_ticker: symbol,
+        date: { gte: startDate, lte: now }
+      },
+      _max: { high: true },
+      _min: { low: true }
+    });
+
+    return {
+      high52w: result._max.high ?? null,
+      low52w: result._min.low ?? null
+    };
+  } catch (error) {
+    console.error(`❌ Erreur lors du calcul 52 semaines de ${symbol}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Récupère les données fondamentales d'une action
  * @param symbol - Le symbole de l'action
  */
