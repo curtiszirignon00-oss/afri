@@ -17,7 +17,7 @@ export function AnnualFinancialsTable({ financials }: AnnualFinancialsTableProps
 
   const formatMillions = (value: number | null | undefined) => {
     if (value === null || value === undefined) return 'N/A';
-    return `${(value / 1_000_000).toFixed(0)} M`;
+    return `${new Intl.NumberFormat('fr-FR').format(Math.round(value))} M`;
   };
 
   const formatPercent = (value: number | null | undefined) => {

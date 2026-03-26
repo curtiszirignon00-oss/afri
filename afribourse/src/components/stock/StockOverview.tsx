@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle, ThumbsUp, ThumbsDown, TrendingUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
 import PremiumPaywall from '../PremiumPaywall';
@@ -17,6 +17,7 @@ type CompanyInfo = {
   headquarters?: string | null;
   ceo?: string | null;
   industry?: string | null;
+  indices?: string[];
 };
 
 type StockOverviewProps = {
@@ -317,6 +318,39 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
                 </div>
               )}
             </div>
+
+            {/* Indices de cotation */}
+            {companyInfo.indices && companyInfo.indices.length > 0 && (
+              <div className="pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-5 h-5 text-gray-400" />
+                  <p className="text-sm text-gray-600 font-medium">Indices de cotation</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {companyInfo.indices.map((idx) => {
+                    const isBRVM30 = idx === 'BRVM-30';
+                    const isPrestige = idx === 'BRVM-Prestige';
+                    const isSector = idx.startsWith('BRVM-') && !['BRVM-30', 'BRVM-C', 'BRVM-Prestige', 'BRVM-Principal'].includes(idx);
+                    return (
+                      <span
+                        key={idx}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          isBRVM30
+                            ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                            : isPrestige
+                            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                            : isSector
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-gray-100 text-gray-600 border border-gray-200'
+                        }`}
+                      >
+                        {idx}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}

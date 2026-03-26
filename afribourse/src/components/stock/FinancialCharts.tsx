@@ -33,7 +33,11 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
   // Trier par année croissante pour les graphiques
   const sortedData = [...financials].sort((a, b) => a.year - b.year);
 
-  const formatMillions = (value: number) => `${(value / 1_000_000).toFixed(0)}M`;
+  // Les valeurs sont déjà en millions de FCFA
+  const formatMillions = (value: number) => {
+    if (value >= 1_000) return `${(value / 1_000).toFixed(0)} Mds`;
+    return `${new Intl.NumberFormat('fr-FR').format(Math.round(value))} M`;
+  };
 
   const charts = {
     revenue: {

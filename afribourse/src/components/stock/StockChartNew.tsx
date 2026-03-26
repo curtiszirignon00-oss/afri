@@ -118,7 +118,7 @@ export default function StockChartNew({
     return applyResolution(data, activeConfig.resolution);
   }, [data, activeConfig.resolution]);
 
-  const { chartContainerRef, isReady, takeScreenshot, cancelActiveDrawing, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
+  const { chartContainerRef, oscillatorContainerRef, hasOscillator, isReady, takeScreenshot, cancelActiveDrawing, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
     chartType: selectedChartType,
     theme,
     data: displayData,
@@ -501,6 +501,7 @@ export default function StockChartNew({
               <p className={`text-xs font-medium ${mutedTextClasses} mb-1.5`}>Momentum & Oscillateurs</p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {[
+                  { id: 'rsi',   label: 'RSI 14',       description: 'Relative Strength Index — surachat >70, survente <30', premium: true },
                   { id: 'stoch', label: 'Stochastique', description: 'Stochastique %K/%D (14,3,3) — surachat/survente',   premium: true },
                   { id: 'willr', label: 'Williams %R',  description: '%R inversé du stochastique',                         premium: true },
                   { id: 'cci',   label: 'CCI',          description: 'Commodity Channel Index — écarts à la moyenne',      premium: true },
@@ -554,6 +555,19 @@ export default function StockChartNew({
             backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff'
           }}
         />
+
+        {/* Panneau oscillateur — toujours dans le DOM, réduit à 0 quand inactif */}
+        <div style={{ height: hasOscillator ? 150 : 0, overflow: 'hidden', transition: 'height 0.2s ease' }}>
+          <div
+            ref={oscillatorContainerRef}
+            className="w-full"
+            style={{
+              height: 150,
+              borderTop: hasOscillator ? `1px solid ${theme === 'dark' ? '#374151' : '#e2e8f0'}` : 'none',
+              backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
+            }}
+          />
+        </div>
 
         {/* Barre d'outils de dessin flottante (gauche) */}
         {showDrawingToolbar && isReady && data.length > 0 && (

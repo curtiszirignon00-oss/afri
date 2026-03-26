@@ -43,7 +43,7 @@ export type StockFundamental = {
 };
 
 export type CompanyInfo = {
-  id: string;
+  id?: string;
   stock_ticker: string;
   description?: string | null;
   website?: string | null;
@@ -52,6 +52,7 @@ export type CompanyInfo = {
   headquarters?: string | null;
   ceo?: string | null;
   industry?: string | null;
+  indices?: string[];
 };
 
 export type StockNewsItem = {
