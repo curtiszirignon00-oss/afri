@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, ChevronRight, AlertTriangle, Newspaper } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Lock, Sparkles, Newspaper } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 
@@ -160,11 +160,28 @@ export default function NewsPage() {
         </div>
       )}
 
-      {/* Error Display */}
+      {/* Premium Feature Display */}
       {!loading && error && (
-        <div className="text-center py-12 px-4">
-          <AlertTriangle className="w-10 h-10 mx-auto text-red-400 mb-3" />
-          <p className="text-red-600">{error}</p>
+        <div className="flex flex-col items-center justify-center py-20 px-4">
+          <div className="relative mb-6">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
+              <Lock className="w-9 h-9 text-white" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Fonctionnalité Premium</h2>
+          <p className="text-slate-500 text-center max-w-sm mb-6">
+            L'accès aux actualités financières en temps réel est réservé aux membres <span className="font-semibold text-amber-600">AfriBourse Premium</span>.
+          </p>
+          <a
+            href="/premium"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+          >
+            <Sparkles className="w-4 h-4" />
+            Passer à Premium
+          </a>
         </div>
       )}
 
