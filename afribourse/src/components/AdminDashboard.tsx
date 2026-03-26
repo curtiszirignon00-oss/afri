@@ -22,6 +22,13 @@ import {
   Ban,
   FileText,
   Download,
+  Bot,
+  ThumbsUp,
+  ThumbsDown,
+  Gift,
+  CheckCircle2,
+  Clock,
+  MailOpen,
 } from 'lucide-react';
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
@@ -111,10 +118,54 @@ interface PremiumIntent {
   };
 }
 
+interface TrialRecord {
+  id: string;
+  claimed: boolean;
+  activatedAt: string | null;
+  expiresAt: string | null;
+  created_at: string;
+  user: { id: string; name: string; lastname: string; email: string };
+}
+
+interface TrialStats {
+  total: number;
+  claimed: number;
+  active: number;
+  expired: number;
+  unclaimed: number;
+  claimRate: number;
+  recent: TrialRecord[];
+}
+
+interface FeedbackByEndpoint {
+  positive: number;
+  negative: number;
+  total: number;
+}
+
+interface AIFeedbackStats {
+  period: string;
+  feedback: {
+    total: number;
+    positive: number;
+    negative: number;
+    satisfactionRate: number;
+    byEndpoint: Record<string, FeedbackByEndpoint>;
+    dailyTrend: { date: string; positive: number; negative: number }[];
+  };
+  aiSummary: {
+    totalCalls: number;
+    avgResponseTimeMs: number;
+    callsByEndpoint: Record<string, number>;
+  };
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [premiumIntents, setPremiumIntents] = useState<PremiumIntent[]>([]);
+  const [trialStats, setTrialStats] = useState<TrialStats | null>(null);
+  const [aiFeedbackStats, setAIFeedbackStats] = useState<AIFeedbackStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verifyEmail, setVerifyEmail] = useState('');
@@ -125,6 +176,8 @@ export default function AdminDashboard() {
     fetchStats();
     fetchAnalytics();
     fetchPremiumIntents();
+    fetchTrialStats();
+    fetchAIFeedbackStats();
   }, []);
 
   const fetchStats = async () => {
@@ -190,6 +243,34 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Erreur premium intents:', err);
+    }
+  };
+
+  const fetchTrialStats = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/trial-stats`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTrialStats(data.data);
+      }
+    } catch (err) {
+      console.error('Erreur trial stats:', err);
+    }
+  };
+
+  const fetchAIFeedbackStats = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/ai-feedback-stats?days=30`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAIFeedbackStats(data.data);
+      }
+    } catch (err) {
+      console.error('Erreur AI feedback stats:', err);
     }
   };
 
@@ -819,6 +900,225 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════ */}
+        {/* FREE TRIAL STATS                          */}
+        {/* ═══════════════════════════════════════════ */}
+        <div className="mt-10">
+          <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <Gift className="w-6 h-6" />
+                  Essai Gratuit IA — 14 jours
+                </h2>
+                <p className="text-violet-100 text-sm">Suivi des invitations et activations trial</p>
+              </div>
+              {trialStats && (
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-white">{trialStats.claimRate}%</p>
+                  <p className="text-violet-200 text-xs">taux d'activation</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {trialStats ? (
+            <>
+              {/* KPIs */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                {[
+                  { label: 'Invitations envoyées', value: trialStats.total, icon: MailOpen, color: 'blue' },
+                  { label: 'Liens cliqués', value: trialStats.claimed, icon: CheckCircle2, color: 'green' },
+                  { label: 'Trials actifs', value: trialStats.active, icon: Zap, color: 'violet' },
+                  { label: 'Trials expirés', value: trialStats.expired, icon: Clock, color: 'orange' },
+                  { label: 'Non réclamés', value: trialStats.unclaimed, icon: MailOpen, color: 'gray' },
+                ].map(({ label, value, icon: Icon, color }) => (
+                  <div key={label} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-${color}-100`}>
+                      <Icon className={`w-5 h-5 text-${color}-600`} />
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{value}</p>
+                    <p className="text-xs text-gray-500 mt-1">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Table des 20 derniers trials */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100">
+                  <h3 className="font-semibold text-gray-900">20 derniers tokens générés</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {['Utilisateur', 'Email', 'Statut', 'Activé le', 'Expire le'].map((h) => (
+                          <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {trialStats.recent.map((t) => {
+                        const now = new Date();
+                        const isActive = t.claimed && t.expiresAt && new Date(t.expiresAt) > now;
+                        const isExpired = t.claimed && t.expiresAt && new Date(t.expiresAt) <= now;
+                        return (
+                          <tr key={t.id} className="hover:bg-gray-50">
+                            <td className="px-5 py-3 text-sm font-medium text-gray-900">
+                              {t.user.name} {t.user.lastname}
+                            </td>
+                            <td className="px-5 py-3 text-sm text-blue-600">{t.user.email}</td>
+                            <td className="px-5 py-3">
+                              {isActive ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                  <Zap className="w-3 h-3" /> Actif
+                                </span>
+                              ) : isExpired ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                                  <Clock className="w-3 h-3" /> Expiré
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                                  <MailOpen className="w-3 h-3" /> En attente
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-5 py-3 text-sm text-gray-500">
+                              {t.activatedAt ? new Date(t.activatedAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                            </td>
+                            <td className="px-5 py-3 text-sm text-gray-500">
+                              {t.expiresAt ? new Date(t.expiresAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {trialStats.recent.length === 0 && (
+                        <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">Aucun trial généré pour l'instant</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-xl p-8 text-center text-gray-400">Chargement des stats trial…</div>
+          )}
+        </div>
+
+        {/* ═══════════════════════════════════════════ */}
+        {/* AI FEEDBACK — POUCES LEVÉ / BAISSÉ         */}
+        {/* ═══════════════════════════════════════════ */}
+        <div className="mt-10">
+          <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <Bot className="w-6 h-6" />
+                  Feedback IA — Pouces levé / baissé
+                </h2>
+                <p className="text-blue-100 text-sm">Satisfaction utilisateurs sur les 30 derniers jours</p>
+              </div>
+              {aiFeedbackStats && (
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-white">{aiFeedbackStats.feedback.satisfactionRate}%</p>
+                  <p className="text-blue-200 text-xs">satisfaction globale</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {aiFeedbackStats ? (
+            <>
+              {/* KPIs globaux */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {[
+                  { label: 'Total feedbacks', value: aiFeedbackStats.feedback.total, icon: Activity, color: 'blue', sub: '30 derniers jours' },
+                  { label: 'Pouces levés 👍', value: aiFeedbackStats.feedback.positive, icon: ThumbsUp, color: 'green', sub: `${aiFeedbackStats.feedback.total > 0 ? Math.round(aiFeedbackStats.feedback.positive / aiFeedbackStats.feedback.total * 100) : 0}% des avis` },
+                  { label: 'Pouces baissés 👎', value: aiFeedbackStats.feedback.negative, icon: ThumbsDown, color: 'red', sub: `${aiFeedbackStats.feedback.total > 0 ? Math.round(aiFeedbackStats.feedback.negative / aiFeedbackStats.feedback.total * 100) : 0}% des avis` },
+                  { label: 'Appels IA totaux', value: aiFeedbackStats.aiSummary.totalCalls, icon: Bot, color: 'violet', sub: `moy. ${Math.round(aiFeedbackStats.aiSummary.avgResponseTimeMs / 1000)}s/réponse` },
+                ].map(({ label, value, icon: Icon, color, sub }) => (
+                  <div key={label} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-${color}-100`}>
+                        <Icon className={`w-5 h-5 text-${color}-600`} />
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900">{formatNumber(value)}</p>
+                    </div>
+                    <p className="text-sm font-medium text-gray-700">{label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Barre de satisfaction globale */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Score de satisfaction global</h3>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-500 w-8">👎</span>
+                  <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-700"
+                      style={{ width: `${aiFeedbackStats.feedback.satisfactionRate}%` }}
+                    />
+                  </div>
+                  <span className="text-sm text-gray-500 w-8">👍</span>
+                  <span className="text-lg font-bold text-emerald-600 w-16 text-right">
+                    {aiFeedbackStats.feedback.satisfactionRate}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Feedback par outil IA */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 className="font-semibold text-gray-900 mb-5">Satisfaction par outil IA</h3>
+                {Object.keys(aiFeedbackStats.feedback.byEndpoint).length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-4">Aucun feedback enregistré pour l'instant</p>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(aiFeedbackStats.feedback.byEndpoint)
+                      .sort((a, b) => b[1].total - a[1].total)
+                      .map(([endpoint, data]) => {
+                        const rate = data.total > 0 ? Math.round((data.positive / data.total) * 100) : 0;
+                        const label: Record<string, string> = {
+                          tutor: '🎓 Tuteur SIMBA',
+                          analyst: '📊 Analyste SIMBA',
+                          coach: '💬 Coach SIMBA',
+                          'market-analysis': '📈 Analyse de marché',
+                          'stock-analysis': '🔍 Analyse action',
+                        };
+                        return (
+                          <div key={endpoint}>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-sm font-medium text-gray-700">
+                                {label[endpoint] ?? endpoint}
+                              </span>
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <span className="text-green-600 font-semibold">👍 {data.positive}</span>
+                                <span className="text-red-500 font-semibold">👎 {data.negative}</span>
+                                <span className="text-gray-400">({data.total} avis)</span>
+                                <span className={`font-bold ${rate >= 70 ? 'text-green-600' : rate >= 50 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                  {rate}%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${rate >= 70 ? 'bg-green-400' : rate >= 50 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                                style={{ width: `${rate}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="bg-white rounded-xl p-8 text-center text-gray-400">Chargement des stats feedback…</div>
+          )}
         </div>
 
         {/* Moderation Section */}

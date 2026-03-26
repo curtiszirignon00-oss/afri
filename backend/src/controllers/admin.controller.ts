@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { getAISummary } from '../ai/aiAnalytics.service';
 
 const prisma = new PrismaClient();
 
@@ -324,5 +325,108 @@ export const getPlatformStats = async (req: AuthRequest, res: Response) => {
       message: 'Erreur serveur',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// GET /api/admin/trial-stats
+// Statistiques du free trial IA
+// ─────────────────────────────────────────────────────────────────
+export const getTrialStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const now = new Date();
+
+    const [total, claimed, active, expired, unclaimed, recent] = await Promise.all([
+      // Total tokens générés
+      (prisma as any).freeTrial.count(),
+      // Total activés (lien cliqué)
+      (prisma as any).freeTrial.count({ where: { claimed: true } }),
+      // Trials actifs en ce moment
+      (prisma as any).freeTrial.count({ where: { claimed: true, expiresAt: { gt: now } } }),
+      // Trials expirés
+      (prisma as any).freeTrial.count({ where: { claimed: true, expiresAt: { lte: now } } }),
+      // Non réclamés (email envoyé mais pas cliqué)
+      (prisma as any).freeTrial.count({ where: { claimed: false } }),
+      // 20 derniers trials avec info utilisateur
+      (prisma as any).freeTrial.findMany({
+        orderBy: { created_at: 'desc' },
+        take: 20,
+        include: {
+          user: { select: { id: true, name: true, lastname: true, email: true } },
+        },
+      }),
+    ]);
+
+    return res.json({
+      success: true,
+      data: {
+        total,
+        claimed,
+        active,
+        expired,
+        unclaimed,
+        claimRate: total > 0 ? Math.round((claimed / total) * 100) : 0,
+        recent,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// GET /api/admin/ai-feedback-stats
+// Statistiques pouces levé/baissé par endpoint + évolution 30j
+// ─────────────────────────────────────────────────────────────────
+export const getAIFeedbackStats = async (req: AuthRequest, res: Response) => {
+  try {
+    const days = parseInt((req.query.days as string) ?? '30', 10);
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    // Récupérer tous les feedbacks sur la période
+    const feedbacks = await prisma.userActionTracking.findMany({
+      where: { action_type: 'ai_feedback', created_at: { gte: since } },
+      select: { metadata: true, created_at: true },
+      orderBy: { created_at: 'asc' },
+    });
+
+    const total = feedbacks.length;
+    const positive = feedbacks.filter((f) => (f.metadata as any)?.rating === 'positive').length;
+    const negative = total - positive;
+    const satisfactionRate = total > 0 ? Math.round((positive / total) * 100) : 0;
+
+    // Par endpoint
+    const byEndpoint: Record<string, { positive: number; negative: number; total: number }> = {};
+    for (const f of feedbacks) {
+      const ep = (f.metadata as any)?.endpoint ?? 'unknown';
+      if (!byEndpoint[ep]) byEndpoint[ep] = { positive: 0, negative: 0, total: 0 };
+      byEndpoint[ep].total++;
+      if ((f.metadata as any)?.rating === 'positive') byEndpoint[ep].positive++;
+      else byEndpoint[ep].negative++;
+    }
+
+    // Évolution par jour (agrégation)
+    const byDay: Record<string, { positive: number; negative: number }> = {};
+    for (const f of feedbacks) {
+      const day = f.created_at!.toISOString().slice(0, 10);
+      if (!byDay[day]) byDay[day] = { positive: 0, negative: 0 };
+      if ((f.metadata as any)?.rating === 'positive') byDay[day].positive++;
+      else byDay[day].negative++;
+    }
+    const dailyTrend = Object.entries(byDay).map(([date, v]) => ({ date, ...v }));
+
+    // Résumé IA complet (appels, temps réponse, etc.)
+    const aiSummary = await getAISummary(since);
+
+    return res.json({
+      success: true,
+      data: {
+        period: `${days}j`,
+        feedback: { total, positive, negative, satisfactionRate, byEndpoint, dailyTrend },
+        aiSummary,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
