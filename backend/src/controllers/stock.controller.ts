@@ -67,6 +67,17 @@ export async function getStockHistory(req: Request, res: Response, next: NextFun
   }
 }
 
+// Pour la route: GET /api/stocks/:symbol/52week
+export async function getStock52Week(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const data = await stockService.get52WeekHighLow(symbol);
+    return res.status(200).json({ symbol, ...data });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 // Pour la route: GET /api/stocks/:symbol/fundamentals
 export async function getStockFundamentals(req: Request, res: Response, next: NextFunction) {
   try {

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   fetchStockHistory,
+  fetchStock52Week,
   fetchStockFundamentals,
   fetchCompanyInfo,
   fetchStockNews,
@@ -19,6 +20,19 @@ export function useStockHistory(symbol: string, period: Period = '1Y') {
     enabled: !!symbol, // Ne lance la requête que si le symbole existe
     staleTime: 5 * 60 * 1000, // Considère les données comme fraîches pendant 5 minutes
     gcTime: 10 * 60 * 1000 // Garde en cache pendant 10 minutes
+  });
+}
+
+/**
+ * Hook pour récupérer le plus haut/bas sur 52 semaines
+ */
+export function useStock52Week(symbol: string) {
+  return useQuery({
+    queryKey: ['stock-52week', symbol],
+    queryFn: () => fetchStock52Week(symbol),
+    enabled: !!symbol,
+    staleTime: 60 * 60 * 1000,  // 1 heure (mis à jour en fin de journée)
+    gcTime: 2 * 60 * 60 * 1000
   });
 }
 

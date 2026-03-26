@@ -110,6 +110,25 @@ export async function fetchStockHistory(
   return response.json();
 }
 
+export type Stock52WeekData = {
+  symbol: string;
+  high52w: number | null;
+  low52w: number | null;
+};
+
+/**
+ * Récupère le plus haut et le plus bas sur 52 semaines
+ */
+export async function fetchStock52Week(symbol: string): Promise<Stock52WeekData> {
+  const response = await authFetch(`${API_BASE_URL}/stocks/${symbol}/52week`, {
+    credentials: 'include'
+  });
+  if (!response.ok) {
+    throw new Error(`Erreur 52 semaines: ${response.statusText}`);
+  }
+  return response.json();
+}
+
 /**
  * Récupère les données fondamentales d'une action
  */
