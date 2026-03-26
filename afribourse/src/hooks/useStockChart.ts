@@ -21,6 +21,7 @@ import type {
 } from '../types/chart.types';
 import {
   calculateSMA, calculateEMA, calculateBollingerBands,
+  calculateRSI,
   calculateStochastic, calculateWilliamsR, calculateCCI,
   calculateROC, calculateMFI, calculateAroon,
   calculateATR, calculateADX, calculateOBV, calculateVWAP,
@@ -46,9 +47,16 @@ const CHART_COLORS: ChartColors = {
 
 export const useStockChart = ({ chartType, theme, data, indicators }: UseStockChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  const oscillatorContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const oscillatorChartRef = useRef<IChartApi | null>(null);
+  const syncingRef = useRef(false);
   const seriesRef = useRef<ISeriesApi<any> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
+
+  // IDs des indicateurs qui vont dans le panneau oscillateur (séparé)
+  const OSCILLATOR_IDS = ['rsi', 'stoch', 'willr', 'cci', 'roc', 'mfi', 'aroon', 'atr', 'adx', 'obv'];
+  const hasOscillator = !!(indicators?.some(id => OSCILLATOR_IDS.includes(id)));
 
   // Refs pour les indicateurs techniques
   const ma20SeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
@@ -76,6 +84,8 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
   const pivotR2Ref      = useRef<ISeriesApi<'Line'> | null>(null);
   const pivotS1Ref      = useRef<ISeriesApi<'Line'> | null>(null);
   const pivotS2Ref      = useRef<ISeriesApi<'Line'> | null>(null);
+
+  const rsiSeriesRef    = useRef<ISeriesApi<'Line'> | null>(null);
 
   // Oscillateurs (pane inférieur — priceScaleId séparé)
   const stochKSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
@@ -297,6 +307,44 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     chartRef.current = chart;
     console.log('useStockChart: Chart created');
 
+    // Graphique oscillateur (panneau séparé en dessous)
+    if (oscillatorContainerRef.current) {
+      const isDark = theme === 'dark';
+      const oscOpts = getChartOptions();
+      const oscChart = createChart(oscillatorContainerRef.current, {
+        ...oscOpts,
+        width: chartContainerRef.current.clientWidth,
+        height: 150,
+        localization: {
+          locale: 'fr-FR',
+          priceFormatter: (price: number) => price.toFixed(2),
+        },
+        rightPriceScale: {
+          borderColor: isDark ? '#374151' : '#e2e8f0',
+          scaleMargins: { top: 0.1, bottom: 0.1 },
+        },
+        timeScale: {
+          ...oscOpts.timeScale,
+          visible: true,
+        },
+      });
+      oscillatorChartRef.current = oscChart;
+
+      // Synchronisation bidirectionnelle des échelles de temps
+      chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (syncingRef.current || !range) return;
+        syncingRef.current = true;
+        oscChart.timeScale().setVisibleLogicalRange(range);
+        syncingRef.current = false;
+      });
+      oscChart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+        if (syncingRef.current || !range) return;
+        syncingRef.current = true;
+        chart.timeScale().setVisibleLogicalRange(range);
+        syncingRef.current = false;
+      });
+    }
+
     // ResizeObserver : couvre le premier rendu (clientWidth peut être 0) + tous les redimensionnements
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -304,8 +352,10 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       const width = entry.contentRect.width;
       if (width > 0) {
         chartRef.current.applyOptions({ width });
+        oscillatorChartRef.current?.applyOptions({ width });
         // fitContent à chaque resize pour maintenir la vue complète
         chartRef.current.timeScale().fitContent();
+        oscillatorChartRef.current?.timeScale().fitContent();
       }
     });
 
@@ -317,8 +367,11 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     const handleFullscreenChange = () => {
       setTimeout(() => {
         if (chartContainerRef.current && chartRef.current) {
-          chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
+          const w = chartContainerRef.current.clientWidth;
+          chartRef.current.applyOptions({ width: w });
+          oscillatorChartRef.current?.applyOptions({ width: w });
           chartRef.current.timeScale().fitContent();
+          oscillatorChartRef.current?.timeScale().fitContent();
         }
       }, 100);
     };
@@ -331,6 +384,10 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     return () => {
       resizeObserver.disconnect();
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      if (oscillatorChartRef.current) {
+        oscillatorChartRef.current.remove();
+        oscillatorChartRef.current = null;
+      }
       if (chartRef.current) {
         chartRef.current.remove();
         chartRef.current = null;
@@ -406,19 +463,17 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
           chartRef.current.removeSeries(volumeSeriesRef.current);
           volumeSeriesRef.current = null;
         }
-        // Supprimer les indicateurs (ils seront recréés par l'effet indicateurs)
+        // Supprimer les indicateurs overlay du chart PRINCIPAL (recréés par l'effet indicateurs)
         for (const ref of [
           ma20SeriesRef, ma50SeriesRef, ma200SeriesRef, ema12SeriesRef,
           bbUpperSeriesRef, bbMiddleSeriesRef, bbLowerSeriesRef,
-          stochKSeriesRef, stochDSeriesRef, willrSeriesRef, cciSeriesRef,
-          rocSeriesRef, mfiSeriesRef, aroonUpSeriesRef, aroonDownSeriesRef,
-          atrSeriesRef, adxPlusRef, adxMinusRef, adxLineRef,
-          obvSeriesRef, vwapSeriesRef,
+          vwapSeriesRef,
           ichTenkanRef, ichKijunRef, ichSpanARef, ichSpanBRef, ichChikouRef,
           pivotPRef, pivotR1Ref, pivotR2Ref, pivotS1Ref, pivotS2Ref,
         ]) {
           if (ref.current) { chartRef.current.removeSeries(ref.current); ref.current = null; }
         }
+        // Les oscillateurs sont sur oscillatorChartRef → pas besoin de les supprimer ici
 
         let mainSeries: ISeriesApi<any>;
         switch (chartType) {
@@ -487,6 +542,7 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
           if (aroonUpSeriesRef.current)   aroonUpSeriesRef.current.setData(aroonData.up as any);
           if (aroonDownSeriesRef.current) aroonDownSeriesRef.current.setData(aroonData.down as any);
         }
+        if (rsiSeriesRef.current)  rsiSeriesRef.current.setData(calculateRSI(chartData) as any);
         if (atrSeriesRef.current)  atrSeriesRef.current.setData(calculateATR(ohlcvData) as any);
         if (adxPlusRef.current || adxMinusRef.current || adxLineRef.current) {
           const adxData = calculateADX(ohlcvData);
@@ -529,8 +585,24 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
   // Mise à jour du thème
   useEffect(() => {
     if (!isReady || !chartRef.current) return;
+    const isDark = theme === 'dark';
 
     chartRef.current.applyOptions(getChartOptions());
+
+    if (oscillatorChartRef.current) {
+      const oscOpts = getChartOptions();
+      oscillatorChartRef.current.applyOptions({
+        ...oscOpts,
+        localization: {
+          locale: 'fr-FR',
+          priceFormatter: (price: number) => price.toFixed(2),
+        },
+        rightPriceScale: {
+          borderColor: isDark ? '#374151' : '#e2e8f0',
+          scaleMargins: { top: 0.1, bottom: 0.1 },
+        },
+      });
+    }
 
     // Mettre à jour les couleurs de la série
     if (seriesRef.current) {
@@ -690,164 +762,158 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     // Données OHLCV complètes pour les oscillateurs
     const ohlcvData = data.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume }));
 
-    // Stochastique (%K et %D)
+    // Raccourci vers le chart oscillateur
+    const oscApi = oscillatorChartRef.current as any;
+
+    // Visibilité du time scale du chart principal :
+    // caché quand un oscillateur est actif (le panneau oscillateur montre le sien)
+    chartRef.current.applyOptions({ timeScale: { ...(getChartOptions().timeScale as object), visible: !hasOscillator } });
+
+    // Helper : ajoute une ligne de référence horizontale (niveau)
+    const addRefLine = (series: ISeriesApi<any>, price: number, color: string, title = '') =>
+      (series as any).createPriceLine({ price, color, lineWidth: 1, lineStyle: 2, axisLabelVisible: !!title, title });
+
+    // ── RSI ──────────────────────────────────────────────────────────────────
+    if (indicators?.includes('rsi')) {
+      if (!rsiSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#9C27B0', lineWidth: 1, title: 'RSI 14', lastValueVisible: true, priceLineVisible: false });
+        s.setData(calculateRSI(chartData));
+        addRefLine(s, 70, '#ef4444', '70');
+        addRefLine(s, 50, '#9ca3af');
+        addRefLine(s, 30, '#10b981', '30');
+        rsiSeriesRef.current = s;
+      }
+    } else if (rsiSeriesRef.current) {
+      oscillatorChartRef.current?.removeSeries(rsiSeriesRef.current); rsiSeriesRef.current = null;
+    }
+
+    // ── Stochastique (%K et %D) ───────────────────────────────────────────────
     if (indicators?.includes('stoch')) {
-      if (!stochKSeriesRef.current) {
+      if (!stochKSeriesRef.current && oscApi) {
         const stochData = calculateStochastic(ohlcvData);
-        const kSeries = chartApi.addLineSeries({
-          color: '#2962FF', lineWidth: 1, title: '%K',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'stoch', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
+        const kSeries = oscApi.addLineSeries({ color: '#2962FF', lineWidth: 1, title: '%K', lastValueVisible: true, priceLineVisible: false });
         kSeries.setData(stochData.k);
+        addRefLine(kSeries, 80, '#ef4444', '80');
+        addRefLine(kSeries, 50, '#9ca3af');
+        addRefLine(kSeries, 20, '#10b981', '20');
         stochKSeriesRef.current = kSeries;
-        const dSeries = chartApi.addLineSeries({
-          color: '#FF6D00', lineWidth: 1, title: '%D',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'stoch', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
+        const dSeries = oscApi.addLineSeries({ color: '#FF6D00', lineWidth: 1, title: '%D', lastValueVisible: false, priceLineVisible: false });
         dSeries.setData(stochData.d);
         stochDSeriesRef.current = dSeries;
       }
     } else {
-      if (stochKSeriesRef.current) { chartRef.current.removeSeries(stochKSeriesRef.current); stochKSeriesRef.current = null; }
-      if (stochDSeriesRef.current) { chartRef.current.removeSeries(stochDSeriesRef.current); stochDSeriesRef.current = null; }
+      if (stochKSeriesRef.current) { oscillatorChartRef.current?.removeSeries(stochKSeriesRef.current); stochKSeriesRef.current = null; }
+      if (stochDSeriesRef.current) { oscillatorChartRef.current?.removeSeries(stochDSeriesRef.current); stochDSeriesRef.current = null; }
     }
 
-    // Williams %R
+    // ── Williams %R ───────────────────────────────────────────────────────────
     if (indicators?.includes('willr')) {
-      if (!willrSeriesRef.current) {
-        const series = chartApi.addLineSeries({
-          color: '#9C27B0', lineWidth: 1, title: 'W%R',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'willr', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
-        series.setData(calculateWilliamsR(ohlcvData));
-        willrSeriesRef.current = series;
+      if (!willrSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#9C27B0', lineWidth: 1, title: 'W%R', lastValueVisible: true, priceLineVisible: false });
+        s.setData(calculateWilliamsR(ohlcvData));
+        addRefLine(s, -20, '#ef4444', '-20');
+        addRefLine(s, -50, '#9ca3af');
+        addRefLine(s, -80, '#10b981', '-80');
+        willrSeriesRef.current = s;
       }
     } else if (willrSeriesRef.current) {
-      chartRef.current.removeSeries(willrSeriesRef.current);
-      willrSeriesRef.current = null;
+      oscillatorChartRef.current?.removeSeries(willrSeriesRef.current); willrSeriesRef.current = null;
     }
 
-    // CCI
+    // ── CCI ───────────────────────────────────────────────────────────────────
     if (indicators?.includes('cci')) {
-      if (!cciSeriesRef.current) {
-        const series = chartApi.addLineSeries({
-          color: '#F23645', lineWidth: 1, title: 'CCI',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'cci', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
-        series.setData(calculateCCI(ohlcvData));
-        cciSeriesRef.current = series;
+      if (!cciSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#F23645', lineWidth: 1, title: 'CCI', lastValueVisible: true, priceLineVisible: false });
+        s.setData(calculateCCI(ohlcvData));
+        addRefLine(s,  100, '#ef4444', '100');
+        addRefLine(s,    0, '#9ca3af');
+        addRefLine(s, -100, '#10b981', '-100');
+        cciSeriesRef.current = s;
       }
     } else if (cciSeriesRef.current) {
-      chartRef.current.removeSeries(cciSeriesRef.current);
-      cciSeriesRef.current = null;
+      oscillatorChartRef.current?.removeSeries(cciSeriesRef.current); cciSeriesRef.current = null;
     }
 
-    // ROC
+    // ── ROC ───────────────────────────────────────────────────────────────────
     if (indicators?.includes('roc')) {
-      if (!rocSeriesRef.current) {
-        const series = chartApi.addLineSeries({
-          color: '#00BCD4', lineWidth: 1, title: 'ROC',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'roc', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
-        series.setData(calculateROC(chartData));
-        rocSeriesRef.current = series;
+      if (!rocSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#00BCD4', lineWidth: 1, title: 'ROC', lastValueVisible: true, priceLineVisible: false });
+        s.setData(calculateROC(chartData));
+        addRefLine(s, 0, '#9ca3af');
+        rocSeriesRef.current = s;
       }
     } else if (rocSeriesRef.current) {
-      chartRef.current.removeSeries(rocSeriesRef.current);
-      rocSeriesRef.current = null;
+      oscillatorChartRef.current?.removeSeries(rocSeriesRef.current); rocSeriesRef.current = null;
     }
 
-    // MFI
+    // ── MFI ───────────────────────────────────────────────────────────────────
     if (indicators?.includes('mfi')) {
-      if (!mfiSeriesRef.current) {
-        const series = chartApi.addLineSeries({
-          color: '#4CAF50', lineWidth: 1, title: 'MFI',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'mfi', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
-        series.setData(calculateMFI(ohlcvData));
-        mfiSeriesRef.current = series;
+      if (!mfiSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#4CAF50', lineWidth: 1, title: 'MFI', lastValueVisible: true, priceLineVisible: false });
+        s.setData(calculateMFI(ohlcvData));
+        addRefLine(s, 80, '#ef4444', '80');
+        addRefLine(s, 50, '#9ca3af');
+        addRefLine(s, 20, '#10b981', '20');
+        mfiSeriesRef.current = s;
       }
     } else if (mfiSeriesRef.current) {
-      chartRef.current.removeSeries(mfiSeriesRef.current);
-      mfiSeriesRef.current = null;
+      oscillatorChartRef.current?.removeSeries(mfiSeriesRef.current); mfiSeriesRef.current = null;
     }
 
-    // Aroon (Up + Down)
+    // ── Aroon (Up + Down) ─────────────────────────────────────────────────────
     if (indicators?.includes('aroon')) {
-      if (!aroonUpSeriesRef.current) {
+      if (!aroonUpSeriesRef.current && oscApi) {
         const aroonData = calculateAroon(ohlcvData);
-        const upSeries = chartApi.addLineSeries({
-          color: '#10b981', lineWidth: 1, title: 'Aroon+',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'aroon', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
+        const upSeries   = oscApi.addLineSeries({ color: '#10b981', lineWidth: 1, title: 'Aroon+', lastValueVisible: true,  priceLineVisible: false });
+        const downSeries = oscApi.addLineSeries({ color: '#ef4444', lineWidth: 1, title: 'Aroon-', lastValueVisible: false, priceLineVisible: false });
         upSeries.setData(aroonData.up);
-        aroonUpSeriesRef.current = upSeries;
-        const downSeries = chartApi.addLineSeries({
-          color: '#ef4444', lineWidth: 1, title: 'Aroon-',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'aroon', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
+        addRefLine(upSeries, 50, '#9ca3af');
         downSeries.setData(aroonData.down);
+        aroonUpSeriesRef.current   = upSeries;
         aroonDownSeriesRef.current = downSeries;
       }
     } else {
-      if (aroonUpSeriesRef.current)   { chartRef.current.removeSeries(aroonUpSeriesRef.current);   aroonUpSeriesRef.current = null; }
-      if (aroonDownSeriesRef.current) { chartRef.current.removeSeries(aroonDownSeriesRef.current); aroonDownSeriesRef.current = null; }
+      if (aroonUpSeriesRef.current)   { oscillatorChartRef.current?.removeSeries(aroonUpSeriesRef.current);   aroonUpSeriesRef.current   = null; }
+      if (aroonDownSeriesRef.current) { oscillatorChartRef.current?.removeSeries(aroonDownSeriesRef.current); aroonDownSeriesRef.current = null; }
     }
 
     // ── ATR ──────────────────────────────────────────────────────────────────
     if (indicators?.includes('atr')) {
-      if (!atrSeriesRef.current) {
-        const s = chartApi.addLineSeries({
-          color: '#FF9800', lineWidth: 1, title: 'ATR',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'atr', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
+      if (!atrSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#FF9800', lineWidth: 1, title: 'ATR', lastValueVisible: true, priceLineVisible: false });
         s.setData(calculateATR(ohlcvData));
         atrSeriesRef.current = s;
       }
     } else if (atrSeriesRef.current) {
-      chartRef.current.removeSeries(atrSeriesRef.current); atrSeriesRef.current = null;
+      oscillatorChartRef.current?.removeSeries(atrSeriesRef.current); atrSeriesRef.current = null;
     }
 
     // ── ADX / DMI ─────────────────────────────────────────────────────────────
     if (indicators?.includes('adx')) {
-      if (!adxPlusRef.current) {
+      if (!adxPlusRef.current && oscApi) {
         const adxData = calculateADX(ohlcvData);
-        const mkLine = (color: string, title: string) => chartApi.addLineSeries({
-          color, lineWidth: 1, title, lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'adx', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
-        const sp = mkLine('#10b981', '+DI'); sp.setData(adxData.diPlus);  adxPlusRef.current  = sp;
-        const sm = mkLine('#ef4444', '-DI'); sm.setData(adxData.diMinus); adxMinusRef.current = sm;
-        const sa = mkLine('#FF9800', 'ADX'); sa.setData(adxData.adx);     adxLineRef.current  = sa;
+        const mkLine  = (color: string, title: string, visible = true) =>
+          oscApi.addLineSeries({ color, lineWidth: 1, title, lastValueVisible: visible, priceLineVisible: false });
+        const sp = mkLine('#10b981', '+DI');       sp.setData(adxData.diPlus);  adxPlusRef.current  = sp;
+        const sm = mkLine('#ef4444', '-DI', false); sm.setData(adxData.diMinus); adxMinusRef.current = sm;
+        const sa = mkLine('#FF9800', 'ADX', false); sa.setData(adxData.adx);    adxLineRef.current  = sa;
+        addRefLine(sp, 25, '#9ca3af', '25');
       }
     } else {
-      if (adxPlusRef.current)  { chartRef.current.removeSeries(adxPlusRef.current);  adxPlusRef.current  = null; }
-      if (adxMinusRef.current) { chartRef.current.removeSeries(adxMinusRef.current); adxMinusRef.current = null; }
-      if (adxLineRef.current)  { chartRef.current.removeSeries(adxLineRef.current);  adxLineRef.current  = null; }
+      if (adxPlusRef.current)  { oscillatorChartRef.current?.removeSeries(adxPlusRef.current);  adxPlusRef.current  = null; }
+      if (adxMinusRef.current) { oscillatorChartRef.current?.removeSeries(adxMinusRef.current); adxMinusRef.current = null; }
+      if (adxLineRef.current)  { oscillatorChartRef.current?.removeSeries(adxLineRef.current);  adxLineRef.current  = null; }
     }
 
     // ── OBV ──────────────────────────────────────────────────────────────────
     if (indicators?.includes('obv')) {
-      if (!obvSeriesRef.current) {
-        const s = chartApi.addLineSeries({
-          color: '#2962FF', lineWidth: 1, title: 'OBV',
-          lastValueVisible: false, priceLineVisible: false,
-          priceScaleId: 'obv', scaleMargins: { top: 0.75, bottom: 0 },
-        } as any);
+      if (!obvSeriesRef.current && oscApi) {
+        const s = oscApi.addLineSeries({ color: '#2962FF', lineWidth: 1, title: 'OBV', lastValueVisible: true, priceLineVisible: false });
         s.setData(calculateOBV(ohlcvData));
         obvSeriesRef.current = s;
       }
     } else if (obvSeriesRef.current) {
-      chartRef.current.removeSeries(obvSeriesRef.current); obvSeriesRef.current = null;
+      oscillatorChartRef.current?.removeSeries(obvSeriesRef.current); obvSeriesRef.current = null;
     }
 
     // ── VWAP (overlay sur le prix) ────────────────────────────────────────────
@@ -1119,6 +1185,8 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
 
   return {
     chartContainerRef,
+    oscillatorContainerRef,
+    hasOscillator,
     chart: chartRef.current,
     series: seriesRef.current,
     volumeSeries: volumeSeriesRef.current,

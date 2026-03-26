@@ -418,10 +418,19 @@ export async function getStockFundamentals(symbol: string) {
  */
 export async function getCompanyInfo(symbol: string) {
   try {
-    const companyInfo = await prisma.companyInfo.findUnique({
-      where: { stock_ticker: symbol }
-    });
-    return companyInfo;
+    const [companyInfo, memberships] = await Promise.all([
+      prisma.companyInfo.findUnique({ where: { stock_ticker: symbol } }),
+      prisma.stockIndexMembership.findMany({
+        where: { stock_ticker: symbol },
+        select: { index_name: true },
+        orderBy: { index_name: 'asc' }
+      })
+    ]);
+    if (!companyInfo && memberships.length === 0) return null;
+    return {
+      ...(companyInfo ?? { stock_ticker: symbol }),
+      indices: memberships.map((m: { index_name: string }) => m.index_name)
+    };
   } catch (error) {
     console.error(`❌ Erreur lors de la récupération des infos de ${symbol}:`, error);
     throw error;

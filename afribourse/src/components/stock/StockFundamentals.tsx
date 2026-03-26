@@ -96,11 +96,11 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
     return new Intl.NumberFormat('fr-FR').format(num);
   };
 
+  // Les valeurs revenue/net_income/market_cap/book_value sont en millions de FCFA
   const formatCurrency = (num?: number | null) => {
     if (num === null || num === undefined) return 'N/A';
-    if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(2)} Mds FCFA`;
-    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)} M FCFA`;
-    return `${formatNumber(num)} FCFA`;
+    if (num >= 1_000) return `${new Intl.NumberFormat('fr-FR').format(+(num / 1_000).toFixed(2))} Mds FCFA`;
+    return `${new Intl.NumberFormat('fr-FR').format(Math.round(num))} M FCFA`;
   };
 
   const formatPercent = (num?: number | null) => {
