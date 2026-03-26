@@ -564,6 +564,7 @@ export default function StockDetailPageEnhanced() {
                 data={lightweightData}
                 fundamentals={fundamentals}
                 annualFinancials={annualFinancialsData?.data}
+                stock={stock}
               />
             )}
             {activeTab === 'fundamentals' && (

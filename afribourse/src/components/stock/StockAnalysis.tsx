@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Lock, Zap, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Lock, Zap, AlertTriangle, TrendingUp, MessageCircle, Sparkles } from 'lucide-react';
 import PremiumPaywall from '../PremiumPaywall';
+import { StockAnalystChat } from './StockAnalystChat';
 import { useAuth } from '../../contexts/AuthContext';
+import type { Stock } from '../../types';
 import {
   calculateSignalScore,
   computeBBPosition,
@@ -31,6 +33,7 @@ interface StockAnalysisProps {
   data?: OHLCVData[];
   fundamentals?: StockFundamental | null;
   annualFinancials?: AnnualFinancial[];
+  stock?: Stock | null;
 }
 
 // ── Score circle SVG ──────────────────────────────────────────────────────────
@@ -120,10 +123,11 @@ const ZONE_CONFIG = [
 
 const MODES: AnalysisMode[] = ['balanced', 'trader', 'investor', 'dividend'];
 
-const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annualFinancials }) => {
+const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annualFinancials, stock }) => {
   const { userProfile } = useAuth();
   const isPremium = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [mode, setMode] = useState<AnalysisMode>('balanced');
 
   // ── Build technical input from OHLCV data ──────────────────────────────────
@@ -424,11 +428,83 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
         </div>
       </div>
 
+      {/* SIMBA — Poser une question */}
+      {stock && (
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl overflow-hidden">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-blue-600" />
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Poser une question à SIMBA</p>
+                <p className="text-[11px] text-gray-500">Notre analyste IA connaît ce score et les données de {stock.company_name}</p>
+              </div>
+            </div>
+            {!isPremium && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-semibold rounded-full flex-shrink-0">
+                <Zap size={10} />
+                Premium
+              </span>
+            )}
+          </div>
+
+          {/* Suggestion chips */}
+          {isPremium && !showChat && (
+            <div className="px-4 pb-3">
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {[
+                  result ? `Que signifie ce score de ${result.score}/100 pour ${stock.symbol} ?` : 'Explique-moi le score de confiance',
+                  'Ce titre est-il bien valorisé en ce moment ?',
+                  'Quels risques surveiller sur cette action ?',
+                  result?.divergenceWarning ? 'Comment interpréter cette divergence technique/fondamental ?' : 'Comparer avec le secteur BRVM',
+                ].map(q => (
+                  <button
+                    key={q}
+                    onClick={() => setShowChat(true)}
+                    className="text-[11px] px-2.5 py-1 bg-white border border-blue-200 text-blue-700 rounded-full hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowChat(true)}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
+              >
+                <MessageCircle size={15} />
+                Discuter avec SIMBA
+              </button>
+            </div>
+          )}
+
+          {/* Non-premium CTA */}
+          {!isPremium && (
+            <div className="px-4 pb-3">
+              <button
+                onClick={() => setShowPremiumPaywall(true)}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white text-sm font-semibold rounded-lg transition-all"
+              >
+                <Zap size={14} />
+                Débloquer SIMBA
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Disclaimer */}
       <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3 text-yellow-800 text-xs flex gap-2">
         <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
         <p>L'analyse technique est fournie à titre indicatif uniquement et ne doit pas constituer la seule base de vos décisions d'investissement.</p>
       </div>
+
+      {/* SIMBA Chat modal */}
+      {stock && (
+        <StockAnalystChat
+          stock={stock}
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+        />
+      )}
 
       {/* Paywall modal */}
       <PremiumPaywall
