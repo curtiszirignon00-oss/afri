@@ -1,4 +1,4 @@
-import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings } from 'lucide-react';
+import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -155,6 +155,14 @@ export default function Header() {
                         <span>Tableau de bord</span>
                       </button>
 
+                      <button
+                        onClick={() => { navigate('/watchlist'); setAccountMenuOpen(false); }}
+                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Star className="w-4 h-4 text-amber-400" />
+                        <span>Ma Watchlist</span>
+                      </button>
+
                       <div className="border-t border-gray-100 my-1"></div>
 
                       <button
@@ -278,6 +286,17 @@ export default function Header() {
 
                   {isLoggedIn && (
                     <>
+                      <button
+                        onClick={() => {
+                          navigate('/watchlist');
+                          setMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors font-semibold"
+                      >
+                        <Star className="w-5 h-5 fill-amber-400" />
+                        <span>Ma Watchlist</span>
+                      </button>
+
                       <button
                         onClick={() => {
                           navigate('/profile');

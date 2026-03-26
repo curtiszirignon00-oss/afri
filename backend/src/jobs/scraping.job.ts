@@ -14,6 +14,8 @@ import { notifyPriceAlert } from '../services/notification.service';
 import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
 import { sendWeeklyLearningSummaries } from '../services/learning-summary.service';
 import { updateROIRankStreaks } from '../services/gamification-leaderboard.service';
+import { checkWatchlistSignals } from '../services/watchlist-signal.service';
+import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
 import prisma from '../config/prisma';
 
 // Tâche cron pour exécuter le scraping toutes les heures
@@ -37,6 +39,13 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
             await saveCurrentDayIndexHistory();
             // Mettre à jour les streaks de position ROI sandbox (1x/jour après clôture)
             await updateROIRankStreaks();
+            // 👁️ Vérifier les signaux watchlist et notifier les utilisateurs
+            try {
+                const result = await checkWatchlistSignals();
+                console.log(`👁️ Signaux watchlist: ${result.notificationsSent} notif(s) envoyée(s) à ${result.usersProcessed} utilisateur(s)`);
+            } catch (err) {
+                console.error('❌ Erreur checkWatchlistSignals:', err);
+            }
         }
 
         console.log('✅ Scraping et sauvegarde terminés avec succès');
@@ -217,5 +226,17 @@ cron.schedule('0 10 * * 6', async () => { // Tous les samedis à 10h UTC
         console.log(`   → Prochain envoi: samedi prochain à 10h UTC`);
     } catch (error) {
         console.error('❌ Erreur lors de l\'envoi des résumés d\'apprentissage:', error);
+    }
+});
+
+// Tâche cron pour envoyer les résumés watchlist hebdomadaires
+// S'exécute tous les lundis à 08h00
+cron.schedule('0 8 * * 1', async () => {
+    try {
+        console.log('📊 Envoi des résumés watchlist hebdomadaires (IA)...');
+        const result = await sendWeeklyWatchlistSummaries();
+        console.log(`✅ Résumés watchlist envoyés: ${result.sent} email(s), ${result.skipped} ignoré(s), ${result.errors} erreur(s)`);
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'envoi des résumés watchlist:', error);
     }
 });

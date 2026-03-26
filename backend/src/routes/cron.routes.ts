@@ -10,6 +10,8 @@ import {
     cronBackup,
     cronSendPortfolioSummaries,
     cronSendLearningSummaries,
+    cronCheckWatchlistSignals,
+    cronSendWatchlistSummaries,
 } from '../controllers/cron.controller';
 
 const router = Router();
@@ -43,5 +45,11 @@ router.post('/send-portfolio-summaries', cronSendPortfolioSummaries);
 
 // Samedi 10h00 UTC: Resumes d'apprentissage
 router.post('/send-learning-summaries', cronSendLearningSummaries);
+
+// Quotidien 18h00: Vérification des signaux watchlist (après clôture BRVM)
+router.post('/check-watchlist-signals', cronCheckWatchlistSignals);
+
+// Lundi 08h00: Résumés watchlist hebdomadaires IA
+router.post('/send-watchlist-summaries', cronSendWatchlistSummaries);
 
 export default router;
