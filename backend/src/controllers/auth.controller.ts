@@ -278,6 +278,19 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
             userAsAny.subscriptionTier = 'max';
         }
 
+        // Essai gratuit : enrichir la réponse avec le statut trial
+        if (userAsAny.subscriptionTier === 'free') {
+            const trial = await prisma.freeTrial.findFirst({
+                where: { userId: userAsAny.id, claimed: true },
+                orderBy: { expiresAt: 'desc' },
+            });
+            if (trial?.expiresAt && new Date() < trial.expiresAt) {
+                userAsAny.subscriptionTier = 'premium';
+                userAsAny.hasTrial = true;
+                userAsAny.trialExpiresAt = trial.expiresAt;
+            }
+        }
+
         // Renvoyer le token dans le body pour les clients qui ne peuvent pas lire les cookies
         // (ex: Safari iOS avec ITP qui bloque les cookies cross-site)
         const rawToken = req.cookies?.token || req.headers['authorization']?.split(' ')[1];

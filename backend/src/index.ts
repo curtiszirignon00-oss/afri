@@ -57,6 +57,7 @@ import pushRoutes from './routes/push.routes'; // Push notifications (Web Push A
 import passportConfig from './config/passport'; // OAuth Passport
 import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
 import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
+import trialRoutes from './routes/trial.routes'; // Essai gratuit 2 semaines
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -254,6 +255,7 @@ class App {
     this.app?.use('/api/cron', cronRoutes);                            // Endpoints CRON securises (QStash/Bearer)
     this.app?.use('/api/push', pushRoutes);                              // Push notifications (Web Push API)
     this.app?.use('/api/ai', aiRoutes);                                   // IA Proxy — Gemini (clé côté serveur uniquement)
+    this.app?.use('/api/trial', trialRoutes);                              // Essai gratuit 2 semaines features IA
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Input, Button } from './ui';
@@ -10,6 +10,9 @@ import OAuthButtons from './auth/OAuthButtons';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +23,7 @@ export default function LoginPage() {
   // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/dashboard');
+      navigate(redirectTo);
     }
   }, [isLoggedIn, navigate]);
 
@@ -47,7 +50,7 @@ export default function LoginPage() {
       initAuthFromLogin(user, token);
 
       toast.success('Connexion réussie !');
-      navigate('/dashboard');
+      navigate(redirectTo);
 
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || 'Une erreur est survenue lors de la connexion.';

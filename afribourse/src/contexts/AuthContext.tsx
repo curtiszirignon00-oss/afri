@@ -10,6 +10,8 @@ interface UserProfile {
   lastname: string | null;
   role?: string;
   subscriptionTier?: string;
+  hasTrial?: boolean;
+  trialExpiresAt?: string;
 }
 
 interface AuthContextType {
