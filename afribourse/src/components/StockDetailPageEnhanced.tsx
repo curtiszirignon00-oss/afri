@@ -27,7 +27,8 @@ import {
   useStockHistory,
   useStockFundamentals,
   useCompanyInfo,
-  useStockNews
+  useStockNews,
+  useAnnualFinancials,
 } from '../hooks/useStockDetails';
 import { Period } from '../services/stockApi';
 
@@ -64,6 +65,7 @@ export default function StockDetailPageEnhanced() {
   const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(symbol || '');
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(symbol || '');
   const { data: newsData, isLoading: newsLoading } = useStockNews(symbol || '', 10);
+  const { data: annualFinancialsData } = useAnnualFinancials(symbol || '', 5);
 
   // État pour afficher/cacher le panneau d'ordre sur mobile - DOIT être avant les early returns
   const [showMobileOrder, setShowMobileOrder] = useState(false);
@@ -557,7 +559,13 @@ export default function StockDetailPageEnhanced() {
 
             {/* Contenu selon l'onglet actif */}
             {activeTab === 'overview' && <StockOverview stock={stock} companyInfo={companyInfo} />}
-            {activeTab === 'analysis' && <StockAnalysis />}
+            {activeTab === 'analysis' && (
+              <StockAnalysis
+                data={lightweightData}
+                fundamentals={fundamentals}
+                annualFinancials={annualFinancialsData?.data}
+              />
+            )}
             {activeTab === 'fundamentals' && (
               <StockFundamentals
                 fundamentals={fundamentals}
