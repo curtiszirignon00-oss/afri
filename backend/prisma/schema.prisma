@@ -733,13 +733,23 @@ model AnnualFinancials {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   stock_ticker      String
   year              Int
-  revenue           Float? // Chiffre d'affaires
+  revenue           Float? // Chiffre d'affaires / Produit Net Bancaire
   revenue_growth    Float? // Croissance CA (%)
   net_income        Float? // Résultat net
   net_income_growth Float? // Croissance RN (%)
   eps               Float? // BNPA (Bénéfice Net Par Action)
   pe_ratio          Float? // PER
   dividend          Float? // Dividende par action
+  // Bilan
+  total_actif              Float? // Total Actif
+  total_dettes_financieres Float? // Total Dettes Financières
+  total_capitaux_propres   Float? // Total Capitaux Propres
+  // Ratios d'analyse annuels
+  roe               Float? // Return on Equity (%)
+  roa               Float? // Return on Assets (%)
+  net_margin        Float? // Marge Nette (%)
+  operating_margin  Float? // Marge Opérationnelle (%)
+  cost_ratio        Float? // Coefficient d'exploitation (%)
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
@@ -751,6 +761,18 @@ model AnnualFinancials {
   @@index([stock_ticker])
   @@index([year])
   @@map("annual_financials")
+}
+
+model StockIndexMembership {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  index_name   String
+  created_at   DateTime @default(now())
+
+  @@unique([stock_ticker, index_name])
+  @@index([stock_ticker])
+  @@index([index_name])
+  @@map("stock_index_memberships")
 }
 
 // ================================= //
