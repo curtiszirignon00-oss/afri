@@ -6,6 +6,7 @@ import PremiumPaywall from '../PremiumPaywall';
 import { StockAnalystChat } from './StockAnalystChat';
 import { getSIMBAStockAnalysis, sendAnalystFeedback } from '../../services/geminiService';
 import { useAuth } from '../../contexts/AuthContext';
+import { useStock52Week } from '../../hooks/useStockDetails';
 
 type CompanyInfo = {
   stock_ticker: string;
@@ -26,6 +27,7 @@ type StockOverviewProps = {
 export default function StockOverview({ stock, companyInfo }: StockOverviewProps) {
   const { userProfile } = useAuth();
   const isPremium = ['investisseur-plus', 'premium', 'max'].includes(userProfile?.subscriptionTier ?? '');
+  const { data: weekData } = useStock52Week(stock.symbol);
 
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
@@ -338,18 +340,16 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Plus Haut</p>
+              <p className="text-sm text-gray-600 mb-1">Plus Haut 52s</p>
               <p className="text-lg font-bold text-gray-900">
-                {/* Cette donnée viendra de l'historique */}
-                N/A
+                {weekData?.high52w != null ? `${formatNumber(weekData.high52w)} FCFA` : 'N/A'}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Plus Bas</p>
+              <p className="text-sm text-gray-600 mb-1">Plus Bas 52s</p>
               <p className="text-lg font-bold text-gray-900">
-                {/* Cette donnée viendra de l'historique */}
-                N/A
+                {weekData?.low52w != null ? `${formatNumber(weekData.low52w)} FCFA` : 'N/A'}
               </p>
             </div>
           </div>

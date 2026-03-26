@@ -5,6 +5,7 @@ import {
   getStocks,
   getStock,
   getStockHistory,
+  getStock52Week,
   getStockFundamentals,
   getCompanyInfo,
   getStockNews,
@@ -25,6 +26,7 @@ router.get('/:symbol', getStock);                // Route pour voir une action p
 // NOUVELLES ROUTES POUR STOCK DETAILS
 // ========================================
 router.get('/:symbol/history', getStockHistory);           // GET /api/stocks/:symbol/history?period=1Y
+router.get('/:symbol/52week', getStock52Week);             // GET /api/stocks/:symbol/52week
 router.get('/:symbol/fundamentals', getStockFundamentals); // GET /api/stocks/:symbol/fundamentals
 router.get('/:symbol/company', getCompanyInfo);            // GET /api/stocks/:symbol/company
 router.get('/:symbol/news', getStockNews);                 // GET /api/stocks/:symbol/news?limit=10
