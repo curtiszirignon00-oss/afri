@@ -167,29 +167,56 @@ class AfribourseChatService {
       ? `${(stock.market_cap / 1_000_000_000).toFixed(2)} Mds FCFA`
       : 'N/D';
 
-    // Enrichissement RAG : fondamentaux complets depuis la DB pour ce ticker
-    const ragDocs = await retrieveStockContext(stock.symbol);
-    const ragContext = ragDocs.length > 0
-      ? `\nDONNÉES DB AFRIBOURSE :\n${ragDocs.map((d) => d.content).join('\n')}\n`
-      : '';
+    // Formater les montants en millions de FCFA
+    const fmtM = (v?: number | null) => v != null
+      ? (v >= 1000 ? `${(v / 1000).toFixed(0)} Mds` : `${v.toFixed(0)} M`) + ' FCFA'
+      : 'N/D';
 
-    const prompt = `${ragContext}Analyse l'action suivante :
+    // Historique annuel (3 dernières années)
+    const annualLines = (stock.annual_data ?? []).slice(0, 3).map((a) => {
+      const parts = [`${a.year}`];
+      if (a.revenue != null)      parts.push(`CA=${fmtM(a.revenue)}`);
+      if (a.net_income != null)   parts.push(`RN=${fmtM(a.net_income)}`);
+      if (a.revenue_growth != null) parts.push(`∆CA=${a.revenue_growth > 0 ? '+' : ''}${a.revenue_growth.toFixed(1)}%`);
+      if (a.roe != null)          parts.push(`ROE=${a.roe.toFixed(1)}%`);
+      if (a.eps != null)          parts.push(`BPA=${a.eps.toFixed(0)} FCFA`);
+      if (a.dividend != null)     parts.push(`Div=${a.dividend.toFixed(0)} FCFA`);
+      return parts.join(' | ');
+    }).join('\n  ');
+
+    const prompt = `Analyse l'action suivante cotée sur la BRVM :
+
+FICHE ACTION :
 - Société : ${stock.company_name} (${stock.symbol})
 - Secteur : ${stock.sector ?? 'N/D'}
+- Description : ${stock.description ? stock.description.slice(0, 300) : 'N/D'}
+
+DONNÉES DE MARCHÉ :
 - Prix actuel : ${stock.current_price ?? 'N/D'} FCFA
 - Variation journalière : ${stock.daily_change_percent?.toFixed(2) ?? 'N/D'}%
-- Capitalisation : ${capStr}
 - Volume : ${stock.volume ? stock.volume.toLocaleString('fr-FR') : 'N/D'}
-- Plus haut 52 sem. : ${stock.week_high ?? 'N/D'} FCFA
-- Plus bas 52 sem. : ${stock.week_low ?? 'N/D'} FCFA
-- PER : ${stock.pe_ratio ?? 'N/D'}
-- Description : ${stock.description ? stock.description.slice(0, 400) : 'N/D'}
+- Capitalisation boursière : ${capStr}
+- Plus haut 52 semaines : ${stock.week_high ?? 'N/D'} FCFA
+- Plus bas 52 semaines : ${stock.week_low ?? 'N/D'} FCFA
 
-Fournis :
-1. **Tendance** : lecture de la variation et du prix par rapport aux 52 semaines.
-2. **Secteur** : dynamique du secteur sur le marché ouest-africain.
-3. **Point de vigilance** : un risque concret à surveiller.
-4. **Concept clé** : un indicateur ou concept boursier pertinent à approfondir.`;
+FONDAMENTAUX (dernière année disponible) :
+- Chiffre d'affaires : ${fmtM(stock.revenue)}
+- Résultat net : ${fmtM(stock.net_income)}
+- BPA (BNPA) : ${stock.eps != null ? stock.eps.toFixed(2) + ' FCFA' : 'N/D'}
+- PER : ${stock.pe_ratio != null ? stock.pe_ratio.toFixed(2) : 'N/D'}
+- ROE : ${stock.roe != null ? stock.roe.toFixed(2) + '%' : 'N/D'}
+- ROA : ${stock.roa != null ? stock.roa.toFixed(2) + '%' : 'N/D'}
+- Marge nette : ${stock.net_margin != null ? stock.net_margin.toFixed(2) + '%' : 'N/D'}
+- Rendement dividende : ${stock.dividend_yield != null ? stock.dividend_yield.toFixed(2) + '%' : 'N/D'}
+
+HISTORIQUE FINANCIER (3 ans) :
+  ${annualLines || 'Non disponible'}
+
+Fournis une analyse structurée en 4 points :
+1. **Tendance de marché** : lecture du prix actuel vs 52 semaines et la variation journalière.
+2. **Santé financière** : commentaire sur les revenus, la rentabilité (ROE/marge) et l'évolution sur 3 ans.
+3. **Point de vigilance** : un risque concret identifié à partir des données ci-dessus.
+4. **Indicateur clé** : l'indicateur le plus pertinent à surveiller pour cette action et pourquoi.`;
 
     return this.chat(prompt, [], {}, {
       maxTokens: 500,
@@ -207,11 +234,31 @@ export interface StockData {
   sector?: string;
   current_price?: number;
   daily_change_percent?: number;
-  market_cap?: number;
+  market_cap?: number;  // en FCFA brut
   volume?: number;
   week_high?: number;
   week_low?: number;
   pe_ratio?: number;
+  roe?: number;
+  roa?: number;
+  net_margin?: number;
+  eps?: number;
+  revenue?: number;       // en millions FCFA
+  net_income?: number;    // en millions FCFA
+  dividend_yield?: number;
+  annual_data?: Array<{
+    year: number;
+    revenue?: number | null;
+    net_income?: number | null;
+    revenue_growth?: number | null;
+    net_income_growth?: number | null;
+    eps?: number | null;
+    pe_ratio?: number | null;
+    dividend?: number | null;
+    roe?: number | null;
+    roa?: number | null;
+    net_margin?: number | null;
+  }>;
   description?: string;
 }
 

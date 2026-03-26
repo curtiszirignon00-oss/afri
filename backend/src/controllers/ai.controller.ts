@@ -231,25 +231,40 @@ export async function analyzeMarket(req: AuthenticatedRequest, res: Response, ne
       return res.status(400).json({ success: false, message: 'symbol est requis.' });
     }
 
-    // Charger les données complètes depuis la DB (market_cap, pe_ratio, 52-week high/low)
+    // Charger les données complètes depuis la DB
     const { PrismaClient } = await import('@prisma/client');
     const prisma = new (PrismaClient as any)();
+    const ticker = String(symbol).slice(0, 20);
 
-    const [dbStock, fundamental, history52w] = await Promise.all([
+    const [dbStock, fundamental, annualData, history52w] = await Promise.all([
       prisma.stock.findUnique({
-        where: { symbol: String(symbol).slice(0, 20) },
+        where: { symbol: ticker },
         select: {
           symbol: true, company_name: true, sector: true, description: true,
           current_price: true, daily_change_percent: true, volume: true, market_cap: true,
         },
       }),
       prisma.stockFundamental.findUnique({
-        where: { stock_ticker: String(symbol).slice(0, 20) },
-        select: { market_cap: true, pe_ratio: true, pb_ratio: true, dividend_yield: true, eps: true },
+        where: { stock_ticker: ticker },
+        select: {
+          market_cap: true, pe_ratio: true, pb_ratio: true, dividend_yield: true,
+          eps: true, roe: true, roa: true, profit_margin: true,
+          revenue: true, net_income: true, book_value: true, year: true,
+        },
+      }),
+      prisma.annualFinancials.findMany({
+        where: { stock_ticker: ticker },
+        orderBy: { year: 'desc' },
+        take: 5,
+        select: {
+          year: true, revenue: true, net_income: true, revenue_growth: true,
+          net_income_growth: true, eps: true, pe_ratio: true, dividend: true,
+          roe: true, roa: true, net_margin: true,
+        },
       }),
       prisma.stockHistory.findMany({
         where: {
-          stock_ticker: String(symbol).slice(0, 20),
+          stock_ticker: ticker,
           date: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
         },
         select: { high: true, low: true },
@@ -261,16 +276,29 @@ export async function analyzeMarket(req: AuthenticatedRequest, res: Response, ne
     const week_high = history52w.length > 0 ? Math.max(...history52w.map((h: any) => h.high)) : undefined;
     const week_low  = history52w.length > 0 ? Math.min(...history52w.map((h: any) => h.low))  : undefined;
 
+    // market_cap du fundamental est en M FCFA → convertir en FCFA pour cohérence
+    const marketCapFCFA = fundamental?.market_cap != null
+      ? fundamental.market_cap * 1_000_000
+      : dbStock?.market_cap ?? undefined;
+
     const stockData: StockData = {
       company_name:         String(dbStock?.company_name || (stock as any).company_name || '').slice(0, 100),
-      symbol:               String(symbol).slice(0, 20),
+      symbol:               ticker,
       sector:               dbStock?.sector ?? undefined,
       description:          dbStock?.description?.slice(0, 500) ?? undefined,
       current_price:        dbStock?.current_price ?? Number((stock as any).current_price) ?? undefined,
       daily_change_percent: dbStock?.daily_change_percent ?? undefined,
       volume:               dbStock?.volume ?? undefined,
-      market_cap:           fundamental?.market_cap ?? dbStock?.market_cap ?? undefined,
+      market_cap:           marketCapFCFA,
       pe_ratio:             fundamental?.pe_ratio ?? undefined,
+      roe:                  fundamental?.roe ?? undefined,
+      roa:                  fundamental?.roa ?? undefined,
+      net_margin:           fundamental?.profit_margin ?? undefined,
+      eps:                  fundamental?.eps ?? undefined,
+      revenue:              fundamental?.revenue ?? undefined,
+      net_income:           fundamental?.net_income ?? undefined,
+      dividend_yield:       fundamental?.dividend_yield ?? undefined,
+      annual_data:          annualData ?? [],
       week_high,
       week_low,
     };
@@ -351,10 +379,11 @@ export async function generateQuizHandler(req: AuthenticatedRequest, res: Respon
 
 export async function coachAnalyst(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { message, conversationHistory, symbol } = req.body as {
+    const { message, conversationHistory, symbol, scoreContext } = req.body as {
       message?: string;
       conversationHistory?: Message[];
       symbol?: string;
+      scoreContext?: string;
     };
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -381,7 +410,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
     const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
     const currentSymbol = typeof symbol === 'string' ? symbol.toUpperCase().trim() : null;
 
-    const systemPrompt = buildAnalystPrompt(currentSymbol ?? '');
+    const systemPrompt = buildAnalystPrompt(currentSymbol ?? '', typeof scoreContext === 'string' ? scoreContext : undefined);
 
     const messages: any[] = [
       { role: 'system', content: systemPrompt },

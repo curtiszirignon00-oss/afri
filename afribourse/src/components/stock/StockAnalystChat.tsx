@@ -16,6 +16,7 @@ interface StockAnalystChatProps {
   stock: Stock;
   isOpen: boolean;
   onClose: () => void;
+  scoreContext?: string;
 }
 
 const ANALYST_SUGGESTIONS = [
@@ -25,7 +26,7 @@ const ANALYST_SUGGESTIONS = [
   'Analyser le dividende',
 ];
 
-export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpen, onClose }) => {
+export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpen, onClose, scoreContext }) => {
   const [messages, setMessages] = useState<UIMessage[]>([
     {
       id: 'welcome',
@@ -87,7 +88,7 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       .filter((m) => m.id !== 'welcome')
       .map((m) => ({ role: m.role, content: m.text }));
 
-    const { reply, messageId } = await askSIMBAAnalyst(messageText, history, stock.symbol);
+    const { reply, messageId } = await askSIMBAAnalyst(messageText, history, stock.symbol, scoreContext);
 
     setMessages((prev) => [
       ...prev,
