@@ -49,7 +49,7 @@ const SignalBadge: React.FC<{ signal: Signal }> = ({ signal }) => {
 
 const StockAnalysis: React.FC = () => {
   const { userProfile } = useAuth();
-  const isPremium = ['investisseur-plus', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
+  const isPremium = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
 
   return (

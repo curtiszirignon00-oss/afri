@@ -187,6 +187,9 @@ model User {
   // --- Push Subscriptions ---
   pushSubscriptions PushSubscription[]
 
+  // --- Free Trial ---
+  freeTrials FreeTrial[]
+
   // --- Community visit tracking ---
   last_community_visit DateTime?
 
@@ -1856,4 +1859,23 @@ model PushSubscription {
 
   @@index([userId])
   @@map("push_subscriptions")
+}
+
+// ================================= //
+// === FREE TRIAL SYSTEM =========== //
+// ================================= //
+
+model FreeTrial {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  token       String    @unique // Token unique envoyé dans le lien email
+  claimed     Boolean   @default(false)
+  activatedAt DateTime? // Quand l'utilisateur a cliqué le lien
+  expiresAt   DateTime? // activatedAt + 14 jours
+  created_at  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("free_trials")
 }

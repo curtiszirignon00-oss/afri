@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
 import PremiumPaywall from '../PremiumPaywall';
 import { StockAnalystChat } from './StockAnalystChat';
-import { getSIMBAStockAnalysis } from '../../services/geminiService';
+import { getSIMBAStockAnalysis, sendAnalystFeedback } from '../../services/geminiService';
 import { useAuth } from '../../contexts/AuthContext';
 
 type CompanyInfo = {
@@ -25,12 +25,14 @@ type StockOverviewProps = {
 
 export default function StockOverview({ stock, companyInfo }: StockOverviewProps) {
   const { userProfile } = useAuth();
-  const isPremium = userProfile?.subscriptionTier === 'investisseur-plus' || userProfile?.subscriptionTier === 'max';
+  const isPremium = ['investisseur-plus', 'premium', 'max'].includes(userProfile?.subscriptionTier ?? '');
 
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [analysisRating, setAnalysisRating] = useState<'up' | 'down' | null>(null);
+  const analysisMessageId = useRef<string>(`analysis-${stock.symbol}-${Date.now()}`);
 
   const fetchSIMBAAnalysis = async () => {
     if (isLoadingAI || aiAnalysis) return;
@@ -43,7 +45,22 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
   // Charge automatiquement l'analyse pour les abonnés premium
   useEffect(() => {
     if (isPremium) fetchSIMBAAnalysis();
+    // Réinitialiser le rating quand l'action change
+    setAnalysisRating(null);
+    analysisMessageId.current = `analysis-${stock.symbol}-${Date.now()}`;
   }, [stock.symbol, isPremium]);
+
+  const rateAnalysis = (rating: 'up' | 'down') => {
+    const newRating = analysisRating === rating ? null : rating;
+    setAnalysisRating(newRating);
+    if (newRating) {
+      sendAnalystFeedback(
+        analysisMessageId.current,
+        newRating === 'up' ? 'positive' : 'negative',
+        'analyst',
+      );
+    }
+  };
   const formatNumber = (num: number) => new Intl.NumberFormat('fr-FR').format(num);
 
   const formatCurrency = (num: number) => {
@@ -102,13 +119,42 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
           {isPremium && !isLoadingAI && aiAnalysis && (
             <div className="prose prose-sm max-w-none text-slate-700">
               <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
-              <button
-                onClick={() => setShowChat(true)}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Poser une question à SIMBA
-              </button>
+
+              {/* Actions : feedback + chat */}
+              <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 not-prose">
+                <span className="text-xs text-slate-400">Cette analyse vous a aidé ?</span>
+                <button
+                  onClick={() => rateAnalysis('up')}
+                  title="Analyse utile"
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm transition-colors ${
+                    analysisRating === 'up'
+                      ? 'bg-blue-100 text-blue-600 font-medium'
+                      : 'text-slate-400 hover:text-blue-500 hover:bg-blue-50'
+                  }`}
+                >
+                  <ThumbsUp className="w-4 h-4" />
+                  {analysisRating === 'up' && <span>Utile</span>}
+                </button>
+                <button
+                  onClick={() => rateAnalysis('down')}
+                  title="Analyse insuffisante"
+                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm transition-colors ${
+                    analysisRating === 'down'
+                      ? 'bg-red-100 text-red-500 font-medium'
+                      : 'text-slate-400 hover:text-red-400 hover:bg-red-50'
+                  }`}
+                >
+                  <ThumbsDown className="w-4 h-4" />
+                  {analysisRating === 'down' && <span>À améliorer</span>}
+                </button>
+                <button
+                  onClick={() => setShowChat(true)}
+                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Poser une question à SIMBA
+                </button>
+              </div>
             </div>
           )}
 

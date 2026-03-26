@@ -49,6 +49,7 @@ import HelpCenterPage from './components/HelpCenterPage';
 import SubscriptionPage from './components/SubscriptionPage';
 import AdminSubscriptionStats from './components/AdminSubscriptionStats';
 import CheckoutPage from './components/CheckoutPage';
+import TrialClaimPage from './pages/TrialClaimPage';
 import AdminDashboard from './components/AdminDashboard';
 import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
 import NotificationsPage from './pages/NotificationsPage';
@@ -126,6 +127,7 @@ function Layout() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
           <Route path="/subscriptions" element={<SubscriptionPage />} />
+          <Route path="/essai-gratuit" element={<TrialClaimPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
           <Route path="/communities/:slug" element={<CommunityDetailPage />} />
