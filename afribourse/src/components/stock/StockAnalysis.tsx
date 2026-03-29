@@ -181,6 +181,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
   const isPremium = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
   const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [initialQuestion, setInitialQuestion] = useState<string | undefined>();
   const [mode, setMode] = useState<AnalysisMode>('balanced');
 
   // ── Build technical input from OHLCV data ──────────────────────────────────
@@ -512,7 +513,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
                 ].map(q => (
                   <button
                     key={q}
-                    onClick={() => setShowChat(true)}
+                    onClick={() => { setInitialQuestion(q); setShowChat(true); }}
                     className="text-[11px] px-2.5 py-1 bg-white border border-blue-200 text-blue-700 rounded-full hover:bg-blue-50 hover:border-blue-300 transition-colors"
                   >
                     {q}
@@ -520,7 +521,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
                 ))}
               </div>
               <button
-                onClick={() => setShowChat(true)}
+                onClick={() => { setInitialQuestion(undefined); setShowChat(true); }}
                 className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
               >
                 <MessageCircle size={15} />
@@ -555,8 +556,9 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
         <StockAnalystChat
           stock={stock}
           isOpen={showChat}
-          onClose={() => setShowChat(false)}
+          onClose={() => { setShowChat(false); setInitialQuestion(undefined); }}
           scoreContext={result ? buildScoreContext(result, mode, technicalInput, fundamentalInput, growthInput) : undefined}
+          initialQuestion={initialQuestion}
         />
       )}
 
