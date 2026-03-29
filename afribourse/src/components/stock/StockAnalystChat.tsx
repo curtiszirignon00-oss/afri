@@ -17,6 +17,7 @@ interface StockAnalystChatProps {
   isOpen: boolean;
   onClose: () => void;
   scoreContext?: string;
+  initialQuestion?: string;
 }
 
 const ANALYST_SUGGESTIONS = [
@@ -26,7 +27,7 @@ const ANALYST_SUGGESTIONS = [
   'Analyser le dividende',
 ];
 
-export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpen, onClose, scoreContext }) => {
+export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpen, onClose, scoreContext, initialQuestion }) => {
   const [messages, setMessages] = useState<UIMessage[]>([
     {
       id: 'welcome',
@@ -54,6 +55,16 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       },
     ]);
   }, [stock.symbol]);
+
+  // Auto-envoyer la question initiale quand le chat s'ouvre
+  const sentInitialRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (isOpen && initialQuestion && sentInitialRef.current !== initialQuestion) {
+      sentInitialRef.current = initialQuestion;
+      handleSend(initialQuestion);
+    }
+    if (!isOpen) sentInitialRef.current = null;
+  }, [isOpen, initialQuestion]);
 
   const rateMessage = (id: string, rating: 'up' | 'down') => {
     setMessages((prev) =>
