@@ -409,15 +409,18 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
             // Chercher le prix exact ou le plus récent disponible
             price = tickerPrices.get(dateStr) || 0;
 
-            // Si pas de prix exact, chercher le prix le plus récent avant cette date
+            // Si pas de prix exact, chercher le prix le plus récent dans les 7 derniers jours
+            // (limité à 7j pour éviter d'utiliser un prix trop ancien quand les données sont incomplètes)
             if (price === 0) {
               const currentDateObj = new Date(dateStr);
+              const sevenDaysAgo = new Date(currentDateObj);
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
               let mostRecentDate = new Date(0);
               const priceEntries = Array.from(tickerPrices.entries());
               for (let j = 0; j < priceEntries.length; j++) {
                 const [priceDate, priceValue] = priceEntries[j];
                 const priceDateObj = new Date(priceDate);
-                if (priceDateObj <= currentDateObj && priceDateObj > mostRecentDate) {
+                if (priceDateObj <= currentDateObj && priceDateObj > sevenDaysAgo && priceDateObj > mostRecentDate) {
                   mostRecentDate = priceDateObj;
                   price = priceValue;
                 }

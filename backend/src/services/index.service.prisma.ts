@@ -31,10 +31,17 @@ export async function saveIndices(indicesData: IndexData[]) {
   }
 }
 
+const EXCLUDED_INDICES = ['SIKA TOTAL RETURN', 'IKAFINANCE'];
+
 export async function getAllIndices() {
   try {
-    // Traduction de "Index.find().exec()"
-    const indices = await prisma.marketIndex.findMany();
+    const indices = await prisma.marketIndex.findMany({
+      where: {
+        index_name: {
+          notIn: EXCLUDED_INDICES,
+        }
+      }
+    });
     return indices;
   } catch (error) {
     console.error('❌ Erreur lors de la récupération Prisma des indices:', error);
@@ -78,18 +85,31 @@ export async function saveCurrentDayIndexHistory() {
         let savedCount = 0;
         let errorCount = 0;
 
+        console.log(`📋 ${indices.length} indices récupérés du scraper`);
+        indices.forEach(d => console.log(`   → "${d.name}" | lastValue=${d.lastValue} | open=${d.opening} | high=${d.high} | low=${d.low} | change=${d.change}`));
+
         for (const data of indices) {
             try {
-                if (!data.name || data.lastValue === null) continue;
-
-                const existingIndex = await prisma.marketIndex.findUnique({
-                    where: { index_name: data.name }
-                });
-
-                if (!existingIndex) {
-                    console.log(`⚠️  Index ${data.name} n'existe pas dans la DB, ignoré`);
+                if (!data.name || data.lastValue === null) {
+                    console.log(`⏭️  Ignoré (nom vide ou valeur nulle): "${data.name}"`);
                     continue;
                 }
+
+                // Upsert dans MarketIndex pour s'assurer que l'entrée existe
+                const marketIndex = await prisma.marketIndex.upsert({
+                    where: { index_name: data.name },
+                    update: {
+                        index_value: data.lastValue,
+                        daily_change_percent: data.change ?? 0,
+                        date: new Date(),
+                    },
+                    create: {
+                        index_name: data.name,
+                        index_value: data.lastValue,
+                        daily_change_percent: data.change ?? 0,
+                        date: new Date(),
+                    }
+                });
 
                 const open = data.opening ?? data.lastValue;
                 const high = data.high ?? data.lastValue;
@@ -111,7 +131,7 @@ export async function saveCurrentDayIndexHistory() {
                         daily_change_percent: data.change ?? 0,
                     },
                     create: {
-                        marketIndexId: existingIndex.id,
+                        marketIndexId: marketIndex.id,
                         index_name: data.name,
                         date: today,
                         open,

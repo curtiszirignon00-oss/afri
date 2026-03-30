@@ -38,6 +38,16 @@ export async function getLatestIndices(req: Request, res: Response, next: NextFu
     }
 }
 
+// POST /api/indices/save-history — déclenche manuellement la sauvegarde de l'historique du jour
+export async function triggerSaveIndexHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+        const result = await indexService.saveCurrentDayIndexHistory();
+        return res.status(200).json(result);
+    } catch (error) {
+        return next(error);
+    }
+}
+
 // Controller for GET /api/indices/history/:indexName
 export async function getIndexHistory(req: Request, res: Response, next: NextFunction) {
     try {
