@@ -31,9 +31,11 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
         await saveStocks(stocks);
         await saveIndices(indices);
 
-        // Sauvegarder dans l'historique (une fois par jour seulement, à 18h après clôture BRVM)
-        const currentHour = new Date().getHours();
-        if (currentHour === 18) {
+        // Sauvegarder dans l'historique (une fois par jour seulement, à 18h00 après clôture BRVM)
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        if (currentHour === 18 && currentMinute < 15) {
             console.log('📊 Sauvegarde de l\'historique du jour (actions + indices)...');
             await saveCurrentDayHistory();
             await saveCurrentDayIndexHistory();

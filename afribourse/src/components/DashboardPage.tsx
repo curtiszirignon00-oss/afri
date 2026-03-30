@@ -315,6 +315,11 @@ export default function DashboardPage() {
 
   // ✅ OPTIMISATION: Mémoiser le calcul de la performance journalière
   const dailyPerf = useMemo(() => {
+    // Marché BRVM fermé le week-end : variation journalière = 0
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0=Dimanche, 6=Samedi
+    if (dayOfWeek === 0 || dayOfWeek === 6) return { value: 0, percent: 0 };
+
     if (portfolioHistory.length === 0) return { value: 0, percent: 0 };
 
     // Valeur actuelle live (current_price en temps réel)
@@ -322,7 +327,7 @@ export default function DashboardPage() {
     if (currentValue === 0) return { value: 0, percent: 0 };
 
     // Trouver le dernier point historique AVANT aujourd'hui (clôture d'hier ou dernier jour de bourse)
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = today.toISOString().split('T')[0];
     let previousPoint: { date: string; value: number } | null = null;
     for (let i = portfolioHistory.length - 1; i >= 0; i--) {
       if (portfolioHistory[i].date < todayStr) {
