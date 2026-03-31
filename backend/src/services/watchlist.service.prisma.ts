@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/watchlist.service.prisma.ts
 
 import prisma from '../config/prisma';
@@ -24,7 +25,7 @@ export async function getWatchlistByUserId(userId: string): Promise<WatchlistIte
     });
     return watchlistItems;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération de la watchlist pour l'utilisateur ${userId}:`, error);
+    log.error(`❌ Erreur lors de la récupération de la watchlist pour l'utilisateur ${userId}:`, error);
     throw error;
   }
 }
@@ -72,14 +73,14 @@ export async function addToWatchlist(
     });
     return newItem;
   } catch (error) {
-    console.error(`❌ Erreur lors de l'ajout de ${stockTicker} à la watchlist pour ${userId}:`, error);
+    log.error(`❌ Erreur lors de l'ajout de ${stockTicker} à la watchlist pour ${userId}:`, error);
     throw error;
   }
 }
 
 // Get a single watchlist item
 export async function getWatchlistItem(userId: string, stockTicker: string): Promise<WatchlistItem | null> {
-  return (prisma.watchlistItem as any).findFirst({
+  return prisma.watchlistItem.findFirst({
     where: { userId, stock_ticker: stockTicker },
   });
 }
@@ -96,13 +97,13 @@ export async function updateWatchlistItem(
     });
     if (!item) throw new Error(`Ticker ${stockTicker} non trouvé dans la watchlist.`);
 
-    const updated = await (prisma.watchlistItem as any).update({
+    const updated = await prisma.watchlistItem.update({
       where: { id: item.id },
       data,
     });
     return updated;
   } catch (error) {
-    console.error(`❌ Erreur updateWatchlistItem ${stockTicker}:`, error);
+    log.error(`❌ Erreur updateWatchlistItem ${stockTicker}:`, error);
     throw error;
   }
 }
@@ -110,7 +111,7 @@ export async function updateWatchlistItem(
 // Get enriched watchlist with current prices
 export async function getWatchlistEnriched(userId: string): Promise<any[]> {
   try {
-    const items = await (prisma.watchlistItem as any).findMany({
+    const items = await prisma.watchlistItem.findMany({
       where: { userId },
       orderBy: { stock_ticker: 'asc' },
     });
@@ -148,7 +149,7 @@ export async function getWatchlistEnriched(userId: string): Promise<any[]> {
       };
     });
   } catch (error) {
-    console.error(`❌ Erreur getWatchlistEnriched:`, error);
+    log.error(`❌ Erreur getWatchlistEnriched:`, error);
     throw error;
   }
 }
@@ -171,7 +172,7 @@ export async function removeFromWatchlist(userId: string, stockTicker: string): 
 
         return deleteResult; // { count: 1 } if successful, { count: 0 } if not found
     } catch (error) {
-        console.error(`❌ Erreur lors de la suppression de ${stockTicker} de la watchlist pour ${userId}:`, error);
+        log.error(`❌ Erreur lors de la suppression de ${stockTicker} de la watchlist pour ${userId}:`, error);
         throw error;
     }
 }

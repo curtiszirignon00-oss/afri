@@ -39,5 +39,22 @@ export const registerSchema = zod.object({
     lastname: zod.string().min(2).max(100),
 });
 
+export const resendConfirmationSchema = zod.object({
+    email: strictEmail,
+});
+
+export const requestPasswordResetSchema = zod.object({
+    email: strictEmail,
+});
+
+export const resetPasswordSchema = zod.object({
+    token: zod.string().min(1, 'Token requis'),
+    newPassword: zod.string()
+        .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+        .max(100)
+        .refine(p => /[A-Z]/.test(p), 'Doit contenir au moins une majuscule')
+        .refine(p => /[^A-Za-z0-9]/.test(p), 'Doit contenir au moins un caractère spécial (!@#$%...)'),
+});
+
 export const validateLogin = validate(loginSchema);
 export const validateRegister = validate(registerSchema);

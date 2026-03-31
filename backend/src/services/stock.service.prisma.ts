@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/stock.service.prisma.ts
 
 import prisma from "../config/prisma";
@@ -104,13 +105,13 @@ export async function saveStocks(stocksData: StockData[]) {
         }
       });
     }
-    console.log(`✅ ${stocksData.length} actions traitées par Prisma.`);
+    log.debug(`✅ ${stocksData.length} actions traitées par Prisma.`);
 
     // Invalider le cache des stocks apres mise a jour
     await cacheInvalidatePattern('stocks:*');
     await cacheInvalidatePattern('stock:*');
   } catch (error) {
-    console.error('❌ Erreur lors de la sauvegarde Prisma des actions:', error);
+    log.error('❌ Erreur lors de la sauvegarde Prisma des actions:', error);
     throw error;
   }
 }
@@ -149,11 +150,15 @@ export async function getAllStocks(filters: {
     }
 
     // Market cap filters
+    const marketCapFilter: Prisma.FloatNullableFilter = {};
     if (minMarketCap !== undefined) {
-      whereClause.market_cap = { ...whereClause.market_cap as any, gte: minMarketCap };
+      marketCapFilter.gte = minMarketCap;
     }
     if (maxMarketCap !== undefined) {
-      whereClause.market_cap = { ...whereClause.market_cap as any, lte: maxMarketCap };
+      marketCapFilter.lte = maxMarketCap;
+    }
+    if (Object.keys(marketCapFilter).length > 0) {
+      whereClause.market_cap = marketCapFilter;
     }
 
     // Fetch stocks with fundamentals and annual financials
@@ -247,7 +252,7 @@ export async function getAllStocks(filters: {
 
     return filteredStocks;
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération Prisma des actions:', error);
+    log.error('❌ Erreur lors de la récupération Prisma des actions:', error);
     throw error;
   }
 }
@@ -259,7 +264,7 @@ export async function getStockBySymbol(symbol: string) {
     });
     return stock;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération de ${symbol}:`, error);
     throw error;
   }
 }
@@ -275,7 +280,7 @@ export async function getTopStocks(limit: number = 6) {
     });
     return stocks;
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération des top stocks:', error);
+    log.error('❌ Erreur lors de la récupération des top stocks:', error);
     throw error;
   }
 }
@@ -363,7 +368,7 @@ export async function getStockHistory(
         date: new Date(dateKey + 'T00:00:00.000Z')
       }));
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération de l'historique de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération de l'historique de ${symbol}:`, error);
     throw error;
   }
 }
@@ -391,7 +396,7 @@ export async function get52WeekHighLow(symbol: string): Promise<{ high52w: numbe
       low52w: result._min.low ?? null
     };
   } catch (error) {
-    console.error(`❌ Erreur lors du calcul 52 semaines de ${symbol}:`, error);
+    log.error(`❌ Erreur lors du calcul 52 semaines de ${symbol}:`, error);
     throw error;
   }
 }
@@ -407,7 +412,7 @@ export async function getStockFundamentals(symbol: string) {
     });
     return fundamentals;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des fondamentaux de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération des fondamentaux de ${symbol}:`, error);
     throw error;
   }
 }
@@ -432,7 +437,7 @@ export async function getCompanyInfo(symbol: string) {
       indices: memberships.map((m: { index_name: string }) => m.index_name)
     };
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des infos de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération des infos de ${symbol}:`, error);
     throw error;
   }
 }
@@ -451,7 +456,7 @@ export async function getStockNews(symbol: string, limit: number = 10) {
     });
     return news;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des news de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération des news de ${symbol}:`, error);
     throw error;
   }
 }
@@ -468,7 +473,7 @@ export async function getShareholders(symbol: string) {
     });
     return shareholders;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des actionnaires de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération des actionnaires de ${symbol}:`, error);
     throw error;
   }
 }
@@ -494,7 +499,7 @@ export async function getAnnualFinancials(symbol: string, yearsBack: number = 5)
     });
     return financials;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des données financières de ${symbol}:`, error);
+    log.error(`❌ Erreur lors de la récupération des données financières de ${symbol}:`, error);
     throw error;
   }
 }
@@ -554,7 +559,7 @@ export async function getHistoryForComparison(symbols: string[], period: number)
     });
     return Object.values(groupedByDate).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
   } catch (error) {
-    console.error('Erreur historique:', error);
+    log.error('Erreur historique:', error);
     throw error;
   }
 }

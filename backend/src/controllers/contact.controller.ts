@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/contact.controller.ts
 
 import { Response, Request, NextFunction } from "express";
@@ -43,7 +44,7 @@ export async function createContactMessage(
       data: contactMessage,
     });
   } catch (error: any) {
-    console.error("[createContactMessage] Error:", error.message);
+    log.error("[createContactMessage] Error:", error.message);
     return next(error);
   }
 }

@@ -1,7 +1,6 @@
+import { log } from '../config/logger';
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 interface AuthRequest extends Request {
   user?: {
@@ -46,7 +45,7 @@ export const logSubscriptionIntent = async (req: AuthRequest, res: Response) => 
       },
     });
 
-    console.log(`📊 Nouvelle intention d'abonnement: ${planName} par user ${userId}`);
+    log.debug(`📊 Nouvelle intention d'abonnement: ${planName} par user ${userId}`);
 
     return res.status(201).json({
       success: true,
@@ -54,7 +53,7 @@ export const logSubscriptionIntent = async (req: AuthRequest, res: Response) => 
       data: intent,
     });
   } catch (error) {
-    console.error('Erreur lors de l\'enregistrement de l\'intention:', error);
+    log.error('Erreur lors de l\'enregistrement de l\'intention:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur serveur',
@@ -179,7 +178,7 @@ export const getSubscriptionStats = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des stats:', error);
+    log.error('Erreur lors de la récupération des stats:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur serveur',
@@ -216,7 +215,7 @@ export const getUserIntents = async (req: AuthRequest, res: Response) => {
       data: intents,
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des intentions utilisateur:', error);
+    log.error('Erreur lors de la récupération des intentions utilisateur:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur serveur',

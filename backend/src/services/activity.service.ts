@@ -1,9 +1,8 @@
+import { log } from '../config/logger';
 // backend/src/services/activity.service.ts
 // Service pour gérer les activités utilisateur et leaderboard
 
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 // =====================================
 // ACTIVITÉS
@@ -23,7 +22,7 @@ export async function getUserActivities(userId: string, limit: number = 20) {
     return activities;
 
   } catch (error) {
-    console.error('❌ Erreur getUserActivities:', error);
+    log.error('❌ Erreur getUserActivities:', error);
     throw error;
   }
 }
@@ -82,7 +81,7 @@ export async function getActivityFeed(userId: string, limit: number = 50) {
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getActivityFeed:', error);
+    log.error('❌ Erreur getActivityFeed:', error);
     throw error;
   }
 }
@@ -111,7 +110,7 @@ export async function createActivity(
     return activity;
 
   } catch (error) {
-    console.error('❌ Erreur createActivity:', error);
+    log.error('❌ Erreur createActivity:', error);
     throw error;
   }
 }
@@ -165,7 +164,7 @@ export async function getGlobalLeaderboard(limit: number = 100, offset: number =
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getGlobalLeaderboard:', error);
+    log.error('❌ Erreur getGlobalLeaderboard:', error);
     throw error;
   }
 }
@@ -214,7 +213,7 @@ export async function getCountryLeaderboard(countryCode: string, limit: number =
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getCountryLeaderboard:', error);
+    log.error('❌ Erreur getCountryLeaderboard:', error);
     throw error;
   }
 }
@@ -272,7 +271,7 @@ export async function getFriendsLeaderboard(userId: string, limit: number = 50) 
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getFriendsLeaderboard:', error);
+    log.error('❌ Erreur getFriendsLeaderboard:', error);
     throw error;
   }
 }
@@ -282,7 +281,7 @@ export async function getFriendsLeaderboard(userId: string, limit: number = 50) 
  */
 export async function updateRanks() {
   try {
-    console.log('📊 Début du calcul des rangs...');
+    log.debug('📊 Début du calcul des rangs...');
 
     // Classement global
     const allProfiles = await prisma.userProfile.findMany({
@@ -305,7 +304,7 @@ export async function updateRanks() {
       });
     }
 
-    console.log(`✅ ${allProfiles.length} rangs globaux mis à jour`);
+    log.debug(`✅ ${allProfiles.length} rangs globaux mis à jour`);
 
     // Rangs par pays
     const countries = [...new Set(allProfiles.map(p => p.country).filter(Boolean))];
@@ -320,13 +319,13 @@ export async function updateRanks() {
         });
       }
 
-      console.log(`✅ ${countryProfiles.length} rangs pour ${country} mis à jour`);
+      log.debug(`✅ ${countryProfiles.length} rangs pour ${country} mis à jour`);
     }
 
-    console.log('🎉 Calcul des rangs terminé !');
+    log.debug('🎉 Calcul des rangs terminé !');
 
   } catch (error) {
-    console.error('❌ Erreur updateRanks:', error);
+    log.error('❌ Erreur updateRanks:', error);
     throw error;
   }
 }

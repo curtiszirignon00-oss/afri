@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/news.service.prisma.ts
 import prisma from '../config/prisma';
 import { NewsArticle } from '@prisma/client';
@@ -12,7 +13,7 @@ export async function getLatestNewsArticle(): Promise<NewsArticle | null> {
     });
     return latestArticle;
   } catch (error) {
-    console.error("❌ Error fetching latest news article:", error);
+    log.error("❌ Error fetching latest news article:", error);
     throw error;
   }
 }
@@ -34,7 +35,7 @@ export async function getFeaturedNews(limit: number = 3): Promise<NewsArticle[]>
     });
     return featuredArticles;
   } catch (error) {
-    console.error("❌ Erreur récupération featured news:", error);
+    log.error("❌ Erreur récupération featured news:", error);
     throw error;
   }
 }

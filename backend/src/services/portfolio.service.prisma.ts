@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/portfolio.service.prisma.ts
 
 import prisma from '../config/prisma';
@@ -28,7 +29,7 @@ export async function findPortfolioByUserId(userId: string, walletType?: string)
     // Pour SANDBOX: retourner le premier (plus ancien) portfolio qui n'est pas CONCOURS
     return allPortfolios.find(p => p.wallet_type !== 'CONCOURS') || null;
   } catch (error) {
-    console.error('Error finding portfolio by user ID:', error);
+    log.error('Error finding portfolio by user ID:', error);
     throw error;
   }
 }
@@ -46,7 +47,7 @@ export async function createPortfolio(userId: string, data: Partial<Portfolio> =
     const newPortfolio = await prisma.portfolio.create({ data: portfolioData });
     return newPortfolio;
   } catch (error) {
-    console.error('Error creating portfolio:', error);
+    log.error('Error creating portfolio:', error);
     throw error;
   }
 }
@@ -246,28 +247,28 @@ export async function sellStock(
 export async function getPortfolioHistory(userId: string, walletType?: string): Promise<{ date: string; value: number }[]> {
   try {
     const targetWalletType = walletType || 'SANDBOX';
-    console.log(`📊 [HISTORY] Getting history for userId=${userId}, walletType=${targetWalletType}`);
+    log.debug(`📊 [HISTORY] Getting history for userId=${userId}, walletType=${targetWalletType}`);
 
     // 1. Find the user's portfolio with all necessary data using the wallet-aware function
     const portfolio = await findPortfolioByUserId(userId, walletType);
 
     if (!portfolio) {
-      console.log(`📊 [HISTORY] No portfolio found for ${targetWalletType}`);
+      log.debug(`📊 [HISTORY] No portfolio found for ${targetWalletType}`);
       return []; // No portfolio, no history
     }
 
-    console.log(`📊 [HISTORY] Found portfolio: id=${portfolio.id}, wallet_type=${portfolio.wallet_type}`);
+    log.debug(`📊 [HISTORY] Found portfolio: id=${portfolio.id}, wallet_type=${portfolio.wallet_type}`);
 
     // Vérifier que le portfolio trouvé correspond bien au type demandé
     // Note: Les anciens portfolios SANDBOX peuvent avoir wallet_type = null/undefined
     const portfolioIsConours = portfolio.wallet_type === 'CONCOURS';
 
     if (targetWalletType === 'CONCOURS' && !portfolioIsConours) {
-      console.log(`⚠️ [HISTORY] Mismatch! Asked for CONCOURS but got ${portfolio.wallet_type || 'SANDBOX (null)'}`);
+      log.debug(`⚠️ [HISTORY] Mismatch! Asked for CONCOURS but got ${portfolio.wallet_type || 'SANDBOX (null)'}`);
       return []; // Ne pas retourner l'historique du mauvais wallet
     }
     if (targetWalletType !== 'CONCOURS' && portfolioIsConours) {
-      console.log(`⚠️ [HISTORY] Mismatch! Asked for SANDBOX but got CONCOURS`);
+      log.debug(`⚠️ [HISTORY] Mismatch! Asked for SANDBOX but got CONCOURS`);
       return []; // Ne pas retourner l'historique du mauvais wallet
     }
 
@@ -284,7 +285,7 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
       }
     });
 
-    console.log(`📊 [HISTORY] Found ${transactions.length} transactions for portfolio ${portfolio.id} (${targetWalletType})`);
+    log.debug(`📊 [HISTORY] Found ${transactions.length} transactions for portfolio ${portfolio.id} (${targetWalletType})`);
 
     // 3. Si le portefeuille n'a aucune transaction, retourner uniquement le solde initial
     if (!transactions || transactions.length === 0) {
@@ -453,7 +454,7 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
     return historyData;
 
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération de l'historique pour l'utilisateur ${userId}:`, error);
+    log.error(`❌ Erreur lors de la récupération de l'historique pour l'utilisateur ${userId}:`, error);
     throw error;
   }
 }
@@ -469,7 +470,7 @@ export async function getTransactionsByPortfolioId(portfolioId: string): Promise
     });
     return transactions;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des transactions pour le portefeuille ${portfolioId}:`, error);
+    log.error(`❌ Erreur lors de la récupération des transactions pour le portefeuille ${portfolioId}:`, error);
     throw error;
   }
 }
@@ -489,7 +490,7 @@ export async function getPortfolioSummary(userId: string) {
     }
 
     // Type cast needed due to Prisma inference limitation with findFirst + include
-    const positions = (portfolio as any).positions as Array<{
+    const positions = (portfolio as Record<string, unknown>).positions as Array<{
       id: string;
       stock_ticker: string;
       quantity: number;
@@ -571,7 +572,7 @@ export async function getPortfolioSummary(userId: string) {
         .slice(0, 3),
     };
   } catch (error) {
-    console.error(`Error getting portfolio summary for user ${userId}:`, error);
+    log.error(`Error getting portfolio summary for user ${userId}:`, error);
     throw error;
   }
 }

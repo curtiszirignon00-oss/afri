@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 import { Request, Response, NextFunction } from 'express';
 import config from '../config/environnement';
 
@@ -11,7 +12,7 @@ export async function verifyCronAuth(req: Request, res: Response, next: NextFunc
   const cronSecret = config.cron.secret;
 
   if (!cronSecret) {
-    console.error('[CRON] CRON_SECRET non configure. Requete rejetee.');
+    log.error('[CRON] CRON_SECRET non configure. Requete rejetee.');
     return res.status(500).json({ error: 'CRON_SECRET non configure sur le serveur' });
   }
 
@@ -41,10 +42,10 @@ export async function verifyCronAuth(req: Request, res: Response, next: NextFunc
         return next();
       }
     } catch (error) {
-      console.error('[CRON] Verification signature QStash echouee:', error);
+      log.error('[CRON] Verification signature QStash echouee:', error);
     }
   }
 
-  console.warn(`[CRON] Requete CRON non autorisee depuis ${req.ip}`);
+  log.warn(`[CRON] Requete CRON non autorisee depuis ${req.ip}`);
   return res.status(401).json({ error: 'Non autorise: identifiants CRON invalides' });
 }

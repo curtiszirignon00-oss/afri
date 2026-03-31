@@ -2,6 +2,7 @@
 // Contrôleur pour le système de gamification AfriBourse
 
 import { Request, Response, NextFunction } from 'express';
+import { prisma } from '../config/database';
 import * as xpService from '../services/xp.service';
 import * as achievementService from '../services/achievement.service';
 import * as streakService from '../services/streak.service';
@@ -266,10 +267,6 @@ export async function getAllRewards(req: Request, res: Response, next: NextFunct
   try {
     const userId = req.user?.id;
     const stats = userId ? await xpService.getUserXPStats(userId) : null;
-
-    // Importer le client Prisma
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
 
     const rewards = await prisma.reward.findMany({
       where: { is_active: true },

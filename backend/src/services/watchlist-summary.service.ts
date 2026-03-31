@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 /**
  * AfriBourse — Weekly Watchlist IA Email Summary
  * Runs every Monday at 08h00.
@@ -175,7 +176,7 @@ export async function sendWeeklyWatchlistSummaries(): Promise<{ sent: number; sk
 
   // Get all users with watchlist items + their email + name
   const usersWithWatchlist: { userId: string; user: { email: string; name: string } }[] =
-    await (prisma.watchlistItem as any).findMany({
+    await prisma.watchlistItem.findMany({
       distinct: ['userId'],
       select: { userId: true, user: { select: { email: true, name: true } } },
     });
@@ -199,9 +200,9 @@ export async function sendWeeklyWatchlistSummaries(): Promise<{ sent: number; sk
       });
 
       sent++;
-      console.log(`[WatchlistSummary] Email envoyé à ${user.email} (${items.length} tickers)`);
+      log.debug(`[WatchlistSummary] Email envoyé à ${user.email} (${items.length} tickers)`);
     } catch (err) {
-      console.error(`[WatchlistSummary] Erreur pour userId ${userId}:`, err);
+      log.error(`[WatchlistSummary] Erreur pour userId ${userId}:`, err);
       errors++;
     }
   }

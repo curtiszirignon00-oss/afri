@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/price-alert.service.prisma.ts
 
 import prisma from '../config/prisma';
@@ -34,7 +35,7 @@ export async function getUserPriceAlerts(userId: string): Promise<PriceAlert[]> 
     });
     return alerts;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des alertes pour l'utilisateur ${userId}:`, error);
+    log.error(`❌ Erreur lors de la récupération des alertes pour l'utilisateur ${userId}:`, error);
     throw error;
   }
 }
@@ -53,7 +54,7 @@ export async function getUserPriceAlertsByTicker(userId: string, stockTicker: st
     });
     return alerts;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des alertes pour ${stockTicker}:`, error);
+    log.error(`❌ Erreur lors de la récupération des alertes pour ${stockTicker}:`, error);
     throw error;
   }
 }
@@ -79,7 +80,7 @@ export async function getActiveAlerts(): Promise<PriceAlertWithUser[]> {
     });
     return alerts;
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération des alertes actives:', error);
+    log.error('❌ Erreur lors de la récupération des alertes actives:', error);
     throw error;
   }
 }
@@ -123,7 +124,7 @@ export async function createPriceAlert(
 
     return newAlert;
   } catch (error) {
-    console.error(`❌ Erreur lors de la création de l'alerte pour ${stockTicker}:`, error);
+    log.error(`❌ Erreur lors de la création de l'alerte pour ${stockTicker}:`, error);
     throw error;
   }
 }
@@ -160,7 +161,7 @@ export async function updatePriceAlert(
 
     return updatedAlert;
   } catch (error) {
-    console.error(`❌ Erreur lors de la mise à jour de l'alerte ${alertId}:`, error);
+    log.error(`❌ Erreur lors de la mise à jour de l'alerte ${alertId}:`, error);
     throw error;
   }
 }
@@ -192,7 +193,7 @@ export async function togglePriceAlert(alertId: string, userId: string, isActive
 
     return updatedAlert;
   } catch (error) {
-    console.error(`❌ Erreur lors de la modification du statut de l'alerte ${alertId}:`, error);
+    log.error(`❌ Erreur lors de la modification du statut de l'alerte ${alertId}:`, error);
     throw error;
   }
 }
@@ -219,7 +220,7 @@ export async function deletePriceAlert(alertId: string, userId: string): Promise
 
     return { success: true };
   } catch (error) {
-    console.error(`❌ Erreur lors de la suppression de l'alerte ${alertId}:`, error);
+    log.error(`❌ Erreur lors de la suppression de l'alerte ${alertId}:`, error);
     throw error;
   }
 }
@@ -242,7 +243,7 @@ export async function markAlertAsTriggered(
 
     return updatedAlert;
   } catch (error) {
-    console.error(`❌ Erreur lors du marquage de l'alerte ${alertId} comme déclenchée:`, error);
+    log.error(`❌ Erreur lors du marquage de l'alerte ${alertId} comme déclenchée:`, error);
     throw error;
   }
 }
@@ -267,7 +268,7 @@ export async function createPriceAlertNotification(
 
     return notification;
   } catch (error) {
-    console.error('❌ Erreur lors de la création de la notification:', error);
+    log.error('❌ Erreur lors de la création de la notification:', error);
     throw error;
   }
 }
@@ -286,7 +287,7 @@ export async function getAlertNotifications(alertId: string): Promise<PriceAlert
 
     return notifications;
   } catch (error) {
-    console.error(`❌ Erreur lors de la récupération des notifications pour l'alerte ${alertId}:`, error);
+    log.error(`❌ Erreur lors de la récupération des notifications pour l'alerte ${alertId}:`, error);
     throw error;
   }
 }

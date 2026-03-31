@@ -169,7 +169,7 @@ async function runWeeklyChallengesGeneration() {
         data: {
           title: template.name,
           description: template.description,
-          challenge_type: template.type as any,
+          challenge_type: template.type,
           target: template.target,
           xp_reward: template.xp_reward,
           start_date: weekStart,

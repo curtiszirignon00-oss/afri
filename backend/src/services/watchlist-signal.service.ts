@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 /**
  * AfriBourse — Watchlist Signal CRON Service
  * Runs daily at 18h after BRVM close.
@@ -28,7 +29,7 @@ export async function checkWatchlistSignals(): Promise<WatchlistSignalResult> {
 
   try {
     // Get all distinct users that have watchlist items
-    const userIds: { userId: string }[] = await (prisma.watchlistItem as any).findMany({
+    const userIds: { userId: string }[] = await prisma.watchlistItem.findMany({
       distinct: ['userId'],
       select: { userId: true },
     });
@@ -89,12 +90,12 @@ export async function checkWatchlistSignals(): Promise<WatchlistSignalResult> {
           }
         }
       } catch (err) {
-        console.error(`[WatchlistSignals] Erreur pour userId ${userId}:`, err);
+        log.error(`[WatchlistSignals] Erreur pour userId ${userId}:`, err);
         errors++;
       }
     }
   } catch (err) {
-    console.error('[WatchlistSignals] Erreur globale:', err);
+    log.error('[WatchlistSignals] Erreur globale:', err);
     errors++;
   }
 

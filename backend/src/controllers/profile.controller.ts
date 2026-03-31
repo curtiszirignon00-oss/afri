@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/profile.controller.ts
 // Controllers pour la gestion du profil social
 
@@ -33,7 +34,7 @@ export async function getPublicProfile(req: Request, res: Response, next: NextFu
     return res.status(200).json(profile);
 
   } catch (error: any) {
-    console.error('❌ Erreur getPublicProfile:', error);
+    log.error('❌ Erreur getPublicProfile:', error);
     return next(error);
   }
 }
@@ -59,7 +60,7 @@ export async function getMyProfile(req: Request, res: Response, next: NextFuncti
     return res.status(200).json(profile);
 
   } catch (error) {
-    console.error('❌ Erreur getMyProfile:', error);
+    log.error('❌ Erreur getMyProfile:', error);
     return next(error);
   }
 }
@@ -79,7 +80,7 @@ export async function getMyStats(req: Request, res: Response, next: NextFunction
     return res.status(200).json(stats);
 
   } catch (error) {
-    console.error('❌ Erreur getMyStats:', error);
+    log.error('❌ Erreur getMyStats:', error);
     return next(error);
   }
 }
@@ -95,11 +96,11 @@ export async function getMyStats(req: Request, res: Response, next: NextFunction
 export async function updateMyProfile(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
-    console.log('📝 [UPDATE PROFILE] userId:', userId);
-    console.log('📝 [UPDATE PROFILE] body:', JSON.stringify(req.body));
+    log.debug('📝 [UPDATE PROFILE] userId:', userId);
+    log.debug('📝 [UPDATE PROFILE] body:', JSON.stringify(req.body));
 
     if (!userId) {
-      console.log('❌ [UPDATE PROFILE] No userId found');
+      log.debug('❌ [UPDATE PROFILE] No userId found');
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
@@ -133,9 +134,9 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
       return res.status(400).json({ message: 'La bio ne peut pas dépasser 200 caractères' });
     }
 
-    console.log('📝 [UPDATE PROFILE] Calling service...');
+    log.debug('📝 [UPDATE PROFILE] Calling service...');
     const updatedProfile = await profileService.updateProfileSocial(userId, updateData);
-    console.log('✅ [UPDATE PROFILE] Success:', updatedProfile?.id);
+    log.debug('✅ [UPDATE PROFILE] Success:', updatedProfile?.id);
 
     // ========== GAMIFICATION TRIGGERS ==========
     let xpGained = 0;
@@ -182,7 +183,7 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
       }
 
     } catch (gamificationError) {
-      console.error('Erreur gamification (profile update):', gamificationError);
+      log.error('Erreur gamification (profile update):', gamificationError);
     }
     // ========== FIN GAMIFICATION ==========
 
@@ -196,8 +197,8 @@ export async function updateMyProfile(req: Request, res: Response, next: NextFun
     });
 
   } catch (error: any) {
-    console.error('❌ Erreur updateMyProfile:', error.message);
-    console.error('❌ Stack:', error.stack);
+    log.error('❌ Erreur updateMyProfile:', error.message);
+    log.error('❌ Stack:', error.stack);
     if (error.message?.includes('nom d\'utilisateur')) {
       return res.status(400).json({ message: error.message });
     }
@@ -229,7 +230,7 @@ export async function updateMyPrivacy(req: Request, res: Response, next: NextFun
     return res.status(200).json(updatedProfile);
 
   } catch (error) {
-    console.error('❌ Erreur updateMyPrivacy:', error);
+    log.error('❌ Erreur updateMyPrivacy:', error);
     return next(error);
   }
 }
@@ -288,7 +289,7 @@ export async function followUser(req: Request, res: Response, next: NextFunction
       }
 
     } catch (gamificationError) {
-      console.error('Erreur gamification (follow):', gamificationError);
+      log.error('Erreur gamification (follow):', gamificationError);
     }
     // ========== FIN GAMIFICATION ==========
 
@@ -299,7 +300,7 @@ export async function followUser(req: Request, res: Response, next: NextFunction
     });
 
   } catch (error: any) {
-    console.error('❌ Erreur followUser:', error);
+    log.error('❌ Erreur followUser:', error);
     if (error.message.includes('suivre')) {
       return res.status(400).json({ message: error.message });
     }
@@ -324,7 +325,7 @@ export async function unfollowUser(req: Request, res: Response, next: NextFuncti
     return res.status(200).json({ message: 'Désabonnement réussi' });
 
   } catch (error: any) {
-    console.error('❌ Erreur unfollowUser:', error);
+    log.error('❌ Erreur unfollowUser:', error);
     if (error.message.includes('suivez pas')) {
       return res.status(400).json({ message: error.message });
     }
@@ -345,7 +346,7 @@ export async function getFollowers(req: Request, res: Response, next: NextFuncti
     return res.status(200).json(followers);
 
   } catch (error: any) {
-    console.error('❌ Erreur getFollowers:', error);
+    log.error('❌ Erreur getFollowers:', error);
     if (error.message.includes('privée')) {
       return res.status(403).json({ message: error.message });
     }
@@ -366,7 +367,7 @@ export async function getFollowing(req: Request, res: Response, next: NextFuncti
     return res.status(200).json(following);
 
   } catch (error: any) {
-    console.error('❌ Erreur getFollowing:', error);
+    log.error('❌ Erreur getFollowing:', error);
     if (error.message.includes('privée')) {
       return res.status(403).json({ message: error.message });
     }
@@ -391,7 +392,7 @@ export async function getSuggestions(req: Request, res: Response, next: NextFunc
     return res.status(200).json(suggestions);
 
   } catch (error) {
-    console.error('❌ Erreur getSuggestions:', error);
+    log.error('❌ Erreur getSuggestions:', error);
     return next(error);
   }
 }

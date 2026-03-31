@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/user.controller.ts
 
 import { Response, Request, NextFunction } from "express";
@@ -35,7 +36,7 @@ export async function getCurrentUser(req: Request, res: Response, next: NextFunc
       return res.status(401).json({ message: 'Non autorisé' });
     }
 
-    console.log('[getCurrentUser] Fetching profile for userId:', userId);
+    log.debug('[getCurrentUser] Fetching profile for userId:', userId);
 
     // Le service getCurrentUserProfile retourne les données de l'utilisateur fusionnées (sans mot de passe)
     const userProfile = await usersService.getCurrentUserProfile(userId);
@@ -44,12 +45,12 @@ export async function getCurrentUser(req: Request, res: Response, next: NextFunc
       return res.status(404).json({ message: 'Profil utilisateur non trouvé' });
     }
 
-    console.log('[getCurrentUser] Profile fetched successfully');
+    log.debug('[getCurrentUser] Profile fetched successfully');
     return res.status(200).json(userProfile);
 
   } catch (error: any) {
-    console.error('[getCurrentUser] Error:', error.message);
-    console.error('[getCurrentUser] Stack:', error.stack);
+    log.error('[getCurrentUser] Error:', error.message);
+    log.error('[getCurrentUser] Stack:', error.stack);
     return next(error);
   }
 }
@@ -106,10 +107,11 @@ export async function updateUserProfile(req: Request, res: Response, next: NextF
       keyFeature: 'key_feature',
       socialLinks: 'social_links'
     };
+    const mutableFields = mappedProfileFields as Record<string, unknown>;
     for (const [k, v] of Object.entries(keyMap)) {
-      if (k in mappedProfileFields) {
-        mappedProfileFields[v] = (mappedProfileFields as any)[k];
-        delete (mappedProfileFields as any)[k];
+      if (k in mutableFields) {
+        mutableFields[v] = mutableFields[k];
+        delete mutableFields[k];
       }
     }
 

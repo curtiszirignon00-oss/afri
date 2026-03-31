@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 /**
  * Service de Backup Automatique - AfriBourse
  *
@@ -39,7 +40,7 @@ function ensureBackupDir(): string {
 function saveToJson(data: any[], filename: string, backupPath: string): void {
   const filePath = path.join(backupPath, `${filename}.json`);
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  console.log(`  ✅ ${filename}.json (${data.length} enregistrements)`);
+  log.debug(`  ✅ ${filename}.json (${data.length} enregistrements)`);
 }
 
 /**
@@ -54,14 +55,14 @@ function saveToExcel(data: any[], filename: string, backupPath: string): void {
 
   const filePath = path.join(backupPath, `${filename}.xlsx`);
   XLSX.writeFile(workbook, filePath);
-  console.log(`  ✅ ${filename}.xlsx`);
+  log.debug(`  ✅ ${filename}.xlsx`);
 }
 
 /**
  * Backup des utilisateurs
  */
 async function backupUsers(backupPath: string): Promise<number> {
-  console.log('\n👤 Sauvegarde des utilisateurs...');
+  log.debug('\n👤 Sauvegarde des utilisateurs...');
 
   const users = await prisma.user.findMany({
     select: {
@@ -101,7 +102,7 @@ async function backupUsers(backupPath: string): Promise<number> {
  * Backup des profils utilisateurs
  */
 async function backupUserProfiles(backupPath: string): Promise<number> {
-  console.log('\n📋 Sauvegarde des profils...');
+  log.debug('\n📋 Sauvegarde des profils...');
 
   const profiles = await prisma.userProfile.findMany({
     include: {
@@ -125,7 +126,7 @@ async function backupUserProfiles(backupPath: string): Promise<number> {
  * Backup des portfolios
  */
 async function backupPortfolios(backupPath: string): Promise<number> {
-  console.log('\n💼 Sauvegarde des portfolios...');
+  log.debug('\n💼 Sauvegarde des portfolios...');
 
   const portfolios = await prisma.portfolio.findMany({
     include: {
@@ -165,7 +166,7 @@ async function backupPortfolios(backupPath: string): Promise<number> {
  * Backup des positions
  */
 async function backupPositions(backupPath: string): Promise<number> {
-  console.log('\n📊 Sauvegarde des positions...');
+  log.debug('\n📊 Sauvegarde des positions...');
 
   const positions = await prisma.position.findMany({
     include: {
@@ -196,7 +197,7 @@ async function backupPositions(backupPath: string): Promise<number> {
  * Backup des transactions
  */
 async function backupTransactions(backupPath: string): Promise<number> {
-  console.log('\n💸 Sauvegarde des transactions...');
+  log.debug('\n💸 Sauvegarde des transactions...');
 
   const transactions = await prisma.transaction.findMany({
     include: {
@@ -229,7 +230,7 @@ async function backupTransactions(backupPath: string): Promise<number> {
  * Backup de la progression d'apprentissage
  */
 async function backupLearningProgress(backupPath: string): Promise<number> {
-  console.log('\n📚 Sauvegarde de la progression d\'apprentissage...');
+  log.debug('\n📚 Sauvegarde de la progression d\'apprentissage...');
 
   const progress = await prisma.learningProgress.findMany({
     include: {
@@ -261,7 +262,7 @@ async function backupLearningProgress(backupPath: string): Promise<number> {
  * Backup des alertes de prix
  */
 async function backupPriceAlerts(backupPath: string): Promise<number> {
-  console.log('\n🔔 Sauvegarde des alertes de prix...');
+  log.debug('\n🔔 Sauvegarde des alertes de prix...');
 
   const alerts = await prisma.priceAlert.findMany({
     include: {
@@ -289,7 +290,7 @@ async function backupPriceAlerts(backupPath: string): Promise<number> {
  * Backup des watchlists
  */
 async function backupWatchlists(backupPath: string): Promise<number> {
-  console.log('\n👁️ Sauvegarde des watchlists...');
+  log.debug('\n👁️ Sauvegarde des watchlists...');
 
   const watchlists = await prisma.watchlistItem.findMany({
     include: {
@@ -313,7 +314,7 @@ async function backupWatchlists(backupPath: string): Promise<number> {
  * Backup des achievements utilisateurs
  */
 async function backupAchievements(backupPath: string): Promise<number> {
-  console.log('\n🏆 Sauvegarde des achievements...');
+  log.debug('\n🏆 Sauvegarde des achievements...');
 
   const achievements = await prisma.userAchievement.findMany({
     include: {
@@ -343,7 +344,7 @@ async function backupAchievements(backupPath: string): Promise<number> {
  * Backup des posts sociaux
  */
 async function backupPosts(backupPath: string): Promise<number> {
-  console.log('\n📝 Sauvegarde des posts...');
+  log.debug('\n📝 Sauvegarde des posts...');
 
   const posts = await prisma.post.findMany({
     include: {
@@ -372,7 +373,7 @@ async function backupPosts(backupPath: string): Promise<number> {
  * Backup des communautés
  */
 async function backupCommunities(backupPath: string): Promise<number> {
-  console.log('\n👥 Sauvegarde des communautés...');
+  log.debug('\n👥 Sauvegarde des communautés...');
 
   const communities = await prisma.community.findMany({
     include: {
@@ -410,7 +411,7 @@ async function backupCommunities(backupPath: string): Promise<number> {
  * Backup des participants au challenge
  */
 async function backupChallengeParticipants(backupPath: string): Promise<number> {
-  console.log('\n🏅 Sauvegarde des participants au challenge...');
+  log.debug('\n🏅 Sauvegarde des participants au challenge...');
 
   const participants = await prisma.challengeParticipant.findMany({
     include: {
@@ -440,7 +441,7 @@ async function backupChallengeParticipants(backupPath: string): Promise<number> 
  * Nettoie les vieux backups (garde les 4 derniers = 1 mois)
  */
 function cleanOldBackups(): void {
-  console.log('\n🧹 Nettoyage des anciens backups...');
+  log.debug('\n🧹 Nettoyage des anciens backups...');
 
   if (!fs.existsSync(BACKUP_DIR)) return;
 
@@ -456,26 +457,26 @@ function cleanOldBackups(): void {
     for (const backup of toDelete) {
       const backupPath = path.join(BACKUP_DIR, backup);
       fs.rmSync(backupPath, { recursive: true, force: true });
-      console.log(`  🗑️ Supprimé: ${backup}`);
+      log.debug(`  🗑️ Supprimé: ${backup}`);
     }
   }
 
-  console.log(`  ✅ ${Math.min(backups.length, toKeep)} backup(s) conservé(s)`);
+  log.debug(`  ✅ ${Math.min(backups.length, toKeep)} backup(s) conservé(s)`);
 }
 
 /**
  * Exécute le backup complet
  */
 export async function runFullBackup(): Promise<string> {
-  console.log('═'.repeat(60));
-  console.log('🔄 BACKUP AUTOMATIQUE AFRIBOURSE');
-  console.log('═'.repeat(60));
-  console.log(`📅 Date: ${new Date().toLocaleString('fr-FR')}`);
+  log.debug('═'.repeat(60));
+  log.debug('🔄 BACKUP AUTOMATIQUE AFRIBOURSE');
+  log.debug('═'.repeat(60));
+  log.debug(`📅 Date: ${new Date().toLocaleString('fr-FR')}`);
 
   const startTime = Date.now();
   const backupPath = ensureBackupDir();
 
-  console.log(`📁 Dossier: ${backupPath}`);
+  log.debug(`📁 Dossier: ${backupPath}`);
 
   const stats = {
     users: 0,
@@ -524,23 +525,23 @@ export async function runFullBackup(): Promise<string> {
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
-    console.log('\n' + '═'.repeat(60));
-    console.log('✅ BACKUP TERMINÉ AVEC SUCCÈS');
-    console.log('═'.repeat(60));
-    console.log(`⏱️ Durée: ${duration}s`);
-    console.log(`📊 Statistiques:`);
-    console.log(`   👤 Utilisateurs: ${stats.users}`);
-    console.log(`   💼 Portfolios: ${stats.portfolios}`);
-    console.log(`   📊 Positions: ${stats.positions}`);
-    console.log(`   💸 Transactions: ${stats.transactions}`);
-    console.log(`   📚 Progressions: ${stats.learningProgress}`);
-    console.log(`   🔔 Alertes: ${stats.priceAlerts}`);
-    console.log(`   📝 Posts: ${stats.posts}`);
-    console.log(`📁 Sauvegardé dans: ${backupPath}`);
+    log.debug('\n' + '═'.repeat(60));
+    log.debug('✅ BACKUP TERMINÉ AVEC SUCCÈS');
+    log.debug('═'.repeat(60));
+    log.debug(`⏱️ Durée: ${duration}s`);
+    log.debug(`📊 Statistiques:`);
+    log.debug(`   👤 Utilisateurs: ${stats.users}`);
+    log.debug(`   💼 Portfolios: ${stats.portfolios}`);
+    log.debug(`   📊 Positions: ${stats.positions}`);
+    log.debug(`   💸 Transactions: ${stats.transactions}`);
+    log.debug(`   📚 Progressions: ${stats.learningProgress}`);
+    log.debug(`   🔔 Alertes: ${stats.priceAlerts}`);
+    log.debug(`   📝 Posts: ${stats.posts}`);
+    log.debug(`📁 Sauvegardé dans: ${backupPath}`);
 
     return backupPath;
   } catch (error: any) {
-    console.error('\n❌ ERREUR LORS DU BACKUP:', error.message);
+    log.error('\n❌ ERREUR LORS DU BACKUP:', error.message);
     throw error;
   } finally {
     await prisma.$disconnect();

@@ -76,8 +76,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
         // 6. Créer automatiquement un portfolio pour le nouvel utilisateur
         try {
-            const user = newUser as any;
-            await portfolioService.createPortfolio(user.id, {
+            await portfolioService.createPortfolio(newUser.id, {
                 name: 'Mon Portefeuille',
                 initial_balance: 1000000,
                 is_virtual: true,
@@ -87,24 +86,22 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         }
 
         // 7. Répondre avec un message de succès (sans créer de session)
-        const user = newUser as any;
         const {
-            password: _,
             email_confirmation_token: __,
             email_confirmation_expires: ___,
             remember_token: _rt2,
             password_reset_token: _prt2,
             password_reset_expires: _pre2,
             ...userWithoutSensitiveData
-        } = user;
+        } = newUser;
 
         // Audit log - Inscription réussie
         await writeAuditLog({
-            userId: user.id,
-            userEmail: user.email,
+            userId: newUser.id,
+            userEmail: newUser.email,
             userRole: 'user',
             action: 'REGISTER',
-            details: `Nouvel utilisateur inscrit: ${user.email}`,
+            details: `Nouvel utilisateur inscrit: ${newUser.email}`,
             ip: getClientIp(req),
             userAgent: getUserAgent(req),
         });
@@ -159,7 +156,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         if (!isMatch) {
             // Audit log - Tentative de connexion echouee (mauvais mot de passe)
             await writeAuditLog({
-                userId: (user as any).id,
+                userId: user.id,
                 userEmail: email,
                 action: 'LOGIN_FAILED',
                 details: 'Tentative de connexion avec mauvais mot de passe',
@@ -172,17 +169,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         }
         
         // 3. Création du token et réponse
-        const userAsAny = user as any;
 
         // Régénérer le remember_token à chaque connexion (invalide les sessions parallèles suspectes)
         const crypto = await import('crypto');
         const newRememberToken = crypto.randomBytes(16).toString('hex');
         await prisma.user.update({
-            where: { id: userAsAny.id },
+            where: { id: user.id },
             data: { remember_token: newRememberToken },
         });
 
-        const token = signJWT({ id: userAsAny.id, email: userAsAny.email, role: userAsAny.role, rtk: newRememberToken });
+        const token = signJWT({ id: user.id, email: user.email, role: user.role, rtk: newRememberToken });
 
         const {
             password: _,
@@ -192,9 +188,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             email_confirmation_token: _ect,
             email_confirmation_expires: _ece,
             ...userWithoutPassword
-        } = userAsAny;
+        } = user;
 
-        const cookieOptions = {
+        const cookieOptions: import('express').CookieOptions = {
             httpOnly: true,
             secure: config.nodeEnv === "production",
             sameSite: config.nodeEnv === "production" ? "none" : "lax",
@@ -202,7 +198,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             path: '/', // Ensure cookie is available on all paths
         };
 
-        res.cookie("token", token, cookieOptions as any);
+        res.cookie("token", token, cookieOptions);
 
         // ========== GAMIFICATION TRIGGERS ==========
         let gamificationData: any = {};
@@ -262,7 +258,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 // --- GET ME ---
 export async function getMe(req: Request, res: Response, next: NextFunction) {
     try {
-        const userId = (req as any).user.id;
+        const userId = req.user!.id;
 
         // Requête UNIQUEMENT au service Prisma
         const user = await usersServicePrisma.getUserById(userId);
@@ -271,23 +267,23 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
             return next(createError.notFound("Utilisateur non trouvé"));
         }
 
-        const userAsAny = user as any;
+        const userResponse: Record<string, unknown> = { ...user };
 
         // Les admins ont accès max à toutes les fonctionnalités
-        if (userAsAny.role === 'admin') {
-            userAsAny.subscriptionTier = 'max';
+        if (user.role === 'admin') {
+            userResponse.subscriptionTier = 'max';
         }
 
         // Essai gratuit : enrichir la réponse avec le statut trial
-        if (userAsAny.subscriptionTier === 'free') {
+        if (user.subscriptionTier === 'free') {
             const trial = await prisma.freeTrial.findFirst({
-                where: { userId: userAsAny.id, claimed: true },
+                where: { userId: user.id, claimed: true },
                 orderBy: { expiresAt: 'desc' },
             });
             if (trial?.expiresAt && new Date() < trial.expiresAt) {
-                userAsAny.subscriptionTier = 'premium';
-                userAsAny.hasTrial = true;
-                userAsAny.trialExpiresAt = trial.expiresAt;
+                userResponse.subscriptionTier = 'premium';
+                userResponse.hasTrial = true;
+                userResponse.trialExpiresAt = trial.expiresAt;
             }
         }
 
@@ -295,7 +291,7 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
         // (ex: Safari iOS avec ITP qui bloque les cookies cross-site)
         const rawToken = req.cookies?.token || req.headers['authorization']?.split(' ')[1];
 
-        return res.status(200).json({ user: userAsAny, token: rawToken ?? null });
+        return res.status(200).json({ user: userResponse, token: rawToken ?? null });
     } catch (error) {
         next(error);
         return;
@@ -306,7 +302,7 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
 export async function logout(req: Request, res: Response, next: NextFunction) {
     try {
         // Audit log - Deconnexion
-        const user = (req as any).user;
+        const user = req.user;
         if (user) {
             await writeAuditLog({
                 userId: user.id,
@@ -456,7 +452,7 @@ export async function requestPasswordReset(req: Request, res: Response, next: Ne
         await writeAuditLog({
             userId: user.id,
             userEmail: user.email,
-            action: 'PASSWORD_RESET_REQUEST' as any,
+            action: 'PASSWORD_RESET',
             details: `Demande de réinitialisation de mot de passe depuis IP: ${getClientIp(req)}`,
             ip: getClientIp(req),
             userAgent: getUserAgent(req),

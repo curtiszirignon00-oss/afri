@@ -19,7 +19,7 @@ export const postCreationLimiter = rateLimit({
         return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
-        const resetTime = (req as any).rateLimit?.resetTime;
+        const resetTime = req.rateLimit?.resetTime;
         const retryAfter = resetTime ? Math.ceil(resetTime.getTime() / 1000) : 3600;
         res.status(429).json({
             error: 'Trop de publications. Vous avez atteint la limite de 10 posts par heure.',
@@ -49,7 +49,7 @@ export const commentCreationLimiter = rateLimit({
         return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
-        const resetTime = (req as any).rateLimit?.resetTime;
+        const resetTime = req.rateLimit?.resetTime;
         const retryAfter = resetTime ? Math.ceil(resetTime.getTime() / 1000) : 3600;
         res.status(429).json({
             error: 'Trop de commentaires. Vous avez atteint la limite de 50 commentaires par heure.',
@@ -78,7 +78,7 @@ export const communityPostCreationLimiter = rateLimit({
         return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
-        const resetTime = (req as any).rateLimit?.resetTime;
+        const resetTime = req.rateLimit?.resetTime;
         const retryAfter = resetTime ? Math.ceil(resetTime.getTime() / 1000) : 3600;
         res.status(429).json({
             error: 'Trop de publications. Vous avez atteint la limite de 15 posts par heure dans les communautés.',
@@ -214,7 +214,7 @@ export const reportLimiter = rateLimit({
         return req.user?.id || ipKeyGenerator(req);
     },
     handler: (req, res) => {
-        const resetTime = (req as any).rateLimit?.resetTime;
+        const resetTime = req.rateLimit?.resetTime;
         const retryAfter = resetTime ? Math.ceil(resetTime.getTime() / 1000) : 3600;
         res.status(429).json({
             error: 'Vous avez atteint la limite de signalements pour cette heure.',

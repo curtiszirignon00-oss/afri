@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/learning.service.prisma.ts
 
 import prisma from '../config/prisma';
@@ -75,7 +76,7 @@ export class LearningServicePrisma {
             return sanitizedModules;
 
         } catch (error) {
-            console.error(`❌ Erreur lors de la récupération des modules d'apprentissage:`, error);
+            log.error(`❌ Erreur lors de la récupération des modules d'apprentissage:`, error);
             throw error;
         }
     }
@@ -106,7 +107,7 @@ export class LearningServicePrisma {
 
             return sanitizedModule;
         } catch (error) {
-            console.error(`❌ Erreur lors de la récupération du module par slug:`, error);
+            log.error(`❌ Erreur lors de la récupération du module par slug:`, error);
             throw error;
         }
     }
@@ -177,7 +178,7 @@ export class LearningServicePrisma {
             }
 
             const quiz = module.quizzes[0];
-            const allQuestions = quiz.questions as any[];
+            const allQuestions = quiz.questions as Record<string, unknown>[];
 
             // Sélectionner aléatoirement 10 questions parmi toutes les questions disponibles
             const QUESTIONS_PER_TEST = 10;
@@ -190,7 +191,7 @@ export class LearningServicePrisma {
             }
 
             // Debug: afficher les IDs des questions sélectionnées
-            console.log('📤 Questions envoyées au frontend:', selectedQuestions.map((q: any) => ({ id: q.id, question: q.question?.substring(0, 30) })));
+            log.debug('📤 Questions envoyées au frontend:', selectedQuestions.map((q: any) => ({ id: q.id, question: q.question?.substring(0, 30) })));
 
             // Retourner le quiz avec seulement les questions sélectionnées
             return {
@@ -198,7 +199,7 @@ export class LearningServicePrisma {
                 questions: selectedQuestions
             };
         } catch (error) {
-            console.error(`❌ Erreur lors de la récupération du quiz:`, error);
+            log.error(`❌ Erreur lors de la récupération du quiz:`, error);
             throw error;
         }
     }
@@ -217,7 +218,7 @@ export class LearningServicePrisma {
             }
 
             const quiz = module.quizzes[0];
-            const allQuestions = quiz.questions as any[];
+            const allQuestions = quiz.questions as Record<string, unknown>[];
 
             // Vérifier les tentatives précédentes
             const existingProgress = await prisma.learningProgress.findUnique({
@@ -270,15 +271,15 @@ export class LearningServicePrisma {
             const questionIds = Object.keys(answersMap);
 
             // Debug: afficher les IDs des questions
-            console.log('🔍 IDs des questions reçues:', questionIds);
-            console.log('🔍 IDs des questions dans la base:', allQuestions.map((q: any) => q.id));
+            log.debug('🔍 IDs des questions reçues:', questionIds);
+            log.debug('🔍 IDs des questions dans la base:', allQuestions.map((q: any) => q.id));
 
             questionIds.forEach((questionId: string) => {
                 // Trouver la question dans toutes les questions
                 const question = allQuestions.find((q: any) => q.id === questionId);
 
                 if (!question) {
-                    console.warn(`⚠️ Question ${questionId} non trouvée dans le quiz. Questions disponibles:`, allQuestions.map((q: any) => q.id));
+                    log.warn(`⚠️ Question ${questionId} non trouvée dans le quiz. Questions disponibles:`, allQuestions.map((q: any) => q.id));
                     return;
                 }
 
@@ -336,7 +337,7 @@ export class LearningServicePrisma {
                 }
             });
 
-            console.log('📊 Résultats du quiz à renvoyer:', {
+            log.debug('📊 Résultats du quiz à renvoyer:', {
                 score,
                 passed,
                 totalQuestions,
@@ -359,7 +360,7 @@ export class LearningServicePrisma {
             if (error.statusCode) {
                 throw error;
             }
-            console.error(`❌ Erreur lors de la soumission du quiz:`, error);
+            log.error(`❌ Erreur lors de la soumission du quiz:`, error);
             throw error;
         }
     }
@@ -398,7 +399,7 @@ export class LearningServicePrisma {
                 is_completed: false
             };
         } catch (error) {
-            console.error(`❌ Erreur lors de la récupération des tentatives:`, error);
+            log.error(`❌ Erreur lors de la récupération des tentatives:`, error);
             throw error;
         }
     }
@@ -450,7 +451,7 @@ export class LearningServicePrisma {
                 progressPercent: totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
             };
         } catch (error) {
-            console.error(`❌ Erreur lors de la récupération du résumé de progression:`, error);
+            log.error(`❌ Erreur lors de la récupération du résumé de progression:`, error);
             throw error;
         }
     }

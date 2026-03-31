@@ -1,8 +1,7 @@
+import { log } from '../config/logger';
 // Service pour calculer les statistiques de portefeuille et envoyer les résumés bi-hebdomadaires
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import { sendPortfolioSummaryEmail } from './email.service';
-
-const prisma = new PrismaClient();
 
 interface PortfolioPosition {
   stock_ticker: string;
@@ -258,7 +257,7 @@ async function calculateUserPortfolioStats(userId: string): Promise<UserPortfoli
       biweeklyEvolution,
     };
   } catch (error) {
-    console.error(`[PORTFOLIO SUMMARY] Erreur calcul stats pour user ${userId}:`, error);
+    log.error(`[PORTFOLIO SUMMARY] Erreur calcul stats pour user ${userId}:`, error);
     return null;
   }
 }
@@ -267,7 +266,7 @@ async function calculateUserPortfolioStats(userId: string): Promise<UserPortfoli
  * Envoie les résumés de portefeuille à tous les utilisateurs avec des positions actives
  */
 export async function sendBiweeklyPortfolioSummaries(): Promise<void> {
-  console.log('📊 Début de l\'envoi des résumés bi-hebdomadaires de portefeuille...');
+  log.debug('📊 Début de l\'envoi des résumés bi-hebdomadaires de portefeuille...');
 
   try {
     // Récupérer tous les utilisateurs avec un portfolio virtuel et des positions
@@ -289,7 +288,7 @@ export async function sendBiweeklyPortfolioSummaries(): Promise<void> {
       },
     });
 
-    console.log(`📧 ${users.length} utilisateur(s) avec positions actives trouvé(s)`);
+    log.debug(`📧 ${users.length} utilisateur(s) avec positions actives trouvé(s)`);
 
     let successCount = 0;
     let errorCount = 0;
@@ -300,7 +299,7 @@ export async function sendBiweeklyPortfolioSummaries(): Promise<void> {
         const stats = await calculateUserPortfolioStats(user.id);
 
         if (!stats) {
-          console.log(`⏭️  Pas de stats disponibles pour user ${user.id}`);
+          log.debug(`⏭️  Pas de stats disponibles pour user ${user.id}`);
           continue;
         }
 
@@ -322,7 +321,7 @@ export async function sendBiweeklyPortfolioSummaries(): Promise<void> {
           },
         });
 
-        console.log(`✅ Email envoyé à ${stats.email} (${stats.name})`);
+        log.debug(`✅ Email envoyé à ${stats.email} (${stats.name})`);
         successCount++;
 
         // Créer un snapshot pour le prochain calcul d'évolution
@@ -339,22 +338,22 @@ export async function sendBiweeklyPortfolioSummaries(): Promise<void> {
           },
           'bi_weekly_summary'
         );
-        console.log(`📸 Snapshot créé pour portfolio ${stats.portfolioId}`);
+        log.debug(`📸 Snapshot créé pour portfolio ${stats.portfolioId}`);
 
         // Petit délai pour éviter de surcharger le serveur SMTP
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error: any) {
-        console.error(`❌ Erreur envoi email pour user ${user.id}:`, error.message);
+        log.error(`❌ Erreur envoi email pour user ${user.id}:`, error.message);
         errorCount++;
       }
     }
 
-    console.log(`\n📊 Résumé de l'envoi:`);
-    console.log(`   → Succès: ${successCount}`);
-    console.log(`   → Erreurs: ${errorCount}`);
-    console.log(`   → Total: ${users.length}`);
+    log.debug(`\n📊 Résumé de l'envoi:`);
+    log.debug(`   → Succès: ${successCount}`);
+    log.debug(`   → Erreurs: ${errorCount}`);
+    log.debug(`   → Total: ${users.length}`);
   } catch (error) {
-    console.error('[PORTFOLIO SUMMARY] Erreur globale:', error);
+    log.error('[PORTFOLIO SUMMARY] Erreur globale:', error);
     throw error;
   }
 }

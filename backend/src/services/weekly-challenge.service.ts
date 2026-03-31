@@ -1,13 +1,12 @@
+import { log } from '../config/logger';
 // backend/src/services/weekly-challenge.service.ts
 // Service pour gérer les défis hebdomadaires
 // Système de gamification AfriBourse
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import * as xpService from './xp.service';
 import * as activityService from './activity.service';
 import * as achievementService from './achievement.service';
-
-const prisma = new PrismaClient();
 
 // =====================================
 // TYPES
@@ -138,7 +137,7 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
  */
 export async function generateWeeklyChallenges(challengeCount: number = 5) {
   try {
-    console.log('🎯 Génération des défis hebdomadaires...');
+    log.debug('🎯 Génération des défis hebdomadaires...');
 
     const now = new Date();
     const weekStart = new Date(now);
@@ -157,7 +156,7 @@ export async function generateWeeklyChallenges(challengeCount: number = 5) {
     });
 
     if (existingChallenges.length > 0) {
-      console.log(`   ⚠️ ${existingChallenges.length} défis existent déjà pour cette semaine`);
+      log.debug(`   ⚠️ ${existingChallenges.length} défis existent déjà pour cette semaine`);
       return { created: 0, existing: existingChallenges.length };
     }
 
@@ -181,10 +180,10 @@ export async function generateWeeklyChallenges(challengeCount: number = 5) {
         }
       });
       createdChallenges.push(challenge);
-      console.log(`   ✅ Créé: ${template.name}`);
+      log.debug(`   ✅ Créé: ${template.name}`);
     }
 
-    console.log(`🎯 ${createdChallenges.length} défis créés pour la semaine`);
+    log.debug(`🎯 ${createdChallenges.length} défis créés pour la semaine`);
 
     return {
       created: createdChallenges.length,
@@ -194,7 +193,7 @@ export async function generateWeeklyChallenges(challengeCount: number = 5) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur generateWeeklyChallenges:', error);
+    log.error('❌ Erreur generateWeeklyChallenges:', error);
     throw error;
   }
 }
@@ -258,7 +257,7 @@ export async function getCurrentWeekChallenges() {
     return challenges;
 
   } catch (error) {
-    console.error('❌ Erreur getCurrentWeekChallenges:', error);
+    log.error('❌ Erreur getCurrentWeekChallenges:', error);
     throw error;
   }
 }
@@ -313,7 +312,7 @@ export async function getUserChallengesProgress(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur getUserChallengesProgress:', error);
+    log.error('❌ Erreur getUserChallengesProgress:', error);
     throw error;
   }
 }
@@ -393,7 +392,7 @@ export async function updateChallengeProgress(
       });
 
       if (isCompleted) {
-        console.log(`🎯 ${userId} a complété le défi "${challenge.title}"`);
+        log.debug(`🎯 ${userId} a complété le défi "${challenge.title}"`);
 
         // Créer une activité
         await activityService.createActivity(
@@ -424,7 +423,7 @@ export async function updateChallengeProgress(
     };
 
   } catch (error) {
-    console.error('❌ Erreur updateChallengeProgress:', error);
+    log.error('❌ Erreur updateChallengeProgress:', error);
     throw error;
   }
 }
@@ -483,7 +482,7 @@ export async function claimChallengeReward(userId: string, challengeId: string) 
       await achievementService.unlockAchievement(userId, progress.challenge.badge_code);
     }
 
-    console.log(`✅ ${userId} a réclamé ${progress.challenge.xp_reward} XP pour "${progress.challenge.title}"`);
+    log.debug(`✅ ${userId} a réclamé ${progress.challenge.xp_reward} XP pour "${progress.challenge.title}"`);
 
     return {
       success: true,
@@ -494,7 +493,7 @@ export async function claimChallengeReward(userId: string, challengeId: string) 
     };
 
   } catch (error) {
-    console.error('❌ Erreur claimChallengeReward:', error);
+    log.error('❌ Erreur claimChallengeReward:', error);
     throw error;
   }
 }
@@ -539,7 +538,7 @@ export async function claimAllChallengeRewards(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur claimAllChallengeRewards:', error);
+    log.error('❌ Erreur claimAllChallengeRewards:', error);
     throw error;
   }
 }
@@ -566,12 +565,12 @@ export async function archiveExpiredChallenges() {
       }
     });
 
-    console.log(`📦 ${result.count} défis archivés`);
+    log.debug(`📦 ${result.count} défis archivés`);
 
     return { archived: result.count };
 
   } catch (error) {
-    console.error('❌ Erreur archiveExpiredChallenges:', error);
+    log.error('❌ Erreur archiveExpiredChallenges:', error);
     throw error;
   }
 }

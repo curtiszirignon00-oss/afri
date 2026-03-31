@@ -1,9 +1,8 @@
+import { log } from '../config/logger';
 // src/controllers/upload.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { uploadAvatar, uploadBanner, uploadPostImages, getPublicUrl, deleteFile, getFilePathFromUrl } from '../config/upload.config';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 // ========================================
 // UPLOAD AVATAR
@@ -13,7 +12,7 @@ export async function handleAvatarUpload(req: Request, res: Response, next: Next
     uploadAvatar(req, res, async (err) => {
         try {
             if (err) {
-                console.error('❌ Erreur upload avatar:', err.message);
+                log.error('❌ Erreur upload avatar:', err.message);
                 return res.status(400).json({
                     success: false,
                     message: err.message || 'Erreur lors de l\'upload de l\'avatar'
@@ -51,7 +50,7 @@ export async function handleAvatarUpload(req: Request, res: Response, next: Next
                     try {
                         await deleteFile(oldFilePath);
                     } catch (e) {
-                        console.warn('Impossible de supprimer l\'ancien avatar:', e);
+                        log.warn('Impossible de supprimer l\'ancien avatar:', e);
                     }
                 }
             }
@@ -66,7 +65,7 @@ export async function handleAvatarUpload(req: Request, res: Response, next: Next
                 }
             });
 
-            console.log(`✅ Avatar uploadé pour user ${userId}: ${avatarUrl}`);
+            log.debug(`✅ Avatar uploadé pour user ${userId}: ${avatarUrl}`);
 
             return res.status(200).json({
                 success: true,
@@ -78,7 +77,7 @@ export async function handleAvatarUpload(req: Request, res: Response, next: Next
             });
 
         } catch (error: any) {
-            console.error('❌ Erreur handleAvatarUpload:', error);
+            log.error('❌ Erreur handleAvatarUpload:', error);
             return res.status(500).json({
                 success: false,
                 message: 'Erreur serveur lors de l\'upload'
@@ -95,7 +94,7 @@ export async function handleBannerUpload(req: Request, res: Response, next: Next
     uploadBanner(req, res, async (err) => {
         try {
             if (err) {
-                console.error('❌ Erreur upload banner:', err.message);
+                log.error('❌ Erreur upload banner:', err.message);
                 return res.status(400).json({
                     success: false,
                     message: err.message || 'Erreur lors de l\'upload de la bannière'
@@ -133,7 +132,7 @@ export async function handleBannerUpload(req: Request, res: Response, next: Next
                     try {
                         await deleteFile(oldFilePath);
                     } catch (e) {
-                        console.warn('Impossible de supprimer l\'ancienne bannière:', e);
+                        log.warn('Impossible de supprimer l\'ancienne bannière:', e);
                     }
                 }
             }
@@ -152,7 +151,7 @@ export async function handleBannerUpload(req: Request, res: Response, next: Next
                 }
             });
 
-            console.log(`✅ Bannière uploadée pour user ${userId}: ${bannerUrl}`);
+            log.debug(`✅ Bannière uploadée pour user ${userId}: ${bannerUrl}`);
 
             return res.status(200).json({
                 success: true,
@@ -164,7 +163,7 @@ export async function handleBannerUpload(req: Request, res: Response, next: Next
             });
 
         } catch (error: any) {
-            console.error('❌ Erreur handleBannerUpload:', error);
+            log.error('❌ Erreur handleBannerUpload:', error);
             return res.status(500).json({
                 success: false,
                 message: 'Erreur serveur lors de l\'upload'
@@ -181,7 +180,7 @@ export async function handlePostImagesUpload(req: Request, res: Response, next: 
     uploadPostImages(req, res, async (err) => {
         try {
             if (err) {
-                console.error('❌ Erreur upload images post:', err.message);
+                log.error('❌ Erreur upload images post:', err.message);
                 return res.status(400).json({
                     success: false,
                     message: err.message || 'Erreur lors de l\'upload des images'
@@ -208,7 +207,7 @@ export async function handlePostImagesUpload(req: Request, res: Response, next: 
             // Générer les URLs publiques pour toutes les images
             const imageUrls = files.map(file => getPublicUrl(file.filename, 'posts'));
 
-            console.log(`✅ ${files.length} image(s) uploadée(s) pour user ${userId}`);
+            log.debug(`✅ ${files.length} image(s) uploadée(s) pour user ${userId}`);
 
             return res.status(200).json({
                 success: true,
@@ -220,7 +219,7 @@ export async function handlePostImagesUpload(req: Request, res: Response, next: 
             });
 
         } catch (error: any) {
-            console.error('❌ Erreur handlePostImagesUpload:', error);
+            log.error('❌ Erreur handlePostImagesUpload:', error);
             return res.status(500).json({
                 success: false,
                 message: 'Erreur serveur lors de l\'upload'
@@ -279,12 +278,12 @@ export async function handleDeleteImage(req: Request, res: Response, next: NextF
             }
         } else if (type === 'posts') {
             // Les images sont stockées comme URLs complètes — vérifier en JS
-            const userPosts = await (prisma as any).post.findMany({
+            const userPosts = await prisma.post.findMany({
                 where: { author_id: userId },
                 select: { images: true }
             });
-            const ownsFile = userPosts.some((p: any) =>
-                Array.isArray(p.images) && p.images.some((img: string) => img.includes(filename))
+            const ownsFile = userPosts.some((p) =>
+                Array.isArray(p.images) && (p.images as string[]).some((img) => img.includes(filename))
             );
             if (!ownsFile) {
                 return res.status(403).json({ success: false, message: 'Accès refusé' });
@@ -314,7 +313,7 @@ export async function handleDeleteImage(req: Request, res: Response, next: NextF
         });
 
     } catch (error: any) {
-        console.error('❌ Erreur handleDeleteImage:', error);
+        log.error('❌ Erreur handleDeleteImage:', error);
         return res.status(500).json({
             success: false,
             message: 'Erreur lors de la suppression'

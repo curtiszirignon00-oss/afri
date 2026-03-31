@@ -1,13 +1,12 @@
+import { log } from '../config/logger';
 // backend/src/services/streak.service.ts
 // Service pour gérer les séries (streaks) quotidiennes
 // Inspiré de Duolingo pour AfriBourse
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import * as xpService from './xp.service';
 import * as activityService from './activity.service';
 import { STREAK_ACTIONS, StreakAction, StreakStats, XP_REWARDS } from '../types/gamification.types';
-
-const prisma = new PrismaClient();
 
 // =====================================
 // CONSTANTES
@@ -71,7 +70,7 @@ export async function recordActivity(userId: string, activityType: string) {
     if (lastActivity && lastActivity.getTime() === yesterday.getTime()) {
       // Série maintenue !
       newStreak++;
-      console.log(`🔥 ${userId} maintient sa série ! Jour ${newStreak}`);
+      log.debug(`🔥 ${userId} maintient sa série ! Jour ${newStreak}`);
 
       // Ajouter XP pour maintien de série selon les paliers
       if (newStreak === 7) {
@@ -89,7 +88,7 @@ export async function recordActivity(userId: string, activityType: string) {
     } else if (!lastActivity || lastActivity.getTime() < yesterday.getTime()) {
       // Série perdue, recommencer
       if (profile.current_streak > 0) {
-        console.log(`💔 ${userId} a perdu sa série de ${profile.current_streak} jours`);
+        log.debug(`💔 ${userId} a perdu sa série de ${profile.current_streak} jours`);
       }
       newStreak = 1;
     }
@@ -97,7 +96,7 @@ export async function recordActivity(userId: string, activityType: string) {
     // Mettre à jour le record personnel
     if (newStreak > longestStreak) {
       longestStreak = newStreak;
-      console.log(`🏆 ${userId} nouveau record de série : ${longestStreak} jours !`);
+      log.debug(`🏆 ${userId} nouveau record de série : ${longestStreak} jours !`);
     }
 
     // Mettre à jour le profil
@@ -118,7 +117,7 @@ export async function recordActivity(userId: string, activityType: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur recordActivity:', error);
+    log.error('❌ Erreur recordActivity:', error);
     throw error;
   }
 }
@@ -174,7 +173,7 @@ export async function useFreeze(userId: string) {
       }
     });
 
-    console.log(`🧊 ${userId} a utilisé un freeze. Restant: ${profile.streak_freezes - 1}`);
+    log.debug(`🧊 ${userId} a utilisé un freeze. Restant: ${profile.streak_freezes - 1}`);
 
     // Créer une activité
     await activityService.createActivity(
@@ -192,7 +191,7 @@ export async function useFreeze(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur useFreeze:', error);
+    log.error('❌ Erreur useFreeze:', error);
     throw error;
   }
 }
@@ -232,7 +231,7 @@ export async function addFreezes(userId: string, quantity: number, reason: strin
       }
     });
 
-    console.log(`🧊 ${userId} a reçu ${actualAdded} freeze(s) - ${reason} (total: ${newTotal})`);
+    log.debug(`🧊 ${userId} a reçu ${actualAdded} freeze(s) - ${reason} (total: ${newTotal})`);
 
     return {
       message: `${actualAdded} freeze(s) ajouté(s)`,
@@ -242,7 +241,7 @@ export async function addFreezes(userId: string, quantity: number, reason: strin
     };
 
   } catch (error) {
-    console.error('❌ Erreur addFreezes:', error);
+    log.error('❌ Erreur addFreezes:', error);
     throw error;
   }
 }
@@ -278,7 +277,7 @@ export async function rewardFreezeForAction(
  */
 export async function checkAllStreaks() {
   try {
-    console.log('🔍 Vérification des séries...');
+    log.debug('🔍 Vérification des séries...');
 
     const now = new Date();
     const yesterday = new Date(now);
@@ -303,7 +302,7 @@ export async function checkAllStreaks() {
       }
     });
 
-    console.log(`📊 ${profiles.length} profils avec série à risque`);
+    log.debug(`📊 ${profiles.length} profils avec série à risque`);
 
     let streaksLost = 0;
     let freezesUsed = 0;
@@ -319,7 +318,7 @@ export async function checkAllStreaks() {
           }
         });
 
-        console.log(`🧊 ${profile.userId} - Freeze automatique utilisé. Série de ${profile.current_streak} jours protégée`);
+        log.debug(`🧊 ${profile.userId} - Freeze automatique utilisé. Série de ${profile.current_streak} jours protégée`);
         freezesUsed++;
 
         // Créer une notification/activité
@@ -345,7 +344,7 @@ export async function checkAllStreaks() {
           }
         });
 
-        console.log(`💔 ${profile.userId} a perdu sa série de ${profile.current_streak} jours`);
+        log.debug(`💔 ${profile.userId} a perdu sa série de ${profile.current_streak} jours`);
         streaksLost++;
 
         // Créer une activité de série perdue
@@ -364,9 +363,9 @@ export async function checkAllStreaks() {
       }
     }
 
-    console.log(`✅ Vérification terminée.`);
-    console.log(`   - ${freezesUsed} freeze(s) utilisé(s) automatiquement`);
-    console.log(`   - ${streaksLost} série(s) perdue(s)`);
+    log.debug(`✅ Vérification terminée.`);
+    log.debug(`   - ${freezesUsed} freeze(s) utilisé(s) automatiquement`);
+    log.debug(`   - ${streaksLost} série(s) perdue(s)`);
 
     return {
       checked: profiles.length,
@@ -375,7 +374,7 @@ export async function checkAllStreaks() {
     };
 
   } catch (error) {
-    console.error('❌ Erreur checkAllStreaks:', error);
+    log.error('❌ Erreur checkAllStreaks:', error);
     throw error;
   }
 }
@@ -420,7 +419,7 @@ export async function getStreakStats(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur getStreakStats:', error);
+    log.error('❌ Erreur getStreakStats:', error);
     throw error;
   }
 }

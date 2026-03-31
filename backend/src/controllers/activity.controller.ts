@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/activity.controller.ts
 // Controllers pour activités et leaderboard
 
@@ -26,7 +27,7 @@ export async function getMyActivities(req: Request, res: Response, next: NextFun
     return res.status(200).json(activities);
 
   } catch (error) {
-    console.error('❌ Erreur getMyActivities:', error);
+    log.error('❌ Erreur getMyActivities:', error);
     return next(error);
   }
 }
@@ -48,7 +49,7 @@ export async function getActivityFeed(req: Request, res: Response, next: NextFun
     return res.status(200).json(feed);
 
   } catch (error) {
-    console.error('❌ Erreur getActivityFeed:', error);
+    log.error('❌ Erreur getActivityFeed:', error);
     return next(error);
   }
 }
@@ -70,7 +71,7 @@ export async function getGlobalLeaderboard(req: Request, res: Response, next: Ne
     return res.status(200).json(leaderboard);
 
   } catch (error) {
-    console.error('❌ Erreur getGlobalLeaderboard:', error);
+    log.error('❌ Erreur getGlobalLeaderboard:', error);
     return next(error);
   }
 }
@@ -88,7 +89,7 @@ export async function getCountryLeaderboard(req: Request, res: Response, next: N
     return res.status(200).json(leaderboard);
 
   } catch (error) {
-    console.error('❌ Erreur getCountryLeaderboard:', error);
+    log.error('❌ Erreur getCountryLeaderboard:', error);
     return next(error);
   }
 }
@@ -110,7 +111,7 @@ export async function getFriendsLeaderboard(req: Request, res: Response, next: N
     return res.status(200).json(leaderboard);
 
   } catch (error) {
-    console.error('❌ Erreur getFriendsLeaderboard:', error);
+    log.error('❌ Erreur getFriendsLeaderboard:', error);
     return next(error);
   }
 }

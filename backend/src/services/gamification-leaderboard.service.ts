@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/gamification-leaderboard.service.ts
 // Service pour les classements gamification (XP, pays, amis, ROI)
 // Système de gamification AfriBourse
@@ -121,7 +122,7 @@ export async function getGlobalLeaderboard(
     };
 
   } catch (error) {
-    console.error('❌ Erreur getGlobalLeaderboard:', error);
+    log.error('❌ Erreur getGlobalLeaderboard:', error);
     throw error;
   }
 }
@@ -171,7 +172,7 @@ export async function getGlobalLeaderboardWithUserRank(
     return leaderboard;
 
   } catch (error) {
-    console.error('❌ Erreur getGlobalLeaderboardWithUserRank:', error);
+    log.error('❌ Erreur getGlobalLeaderboardWithUserRank:', error);
     throw error;
   }
 }
@@ -237,7 +238,7 @@ export async function getCountryLeaderboard(
     };
 
   } catch (error) {
-    console.error('❌ Erreur getCountryLeaderboard:', error);
+    log.error('❌ Erreur getCountryLeaderboard:', error);
     throw error;
   }
 }
@@ -296,7 +297,7 @@ export async function getCountryLeaderboardForUser(
     return leaderboard;
 
   } catch (error) {
-    console.error('❌ Erreur getCountryLeaderboardForUser:', error);
+    log.error('❌ Erreur getCountryLeaderboardForUser:', error);
     throw error;
   }
 }
@@ -366,7 +367,7 @@ export async function getFriendsLeaderboard(userId: string): Promise<Leaderboard
     };
 
   } catch (error) {
-    console.error('❌ Erreur getFriendsLeaderboard:', error);
+    log.error('❌ Erreur getFriendsLeaderboard:', error);
     throw error;
   }
 }
@@ -484,7 +485,7 @@ export async function getMonthlyROILeaderboard(limit: number = 50): Promise<Lead
     };
 
   } catch (error) {
-    console.error('❌ Erreur getMonthlyROILeaderboard:', error);
+    log.error('❌ Erreur getMonthlyROILeaderboard:', error);
     throw error;
   }
 }
@@ -574,11 +575,11 @@ export async function updateROITopRanks(): Promise<{ updated: number; reset: num
       }
     }
 
-    console.log(`✅ ROI top 3 mis à jour: ${updated} mis à jour, ${reset} réinitialisés`);
+    log.debug(`✅ ROI top 3 mis à jour: ${updated} mis à jour, ${reset} réinitialisés`);
     return { updated, reset };
 
   } catch (error) {
-    console.error('❌ Erreur updateROITopRanks:', error);
+    log.error('❌ Erreur updateROITopRanks:', error);
     throw error;
   }
 }
@@ -593,7 +594,7 @@ export async function updateROITopRanks(): Promise<{ updated: number; reset: num
  */
 export async function calculateAllRankings() {
   try {
-    console.log('📊 Calcul des classements gamification...');
+    log.debug('📊 Calcul des classements gamification...');
 
     // Récupérer tous les profils avec XP > 0
     const profiles = await prisma.userProfile.findMany({
@@ -606,7 +607,7 @@ export async function calculateAllRankings() {
       }
     });
 
-    console.log(`   📈 ${profiles.length} profils à classer`);
+    log.debug(`   📈 ${profiles.length} profils à classer`);
 
     // Calculer le rang global
     const countryRanks: { [country: string]: number } = {};
@@ -635,9 +636,9 @@ export async function calculateAllRankings() {
 
     const countriesCount = Object.keys(countryRanks).length;
 
-    console.log(`✅ Classements calculés:`);
-    console.log(`   - Profils classés: ${profiles.length}`);
-    console.log(`   - Pays: ${countriesCount}`);
+    log.debug(`✅ Classements calculés:`);
+    log.debug(`   - Profils classés: ${profiles.length}`);
+    log.debug(`   - Pays: ${countriesCount}`);
 
     // Attribuer les récompenses de classement
     await distributeRankingRewards(profiles.length);
@@ -648,7 +649,7 @@ export async function calculateAllRankings() {
     };
 
   } catch (error) {
-    console.error('❌ Erreur calculateAllRankings:', error);
+    log.error('❌ Erreur calculateAllRankings:', error);
     throw error;
   }
 }
@@ -667,7 +668,7 @@ async function distributeRankingRewards(totalParticipants: number) {
     if (top1) {
       // TODO: Vérifier si déjà récompensé cette semaine
       // Pour l'instant, on log seulement
-      console.log(`   🥇 Champion: ${top1.userId}`);
+      log.debug(`   🥇 Champion: ${top1.userId}`);
     }
 
     // Top 2-3: Podium
@@ -677,7 +678,7 @@ async function distributeRankingRewards(totalParticipants: number) {
     });
 
     for (const user of podium) {
-      console.log(`   🥈🥉 Podium #${user.global_rank}: ${user.userId}`);
+      log.debug(`   🥈🥉 Podium #${user.global_rank}: ${user.userId}`);
     }
 
     // Top 10%
@@ -694,10 +695,10 @@ async function distributeRankingRewards(totalParticipants: number) {
       await achievementService.unlockAchievement(user.userId, 'top_10_percent');
     }
 
-    console.log(`   🏆 Top 10% (${top10Percent.length} utilisateurs) - badge attribué`);
+    log.debug(`   🏆 Top 10% (${top10Percent.length} utilisateurs) - badge attribué`);
 
   } catch (error) {
-    console.error('❌ Erreur distributeRankingRewards:', error);
+    log.error('❌ Erreur distributeRankingRewards:', error);
   }
 }
 
@@ -751,7 +752,7 @@ export async function getStreakLeaderboard(limit: number = 50): Promise<Leaderbo
     };
 
   } catch (error) {
-    console.error('❌ Erreur getStreakLeaderboard:', error);
+    log.error('❌ Erreur getStreakLeaderboard:', error);
     throw error;
   }
 }
@@ -808,9 +809,9 @@ export async function updateROIRankStreaks(): Promise<void> {
       }
     }
 
-    console.log(`✅ ROI rank streaks mis à jour (top ${newTop3.length})`);
+    log.debug(`✅ ROI rank streaks mis à jour (top ${newTop3.length})`);
   } catch (error) {
-    console.error('❌ Erreur updateROIRankStreaks:', error);
+    log.error('❌ Erreur updateROIRankStreaks:', error);
     throw error;
   }
 }

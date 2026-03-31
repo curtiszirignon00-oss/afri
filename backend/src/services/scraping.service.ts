@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 
@@ -8,7 +9,7 @@ function parseNumber(text: string | undefined): number | null {
     const number = parseFloat(cleanedText)
     return isNaN(number) ? null : number
   } catch (e) {
-    console.error(`Erreur parsing nombre: ${text}`, e)
+    log.error(`Erreur parsing nombre: ${text}`, e)
     return null
   }
 }
@@ -66,8 +67,8 @@ export async function scrapeStock() {
 
             if (symbol && data.lastPrice !== null) {
                 scrapedStocks.push(data);
-                // console.log(`Scraped Stocks: ${symbol} - ${name}`);
-                // console.log('Data:', data);
+                // log.debug(`Scraped Stocks: ${symbol} - ${name}`);
+                // log.debug('Data:', data);
             }
         });
     
@@ -75,11 +76,11 @@ export async function scrapeStock() {
             throw new Error("Aucune action extraite. Problème avec les sélecteurs CSS.")
         }
     
-        console.log(`✅ Extraction réussie: ${scrapedStocks.length} actions trouvées.`);
+        log.debug(`✅ Extraction réussie: ${scrapedStocks.length} actions trouvées.`);
         return scrapedStocks;
 
     } catch (error) {
-        console.error('❌ Erreur lors du scraping des données:', error);
+        log.error('❌ Erreur lors du scraping des données:', error);
         throw error;
     }
 }
@@ -129,8 +130,8 @@ export async function scrapeIndex() {
 
             if (symbol) {
                 scrapedIndices.push(data);
-                console.log(`Scraped Index: ${symbol} - ${name}`);
-                // console.log('Data:', data);
+                log.debug(`Scraped Index: ${symbol} - ${name}`);
+                // log.debug('Data:', data);
             }
         });
     
@@ -138,11 +139,11 @@ export async function scrapeIndex() {
             throw new Error("Aucun indice extrait. Problème avec les sélecteurs CSS.")
         }
     
-        console.log(`✅ Extraction réussie: ${scrapedIndices.length} indices trouvés.`);
+        log.debug(`✅ Extraction réussie: ${scrapedIndices.length} indices trouvés.`);
         return scrapedIndices;
 
     } catch (error) {
-        console.error('❌ Erreur lors du scraping des indices:', error);
+        log.error('❌ Erreur lors du scraping des indices:', error);
         throw error;
     }
 }

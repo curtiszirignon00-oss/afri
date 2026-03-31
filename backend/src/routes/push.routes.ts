@@ -24,7 +24,7 @@ router.get('/vapid-key', (_req: Request, res: Response) => {
 router.post('/subscribe', auth, async (req: Request, res: Response) => {
   try {
     const { subscription } = req.body;
-    const userId = (req as any).user?.id;
+    const userId = req.user?.id;
 
     if (!userId || !subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
       return res.status(400).json({ error: 'Données d\'abonnement invalides' });
@@ -61,7 +61,7 @@ router.post('/unsubscribe', auth, async (req: Request, res: Response) => {
 // POST /api/push/send - Envoyer une notification (admin only)
 router.post('/send', auth, async (req: Request, res: Response) => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     if (user?.role !== 'admin') {
       return res.status(403).json({ error: 'Accès réservé aux administrateurs' });
     }

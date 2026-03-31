@@ -82,7 +82,7 @@ export async function requireChallengeEnrollment(req: AuthRequest, res: Response
         }
 
         // Ajouter le status au request pour utilisation dans les controllers
-        (req as any).challengeStatus = status;
+        req.challengeStatus = status;
 
         next();
     } catch (error: any) {

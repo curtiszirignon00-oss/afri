@@ -77,13 +77,13 @@ function expandQuery(queryTokens: string[]): string[] {
 // ─── Construction de la base de connaissance ──────────────────────────────────
 
 export async function buildKnowledgeBase(): Promise<void> {
-  const modules = await (prisma as any).learningModule.findMany({
+  const modules = await prisma.learningModule.findMany({
     where: { is_published: true },
     select: { id: true, title: true, slug: true, content: true, content_json: true },
   });
 
   KNOWLEDGE_BASE = modules
-    .map((mod: any) => {
+    .map((mod) => {
       // Priorité : content_json (format structuré) → content (texte brut)
       let flatText = '';
       try {

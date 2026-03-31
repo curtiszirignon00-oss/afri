@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 import { getRedisClient } from '../config/redis';
 
 // TTLs en secondes
@@ -39,7 +40,7 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
     }
     return null;
   } catch (error) {
-    console.error(`[Cache] Erreur GET ${key}:`, error);
+    log.error(`[Cache] Erreur GET ${key}:`, error);
     return null;
   }
 }
@@ -54,7 +55,7 @@ export async function cacheSet<T>(key: string, value: T, ttlSeconds: number): Pr
   try {
     await redis.set(key, value, { ex: ttlSeconds });
   } catch (error) {
-    console.error(`[Cache] Erreur SET ${key}:`, error);
+    log.error(`[Cache] Erreur SET ${key}:`, error);
   }
 }
 
@@ -68,7 +69,7 @@ export async function cacheDelete(key: string): Promise<void> {
   try {
     await redis.del(key);
   } catch (error) {
-    console.error(`[Cache] Erreur DELETE ${key}:`, error);
+    log.error(`[Cache] Erreur DELETE ${key}:`, error);
   }
 }
 
@@ -91,7 +92,7 @@ export async function cacheInvalidatePattern(pattern: string): Promise<void> {
       }
     } while (cursor !== 0);
   } catch (error) {
-    console.error(`[Cache] Erreur INVALIDATE ${pattern}:`, error);
+    log.error(`[Cache] Erreur INVALIDATE ${pattern}:`, error);
   }
 }
 

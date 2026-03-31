@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 import { Response, NextFunction } from 'express';
 import Groq from 'groq-sdk';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
@@ -17,6 +18,7 @@ import { trackAICall, trackAIFeedback, getAISummary } from '../ai/aiAnalytics.se
 import { ANALYST_TOOLS } from '../ai/analystTools';
 import { TOOL_EXECUTORS } from '../services/brvmDataService';
 import { buildContextBlock } from '../ai/tutorRAG';
+import { prisma } from '../config/database';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
@@ -49,7 +51,7 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
     // RAG : recherche du contenu de module pertinent
     const contextBlock = buildContextBlock(cleanMessage);
     if (contextBlock) {
-      console.log(`[TUTOR RAG] Contexte injecté pour : "${cleanMessage.slice(0, 60)}"`);
+      log.debug(`[TUTOR RAG] Contexte injecté pour : "${cleanMessage.slice(0, 60)}"`);
     }
 
     const systemPrompt = buildTutorSystemPrompt(ctx, contextBlock);
@@ -72,7 +74,7 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
 
     trackAICall({
       userId: req.user!.id,
-      sessionId: (req as any).id ?? req.ip ?? 'unknown',
+      sessionId: req.id ?? req.ip ?? 'unknown',
       endpoint: 'tutor',
       provider: 'groq',
       responseTimeMs,
@@ -93,7 +95,7 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
       },
     });
   } catch (error) {
-    console.error('[TUTOR ERROR]', error);
+    log.error('[TUTOR ERROR]', error);
     next(error);
   }
 }
@@ -105,7 +107,7 @@ export async function analyzeStock(req: AuthenticatedRequest, res: Response, nex
       return res.status(400).json({ success: false, message: 'Les données de l\'action sont requises.' });
     }
 
-    const { company_name, symbol, sector, current_price, daily_change_percent, market_cap, volume, description } = stock as any;
+    const { company_name, symbol, sector, current_price, daily_change_percent, market_cap, volume, description } = stock as Record<string, unknown>;
 
     if (!company_name || !symbol) {
       return res.status(400).json({ success: false, message: 'company_name et symbol sont requis.' });
@@ -187,7 +189,7 @@ export async function coachIA(req: AuthenticatedRequest, res: Response, next: Ne
     const safeReply = postProcessResponse(result.text || 'Désolé, je n\'ai pas pu générer de réponse.');
 
     // 5. Analytics (fire-and-forget)
-    const sessionId = (req as any).id ?? req.ip ?? 'unknown';
+    const sessionId = req.id ?? req.ip ?? 'unknown';
     trackAICall({
       userId: req.user!.id,
       sessionId,
@@ -226,14 +228,12 @@ export async function analyzeMarket(req: AuthenticatedRequest, res: Response, ne
       return res.status(400).json({ success: false, message: 'Les données de l\'action sont requises.' });
     }
 
-    const { symbol } = stock as any;
+    const { symbol } = stock;
     if (!symbol) {
       return res.status(400).json({ success: false, message: 'symbol est requis.' });
     }
 
     // Charger les données complètes depuis la DB
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new (PrismaClient as any)();
     const ticker = String(symbol).slice(0, 20);
 
     const [dbStock, fundamental, annualData, history52w] = await Promise.all([
@@ -271,10 +271,8 @@ export async function analyzeMarket(req: AuthenticatedRequest, res: Response, ne
       }),
     ]);
 
-    await prisma.$disconnect();
-
-    const week_high = history52w.length > 0 ? Math.max(...history52w.map((h: any) => h.high)) : undefined;
-    const week_low  = history52w.length > 0 ? Math.min(...history52w.map((h: any) => h.low))  : undefined;
+    const week_high = history52w.length > 0 ? Math.max(...history52w.map((h) => h.high)) : undefined;
+    const week_low  = history52w.length > 0 ? Math.min(...history52w.map((h) => h.low))  : undefined;
 
     // market_cap du fundamental est en M FCFA → convertir en FCFA pour cohérence
     const marketCapFCFA = fundamental?.market_cap != null
@@ -282,11 +280,11 @@ export async function analyzeMarket(req: AuthenticatedRequest, res: Response, ne
       : dbStock?.market_cap ?? undefined;
 
     const stockData: StockData = {
-      company_name:         String(dbStock?.company_name || (stock as any).company_name || '').slice(0, 100),
+      company_name:         String(dbStock?.company_name || stock.company_name || '').slice(0, 100),
       symbol:               ticker,
       sector:               dbStock?.sector ?? undefined,
       description:          dbStock?.description?.slice(0, 500) ?? undefined,
-      current_price:        dbStock?.current_price ?? Number((stock as any).current_price) ?? undefined,
+      current_price:        dbStock?.current_price ?? Number(stock.current_price) ?? undefined,
       daily_change_percent: dbStock?.daily_change_percent ?? undefined,
       volume:               dbStock?.volume ?? undefined,
       market_cap:           marketCapFCFA,
@@ -336,7 +334,7 @@ export async function explainConceptHandler(req: AuthenticatedRequest, res: Resp
 
 export async function analyzePortfolioHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { portfolio, userContext } = req.body as { portfolio?: unknown[]; userContext?: UserContext };
+    const { portfolio, userContext } = req.body as { portfolio?: PortfolioHolding[]; userContext?: UserContext };
 
     if (!Array.isArray(portfolio) || portfolio.length === 0) {
       return res.status(400).json({ success: false, message: 'Le portefeuille est requis (tableau non vide).' });
@@ -345,7 +343,7 @@ export async function analyzePortfolioHandler(req: AuthenticatedRequest, res: Re
       return res.status(400).json({ success: false, message: 'Le portefeuille ne peut pas dépasser 50 lignes.' });
     }
 
-    const text = await analyzePortfolio(portfolio as any, userContext ?? {});
+    const text = await analyzePortfolio(portfolio, userContext ?? {});
 
     return res.json({ success: true, data: { text } });
   } catch (error) {
@@ -431,7 +429,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
         const response = await groq.chat.completions.create({
           model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
           messages,
-          tools: ANALYST_TOOLS as any,
+          tools: ANALYST_TOOLS,
           tool_choice: 'auto',
           max_tokens: 2000,
           temperature: 0.2,
@@ -456,7 +454,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
               let toolArgs: any = {};
               try { toolArgs = JSON.parse(toolCall.function.arguments); } catch {}
 
-              console.log(`[SIMBA-Analyst Tool] ${toolName}(${JSON.stringify(toolArgs)})`);
+              log.debug(`[SIMBA-Analyst Tool] ${toolName}(${JSON.stringify(toolArgs)})`);
 
               let result: any;
               try {
@@ -466,7 +464,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
                   result = await TOOL_EXECUTORS[toolName](toolArgs);
                 }
               } catch (err: any) {
-                console.error(`[SIMBA-Analyst Tool Error] ${toolName}:`, err?.message);
+                log.error(`[SIMBA-Analyst Tool Error] ${toolName}:`, err?.message);
                 result = { error: `Erreur technique sur ${toolName}: ${err?.message}` };
               }
 
@@ -484,7 +482,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
         }
       }
     } catch (err: any) {
-      console.error('[SIMBA-Analyst] Groq failed:', err?.message);
+      log.error('[SIMBA-Analyst] Groq failed:', err?.message);
       return res.json({
         success: true,
         data: {
@@ -505,7 +503,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
 
     trackAICall({
       userId: req.user!.id,
-      sessionId: (req as any).id ?? req.ip ?? 'unknown',
+      sessionId: req.id ?? req.ip ?? 'unknown',
       endpoint: 'analyst',
       provider: 'groq',
       responseTimeMs,
@@ -544,7 +542,7 @@ export async function aiFeedbackHandler(req: AuthenticatedRequest, res: Response
       return res.status(400).json({ success: false, message: 'messageId et rating (positive|negative) sont requis.' });
     }
 
-    const sessionId = (req as any).id ?? req.ip ?? 'unknown';
+    const sessionId = req.id ?? req.ip ?? 'unknown';
     await trackAIFeedback({
       userId: req.user!.id,
       sessionId,
