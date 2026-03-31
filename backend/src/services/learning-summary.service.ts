@@ -1,8 +1,7 @@
+import { log } from '../config/logger';
 // Service pour calculer les statistiques d'apprentissage et envoyer les résumés hebdomadaires
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import { sendLearningSummaryEmail } from './email.service';
-
-const prisma = new PrismaClient();
 
 interface UserLearningStats {
   userId: string;
@@ -257,7 +256,7 @@ async function calculateUserLearningStats(userId: string): Promise<UserLearningS
       period: getWeeklyPeriod(),
     };
   } catch (error) {
-    console.error(`[LEARNING SUMMARY] Erreur calcul stats pour user ${userId}:`, error);
+    log.error(`[LEARNING SUMMARY] Erreur calcul stats pour user ${userId}:`, error);
     return null;
   }
 }
@@ -266,7 +265,7 @@ async function calculateUserLearningStats(userId: string): Promise<UserLearningS
  * Envoie les résumés d'apprentissage à tous les utilisateurs avec de l'activité d'apprentissage
  */
 export async function sendWeeklyLearningSummaries(): Promise<void> {
-  console.log('📚 Début de l\'envoi des résumés hebdomadaires d\'apprentissage...');
+  log.debug('📚 Début de l\'envoi des résumés hebdomadaires d\'apprentissage...');
 
   try {
     const oneWeekAgo = getOneWeekAgo();
@@ -289,7 +288,7 @@ export async function sendWeeklyLearningSummaries(): Promise<void> {
       },
     });
 
-    console.log(`📧 ${usersWithLearningActivity.length} utilisateur(s) avec activité d'apprentissage trouvé(s)`);
+    log.debug(`📧 ${usersWithLearningActivity.length} utilisateur(s) avec activité d'apprentissage trouvé(s)`);
 
     let successCount = 0;
     let skippedCount = 0;
@@ -301,7 +300,7 @@ export async function sendWeeklyLearningSummaries(): Promise<void> {
         const stats = await calculateUserLearningStats(user.id);
 
         if (!stats) {
-          console.log(`⏭️  Pas de stats disponibles pour user ${user.id}`);
+          log.debug(`⏭️  Pas de stats disponibles pour user ${user.id}`);
           skippedCount++;
           continue;
         }
@@ -318,7 +317,7 @@ export async function sendWeeklyLearningSummaries(): Promise<void> {
 
         // Si jamais commencé et aucune activité, skip
         if (!hasWeeklyActivity && stats.totalModulesCompleted === 0) {
-          console.log(`⏭️  Aucune activité pour user ${user.id}, skip`);
+          log.debug(`⏭️  Aucune activité pour user ${user.id}, skip`);
           skippedCount++;
           continue;
         }
@@ -348,24 +347,24 @@ export async function sendWeeklyLearningSummaries(): Promise<void> {
           },
         });
 
-        console.log(`✅ Email envoyé à ${stats.email} (${stats.name})${shouldSendReminder ? ' [Rappel]' : ''}`);
+        log.debug(`✅ Email envoyé à ${stats.email} (${stats.name})${shouldSendReminder ? ' [Rappel]' : ''}`);
         successCount++;
 
         // Petit délai pour éviter de surcharger le serveur SMTP
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error: any) {
-        console.error(`❌ Erreur envoi email pour user ${user.id}:`, error.message);
+        log.error(`❌ Erreur envoi email pour user ${user.id}:`, error.message);
         errorCount++;
       }
     }
 
-    console.log(`\n📚 Résumé de l'envoi:`);
-    console.log(`   → Succès: ${successCount}`);
-    console.log(`   → Ignorés: ${skippedCount}`);
-    console.log(`   → Erreurs: ${errorCount}`);
-    console.log(`   → Total: ${usersWithLearningActivity.length}`);
+    log.debug(`\n📚 Résumé de l'envoi:`);
+    log.debug(`   → Succès: ${successCount}`);
+    log.debug(`   → Ignorés: ${skippedCount}`);
+    log.debug(`   → Erreurs: ${errorCount}`);
+    log.debug(`   → Total: ${usersWithLearningActivity.length}`);
   } catch (error) {
-    console.error('[LEARNING SUMMARY] Erreur globale:', error);
+    log.error('[LEARNING SUMMARY] Erreur globale:', error);
     throw error;
   }
 }

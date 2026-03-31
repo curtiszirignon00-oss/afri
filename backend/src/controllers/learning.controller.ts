@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/learning.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
@@ -52,7 +53,7 @@ export class LearningController {
     async markAsCompleted(req: Request, res: Response, next: NextFunction) {
         try {
             // Récupération de l'ID utilisateur via le middleware d'authentification
-            const userId = (req as any).user?.id as string;
+            const userId = req.user!.id;
             const { slug } = req.params;
 
             if (!userId) {
@@ -104,7 +105,7 @@ export class LearningController {
 
             } catch (gamificationError) {
                 // Log l'erreur mais ne bloque pas la réponse
-                console.error('Erreur gamification (module complete):', gamificationError);
+                log.error('Erreur gamification (module complete):', gamificationError);
             }
             // ========== FIN GAMIFICATION ==========
 
@@ -126,7 +127,7 @@ export class LearningController {
     // 4. RÉCUPÉRER LA PROGRESSION (GET /api/learning-modules/progress)
     async getUserProgress(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = (req as any).user?.id as string;
+            const userId = req.user!.id;
 
             if (!userId) {
                 // CORRECTION TS7030: Retour explicite
@@ -161,7 +162,7 @@ export class LearningController {
             // Ne pas renvoyer les bonnes réponses au client
             const quizWithoutAnswers = {
                 ...quiz,
-                questions: (quiz.questions as any[]).map((q: any) => ({
+                questions: (quiz.questions as Record<string, unknown>[]).map((q) => ({
                     id: q.id,
                     question: q.question,
                     options: q.options,
@@ -178,7 +179,7 @@ export class LearningController {
     // 6. SOUMETTRE LE QUIZ (POST /api/learning-modules/:slug/submit-quiz)
     async submitQuiz(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = (req as any).user?.id as string;
+            const userId = req.user!.id;
             const { slug } = req.params;
             const { answers, timeSpent } = req.body; // answers = array d'index ou objet { questionId: answerIndex }
 
@@ -227,7 +228,7 @@ export class LearningController {
 
             } catch (gamificationError) {
                 // Log l'erreur mais ne bloque pas la réponse
-                console.error('Erreur gamification (quiz submit):', gamificationError);
+                log.error('Erreur gamification (quiz submit):', gamificationError);
             }
             // ========== FIN GAMIFICATION ==========
 
@@ -254,7 +255,7 @@ export class LearningController {
     // 7. OBTENIR LES TENTATIVES AU QUIZ (GET /api/learning-modules/:slug/quiz-attempts)
     async getQuizAttempts(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = (req as any).user?.id as string;
+            const userId = req.user!.id;
             const { slug } = req.params;
 
             if (!userId) {
@@ -272,7 +273,7 @@ export class LearningController {
     // 8. OBTENIR LE RÉSUMÉ DE PROGRESSION POUR LE PROFIL (GET /api/learning/progress/summary)
     async getProgressSummary(req: Request, res: Response, next: NextFunction) {
         try {
-            const userId = (req as any).user?.id as string;
+            const userId = req.user!.id;
 
             if (!userId) {
                 return res.status(401).json({ message: "Utilisateur non authentifié." });

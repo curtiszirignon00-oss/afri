@@ -1,10 +1,11 @@
+import { log } from '../config/logger';
 import {Response, Request, NextFunction} from "express";
 import path from "path";
 require("dotenv").config();
 
 export function errorHandler(error: any, req: Request, res: Response, next: NextFunction) {
   // Log de l'erreur
-  console.error({
+  log.error('Erreur HTTP', {
     message: error.message,
     stack: error.stack,
     url: req.url,

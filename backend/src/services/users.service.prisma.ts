@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/users.service.prisma.ts
 
 import prisma from "../config/prisma";
@@ -46,7 +47,7 @@ export const createUser = async (data: IUserInput) => {
         const { password, ...userWithoutPassword } = user;
         return userWithoutPassword;
     } catch (error: any) {
-        console.error("Erreur lors de la création de l'utilisateur:", error);
+        log.error("Erreur lors de la création de l'utilisateur:", error);
         // Gérer la violation de contrainte unique (Email déjà utilisé)
         if (error.code === 'P2002') {
             throw createError.conflict("Un utilisateur avec cet email existe déjà.");
@@ -293,7 +294,7 @@ export const getCurrentUserProfile = async (userId: string) => {
         };
 
     } catch (error) {
-        console.error(`❌ Erreur lors de la récupération du profil pour l'utilisateur ${userId}:`, error);
+        log.error(`❌ Erreur lors de la récupération du profil pour l'utilisateur ${userId}:`, error);
         throw error;
     }
 };
@@ -502,7 +503,7 @@ export const upsertUserProfile = async (userId: string, profileData: any) => {
         });
         return profile;
     } catch (error) {
-        console.error(`❌ Erreur upsert profile pour ${userId}:`, error);
+        log.error(`❌ Erreur upsert profile pour ${userId}:`, error);
         throw error;
     }
 };

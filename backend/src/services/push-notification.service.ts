@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/push-notification.service.ts
 // Système de notifications push natif avec Web Push API (sans OneSignal)
 import webpush from 'web-push';
@@ -10,9 +11,9 @@ const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:noreply@africbourse.c
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
-  console.log('[Push] Web Push configured with VAPID keys');
+  log.debug('[Push] Web Push configured with VAPID keys');
 } else {
-  console.warn('[Push] VAPID keys not configured, push notifications disabled');
+  log.warn('[Push] VAPID keys not configured, push notifications disabled');
 }
 
 // =============================================
@@ -50,7 +51,7 @@ export async function saveSubscription(userId: string, subscription: PushSubscri
     });
     return true;
   } catch (error) {
-    console.error('[Push] Failed to save subscription:', error);
+    log.error('[Push] Failed to save subscription:', error);
     return false;
   }
 }
@@ -63,7 +64,7 @@ export async function removeSubscription(endpoint: string) {
     await prisma.pushSubscription.delete({ where: { endpoint } });
     return true;
   } catch (error) {
-    console.error('[Push] Failed to remove subscription:', error);
+    log.error('[Push] Failed to remove subscription:', error);
     return false;
   }
 }
@@ -122,7 +123,7 @@ export async function sendPushToUser(userId: string, payload: NotificationPayloa
       if (error.statusCode === 410 || error.statusCode === 404) {
         await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
       } else {
-        console.error(`[Push] Failed to send to ${sub.endpoint.slice(0, 50)}:`, error.statusCode || error.message);
+        log.error(`[Push] Failed to send to ${sub.endpoint.slice(0, 50)}:`, error.statusCode || error.message);
       }
     }
   }

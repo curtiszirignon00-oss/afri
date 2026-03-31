@@ -1,8 +1,9 @@
+import { log } from '../config/logger';
 // backend/src/services/xp.service.ts
 // Service pour gérer le système XP, Level-up et Rewards
 // Inspiré de Duolingo pour AfriBourse
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import * as achievementService from './achievement.service';
 import * as activityService from './activity.service';
 import { createNotification } from './notification.service';
@@ -15,8 +16,6 @@ import {
   UserXPStats,
   XPGainResult
 } from '../types/gamification.types';
-
-const prisma = new PrismaClient();
 
 // =====================================
 // CONFIGURATION XP - FORMULE DUOLINGO-STYLE
@@ -98,7 +97,7 @@ export async function getUserXPStats(userId: string): Promise<UserXPStats> {
 
   // Auto-correction si le niveau stocké ne correspond pas
   if (profile.level !== currentLevel) {
-    console.warn(`⚠️ Level mismatch for ${userId}: stored=${profile.level}, calculated=${currentLevel}, xp=${totalXP}. Auto-correcting.`);
+    log.warn(`⚠️ Level mismatch for ${userId}: stored=${profile.level}, calculated=${currentLevel}, xp=${totalXP}. Auto-correcting.`);
     await prisma.userProfile.update({
       where: { userId },
       data: { level: currentLevel }
@@ -185,7 +184,7 @@ export async function addXP(
       }
     });
 
-    console.log(`✨ ${userId} a gagné ${amount} XP (${reason})`);
+    log.debug(`✨ ${userId} a gagné ${amount} XP (${reason})`);
 
     // Vérifier level-up
     const leveledUp = newLevel > oldLevel;
@@ -209,7 +208,7 @@ export async function addXP(
     };
 
   } catch (error) {
-    console.error('❌ Erreur addXP:', error);
+    log.error('❌ Erreur addXP:', error);
     throw error;
   }
 }
@@ -219,7 +218,7 @@ export async function addXP(
  */
 async function handleLevelUp(userId: string, oldLevel: number, newLevel: number) {
   try {
-    console.log(`🎉 ${userId} est passé du niveau ${oldLevel} au niveau ${newLevel} !`);
+    log.debug(`🎉 ${userId} est passé du niveau ${oldLevel} au niveau ${newLevel} !`);
 
     // Créer une activité
     await activityService.createActivity(
@@ -255,7 +254,7 @@ async function handleLevelUp(userId: string, oldLevel: number, newLevel: number)
     } catch (e) { /* push optionnel */ }
 
   } catch (error) {
-    console.error('❌ Erreur handleLevelUp:', error);
+    log.error('❌ Erreur handleLevelUp:', error);
     throw error;
   }
 }
@@ -298,7 +297,7 @@ async function checkRewardUnlocks(userId: string, currentXP: number) {
         }
       });
 
-      console.log(`🎁 ${userId} a débloqué la récompense "${reward.title}"`);
+      log.debug(`🎁 ${userId} a débloqué la récompense "${reward.title}"`);
 
       // Créer une activité
       await activityService.createActivity(
@@ -315,7 +314,7 @@ async function checkRewardUnlocks(userId: string, currentXP: number) {
     return unlocked;
 
   } catch (error) {
-    console.error('❌ Erreur checkRewardUnlocks:', error);
+    log.error('❌ Erreur checkRewardUnlocks:', error);
     throw error;
   }
 }
@@ -336,7 +335,7 @@ export async function getUserRewards(userId: string) {
     return userRewards;
 
   } catch (error) {
-    console.error('❌ Erreur getUserRewards:', error);
+    log.error('❌ Erreur getUserRewards:', error);
     throw error;
   }
 }
@@ -376,7 +375,7 @@ export async function claimReward(userId: string, rewardId: string) {
     // Appliquer la récompense selon son type
     await applyReward(userId, userReward.reward);
 
-    console.log(`✅ ${userId} a réclamé la récompense "${userReward.reward.title}"`);
+    log.debug(`✅ ${userId} a réclamé la récompense "${userReward.reward.title}"`);
 
     return {
       message: 'Récompense réclamée avec succès',
@@ -384,7 +383,7 @@ export async function claimReward(userId: string, rewardId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur claimReward:', error);
+    log.error('❌ Erreur claimReward:', error);
     throw error;
   }
 }
@@ -393,7 +392,7 @@ export async function claimReward(userId: string, rewardId: string) {
  * Applique une récompense selon son type
  */
 async function applyReward(userId: string, reward: any) {
-  const rewardData = reward.reward_data as any;
+  const rewardData = reward.reward_data as Record<string, unknown>;
 
   switch (reward.reward_type) {
     case 'virtual_cash':
@@ -409,7 +408,7 @@ async function applyReward(userId: string, reward: any) {
             cash_balance: { increment: rewardData.amount }
           }
         });
-        console.log(`💰 +${rewardData.amount} FCFA ajoutés au portfolio`);
+        log.debug(`💰 +${rewardData.amount} FCFA ajoutés au portfolio`);
       }
       break;
 
@@ -421,12 +420,12 @@ async function applyReward(userId: string, reward: any) {
           streak_freezes: { increment: rewardData.quantity }
         }
       });
-      console.log(`🧊 +${rewardData.quantity} freezes ajoutés`);
+      log.debug(`🧊 +${rewardData.quantity} freezes ajoutés`);
       break;
 
     case 'feature':
       // Débloquer une feature (à implémenter selon vos besoins)
-      console.log(`⚡ Feature "${rewardData.featureCode}" débloquée`);
+      log.debug(`⚡ Feature "${rewardData.featureCode}" débloquée`);
       // TODO: Stocker les features débloquées
       break;
 
@@ -435,11 +434,11 @@ async function applyReward(userId: string, reward: any) {
     case 'consultation':
     case 'masterclass':
       // Ces récompenses nécessitent une action manuelle
-      console.log(`🎁 Récompense "${reward.title}" nécessite une livraison manuelle`);
+      log.debug(`🎁 Récompense "${reward.title}" nécessite une livraison manuelle`);
       break;
 
     default:
-      console.log(`⚠️ Type de récompense inconnu: ${reward.reward_type}`);
+      log.debug(`⚠️ Type de récompense inconnu: ${reward.reward_type}`);
   }
 }
 
@@ -458,7 +457,7 @@ async function checkFeatureUnlocks(userId: string, level: number) {
     return;
   }
 
-  console.log(`🔓 Niveau ${level} atteint ! Feature "${featureConfig.feature}" débloquée`);
+  log.debug(`🔓 Niveau ${level} atteint ! Feature "${featureConfig.feature}" débloquée`);
 
   try {
     // Appliquer la feature selon son type
@@ -478,7 +477,7 @@ async function checkFeatureUnlocks(userId: string, level: number) {
               cash_balance: { increment: featureConfig.value as number }
             }
           });
-          console.log(`💰 +${featureConfig.value} FCFA ajoutés au portfolio (niveau ${level})`);
+          log.debug(`💰 +${featureConfig.value} FCFA ajoutés au portfolio (niveau ${level})`);
         }
         break;
 
@@ -488,7 +487,7 @@ async function checkFeatureUnlocks(userId: string, level: number) {
           where: { userId },
           data: { verified_investor: true }
         });
-        console.log(`✅ Badge "Verified Investor" attribué`);
+        log.debug(`✅ Badge "Verified Investor" attribué`);
         break;
 
       case 'extra_alerts':
@@ -498,7 +497,7 @@ async function checkFeatureUnlocks(userId: string, level: number) {
       case 'premium_webinars':
         // Ces features sont vérifiées dynamiquement selon le niveau
         // Pas besoin de stocker, on vérifie le niveau de l'utilisateur
-        console.log(`⚡ Feature "${featureConfig.feature}" débloquée pour niveau ${level}`);
+        log.debug(`⚡ Feature "${featureConfig.feature}" débloquée pour niveau ${level}`);
         break;
     }
 
@@ -512,7 +511,7 @@ async function checkFeatureUnlocks(userId: string, level: number) {
     );
 
   } catch (error) {
-    console.error(`❌ Erreur lors du déblocage de feature niveau ${level}:`, error);
+    log.error(`❌ Erreur lors du déblocage de feature niveau ${level}:`, error);
   }
 }
 
@@ -562,7 +561,7 @@ async function checkAchievementUnlocks(userId: string, reason: string) {
         break;
     }
   } catch (error) {
-    console.error('❌ Erreur checkAchievementUnlocks:', error);
+    log.error('❌ Erreur checkAchievementUnlocks:', error);
   }
 }
 
@@ -584,7 +583,7 @@ export async function getXPHistory(userId: string, limit: number = 50) {
     return history;
 
   } catch (error) {
-    console.error('❌ Erreur getXPHistory:', error);
+    log.error('❌ Erreur getXPHistory:', error);
     throw error;
   }
 }
@@ -618,7 +617,7 @@ export async function getXPToNextLevel(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur getXPToNextLevel:', error);
+    log.error('❌ Erreur getXPToNextLevel:', error);
     throw error;
   }
 }

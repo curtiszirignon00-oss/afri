@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/audit.service.ts
 import prisma from '../config/prisma';
 import { AuditAction } from '@prisma/client';
@@ -39,7 +40,7 @@ export async function writeAuditLog(input: AuditLogInput): Promise<void> {
     });
   } catch (error) {
     // Ne pas faire echouer l'operation principale si l'audit echoue
-    console.error('[AUDIT] Failed to write audit log:', error);
+    log.error('[AUDIT] Failed to write audit log:', error);
   }
 }
 

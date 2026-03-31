@@ -2,8 +2,9 @@
  * Analyst Tools — Définitions des 5 outils function-calling pour SIMBA Analyste
  * Compatible avec l'API Groq (format OpenAI tool_calls)
  */
+import type Groq from 'groq-sdk';
 
-export const ANALYST_TOOLS = [
+export const ANALYST_TOOLS: Groq.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {

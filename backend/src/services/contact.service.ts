@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/contact.service.ts
 
 import prisma from "../config/prisma";
@@ -127,7 +128,7 @@ export const createContactMessage = async (data: ContactMessageData) => {
       html: emailHtml,
     });
   } catch (emailError) {
-    console.error("Erreur lors de l'envoi de l'email:", emailError);
+    log.error("Erreur lors de l'envoi de l'email:", emailError);
     // On continue même si l'email échoue, le message est sauvegardé
   }
 
@@ -186,7 +187,7 @@ export const createContactMessage = async (data: ContactMessageData) => {
       html: confirmationHtml,
     });
   } catch (confirmError) {
-    console.error("Erreur lors de l'envoi de la confirmation:", confirmError);
+    log.error("Erreur lors de l'envoi de la confirmation:", confirmError);
   }
 
   return contactMessage;

@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 import { Request, Response } from 'express';
 import { scrapeStock, scrapeIndex } from '../services/scraping.service';
 import { saveStocks } from '../services/stock.service.prisma';
@@ -33,7 +34,7 @@ import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.serv
 export async function cronScrapeStocks(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Scraping des cotations...');
+        log.debug('[CRON API] Scraping des cotations...');
 
         const stocks = await scrapeStock();
         const indices = await scrapeIndex();
@@ -48,7 +49,7 @@ export async function cronScrapeStocks(req: Request, res: Response) {
         await updateROIRankStreaks();
 
         const duration = Date.now() - startTime;
-        console.log(`[CRON API] Scraping termine en ${duration}ms`);
+        log.debug(`[CRON API] Scraping termine en ${duration}ms`);
 
         return res.status(200).json({
             success: true,
@@ -57,7 +58,7 @@ export async function cronScrapeStocks(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Scraping echoue:', error.message);
+        log.error('[CRON API] Scraping echoue:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -69,7 +70,7 @@ export async function cronScrapeStocks(req: Request, res: Response) {
 export async function cronSaveDailyHistory(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Sauvegarde historique du jour (actions + indices)...');
+        log.debug('[CRON API] Sauvegarde historique du jour (actions + indices)...');
         await saveCurrentDayHistory();
         await saveCurrentDayIndexHistory();
 
@@ -80,7 +81,7 @@ export async function cronSaveDailyHistory(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Sauvegarde historique echouee:', error.message);
+        log.error('[CRON API] Sauvegarde historique echouee:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -92,7 +93,7 @@ export async function cronSaveDailyHistory(req: Request, res: Response) {
 export async function cronVerifyStreaks(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Verification des streaks...');
+        log.debug('[CRON API] Verification des streaks...');
         const result = await runStreakCheck();
 
         const duration = Date.now() - startTime;
@@ -103,7 +104,7 @@ export async function cronVerifyStreaks(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Verification streaks echouee:', error.message);
+        log.error('[CRON API] Verification streaks echouee:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -115,7 +116,7 @@ export async function cronVerifyStreaks(req: Request, res: Response) {
 export async function cronCalculateRankings(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Calcul des classements...');
+        log.debug('[CRON API] Calcul des classements...');
         const result = await runRankingsCalculation();
 
         // Invalider le cache leaderboard apres recalcul
@@ -129,7 +130,7 @@ export async function cronCalculateRankings(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Calcul classements echoue:', error.message);
+        log.error('[CRON API] Calcul classements echoue:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -141,7 +142,7 @@ export async function cronCalculateRankings(req: Request, res: Response) {
 export async function cronResetWeeklyChallenges(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Generation des defis hebdomadaires...');
+        log.debug('[CRON API] Generation des defis hebdomadaires...');
         const result = await runWeeklyChallengesGeneration();
 
         const duration = Date.now() - startTime;
@@ -152,7 +153,7 @@ export async function cronResetWeeklyChallenges(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Generation defis echouee:', error.message);
+        log.error('[CRON API] Generation defis echouee:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -164,7 +165,7 @@ export async function cronResetWeeklyChallenges(req: Request, res: Response) {
 export async function cronCleanup(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Nettoyage des donnees anciennes...');
+        log.debug('[CRON API] Nettoyage des donnees anciennes...');
         const result = await runCleanup();
 
         const duration = Date.now() - startTime;
@@ -175,7 +176,7 @@ export async function cronCleanup(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Nettoyage echoue:', error.message);
+        log.error('[CRON API] Nettoyage echoue:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -187,7 +188,7 @@ export async function cronCleanup(req: Request, res: Response) {
 export async function cronBackup(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Backup en cours...');
+        log.debug('[CRON API] Backup en cours...');
         const backupPath = await runFullBackup();
 
         const duration = Date.now() - startTime;
@@ -198,7 +199,7 @@ export async function cronBackup(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Backup echoue:', error.message);
+        log.error('[CRON API] Backup echoue:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -210,7 +211,7 @@ export async function cronBackup(req: Request, res: Response) {
 export async function cronSendPortfolioSummaries(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Envoi des resumes de portefeuille...');
+        log.debug('[CRON API] Envoi des resumes de portefeuille...');
         await sendBiweeklyPortfolioSummaries();
 
         const duration = Date.now() - startTime;
@@ -220,7 +221,7 @@ export async function cronSendPortfolioSummaries(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Envoi resumes echoue:', error.message);
+        log.error('[CRON API] Envoi resumes echoue:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -232,7 +233,7 @@ export async function cronSendPortfolioSummaries(req: Request, res: Response) {
 export async function cronSendLearningSummaries(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Envoi des resumes d\'apprentissage...');
+        log.debug('[CRON API] Envoi des resumes d\'apprentissage...');
         await sendWeeklyLearningSummaries();
 
         const duration = Date.now() - startTime;
@@ -242,7 +243,7 @@ export async function cronSendLearningSummaries(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Envoi resumes apprentissage echoue:', error.message);
+        log.error('[CRON API] Envoi resumes apprentissage echoue:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -292,7 +293,7 @@ async function checkPriceAlerts() {
                             });
                             emailSent = true;
                         } catch (emailError) {
-                            console.error(`[CRON] Erreur email alerte ${alert.id}:`, emailError);
+                            log.error(`[CRON] Erreur email alerte ${alert.id}:`, emailError);
                         }
                     }
 
@@ -315,22 +316,22 @@ async function checkPriceAlerts() {
                                 alert.alert_type as 'ABOVE' | 'BELOW'
                             );
                         } catch (notifError) {
-                            console.error(`[CRON] Erreur notif inapp alerte ${alert.id}:`, notifError);
+                            log.error(`[CRON] Erreur notif inapp alerte ${alert.id}:`, notifError);
                         }
                     }
 
                     triggeredCount++;
                 }
             } catch (alertError) {
-                console.error(`[CRON] Erreur traitement alerte ${alert.id}:`, alertError);
+                log.error(`[CRON] Erreur traitement alerte ${alert.id}:`, alertError);
             }
         }
 
         if (triggeredCount > 0) {
-            console.log(`[CRON] ${triggeredCount} alerte(s) declenchee(s)`);
+            log.debug(`[CRON] ${triggeredCount} alerte(s) declenchee(s)`);
         }
     } catch (error) {
-        console.error('[CRON] Erreur verification alertes de prix:', error);
+        log.error('[CRON] Erreur verification alertes de prix:', error);
     }
 }
 
@@ -341,11 +342,11 @@ async function checkPriceAlerts() {
 export async function cronCheckWatchlistSignals(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Vérification des signaux watchlist...');
+        log.debug('[CRON API] Vérification des signaux watchlist...');
         const result = await checkWatchlistSignals();
 
         const duration = Date.now() - startTime;
-        console.log(`[CRON API] Signaux watchlist: ${result.notificationsSent} notifications envoyées sur ${result.usersProcessed} utilisateurs`);
+        log.debug(`[CRON API] Signaux watchlist: ${result.notificationsSent} notifications envoyées sur ${result.usersProcessed} utilisateurs`);
         return res.status(200).json({
             success: true,
             message: 'Signaux watchlist vérifiés',
@@ -353,7 +354,7 @@ export async function cronCheckWatchlistSignals(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Erreur signaux watchlist:', error.message);
+        log.error('[CRON API] Erreur signaux watchlist:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -365,7 +366,7 @@ export async function cronCheckWatchlistSignals(req: Request, res: Response) {
 export async function cronSendWatchlistSummaries(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        console.log('[CRON API] Envoi des résumés watchlist hebdomadaires...');
+        log.debug('[CRON API] Envoi des résumés watchlist hebdomadaires...');
         const result = await sendWeeklyWatchlistSummaries();
 
         const duration = Date.now() - startTime;
@@ -376,7 +377,7 @@ export async function cronSendWatchlistSummaries(req: Request, res: Response) {
             duration_ms: duration,
         });
     } catch (error: any) {
-        console.error('[CRON API] Erreur résumés watchlist:', error.message);
+        log.error('[CRON API] Erreur résumés watchlist:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }

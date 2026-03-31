@@ -58,9 +58,9 @@ export async function getReports(req: AuthRequest, res: Response) {
         }
 
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
-        const status = req.query.status as any;
-        const contentType = req.query.contentType as any;
-        const reason = req.query.reason as any;
+        const status = req.query.status as string | undefined;
+        const contentType = req.query.contentType as string | undefined;
+        const reason = req.query.reason as string | undefined;
 
         const result = await moderationService.getReports(page, limit, {
             status,
@@ -343,8 +343,8 @@ export async function getModerationLogs(req: AuthRequest, res: Response) {
 
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 50);
         const moderatorId = req.query.moderatorId as string;
-        const action = req.query.action as any;
-        const targetType = req.query.targetType as any;
+        const action = req.query.action as string | undefined;
+        const targetType = req.query.targetType as string | undefined;
 
         const result = await moderationService.getModerationLogs(page, limit, {
             moderatorId,

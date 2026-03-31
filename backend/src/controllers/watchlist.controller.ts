@@ -88,7 +88,7 @@ export async function updateMyWatchlistItem(req: Request, res: Response, next: N
 
     // Fetch current state to detect first-time entry_price set → award XP
     const existing = await watchlistService.getWatchlistItem(userId, stockTicker.toUpperCase());
-    const isFirstEntryPrice = entry_price != null && (existing == null || (existing as any).entry_price == null);
+    const isFirstEntryPrice = entry_price != null && (existing == null || existing.entry_price == null);
 
     const updated = await watchlistService.updateWatchlistItem(userId, stockTicker.toUpperCase(), {
       entry_price: entry_price ?? undefined,

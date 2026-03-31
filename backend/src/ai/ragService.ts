@@ -78,7 +78,7 @@ async function loadModules(): Promise<KnowledgeDoc[]> {
 
     // Questions/réponses du quiz
     for (const quiz of mod.quizzes) {
-      const questions = quiz.questions as any[];
+      const questions = quiz.questions as Record<string, unknown>[];
       if (!Array.isArray(questions)) continue;
 
       const qaText = questions.map((q: any) => {

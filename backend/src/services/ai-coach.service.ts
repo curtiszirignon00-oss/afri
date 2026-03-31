@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 /**
  * AfribourseChatService — Service IA centralisé (SIMBA)
  * Provider principal : Groq (llama-3.3-70b-versatile / llama-3.1-8b-instant)
@@ -102,7 +103,7 @@ class AfribourseChatService {
       const text = await this.callGroq(messages, options);
       return { text, provider: 'groq', success: true };
     } catch (groqError: any) {
-      console.error('[SIMBA] Groq failed — status:', groqError?.status, '— message:', groqError?.message, '— error:', JSON.stringify(groqError?.error ?? {}));
+      log.error('[SIMBA] Groq failed — status:', groqError?.status, '— message:', groqError?.message, '— error:', JSON.stringify(groqError?.error ?? {}));
       return {
         text: 'Je suis temporairement indisponible. Veuillez réessayer dans quelques instants.',
         provider: 'fallback',

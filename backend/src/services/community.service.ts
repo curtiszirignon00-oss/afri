@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // src/services/community.service.ts
 import { prisma } from '../config/database';
 import type { CommunityVisibility, CommunityMemberRole, PostType } from '@prisma/client';
@@ -587,7 +588,7 @@ export async function joinCommunity(communityId: string, userId: string) {
                     actorId: userId,
                     metadata: { communityId: community.id, communityName: community.name },
                 })
-                .catch((err) => console.error('Error notifying join request:', err));
+                .catch((err) => log.error('Error notifying join request:', err));
         }
 
         return { status: 'pending', request };
@@ -624,7 +625,7 @@ export async function joinCommunity(communityId: string, userId: string) {
                 actorId: userId,
                 metadata: { communityId: community.id, communityName: community.name },
             })
-            .catch((err) => console.error('Error notifying community join:', err));
+            .catch((err) => log.error('Error notifying community join:', err));
     }
 
     return { status: 'joined', member };
@@ -746,7 +747,7 @@ export async function processJoinRequest(
                 actorId: processorId,
                 metadata: { communityId: request.community_id, communityName: request.community.name },
             })
-            .catch((err) => console.error('Error notifying join approved:', err));
+            .catch((err) => log.error('Error notifying join approved:', err));
 
         return { status: 'approved' };
     } else {
@@ -771,7 +772,7 @@ export async function processJoinRequest(
                 actorId: processorId,
                 metadata: { communityId: request.community_id, reason: rejectReason },
             })
-            .catch((err) => console.error('Error notifying join rejected:', err));
+            .catch((err) => log.error('Error notifying join rejected:', err));
 
         return { status: 'rejected' };
     }
@@ -1024,7 +1025,7 @@ export async function createCommunityPost(communityId: string, authorId: string,
         throw new Error('Community not found');
     }
 
-    const settings = community.settings as any || {};
+    const settings = (community.settings ?? {}) as Record<string, unknown>;
     const requireApproval = settings.require_post_approval && !['OWNER', 'ADMIN', 'MODERATOR'].includes(membership.role);
 
     const post = await prisma.communityPost.create({
@@ -1081,7 +1082,7 @@ export async function createCommunityPost(communityId: string, authorId: string,
                 `${post.author.name} ${post.author.lastname}`,
                 postData.title
             )
-            .catch((err) => console.error('Error notifying community post:', err));
+            .catch((err) => log.error('Error notifying community post:', err));
     }
 
     // Always notify platform admins about new community posts for review
@@ -1095,7 +1096,7 @@ export async function createCommunityPost(communityId: string, authorId: string,
             `${post.author.name} ${post.author.lastname}`,
             postData.content
         )
-        .catch((err) => console.error('Error notifying admins:', err));
+        .catch((err) => log.error('Error notifying admins:', err));
 
     return postWithBadge;
 }

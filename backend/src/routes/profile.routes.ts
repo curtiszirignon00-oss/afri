@@ -15,6 +15,7 @@ import {
   getFollowing,
   getSuggestions
 } from '../controllers/profile.controller';
+import { validateUpdateProfile, validateUpdatePrivacy } from '../validation/profile.validation';
 
 const router = Router();
 
@@ -43,14 +44,14 @@ router.get('/me/stats', auth, getMyStats);
  * Met à jour le profil social
  * Protégé
  */
-router.put('/me', auth, updateMyProfile);
+router.put('/me', auth, validateUpdateProfile, updateMyProfile);
 
 /**
  * PATCH /api/profile/me/privacy
  * Met à jour les paramètres de confidentialité
  * Protégé
  */
-router.patch('/me/privacy', auth, updateMyPrivacy);
+router.patch('/me/privacy', auth, validateUpdatePrivacy, updateMyPrivacy);
 
 // =====================================
 // ROUTES PUBLIQUES

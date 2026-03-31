@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // src/services/leaderboard.service.ts
 import { prisma } from '../config/database';
 import { cacheGet, cacheSet, cacheDelete, cacheInvalidatePattern, CACHE_TTL, CACHE_KEYS } from './cache.service';
@@ -80,7 +81,7 @@ export async function calculateWeeklyRankings(limit: number = 100) {
     // Calculer toutes les performances en mémoire (aucune requête DB supplémentaire)
     const performances = participants.map((participant) => {
         if (!participant.user) {
-            console.warn(`[Leaderboard] Participant orphelin ignoré: ${participant.userId}`);
+            log.warn(`[Leaderboard] Participant orphelin ignoré: ${participant.userId}`);
             return null;
         }
 
@@ -109,8 +110,8 @@ export async function calculateWeeklyRankings(limit: number = 100) {
             gainLossPercent,
             validTransactions: participant.valid_transactions,
             isEligible: participant.is_eligible,
-            top3Streak: (participant as any).top3_streak ?? 0,
-            streakRank: (participant as any).top3_rank ?? null,
+            top3Streak: (participant as Record<string, unknown>).top3_streak as number ?? 0,
+            streakRank: (participant as Record<string, unknown>).top3_rank as number | null ?? null,
         };
     });
 

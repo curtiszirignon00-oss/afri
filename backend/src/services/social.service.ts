@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // src/services/social.service.ts
 import { prisma } from '../config/database';
 import type { PostType, VisibilityLevel } from '@prisma/client';
@@ -72,7 +73,7 @@ export async function followUser(followerId: string, followingId: string) {
     });
     if (follower) {
         notificationService.notifyNewFollower(followerId, `${follower.name} ${follower.lastname}`, followingId)
-            .catch(err => console.error('Error notifying new follower:', err));
+            .catch(err => log.error('Error notifying new follower:', err));
     }
 
     return follow;
@@ -431,7 +432,7 @@ export async function createPost(authorId: string, postData: CreatePostDto) {
     if (!visibility || visibility === 'PUBLIC') {
         const authorName = `${post.author.name} ${post.author.lastname}`;
         notificationService.notifyFollowersOfNewPost(authorId, authorName, post.id, title)
-            .catch(err => console.error('Error notifying followers:', err));
+            .catch(err => log.error('Error notifying followers:', err));
     }
 
     return post;
@@ -475,7 +476,7 @@ export async function likePost(userId: string, postId: string) {
     });
     if (liker && post.author_id !== userId) {
         notificationService.notifyPostLike(userId, `${liker.name} ${liker.lastname}`, postId, post.author_id)
-            .catch(err => console.error('Error notifying post like:', err));
+            .catch(err => log.error('Error notifying post like:', err));
     }
 
     return like;
@@ -545,7 +546,7 @@ export async function commentPost(userId: string, postId: string, content: strin
     });
     if (commenter && post.author_id !== userId) {
         notificationService.notifyPostComment(userId, `${commenter.name} ${commenter.lastname}`, postId, post.author_id)
-            .catch(err => console.error('Error notifying post comment:', err));
+            .catch(err => log.error('Error notifying post comment:', err));
     }
 
     // If this is a reply to another comment, notify the parent comment author
@@ -562,7 +563,7 @@ export async function commentPost(userId: string, postId: string, content: strin
                 message: `${commenter.name} ${commenter.lastname} a répondu à votre commentaire`,
                 actorId: userId,
                 postId: postId,
-            }).catch(err => console.error('Error notifying comment reply:', err));
+            }).catch(err => log.error('Error notifying comment reply:', err));
         }
     }
 

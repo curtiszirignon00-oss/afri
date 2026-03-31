@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/achievement.controller.ts
 // Controllers pour la gestion des achievements
 
@@ -19,7 +20,7 @@ export async function getAllAchievements(req: Request, res: Response, next: Next
     return res.status(200).json(achievements);
 
   } catch (error) {
-    console.error('❌ Erreur getAllAchievements:', error);
+    log.error('❌ Erreur getAllAchievements:', error);
     return next(error);
   }
 }
@@ -39,7 +40,7 @@ export async function getMyAchievements(req: Request, res: Response, next: NextF
     return res.status(200).json(achievements);
 
   } catch (error) {
-    console.error('❌ Erreur getMyAchievements:', error);
+    log.error('❌ Erreur getMyAchievements:', error);
     return next(error);
   }
 }
@@ -59,7 +60,7 @@ export async function getMyAchievementsProgress(req: Request, res: Response, nex
     return res.status(200).json(achievements);
 
   } catch (error) {
-    console.error('❌ Erreur getMyAchievementsProgress:', error);
+    log.error('❌ Erreur getMyAchievementsProgress:', error);
     return next(error);
   }
 }
@@ -77,7 +78,7 @@ export async function getUserAchievements(req: Request, res: Response, next: Nex
     return res.status(200).json(achievements);
 
   } catch (error) {
-    console.error('❌ Erreur getUserAchievements:', error);
+    log.error('❌ Erreur getUserAchievements:', error);
     return next(error);
   }
 }
@@ -102,7 +103,7 @@ export async function checkMyAchievements(req: Request, res: Response, next: Nex
     return res.status(200).json(result);
 
   } catch (error) {
-    console.error('❌ Erreur checkMyAchievements:', error);
+    log.error('❌ Erreur checkMyAchievements:', error);
     return next(error);
   }
 }
@@ -123,7 +124,7 @@ export async function getNextAchievements(req: Request, res: Response, next: Nex
     return res.status(200).json(nextBadges);
 
   } catch (error) {
-    console.error('❌ Erreur getNextAchievements:', error);
+    log.error('❌ Erreur getNextAchievements:', error);
     return next(error);
   }
 }
@@ -159,7 +160,7 @@ export async function checkCategoryAchievements(req: Request, res: Response, nex
     return res.status(200).json({ category, unlocked: result });
 
   } catch (error) {
-    console.error('❌ Erreur checkCategoryAchievements:', error);
+    log.error('❌ Erreur checkCategoryAchievements:', error);
     return next(error);
   }
 }

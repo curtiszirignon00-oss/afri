@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/stockHistory.service.ts
 // Service pour sauvegarder l'historique quotidien à partir du scraper existant
 
@@ -10,7 +11,7 @@ import { scrapeStock } from './scraping.service';
  */
 export async function saveCurrentDayHistory() {
   try {
-    console.log('📊 Sauvegarde de l\'historique du jour...');
+    log.debug('📊 Sauvegarde de l\'historique du jour...');
 
     // Récupérer les données du scraper existant
     const stocks = await scrapeStock();
@@ -30,13 +31,13 @@ export async function saveCurrentDayHistory() {
         });
 
         if (!existingStock) {
-          console.log(`⚠️  Stock ${stock.symbol} n'existe pas dans la DB, ignoré`);
+          log.debug(`⚠️  Stock ${stock.symbol} n'existe pas dans la DB, ignoré`);
           continue;
         }
 
         // Vérifier que nous avons les données minimales nécessaires
         if (stock.lastPrice === null) {
-          console.log(`⚠️  ${stock.symbol}: pas de prix, ignoré`);
+          log.debug(`⚠️  ${stock.symbol}: pas de prix, ignoré`);
           continue;
         }
 
@@ -75,18 +76,18 @@ export async function saveCurrentDayHistory() {
         });
 
         savedCount++;
-        console.log(`✅ ${stock.symbol}: historique sauvegardé`);
+        log.debug(`✅ ${stock.symbol}: historique sauvegardé`);
 
       } catch (stockError) {
         errorCount++;
-        console.error(`❌ Erreur pour ${stock.symbol}:`, stockError);
+        log.error(`❌ Erreur pour ${stock.symbol}:`, stockError);
       }
     }
 
-    console.log(`\n📊 Résumé de sauvegarde:`);
-    console.log(`  ✅ Sauvegardés: ${savedCount}`);
-    console.log(`  ❌ Erreurs: ${errorCount}`);
-    console.log(`  📅 Date: ${today.toISOString().split('T')[0]}`);
+    log.debug(`\n📊 Résumé de sauvegarde:`);
+    log.debug(`  ✅ Sauvegardés: ${savedCount}`);
+    log.debug(`  ❌ Erreurs: ${errorCount}`);
+    log.debug(`  📅 Date: ${today.toISOString().split('T')[0]}`);
 
     return {
       success: true,
@@ -96,7 +97,7 @@ export async function saveCurrentDayHistory() {
     };
 
   } catch (error) {
-    console.error('❌ Erreur globale lors de la sauvegarde de l\'historique:', error);
+    log.error('❌ Erreur globale lors de la sauvegarde de l\'historique:', error);
     throw error;
   }
 }
@@ -144,11 +145,11 @@ export async function saveStockHistory(symbol: string, date: Date, data: {
       }
     });
 
-    console.log(`✅ Historique sauvegardé pour ${symbol} le ${normalizedDate.toISOString().split('T')[0]}`);
+    log.debug(`✅ Historique sauvegardé pour ${symbol} le ${normalizedDate.toISOString().split('T')[0]}`);
     return history;
 
   } catch (error) {
-    console.error(`❌ Erreur sauvegarde historique ${symbol}:`, error);
+    log.error(`❌ Erreur sauvegarde historique ${symbol}:`, error);
     throw error;
   }
 }
@@ -178,7 +179,7 @@ export async function getStockHistoryData(symbol: string, days: number = 30) {
     return history;
 
   } catch (error) {
-    console.error(`❌ Erreur récupération historique ${symbol}:`, error);
+    log.error(`❌ Erreur récupération historique ${symbol}:`, error);
     throw error;
   }
 }

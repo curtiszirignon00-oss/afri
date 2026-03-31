@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/controllers/portfolio.controller.ts
 
 import { Request, Response, NextFunction } from 'express';
@@ -100,7 +101,7 @@ export async function buyStock(req: Request, res: Response, next: NextFunction) 
       try {
         await challengeService.validateTransaction(userId, stockTicker);
       } catch (err) {
-        console.error('Error validating challenge transaction:', err);
+        log.error('Error validating challenge transaction:', err);
         // Non-blocking - ne pas faire échouer l'achat
       }
     }
@@ -137,7 +138,7 @@ export async function buyStock(req: Request, res: Response, next: NextFunction) 
       newAchievements = unlockedAchievements.map(a => a.name);
 
     } catch (gamificationError) {
-      console.error('Erreur gamification (buy stock):', gamificationError);
+      log.error('Erreur gamification (buy stock):', gamificationError);
     }
     // ========== FIN GAMIFICATION ==========
 
@@ -169,7 +170,7 @@ export async function buyStock(req: Request, res: Response, next: NextFunction) 
     });
 
   } catch (error: any) {
-    console.error("Error in buyStock controller:", error);
+    log.error("Error in buyStock controller:", error);
     return res.status(400).json({ message: error.message || "Erreur lors de l'achat" });
   }
 }
@@ -211,7 +212,7 @@ export async function sellStock(req: Request, res: Response, next: NextFunction)
       newAchievements = unlockedAchievements.map(a => a.name);
 
     } catch (gamificationError) {
-      console.error('Erreur gamification (sell stock):', gamificationError);
+      log.error('Erreur gamification (sell stock):', gamificationError);
     }
     // ========== FIN GAMIFICATION ==========
 
@@ -242,7 +243,7 @@ export async function sellStock(req: Request, res: Response, next: NextFunction)
     });
 
   } catch (error: any) {
-    console.error("Error in sellStock controller:", error);
+    log.error("Error in sellStock controller:", error);
     return res.status(400).json({ message: error.message || "Erreur lors de la vente" });
   }
 }

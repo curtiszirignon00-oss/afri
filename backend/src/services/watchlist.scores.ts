@@ -258,13 +258,13 @@ function computeScore(
 
 export async function getWatchlistScores(userId: string): Promise<TickerScore[]> {
   // 1. Get watchlist tickers
-  const items = await (prisma.watchlistItem as any).findMany({
+  const items = await prisma.watchlistItem.findMany({
     where: { userId },
     select: { stock_ticker: true },
   });
   if (items.length === 0) return [];
 
-  const tickers: string[] = items.map((i: any) => i.stock_ticker);
+  const tickers: string[] = items.map((i) => i.stock_ticker);
 
   // 2. Fetch last 90 days of history per ticker (ordered asc for indicator calc)
   const cutoff = new Date();

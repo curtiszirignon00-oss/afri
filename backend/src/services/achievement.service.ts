@@ -1,14 +1,13 @@
+import { log } from '../config/logger';
 // backend/src/services/achievement.service.ts
 // Service pour gérer les achievements (badges)
 // Système de gamification AfriBourse
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/database';
 import * as xpService from './xp.service';
 import * as activityService from './activity.service';
 import { createNotification } from './notification.service';
 import { sendAchievementUnlockedNotification } from './push-notification.service';
-
-const prisma = new PrismaClient();
 
 // =====================================
 // RÉCUPÉRATION ACHIEVEMENTS
@@ -32,7 +31,7 @@ export async function getAllAchievements() {
     return achievements;
 
   } catch (error) {
-    console.error('❌ Erreur getAllAchievements:', error);
+    log.error('❌ Erreur getAllAchievements:', error);
     throw error;
   }
 }
@@ -53,7 +52,7 @@ export async function getUserAchievements(userId: string) {
     return userAchievements;
 
   } catch (error) {
-    console.error('❌ Erreur getUserAchievements:', error);
+    log.error('❌ Erreur getUserAchievements:', error);
     throw error;
   }
 }
@@ -87,7 +86,7 @@ export async function getAchievementsWithProgress(userId: string) {
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getAchievementsWithProgress:', error);
+    log.error('❌ Erreur getAchievementsWithProgress:', error);
     throw error;
   }
 }
@@ -158,7 +157,7 @@ export async function unlockAchievement(userId: string, achievementCode: string)
       );
     }
 
-    console.log(`🏆 ${userId} a débloqué "${achievement.name}" (+${achievement.xp_reward} XP)`);
+    log.debug(`🏆 ${userId} a débloqué "${achievement.name}" (+${achievement.xp_reward} XP)`);
 
     // Notification in-app
     const xpText = achievement.xp_reward > 0 ? ` (+${achievement.xp_reward} XP)` : '';
@@ -177,7 +176,7 @@ export async function unlockAchievement(userId: string, achievementCode: string)
         }
       });
     } catch (notifError) {
-      console.error('⚠️ Erreur notification in-app badge:', notifError instanceof Error ? notifError.message : notifError);
+      log.error('⚠️ Erreur notification in-app badge:', notifError instanceof Error ? notifError.message : notifError);
     }
 
     // Push notification
@@ -195,7 +194,7 @@ export async function unlockAchievement(userId: string, achievementCode: string)
     };
 
   } catch (error) {
-    console.error('❌ Erreur unlockAchievement:', error);
+    log.error('❌ Erreur unlockAchievement:', error);
     throw error;
   }
 }
@@ -261,7 +260,7 @@ export async function checkFormationAchievements(userId: string) {
     return unlocked;
 
   } catch (error) {
-    console.error('❌ Erreur checkFormationAchievements:', error);
+    log.error('❌ Erreur checkFormationAchievements:', error);
     throw error;
   }
 }
@@ -312,7 +311,7 @@ export async function checkTradingAchievements(userId: string) {
     return unlocked;
 
   } catch (error) {
-    console.error('❌ Erreur checkTradingAchievements:', error);
+    log.error('❌ Erreur checkTradingAchievements:', error);
     throw error;
   }
 }
@@ -350,7 +349,7 @@ export async function checkSocialAchievements(userId: string) {
     return unlocked;
 
   } catch (error) {
-    console.error('❌ Erreur checkSocialAchievements:', error);
+    log.error('❌ Erreur checkSocialAchievements:', error);
     throw error;
   }
 }
@@ -395,7 +394,7 @@ export async function checkEngagementAchievements(userId: string) {
     return unlocked;
 
   } catch (error) {
-    console.error('❌ Erreur checkEngagementAchievements:', error);
+    log.error('❌ Erreur checkEngagementAchievements:', error);
     throw error;
   }
 }
@@ -457,7 +456,7 @@ export async function checkSpecialAchievements(userId: string) {
     return unlocked;
 
   } catch (error) {
-    console.error('❌ Erreur checkSpecialAchievements:', error);
+    log.error('❌ Erreur checkSpecialAchievements:', error);
     throw error;
   }
 }
@@ -554,7 +553,7 @@ export async function getNextAchievements(userId: string, limit: number = 3) {
     }> = [];
 
     for (const achievement of lockedAchievements) {
-      const criteria = achievement.criteria as any;
+      const criteria = achievement.criteria as Record<string, unknown>;
       if (!criteria || !criteria.type) continue;
 
       let current = 0;
@@ -653,7 +652,7 @@ export async function getNextAchievements(userId: string, limit: number = 3) {
     return progressList.slice(0, limit);
 
   } catch (error) {
-    console.error('❌ Erreur getNextAchievements:', error);
+    log.error('❌ Erreur getNextAchievements:', error);
     throw error;
   }
 }
@@ -681,7 +680,7 @@ export async function checkAllAchievements(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur checkAllAchievements:', error);
+    log.error('❌ Erreur checkAllAchievements:', error);
     throw error;
   }
 }

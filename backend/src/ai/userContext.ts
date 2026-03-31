@@ -45,7 +45,7 @@ export async function getUserContext(userId: string): Promise<UserContext> {
   return {
     user_level: mapExperienceLevel(investorProfile?.experience_level),
     has_portfolio: portfolios !== null,
-    current_module: (learningProgress?.module as any)?.title ?? undefined,
+    current_module: (learningProgress?.module as Record<string, unknown> | null)?.title as string ?? undefined,
     learning_progress: progressStr,
   };
 }

@@ -14,7 +14,7 @@ import prisma from './prisma';
 // Crée l'index TTL sur la collection oauth_states au démarrage (idempotent)
 async function ensureOAuthStatesTTLIndex() {
   try {
-    await (prisma as any).$runCommandRaw({
+    await prisma.$runCommandRaw({
       createIndexes: 'oauth_states',
       indexes: [{ key: { expireAt: 1 }, name: 'ttl_expireAt', expireAfterSeconds: 0 }],
     });
@@ -31,7 +31,7 @@ class MongoStateStore {
       const handle = crypto.randomBytes(16).toString('hex');
       const expireAt = new Date(Date.now() + 10 * 60 * 1000); // TTL 10 min
 
-      await (prisma as any).$runCommandRaw({
+      await prisma.$runCommandRaw({
         insert: 'oauth_states',
         documents: [{ _id: handle, codeVerifier: verifier, expireAt }],
       });
@@ -46,7 +46,7 @@ class MongoStateStore {
   async verify(_req: any, providedState: string, callback: (err: any, codeVerifier: any, state?: any) => void) {
     try {
       // Trouver ET supprimer en une seule opération (findAndModify atomique)
-      const result: any = await (prisma as any).$runCommandRaw({
+      const result: any = await prisma.$runCommandRaw({
         findAndModify: 'oauth_states',
         query: { _id: providedState, expireAt: { $gt: new Date() } },
         remove: true,
@@ -83,7 +83,7 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
     '';
 
   // 1. Compte OAuth déjà lié ?
-  const existingOAuth = await (prisma as any).oAuthAccount.findUnique({
+  const existingOAuth = await prisma.oAuthAccount.findUnique({
     where: {
       provider_provider_user_id: { provider, provider_user_id: providerUserId },
     },
@@ -120,9 +120,9 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
       },
     });
 
-    await (prisma as any).portfolio.create({
+    await prisma.portfolio.create({
       data: {
-        userId: (user as any).id,
+        userId: user.id,
         name: 'Mon Portefeuille',
         cash_balance: 1000000,
         initial_balance: 1000000,
@@ -131,9 +131,9 @@ export async function findOrCreateOAuthUser(profile: any, provider: string) {
   }
 
   // 4. Lier le compte OAuth
-  await (prisma as any).oAuthAccount.create({
+  await prisma.oAuthAccount.create({
     data: {
-      user_id: (user as any).id,
+      user_id: user.id,
       provider,
       provider_user_id: providerUserId,
       provider_email: email,

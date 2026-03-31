@@ -236,7 +236,7 @@ export async function getCommunityMembers(req: AuthRequest, res: Response) {
     try {
         const { communityId } = req.params;
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
-        const role = req.query.role as any;
+        const role = req.query.role as string | undefined;
 
         const result = await communityService.getCommunityMembers(communityId, page, limit, role);
         res.status(200).json({ success: true, ...result });

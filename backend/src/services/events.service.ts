@@ -1,7 +1,7 @@
+import { log } from '../config/logger';
 // src/services/events.service.ts
-import { PrismaClient, EventStatus, EventType } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { EventStatus, EventType } from '@prisma/client';
+import { prisma } from '../config/database';
 
 // Email admin autorisé à gérer les événements
 const ADMIN_EMAIL = 'contact@africbourse.com';
@@ -49,7 +49,7 @@ class EventsService {
         const isAdminEmail = user.email === ADMIN_EMAIL;
         const isAdminRole = user.role === 'admin' || user.role === 'superadmin';
 
-        console.log(`[EventsService] Checking admin access for ${user.email}, role: ${user.role}, isAdmin: ${isAdminEmail || isAdminRole}`);
+        log.debug(`[EventsService] Checking admin access for ${user.email}, role: ${user.role}, isAdmin: ${isAdminEmail || isAdminRole}`);
 
         return isAdminEmail || isAdminRole;
     }

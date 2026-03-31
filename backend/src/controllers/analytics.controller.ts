@@ -1,7 +1,6 @@
+import { log } from '../config/logger';
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../config/database';
 
 interface AuthRequest extends Request {
   user?: {
@@ -36,7 +35,7 @@ export const trackPageView = async (req: AuthRequest, res: Response) => {
 
     return res.status(201).json({ success: true });
   } catch (error) {
-    console.error('Erreur trackPageView:', error);
+    log.error('Erreur trackPageView:', error);
     return res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 };
@@ -67,7 +66,7 @@ export const trackAction = async (req: AuthRequest, res: Response) => {
 
     return res.status(201).json({ success: true });
   } catch (error) {
-    console.error('Erreur trackAction:', error);
+    log.error('Erreur trackAction:', error);
     return res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 };
@@ -99,7 +98,7 @@ export const trackFeatureUsage = async (req: AuthRequest, res: Response) => {
 
     return res.status(201).json({ success: true });
   } catch (error) {
-    console.error('Erreur trackFeatureUsage:', error);
+    log.error('Erreur trackFeatureUsage:', error);
     return res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 };
@@ -118,7 +117,7 @@ export const updatePageDuration = async (req: AuthRequest, res: Response) => {
 
     return res.status(200).json({ success: true });
   } catch (error) {
-    console.error('Erreur updatePageDuration:', error);
+    log.error('Erreur updatePageDuration:', error);
     return res.status(500).json({ success: false, error: 'Erreur serveur' });
   }
 };
@@ -317,7 +316,7 @@ export const getAnalyticsStats = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Erreur getAnalyticsStats:', error);
+    log.error('Erreur getAnalyticsStats:', error);
     return res.status(500).json({
       success: false,
       message: 'Erreur serveur',

@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/middlewares/level.middleware.ts
 // Middleware pour vérifier le niveau utilisateur et les fonctionnalités débloquées
 
@@ -175,7 +176,7 @@ export function requireLevel(featureKey: string) {
             return next();
 
         } catch (error) {
-            console.error('Erreur middleware niveau:', error);
+            log.error('Erreur middleware niveau:', error);
             return next(error);
         }
     };
@@ -203,7 +204,7 @@ export async function attachLevelInfo(req: Request, res: Response, next: NextFun
 
         if (profile) {
             // Enrichir l'objet user avec les infos de niveau
-            (req as any).userLevel = {
+            req.userLevel = {
                 level: profile.level,
                 totalXP: profile.total_xp,
                 unlockedFeatures: getUnlockedFeatures(profile.level),
@@ -214,7 +215,7 @@ export async function attachLevelInfo(req: Request, res: Response, next: NextFun
         return next();
 
     } catch (error) {
-        console.error('Erreur attachLevelInfo:', error);
+        log.error('Erreur attachLevelInfo:', error);
         return next();
     }
 }
@@ -405,7 +406,7 @@ export async function applyLevelRewards(userId: string, newLevel: number): Promi
                             }
                         });
 
-                        console.log(`✅ [LEVEL UP] +${reward.value} FCFA ajoutés au portfolio de ${userId}`);
+                        log.debug(`✅ [LEVEL UP] +${reward.value} FCFA ajoutés au portfolio de ${userId}`);
                     }
                     break;
 
@@ -417,7 +418,7 @@ export async function applyLevelRewards(userId: string, newLevel: number): Promi
                             data: { verified_investor: true }
                         });
 
-                        console.log(`✅ [LEVEL UP] Badge vérifié attribué à ${userId}`);
+                        log.debug(`✅ [LEVEL UP] Badge vérifié attribué à ${userId}`);
                     }
                     break;
 
@@ -432,16 +433,16 @@ export async function applyLevelRewards(userId: string, newLevel: number): Promi
                         }
                     });
 
-                    console.log(`✅ [LEVEL UP] +${reward.value} freezes ajoutés à ${userId}`);
+                    log.debug(`✅ [LEVEL UP] +${reward.value} freezes ajoutés à ${userId}`);
                     break;
 
                 case 'feature':
                     // Les features sont automatiquement débloquées par le niveau
-                    console.log(`✅ [LEVEL UP] Feature ${reward.value} débloquée pour ${userId}`);
+                    log.debug(`✅ [LEVEL UP] Feature ${reward.value} débloquée pour ${userId}`);
                     break;
             }
         } catch (error) {
-            console.error(`Erreur application récompense niveau ${newLevel}:`, error);
+            log.error(`Erreur application récompense niveau ${newLevel}:`, error);
         }
     }
 

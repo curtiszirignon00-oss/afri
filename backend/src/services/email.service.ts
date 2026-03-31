@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 import transporter from '../config/mailer';
 import config from '../config/environnement';
 
@@ -355,14 +356,188 @@ export async function sendPasswordResetEmail({
 }
 
 /**
+ * Envoie un email d'invitation à l'essai gratuit de 14 jours
+ */
+export async function sendTrialInviteEmail({
+  email,
+  name,
+  token,
+}: {
+  email: string;
+  name: string;
+  token: string;
+}): Promise<void> {
+  const claimUrl = `${config.app.frontendUrl}/essai-gratuit?token=${token}`;
+  const displayName = name.split(' ')[0];
+
+  const frontendUrl = config.app.frontendUrl;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Votre essai gratuit 14 jours - AfriBourse IA</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f0f4f8; }
+        .container { background-color: #ffffff; border-radius: 16px; padding: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+        .logo-text { font-size: 28px; font-weight: bold; color: #f97316; margin: 0; text-align: center; }
+        .hero { background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%); border-radius: 12px; padding: 32px 24px; text-align: center; margin: 20px 0 28px; }
+        .hero h1 { color: #ffffff; font-size: 24px; margin: 0 0 8px 0; }
+        .hero p { color: #c7d2fe; margin: 0; font-size: 15px; }
+        .section-title { font-size: 16px; font-weight: 700; color: #1f2937; margin: 28px 0 12px; border-left: 4px solid #f97316; padding-left: 10px; }
+        .feature-card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+        .feature-card.blue { border-left: 4px solid #3b82f6; background: #eff6ff; }
+        .feature-card.purple { border-left: 4px solid #8b5cf6; background: #f5f3ff; }
+        .feature-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .feature-emoji { font-size: 22px; }
+        .feature-name { font-weight: 700; font-size: 15px; color: #1f2937; }
+        .feature-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; margin-left: auto; }
+        .tag-blue { background: #dbeafe; color: #1d4ed8; }
+        .tag-purple { background: #ede9fe; color: #7c3aed; }
+        .feature-desc { font-size: 13px; color: #4b5563; margin: 0 0 10px; }
+        .feature-capabilities { list-style: none; padding: 0; margin: 0 0 12px; }
+        .feature-capabilities li { font-size: 13px; color: #374151; padding: 3px 0; }
+        .feature-capabilities li::before { content: "✓ "; color: #10b981; font-weight: bold; }
+        .where-to-find { background: #f9fafb; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #6b7280; }
+        .where-to-find strong { color: #374151; }
+        .where-link { color: #f97316; font-weight: 600; text-decoration: none; }
+        .cta-block { text-align: center; margin: 28px 0; }
+        .button { display: inline-block; padding: 16px 44px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff !important; text-decoration: none; border-radius: 10px; font-size: 17px; font-weight: bold; }
+        .timer { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 14px 18px; margin: 20px 0; text-align: center; color: #92400e; font-size: 14px; }
+        .url-fallback { word-break: break-all; color: #f97316; font-size: 12px; }
+        .note { font-size: 12px; color: #9ca3af; text-align: center; margin-top: 10px; }
+        .footer { text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px; border-top: 1px solid #f3f4f6; padding-top: 20px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+
+        <p class="logo-text">📈 AfriBourse</p>
+
+        <div class="hero">
+          <h1>🎁 14 jours d'accès IA offerts</h1>
+          <p>Découvrez SIMBA et l'Analyste IA — gratuitement, sans carte bancaire</p>
+        </div>
+
+        <p>Bonjour <strong>${displayName}</strong>,</p>
+        <p>Nous vous offrons un accès complet à nos outils IA pour tester par vous-même ce qu'ils peuvent faire pour votre investissement sur la BRVM.</p>
+
+        <!-- FEATURE 1 : SIMBA COACH -->
+        <p class="section-title">🤖 SIMBA — Votre Coach IA personnel</p>
+        <div class="feature-card blue">
+          <div class="feature-header">
+            <span class="feature-emoji">💬</span>
+            <span class="feature-name">SIMBA — Coach IA</span>
+            <span class="feature-tag tag-blue">Académie</span>
+          </div>
+          <p class="feature-desc">Un assistant intelligent qui répond à toutes vos questions sur la bourse, l'investissement et les marchés africains — disponible à tout moment, en français.</p>
+          <ul class="feature-capabilities">
+            <li>Expliquer les concepts boursiers (PER, dividende, action, obligation…)</li>
+            <li>Répondre à vos questions sur la BRVM et les marchés africains</li>
+            <li>Vous guider dans vos modules d'apprentissage</li>
+            <li>Vous aider à comprendre vos résultats de quiz</li>
+          </ul>
+          <div class="where-to-find">
+            📍 <strong>Où le trouver :</strong> Allez dans
+            <a href="${frontendUrl}/learn" class="where-link">Académie (Apprendre)</a>
+            → ouvrez n'importe quel module → bouton <strong>"Demander à SIMBA"</strong>
+          </div>
+        </div>
+
+        <!-- FEATURE 2 : ANALYSTE DE MARCHÉ -->
+        <p class="section-title">📊 Analyste de Marché — L'IA qui lit vos actions</p>
+        <div class="feature-card purple">
+          <div class="feature-header">
+            <span class="feature-emoji">🔍</span>
+            <span class="feature-name">Analyste SIMBA</span>
+            <span class="feature-tag tag-purple">Marchés</span>
+          </div>
+          <p class="feature-desc">Une analyse approfondie de n'importe quelle action cotée sur la BRVM — valorisation, ratios, risques, comparaison sectorielle. Plus un chat pour poser vos questions directement sur l'action.</p>
+          <ul class="feature-capabilities">
+            <li>Analyse complète d'une action (PER, rendement, valorisation)</li>
+            <li>Comparaison avec le secteur et les moyennes du marché</li>
+            <li>Identification des points forts et des risques</li>
+            <li>Chat en direct : posez n'importe quelle question sur l'action</li>
+          </ul>
+          <div class="where-to-find">
+            📍 <strong>Où le trouver :</strong> Allez dans
+            <a href="${frontendUrl}/markets" class="where-link">Marchés</a>
+            → cliquez sur une action (ex : SGBC, BOAB, ONTBF…) → onglet <strong>"Vue d'ensemble"</strong> → section <strong>"Analyse par SIMBA"</strong>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-block">
+          <div class="timer">⏰ <strong>Offre limitée — 14 jours à partir de l'activation</strong><br>Aucun paiement requis, aucune carte bancaire demandée.</div>
+          <a href="${claimUrl}" class="button">🚀 Activer mon accès gratuit</a>
+          <p class="note">Ou copiez ce lien dans votre navigateur :</p>
+          <p class="url-fallback">${claimUrl}</p>
+        </div>
+
+        <div class="footer">
+          <p>© AfriBourse — Votre plateforme d'investissement africaine</p>
+          <p>Après 14 jours, votre compte revient automatiquement sur le plan gratuit.<br>Si vous n'êtes pas à l'origine de cette offre, ignorez simplement cet email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `
+Bonjour ${displayName},
+
+Nous vous offrons 14 jours d'accès gratuit aux outils IA d'AfriBourse.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 SIMBA — Coach IA personnel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Posez toutes vos questions sur la bourse et la BRVM.
+✓ Explique les concepts (PER, dividende, obligations…)
+✓ Répond à vos questions sur les marchés africains
+✓ Vous aide dans vos modules d'apprentissage
+
+📍 Où le trouver : Académie (Apprendre) → ouvrez un module → "Demander à SIMBA"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 Analyste de Marché IA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Analyse complète de n'importe quelle action BRVM.
+✓ Valorisation, PER, rendement du dividende
+✓ Comparaison sectorielle et risques
+✓ Chat en direct sur l'action de votre choix
+
+📍 Où le trouver : Marchés → cliquez sur une action → "Vue d'ensemble" → "Analyse par SIMBA"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 Activez votre accès (14 jours, gratuit) :
+${claimUrl}
+
+Après 14 jours, votre compte revient automatiquement sur le plan gratuit.
+Aucun paiement, aucune carte bancaire.
+
+AfriBourse — Votre plateforme d'investissement africaine
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: '🎁 Votre essai gratuit 14 jours — SIMBA IA & Conseiller Financier',
+    html,
+    text,
+  });
+}
+
+/**
  * Fonction générique d'envoi d'email
  */
 export async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<void> {
-  console.log(`📧 [EMAIL] Tentative d'envoi d'email:`);
-  console.log(`   → Destinataire: ${to}`);
-  console.log(`   → Sujet: ${subject}`);
-  console.log(`   → Expéditeur: "${config.email.fromName}" <${config.email.from}>`);
-  console.log(`   → Serveur SMTP: ${config.email.host}:${config.email.port}`);
+  log.debug(`📧 [EMAIL] Tentative d'envoi d'email:`);
+  log.debug(`   → Destinataire: ${to}`);
+  log.debug(`   → Sujet: ${subject}`);
+  log.debug(`   → Expéditeur: "${config.email.fromName}" <${config.email.from}>`);
+  log.debug(`   → Serveur SMTP: ${config.email.host}:${config.email.port}`);
 
   try {
     const info = await transporter.sendMail({
@@ -373,24 +548,24 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
       text: text || '',
     });
 
-    console.log(`✅ [EMAIL] Email envoyé avec succès!`);
-    console.log(`   → Message ID: ${info.messageId}`);
-    console.log(`   → Response: ${info.response}`);
-    console.log(`   → Accepted: ${info.accepted?.join(', ') || 'N/A'}`);
-    console.log(`   → Rejected: ${info.rejected?.join(', ') || 'Aucun'}`);
+    log.debug(`✅ [EMAIL] Email envoyé avec succès!`);
+    log.debug(`   → Message ID: ${info.messageId}`);
+    log.debug(`   → Response: ${info.response}`);
+    log.debug(`   → Accepted: ${info.accepted?.join(', ') || 'N/A'}`);
+    log.debug(`   → Rejected: ${info.rejected?.join(', ') || 'Aucun'}`);
   } catch (error: any) {
-    console.error(`❌ [EMAIL] ÉCHEC de l'envoi de l'email à ${to}`);
-    console.error(`   → Type d'erreur: ${error.name || 'Unknown'}`);
-    console.error(`   → Message: ${error.message || 'Aucun message'}`);
-    console.error(`   → Code: ${error.code || 'N/A'}`);
-    console.error(`   → Command: ${error.command || 'N/A'}`);
+    log.error(`❌ [EMAIL] ÉCHEC de l'envoi de l'email à ${to}`);
+    log.error(`   → Type d'erreur: ${error.name || 'Unknown'}`);
+    log.error(`   → Message: ${error.message || 'Aucun message'}`);
+    log.error(`   → Code: ${error.code || 'N/A'}`);
+    log.error(`   → Command: ${error.command || 'N/A'}`);
 
     if (error.response) {
-      console.error(`   → SMTP Response: ${error.response}`);
+      log.error(`   → SMTP Response: ${error.response}`);
     }
 
     // Log complet de l'erreur pour le debugging
-    console.error(`   → Stack trace:`, error.stack);
+    log.error(`   → Stack trace:`, error.stack);
 
     throw new Error(`Échec de l'envoi de l'email: ${error.message || 'Erreur inconnue'}`);
   }

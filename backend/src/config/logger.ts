@@ -42,12 +42,19 @@ const logger = pino({
   transport: transports.length > 0 ? { targets: transports } : undefined,
 });
 
-// Export convenience methods
+// Convertit les args extra (style console) en contexte structuré pino
+function toCtx(args: any[]): Record<string, any> | undefined {
+  if (args.length === 0) return undefined;
+  if (args.length === 1) return { ctx: args[0] };
+  return { ctx: args };
+}
+
+// Export convenience methods — signatures compatibles console (message, ...args)
 export const log = {
-  info: (message: string, meta?: Record<string, any>) => logger.info(meta, message),
-  warn: (message: string, meta?: Record<string, any>) => logger.warn(meta, message),
-  error: (message: string, meta?: Record<string, any>) => logger.error(meta, message),
-  debug: (message: string, meta?: Record<string, any>) => logger.debug(meta, message),
+  info:  (message: string, ...args: any[]) => logger.info(toCtx(args) ?? {}, message),
+  warn:  (message: string, ...args: any[]) => logger.warn(toCtx(args) ?? {}, message),
+  error: (message: string, ...args: any[]) => logger.error(toCtx(args) ?? {}, message),
+  debug: (message: string, ...args: any[]) => logger.debug(toCtx(args) ?? {}, message),
   child: (bindings: Record<string, any>) => logger.child(bindings),
 };
 

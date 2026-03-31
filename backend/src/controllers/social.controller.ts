@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // src/controllers/social.controller.ts
 import { Request, Response } from 'express';
 import * as socialService from '../services/social.service';
@@ -60,7 +61,7 @@ export async function followUser(req: AuthRequest, res: Response) {
             }
 
         } catch (gamificationError) {
-            console.error('Erreur gamification (follow):', gamificationError);
+            log.error('Erreur gamification (follow):', gamificationError);
         }
         // ========== FIN GAMIFICATION ==========
 
@@ -197,7 +198,7 @@ export async function commentPost(req: AuthRequest, res: Response) {
             await weeklyChallengeService.updateChallengeProgress(userId, 'social', 1);
 
         } catch (gamificationError) {
-            console.error('Erreur gamification (comment):', gamificationError);
+            log.error('Erreur gamification (comment):', gamificationError);
         }
         // ========== FIN GAMIFICATION ==========
 

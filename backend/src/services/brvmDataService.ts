@@ -28,7 +28,7 @@ async function getStockData({ symbol }: { symbol: string }) {
 
   const [stock, fundamentals] = await Promise.all([
     prisma.stock.findFirst({ where: { symbol: sym, is_active: true } }),
-    (prisma as any).stockFundamental.findFirst({
+    prisma.stockFundamental.findFirst({
       where: { stock_ticker: sym },
       orderBy: { year: 'desc' },
     }),
@@ -73,12 +73,12 @@ async function getHistoricalPerformance({ symbol, period }: { symbol: string; pe
   const since = new Date(Date.now() - days * 86_400_000);
 
   const [prices, brvmPrices] = await Promise.all([
-    (prisma as any).stockHistory.findMany({
+    prisma.stockHistory.findMany({
       where: { stock_ticker: sym, date: { gte: since } },
       orderBy: { date: 'asc' },
       select: { date: true, close: true, volume: true, high: true, low: true },
     }),
-    (prisma as any).marketIndexHistory.findMany({
+    prisma.marketIndexHistory.findMany({
       where: { index_name: 'BRVM COMPOSITE', date: { gte: since } },
       orderBy: { date: 'asc' },
       select: { date: true, close: true },
@@ -130,7 +130,7 @@ async function compareStocks({ symbols, metrics }: { symbols: string[]; metrics?
 
   const [stocks, fundamentalsAll] = await Promise.all([
     prisma.stock.findMany({ where: { symbol: { in: syms }, is_active: true } }),
-    (prisma as any).stockFundamental.findMany({
+    prisma.stockFundamental.findMany({
       where: { stock_ticker: { in: syms } },
       orderBy: { year: 'desc' },
     }),
@@ -179,7 +179,7 @@ async function getSectorBenchmark({ symbol }: { symbol: string }) {
   const stock = await prisma.stock.findFirst({ where: { symbol: sym, is_active: true } });
   if (!stock) return { error: `Titre "${sym}" introuvable.` };
 
-  const fund = await (prisma as any).stockFundamental.findFirst({
+  const fund = await prisma.stockFundamental.findFirst({
     where: { stock_ticker: sym },
     orderBy: { year: 'desc' },
   });
@@ -189,7 +189,7 @@ async function getSectorBenchmark({ symbol }: { symbol: string }) {
   });
   const sectorSymbols = sectorStocks.map((s: any) => s.symbol);
 
-  const sectorFunds = await (prisma as any).stockFundamental.findMany({
+  const sectorFunds = await prisma.stockFundamental.findMany({
     where: { stock_ticker: { in: sectorSymbols } },
     orderBy: { year: 'desc' },
   });
@@ -267,7 +267,7 @@ async function getTopPerformers({
 
   const perfs = await Promise.all(
     stocks.map(async (stock: any) => {
-      const firstPrice = await (prisma as any).stockHistory.findFirst({
+      const firstPrice = await prisma.stockHistory.findFirst({
         where: { stock_ticker: stock.symbol, date: { gte: since } },
         orderBy: { date: 'asc' },
         select: { close: true, date: true },

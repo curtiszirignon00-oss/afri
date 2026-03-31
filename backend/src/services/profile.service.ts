@@ -1,12 +1,12 @@
+import { log } from '../config/logger';
 // backend/src/services/profile.service.ts
 // Service pour gérer le profil social des utilisateurs
 
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { prisma } from '../config/database';
 import { calculateLevelFromXP } from './xp.service';
 import { getPortfolioSummary } from './portfolio.service.prisma';
 import { getWatchlistByUserId } from './watchlist.service.prisma';
-
-const prisma = new PrismaClient();
 
 // Liste des noms d'utilisateur réservés pour la plateforme
 const RESERVED_USERNAMES = [
@@ -211,7 +211,7 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     return filtered;
 
   } catch (error) {
-    console.error('❌ Erreur getPublicProfile:', error);
+    log.error('❌ Erreur getPublicProfile:', error);
     throw error;
   }
 }
@@ -257,7 +257,7 @@ export async function getUserStats(userId: string) {
     };
 
   } catch (error) {
-    console.error('❌ Erreur getUserStats:', error);
+    log.error('❌ Erreur getUserStats:', error);
     throw error;
   }
 }
@@ -271,8 +271,8 @@ export async function getUserStats(userId: string) {
  */
 export async function updateProfileSocial(userId: string, data: any) {
   try {
-    console.log('📝 [SERVICE] updateProfileSocial called with userId:', userId);
-    console.log('📝 [SERVICE] data received:', JSON.stringify(data));
+    log.debug('📝 [SERVICE] updateProfileSocial called with userId:', userId);
+    log.debug('📝 [SERVICE] data received:', JSON.stringify(data));
 
     const profileUpdateData: any = {};
     const userUpdateData: any = {};
@@ -299,12 +299,12 @@ export async function updateProfileSocial(userId: string, data: any) {
     if (data.name !== undefined) userUpdateData.name = data.name;
     if (data.lastname !== undefined) userUpdateData.lastname = data.lastname;
 
-    console.log('📝 [SERVICE] profileUpdateData prepared:', JSON.stringify(profileUpdateData));
-    console.log('📝 [SERVICE] userUpdateData prepared:', JSON.stringify(userUpdateData));
+    log.debug('📝 [SERVICE] profileUpdateData prepared:', JSON.stringify(profileUpdateData));
+    log.debug('📝 [SERVICE] userUpdateData prepared:', JSON.stringify(userUpdateData));
 
     // Si aucune donnée à mettre à jour, retourner le profil existant
     if (Object.keys(profileUpdateData).length === 0 && Object.keys(userUpdateData).length === 0) {
-      console.log('📝 [SERVICE] No data to update, fetching existing profile');
+      log.debug('📝 [SERVICE] No data to update, fetching existing profile');
       const existingProfile = await prisma.userProfile.findUnique({
         where: { userId }
       });
@@ -313,7 +313,7 @@ export async function updateProfileSocial(userId: string, data: any) {
 
     // Mettre à jour le User si nécessaire
     if (Object.keys(userUpdateData).length > 0) {
-      console.log('📝 [SERVICE] Updating User table...');
+      log.debug('📝 [SERVICE] Updating User table...');
       await prisma.user.update({
         where: { id: userId },
         data: userUpdateData
@@ -323,7 +323,7 @@ export async function updateProfileSocial(userId: string, data: any) {
     // Si il y a des données de profil à mettre à jour
     if (Object.keys(profileUpdateData).length > 0) {
       // Utiliser upsert pour créer le profil s'il n'existe pas
-      console.log('📝 [SERVICE] Performing upsert on UserProfile...');
+      log.debug('📝 [SERVICE] Performing upsert on UserProfile...');
       const updatedProfile = await prisma.userProfile.upsert({
         where: { userId },
         update: profileUpdateData,
@@ -351,21 +351,21 @@ export async function updateProfileSocial(userId: string, data: any) {
         }
       });
 
-      console.log('✅ [SERVICE] Profile updated successfully:', updatedProfile.id);
+      log.debug('✅ [SERVICE] Profile updated successfully:', updatedProfile.id);
       return updatedProfile;
     } else {
       // Si seulement le User a été mis à jour, retourner le profil existant
       const existingProfile = await prisma.userProfile.findUnique({
         where: { userId }
       });
-      console.log('✅ [SERVICE] User updated, returning existing profile');
+      log.debug('✅ [SERVICE] User updated, returning existing profile');
       return existingProfile;
     }
 
   } catch (error: any) {
-    console.error('❌ [SERVICE] Error in updateProfileSocial:', error.message);
-    console.error('❌ [SERVICE] Error code:', error.code);
-    console.error('❌ [SERVICE] Full error:', error);
+    log.error('❌ [SERVICE] Error in updateProfileSocial:', error.message);
+    log.error('❌ [SERVICE] Error code:', error.code);
+    log.error('❌ [SERVICE] Full error:', error);
     if (error.code === 'P2002') {
       throw new Error("Ce nom d'utilisateur est déjà pris");
     }
@@ -409,7 +409,7 @@ export async function updatePrivacySettings(userId: string, settings: any) {
     return updatedProfile;
 
   } catch (error) {
-    console.error('❌ Erreur updatePrivacySettings:', error);
+    log.error('❌ Erreur updatePrivacySettings:', error);
     throw error;
   }
 }
@@ -468,7 +468,7 @@ export async function followUser(followerId: string, followingId: string) {
 
     if (followersCount % 50 === 0) {
       // Déclencher l'ajout de 200 XP (à implémenter dans xpService)
-      console.log(`🎯 ${followingId} a atteint ${followersCount} abonnés ! +200 XP`);
+      log.debug(`🎯 ${followingId} a atteint ${followersCount} abonnés ! +200 XP`);
     }
 
     return follow;
@@ -477,7 +477,7 @@ export async function followUser(followerId: string, followingId: string) {
     if (error.code === 'P2002') {
       throw new Error('Vous suivez déjà cet utilisateur');
     }
-    console.error('❌ Erreur followUser:', error);
+    log.error('❌ Erreur followUser:', error);
     throw error;
   }
 }
@@ -501,7 +501,7 @@ export async function unfollowUser(followerId: string, followingId: string) {
     return { message: 'Désabonnement réussi' };
 
   } catch (error) {
-    console.error('❌ Erreur unfollowUser:', error);
+    log.error('❌ Erreur unfollowUser:', error);
     throw error;
   }
 }
@@ -549,7 +549,7 @@ export async function getFollowers(userId: string, viewerId?: string) {
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getFollowers:', error);
+    log.error('❌ Erreur getFollowers:', error);
     throw error;
   }
 }
@@ -597,7 +597,7 @@ export async function getFollowing(userId: string, viewerId?: string) {
     }));
 
   } catch (error) {
-    console.error('❌ Erreur getFollowing:', error);
+    log.error('❌ Erreur getFollowing:', error);
     throw error;
   }
 }
@@ -706,7 +706,7 @@ export async function getSuggestions(userId: string, limit: number = 10) {
       .slice(0, limit);
 
   } catch (error) {
-    console.error('❌ Erreur getSuggestions:', error);
+    log.error('❌ Erreur getSuggestions:', error);
     throw error;
   }
 }

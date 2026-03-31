@@ -1,3 +1,4 @@
+import { log } from '../config/logger';
 // backend/src/services/index.service.ts
 
 import prisma from '../config/prisma';
@@ -24,9 +25,9 @@ export async function saveIndices(indicesData: IndexData[]) {
         }
       });
     }
-    console.log(`✅ ${indicesData.length} indices traités par Prisma.`);
+    log.debug(`✅ ${indicesData.length} indices traités par Prisma.`);
   } catch (error) {
-    console.error('❌ Erreur lors de la sauvegarde Prisma des indices:', error);
+    log.error('❌ Erreur lors de la sauvegarde Prisma des indices:', error);
     throw error;
   }
 }
@@ -44,7 +45,7 @@ export async function getAllIndices() {
     });
     return indices;
   } catch (error) {
-    console.error('❌ Erreur lors de la récupération Prisma des indices:', error);
+    log.error('❌ Erreur lors de la récupération Prisma des indices:', error);
     throw error;
   }
 }
@@ -64,7 +65,7 @@ export async function getLatestIndices(limit: number = 2): Promise<MarketIndex[]
         });
         return indices;
     } catch (error) {
-        console.error("❌ Error fetching latest indices:", error);
+        log.error("❌ Error fetching latest indices:", error);
         throw error;
     }
 }
@@ -75,7 +76,7 @@ export async function getLatestIndices(limit: number = 2): Promise<MarketIndex[]
  */
 export async function saveCurrentDayIndexHistory() {
     try {
-        console.log('📊 Sauvegarde de l\'historique des indices du jour...');
+        log.debug('📊 Sauvegarde de l\'historique des indices du jour...');
 
         const indices = await scrapeIndex();
 
@@ -85,13 +86,13 @@ export async function saveCurrentDayIndexHistory() {
         let savedCount = 0;
         let errorCount = 0;
 
-        console.log(`📋 ${indices.length} indices récupérés du scraper`);
-        indices.forEach(d => console.log(`   → "${d.name}" | lastValue=${d.lastValue} | open=${d.opening} | high=${d.high} | low=${d.low} | change=${d.change}`));
+        log.debug(`📋 ${indices.length} indices récupérés du scraper`);
+        indices.forEach(d => log.debug(`   → "${d.name}" | lastValue=${d.lastValue} | open=${d.opening} | high=${d.high} | low=${d.low} | change=${d.change}`));
 
         for (const data of indices) {
             try {
                 if (!data.name || data.lastValue === null) {
-                    console.log(`⏭️  Ignoré (nom vide ou valeur nulle): "${data.name}"`);
+                    log.debug(`⏭️  Ignoré (nom vide ou valeur nulle): "${data.name}"`);
                     continue;
                 }
 
@@ -145,14 +146,14 @@ export async function saveCurrentDayIndexHistory() {
                 savedCount++;
             } catch (err) {
                 errorCount++;
-                console.error(`❌ Erreur pour l'index ${data.name}:`, err);
+                log.error(`❌ Erreur pour l'index ${data.name}:`, err);
             }
         }
 
-        console.log(`📊 Historique indices - Sauvegardés: ${savedCount}, Erreurs: ${errorCount}`);
+        log.debug(`📊 Historique indices - Sauvegardés: ${savedCount}, Erreurs: ${errorCount}`);
         return { success: true, savedCount, errorCount, date: today };
     } catch (error) {
-        console.error('❌ Erreur lors de la sauvegarde de l\'historique des indices:', error);
+        log.error('❌ Erreur lors de la sauvegarde de l\'historique des indices:', error);
         throw error;
     }
 }
@@ -196,7 +197,7 @@ export async function getIndexHistory(indexName: string, period?: string) {
 
         return history;
     } catch (error) {
-        console.error(`❌ Error fetching index history for ${indexName}:`, error);
+        log.error(`❌ Error fetching index history for ${indexName}:`, error);
         throw error;
     }
 }

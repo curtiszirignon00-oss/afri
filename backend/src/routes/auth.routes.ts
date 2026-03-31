@@ -12,7 +12,10 @@ import {
 } from "../controllers/auth.controller";
 import { auth } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validate.util";
-import { registerSchema, loginSchema } from "../validation/auth.validation";
+import {
+    registerSchema, loginSchema,
+    resendConfirmationSchema, requestPasswordResetSchema, resetPasswordSchema
+} from "../validation/auth.validation";
 import { authLimiter, loginEmailLimiter, resetPasswordLimiter, resetPasswordEmailLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
@@ -33,12 +36,12 @@ router.get('/me', auth, getMe);
 router.get('/confirm-email', confirmEmail);
 
 // Route pour renvoyer l'email de confirmation - limite: 3 / heure
-router.post('/resend-confirmation', resetPasswordLimiter, resendConfirmationEmail);
+router.post('/resend-confirmation', resetPasswordLimiter, validate(resendConfirmationSchema), resendConfirmationEmail);
 
 // Route pour demander la réinitialisation du mot de passe — double limite: 3/h par IP + 5/h par email
-router.post('/request-password-reset', resetPasswordLimiter, resetPasswordEmailLimiter, requestPasswordReset);
+router.post('/request-password-reset', resetPasswordLimiter, resetPasswordEmailLimiter, validate(requestPasswordResetSchema), requestPasswordReset);
 
 // Route pour réinitialiser le mot de passe - limite: 3 / heure
-router.post('/reset-password', resetPasswordLimiter, resetPassword);
+router.post('/reset-password', resetPasswordLimiter, validate(resetPasswordSchema), resetPassword);
 
 export default router;
