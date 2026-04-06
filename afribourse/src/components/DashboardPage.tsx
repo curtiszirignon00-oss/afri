@@ -322,12 +322,17 @@ export default function DashboardPage() {
 
     if (portfolioHistory.length === 0) return { value: 0, percent: 0 };
 
-    // Valeur actuelle live (current_price en temps réel)
-    const currentValue = calculateTotalValue();
+    const todayStr = today.toISOString().split('T')[0];
+
+    // Utiliser la valeur d'aujourd'hui issue de l'historique backend (calculée depuis
+    // initial_balance + transactions uniquement, sans les bonus XP/récompenses).
+    // Cela évite un écart fictif dû aux crédits de récompenses non enregistrés comme
+    // transactions, qui faisait apparaître un gain permanent (ex: +250 000).
+    const todayPoint = portfolioHistory.find(p => p.date === todayStr);
+    const currentValue = todayPoint ? todayPoint.value : calculateTotalValue();
     if (currentValue === 0) return { value: 0, percent: 0 };
 
     // Trouver le dernier point historique AVANT aujourd'hui (clôture d'hier ou dernier jour de bourse)
-    const todayStr = today.toISOString().split('T')[0];
     let previousPoint: { date: string; value: number } | null = null;
     for (let i = portfolioHistory.length - 1; i >= 0; i--) {
       if (portfolioHistory[i].date < todayStr) {
