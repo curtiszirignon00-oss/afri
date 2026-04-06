@@ -33,6 +33,7 @@ interface IConfig {
     jwt: {
       secret: string,
       expiresIn: string,
+      accessTokenTtl: string,
     },
     
     cors: {
@@ -108,7 +109,8 @@ const config : IConfig = {
   
   jwt: {
     secret: getEnvVar('JWT_SECRET'),
-    expiresIn: getEnvVar('JWT_EXPIRES_IN', '7d'),
+    expiresIn: getEnvVar('JWT_EXPIRES_IN', '7d'),       // legacy / refresh token cookie duration reference
+    accessTokenTtl: getEnvVar('ACCESS_TOKEN_TTL', '15m'), // durée de vie du JWT d'accès
   },
   
   cors: {
