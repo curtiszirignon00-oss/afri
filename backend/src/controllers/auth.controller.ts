@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, CookieOptions } from "express";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { signJWT } from "../utils";
 import { createError } from "../middlewares/errorHandlers";
 import config from "../config/environnement";
@@ -168,17 +169,17 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             return next(createError.unauthorized("Email ou mot de passe invalide"));
         }
         
-        // 3. Création du token et réponse
+        // 3. Création des tokens
 
-        // Régénérer le remember_token à chaque connexion (invalide les sessions parallèles suspectes)
-        const crypto = await import('crypto');
-        const newRememberToken = crypto.randomBytes(16).toString('hex');
+        // Refresh token : remember_token rotatif stocké en DB + cookie httpOnly
+        const newRefreshToken = crypto.randomBytes(32).toString('hex');
         await prisma.user.update({
             where: { id: user.id },
-            data: { remember_token: newRememberToken },
+            data: { remember_token: newRefreshToken },
         });
 
-        const token = signJWT({ id: user.id, email: user.email, role: user.role, rtk: newRememberToken });
+        // Access token court-vivant (15m par défaut)
+        const accessToken = signJWT({ id: user.id, email: user.email, role: user.role });
 
         const {
             password: _,
@@ -190,34 +191,35 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             ...userWithoutPassword
         } = user;
 
-        const cookieOptions: import('express').CookieOptions = {
+        const isProduction = config.nodeEnv === 'production';
+        const baseCookieOptions: CookieOptions = {
             httpOnly: true,
-            secure: config.nodeEnv === "production",
-            sameSite: config.nodeEnv === "production" ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
-            path: '/', // Ensure cookie is available on all paths
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
         };
 
-        res.cookie("token", token, cookieOptions);
+        // Cookie access token (15 min)
+        res.cookie('token', accessToken, { ...baseCookieOptions, maxAge: 15 * 60 * 1000 });
+        // Cookie refresh token (7 jours)
+        res.cookie('rtk', newRefreshToken, { ...baseCookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
         // ========== GAMIFICATION TRIGGERS ==========
         let gamificationData: any = {};
 
         try {
-            const userId = userAsAny.id;
-
             // 1. Enregistrer activité de streak (login compte comme visite profil)
-            await streakService.recordActivity(userId, 'profile_visit');
+            await streakService.recordActivity(user.id, 'profile_visit');
 
             // 2. Vérifier et débloquer les badges automatiquement
-            const achievementResults = await achievementService.checkAllAchievements(userId);
+            const achievementResults = await achievementService.checkAllAchievements(user.id);
             if (achievementResults.total > 0) {
                 gamificationData.newAchievements = achievementResults;
             }
 
             // 3. Récupérer les stats gamification pour la réponse
             const userGamificationStats = await prisma.userProfile.findUnique({
-                where: { userId },
+                where: { userId: user.id },
                 select: {
                     total_xp: true,
                     level: true,
@@ -228,10 +230,6 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
             gamificationData.stats = userGamificationStats;
 
-            // NOTE: Pour activer le tracking early_bird/night_owl, exécuter:
-            // npx prisma generate
-            // Les champs early_logins_count et night_logins_count ont été ajoutés au schema
-
         } catch (gamificationError) {
             // Non-blocking gamification error
         }
@@ -239,16 +237,22 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
         // Audit log - Connexion reussie
         await writeAuditLog({
-            userId: userAsAny.id,
-            userEmail: userAsAny.email,
-            userRole: userAsAny.role,
+            userId: user.id,
+            userEmail: user.email,
+            userRole: user.role,
             action: 'LOGIN',
             details: 'Connexion reussie',
             ip: getClientIp(req),
             userAgent: getUserAgent(req),
         });
 
-        return res.status(200).json({ user: userWithoutPassword, token, gamification: gamificationData });
+        // refreshToken retourné dans le body pour les clients mobiles qui ne lisent pas les cookies
+        return res.status(200).json({
+            user: userWithoutPassword,
+            token: accessToken,
+            refreshToken: newRefreshToken,
+            gamification: gamificationData,
+        });
     } catch (error) {
         next(error);
         return;
@@ -314,11 +318,24 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
             });
         }
 
-        res.clearCookie("token", {
+        // Invalider le refresh token en base
+        const logoutUserId = req.user?.id;
+        if (logoutUserId) {
+            await prisma.user.update({
+                where: { id: logoutUserId },
+                data: { remember_token: null },
+            });
+        }
+
+        const isProduction = config.nodeEnv === 'production';
+        const clearOptions: CookieOptions = {
             httpOnly: true,
-            secure: config.nodeEnv === "production",
-            sameSite: config.nodeEnv === "production" ? "none" : "lax",
-        });
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
+        };
+        res.clearCookie('token', clearOptions);
+        res.clearCookie('rtk', clearOptions);
         return res.status(200).json({ message: "Déconnexion réussie" });
     } catch (error) {
         next(error);
@@ -508,8 +525,12 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
         // 4. Hasher le nouveau mot de passe
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // 5. Mettre à jour le mot de passe et supprimer le token
+        // 5. Mettre à jour le mot de passe, supprimer le token et invalider tous les refresh tokens
         await usersServicePrisma.resetUserPassword(user.id, hashedPassword);
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { remember_token: null },
+        });
 
 
         // Audit log - Reinitialisation du mot de passe
@@ -525,6 +546,60 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
         return res.status(200).json({
             message: "Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter.",
             success: true,
+        });
+    } catch (error) {
+        next(error);
+        return;
+    }
+}
+
+// ─── REFRESH TOKEN ────────────────────────────────────────────────────────────
+// POST /api/auth/refresh
+// Échange un refresh token valide contre un nouveau access token + nouveau refresh token (rotation)
+export async function refreshToken(req: Request, res: Response, next: NextFunction) {
+    try {
+        // Cookie web en priorité, body pour les clients mobiles
+        const rtkValue: string | undefined = req.cookies?.rtk || req.body?.refreshToken;
+
+        if (!rtkValue) {
+            return next(createError.unauthorized('Refresh token manquant'));
+        }
+
+        // Trouver l'utilisateur possédant ce remember_token
+        const user = await prisma.user.findFirst({
+            where: { remember_token: rtkValue },
+        });
+
+        if (!user) {
+            // Token invalide ou déjà utilisé (reuse detection)
+            return next(createError.unauthorized('Refresh token invalide ou expiré. Veuillez vous reconnecter.'));
+        }
+
+        // Rotation du refresh token (invalide l'ancien immédiatement)
+        const newRefreshToken = crypto.randomBytes(32).toString('hex');
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { remember_token: newRefreshToken },
+        });
+
+        // Nouvel access token court-vivant
+        const newAccessToken = signJWT({ id: user.id, email: user.email, role: user.role });
+
+        const isProduction = config.nodeEnv === 'production';
+        const cookieOptions: CookieOptions = {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
+        };
+
+        res.cookie('token', newAccessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
+        res.cookie('rtk', newRefreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+
+        return res.json({
+            success: true,
+            token: newAccessToken,
+            refreshToken: newRefreshToken,
         });
     } catch (error) {
         next(error);

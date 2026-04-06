@@ -28,7 +28,7 @@ export const postCreationLimiter = rateLimit({
     },
     skip: (req: any) => {
         // Skip rate limiting for admins/moderators
-        return req.user?.role === 'ADMIN' || req.user?.role === 'MODERATOR';
+        return req.user?.role === 'admin' || req.user?.role === 'moderator';
     }
 });
 
@@ -57,7 +57,7 @@ export const commentCreationLimiter = rateLimit({
         });
     },
     skip: (req: any) => {
-        return req.user?.role === 'ADMIN' || req.user?.role === 'MODERATOR';
+        return req.user?.role === 'admin' || req.user?.role === 'moderator';
     }
 });
 
@@ -86,7 +86,7 @@ export const communityPostCreationLimiter = rateLimit({
         });
     },
     skip: (req: any) => {
-        return req.user?.role === 'ADMIN' || req.user?.role === 'MODERATOR';
+        return req.user?.role === 'admin' || req.user?.role === 'moderator';
     }
 });
 
@@ -106,7 +106,7 @@ export const generalApiLimiter = rateLimit({
         return req.user?.id || ipKeyGenerator(req);
     },
     skip: (req: any) => {
-        return req.user?.role === 'ADMIN' || req.user?.role === 'MODERATOR';
+        return req.user?.role === 'admin' || req.user?.role === 'moderator';
     }
 });
 
@@ -194,7 +194,7 @@ export const tradingLimiter = rateLimit({
     legacyHeaders: false,
     keyGenerator: (req: any) => req.user?.id || ipKeyGenerator(req),
     skip: (req: any) => {
-        return req.user?.role === 'ADMIN';
+        return req.user?.role === 'admin';
     }
 });
 
@@ -222,3 +222,4 @@ export const reportLimiter = rateLimit({
         });
     },
 });
+

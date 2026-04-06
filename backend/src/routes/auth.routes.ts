@@ -8,7 +8,8 @@ import {
     confirmEmail,
     resendConfirmationEmail,
     requestPasswordReset,
-    resetPassword
+    resetPassword,
+    refreshToken,
 } from "../controllers/auth.controller";
 import { auth } from "../middlewares/auth.middleware";
 import { validate } from "../utils/validate.util";
@@ -28,6 +29,10 @@ router.post('/login', authLimiter, loginEmailLimiter, validate(loginSchema), log
 
 // Route de DÉCONNEXION
 router.post('/logout', logout);
+
+// Route de REFRESH TOKEN — échange un refresh token contre un nouvel access token
+// Limité à 10/15min pour éviter l'abus
+router.post('/refresh', authLimiter, refreshToken);
 
 // Route pour l'utilisateur courant (getMe)
 router.get('/me', auth, getMe);
