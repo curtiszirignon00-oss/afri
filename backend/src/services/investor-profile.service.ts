@@ -35,6 +35,14 @@ export interface OnboardingDto {
     quiz_score?: number;
     profession?: string;
     phone_number?: string;
+    // === Onboarding v2 ===
+    life_goal?: string;
+    income_source?: string;
+    monthly_budget?: number;
+    investor_score?: number;
+    score_breakdown?: object;
+    allocation_json?: object[];
+    disclaimer_accepted_at?: string;
 }
 
 // ============= SERVICES =============
@@ -191,7 +199,9 @@ export async function checkOnboardingStatus(userId: string) {
  */
 export async function completeOnboarding(userId: string, answers: OnboardingDto) {
     // Séparer les champs pour InvestorProfile et UserProfile
-    const { profession, phone_number, ...investorData } = answers;
+    const { profession, phone_number, disclaimer_accepted_at, ...investorData } = answers;
+
+    const disclaimerDate = disclaimer_accepted_at ? new Date(disclaimer_accepted_at) : null;
 
     // Mettre à jour InvestorProfile
     const investorProfile = await prisma.investorProfile.upsert({
@@ -201,11 +211,17 @@ export async function completeOnboarding(userId: string, answers: OnboardingDto)
             onboarding_completed: true,
             onboarding_date: new Date(),
             ...investorData,
+            ...(disclaimerDate ? { disclaimer_accepted_at: disclaimerDate } : {}),
+            score_version: investorData.investor_score != null ? 'v2.0' : undefined,
+            score_computed_at: investorData.investor_score != null ? new Date() : undefined,
         },
         update: {
             onboarding_completed: true,
             onboarding_date: new Date(),
             ...investorData,
+            ...(disclaimerDate ? { disclaimer_accepted_at: disclaimerDate } : {}),
+            score_version: investorData.investor_score != null ? 'v2.0' : undefined,
+            score_computed_at: investorData.investor_score != null ? new Date() : undefined,
         },
     });
 
