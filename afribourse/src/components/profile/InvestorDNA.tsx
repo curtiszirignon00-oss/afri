@@ -1,5 +1,61 @@
 // src/components/profile/InvestorDNA.tsx
-import { Shield, TrendingUp, Target, Building2, Clock, Briefcase, PieChart } from 'lucide-react';
+import { Shield, TrendingUp, Target, Clock, Briefcase, PieChart } from 'lucide-react';
+
+// ─── Helpers v2 ──────────────────────────────────────────────────────────────
+
+function getProfileLabel(score: number): string {
+    if (score < 30) return 'Investisseur Prudent';
+    if (score < 50) return 'Investisseur Modéré';
+    if (score < 70) return 'Investisseur Équilibré';
+    if (score < 85) return 'Investisseur Dynamique';
+    return 'Investisseur Avisé';
+}
+
+const GOAL_LABELS: Record<string, string> = {
+    education: 'Objectif : Éducation',
+    immo:      'Objectif : Immobilier',
+    retraite:  'Objectif : Retraite',
+    business:  'Objectif : Entrepreneuriat',
+    epargne:   'Objectif : Épargne',
+};
+function getGoalLabel(goal: string): string {
+    return GOAL_LABELS[goal] ?? 'Objectif personnel';
+}
+
+const ALLOC_COLORS = ['#1D9E75', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#10B981'];
+
+interface AllocationItem {
+    sector: string;
+    pct: number;
+    tickers: string[];
+    rationale?: string;
+}
+
+// ─── ScoreRing SVG ────────────────────────────────────────────────────────────
+
+function ScoreRing({ score }: { score: number }) {
+    const r = 26;
+    const circ = 2 * Math.PI * r;
+    const filled = (score / 100) * circ;
+    return (
+        <div className="relative w-16 h-16 flex-shrink-0">
+            <svg viewBox="0 0 64 64" className="w-16 h-16 -rotate-90">
+                <circle cx="32" cy="32" r={r} fill="none" stroke="#E5E7EB" strokeWidth="6" />
+                <circle
+                    cx="32" cy="32" r={r}
+                    fill="none" stroke="#1D9E75" strokeWidth="6"
+                    strokeDasharray={`${filled} ${circ}`}
+                    strokeLinecap="round"
+                />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-sm font-bold text-emerald-600">{score}</span>
+            </div>
+        </div>
+    );
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface InvestorDNAProps {
     profile: any;
@@ -78,6 +134,22 @@ export default function InvestorDNA({ profile, isOwnProfile = false }: InvestorD
             </div>
 
             <div className="p-6 space-y-5">
+                {/* Score investisseur (v2) */}
+                {investorProfile.investor_score != null && (
+                    <div className="flex items-center gap-4 p-4 border-b border-gray-100">
+                        <ScoreRing score={investorProfile.investor_score} />
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Score investisseur</p>
+                            <p className="font-semibold text-gray-900">{getProfileLabel(investorProfile.investor_score)}</p>
+                            {investorProfile.life_goal && (
+                                <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+                                    {getGoalLabel(investorProfile.life_goal)}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Risk Profile - Featured Card */}
                 <div className={`${riskConfig.bgColor} rounded-xl p-4 border border-${riskConfig.color}-100`}>
                     <div className="flex items-center justify-between">
@@ -134,6 +206,40 @@ export default function InvestorDNA({ profile, isOwnProfile = false }: InvestorD
                                 </span>
                             ))}
                         </div>
+                    </div>
+                )}
+
+                {/* Répartition sectorielle Simba (v2) */}
+                {investorProfile.allocation_json && Array.isArray(investorProfile.allocation_json) && (
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <PieChart className="w-4 h-4 text-gray-400" />
+                            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Répartition sectorielle</p>
+                        </div>
+                        <div className="space-y-3">
+                            {(investorProfile.allocation_json as AllocationItem[]).map((item, idx) => (
+                                <div key={item.sector}>
+                                    <div className="flex justify-between text-sm mb-1">
+                                        <span className="text-gray-700">{item.sector}</span>
+                                        <span className="font-medium text-gray-900">{item.pct}%</span>
+                                    </div>
+                                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full"
+                                            style={{
+                                                width: `${item.pct}%`,
+                                                backgroundColor: ALLOC_COLORS[idx % ALLOC_COLORS.length],
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400 mt-1">{item.tickers.join(' · ')}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-3 italic">
+                            * Répartition éducative générée par Simba. Données historiques BRVM.
+                            Ne constitue pas un conseil en investissement.
+                        </p>
                     </div>
                 )}
             </div>

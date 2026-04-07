@@ -1,6 +1,8 @@
 // src/controllers/investor-profile.controller.ts
 import { Request, Response } from 'express';
 import * as investorProfileService from '../services/investor-profile.service';
+import { computeInvestorScore } from '../services/investor-score.service';
+import { generateBRVMAllocation } from '../services/simba-allocation.service';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -115,6 +117,36 @@ export async function completeOnboarding(req: AuthRequest, res: Response) {
         res.status(200).json({ success: true, data: profile });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
+    }
+}
+
+/**
+ * Compute AI investor score (deterministic — Step 6 onboarding)
+ */
+export async function computeAIScore(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+
+        const result = computeInvestorScore(req.body);
+        return res.status(200).json({ message: 'Score calculé', data: result });
+    } catch (error: any) {
+        return res.status(400).json({ error: error.message });
+    }
+}
+
+/**
+ * Generate BRVM sector allocation via Simba/Groq (Step 7 onboarding)
+ */
+export async function generateAllocation(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+
+        const allocation = await generateBRVMAllocation(req.body);
+        return res.status(200).json({ message: 'Allocation générée', data: { allocation } });
+    } catch (error: any) {
+        return res.status(500).json({ error: error.message });
     }
 }
 

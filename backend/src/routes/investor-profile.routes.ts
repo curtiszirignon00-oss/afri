@@ -21,4 +21,8 @@ router.post('/onboarding/complete', auth, investorProfileController.completeOnbo
 // Sync social stats
 router.post('/sync-stats', auth, investorProfileController.syncSocialStats);
 
+// Onboarding v2 — Score IA & Allocation Simba
+router.post('/ai-score', auth, investorProfileController.computeAIScore);
+router.post('/ai-allocation', auth, investorProfileController.generateAllocation);
+
 export default router;

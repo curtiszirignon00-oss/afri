@@ -15,6 +15,14 @@ export interface OnboardingData {
     quiz_score?: number;
     profession?: string;
     phone_number?: string;
+    // === Onboarding v2 ===
+    life_goal?: string;
+    income_source?: string;
+    monthly_budget?: number;
+    investor_score?: number;
+    score_breakdown?: object;
+    allocation_json?: object[];
+    disclaimer_accepted_at?: string;
 }
 
 /**
@@ -168,4 +176,28 @@ export function useOnboardingRedirect(options?: {
         error,
         needsOnboarding: status ? !status.completed : false
     };
+}
+
+/**
+ * Compute investor score (Step 6 — deterministic, no AI)
+ */
+export function useComputeAIScore() {
+    return useMutation({
+        mutationFn: async (data: Partial<OnboardingData>) => {
+            const response = await apiClient.post('/investor-profile/ai-score', data);
+            return response.data.data;
+        },
+    });
+}
+
+/**
+ * Generate BRVM sector allocation via Simba (Step 7)
+ */
+export function useGenerateAllocation() {
+    return useMutation({
+        mutationFn: async (data: Partial<OnboardingData>) => {
+            const response = await apiClient.post('/investor-profile/ai-allocation', data);
+            return response.data.data;
+        },
+    });
 }

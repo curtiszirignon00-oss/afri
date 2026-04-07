@@ -1196,6 +1196,22 @@ model InvestorProfile {
   weekly_digest       Boolean @default(true)
   market_alerts       Boolean @default(true)
 
+  // ============= ONBOARDING v2 =============
+  // Step 1 — Objectif de vie
+  life_goal    String? // education | immo | retraite | business | epargne
+  // Step 2 — Contexte financier
+  income_source  String? // salarie | independant | diaspora | entrepreneur
+  monthly_budget Float?  // Budget mensuel en FCFA
+  // Step 6 — Score IA (déterministe)
+  investor_score    Int?
+  score_breakdown   Json?
+  score_version     String?
+  score_computed_at DateTime?
+  // Step 7 — Allocation sectorielle Simba
+  allocation_json Json?
+  // Disclaimer légal accepté
+  disclaimer_accepted_at DateTime?
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

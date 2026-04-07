@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCompleteOnboarding } from '../../hooks/useOnboarding';
 import type { OnboardingData } from '../../hooks/useOnboarding';
-import RiskProfileStep from './RiskProfileStep';
-import ProfessionPhoneStep from './ProfessionPhoneStep';
+import LifeGoalStep from './LifeGoalStep';
+import FinancialContextStep from './FinancialContextStep';
 import HorizonStep from './HorizonStep';
+import BRVMRiskQuizStep from './BRVMRiskQuizStep';
 import SectorsStep from './SectorsStep';
-import PrivacyStep from './PrivacyStep';
-import CompletionStep from './CompletionStep';
+import AIScoreStep from './AIScoreStep';
+import type { ScoreBreakdown } from './AIScoreStep';
+import AllocationResultStep from './AllocationResultStep';
 import toast from 'react-hot-toast';
 
 export default function OnboardingFlow() {
@@ -17,26 +19,28 @@ export default function OnboardingFlow() {
     const [formData, setFormData] = useState<Partial<OnboardingData>>({
         favorite_sectors: [],
         investment_goals: [],
+        life_goal: undefined,
+        income_source: undefined,
+        monthly_budget: undefined,
+        investor_score: undefined,
+        score_breakdown: undefined,
+        allocation_json: undefined,
     });
 
     const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
 
-    const totalSteps = 6;
+    const totalSteps = 7;
 
     const updateFormData = (data: Partial<OnboardingData>) => {
         setFormData((prev) => ({ ...prev, ...data }));
     };
 
     const nextStep = () => {
-        if (currentStep < totalSteps) {
-            setCurrentStep((prev) => prev + 1);
-        }
+        if (currentStep < totalSteps) setCurrentStep((prev) => prev + 1);
     };
 
     const prevStep = () => {
-        if (currentStep > 1) {
-            setCurrentStep((prev) => prev - 1);
-        }
+        if (currentStep > 1) setCurrentStep((prev) => prev - 1);
     };
 
     const handleComplete = () => {
@@ -45,43 +49,47 @@ export default function OnboardingFlow() {
             return;
         }
 
-        completeOnboarding(formData as OnboardingData, {
-            onSuccess: () => {
-                toast.success('Profil créé avec succès !');
-                // Rediriger vers le dashboard (qui vérifiera l'onboarding avec le cache mis à jour)
-                navigate('/dashboard', { replace: true });
-            },
-            onError: (error: any) => {
-                toast.error(error.response?.data?.error || 'Erreur lors de la création du profil');
-            },
-        });
+        completeOnboarding(
+            { ...formData, disclaimer_accepted_at: new Date().toISOString() } as OnboardingData,
+            {
+                onSuccess: () => {
+                    toast.success('Profil créé avec succès !');
+                    navigate('/dashboard', { replace: true });
+                },
+                onError: (error: any) => {
+                    toast.error(error.response?.data?.error || 'Erreur lors de la création du profil');
+                },
+            }
+        );
     };
 
     const renderStep = () => {
         switch (currentStep) {
+            // Step 1 — Objectif de vie
             case 1:
                 return (
-                    <ProfessionPhoneStep
-                        profession={formData.profession}
-                        phoneNumber={formData.phone_number}
-                        onNext={(profession, phoneNumber) => {
-                            updateFormData({ profession, phone_number: phoneNumber });
+                    <LifeGoalStep
+                        onNext={(lifeGoal) => {
+                            updateFormData({ life_goal: lifeGoal });
                             nextStep();
                         }}
                         showBackButton={false}
                     />
                 );
+
+            // Step 2 — Contexte financier
             case 2:
                 return (
-                    <RiskProfileStep
-                        value={formData.risk_profile}
-                        quizScore={formData.quiz_score}
-                        onNext={(riskProfile, quizScore) => {
-                            updateFormData({ risk_profile: riskProfile, quiz_score: quizScore });
+                    <FinancialContextStep
+                        onNext={(incomeSource, monthlyBudget) => {
+                            updateFormData({ income_source: incomeSource, monthly_budget: monthlyBudget });
                             nextStep();
                         }}
+                        onBack={prevStep}
                     />
                 );
+
+            // Step 3 — Horizon d'investissement
             case 3:
                 return (
                     <HorizonStep
@@ -93,7 +101,23 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
+
+            // Step 4 — Quiz risque BRVM
             case 4:
+                return (
+                    <BRVMRiskQuizStep
+                        value={formData.risk_profile}
+                        quizScore={formData.quiz_score}
+                        onNext={(riskProfile, quizScore) => {
+                            updateFormData({ risk_profile: riskProfile, quiz_score: quizScore });
+                            nextStep();
+                        }}
+                        onBack={prevStep}
+                    />
+                );
+
+            // Step 5 — Secteurs favoris
+            case 5:
                 return (
                     <SectorsStep
                         value={formData.favorite_sectors || []}
@@ -104,32 +128,38 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
-            case 5:
+
+            // Step 6 — Score IA Simba
+            case 6:
                 return (
-                    <PrivacyStep
-                        onNext={(privacy) => {
-                            updateFormData(privacy);
+                    <AIScoreStep
+                        formData={formData}
+                        onNext={(score: number, breakdown: ScoreBreakdown) => {
+                            updateFormData({ investor_score: score, score_breakdown: breakdown });
                             nextStep();
                         }}
                         onBack={prevStep}
                     />
                 );
-            case 6:
+
+            // Step 7 — Allocation Simba + Disclaimer
+            case 7:
                 return (
-                    <CompletionStep
+                    <AllocationResultStep
                         data={formData}
                         onComplete={handleComplete}
                         onBack={prevStep}
                         isLoading={isPending}
                     />
                 );
+
             default:
                 return null;
         }
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12 px-4">
             <div className="max-w-3xl mx-auto">
                 {/* Progress Bar */}
                 <div className="mb-8">
@@ -143,7 +173,7 @@ export default function OnboardingFlow() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all duration-300"
+                            className="bg-gradient-to-r from-emerald-500 to-blue-500 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                         />
                     </div>
