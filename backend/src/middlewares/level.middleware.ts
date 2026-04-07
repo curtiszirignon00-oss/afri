@@ -402,6 +402,11 @@ export async function applyLevelRewards(userId: string, newLevel: number): Promi
                             data: {
                                 cash_balance: {
                                     increment: reward.value as number
+                                },
+                                // Incrémenter initial_balance du même montant pour que le bonus
+                                // ne crée pas de gain fictif dans l'historique du portefeuille.
+                                initial_balance: {
+                                    increment: reward.value as number
                                 }
                             }
                         });
