@@ -26,6 +26,7 @@ import prisma from '../config/prisma';
 import { cacheInvalidatePattern } from '../services/cache.service';
 import { checkWatchlistSignals } from '../services/watchlist-signal.service';
 import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
+import { sendReengagementEmails } from '../services/reengagement.service';
 
 // ============================================================
 // POST /api/cron/scrape-stocks
@@ -244,6 +245,31 @@ export async function cronSendLearningSummaries(req: Request, res: Response) {
         });
     } catch (error: any) {
         log.error('[CRON API] Envoi resumes apprentissage echoue:', error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// ============================================================
+// POST /api/cron/send-reengagement-emails
+// Séquence réengagement post-inscription (quotidien 09h00)
+// Email 0: relance confirmation J+1 | Email 1: J+1 post-confirm | Email 2: J+3 | Email 3: J+7
+// ============================================================
+export async function cronSendReengagementEmails(req: Request, res: Response) {
+    const startTime = Date.now();
+    try {
+        log.debug('[CRON API] Envoi des emails de réengagement...');
+        const result = await sendReengagementEmails();
+
+        const duration = Date.now() - startTime;
+        log.debug(`[CRON API] Réengagement: ${result.total_sent} email(s) envoyé(s)`);
+        return res.status(200).json({
+            success: true,
+            message: 'Emails de réengagement envoyés',
+            ...result,
+            duration_ms: duration,
+        });
+    } catch (error: any) {
+        log.error('[CRON API] Erreur réengagement:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }

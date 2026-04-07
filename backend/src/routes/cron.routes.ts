@@ -12,6 +12,7 @@ import {
     cronSendLearningSummaries,
     cronCheckWatchlistSignals,
     cronSendWatchlistSummaries,
+    cronSendReengagementEmails,
 } from '../controllers/cron.controller';
 
 const router = Router();
@@ -51,5 +52,8 @@ router.post('/check-watchlist-signals', cronCheckWatchlistSignals);
 
 // Lundi 08h00: Résumés watchlist hebdomadaires IA
 router.post('/send-watchlist-summaries', cronSendWatchlistSummaries);
+
+// Quotidien 09h00: Séquence emails réengagement post-inscription
+router.post('/send-reengagement-emails', cronSendReengagementEmails);
 
 export default router;

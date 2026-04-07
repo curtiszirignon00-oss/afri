@@ -2885,6 +2885,264 @@ L'équipe Afribourse
   });
 }
 
+// ─── EMAIL 0 — Relance confirmation (J+1 sans confirmation) ───────────────────
+
+export async function sendReengagementEmail0({
+  email,
+  name,
+  confirmationToken,
+}: { email: string; name: string; confirmationToken: string }): Promise<void> {
+  const confirmationUrl = `${config.app.frontendUrl}/confirmer-inscription?token=${confirmationToken}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre compte Afribourse n'est pas encore activé</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+    .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
+    h1 { color: #1f2937; font-size: 22px; }
+    p { color: #4b5563; margin-bottom: 15px; }
+    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+    .feature-list { list-style: none; padding: 0; }
+    .feature-list li { padding: 6px 0; color: #374151; }
+    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="logo-text">AfriBourse</p>
+    <h1>⚠️ Votre compte Afribourse n'est pas encore activé</h1>
+    <p>Bonjour ${name},</p>
+    <p>Vous vous êtes inscrit(e) sur Afribourse il y a 24 heures — mais votre compte n'est pas encore actif.</p>
+    <p>Un seul clic vous sépare de l'accès à :</p>
+    <ul class="feature-list">
+      <li>▸ Le simulateur de portefeuille BRVM — investissez sans risque</li>
+      <li>▸ Les cours en temps réel des 45 titres cotés</li>
+      <li>▸ Les modules de formation animés par Simba, votre coach IA</li>
+    </ul>
+    <p>Le lien de confirmation est valable 48h.</p>
+    <div style="text-align: center;">
+      <a href="${confirmationUrl}" class="button">✅ Confirmer mon adresse email</a>
+    </div>
+    <p style="font-size: 13px; color: #6b7280;">Si vous n'avez pas reçu l'email précédent ou si le lien a expiré, vous pouvez en demander un nouveau directement depuis la page de connexion.</p>
+    <p>À tout de suite sur la plateforme,<br><strong>Simba — Votre coach BRVM</strong><br>Afribourse · africbourse.com</p>
+    <div class="footer"><p>Afribourse · africbourse.com</p></div>
+  </div>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: '⚠️ Votre compte Afribourse n\'est pas encore activé',
+    html,
+    text: `Bonjour ${name},\n\nVous vous êtes inscrit(e) sur Afribourse il y a 24 heures mais votre compte n'est pas encore actif.\n\nConfirmez votre email : ${confirmationUrl}\n\nSimba — Votre coach BRVM\nAfribourse · africbourse.com`,
+  });
+}
+
+// ─── EMAIL 1 — Réengagement J+1 (après confirmation, sans reconnexion) ────────
+
+export async function sendReengagementEmail1({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const platformUrl = `${config.app.frontendUrl}/dashboard`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voici ce qui vous attend sur Afribourse</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+    .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
+    h1 { color: #1f2937; font-size: 22px; }
+    p { color: #4b5563; margin-bottom: 15px; }
+    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+    .step-card { background: #f9fafb; border-radius: 8px; padding: 16px; margin: 12px 0; border-left: 4px solid #f97316; }
+    .step-card p { margin: 0; color: #374151; }
+    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="logo-text">AfriBourse</p>
+    <h1>🌱 Voici ce qui vous attend sur Afribourse, ${name}</h1>
+    <p>Bonjour ${name},</p>
+    <p>Je suis Simba, votre coach IA sur Afribourse. Votre compte est activé — maintenant, le vrai voyage commence.</p>
+    <p>Voici ce que vous allez apprendre et maîtriser sur la plateforme :</p>
+    <div class="step-card">
+      <p><strong>📚 Les bases</strong><br>Comprendre la BRVM, son fonctionnement et les 45 titres cotés. Lisez les cours comme un pro.</p>
+    </div>
+    <div class="step-card">
+      <p><strong>📊 Analyser un titre</strong><br>Décrypter un bilan, lire un graphique de cours, identifier les signaux d'achat et de vente.</p>
+    </div>
+    <div class="step-card">
+      <p><strong>🎮 Simulateur — Sans risque</strong><br>Construisez votre portefeuille virtuel avec de vraies données BRVM. Apprenez à investir sans perdre un franc.</p>
+    </div>
+    <div class="step-card">
+      <p><strong>🏆 Construire une stratégie</strong><br>Diversification, gestion du risque, horizon d'investissement — les mêmes techniques que les pros.</p>
+    </div>
+    <p>Tout ça vous attend. Gratuit. Maintenant.</p>
+    <div style="text-align: center;">
+      <a href="${platformUrl}" class="button">🚀 Commencer mon parcours BRVM</a>
+    </div>
+    <p>À bientôt sur la plateforme,<br><strong>Simba — Votre coach BRVM</strong><br>Afribourse · africbourse.com</p>
+    <div class="footer"><p>Afribourse · africbourse.com</p></div>
+  </div>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `🌱 Voici ce qui vous attend sur Afribourse, ${name}`,
+    html,
+    text: `Bonjour ${name},\n\nJe suis Simba, votre coach IA sur Afribourse. Votre compte est activé — le vrai voyage commence.\n\nCommencez votre parcours : ${platformUrl}\n\nSimba — Votre coach BRVM\nAfribourse · africbourse.com`,
+  });
+}
+
+// ─── EMAIL 2 — Marché BRVM J+3 (sans session depuis confirmation) ─────────────
+
+export async function sendReengagementEmail2({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const platformUrl = `${config.app.frontendUrl}/dashboard`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ce qui s'est passé sur le BRVM cette semaine</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+    .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
+    h1 { color: #1f2937; font-size: 22px; }
+    p { color: #4b5563; margin-bottom: 15px; }
+    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th { background: #f97316; color: white; padding: 10px; text-align: left; font-size: 13px; }
+    td { padding: 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    tr:nth-child(even) { background: #f9fafb; }
+    .up { color: #16a34a; font-weight: 600; }
+    .down { color: #dc2626; font-weight: 600; }
+    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="logo-text">AfriBourse</p>
+    <h1>📈 Ce qui s'est passé sur le BRVM cette semaine, ${name}</h1>
+    <p>Bonjour ${name},</p>
+    <p>Pendant que vous étiez absent(e), le BRVM n'a pas chômé. Voici 3 mouvements que tout investisseur informé devrait connaître :</p>
+    <table>
+      <tr><th>Titre</th><th>Variation</th><th>Ce que ça signifie</th></tr>
+      <tr><td>SONATEL SN</td><td class="up">+3,2%</td><td>Signal haussier après résultats semestriels — bon momentum</td></tr>
+      <tr><td>ECOBANK CI</td><td class="down">-1,8%</td><td>Prise de bénéfices après un pic — surveiller le support</td></tr>
+      <tr><td>CFAO CI</td><td class="up">+5,1%</td><td>Fort volume, annonce d'un partenariat — à analyser</td></tr>
+    </table>
+    <p>Vous souhaitez comprendre comment interpréter ces mouvements ? Sur Afribourse, je vous explique pas à pas comment analyser chaque titre — et comment réagir en simulant vos décisions d'investissement sans risque.</p>
+    <div style="text-align: center;">
+      <a href="${platformUrl}" class="button">📊 Analyser ces titres sur Afribourse</a>
+    </div>
+    <p>Les marchés ne s'arrêtent pas. Votre formation non plus.</p>
+    <p><strong>Simba — Votre coach BRVM</strong><br>Afribourse · africbourse.com</p>
+    <div class="footer"><p>Afribourse · africbourse.com</p></div>
+  </div>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `📈 Ce qui s'est passé sur le BRVM cette semaine, ${name}`,
+    html,
+    text: `Bonjour ${name},\n\nPendant que vous étiez absent(e), le BRVM n'a pas chômé.\n\nSONATEL SN : +3,2% — Signal haussier après résultats semestriels\nECOBANK CI : -1,8% — Prise de bénéfices après un pic\nCFAO CI : +5,1% — Fort volume, annonce d'un partenariat\n\nAnalysez ces titres : ${platformUrl}\n\nSimba — Votre coach BRVM\nAfribourse · africbourse.com`,
+  });
+}
+
+// ─── EMAIL 3 — Simulateur & Top 5 J+7 ────────────────────────────────────────
+
+export async function sendReengagementEmail3({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const simulatorUrl = `${config.app.frontendUrl}/simulateur`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Le Top 5 de la communauté Afribourse cette semaine</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+    .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
+    h1 { color: #1f2937; font-size: 22px; }
+    p { color: #4b5563; margin-bottom: 15px; }
+    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th { background: #f97316; color: white; padding: 10px; text-align: left; font-size: 13px; }
+    td { padding: 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    tr:nth-child(even) { background: #f9fafb; }
+    .perf { color: #16a34a; font-weight: 600; }
+    .steps { list-style: none; padding: 0; }
+    .steps li { padding: 6px 0; color: #374151; }
+    .stat-bar { background: #fff7ed; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0; }
+    .stat-bar p { margin: 0; color: #c2410c; font-weight: 600; font-size: 15px; }
+    .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="logo-text">AfriBourse</p>
+    <h1>🏆 Le Top 5 de la communauté Afribourse cette semaine</h1>
+    <p>Bonjour ${name},</p>
+    <p>Cela fait une semaine que vous avez créé votre compte Afribourse. Pendant ce temps, les meilleurs investisseurs de la communauté ont fait travailler leur simulateur.</p>
+    <p><strong>Voici le Top 5 de cette semaine :</strong></p>
+    <table>
+      <tr><th>Rang</th><th>Investisseur</th><th>Performance</th><th>Stratégie</th></tr>
+      <tr><td>🥇 1</td><td>Kouassi A.</td><td class="perf">+18,4%</td><td>Concentration SONATEL + ECOBANK</td></tr>
+      <tr><td>🥈 2</td><td>Mariama D.</td><td class="perf">+15,2%</td><td>Diversification 8 titres UEMOA</td></tr>
+      <tr><td>🥉 3</td><td>Ousmane T.</td><td class="perf">+12,7%</td><td>Secteur bancaire + agroalimentaire</td></tr>
+      <tr><td>4</td><td>Awa S.</td><td class="perf">+10,1%</td><td>Blue chips + attente dividendes</td></tr>
+      <tr><td>5</td><td>Ibrahima K.</td><td class="perf">+8,9%</td><td>Stratégie défensive long terme</td></tr>
+    </table>
+    <p>Ces 5 investisseurs ont commencé exactement comme vous — un compte, un simulateur, et la volonté d'apprendre. Chaque semaine, le classement est remis à zéro. <strong>Vous pouvez faire partie du Top 5 dès cette semaine.</strong></p>
+    <p>Voici comment commencer en moins de 5 minutes :</p>
+    <ul class="steps">
+      <li>▸ Connectez-vous à votre compte</li>
+      <li>▸ Allez dans l'onglet Simulateur</li>
+      <li>▸ Choisissez 2-3 titres BRVM et construisez votre premier portefeuille</li>
+      <li>▸ Suivez vos performances en temps réel</li>
+    </ul>
+    <div style="text-align: center;">
+      <a href="${simulatorUrl}" class="button">🏆 Rejoindre le classement cette semaine</a>
+    </div>
+    <div class="stat-bar">
+      <p>2 100+ investisseurs déjà actifs sur la BRVM · 0 XOF pour commencer</p>
+    </div>
+    <p>On vous attend dans l'arène,<br><strong>Simba — Votre coach BRVM</strong><br>Afribourse · afribourse.com</p>
+    <div class="footer"><p>Afribourse · afribourse.com · <a href="${config.app.frontendUrl}/desabonnement">Se désabonner</a></p></div>
+  </div>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: '🏆 Le Top 5 de la communauté Afribourse cette semaine',
+    html,
+    text: `Bonjour ${name},\n\nCela fait une semaine que vous avez créé votre compte. Voici le Top 5 simulateur de la semaine :\n\n1. Kouassi A. — +18,4%\n2. Mariama D. — +15,2%\n3. Ousmane T. — +12,7%\n4. Awa S. — +10,1%\n5. Ibrahima K. — +8,9%\n\nRejoingnez le classement : ${simulatorUrl}\n\nSimba — Votre coach BRVM\nAfribourse · afribourse.com`,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -2896,5 +3154,9 @@ export default {
   sendGrandChallengeAnnouncementEmail,
   sendCompleteProfileEmail,
   sendNewsletterMarch2026Email,
+  sendReengagementEmail0,
+  sendReengagementEmail1,
+  sendReengagementEmail2,
+  sendReengagementEmail3,
   sendEmail,
 };
