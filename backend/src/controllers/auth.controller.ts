@@ -175,7 +175,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         const newRefreshToken = crypto.randomBytes(32).toString('hex');
         await prisma.user.update({
             where: { id: user.id },
-            data: { remember_token: newRefreshToken },
+            data: { remember_token: newRefreshToken, last_login_at: new Date() } as any,
         });
 
         // Access token court-vivant (15m par défaut)

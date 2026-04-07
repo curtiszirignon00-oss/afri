@@ -193,6 +193,13 @@ model User {
   // --- Community visit tracking ---
   last_community_visit DateTime?
 
+  // --- Réengagement email sequence ---
+  last_login_at              DateTime?
+  reengagement_email0_sent   Boolean   @default(false) // Relance confirmation J+1
+  reengagement_email1_sent   Boolean   @default(false) // Réengagement J+1 post-confirmation
+  reengagement_email2_sent   Boolean   @default(false) // Marché BRVM J+3
+  reengagement_email3_sent   Boolean   @default(false) // Simulateur & Top 5 J+7
+
   // --- OAuth ---
   oauth_accounts OAuthAccount[]
 
