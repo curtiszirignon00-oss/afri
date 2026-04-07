@@ -1,6 +1,6 @@
 // src/components/onboarding/SectorsStep.tsx
 import { useState } from 'react';
-import { Building2, Smartphone, Heart, Zap, ShoppingBag, Home, Landmark, Leaf } from 'lucide-react';
+import { Building2, Zap, ShoppingBag, ShoppingCart, Landmark, Radio, Droplets } from 'lucide-react';
 
 interface SectorsStepProps {
     value: string[];
@@ -8,15 +8,15 @@ interface SectorsStepProps {
     onBack: () => void;
 }
 
+// Secteurs officiels de la BRVM
 const sectors = [
-    { value: 'Technologie', icon: Smartphone, color: 'blue' },
-    { value: 'Finance', icon: Landmark, color: 'green' },
-    { value: 'Santé', icon: Heart, color: 'red' },
+    { value: 'Consommation Discrétionnaire', icon: ShoppingBag, color: 'purple' },
+    { value: 'Consommation de Base', icon: ShoppingCart, color: 'green' },
     { value: 'Énergie', icon: Zap, color: 'yellow' },
-    { value: 'Consommation', icon: ShoppingBag, color: 'purple' },
-    { value: 'Immobilier', icon: Home, color: 'orange' },
-    { value: 'Industrie', icon: Building2, color: 'gray' },
-    { value: 'Agriculture', icon: Leaf, color: 'green' },
+    { value: 'Industriels', icon: Building2, color: 'gray' },
+    { value: 'Services Financiers', icon: Landmark, color: 'blue' },
+    { value: 'Services Publics', icon: Droplets, color: 'cyan' },
+    { value: 'Télécommunications', icon: Radio, color: 'indigo' },
 ];
 
 export default function SectorsStep({ value, onNext, onBack }: SectorsStepProps) {
