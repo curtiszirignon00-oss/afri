@@ -77,15 +77,15 @@ const horizonConfig: Record<string, { label: string; description: string }> = {
     VERY_LONG_TERM: { label: 'Très long terme', description: '> 10 ans' },
 };
 
+// Secteurs officiels BRVM
 const sectorColors: Record<string, string> = {
-    'Technologie': 'bg-blue-100 text-blue-700 border-blue-200',
-    'Finance': 'bg-green-100 text-green-700 border-green-200',
-    'Santé': 'bg-red-100 text-red-700 border-red-200',
-    'Énergie': 'bg-amber-100 text-amber-700 border-amber-200',
-    'Industrie': 'bg-gray-100 text-gray-700 border-gray-200',
-    'Consommation': 'bg-pink-100 text-pink-700 border-pink-200',
-    'Immobilier': 'bg-purple-100 text-purple-700 border-purple-200',
-    'Télécoms': 'bg-indigo-100 text-indigo-700 border-indigo-200',
+    'Consommation Discrétionnaire': 'bg-purple-100 text-purple-700 border-purple-200',
+    'Consommation de Base':         'bg-green-100 text-green-700 border-green-200',
+    'Énergie':                      'bg-amber-100 text-amber-700 border-amber-200',
+    'Industriels':                  'bg-gray-100 text-gray-700 border-gray-200',
+    'Services Financiers':          'bg-blue-100 text-blue-700 border-blue-200',
+    'Services Publics':             'bg-cyan-100 text-cyan-700 border-cyan-200',
+    'Télécommunications':           'bg-indigo-100 text-indigo-700 border-indigo-200',
 };
 
 export default function InvestorDNA({ profile, isOwnProfile = false }: InvestorDNAProps) {
