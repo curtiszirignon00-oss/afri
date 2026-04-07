@@ -405,7 +405,9 @@ async function applyReward(userId: string, reward: any) {
         await prisma.portfolio.update({
           where: { id: portfolio.id },
           data: {
-            cash_balance: { increment: rewardData.amount }
+            cash_balance: { increment: rewardData.amount },
+            // initial_balance aussi pour que le bonus ne crée pas de gain fictif
+            initial_balance: { increment: rewardData.amount }
           }
         });
         log.debug(`💰 +${rewardData.amount} FCFA ajoutés au portfolio`);
@@ -474,7 +476,9 @@ async function checkFeatureUnlocks(userId: string, level: number) {
           await prisma.portfolio.update({
             where: { id: portfolio.id },
             data: {
-              cash_balance: { increment: featureConfig.value as number }
+              cash_balance: { increment: featureConfig.value as number },
+              // initial_balance aussi pour que le bonus ne crée pas de gain fictif
+              initial_balance: { increment: featureConfig.value as number }
             }
           });
           log.debug(`💰 +${featureConfig.value} FCFA ajoutés au portfolio (niveau ${level})`);

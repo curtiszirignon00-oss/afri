@@ -328,8 +328,11 @@ export default function DashboardPage() {
     // initial_balance + transactions uniquement, sans les bonus XP/récompenses).
     // Cela évite un écart fictif dû aux crédits de récompenses non enregistrés comme
     // transactions, qui faisait apparaître un gain permanent (ex: +250 000).
+    // Si pas de point pour aujourd'hui dans l'historique backend, on ne peut pas
+    // calculer la variation journalière sans risquer d'inclure les bonus XP/récompenses.
     const todayPoint = portfolioHistory.find(p => p.date === todayStr);
-    const currentValue = todayPoint ? todayPoint.value : calculateTotalValue();
+    if (!todayPoint) return { value: 0, percent: 0 };
+    const currentValue = todayPoint.value;
     if (currentValue === 0) return { value: 0, percent: 0 };
 
     // Trouver le dernier point historique AVANT aujourd'hui (clôture d'hier ou dernier jour de bourse)

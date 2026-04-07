@@ -287,13 +287,23 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
 
     log.debug(`📊 [HISTORY] Found ${transactions.length} transactions for portfolio ${portfolio.id} (${targetWalletType})`);
 
-    // 3. Si le portefeuille n'a aucune transaction, retourner uniquement le solde initial
+    // 3. Si le portefeuille n'a aucune transaction, générer un historique plat
+    // (initial_balance chaque jour) de la création jusqu'à aujourd'hui.
+    // On ne retourne pas seulement le point de création car le frontend a besoin
+    // d'un point pour aujourd'hui afin de calculer la variation journalière sans
+    // inclure les bonus XP/récompenses (qui ne sont pas des transactions).
     if (!transactions || transactions.length === 0) {
       const createdDate = portfolio.created_at || new Date();
-      return [{
-        date: createdDate.toISOString().split('T')[0],
-        value: portfolio.initial_balance
-      }];
+      const history: { date: string; value: number }[] = [];
+      const cur = new Date(createdDate);
+      cur.setUTCHours(0, 0, 0, 0);
+      const todayUTC = new Date();
+      todayUTC.setUTCHours(0, 0, 0, 0);
+      while (cur <= todayUTC) {
+        history.push({ date: cur.toISOString().split('T')[0], value: portfolio.initial_balance });
+        cur.setUTCDate(cur.getUTCDate() + 1);
+      }
+      return history;
     }
 
     // 4. Obtenir la plage de dates (de la création à aujourd'hui)
