@@ -1,6 +1,6 @@
 // src/components/onboarding/OnboardingFlow.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCompleteOnboarding } from '../../hooks/useOnboarding';
 import type { OnboardingData } from '../../hooks/useOnboarding';
 import LifeGoalStep from './LifeGoalStep';
@@ -13,9 +13,78 @@ import type { ScoreBreakdown } from './AIScoreStep';
 import AllocationResultStep from './AllocationResultStep';
 import toast from 'react-hot-toast';
 
+// ─── Écran de bifurcation après étape 4 ──────────────────────────────────────
+function ForkScreen({
+    onDashboard,
+    onContinue,
+    isLoading,
+}: {
+    onDashboard: () => void;
+    onContinue: () => void;
+    isLoading: boolean;
+}) {
+    return (
+        <div className="space-y-6 text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
+                <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+
+            <div>
+                <h2 className="text-2xl font-bold text-gray-900">Votre profil de base est prêt !</h2>
+                <p className="text-gray-500 mt-2 text-sm">
+                    Votre profil de risque a été déterminé. Vous pouvez accéder à votre dashboard
+                    maintenant ou continuer pour obtenir votre score investisseur Simba.
+                </p>
+            </div>
+
+            {/* Option A — Dashboard */}
+            <button
+                onClick={onDashboard}
+                disabled={isLoading}
+                className="w-full py-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+                {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                    <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Accéder à mon dashboard
+                    </>
+                )}
+            </button>
+
+            {/* Option B — Continuer */}
+            <button
+                onClick={onContinue}
+                disabled={isLoading}
+                className="w-full py-4 border-2 border-emerald-500 text-emerald-700 rounded-xl font-semibold hover:bg-emerald-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+                <span className="text-lg">🎯</span>
+                Continuer — Déterminer mon score investisseur
+                <span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full font-medium">3 étapes</span>
+            </button>
+
+            <p className="text-xs text-gray-400">
+                Vous pourrez compléter votre score investisseur plus tard depuis votre profil.
+            </p>
+        </div>
+    );
+}
+
+// ─── Composant principal ──────────────────────────────────────────────────────
 export default function OnboardingFlow() {
     const navigate = useNavigate();
-    const [currentStep, setCurrentStep] = useState(1);
+    const [searchParams] = useSearchParams();
+
+    // Phase 2 = démarrer directement à l'étape 5 (depuis le profil)
+    const isPhase2 = searchParams.get('phase') === '2';
+
+    const [currentStep, setCurrentStep] = useState(isPhase2 ? 5 : 1);
+    const [showFork, setShowFork] = useState(false);
     const [formData, setFormData] = useState<Partial<OnboardingData>>({
         favorite_sectors: [],
         investment_goals: [],
@@ -29,55 +98,72 @@ export default function OnboardingFlow() {
 
     const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
 
-    const totalSteps = 7;
+    // Phase 1 : 4 étapes — Phase 2 : 3 étapes supplémentaires
+    const PHASE1_STEPS = 4;
+    const TOTAL_STEPS = 7;
+    const displayTotal = isPhase2 ? 3 : TOTAL_STEPS;
+    const displayCurrent = isPhase2 ? currentStep - 4 : currentStep;
 
     const updateFormData = (data: Partial<OnboardingData>) => {
         setFormData((prev) => ({ ...prev, ...data }));
     };
 
     const nextStep = () => {
-        if (currentStep < totalSteps) setCurrentStep((prev) => prev + 1);
+        if (currentStep < TOTAL_STEPS) setCurrentStep((prev) => prev + 1);
     };
 
     const prevStep = () => {
         if (currentStep > 1) setCurrentStep((prev) => prev - 1);
     };
 
-    const handleComplete = () => {
+    // Sauvegarde les données et redirige vers le dashboard (fin phase 1 ou fin phase 2)
+    const saveAndRedirect = (extraData: Partial<OnboardingData> = {}) => {
+        const payload = { ...formData, ...extraData } as OnboardingData;
+        completeOnboarding(payload, {
+            onSuccess: () => {
+                toast.success(isPhase2 ? 'Score investisseur enregistré !' : 'Profil créé avec succès !');
+                navigate('/dashboard', { replace: true });
+            },
+            onError: (error: any) => {
+                toast.error(error.response?.data?.error || 'Erreur lors de la sauvegarde');
+            },
+        });
+    };
+
+    // Fin phase 1 → dashboard (sans score)
+    const handlePhase1Complete = () => {
         if (!formData.risk_profile || !formData.investment_horizon) {
             toast.error('Veuillez compléter toutes les étapes obligatoires');
             return;
         }
+        saveAndRedirect();
+    };
 
-        completeOnboarding(
-            { ...formData, disclaimer_accepted_at: new Date().toISOString() } as OnboardingData,
-            {
-                onSuccess: () => {
-                    toast.success('Profil créé avec succès !');
-                    navigate('/dashboard', { replace: true });
-                },
-                onError: (error: any) => {
-                    toast.error(error.response?.data?.error || 'Erreur lors de la création du profil');
-                },
-            }
-        );
+    // Fin phase 2 → dashboard (avec score + allocation + disclaimer)
+    const handlePhase2Complete = () => {
+        saveAndRedirect({ disclaimer_accepted_at: new Date().toISOString() });
     };
 
     const renderStep = () => {
+        // Écran de bifurcation (entre phase 1 et phase 2)
+        if (showFork) {
+            return (
+                <ForkScreen
+                    onDashboard={handlePhase1Complete}
+                    onContinue={() => { setShowFork(false); nextStep(); }}
+                    isLoading={isPending}
+                />
+            );
+        }
+
         switch (currentStep) {
-            // Step 1 — Objectif de vie
             case 1:
                 return (
                     <LifeGoalStep
-                        onNext={(lifeGoal) => {
-                            updateFormData({ life_goal: lifeGoal });
-                            nextStep();
-                        }}
+                        onNext={(lifeGoal) => { updateFormData({ life_goal: lifeGoal }); nextStep(); }}
                         showBackButton={false}
                     />
                 );
-
-            // Step 2 — Contexte financier
             case 2:
                 return (
                     <FinancialContextStep
@@ -88,21 +174,14 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
-
-            // Step 3 — Horizon d'investissement
             case 3:
                 return (
                     <HorizonStep
                         value={formData.investment_horizon}
-                        onNext={(horizon) => {
-                            updateFormData({ investment_horizon: horizon });
-                            nextStep();
-                        }}
+                        onNext={(horizon) => { updateFormData({ investment_horizon: horizon }); nextStep(); }}
                         onBack={prevStep}
                     />
                 );
-
-            // Step 4 — Quiz risque BRVM
             case 4:
                 return (
                     <BRVMRiskQuizStep
@@ -110,26 +189,20 @@ export default function OnboardingFlow() {
                         quizScore={formData.quiz_score}
                         onNext={(riskProfile, quizScore) => {
                             updateFormData({ risk_profile: riskProfile, quiz_score: quizScore });
-                            nextStep();
+                            // Afficher le fork plutôt que de passer directement à l'étape 5
+                            setShowFork(true);
                         }}
                         onBack={prevStep}
                     />
                 );
-
-            // Step 5 — Secteurs favoris
             case 5:
                 return (
                     <SectorsStep
                         value={formData.favorite_sectors || []}
-                        onNext={(sectors) => {
-                            updateFormData({ favorite_sectors: sectors });
-                            nextStep();
-                        }}
-                        onBack={prevStep}
+                        onNext={(sectors) => { updateFormData({ favorite_sectors: sectors }); nextStep(); }}
+                        onBack={isPhase2 ? () => navigate('/profile') : () => { setShowFork(true); }}
                     />
                 );
-
-            // Step 6 — Score IA Simba
             case 6:
                 return (
                     <AIScoreStep
@@ -141,22 +214,26 @@ export default function OnboardingFlow() {
                         onBack={prevStep}
                     />
                 );
-
-            // Step 7 — Allocation Simba + Disclaimer
             case 7:
                 return (
                     <AllocationResultStep
                         data={formData}
-                        onComplete={handleComplete}
+                        onComplete={handlePhase2Complete}
                         onBack={prevStep}
                         isLoading={isPending}
                     />
                 );
-
             default:
                 return null;
         }
     };
+
+    // Barre de progression : masquée sur l'écran de fork
+    const showProgress = !showFork;
+    const progressPct = showProgress ? Math.round((displayCurrent / displayTotal) * 100) : 57;
+    const progressLabel = isPhase2
+        ? `Score investisseur — Étape ${displayCurrent} sur ${displayTotal}`
+        : `Étape ${displayCurrent} sur ${displayTotal}`;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12 px-4">
@@ -165,16 +242,16 @@ export default function OnboardingFlow() {
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-700">
-                            Étape {currentStep} sur {totalSteps}
+                            {showFork ? 'Profil de base complété ✓' : progressLabel}
                         </span>
                         <span className="text-sm text-gray-500">
-                            {Math.round((currentStep / totalSteps) * 100)}% complété
+                            {showFork ? '57%' : `${progressPct}%`} complété
                         </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                             className="bg-gradient-to-r from-emerald-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                            style={{ width: showFork ? '57%' : `${progressPct}%` }}
                         />
                     </div>
                 </div>
@@ -184,7 +261,6 @@ export default function OnboardingFlow() {
                     {renderStep()}
                 </div>
 
-                {/* Help Text */}
                 <div className="mt-6 text-center text-sm text-gray-500">
                     <p>Vos données sont sécurisées et ne seront jamais partagées sans votre consentement</p>
                 </div>

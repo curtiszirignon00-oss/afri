@@ -416,7 +416,11 @@ export default function ProfilePage() {
 
                     {/* Right Column - Activity Feed */}
                     <div className="lg:col-span-2">
-                        <ActivityFeed userId={profileData.id} isOwnProfile={isOwnProfile} />
+                        <ActivityFeed
+                            userId={profileData.id}
+                            isOwnProfile={isOwnProfile}
+                            investorScore={investorProfile?.investor_score ?? null}
+                        />
                     </div>
                 </div>
             </div>

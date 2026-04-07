@@ -1,5 +1,6 @@
 // src/components/profile/ActivityFeed.tsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUserPosts } from '../../hooks/useSocial';
 import PostCard from './PostCard';
 import PostComposer from './PostComposer';
@@ -9,14 +10,45 @@ import { Card } from '../ui';
 interface ActivityFeedProps {
     userId: string;
     isOwnProfile?: boolean;
+    investorScore?: number | null;
 }
 
-export default function ActivityFeed({ userId, isOwnProfile = false }: ActivityFeedProps) {
+export default function ActivityFeed({ userId, isOwnProfile = false, investorScore }: ActivityFeedProps) {
     const [page, setPage] = useState(1);
+    const navigate = useNavigate();
     const { data, isLoading, error } = useUserPosts(userId, page);
+
+    const showScoreCTA = isOwnProfile && investorScore == null;
 
     return (
         <div className="space-y-6">
+            {/* CTA Score investisseur Simba — si phase 2 non complétée */}
+            {showScoreCTA && (
+                <div className="bg-gradient-to-r from-emerald-500 to-blue-500 rounded-2xl p-6 text-white">
+                    <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span className="text-2xl">🎯</span>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="font-bold text-lg">Déterminez votre score investisseur</h3>
+                            <p className="text-white/80 text-sm mt-1">
+                                Simba analyse vos secteurs préférés et génère votre allocation BRVM personnalisée.
+                                3 étapes rapides.
+                            </p>
+                            <button
+                                onClick={() => navigate('/onboarding?phase=2')}
+                                className="mt-4 px-5 py-2.5 bg-white text-emerald-700 rounded-xl font-semibold text-sm hover:bg-emerald-50 transition-colors inline-flex items-center gap-2"
+                            >
+                                Obtenir mon score Simba
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Post Composer - Only show for own profile */}
             {isOwnProfile && <PostComposer />}
 
