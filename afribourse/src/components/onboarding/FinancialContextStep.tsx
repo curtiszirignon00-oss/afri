@@ -72,8 +72,8 @@ export default function FinancialContextStep({ onNext, onBack }: Props) {
 
         <div className="space-y-3">
           <div className="flex justify-between text-xs text-gray-500">
-            <span>< 10 000</span>
-            <span>> 500 000 FCFA</span>
+            <span>&lt; 10 000</span>
+            <span>&gt; 500 000 FCFA</span>
           </div>
           <input
             type="range"
