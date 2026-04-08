@@ -4,6 +4,7 @@ import { log } from '../config/logger';
 import { Request, Response, NextFunction } from 'express';
 import * as portfolioService from '../services/portfolio.service.prisma';
 import * as challengeService from '../services/challenge.service';
+import * as leaderboardService from '../services/leaderboard.service';
 // Import gamification services
 import * as xpService from '../services/xp.service';
 import * as streakService from '../services/streak.service';
@@ -252,6 +253,29 @@ export async function sellStock(req: Request, res: Response, next: NextFunction)
 // export async function getPortfolioPositions(...) {}
 // export async function getPortfolioTransactions(...) {}
 // Add this function to portfolio.controller.ts
+
+// Controller for GET /api/portfolios/my/rank
+export async function getMyRank(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+
+    const walletType = (req.query.wallet_type as string) || 'SANDBOX';
+
+    let rankInfo;
+    if (walletType === 'CONCOURS') {
+      rankInfo = await leaderboardService.getUserRank(userId);
+    } else {
+      rankInfo = await leaderboardService.getSandboxUserRank(userId);
+    }
+
+    return res.status(200).json(rankInfo);
+  } catch (error) {
+    return next(error);
+  }
+}
 
 // Controller for GET /api/portfolios/my/history
 export async function getPortfolioHistory(req: Request, res: Response, next: NextFunction) {
