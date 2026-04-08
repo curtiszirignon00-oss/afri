@@ -128,7 +128,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 // --- CONNEXION (LOGIN) ---
 export async function login(req: Request, res: Response, next: NextFunction) {
     try {
-        const {email, password} = req.body;
+        const { email, password, rememberMe } = req.body;
 
         // Requête UNIQUEMENT au service Prisma
         const user = await usersServicePrisma.getUserByEmail(email);
@@ -199,10 +199,15 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             path: '/',
         };
 
-        // Cookie access token (15 min)
+        // "Se souvenir de moi" : refresh token 30 jours, sinon 7 jours
+        const refreshMaxAge = rememberMe
+            ? 30 * 24 * 60 * 60 * 1000   // 30 jours
+            : 7 * 24 * 60 * 60 * 1000;   // 7 jours
+
+        // Cookie access token (15 min — renouvelé automatiquement par le refresh)
         res.cookie('token', accessToken, { ...baseCookieOptions, maxAge: 15 * 60 * 1000 });
-        // Cookie refresh token (7 jours)
-        res.cookie('rtk', newRefreshToken, { ...baseCookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+        // Cookie refresh token
+        res.cookie('rtk', newRefreshToken, { ...baseCookieOptions, maxAge: refreshMaxAge });
 
         // ========== GAMIFICATION TRIGGERS ==========
         let gamificationData: any = {};
