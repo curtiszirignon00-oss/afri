@@ -76,30 +76,31 @@ function ForkScreen({
 }
 
 // ─── Composant principal ──────────────────────────────────────────────────────
-export default function OnboardingFlow() {
+interface OnboardingFlowProps {
+    /** Mode modal : pas de plein écran, appelle onDone à la fin */
+    isModal?: boolean;
+    /** Étape de départ (5 = phase 2) */
+    startStep?: number;
+    /** Callback appelé après sauvegarde réussie (mode modal) */
+    onDone?: () => void;
+}
+
+export default function OnboardingFlow({ isModal = false, startStep = 1, onDone }: OnboardingFlowProps) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    // Phase 2 = démarrer directement à l'étape 5 (depuis le profil)
-    const isPhase2 = searchParams.get('phase') === '2';
+    const initialStep = startStep > 1 ? startStep : (searchParams.get('phase') === '2' ? 5 : 1);
+    const isPhase2 = initialStep >= 5;
 
-    const [currentStep, setCurrentStep] = useState(isPhase2 ? 5 : 1);
+    const [currentStep, setCurrentStep] = useState(initialStep);
     const [showFork, setShowFork] = useState(false);
     const [formData, setFormData] = useState<Partial<OnboardingData>>({
         favorite_sectors: [],
         investment_goals: [],
-        life_goal: undefined,
-        income_source: undefined,
-        monthly_budget: undefined,
-        investor_score: undefined,
-        score_breakdown: undefined,
-        allocation_json: undefined,
     });
 
     const { mutate: completeOnboarding, isPending } = useCompleteOnboarding();
 
-    // Phase 1 : 4 étapes — Phase 2 : 3 étapes supplémentaires
-    const PHASE1_STEPS = 4;
     const TOTAL_STEPS = 7;
     const displayTotal = isPhase2 ? 3 : TOTAL_STEPS;
     const displayCurrent = isPhase2 ? currentStep - 4 : currentStep;
@@ -116,13 +117,17 @@ export default function OnboardingFlow() {
         if (currentStep > 1) setCurrentStep((prev) => prev - 1);
     };
 
-    // Sauvegarde les données et redirige vers le dashboard (fin phase 1 ou fin phase 2)
-    const saveAndRedirect = (extraData: Partial<OnboardingData> = {}) => {
+    const saveAndFinish = (extraData: Partial<OnboardingData> = {}) => {
         const payload = { ...formData, ...extraData } as OnboardingData;
         completeOnboarding(payload, {
             onSuccess: () => {
-                toast.success(isPhase2 ? 'Score investisseur enregistré !' : 'Profil créé avec succès !');
-                navigate('/dashboard', { replace: true });
+                const msg = isPhase2 ? 'Score investisseur enregistré !' : 'Profil configuré avec succès !';
+                toast.success(msg);
+                if (isModal && onDone) {
+                    onDone();
+                } else {
+                    navigate('/profile', { replace: true });
+                }
             },
             onError: (error: any) => {
                 toast.error(error.response?.data?.error || 'Erreur lors de la sauvegarde');
@@ -130,22 +135,24 @@ export default function OnboardingFlow() {
         });
     };
 
-    // Fin phase 1 → dashboard (sans score)
     const handlePhase1Complete = () => {
         if (!formData.risk_profile || !formData.investment_horizon) {
             toast.error('Veuillez compléter toutes les étapes obligatoires');
             return;
         }
-        saveAndRedirect();
+        saveAndFinish();
     };
 
-    // Fin phase 2 → dashboard (avec score + allocation + disclaimer)
     const handlePhase2Complete = () => {
-        saveAndRedirect({ disclaimer_accepted_at: new Date().toISOString() });
+        saveAndFinish({ disclaimer_accepted_at: new Date().toISOString() });
+    };
+
+    const handleBackFromPhase2Start = () => {
+        if (isModal && onDone) { onDone(); return; }
+        navigate('/profile');
     };
 
     const renderStep = () => {
-        // Écran de bifurcation (entre phase 1 et phase 2)
         if (showFork) {
             return (
                 <ForkScreen
@@ -189,7 +196,6 @@ export default function OnboardingFlow() {
                         quizScore={formData.quiz_score}
                         onNext={(riskProfile, quizScore) => {
                             updateFormData({ risk_profile: riskProfile, quiz_score: quizScore });
-                            // Afficher le fork plutôt que de passer directement à l'étape 5
                             setShowFork(true);
                         }}
                         onBack={prevStep}
@@ -200,7 +206,7 @@ export default function OnboardingFlow() {
                     <SectorsStep
                         value={formData.favorite_sectors || []}
                         onNext={(sectors) => { updateFormData({ favorite_sectors: sectors }); nextStep(); }}
-                        onBack={isPhase2 ? () => navigate('/profile') : () => { setShowFork(true); }}
+                        onBack={isPhase2 ? handleBackFromPhase2Start : () => setShowFork(true)}
                     />
                 );
             case 6:
@@ -228,43 +234,49 @@ export default function OnboardingFlow() {
         }
     };
 
-    // Barre de progression : masquée sur l'écran de fork
-    const showProgress = !showFork;
-    const progressPct = showProgress ? Math.round((displayCurrent / displayTotal) * 100) : 57;
-    const progressLabel = isPhase2
+    const progressPct = showFork ? 57 : Math.round((displayCurrent / displayTotal) * 100);
+    const progressLabel = showFork
+        ? 'Profil de base complété ✓'
+        : isPhase2
         ? `Score investisseur — Étape ${displayCurrent} sur ${displayTotal}`
         : `Étape ${displayCurrent} sur ${displayTotal}`;
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12 px-4">
-            <div className="max-w-3xl mx-auto">
-                {/* Progress Bar */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-700">
-                            {showFork ? 'Profil de base complété ✓' : progressLabel}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                            {showFork ? '57%' : `${progressPct}%`} complété
-                        </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                            className="bg-gradient-to-r from-emerald-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: showFork ? '57%' : `${progressPct}%` }}
-                        />
-                    </div>
+    const inner = (
+        <>
+            {/* Progress Bar */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">{progressLabel}</span>
+                    <span className="text-sm text-gray-500">{progressPct}% complété</span>
                 </div>
-
-                {/* Step Content */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    {renderStep()}
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                        className="bg-gradient-to-r from-emerald-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${progressPct}%` }}
+                    />
                 </div>
+            </div>
 
+            {/* Step Content */}
+            <div className={isModal ? '' : 'bg-white rounded-2xl shadow-xl p-8'}>
+                {renderStep()}
+            </div>
+
+            {!isModal && (
                 <div className="mt-6 text-center text-sm text-gray-500">
                     <p>Vos données sont sécurisées et ne seront jamais partagées sans votre consentement</p>
                 </div>
-            </div>
+            )}
+        </>
+    );
+
+    // Mode modal : rendu sans enveloppe plein écran
+    if (isModal) return <div className="space-y-0">{inner}</div>;
+
+    // Mode page complète
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12 px-4">
+            <div className="max-w-3xl mx-auto">{inner}</div>
         </div>
     );
 }
