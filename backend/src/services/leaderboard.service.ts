@@ -198,6 +198,73 @@ export async function getUserRank(userId: string): Promise<UserRankInfo> {
     return result;
 }
 
+// ============= SANDBOX RANKING =============
+
+/**
+ * Calcule le rang de l'utilisateur parmi tous les portfolios SANDBOX actifs.
+ * Tri par gainLossPercent décroissant (même logique que le concours).
+ */
+export async function getSandboxUserRank(userId: string): Promise<UserRankInfo> {
+    const cacheKey = `leaderboard:sandbox:user:${userId}`;
+    const cached = await cacheGet<UserRankInfo>(cacheKey);
+    if (cached) return cached;
+
+    // Charger tous les portfolios SANDBOX actifs avec leurs positions
+    const portfolios = await prisma.portfolio.findMany({
+        where: { wallet_type: 'SANDBOX', status: 'ACTIVE' },
+        select: {
+            userId: true,
+            cash_balance: true,
+            initial_balance: true,
+            positions: { select: { stock_ticker: true, quantity: true } }
+        }
+    });
+
+    if (portfolios.length === 0) {
+        return { rank: null, totalParticipants: 0 };
+    }
+
+    // Charger les prix actuels
+    const allTickers = [...new Set(portfolios.flatMap(p => p.positions.map(pos => pos.stock_ticker)))];
+    const stockRows = allTickers.length > 0
+        ? await prisma.stock.findMany({
+            where: { symbol: { in: allTickers } },
+            select: { symbol: true, current_price: true }
+        })
+        : [];
+    const priceMap = new Map(stockRows.map(s => [s.symbol, s.current_price]));
+
+    // Calculer la performance de chaque portfolio
+    const performances = portfolios.map(p => {
+        const stocksValue = p.positions.reduce((acc, pos) => {
+            const price = priceMap.get(pos.stock_ticker) ?? 0;
+            return acc + pos.quantity * price;
+        }, 0);
+        const totalValue = p.cash_balance + stocksValue;
+        const gainLossPercent = p.initial_balance > 0
+            ? ((totalValue - p.initial_balance) / p.initial_balance) * 100
+            : 0;
+        return { userId: p.userId, gainLossPercent };
+    });
+
+    // Trier par performance décroissante
+    performances.sort((a, b) => b.gainLossPercent - a.gainLossPercent);
+
+    const totalParticipants = performances.length;
+    const userIndex = performances.findIndex(p => p.userId === userId);
+
+    if (userIndex === -1) {
+        return { rank: null, totalParticipants };
+    }
+
+    const rank = userIndex + 1;
+    const percentile = ((totalParticipants - rank) / totalParticipants) * 100;
+
+    const result: UserRankInfo = { rank, totalParticipants, percentile };
+    await cacheSet(cacheKey, result, CACHE_TTL.LEADERBOARD);
+    return result;
+}
+
 // ============= CACHE (OPTIONNEL - REDIS) =============
 
 /**

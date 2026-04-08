@@ -100,6 +100,7 @@ export default function DashboardPage() {
   const [marketIndices, setMarketIndices] = useState<MarketIndex[]>([]); // <-- AJOUT: Indices du marché
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userRank, setUserRank] = useState<{ rank: number | null; totalParticipants: number; percentile?: number } | null>(null);
 
   // <-- AJOUT: État pour le filtre de temps du graphique
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('MAX');
@@ -139,7 +140,7 @@ export default function DashboardPage() {
       console.log('📊 [DASHBOARD] Loading user data...');
 
       // Utiliser apiFetch qui ajoute automatiquement le token sur mobile
-      const [profileData, watchlistItems, transactionsData, indicesData] = await Promise.all([
+      const [profileData, watchlistItems, transactionsData, indicesData, rankData] = await Promise.all([
         apiFetch<any>('/users/me').catch(err => {
           console.error('Profile fetch error:', err);
           if (err.message.includes('401') || err.message.includes('Unauthorized')) {
@@ -159,7 +160,10 @@ export default function DashboardPage() {
         apiFetch<MarketIndex[]>('/indices/latest').catch(err => {
           console.warn('Indices fetch error:', err);
           return [];
-        })
+        }),
+        apiFetch<{ rank: number | null; totalParticipants: number; percentile?: number }>(
+          `/portfolios/my/rank?wallet_type=${walletMode}`
+        ).catch(() => null)
       ]);
 
       console.log('✅ [DASHBOARD] Data loaded successfully');
@@ -174,6 +178,7 @@ export default function DashboardPage() {
 
       setRecentTransactions(transactionsData.slice(0, 5)); // Les 5 dernières
       setMarketIndices(indicesData);
+      setUserRank(rankData);
       setUserDataLoaded(true);
 
     } catch (err: any) {
@@ -566,7 +571,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* <-- AJOUT: KPIs Secondaires */}
+            {/* KPIs Secondaires */}
             <div className="space-y-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                 <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>💰 Liquidités</p>
@@ -576,6 +581,24 @@ export default function DashboardPage() {
                 <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>📊 Valeur des Actions</p>
                 <p className="text-2xl font-bold">{formatNumber(stocksValue)} FCFA</p>
               </div>
+              {/* Classement */}
+              {userRank && userRank.rank !== null && (
+                <div className={`bg-white/10 backdrop-blur-sm rounded-lg p-4 border ${walletMode === 'CONCOURS' ? 'border-orange-400/40' : 'border-blue-400/40'}`}>
+                  <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>
+                    <Trophy className="w-3.5 h-3.5 inline mr-1" />
+                    Classement {walletMode === 'CONCOURS' ? 'Concours' : 'Sandbox'}
+                  </p>
+                  <p className="text-2xl font-bold">
+                    #{userRank.rank}
+                    <span className="text-sm font-normal ml-2 opacity-75">/ {userRank.totalParticipants}</span>
+                  </p>
+                  {userRank.percentile !== undefined && (
+                    <p className={`text-xs mt-0.5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`}>
+                      Top {(100 - userRank.percentile).toFixed(0)}% des investisseurs
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Card>
