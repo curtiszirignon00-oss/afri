@@ -5,6 +5,7 @@ import {
   trackFeatureUsage,
   updatePageDuration,
   getAnalyticsStats,
+  getCohortAnalytics,
 } from '../controllers/analytics.controller';
 import { auth, admin } from '../middlewares/auth.middleware';
 import { generalApiLimiter } from '../middleware/rateLimiter';
@@ -19,5 +20,6 @@ router.put('/page-duration', generalApiLimiter, updatePageDuration); // Visiteur
 
 // Analytics stats (GET) - ADMIN ONLY
 router.get('/stats', admin, getAnalyticsStats);
+router.get('/cohort', admin, getCohortAnalytics);
 
 export default router;
