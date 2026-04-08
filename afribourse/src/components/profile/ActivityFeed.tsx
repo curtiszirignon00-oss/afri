@@ -1,6 +1,5 @@
 // src/components/profile/ActivityFeed.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUserPosts } from '../../hooks/useSocial';
 import PostCard from './PostCard';
 import PostComposer from './PostComposer';
@@ -11,18 +10,18 @@ interface ActivityFeedProps {
     userId: string;
     isOwnProfile?: boolean;
     investorScore?: number | null;
+    onOpenScoreModal?: () => void;
 }
 
-export default function ActivityFeed({ userId, isOwnProfile = false, investorScore }: ActivityFeedProps) {
+export default function ActivityFeed({ userId, isOwnProfile = false, investorScore, onOpenScoreModal }: ActivityFeedProps) {
     const [page, setPage] = useState(1);
-    const navigate = useNavigate();
     const { data, isLoading, error } = useUserPosts(userId, page);
 
     const showScoreCTA = isOwnProfile && investorScore == null;
 
     return (
         <div className="space-y-6">
-            {/* CTA Score investisseur Simba — si phase 2 non complétée */}
+            {/* CTA Score investisseur Simba — phase 2 non complétée */}
             {showScoreCTA && (
                 <div className="bg-gradient-to-r from-emerald-500 to-blue-500 rounded-2xl p-6 text-white">
                     <div className="flex items-start gap-4">
@@ -36,7 +35,7 @@ export default function ActivityFeed({ userId, isOwnProfile = false, investorSco
                                 3 étapes rapides.
                             </p>
                             <button
-                                onClick={() => navigate('/onboarding?phase=2')}
+                                onClick={onOpenScoreModal}
                                 className="mt-4 px-5 py-2.5 bg-white text-emerald-700 rounded-xl font-semibold text-sm hover:bg-emerald-50 transition-colors inline-flex items-center gap-2"
                             >
                                 Obtenir mon score Simba

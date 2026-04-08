@@ -62,6 +62,7 @@ import { UpdatePrompt } from './components/pwa/UpdatePrompt';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { PushNotificationPrompt } from './components/pwa/PushNotificationPrompt';
 import { InstallPrompt } from './components/pwa/InstallPrompt';
+import EmailVerificationBanner from './components/EmailVerificationBanner';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -110,6 +111,7 @@ function Layout() {
         <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
       )}
 
+      {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
 
       <main className="flex-grow">
@@ -187,21 +189,21 @@ function Layout() {
           <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ResetPasswordPage />} />
 
-          {/* Dashboard - Protégé avec vérification onboarding */}
+          {/* Dashboard - Protégé (pas de vérif onboarding — le profil gère ça) */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute requireOnboarding={true}>
+              <ProtectedRoute requireOnboarding={false}>
                 <DashboardPage />
               </ProtectedRoute>
             }
           />
 
-          {/* Mon Profil - Protégé avec vérification onboarding */}
+          {/* Mon Profil - Protégé (KYC géré dans la page elle-même) */}
           <Route
             path="/profile"
             element={
-              <ProtectedRoute requireOnboarding={true}>
+              <ProtectedRoute requireOnboarding={false}>
                 <ProfilePage />
               </ProtectedRoute>
             }
