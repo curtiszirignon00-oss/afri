@@ -179,6 +179,43 @@ export function useOnboardingRedirect(options?: {
 }
 
 /**
+ * Submit discovery survey (3-question post-registration survey)
+ */
+export function useDiscoverySurvey() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: { q1: string; q2?: string | null; q3: string }) => {
+            const response = await apiClient.post('/investor-profile/survey/discovery', data);
+            return response.data.data;
+        },
+        onSuccess: () => {
+            // Mark survey_completed in onboarding status cache
+            queryClient.setQueryData(['onboarding', 'status'], (old: any) => ({
+                ...old,
+                completed: true,
+                survey_completed: true,
+            }));
+            queryClient.invalidateQueries({ queryKey: ['onboarding', 'status'] });
+            queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
+        },
+    });
+}
+
+/**
+ * Get survey status
+ */
+export function useSurveyStatus() {
+    return useQuery({
+        queryKey: ['survey', 'status'],
+        queryFn: async () => {
+            const response = await apiClient.get('/investor-profile/survey/status');
+            return response.data.data;
+        },
+    });
+}
+
+/**
  * Compute investor score (Step 6 — deterministic, no AI)
  */
 export function useComputeAIScore() {

@@ -22,6 +22,8 @@ import HomePage from './components/HomePage';
 import MarketsPageRefactored from './components/MarketsPageRefactored';
 import IndicesPage from './components/IndicesPage';
 import OnboardingFlow from './components/onboarding/OnboardingFlow';
+import DiscoverySurvey from './components/onboarding/DiscoverySurvey';
+import SurveyPopup from './components/survey/SurveyPopup';
 import ProfilePage from './pages/ProfilePage';
 import CommunityPage from './pages/CommunityPage';
 import CommunitiesPage from './pages/CommunitiesPage';
@@ -114,6 +116,9 @@ function Layout() {
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
 
+      {/* Discovery survey popup for users who haven't completed it */}
+      <SurveyPopup />
+
       <main className="flex-grow">
         <Routes>
           {/* Routes publiques */}
@@ -158,9 +163,19 @@ function Layout() {
           {/* Classement - Public */}
           <Route path="/classement" element={<LeaderboardPage />} />
 
-          {/* Onboarding - Protégé mais ne vérifie PAS le statut d'onboarding (évite la boucle) */}
+          {/* Discovery survey — 3 questions post-inscription, déverrouille l'accès */}
           <Route
             path="/onboarding"
+            element={
+              <ProtectedRoute requireOnboarding={false}>
+                <DiscoverySurvey />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* KYC complet (ADN Investisseur) — accessible via /profile */}
+          <Route
+            path="/onboarding/kyc"
             element={
               <ProtectedRoute requireOnboarding={false}>
                 <OnboardingFlow />
