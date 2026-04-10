@@ -2,12 +2,13 @@ import { Router, Request, Response } from 'express';
 import passport from '../config/passport';
 import { signJWT } from '../utils';
 import config from '../config/environnement';
+import { prisma } from '../config/database';
 
 const router = Router();
 
 // ─── Helper : générer JWT et rediriger vers le frontend ──────────────────────
 function handleOAuthCallback(provider: string) {
-  return (req: Request, res: Response) => {
+  return async (req: Request, res: Response) => {
     const user = req.user;
     console.log(`[OAuth] handleOAuthCallback ${provider}, req.user:`, user ? `id=${user.id} email=${user.email}` : 'NULL');
     if (!user) {
@@ -27,10 +28,22 @@ function handleOAuthCallback(provider: string) {
       path: '/',
     });
 
-    // Le JWT est dans le cookie httpOnly — pas besoin de le mettre dans l'URL
-    res.redirect(
-      `${config.app.frontendUrl}/dashboard?oauth=success&provider=${provider}`
-    );
+    // Vérifier si le nouvel utilisateur a complété le sondage de découverte
+    let surveyCompleted = false;
+    try {
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { userId: user.id },
+        select: { survey_completed: true },
+      });
+      surveyCompleted = userProfile?.survey_completed ?? false;
+    } catch {
+      // Non-bloquant — on envoie au dashboard par défaut
+      surveyCompleted = true;
+    }
+
+    // Nouveaux utilisateurs OAuth → sondage de 3 questions avant le dashboard
+    const destination = surveyCompleted ? '/dashboard' : '/onboarding';
+    res.redirect(`${config.app.frontendUrl}${destination}?oauth=success&provider=${provider}`);
   };
 }
 

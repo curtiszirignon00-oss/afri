@@ -51,7 +51,10 @@ export default function LoginPage() {
       initAuthFromLogin(user, token);
 
       toast.success('Connexion réussie !');
-      navigate(redirectTo);
+
+      // Si le sondage de découverte n'est pas complété → onboarding 3 questions
+      const surveyCompleted = loginResponse.data.gamification?.survey_completed ?? true;
+      navigate(surveyCompleted ? redirectTo : '/onboarding');
 
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || 'Une erreur est survenue lors de la connexion.';
