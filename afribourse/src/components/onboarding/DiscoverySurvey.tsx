@@ -122,7 +122,7 @@ export default function DiscoverySurvey({ onComplete }: DiscoverySurveyProps) {
   if (step === 'result' && result) {
     const meta = PROFILE_META[result.profile_type];
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-5rem)] bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
           {/* Profile card */}
           <div className={`bg-gradient-to-br ${meta.gradient} rounded-3xl p-8 text-white text-center mb-6`}>
@@ -154,7 +154,7 @@ export default function DiscoverySurvey({ onComplete }: DiscoverySurveyProps) {
   // ─── Survey steps ─────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-[calc(100vh-5rem)] bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
 
         {/* Header */}

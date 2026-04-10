@@ -99,7 +99,7 @@ function Layout() {
   usePageTracking();
 
   // Détermine si le Header/Footer doit être affiché
-  const showLayout = !['/signup', '/login', '/onboarding', '/profile', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
+  const showLayout = !['/signup', '/login', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

@@ -123,7 +123,7 @@ export default function ProfilePage() {
     // Garde : si c'est "son propre profil" mais pas connecte, rediriger
     if (isOwnProfile && !isLoggedIn) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md mx-auto p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Connexion requise</h2>
                     <p className="text-gray-600 mb-6">Connectez-vous pour voir votre profil.</p>
@@ -140,7 +140,7 @@ export default function ProfilePage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
         );
@@ -153,7 +153,7 @@ export default function ProfilePage() {
     // Gestion des erreurs : profil d'un autre utilisateur introuvable
     if (!isOwnProfile && (errorOther || !otherUserProfile)) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md mx-auto p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non trouve</h2>
                     <p className="text-gray-600 mb-6">
@@ -239,7 +239,7 @@ export default function ProfilePage() {
         };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-[calc(100vh-5rem)] bg-gray-50">
             {/* Bouton Retour */}
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
