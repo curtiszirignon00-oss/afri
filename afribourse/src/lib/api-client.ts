@@ -99,7 +99,15 @@ apiClient.interceptors.response.use(
                     // Refresh token expiré ou révoqué → déconnecter proprement
                     refreshQueue = [];
                     setAuthToken(null);
-                    if (!window.location.pathname.includes('/login')) {
+                    // Ne rediriger vers login que sur les pages protégées (pas les pages publiques)
+                    const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
+                        '/glossary', '/about', '/contact', '/privacy', '/help', '/subscriptions',
+                        '/community', '/communities', '/classement', '/login', '/signup',
+                        '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email',
+                        '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'];
+                    const currentPath = window.location.pathname;
+                    const isPublic = PUBLIC_PATHS.some(p => currentPath === p || currentPath.startsWith(p + '/'));
+                    if (!isPublic) {
                         window.location.href = '/login';
                     }
                 } finally {
