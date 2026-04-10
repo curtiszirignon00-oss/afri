@@ -154,14 +154,7 @@ export const updatePageDuration = async (req: AuthRequest, res: Response) => {
  */
 export const getCohortAnalytics = async (req: AuthRequest, res: Response) => {
   try {
-    const adminUser = await prisma.user.findUnique({
-      where: { id: req.user?.id },
-      select: { role: true },
-    });
-    if (!adminUser || adminUser.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin uniquement.' });
-    }
-
+    // La route est protégée par le middleware `admin` — pas besoin de re-vérifier en DB.
     const now = new Date();
     const windowDays = Math.min(parseInt(req.query.window as string) || 90, 365);
     const cohortStart = daysAgo(windowDays, now);
@@ -395,20 +388,18 @@ export const getCohortAnalytics = async (req: AuthRequest, res: Response) => {
       eligibleD7.filter((u) => !retainedD7Ids.has(u.id)).map((u) => u.id),
     );
 
-    // Pour chaque user, actions faites dans les 7 premiers jours
+    // Pré-calculer une Map userId → Set<action_type> pour les actions en W1 (O(n) unique)
     const userMap = new Map(users.map((u) => [u.id, u]));
-
-    function actionsInW1(userId: string): Set<string> {
-      const u = userMap.get(userId);
-      if (!u?.created_at) return new Set();
-      const w1End = new Date(u.created_at.getTime() + 7 * 24 * 3600 * 1000);
-      const types = new Set<string>();
-      for (const a of allActions) {
-        if (a.userId === userId && a.created_at <= w1End) {
-          types.add(a.action_type);
-        }
+    const w1ActionsByUser = new Map<string, Set<string>>();
+    for (const a of allActions) {
+      const u = userMap.get(a.userId);
+      if (!u?.created_at) continue;
+      const w1End = u.created_at.getTime() + 7 * 24 * 3600 * 1000;
+      if (a.created_at.getTime() <= w1End) {
+        let types = w1ActionsByUser.get(a.userId);
+        if (!types) { types = new Set(); w1ActionsByUser.set(a.userId, types); }
+        types.add(a.action_type);
       }
-      return types;
     }
 
     // Calculer le taux d'adoption par action pour chaque groupe
@@ -419,11 +410,11 @@ export const getCohortAnalytics = async (req: AuthRequest, res: Response) => {
       .map((actionType) => {
         const retainedWith =
           retainedD7Ids.size > 0
-            ? [...retainedD7Ids].filter((id) => actionsInW1(id).has(actionType)).length
+            ? [...retainedD7Ids].filter((id) => w1ActionsByUser.get(id)?.has(actionType)).length
             : 0;
         const churnedWith =
           churnedD7Ids.size > 0
-            ? [...churnedD7Ids].filter((id) => actionsInW1(id).has(actionType)).length
+            ? [...churnedD7Ids].filter((id) => w1ActionsByUser.get(id)?.has(actionType)).length
             : 0;
 
         const retainedRate =
