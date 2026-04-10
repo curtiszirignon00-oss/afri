@@ -30,9 +30,16 @@ import { InstallInstructions } from './pwa/InstallPrompt';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loading } = useAuth();
   const { isInstallable, installApp, showInstructions, closeInstructions, platform } = useInstallPrompt();
   const newsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Utilisateur connecté → dashboard directement
+  useEffect(() => {
+    if (!loading && isLoggedIn) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isLoggedIn, loading, navigate]);
 
   // <-- AJOUT: État pour rotation des images de fond
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
