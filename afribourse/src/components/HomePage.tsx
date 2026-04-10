@@ -30,7 +30,7 @@ import { InstallInstructions } from './pwa/InstallPrompt';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isLoggedIn, loading } = useAuth();
+  const { isLoggedIn } = useAuth();
   const { isInstallable, installApp, showInstructions, closeInstructions, platform } = useInstallPrompt();
   const newsContainerRef = useRef<HTMLDivElement>(null);
 
