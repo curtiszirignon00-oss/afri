@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
-type Status = 'loading' | 'success' | 'error' | 'already-verified';
+type Status = 'loading' | 'success' | 'error';
 
 const ConfirmEmailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { initAuthFromLogin } = useAuth();
   const [status, setStatus] = useState<Status>('loading');
   const [message, setMessage] = useState('');
 
@@ -24,18 +26,20 @@ const ConfirmEmailPage = () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/confirm-email`,
-          { params: { token } }
+          { params: { token }, withCredentials: true }
         );
 
-        if (response.data.alreadyVerified) {
-          setStatus('already-verified');
-          setMessage(response.data.message);
-        } else {
-          setStatus('success');
-          setMessage(response.data.message);
-          // Rediriger vers la page de connexion après 3 secondes
-          setTimeout(() => navigate('/login'), 3000);
+        const { user, token: accessToken } = response.data;
+
+        // Connecter l'utilisateur automatiquement (magic link)
+        if (user && accessToken) {
+          initAuthFromLogin(user, accessToken);
         }
+
+        setStatus('success');
+        setMessage(response.data.message);
+        // Rediriger vers le dashboard après 2 secondes
+        setTimeout(() => navigate('/dashboard'), 2000);
       } catch (error: any) {
         setStatus('error');
         setMessage(
@@ -46,7 +50,7 @@ const ConfirmEmailPage = () => {
     };
 
     confirmEmail();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, initAuthFromLogin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
@@ -76,38 +80,16 @@ const ConfirmEmailPage = () => {
               Email confirmé !
             </h2>
             <p className="text-gray-700 mb-4">{message}</p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-blue-800">
-                🎉 Votre compte est maintenant actif !
-              </p>
-              <p className="text-sm text-blue-600 mt-2">
-                Redirection vers la page de connexion dans 3 secondes...
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-green-800 font-medium">
+                Vous êtes connecté — redirection vers votre dashboard...
               </p>
             </div>
             <div className="flex justify-center">
               <div className="w-48 bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div className="bg-blue-600 h-2 rounded-full animate-progress"></div>
+                <div className="bg-green-600 h-2 rounded-full animate-progress"></div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Already Verified State */}
-        {status === 'already-verified' && (
-          <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4">
-              <AlertCircle className="h-10 w-10 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Déjà confirmé
-            </h2>
-            <p className="text-gray-700 mb-6">{message}</p>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full bg-blue-600 text-white rounded-lg px-6 py-3 hover:bg-blue-700 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Aller à la connexion
-            </button>
           </div>
         )}
 

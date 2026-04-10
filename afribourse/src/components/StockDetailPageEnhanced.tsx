@@ -7,6 +7,8 @@ import { API_BASE_URL, authFetch } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
 import PriceAlertModal from './price-alerts/PriceAlertModal';
 import PriceAlertList from './price-alerts/PriceAlertList';
+import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
+import EmailVerificationModal from './EmailVerificationModal';
 import { getStockLogo } from '../utils/stockLogos';
 
 // Import des nouveaux composants
@@ -69,6 +71,8 @@ export default function StockDetailPageEnhanced() {
 
   // État pour afficher/cacher le panneau d'ordre sur mobile - DOIT être avant les early returns
   const [showMobileOrder, setShowMobileOrder] = useState(false);
+  const [showEmailVerifModal, setShowEmailVerifModal] = useState(false);
+  const { phase: emailPhase } = useEmailVerificationPhase();
 
   // Charger le stock depuis l'API si non disponible dans state
   useEffect(() => {
@@ -245,6 +249,7 @@ export default function StockDetailPageEnhanced() {
   // Handler pour l'achat
   async function handleBuy() {
     if (!stock) return;
+    if (emailPhase >= 2) { setShowEmailVerifModal(true); return; }
 
     if (!portfolio) {
       return toast.error("Connectez-vous et créez un portefeuille pour acheter.");
@@ -864,6 +869,10 @@ export default function StockDetailPageEnhanced() {
         currentPrice={stock.current_price}
         companyName={stock.company_name}
       />
+
+      {showEmailVerifModal && (
+        <EmailVerificationModal onClose={() => setShowEmailVerifModal(false)} />
+      )}
     </div>
   );
 }

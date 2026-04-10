@@ -23,6 +23,7 @@ import {
 import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 import { useAuth } from '../contexts/AuthContext';
+import { API_BASE_URL, authFetch } from '../config/api';
 import { ChallengeCTA } from './challenge';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { InstallInstructions } from './pwa/InstallPrompt';
@@ -190,24 +191,39 @@ export default function HomePage() {
   };
 
   // <-- AJOUT: Fonctions pour gérer le modal d'avis
-  const handleSubmitReview = () => {
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  const handleSubmitReview = async () => {
     if (reviewRating === 0) {
-      alert('Veuillez sélectionner une note');
+      setReviewError('Veuillez sélectionner une note');
       return;
     }
     if (reviewText.trim().length === 0) {
-      alert('Veuillez saisir votre avis');
+      setReviewError('Veuillez saisir votre avis');
       return;
     }
 
-    // TODO: Envoyer l'avis au backend
-    console.log('Avis soumis:', { rating: reviewRating, text: reviewText });
-
-    // Réinitialiser et fermer
-    setReviewRating(0);
-    setReviewText('');
-    setIsReviewModalOpen(false);
-    alert('Merci pour votre avis ! Il sera publié après validation.');
+    setReviewSubmitting(true);
+    setReviewError(null);
+    try {
+      const res = await authFetch(`${API_BASE_URL}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating: reviewRating, text: reviewText.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Erreur lors de l\'envoi');
+      }
+      setReviewRating(0);
+      setReviewText('');
+      setIsReviewModalOpen(false);
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setReviewSubmitting(false);
+    }
   };
 
   const closeReviewModal = () => {
@@ -757,22 +773,28 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Message d'erreur */}
+            {reviewError && (
+              <p className="text-sm text-red-600 text-center -mt-2">{reviewError}</p>
+            )}
+
             {/* Boutons d'action */}
             <div className="flex space-x-4">
               <Button
                 variant="ghost"
                 onClick={closeReviewModal}
                 className="flex-1"
+                disabled={reviewSubmitting}
               >
                 Annuler
               </Button>
               <Button
                 variant="primary"
                 onClick={handleSubmitReview}
-                disabled={reviewRating === 0 || reviewText.trim().length === 0}
+                disabled={reviewRating === 0 || reviewText.trim().length === 0 || reviewSubmitting}
                 className="flex-1"
               >
-                Envoyer l'avis
+                {reviewSubmitting ? 'Envoi...' : "Envoyer l'avis"}
               </Button>
             </div>
           </div>

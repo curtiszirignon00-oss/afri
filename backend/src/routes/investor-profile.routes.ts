@@ -25,4 +25,8 @@ router.post('/sync-stats', auth, investorProfileController.syncSocialStats);
 router.post('/ai-score', auth, investorProfileController.computeAIScore);
 router.post('/ai-allocation', auth, investorProfileController.generateAllocation);
 
+// Discovery survey (post-registration lightweight survey)
+router.post('/survey/discovery', auth, investorProfileController.surveyDiscovery);
+router.get('/survey/status', auth, investorProfileController.getSurveyStatus);
+
 export default router;

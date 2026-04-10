@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { apiClient } from '../lib/api-client';
 import { setAuthToken, getAuthToken } from '../config/api';
+import * as amplitude from '@amplitude/unified';
 
 // --- Types ---
 interface UserProfile {
@@ -12,6 +13,23 @@ interface UserProfile {
   subscriptionTier?: string;
   hasTrial?: boolean;
   trialExpiresAt?: string;
+  email_verified_at?: string | null;
+  created_at?: string | null;
+  telephone?: string | null;
+}
+
+// --- Amplitude identify helper ---
+function identifyAmplitudeUser(profile: UserProfile) {
+  amplitude.setUserId(profile.email);
+
+  const identify = new amplitude.Identify();
+  identify.set('email', profile.email);
+  identify.set('name', `${profile.name ?? ''} ${profile.lastname ?? ''}`.trim());
+  identify.set('plan', profile.subscriptionTier ?? 'free');
+  identify.set('role', profile.role ?? 'user');
+  if (profile.telephone) identify.set('phone', profile.telephone);
+
+  amplitude.identify(identify);
 }
 
 interface AuthContextType {
@@ -57,15 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const silentRefresh = async () => {
     try {
       const response = await apiClient.post('/refresh', {});
-      const { token, refreshToken } = response.data;
+      const { token } = response.data;
       if (token) {
         setAuthToken(token);
         tokenIssuedAtRef.current = Date.now();
         scheduleTokenRefresh();
-      }
-      // Sur mobile, stocker aussi le nouveau refreshToken pour les prochains appels
-      if (refreshToken) {
-        (window as any).__afri_rtk = refreshToken;
       }
     } catch {
       // Si le refresh échoue (refresh token expiré ou révoqué), déconnecter
@@ -90,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setUserProfile(profile);
       setIsLoggedIn(true);
+      if (profile) identifyAmplitudeUser(profile);
       // Stocker le token en mémoire pour les clients Safari iOS (ITP bloque les cookies cross-site)
       if (token) {
         setAuthToken(token);
@@ -120,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile(user);
     setIsLoggedIn(true);
     setLoading(false);
+    identifyAmplitudeUser(user);
     if (token) {
       setAuthToken(token);
       tokenIssuedAtRef.current = Date.now();
@@ -138,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       initialCheckAborted.current = false;
       setIsLoggedIn(false);
       setUserProfile(null);
+      amplitude.reset();
       setAuthToken(null);
     }
   };

@@ -167,7 +167,9 @@ export const getCohortAnalytics = async (req: AuthRequest, res: Response) => {
     const cohortStart = daysAgo(windowDays, now);
 
     // ── 0. Charger tous les users de la cohorte ──────────────────────────────
-    const users = await prisma.user.findMany({
+    // Cast nécessaire tant que `npx prisma generate` n'a pas été relancé
+    // après l'ajout de last_login_at / reengagement_* au schema
+    const users = await (prisma.user.findMany as any)({
       where: { created_at: { gte: cohortStart } },
       select: {
         id: true,
@@ -175,7 +177,12 @@ export const getCohortAnalytics = async (req: AuthRequest, res: Response) => {
         last_login_at: true,
         email_verified_at: true,
       },
-    });
+    }) as Array<{
+      id: string;
+      created_at: Date | null;
+      last_login_at: Date | null;
+      email_verified_at: Date | null;
+    }>;
 
     const userIds = users.map((u) => u.id);
     const totalSignups = users.length;
@@ -497,11 +504,7 @@ export const getCohortAnalytics = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     log.error('Erreur getCohortAnalytics:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur serveur',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
@@ -700,10 +703,6 @@ export const getAnalyticsStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     log.error('Erreur getAnalyticsStats:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Erreur serveur',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
