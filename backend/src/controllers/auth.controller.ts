@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction, CookieOptions } from "express";
+import { Response, NextFunction, CookieOptions } from "express";
+import type { AuthenticatedRequest as Request } from "../middlewares/auth.middleware";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { signJWT } from "../utils";
