@@ -18,7 +18,7 @@ export async function getUserContext(userId: string): Promise<UserContext> {
   const [investorProfile, portfolios, learningProgress] = await Promise.all([
     // Profil investisseur → niveau d'expérience
     prisma.investorProfile.findUnique({
-      where: { userId },
+      where: { user_id: userId },
       select: { experience_level: true },
     }).catch(() => null),
 

@@ -131,21 +131,21 @@ export async function getAISummary(since?: Date): Promise<AISummary> {
   // Répartition par endpoint
   const callsByEndpoint: Record<string, number> = {};
   for (const c of calls) {
-    const ep = ((c.metadata ?? {}) as Record<string, unknown>)?.endpoint ?? 'unknown';
+    const ep = String(((c.metadata ?? {}) as Record<string, unknown>)?.endpoint ?? 'unknown');
     callsByEndpoint[ep] = (callsByEndpoint[ep] ?? 0) + 1;
   }
 
   // Répartition par provider
   const callsByProvider: Record<string, number> = {};
   for (const c of calls) {
-    const prov = ((c.metadata ?? {}) as Record<string, unknown>)?.provider ?? 'unknown';
+    const prov = String(((c.metadata ?? {}) as Record<string, unknown>)?.provider ?? 'unknown');
     callsByProvider[prov] = (callsByProvider[prov] ?? 0) + 1;
   }
 
   // Top raisons de blocage
   const blockedMap: Record<string, number> = {};
   for (const c of calls.filter((c) => ((c.metadata ?? {}) as Record<string, unknown>)?.blocked)) {
-    const reason = ((c.metadata ?? {}) as Record<string, unknown>)?.blockedReason ?? 'inconnu';
+    const reason = String(((c.metadata ?? {}) as Record<string, unknown>)?.blockedReason ?? 'inconnu');
     blockedMap[reason] = (blockedMap[reason] ?? 0) + 1;
   }
   const topBlockedReasons = Object.entries(blockedMap)
@@ -157,7 +157,7 @@ export async function getAISummary(since?: Date): Promise<AISummary> {
   const questionMap: Record<string, number> = {};
   for (const c of calls) {
     const q = ((c.metadata ?? {}) as Record<string, unknown>)?.question;
-    if (q) questionMap[q] = (questionMap[q] ?? 0) + 1;
+    if (q) { const qStr = String(q); questionMap[qStr] = (questionMap[qStr] ?? 0) + 1; }
   }
   const topQuestions = Object.entries(questionMap)
     .sort((a, b) => b[1] - a[1])
