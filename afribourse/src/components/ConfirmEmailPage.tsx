@@ -38,8 +38,9 @@ const ConfirmEmailPage = () => {
 
         setStatus('success');
         setMessage(response.data.message);
-        // Rediriger vers le dashboard après 2 secondes
-        setTimeout(() => navigate('/dashboard'), 2000);
+        // Nouveau user → onboarding 3 questions, déjà vérifié → dashboard
+        const destination = response.data.alreadyVerified ? '/dashboard' : '/onboarding';
+        setTimeout(() => navigate(destination), 2000);
       } catch (error: any) {
         setStatus('error');
         setMessage(
@@ -82,7 +83,7 @@ const ConfirmEmailPage = () => {
             <p className="text-gray-700 mb-4">{message}</p>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-green-800 font-medium">
-                Vous êtes connecté — redirection vers votre dashboard...
+                Vous êtes connecté — on prépare votre espace en 3 questions...
               </p>
             </div>
             <div className="flex justify-center">
