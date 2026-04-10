@@ -39,6 +39,7 @@ import achievementRoutes from './routes/achievement.routes';
 import activityRoutes from './routes/activity.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
 import contactRoutes from './routes/contact.routes';
+import reviewRoutes from './routes/reviews.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import adminRoutes from './routes/admin.routes';
 import analyticsRoutes from './routes/analytics.routes';
@@ -240,6 +241,7 @@ class App {
     this.app?.use('/api/activities', activityRoutes);      // Activités utilisateur
     this.app?.use('/api/leaderboard', leaderboardRoutes);  // Classements
     this.app?.use('/api/contact', contactRoutes);          // Formulaire de contact
+    this.app?.use('/api/reviews', reviewRoutes);           // Avis utilisateurs
     this.app?.use('/api/subscriptions', subscriptionRoutes); // Tracking abonnements
     this.app?.use('/api/admin', adminRoutes);              // Admin dashboard
     this.app?.use('/api/analytics', analyticsRoutes);       // Analytics tracking

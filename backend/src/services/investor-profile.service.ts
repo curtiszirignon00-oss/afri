@@ -184,12 +184,17 @@ export async function updatePrivacySettings(userId: string, settings: PrivacySet
  * Check onboarding status
  */
 export async function checkOnboardingStatus(userId: string) {
-    const investorProfile = await prisma.investorProfile.findUnique({
-        where: { user_id: userId },
-    });
+    const [investorProfile, userProfile] = await Promise.all([
+        prisma.investorProfile.findUnique({ where: { user_id: userId } }),
+        prisma.userProfile.findUnique({ where: { userId }, select: { survey_completed: true, discovery_survey: true } }),
+    ]);
 
     return {
-        completed: investorProfile?.onboarding_completed || false,
+        // New gate: survey_completed unlocks dashboard access
+        completed: userProfile?.survey_completed || false,
+        // KYC (ADN Investisseur) is now optional / tracked separately
+        kyc_completed: investorProfile?.onboarding_completed || false,
+        survey_completed: userProfile?.survey_completed || false,
         profile: investorProfile,
     };
 }

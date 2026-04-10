@@ -147,9 +147,14 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             return next(createError.unauthorized("Email ou mot de passe invalide"));
         }
 
-        // 2. Vérifier que l'email a été confirmé
+        // 2. Vérification différée : bloquer uniquement à J+30
         if (!user.email_verified_at) {
-            return next(createError.forbidden("Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte de réception."));
+            const daysSinceSignup = user.created_at
+                ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))
+                : 0;
+            if (daysSinceSignup >= 30) {
+                return next(createError.forbidden("Votre compte a été suspendu faute de confirmation d'email. Vérifiez votre boîte mail ou demandez un nouveau lien."));
+            }
         }
 
         // 3. Comparaison CRITIQUE du mot de passe
@@ -200,7 +205,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         };
 
         // "Se souvenir de moi" : refresh token 30 jours, sinon 7 jours
-        const refreshMaxAge = rememberMe
+        const refreshMaxAge = rememberMe === true
             ? 30 * 24 * 60 * 60 * 1000   // 30 jours
             : 7 * 24 * 60 * 60 * 1000;   // 7 jours
 
@@ -369,21 +374,51 @@ export async function confirmEmail(req: Request, res: Response, next: NextFuncti
             return next(createError.badRequest("Le token de confirmation a expiré. Veuillez demander un nouveau lien."));
         }
 
-        // 3. Vérifier que l'email n'est pas déjà confirmé
-        if (user.email_verified_at) {
-            return res.status(200).json({
-                message: "Votre email a déjà été confirmé. Vous pouvez vous connecter.",
-                alreadyVerified: true,
-            });
+        // 3. Confirmer l'email si pas déjà fait
+        const alreadyVerified = !!user.email_verified_at;
+        if (!alreadyVerified) {
+            await usersServicePrisma.confirmUserEmail(user.id);
         }
 
-        // 4. Confirmer l'email
-        await usersServicePrisma.confirmUserEmail(user.id);
+        // 4. Créer une session (magic link — connexion automatique)
+        const newRefreshToken = crypto.randomBytes(32).toString('hex');
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { remember_token: newRefreshToken },
+        });
 
+        const accessToken = signJWT({ id: user.id, email: user.email, role: user.role });
+
+        const {
+            password: _,
+            remember_token: _rt,
+            password_reset_token: _prt,
+            password_reset_expires: _pre,
+            email_confirmation_token: _ect,
+            email_confirmation_expires: _ece,
+            ...userWithoutSensitive
+        } = user;
+
+        const isProduction = config.nodeEnv === 'production';
+        const baseCookieOptions: CookieOptions = {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
+        };
+
+        res.cookie('token', accessToken, { ...baseCookieOptions, maxAge: 15 * 60 * 1000 });
+        res.cookie('rtk', newRefreshToken, { ...baseCookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
         return res.status(200).json({
-            message: "Votre email a été confirmé avec succès ! Vous pouvez maintenant vous connecter.",
+            message: alreadyVerified
+                ? "Votre email a déjà été confirmé. Vous êtes connecté."
+                : "Votre email a été confirmé avec succès ! Bienvenue sur AfriBourse.",
             verified: true,
+            alreadyVerified,
+            user: userWithoutSensitive,
+            token: accessToken,
+            refreshToken: newRefreshToken,
         });
     } catch (error) {
         next(error);

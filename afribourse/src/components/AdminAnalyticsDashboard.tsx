@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, MousePointer, Eye, Smartphone, TrendingUp, Target, BookOpen, Activity, AlertTriangle } from 'lucide-react';
+import { Users, MousePointer, Eye, Smartphone, TrendingUp, Target, BookOpen, Activity, AlertTriangle, BarChart2 } from 'lucide-react';
 
 // ─── Types Stats classiques ───────────────────────────────────────────────────
 interface AnalyticsData {
@@ -147,7 +147,7 @@ export default function AdminAnalyticsDashboard() {
   useEffect(() => { if (tab === 'cohort') fetchCohort(); }, [tab, cohortWindow]);
 
   const tabs = [
-    { id: 'stats' as const, label: 'Stats globales', icon: BarChart },
+    { id: 'stats' as const, label: 'Stats globales', icon: BarChart2 },
     { id: 'cohort' as const, label: 'Analyse cohortes', icon: Target },
   ];
 

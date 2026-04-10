@@ -190,6 +190,9 @@ model User {
   // --- Free Trial ---
   freeTrials FreeTrial[]
 
+  // --- Avis utilisateurs ---
+  reviews Review[]
+
   // --- Community visit tracking ---
   last_community_visit DateTime?
 
@@ -351,10 +354,16 @@ model UserProfile {
   following    Follow[]          @relation("UserFollowing")
   rewards      UserReward[]
 
+  // ============= SURVEY DÉCOUVERTE =============
+  // { q1, q2, q3, profile_type, urgency, completed_at }
+  discovery_survey   Json?
+  survey_completed   Boolean  @default(false)
+
   @@index([level])
   @@index([total_xp])
   @@index([country])
   @@index([username])
+  @@index([survey_completed])
   @@map("user_profiles")
 }
 
@@ -1160,6 +1169,30 @@ model FeatureUsage {
   @@index([blocked_by_paywall])
   @@index([created_at])
   @@map("feature_usage")
+}
+
+// ================================= //
+// === AVIS UTILISATEURS =========== //
+// ================================= //
+
+model Review {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String @db.ObjectId
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rating  Int    // 1 à 5
+  text    String @db.String
+
+  // Modération
+  status  String @default("pending") // pending | published | rejected
+
+  created_at DateTime @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([rating])
+  @@index([created_at])
+  @@map("reviews")
 }
 
 // ================================= //

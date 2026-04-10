@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import * as investorProfileService from '../services/investor-profile.service';
 import { computeInvestorScore } from '../services/investor-score.service';
 import { generateBRVMAllocation } from '../services/simba-allocation.service';
+import { saveDiscoverySurvey, getSurveySummary } from '../services/discovery-survey.service';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -145,8 +146,51 @@ export async function generateAllocation(req: AuthRequest, res: Response) {
 
         const allocation = await generateBRVMAllocation(req.body);
         return res.status(200).json({ message: 'Allocation générée', data: { allocation } });
-    } catch (error: any) {
-        return res.status(500).json({ error: error.message });
+    } catch {
+        return res.status(500).json({ error: 'Erreur serveur' });
+    }
+}
+
+/**
+ * Save discovery survey (3 questions, post-registration)
+ */
+export async function surveyDiscovery(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+
+        const { q1, q2, q3 } = req.body;
+
+        const validQ1 = ['A', 'B', 'C', 'D'];
+        const validQ2 = ['A', 'B', 'C', 'D', 'E', null, undefined];
+        const validQ3 = ['A', 'B', 'C', 'D'];
+
+        if (!validQ1.includes(q1) || !validQ3.includes(q3)) {
+            return res.status(400).json({ error: 'Réponses invalides' });
+        }
+        if (!validQ2.includes(q2)) {
+            return res.status(400).json({ error: 'Réponses invalides' });
+        }
+
+        const result = await saveDiscoverySurvey(userId, { q1, q2: q2 ?? null, q3 });
+        return res.status(200).json({ message: 'Sondage enregistré', data: result });
+    } catch {
+        return res.status(500).json({ error: 'Erreur serveur' });
+    }
+}
+
+/**
+ * Get discovery survey summary
+ */
+export async function getSurveyStatus(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+
+        const summary = await getSurveySummary(userId);
+        return res.status(200).json({ success: true, data: summary });
+    } catch {
+        return res.status(500).json({ error: 'Erreur serveur' });
     }
 }
 

@@ -19,6 +19,8 @@ import type { ShareablePortfolioData, ShareablePerformanceData, ShareablePositio
 import { WalletSwitcher } from './challenge';
 import { useChallengeContext } from '../contexts/ChallengeContext';
 import { useCanTrade } from '../hooks/useChallenge';
+import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
+import EmailVerificationModal from './EmailVerificationModal';
 // Gamification imports
 import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward } from '../hooks/useGamification';
 import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
@@ -112,6 +114,9 @@ export default function DashboardPage() {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedStockToBuy, setSelectedStockToBuy] = useState<Stock | null>(null);
   const [buyQuantity, setBuyQuantity] = useState(1);
+  const [showEmailVerifModal, setShowEmailVerifModal] = useState(false);
+
+  const { phase: emailPhase } = useEmailVerificationPhase();
 
   // ✅ OPTIMISATION: Charger les données utilisateur une seule fois au montage
   // et mettre à jour la watchlist quand stocksData devient disponible
@@ -195,6 +200,7 @@ export default function DashboardPage() {
   // ✅ Vente avec React Query mutation
   async function handleSell() {
     if (!selectedPosition || !portfolio) return;
+    if (emailPhase >= 2) { setShowEmailVerifModal(true); return; }
     const stockMarketData = stocksData[selectedPosition.stock_ticker];
     if (!stockMarketData) return;
 
@@ -230,6 +236,7 @@ export default function DashboardPage() {
   // ✅ Achat avec React Query mutation
   async function handleBuy() {
     if (!selectedStockToBuy || !portfolio) return;
+    if (emailPhase >= 2) { setShowEmailVerifModal(true); return; }
 
     try {
       await buyStock.mutateAsync({
@@ -1245,6 +1252,11 @@ export default function DashboardPage() {
             </div>
           </Card>
         </div>
+      )}
+
+      {/* Modal vérification email (J+14) */}
+      {showEmailVerifModal && (
+        <EmailVerificationModal onClose={() => setShowEmailVerifModal(false)} />
       )}
 
       {/* Share Modal */}
