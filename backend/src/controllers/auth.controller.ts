@@ -234,11 +234,13 @@ export async function login(req: Request, res: Response, next: NextFunction) {
                     total_xp: true,
                     level: true,
                     current_streak: true,
-                    streak_freezes: true
+                    streak_freezes: true,
+                    survey_completed: true,
                 }
             });
 
             gamificationData.stats = userGamificationStats;
+            gamificationData.survey_completed = userGamificationStats?.survey_completed ?? false;
 
         } catch (gamificationError) {
             // Non-blocking gamification error

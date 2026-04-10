@@ -2,7 +2,7 @@
 // Non-blocking popup for existing users who haven't completed the discovery survey
 import { useState } from 'react';
 import { X, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useOnboardingStatus } from '../../hooks/useOnboarding';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -11,9 +11,10 @@ export default function SurveyPopup() {
     const { data: status, isLoading } = useOnboardingStatus(isLoggedIn);
     const [dismissed, setDismissed] = useState(false);
     const navigate = useNavigate();
+    const { pathname } = useLocation();
 
-    // Only show if logged in, survey not completed, not loading, and not dismissed
-    if (!isLoggedIn || isLoading || dismissed || status?.survey_completed) {
+    // Don't show on the onboarding/survey page itself, or if already done
+    if (!isLoggedIn || isLoading || dismissed || status?.survey_completed || pathname.startsWith('/onboarding')) {
         return null;
     }
 
