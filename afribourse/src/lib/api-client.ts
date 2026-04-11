@@ -37,10 +37,15 @@ apiClient.interceptors.request.use(async (config) => {
 
 // Flag pour éviter les boucles infinies de refresh
 let isRefreshing = false;
-let refreshQueue: Array<(token: string) => void> = [];
+let refreshQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
 
 function processRefreshQueue(newToken: string) {
-    refreshQueue.forEach(cb => cb(newToken));
+    refreshQueue.forEach(({ resolve }) => resolve(newToken));
+    refreshQueue = [];
+}
+
+function rejectRefreshQueue(err: any) {
+    refreshQueue.forEach(({ reject }) => reject(err));
     refreshQueue = [];
 }
 
@@ -77,8 +82,8 @@ apiClient.interceptors.response.use(
 
                 if (isRefreshing) {
                     // Mettre en file d'attente les requêtes pendant le refresh en cours
-                    return new Promise<string>((resolve) => {
-                        refreshQueue.push((token: string) => resolve(token));
+                    return new Promise<string>((resolve, reject) => {
+                        refreshQueue.push({ resolve, reject });
                     }).then((newToken) => {
                         originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
                         return apiClient.request(originalConfig);
@@ -95,9 +100,9 @@ apiClient.interceptors.response.use(
                         originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
                     }
                     return apiClient.request(originalConfig);
-                } catch {
-                    // Refresh token expiré ou révoqué → déconnecter proprement
-                    refreshQueue = [];
+                } catch (refreshErr) {
+                    // Refresh token expiré ou révoqué → rejeter toutes les requêtes en attente
+                    rejectRefreshQueue(refreshErr);
                     setAuthToken(null);
                     // Ne rediriger vers login que sur les pages protégées (pas les pages publiques)
                     const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
