@@ -29,7 +29,7 @@ const ConfirmEmailPage = () => {
           { params: { token }, withCredentials: true }
         );
 
-        const { user, token: accessToken } = response.data;
+        const { user, token: accessToken, surveyCompleted } = response.data;
 
         // Connecter l'utilisateur automatiquement (magic link)
         if (user && accessToken) {
@@ -38,8 +38,8 @@ const ConfirmEmailPage = () => {
 
         setStatus('success');
         setMessage(response.data.message);
-        // Nouveau user → onboarding 3 questions, déjà vérifié → dashboard
-        const destination = response.data.alreadyVerified ? '/dashboard' : '/onboarding';
+        // Survey pas encore fait → /survey, sinon → /dashboard
+        const destination = surveyCompleted ? '/dashboard' : '/survey';
         setTimeout(() => navigate(destination), 2000);
       } catch (error: any) {
         setStatus('error');
