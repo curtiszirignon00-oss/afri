@@ -209,33 +209,34 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         // ========== GAMIFICATION TRIGGERS ==========
         let gamificationData: any = {};
 
+        // survey_completed : query critique séparé — doit toujours s'exécuter
         try {
-            // 1. Enregistrer activité de streak (login compte comme visite profil)
+            const userProfile = await prisma.userProfile.findUnique({
+                where: { userId: user.id },
+                select: { survey_completed: true },
+            });
+            gamificationData.survey_completed = userProfile?.survey_completed ?? false;
+        } catch {
+            gamificationData.survey_completed = false;
+        }
+
+        // Gamification (streak, badges, stats) — non-bloquant
+        try {
             await streakService.recordActivity(user.id, 'profile_visit');
 
-            // 2. Vérifier et débloquer les badges automatiquement
             const achievementResults = await achievementService.checkAllAchievements(user.id);
             if (achievementResults.total > 0) {
                 gamificationData.newAchievements = achievementResults;
             }
 
-            // 3. Récupérer les stats gamification pour la réponse
             const userGamificationStats = await prisma.userProfile.findUnique({
                 where: { userId: user.id },
-                select: {
-                    total_xp: true,
-                    level: true,
-                    current_streak: true,
-                    streak_freezes: true,
-                    survey_completed: true,
-                }
+                select: { total_xp: true, level: true, current_streak: true, streak_freezes: true },
             });
-
             gamificationData.stats = userGamificationStats;
-            gamificationData.survey_completed = userGamificationStats?.survey_completed ?? false;
 
-        } catch (gamificationError) {
-            // Non-blocking gamification error
+        } catch {
+            // Non-blocking
         }
         // ========== FIN GAMIFICATION ==========
 
