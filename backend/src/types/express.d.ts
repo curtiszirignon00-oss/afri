@@ -4,6 +4,15 @@ import type { Options as RateLimitInfo } from 'express-rate-limit';
 
 declare global {
     namespace Express {
+        // Augmenter Express.User pour Passport (req.user dans les routes OAuth)
+        interface User {
+            id: string;
+            email: string;
+            name?: string;
+            role?: string;
+            subscriptionTier?: string;
+        }
+
         interface Request {
             // Posé par auth.middleware après vérification JWT
             user?: {

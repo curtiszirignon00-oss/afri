@@ -60,19 +60,12 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             return next(createError.internal("Impossible de créer l'utilisateur."));
         }
 
-        // 5. Envoyer l'email de confirmation
+        // 5. Envoyer l'email de confirmation (non-bloquant)
         let emailSent = false;
-        let emailError: any = null;
-
         try {
-            await sendConfirmationEmail({
-                email,
-                name,
-                confirmationToken,
-            });
+            await sendConfirmationEmail({ email, name, confirmationToken });
             emailSent = true;
-        } catch (error) {
-            emailError = error;
+        } catch {
             emailSent = false;
         }
 
@@ -87,7 +80,15 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             // Ne pas bloquer l'inscription si la création du portfolio échoue
         }
 
-        // 7. Répondre avec un message de succès (sans créer de session)
+        // 7. Auto-login : créer la session immédiatement (refresh token + access token)
+        const newRefreshToken = crypto.randomBytes(32).toString('hex');
+        await prisma.user.update({
+            where: { id: newUser.id },
+            data: { remember_token: newRefreshToken, last_login_at: new Date() } as any,
+        });
+
+        const accessToken = signJWT({ id: newUser.id, email: newUser.email, role: newUser.role });
+
         const {
             email_confirmation_token: __,
             email_confirmation_expires: ___,
@@ -96,6 +97,19 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             password_reset_expires: _pre2,
             ...userWithoutSensitiveData
         } = newUser;
+
+        const isProduction = config.nodeEnv === 'production';
+        const baseCookieOptions: CookieOptions = {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/',
+        };
+
+        res.cookie('rtk', newRefreshToken, {
+            ...baseCookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+        });
 
         // Audit log - Inscription réussie
         await writeAuditLog({
@@ -108,16 +122,11 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             userAgent: getUserAgent(req),
         });
 
-        // Message personnalisé selon si l'email a été envoyé ou non
-        const message = emailSent
-            ? "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception."
-            : "Inscription réussie ! Cependant, nous n'avons pas pu envoyer l'email de confirmation. Vous pouvez demander un nouveau lien via le bouton 'Renvoyer l'email'.";
-
         return res.status(201).json({
-            message,
+            message: "Inscription réussie !",
             user: userWithoutSensitiveData,
+            token: accessToken,
             emailSent,
-            emailError: emailError ? emailError.message : null,
         });
 
     } catch (error) {
