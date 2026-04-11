@@ -23,6 +23,7 @@ import MarketsPageRefactored from './components/MarketsPageRefactored';
 import IndicesPage from './components/IndicesPage';
 import OnboardingFlow from './components/onboarding/OnboardingFlow';
 import DiscoverySurvey from './components/onboarding/DiscoverySurvey';
+import SurveyPage from './pages/SurveyPage';
 import SurveyPopup from './components/survey/SurveyPopup';
 import ProfilePage from './pages/ProfilePage';
 import CommunityPage from './pages/CommunityPage';
@@ -71,7 +72,7 @@ import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
 import { usePageTracking } from './hooks/useAnalytics';
 
 // Debug utilities (only in development)
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   import('./utils/testOnboarding');
 }
 
@@ -99,7 +100,7 @@ function Layout() {
   usePageTracking();
 
   // Détermine si le Header/Footer doit être affiché
-  const showLayout = !['/signup', '/login', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
+  const showLayout = !['/signup', '/login', '/survey', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -195,6 +196,10 @@ function Layout() {
               </ProtectedRoute>
             }
           />
+          {/* Routes d'authentification */}
+          {/* Survey onboarding nouveaux utilisateurs — sans header */}
+          <Route path="/survey" element={<SurveyPage />} />
+
           {/* Routes d'authentification */}
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />

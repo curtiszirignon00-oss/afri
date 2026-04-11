@@ -42,7 +42,7 @@ function handleOAuthCallback(provider: string) {
     }
 
     // Nouveaux utilisateurs OAuth → sondage de 3 questions avant le dashboard
-    const destination = surveyCompleted ? '/dashboard' : '/onboarding';
+    const destination = surveyCompleted ? '/dashboard' : '/survey';
     res.redirect(`${config.app.frontendUrl}${destination}?oauth=success&provider=${provider}`);
   };
 }

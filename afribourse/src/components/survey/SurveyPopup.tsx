@@ -14,7 +14,7 @@ export default function SurveyPopup() {
     const { pathname } = useLocation();
 
     // Don't show on the onboarding/survey page itself, or if already done
-    if (!isLoggedIn || isLoading || dismissed || status?.survey_completed || pathname.startsWith('/onboarding')) {
+    if (!isLoggedIn || isLoading || dismissed || status?.survey_completed || pathname.startsWith('/onboarding') || pathname.startsWith('/survey')) {
         return null;
     }
 
