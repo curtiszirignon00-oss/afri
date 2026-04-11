@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,12 +21,13 @@ export default function LoginPage() {
 
   const { initAuthFromLogin, isLoggedIn } = useAuth();
 
-  // <-- AJOUT : useEffect pour rediriger automatiquement si déjà connecté
+  // Rediriger si déjà connecté AU MONTAGE uniquement (pas pendant le flow de login)
+  const wasAlreadyLoggedIn = useRef(isLoggedIn);
   useEffect(() => {
-    if (isLoggedIn) {
+    if (wasAlreadyLoggedIn.current) {
       navigate(redirectTo);
     }
-  }, [isLoggedIn, navigate]);
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
