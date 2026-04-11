@@ -53,7 +53,7 @@ export default function LoginPage() {
       toast.success('Connexion réussie !');
 
       // Si le sondage de découverte n'est pas complété → onboarding 3 questions
-      const surveyCompleted = loginResponse.data.gamification?.survey_completed ?? true;
+      const surveyCompleted = loginResponse.data.gamification?.survey_completed ?? false;
       navigate(surveyCompleted ? redirectTo : '/survey');
 
     } catch (err: any) {
