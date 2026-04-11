@@ -2,9 +2,11 @@
 import { useState } from 'react';
 import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon } from 'lucide-react';
 import { Button, Input, Card } from './ui';
-import { API_BASE_URL, authFetch } from '../config/api';
+import { API_BASE_URL, authFetch, setAuthToken } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import OAuthButtons from './auth/OAuthButtons';
+import { useAuth } from '../contexts/AuthContext';
+import { fetchCsrfToken } from '../config/api';
 
 const passwordRules = [
   { label: '8 caractères minimum', test: (p: string) => p.length >= 8 },
@@ -31,6 +33,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const { initAuthFromLogin } = useAuth();
   const [name, setName] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
@@ -81,9 +84,15 @@ export default function SignupPage() {
 
       setSuccess(true);
 
-      setTimeout(() => {
-        navigate('/verifier-email', { state: { email } });
-      }, 1000);
+      // Auto-login avec le token retourné par le backend
+      if (data.token) {
+        setAuthToken(data.token);
+      }
+      await fetchCsrfToken();
+      initAuthFromLogin(data.user, data.token);
+
+      // Rediriger vers le survey d'onboarding
+      navigate('/survey');
     } catch (err: any) {
       setError(err.message || "Une erreur est survenue lors de l'inscription.");
     } finally {

@@ -82,7 +82,7 @@ router.get(
   (req, res, next) => {
     console.log('[OAuth] Twitter init. sessionID:', req.sessionID, 'CLIENT_ID set:', !!process.env.TWITTER_CLIENT_ID);
     const originalRedirect = res.redirect.bind(res);
-    res.redirect = (url: string) => {
+    (res as any).redirect = (url: string) => {
       console.log('[OAuth] Twitter redirect URL:', url);
       return originalRedirect(url);
     };
