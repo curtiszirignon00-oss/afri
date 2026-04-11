@@ -80,15 +80,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             // Ne pas bloquer l'inscription si la création du portfolio échoue
         }
 
-        // 7. Auto-login : créer la session immédiatement (refresh token + access token)
-        const newRefreshToken = crypto.randomBytes(32).toString('hex');
-        await prisma.user.update({
-            where: { id: newUser.id },
-            data: { remember_token: newRefreshToken, last_login_at: new Date() } as any,
-        });
-
-        const accessToken = signJWT({ id: newUser.id, email: newUser.email, role: newUser.role });
-
+        // 7. Répondre avec un message de succès (sans créer de session)
         const {
             email_confirmation_token: __,
             email_confirmation_expires: ___,
@@ -97,19 +89,6 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             password_reset_expires: _pre2,
             ...userWithoutSensitiveData
         } = newUser;
-
-        const isProduction = config.nodeEnv === 'production';
-        const baseCookieOptions: CookieOptions = {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
-            path: '/',
-        };
-
-        res.cookie('rtk', newRefreshToken, {
-            ...baseCookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
-        });
 
         // Audit log - Inscription réussie
         await writeAuditLog({
@@ -122,10 +101,13 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             userAgent: getUserAgent(req),
         });
 
+        const message = emailSent
+            ? "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
+            : "Inscription réussie ! Vous pouvez vous connecter dès maintenant.";
+
         return res.status(201).json({
-            message: "Inscription réussie !",
+            message,
             user: userWithoutSensitiveData,
-            token: accessToken,
             emailSent,
         });
 
@@ -422,12 +404,25 @@ export async function confirmEmail(req: Request, res: Response, next: NextFuncti
         res.cookie('token', accessToken, { ...baseCookieOptions, maxAge: 15 * 60 * 1000 });
         res.cookie('rtk', newRefreshToken, { ...baseCookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
+        // Vérifier si le survey d'onboarding a été complété
+        let surveyCompleted = false;
+        try {
+            const profile = await prisma.userProfile.findUnique({
+                where: { userId: user.id },
+                select: { survey_completed: true },
+            });
+            surveyCompleted = profile?.survey_completed ?? false;
+        } catch {
+            surveyCompleted = false;
+        }
+
         return res.status(200).json({
             message: alreadyVerified
                 ? "Votre email a déjà été confirmé. Vous êtes connecté."
                 : "Votre email a été confirmé avec succès ! Bienvenue sur AfriBourse.",
             verified: true,
             alreadyVerified,
+            surveyCompleted,
             user: userWithoutSensitive,
             token: accessToken,
             refreshToken: newRefreshToken,
