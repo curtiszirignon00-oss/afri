@@ -141,8 +141,8 @@ export default function ChartShareModal({
         if (uploadResult.data.images?.length) {
           imageUrls = uploadResult.data.images;
         }
-      } catch {
-        // Le hook affiche déjà le toast d'erreur, on annule le partage
+      } catch (err: any) {
+        toast.error(err?.message || 'Erreur lors de l\'upload de l\'image');
         return;
       }
     }

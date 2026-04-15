@@ -126,9 +126,7 @@ export function useUploadPostImages() {
 
             return response.json();
         },
-        onError: (error: Error) => {
-            toast.error(error.message || 'Erreur lors de l\'upload des images');
-        }
+        // No onError here — callers (PostComposer, ChartShareModal) handle errors themselves via mutateAsync catch
     });
 }
 

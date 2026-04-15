@@ -2,9 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck, Filter, X, Calendar, Tag, UserRound } from 'lucide-react';
+import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound, PenSquare } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
+import PostComposer from '../components/profile/PostComposer';
 import { useAuth } from '../contexts/AuthContext';
 import { useCommunities } from '../hooks/useCommunity';
 import { useFollowSuggestions, useFollowUser } from '../hooks/useSocial';
@@ -369,6 +370,30 @@ export default function CommunityPage() {
 
                     {/* Main Content - Posts */}
                     <div className="lg:col-span-3">
+
+                        {/* Post Composer */}
+                        {isLoggedIn ? (
+                            <div className="mb-6">
+                                <PostComposer />
+                            </div>
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <PenSquare className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-gray-700 font-medium">Partagez votre analyse ou opinion avec la communauté</p>
+                                    <p className="text-sm text-gray-500 mt-0.5">Connectez-vous pour publier</p>
+                                </div>
+                                <Link
+                                    to="/login"
+                                    className="flex-shrink-0 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+                                >
+                                    Se connecter
+                                </Link>
+                            </div>
+                        )}
+
                         {/* Header + Refresh */}
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-lg font-semibold text-gray-900">
