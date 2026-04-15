@@ -4,7 +4,11 @@ import { validate } from '../utils/validate.util';
 const postTypeEnum = zod.enum(['ANALYSIS', 'TRANSACTION', 'OPINION', 'QUESTION', 'ACHIEVEMENT', 'ARTICLE']);
 const visibilityEnum = zod.enum(['PUBLIC', 'FOLLOWERS', 'PRIVATE']);
 
-const urlOrEmpty = zod.string().url('URL invalide').optional().or(zod.literal(''));
+// Use native URL constructor instead of zod .url() — zod rejects localhost (no TLD)
+const isValidUrl = (val: string) => { try { new URL(val); return true; } catch { return false; } };
+const httpUrl = zod.string().refine(isValidUrl, 'URL invalide');
+const urlOrEmpty = httpUrl.optional().or(zod.literal(''));
+const imageUrl = zod.string().refine(isValidUrl, 'L\'upload d\'image n\'est pas permis');
 
 export const createPostSchema = zod.object({
     type: postTypeEnum,
@@ -13,7 +17,7 @@ export const createPostSchema = zod.object({
     stock_symbol: zod.string().max(10).optional(),
     stock_price: zod.number().nonnegative().nullish(),
     stock_change: zod.number().nullish(),
-    images: zod.array(zod.string().url('URL d\'image invalide')).max(10).optional(),
+    images: zod.array(imageUrl).max(10).optional(),
     video_url: urlOrEmpty,
     tags: zod.array(zod.string().max(50)).max(10).optional(),
     visibility: visibilityEnum.optional(),
