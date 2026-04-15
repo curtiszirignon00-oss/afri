@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { X, Download, Send, Loader2, Smartphone } from 'lucide-react';
 import { useCreatePost } from '../../hooks/useSocial';
-import { useUploadPostImages } from '../../hooks/useUpload';
 import toast from 'react-hot-toast';
 
 interface ChartShareModalProps {
@@ -29,8 +28,7 @@ export default function ChartShareModal({
   const [customMessage, setCustomMessage] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
   const { mutate: createPost, isPending } = useCreatePost();
-  const { mutateAsync: uploadImages, isPending: isUploading } = useUploadPostImages();
-  const isBusy = isPending || isUploading;
+  const isBusy = isPending;
 
   if (!isOpen) return null;
 
@@ -124,30 +122,38 @@ export default function ChartShareModal({
     }
   };
 
+  const compressChartImage = (pngDataUrl: string): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxWidth = 1000;
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas non disponible')); return; }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = () => reject(new Error('Conversion image échouée'));
+      img.src = pngDataUrl;
+    });
+
   const handleShareCommunity = async () => {
     let imageUrls: string[] = [];
 
-    // 1. Uploader l'image du graphique si disponible
+    // Compresser et encoder le graphique directement en JPEG — pas d'upload disque
     if (dataUrl) {
       try {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        const file = new File(
-          [blob],
-          `afribourse-${symbol.toLowerCase()}-chart.png`,
-          { type: 'image/png' }
-        );
-        const uploadResult = await uploadImages([file]);
-        if (uploadResult.data.images?.length) {
-          imageUrls = uploadResult.data.images;
-        }
-      } catch (err: any) {
-        toast.error(err?.message || 'Erreur lors de l\'upload de l\'image');
-        return;
+        const compressed = await compressChartImage(dataUrl);
+        imageUrls = [compressed];
+      } catch {
+        // Image non critique — on continue sans image
       }
     }
 
-    // 2. Créer le post avec l'image uploadée
+    // Créer le post avec l'image en base64
     createPost(
       {
         type: 'ANALYSIS',
@@ -347,7 +353,7 @@ export default function ChartShareModal({
             {isBusy ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {isUploading ? 'Upload...' : 'Partage...'}
+                Partage...
               </>
             ) : (
               <>

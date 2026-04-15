@@ -459,14 +459,21 @@ export default function PostCard({ post }: PostCardProps) {
             {post.images && post.images.length > 0 && (
                 <div
                     onClick={() => setShowComments(true)}
-                    className="mb-4 grid grid-cols-2 gap-2 cursor-pointer"
+                    className={`mb-4 cursor-pointer ${post.images.length === 1 ? '' : 'grid grid-cols-2 gap-2'}`}
                 >
                     {post.images.map((img: string, idx: number) => (
                         <img
                             key={idx}
                             src={img}
-                            alt={`Post image ${idx + 1}`}
-                            className="rounded-lg w-full h-48 object-cover hover:opacity-90 transition-opacity"
+                            alt=""
+                            onError={(e) => {
+                                const el = e.currentTarget;
+                                el.onerror = null;
+                                el.style.display = 'none';
+                            }}
+                            className={`rounded-xl w-full object-cover hover:opacity-90 transition-opacity ${
+                                post.images.length === 1 ? 'max-h-96' : 'h-48'
+                            }`}
                         />
                     ))}
                 </div>
