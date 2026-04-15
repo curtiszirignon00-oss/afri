@@ -21,6 +21,8 @@ import { useChallengeContext } from '../contexts/ChallengeContext';
 import { useCanTrade } from '../hooks/useChallenge';
 import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
+import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
+import type { PortfolioCtx } from '../services/geminiService';
 // Gamification imports
 import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward } from '../hooks/useGamification';
 import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
@@ -336,15 +338,12 @@ export default function DashboardPage() {
 
     const todayStr = today.toISOString().split('T')[0];
 
-    // Utiliser la valeur d'aujourd'hui issue de l'historique backend (calculée depuis
-    // initial_balance + transactions uniquement, sans les bonus XP/récompenses).
-    // Cela évite un écart fictif dû aux crédits de récompenses non enregistrés comme
-    // transactions, qui faisait apparaître un gain permanent (ex: +250 000).
-    // Si pas de point pour aujourd'hui dans l'historique backend, on ne peut pas
-    // calculer la variation journalière sans risquer d'inclure les bonus XP/récompenses.
+    // Utiliser la valeur live du portefeuille comme valeur actuelle du jour.
+    // Si elle n'est pas encore disponible, on tente de lire le point d'aujourd'hui
+    // dans l'historique backend en fallback.
+    const liveValue = calculateTotalValue();
     const todayPoint = portfolioHistory.find(p => p.date === todayStr);
-    if (!todayPoint) return { value: 0, percent: 0 };
-    const currentValue = todayPoint.value;
+    const currentValue = liveValue > 0 ? liveValue : todayPoint?.value ?? 0;
     if (currentValue === 0) return { value: 0, percent: 0 };
 
     // Trouver le dernier point historique AVANT aujourd'hui (clôture d'hier ou dernier jour de bourse)
@@ -451,6 +450,50 @@ export default function DashboardPage() {
     const stock = stocksData[pos.stock_ticker];
     return stock ? acc + (pos.quantity * stock.current_price) : acc;
   }, 0);
+
+  // ✅ Plus-value latente (unrealized): valeur marché - coût d'achat des positions ouvertes
+  const costBasis = portfolio.positions.reduce((acc, pos) => {
+    const stock = stocksData[pos.stock_ticker];
+    return stock ? acc + (pos.quantity * pos.average_buy_price) : acc;
+  }, 0);
+  const unrealizedGainLoss = stocksValue - costBasis;
+  const unrealizedPercent = costBasis > 0 ? (unrealizedGainLoss / costBasis) * 100 : 0;
+  // ✅ Plus-value réalisée: gain total - gain latent (dérivé mathématiquement)
+  const realizedGainLoss = totalGainLoss - unrealizedGainLoss;
+  const realizedPercent = initialBalance > 0 ? (realizedGainLoss / initialBalance) * 100 : 0;
+
+  // Contexte portefeuille pour SIMBA
+  const simbaPortfolioCtx: PortfolioCtx = {
+    totalValue,
+    cashBalance: portfolio.cash_balance,
+    initialBalance,
+    totalGainLoss,
+    totalGainLossPercent,
+    unrealizedGainLoss,
+    unrealizedPercent,
+    realizedGainLoss,
+    realizedPercent,
+    positions: portfolio.positions
+      .filter(pos => stocksData[pos.stock_ticker])
+      .map(pos => {
+        const stock = stocksData[pos.stock_ticker];
+        const currentValue = pos.quantity * stock.current_price;
+        const costBasis2 = pos.quantity * pos.average_buy_price;
+        const gainLoss = currentValue - costBasis2;
+        const gainLossPercent = costBasis2 > 0 ? (gainLoss / costBasis2) * 100 : 0;
+        return {
+          ticker: pos.stock_ticker,
+          companyName: stock.company_name,
+          quantity: pos.quantity,
+          avgBuyPrice: pos.average_buy_price,
+          currentPrice: stock.current_price,
+          currentValue,
+          gainLoss,
+          gainLossPercent,
+        };
+      }),
+    historyPoints: portfolioHistory.slice(-30).map(p => ({ date: p.date, value: p.value })),
+  };
 
   return (
     <>
@@ -813,6 +856,56 @@ export default function DashboardPage() {
                 </div>
               )}
             </Card>
+
+            {/* Plus-value Latente vs Réalisée */}
+            <Card>
+              <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5 text-indigo-600" />
+                <span>Plus-values</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Latente */}
+                <div className={`rounded-xl p-5 border-2 ${unrealizedGainLoss >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Latente</span>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${unrealizedGainLoss >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      Positions ouvertes
+                    </span>
+                  </div>
+                  <p className={`text-2xl font-bold ${unrealizedGainLoss >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    {unrealizedGainLoss >= 0 ? '+' : ''}{formatNumber(unrealizedGainLoss)} F
+                  </p>
+                  <p className={`text-sm mt-1 ${unrealizedGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {unrealizedGainLoss >= 0 ? '+' : ''}{unrealizedPercent.toFixed(2)}% sur coût d'achat
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Coût d'achat : {formatNumber(costBasis)} F · Valeur actuelle : {formatNumber(stocksValue)} F
+                  </p>
+                </div>
+
+                {/* Réalisée */}
+                <div className={`rounded-xl p-5 border-2 ${realizedGainLoss >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Réalisée</span>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${realizedGainLoss >= 0 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                      Ventes clôturées
+                    </span>
+                  </div>
+                  <p className={`text-2xl font-bold ${realizedGainLoss >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+                    {realizedGainLoss >= 0 ? '+' : ''}{formatNumber(realizedGainLoss)} F
+                  </p>
+                  <p className={`text-sm mt-1 ${realizedGainLoss >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                    {realizedGainLoss >= 0 ? '+' : ''}{realizedPercent.toFixed(2)}% sur capital initial
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Gain total : {totalGainLoss >= 0 ? '+' : ''}{formatNumber(totalGainLoss)} F · Latente : {unrealizedGainLoss >= 0 ? '+' : ''}{formatNumber(unrealizedGainLoss)} F
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* SIMBA — Conseiller Portefeuille */}
+            <SimbaPortfolioAdvisor portfolioContext={simbaPortfolioCtx} />
 
             {/* <-- AJOUT: Historique des Transactions Récentes */}
             <Card>

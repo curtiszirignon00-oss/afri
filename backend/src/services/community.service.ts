@@ -30,6 +30,7 @@ const AUTHOR_PROFILE_SELECT = {
     avatar_url: true,
     verified_investor: true,
     level: true,
+    current_streak: true,
     achievements: {
         select: {
             achievement: {
