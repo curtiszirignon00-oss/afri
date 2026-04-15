@@ -1,6 +1,7 @@
 // src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
 import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import OptimizedImage from './ui/OptimizedImage';
 import {
   TrendingUp,
@@ -13,15 +14,19 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Star, // <-- AJOUT: Pour témoignages
-  Quote, // <-- AJOUT: Pour témoignages
-  CheckCircle, // <-- AJOUT: Pour FAQ
-  Target, // <-- AJOUT: Pour stats
-  Award, // <-- AJOUT: Pour stats
-  TrendingUpIcon // <-- AJOUT: Pour stats
+  Star,
+  Quote,
+  CheckCircle,
+  Target,
+  Award,
+  TrendingUpIcon,
+  Heart,
+  MessageCircle,
+  Flame
 } from 'lucide-react';
 import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
+import { apiClient } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { ChallengeCTA } from './challenge';
@@ -48,6 +53,19 @@ export default function HomePage() {
   const { data, isLoading, error, refetch } = useHomePageData();
 
   const topStocks = data?.topStocks || [];
+
+  // Top posts communauté (3 posts avec le plus d'engagement)
+  const { data: communityData } = useQuery({
+    queryKey: ['home-community-preview'],
+    queryFn: async () => {
+      const response = await apiClient.get('/social/community?page=1&limit=20');
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const topCommunityPosts = ((communityData?.data || communityData?.posts || []) as any[])
+    .sort((a: any, b: any) => (b.likes_count + b.comments_count) - (a.likes_count + a.comments_count))
+    .slice(0, 3);
   const featuredNews = data?.featuredNews || [];
 
   // <-- AJOUT: Rotation automatique des images de fond toutes les 6 secondes
@@ -463,6 +481,94 @@ export default function HomePage() {
                 </div>
               </Card>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* === Section Aperçu Communauté === */}
+      {topCommunityPosts.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <h2 className="text-3xl font-bold text-gray-900">La Communauté en effervescence</h2>
+              </div>
+              <p className="text-gray-600">Les posts qui font le plus réagir en ce moment</p>
+            </div>
+            <Button variant="ghost" onClick={() => navigate('/community')}>
+              Voir la communauté
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {topCommunityPosts.map((post: any) => {
+              const authorName = post.author?.profile?.username
+                || `${post.author?.name ?? ''} ${post.author?.lastname ?? ''}`.trim();
+              const avatar = post.author?.profile?.avatar_url;
+              const typeColors: Record<string, string> = {
+                ANALYSIS: 'bg-blue-100 text-blue-700',
+                TRANSACTION: 'bg-green-100 text-green-700',
+                OPINION: 'bg-purple-100 text-purple-700',
+                QUESTION: 'bg-yellow-100 text-yellow-700',
+                ACHIEVEMENT: 'bg-orange-100 text-orange-700',
+                ARTICLE: 'bg-gray-100 text-gray-700',
+              };
+              const typeLabels: Record<string, string> = {
+                ANALYSIS: 'Analyse', TRANSACTION: 'Transaction',
+                OPINION: 'Opinion', QUESTION: 'Question',
+                ACHIEVEMENT: 'Succès', ARTICLE: 'Article',
+              };
+              return (
+                <Card
+                  key={post.id}
+                  hoverable
+                  onClick={() => navigate('/community')}
+                  className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl flex flex-col"
+                >
+                  {/* Auteur */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shrink-0">
+                      {avatar
+                        ? <OptimizedImage src={avatar} alt={authorName} className="w-full h-full object-cover" />
+                        : authorName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{authorName}</p>
+                      {post.author?.profile?.verified_investor && (
+                        <span className="text-xs text-blue-500 font-medium">Investisseur vérifié</span>
+                      )}
+                    </div>
+                    {post.type && (
+                      <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${typeColors[post.type] ?? 'bg-gray-100 text-gray-700'}`}>
+                        {typeLabels[post.type] ?? post.type}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Contenu */}
+                  {post.title && (
+                    <p className="text-sm font-bold text-gray-900 mb-1 line-clamp-1">{post.title}</p>
+                  )}
+                  <p className="text-sm text-gray-600 line-clamp-3 flex-1">
+                    {post.content}
+                  </p>
+
+                  {/* Engagement */}
+                  <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Heart className="w-4 h-4 text-red-400" />
+                      {post.likes_count ?? 0}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MessageCircle className="w-4 h-4 text-blue-400" />
+                      {post.comments_count ?? 0}
+                    </span>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </section>
       )}
