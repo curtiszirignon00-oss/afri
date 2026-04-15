@@ -16,6 +16,7 @@ interface UserProfile {
   email_verified_at?: string | null;
   created_at?: string | null;
   telephone?: string | null;
+  avatar_url?: string | null;
 }
 
 // --- Amplitude identify helper ---
