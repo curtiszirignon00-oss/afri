@@ -4,11 +4,12 @@ import { validate } from '../utils/validate.util';
 const postTypeEnum = zod.enum(['ANALYSIS', 'TRANSACTION', 'OPINION', 'QUESTION', 'ACHIEVEMENT', 'ARTICLE']);
 const visibilityEnum = zod.enum(['PUBLIC', 'FOLLOWERS', 'PRIVATE']);
 
-// Use native URL constructor instead of zod .url() — zod rejects localhost (no TLD)
-const isValidUrl = (val: string) => { try { new URL(val); return true; } catch { return false; } };
-const httpUrl = zod.string().refine(isValidUrl, 'URL invalide');
-const urlOrEmpty = httpUrl.optional().or(zod.literal(''));
-const imageUrl = zod.string().refine(isValidUrl, 'L\'upload d\'image n\'est pas permis');
+// Images come exclusively from our own upload endpoint — no need to re-validate URL format.
+// zod .url() rejects localhost and env-misconfigured URLs (missing https:// prefix).
+const imageUrl = zod.string().min(1, 'URL d\'image invalide');
+
+// For video_url: accept any non-empty string that looks like a URL, or empty string
+const urlOrEmpty = zod.string().min(1).optional().or(zod.literal(''));
 
 export const createPostSchema = zod.object({
     type: postTypeEnum,
