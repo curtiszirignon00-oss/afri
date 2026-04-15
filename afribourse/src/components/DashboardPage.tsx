@@ -463,13 +463,17 @@ export default function DashboardPage() {
   const realizedGainLoss = totalGainLoss - unrealizedGainLoss;
   const realizedPercent = initialBalance > 0 ? (realizedGainLoss / initialBalance) * 100 : 0;
 
-  // ✅ Bonus financiers: récompenses virtual_cash appliquées au portefeuille (via badges/niveaux)
-  const appliedCashRewards = (myRewards ?? []).filter(
-    r => r.reward.reward_type === 'virtual_cash' && r.applied
-  );
-  const totalBonusCash = appliedCashRewards.reduce(
-    (sum, r) => sum + ((r.reward.reward_data as { amount?: number })?.amount ?? 0),
-    0
+  // ✅ Bonus financiers: tous les bonus appliqués au portefeuille incrémentent initial_balance.
+  // Source 1 : bonus de niveau (checkFeatureUnlocks — pas de UserReward créé)
+  // Source 2 : récompenses catalog réclamées (UserReward.claimed = true)
+  // Formule fiable : initialBalance - 1_000_000 (capital de départ fixe)
+  const BASE_INITIAL = 1_000_000;
+  const totalBonusCash = Math.max(0, initialBalance - BASE_INITIAL);
+
+  // Détail des récompenses catalog réclamées (virtual_cash, claimed = true)
+  // Note : les bonus de niveau (lvl 5, 65, 80) ne sont pas dans UserReward
+  const claimedCashRewards = (myRewards ?? []).filter(
+    r => r.reward.reward_type === 'virtual_cash' && (r as any).claimed === true
   );
 
   // Contexte portefeuille pour SIMBA
@@ -914,38 +918,58 @@ export default function DashboardPage() {
               </div>
 
               {/* Bonus Financiers — Badges & Niveaux */}
-              <div className="mt-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Bonus Badges & Niveaux</span>
-                  </div>
-                  <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
-                    Capital additionnel
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-amber-700">
-                  +{formatNumber(totalBonusCash)} F
-                </p>
-                <p className="text-sm text-amber-600 mt-1">
-                  {appliedCashRewards.length} récompense{appliedCashRewards.length !== 1 ? 's' : ''} appliquée{appliedCashRewards.length !== 1 ? 's' : ''} au portefeuille
-                </p>
-                {appliedCashRewards.length > 0 && (
-                  <div className="mt-3 space-y-1">
-                    {appliedCashRewards.map((r) => (
-                      <div key={r.id} className="flex items-center justify-between text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-1.5">
-                        <span className="font-medium">{r.reward.title}</span>
-                        <span className="font-bold">+{formatNumber((r.reward.reward_data as { amount?: number })?.amount ?? 0)} F</span>
+              {/* Bonus Financiers — Badges & Niveaux */}
+              {(() => {
+                // Bonus de niveau déduits du niveau XP actuel
+                const currentLevel = gamificationSummary?.xp?.level ?? 0;
+                const levelBonuses: { label: string; amount: number }[] = [];
+                if (currentLevel >= 5)  levelBonuses.push({ label: 'Bonus Niveau 5',  amount: 250_000 });
+                if (currentLevel >= 65) levelBonuses.push({ label: 'Bonus Niveau 65', amount: 1_000_000 });
+                if (currentLevel >= 80) levelBonuses.push({ label: 'Bonus Niveau 80', amount: 10_000_000 });
+
+                const allRows = [
+                  ...levelBonuses.map(b => ({ id: b.label, label: b.label, amount: b.amount })),
+                  ...claimedCashRewards.map(r => ({
+                    id: r.id,
+                    label: r.reward.title,
+                    amount: (r.reward.reward_data as { amount?: number })?.amount ?? 0,
+                  })),
+                ];
+
+                return (
+                  <div className="mt-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-amber-600" />
+                        <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Bonus Badges & Niveaux</span>
                       </div>
-                    ))}
+                      <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
+                        Capital additionnel
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-700">
+                      +{formatNumber(totalBonusCash)} F
+                    </p>
+                    <p className="text-sm text-amber-600 mt-1">
+                      Ajouté à ton capital initial (ne compte pas dans le P/L)
+                    </p>
+                    {totalBonusCash > 0 ? (
+                      <div className="mt-3 space-y-1">
+                        {allRows.map(row => (
+                          <div key={row.id} className="flex items-center justify-between text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-1.5">
+                            <span className="font-medium">{row.label}</span>
+                            <span className="font-bold">+{formatNumber(row.amount)} F</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-amber-500 mt-2">
+                        Débloque des badges et monte en niveau pour recevoir des bonus de capital !
+                      </p>
+                    )}
                   </div>
-                )}
-                {appliedCashRewards.length === 0 && (
-                  <p className="text-xs text-amber-500 mt-2">
-                    Débloque des badges et monte en niveau pour recevoir des bonus de capital !
-                  </p>
-                )}
-              </div>
+                );
+              })()}
             </Card>
 
             {/* SIMBA — Conseiller Portefeuille */}
