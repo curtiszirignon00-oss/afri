@@ -124,13 +124,29 @@ export default function Header() {
               {!loading && (
                 <div className="hidden lg:relative lg:flex items-center">
                   {isLoggedIn ? (
-                    <button
-                      onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                      className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
-                    >
-                      <User className="w-5 h-5" />
-                      <span>Mon Compte</span>
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      {/* Bouton Profil */}
+                      <button
+                        onClick={() => navigate('/profile')}
+                        className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 hover:border-blue-500 transition-all shadow-sm"
+                        title="Mon Profil"
+                      >
+                        {userProfile?.avatar_url ? (
+                          <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                            <User className="w-5 h-5 text-blue-600" />
+                          </div>
+                        )}
+                      </button>
+                      {/* Bouton Mon Compte */}
+                      <button
+                        onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                        className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
+                      >
+                        <span>Mon Compte</span>
+                      </button>
+                    </div>
                   ) : (
                     <button
                       onClick={() => navigate('/login')}
@@ -164,14 +180,6 @@ export default function Header() {
                       </button>
 
                       <div className="border-t border-gray-100 my-1"></div>
-
-                      <button
-                        onClick={() => { navigate('/profile'); setAccountMenuOpen(false); }}
-                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <Settings className="w-4 h-4" />
-                        <span>Mon Profil</span>
-                      </button>
 
                       <button
                         onClick={() => { navigate('/subscriptions'); setAccountMenuOpen(false); }}

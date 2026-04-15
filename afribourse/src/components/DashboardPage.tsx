@@ -24,7 +24,7 @@ import EmailVerificationModal from './EmailVerificationModal';
 import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
 import type { PortfolioCtx } from '../services/geminiService';
 // Gamification imports
-import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward } from '../hooks/useGamification';
+import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward, useMyRewards } from '../hooks/useGamification';
 import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
 import { Target, Flame, Zap, Trophy } from 'lucide-react';
 
@@ -96,6 +96,7 @@ export default function DashboardPage() {
   const { data: gamificationSummary, isLoading: gamificationLoading } = useGamificationSummary();
   const { data: challengesProgress } = useMyChallengesProgress();
   const claimChallengeMutation = useClaimChallengeReward();
+  const { data: myRewards } = useMyRewards();
 
   // États locaux
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -461,6 +462,15 @@ export default function DashboardPage() {
   // ✅ Plus-value réalisée: gain total - gain latent (dérivé mathématiquement)
   const realizedGainLoss = totalGainLoss - unrealizedGainLoss;
   const realizedPercent = initialBalance > 0 ? (realizedGainLoss / initialBalance) * 100 : 0;
+
+  // ✅ Bonus financiers: récompenses virtual_cash appliquées au portefeuille (via badges/niveaux)
+  const appliedCashRewards = (myRewards ?? []).filter(
+    r => r.reward.reward_type === 'virtual_cash' && r.applied
+  );
+  const totalBonusCash = appliedCashRewards.reduce(
+    (sum, r) => sum + ((r.reward.reward_data as { amount?: number })?.amount ?? 0),
+    0
+  );
 
   // Contexte portefeuille pour SIMBA
   const simbaPortfolioCtx: PortfolioCtx = {
@@ -901,6 +911,40 @@ export default function DashboardPage() {
                     Gain total : {totalGainLoss >= 0 ? '+' : ''}{formatNumber(totalGainLoss)} F · Latente : {unrealizedGainLoss >= 0 ? '+' : ''}{formatNumber(unrealizedGainLoss)} F
                   </p>
                 </div>
+              </div>
+
+              {/* Bonus Financiers — Badges & Niveaux */}
+              <div className="mt-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Bonus Badges & Niveaux</span>
+                  </div>
+                  <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
+                    Capital additionnel
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-amber-700">
+                  +{formatNumber(totalBonusCash)} F
+                </p>
+                <p className="text-sm text-amber-600 mt-1">
+                  {appliedCashRewards.length} récompense{appliedCashRewards.length !== 1 ? 's' : ''} appliquée{appliedCashRewards.length !== 1 ? 's' : ''} au portefeuille
+                </p>
+                {appliedCashRewards.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    {appliedCashRewards.map((r) => (
+                      <div key={r.id} className="flex items-center justify-between text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-1.5">
+                        <span className="font-medium">{r.reward.title}</span>
+                        <span className="font-bold">+{formatNumber((r.reward.reward_data as { amount?: number })?.amount ?? 0)} F</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {appliedCashRewards.length === 0 && (
+                  <p className="text-xs text-amber-500 mt-2">
+                    Débloque des badges et monte en niveau pour recevoir des bonus de capital !
+                  </p>
+                )}
               </div>
             </Card>
 
