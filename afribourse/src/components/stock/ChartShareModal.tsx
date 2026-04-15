@@ -148,8 +148,9 @@ export default function ChartShareModal({
       try {
         const compressed = await compressChartImage(dataUrl);
         imageUrls = [compressed];
-      } catch {
-        // Image non critique — on continue sans image
+      } catch (err: any) {
+        toast.error('Compression image échouée: ' + (err?.message || 'erreur inconnue'));
+        return;
       }
     }
 
