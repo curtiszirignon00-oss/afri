@@ -528,6 +528,156 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
   }
 }
 
+// ─── SIMBA Conseiller Portefeuille — Chat avec contexte portfolio ─────────────
+
+interface PortfolioPositionCtx {
+  ticker: string;
+  companyName?: string;
+  quantity: number;
+  avgBuyPrice: number;
+  currentPrice: number;
+  currentValue: number;
+  gainLoss: number;
+  gainLossPercent: number;
+}
+
+interface PortfolioCtx {
+  totalValue: number;
+  cashBalance: number;
+  initialBalance: number;
+  totalGainLoss: number;
+  totalGainLossPercent: number;
+  unrealizedGainLoss: number;
+  unrealizedPercent: number;
+  realizedGainLoss: number;
+  realizedPercent: number;
+  positions: PortfolioPositionCtx[];
+  historyPoints?: { date: string; value: number }[];
+}
+
+function buildPortfolioAdvisorPrompt(ctx: PortfolioCtx): string {
+  const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+  const sign = (n: number) => (n >= 0 ? '+' : '');
+
+  const posTable = ctx.positions.length === 0
+    ? 'Aucune position ouverte.'
+    : ctx.positions.map(p =>
+        `- **${p.ticker}**${p.companyName ? ` (${p.companyName})` : ''} : ${p.quantity} titres · PRU ${fmt(p.avgBuyPrice)} F · Cours ${fmt(p.currentPrice)} F · Valeur ${fmt(p.currentValue)} F · P/L ${sign(p.gainLoss)}${fmt(p.gainLoss)} F (${sign(p.gainLossPercent)}${p.gainLossPercent.toFixed(2)}%)`
+      ).join('\n');
+
+  // Résumé historique : tendance sur les 5 derniers points
+  let histSummary = 'Non disponible.';
+  if (ctx.historyPoints && ctx.historyPoints.length >= 2) {
+    const pts = ctx.historyPoints.slice(-5);
+    const trend = pts.map(p => `${p.date}: ${fmt(p.value)} F`).join(' → ');
+    histSummary = trend;
+  }
+
+  return `Tu es SIMBA, le conseiller pédagogique de portefeuille d'Afribourse. Tu es en mode BÊTA.
+
+## TON RÔLE
+Analyser le portefeuille simulé de l'utilisateur et donner des avis pédagogiques sur sa gestion.
+Tu bases tes analyses UNIQUEMENT sur les données ci-dessous. Tu ne connais pas d'autres données.
+
+## PORTEFEUILLE SIMULÉ (données temps réel)
+
+### Vue d'ensemble
+- Capital initial : ${fmt(ctx.initialBalance)} F
+- Valeur totale actuelle : ${fmt(ctx.totalValue)} F
+- Liquidités disponibles : ${fmt(ctx.cashBalance)} F
+- Gain/Perte total : ${sign(ctx.totalGainLoss)}${fmt(ctx.totalGainLoss)} F (${sign(ctx.totalGainLossPercent)}${ctx.totalGainLossPercent.toFixed(2)}%)
+  - Plus-value latente (positions ouvertes) : ${sign(ctx.unrealizedGainLoss)}${fmt(ctx.unrealizedGainLoss)} F (${sign(ctx.unrealizedPercent)}${ctx.unrealizedPercent.toFixed(2)}%)
+  - Plus-value réalisée (ventes clôturées) : ${sign(ctx.realizedGainLoss)}${fmt(ctx.realizedGainLoss)} F (${sign(ctx.realizedPercent)}${ctx.realizedPercent.toFixed(2)}%)
+
+### Positions ouvertes
+${posTable}
+
+### Tendance récente du portefeuille
+${histSummary}
+
+## RÈGLES ABSOLUES
+1. Baser tes avis UNIQUEMENT sur les données ci-dessus — ne jamais inventer de chiffres
+2. Ne jamais recommander d'acheter ou vendre un titre spécifique avec certitude
+3. Rester pédagogique : expliquer les concepts (diversification, P/L, risque...) avec des exemples BRVM
+4. Être honnête si le portefeuille présente des risques (concentration, perte importante)
+5. 150-300 mots max sauf si l'utilisateur demande explicitement plus
+6. Terminer par une question ou une action concrète pour l'utilisateur
+
+## TON ET FORMAT
+- Français, chaleureux, direct, pédagogique
+- 1-2 emojis max par réponse
+- Markdown léger (gras pour les chiffres clés, tirets pour les listes)
+
+⚠️ Rappeler discrètement en fin de réponse : "Ceci est une analyse sur portefeuille simulé — pas un conseil en investissement réel."`;
+}
+
+export async function portfolioAdvisorIA(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { message, conversationHistory, portfolioContext } = req.body as {
+      message?: string;
+      conversationHistory?: Message[];
+      portfolioContext?: PortfolioCtx;
+    };
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Le champ message est requis.' });
+    }
+    if (message.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Le message est trop long (max 1000 caractères).' });
+    }
+    if (!portfolioContext || typeof portfolioContext !== 'object') {
+      return res.status(400).json({ success: false, message: 'portfolioContext est requis.' });
+    }
+
+    // Guardrail
+    const preCheck = preProcessMessage(message);
+    if (preCheck.blocked) {
+      return res.json({ success: true, data: { reply: preCheck.fallbackMessage, provider: 'guardrail' } });
+    }
+
+    const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
+    const history = Array.isArray(conversationHistory) ? conversationHistory.slice(-8) : [];
+
+    const systemPrompt = buildPortfolioAdvisorPrompt(portfolioContext);
+    const messages: Message[] = [
+      { role: 'system', content: systemPrompt },
+      ...history,
+      { role: 'user', content: cleanMessage },
+    ];
+
+    const t0 = Date.now();
+    const completion = await groq.chat.completions.create({
+      model: GROQ_MODEL,
+      messages,
+      max_tokens: 600,
+      temperature: 0.65,
+    });
+    const rawText = completion.choices[0]?.message?.content ?? '';
+    const safeReply = postProcessResponse(rawText || 'Désolé, je n\'ai pas pu analyser ton portefeuille.');
+    const responseTimeMs = Date.now() - t0;
+
+    const messageId = `portfolio-advisor-${req.user!.id}-${Date.now()}`;
+
+    trackAICall({
+      userId: req.user!.id,
+      sessionId: req.id ?? req.ip ?? 'unknown',
+      endpoint: 'coach',
+      provider: 'groq',
+      responseTimeMs,
+      blocked: false,
+      question: cleanMessage,
+      success: true,
+    }).catch(() => {});
+
+    return res.json({
+      success: true,
+      data: { reply: safeReply, provider: 'groq', messageId, responseTimeMs },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // ─── Feedback utilisateur (👍 / 👎) ──────────────────────────────────────────
 
 export async function aiFeedbackHandler(req: AuthenticatedRequest, res: Response, next: NextFunction) {

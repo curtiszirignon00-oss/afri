@@ -140,6 +140,14 @@ export default function CommunityPostCard({ post, communityId, canModerate }: Pr
                                     <CheckCircle className="w-4 h-4 text-blue-500" />
                                 )}
                                 <RareBadgeIcon badge={post.author.profile?.rare_badge as any} />
+                                {(post.author.profile?.current_streak ?? 0) >= 3 && (
+                                    <span
+                                        className="text-xs font-semibold text-orange-500 flex items-center gap-0.5"
+                                        title={`${post.author.profile!.current_streak} jours consécutifs`}
+                                    >
+                                        🔥 {post.author.profile!.current_streak}j
+                                    </span>
+                                )}
                             </div>
                             <div className="flex items-center gap-2 text-sm text-gray-500">
                                 {post.author.profile?.username && (

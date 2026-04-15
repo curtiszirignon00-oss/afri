@@ -69,6 +69,62 @@ export const askSIMBAAnalyst = async (
   }
 };
 
+// ─── SIMBA — Conseiller de Portefeuille ──────────────────────────────────────
+
+export interface PortfolioPositionCtx {
+  ticker: string;
+  companyName?: string;
+  quantity: number;
+  avgBuyPrice: number;
+  currentPrice: number;
+  currentValue: number;
+  gainLoss: number;
+  gainLossPercent: number;
+}
+
+export interface PortfolioCtx {
+  totalValue: number;
+  cashBalance: number;
+  initialBalance: number;
+  totalGainLoss: number;
+  totalGainLossPercent: number;
+  unrealizedGainLoss: number;
+  unrealizedPercent: number;
+  realizedGainLoss: number;
+  realizedPercent: number;
+  positions: PortfolioPositionCtx[];
+  historyPoints?: { date: string; value: number }[];
+}
+
+export const askSIMBAPortfolioAdvisor = async (
+  message: string,
+  conversationHistory: ChatMessage[] = [],
+  portfolioContext: PortfolioCtx,
+): Promise<{ reply: string; provider: string; messageId?: string }> => {
+  try {
+    const response = await authFetch(`${API_BASE_URL}/ai/portfolio-advisor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, conversationHistory, portfolioContext }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.', provider: 'fallback' };
+      if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser SIMBA.', provider: 'fallback' };
+      return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.', provider: 'fallback' };
+    }
+
+    const data = await response.json();
+    return {
+      reply: data?.data?.reply || 'Désolé, je n\'ai pas pu analyser ton portefeuille.',
+      provider: data?.data?.provider || 'groq',
+      messageId: data?.data?.messageId,
+    };
+  } catch {
+    return { reply: 'Une erreur est survenue. Vérifiez votre connexion ou réessayez plus tard.', provider: 'fallback' };
+  }
+};
+
 // ─── SIMBA — Feedback 👍 / 👎 sur une réponse analyste ───────────────────────
 
 export const sendAnalystFeedback = async (

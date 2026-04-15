@@ -30,6 +30,7 @@ import './jobs/backup.job';
 import './jobs/notify-users.job';
 import './jobs/gamification.job';
 import './jobs/reengagement.job';
+import './jobs/pulse-marche.job';
 import learningRoutes from "./routes/learning.routes";
 import newsRoutes from "./routes/news.routes";
 import authRoutes from './routes/auth.routes';

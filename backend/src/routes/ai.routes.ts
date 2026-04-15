@@ -11,6 +11,7 @@ import {
   generateQuizHandler,
   aiFeedbackHandler,
   aiAnalyticsHandler,
+  portfolioAdvisorIA,
 } from '../controllers/ai.controller';
 import { aiRateLimit } from '../middlewares/ai-rate-limiter.middleware';
 import { admin } from '../middlewares/auth.middleware';
@@ -25,6 +26,7 @@ router.post('/analyst',            auth, aiRateLimit('coach'),               coa
 router.post('/market-analysis',    auth, aiRateLimit('market-analysis'),     analyzeMarket);
 router.post('/explain',            auth, aiRateLimit('explain'),             explainConceptHandler);
 router.post('/portfolio-analysis', auth, aiRateLimit('portfolio-analysis'),  analyzePortfolioHandler);
+router.post('/portfolio-advisor',  auth, aiRateLimit('coach'),               portfolioAdvisorIA);
 router.post('/quiz',               auth, aiRateLimit('quiz'),                generateQuizHandler);
 
 // Feedback utilisateur — pas de rate limit strict (UX fluide)
