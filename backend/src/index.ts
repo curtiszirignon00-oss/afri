@@ -6,7 +6,6 @@ import session from 'express-session';
 import MemoryStore from 'memorystore';
 import cors from 'cors';
 import helmet from 'helmet';
-import bodyParser from 'body-parser';
 import config from './config/environnement';
 import rateLimit from 'express-rate-limit';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandlers';
@@ -138,7 +137,6 @@ class App {
     // --- END CORS Configuration ---
 
     // Body Parsers
-    this.app?.use(bodyParser.json());
     this.app?.use(json({ limit: '10mb' }));
     this.app?.use(urlencoded({ extended: true, limit: '10mb' }));
 
