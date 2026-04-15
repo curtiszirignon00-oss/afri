@@ -4,10 +4,12 @@ import { Send, Image, TrendingUp, X, Loader2 } from 'lucide-react';
 import { useCreatePost } from '../../hooks/useSocial';
 import type { CreatePostData } from '../../hooks/useSocial';
 import { useUploadPostImages, validateImageFile, createImagePreview } from '../../hooks/useUpload';
+import { useAuth } from '../../contexts/AuthContext';
 import { Card } from '../ui';
 import toast from 'react-hot-toast';
 
 export default function PostComposer() {
+    const { userProfile } = useAuth();
     const [isExpanded, setIsExpanded] = useState(false);
     const [content, setContent] = useState('');
     const [title, setTitle] = useState('');
@@ -68,7 +70,7 @@ export default function PostComposer() {
             // Upload images first if any
             if (selectedImages.length > 0) {
                 const uploadResult = await uploadImages(selectedImages);
-                imageUrls = uploadResult.urls;
+                imageUrls = uploadResult.data.images ?? [];
             }
 
             const postData: CreatePostData = {
@@ -128,8 +130,8 @@ export default function PostComposer() {
             />
 
             <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold">
-                    U
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {userProfile?.name?.[0]?.toUpperCase() ?? ''}{userProfile?.lastname?.[0]?.toUpperCase() ?? ''}
                 </div>
 
                 <div className="flex-1">
@@ -187,6 +189,7 @@ export default function PostComposer() {
                                     placeholder="Symbole boursier (ex: SNTS)"
                                     value={stockSymbol}
                                     onChange={(e) => setStockSymbol(e.target.value.toUpperCase())}
+                                    maxLength={10}
                                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
