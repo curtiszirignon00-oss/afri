@@ -172,62 +172,32 @@ export async function runPulseMarche(): Promise<void> {
   const title = `Pulse du marché — ${new Date().toLocaleDateString('fr-FR', { timeZone: 'UTC' })}`;
   const content = buildPostContent(topVolume, topGainers, topLosers, simbaQuestion, dateLabel);
 
-  // 5. Publication dans chaque communauté publique
-  const communities = await prisma.community.findMany({
-    where: { visibility: 'PUBLIC' },
-    select: { id: true, name: true },
-    orderBy: { members_count: 'desc' },
+  // 5. Dépingler l'ancien Pulse social s'il existe
+  const oldSocialPulse = await prisma.post.findFirst({
+    where: { tags: { has: PULSE_TAG }, is_pinned: true },
+    orderBy: { created_at: 'desc' },
   });
-
-  let published = 0;
-  for (const community of communities) {
-    try {
-      // S'assurer que l'admin est membre (upsert silencieux)
-      await prisma.communityMember.upsert({
-        where: { community_id_user_id: { community_id: community.id, user_id: admin.id } },
-        update: {},
-        create: { community_id: community.id, user_id: admin.id, role: 'ADMIN' },
-      });
-
-      // Dépingler l'ancien Pulse s'il existe
-      const oldPulse = await prisma.communityPost.findFirst({
-        where: { community_id: community.id, tags: { has: PULSE_TAG }, is_pinned: true },
-        orderBy: { created_at: 'desc' },
-      });
-      if (oldPulse) {
-        await prisma.communityPost.update({ where: { id: oldPulse.id }, data: { is_pinned: false } });
-      }
-
-      // Créer le nouveau post épinglé
-      await prisma.communityPost.create({
-        data: {
-          community_id: community.id,
-          author_id: admin.id,
-          type: 'ANALYSIS',
-          title,
-          content,
-          stock_symbol: featuredStock.symbol ?? null,
-          stock_price: featuredStock.current_price ?? null,
-          stock_change: featuredStock.daily_change_percent ?? null,
-          tags: [PULSE_TAG],
-          is_pinned: true,
-          is_approved: true,
-        },
-      });
-
-      await prisma.community.update({
-        where: { id: community.id },
-        data: { posts_count: { increment: 1 } },
-      });
-
-      published++;
-      log.info(`[PulseMarché] ✅ "${community.name}"`);
-    } catch (err) {
-      log.error(`[PulseMarché] ❌ "${community.name}" :`, err);
-    }
+  if (oldSocialPulse) {
+    await prisma.post.update({ where: { id: oldSocialPulse.id }, data: { is_pinned: false } });
   }
 
-  log.info(`[PulseMarché] Terminé — ${published}/${communities.length} communauté(s) publiée(s).`);
+  // 6. Publier dans le feed social public (/community)
+  await prisma.post.create({
+    data: {
+      author_id: admin.id,
+      type: 'ANALYSIS',
+      title,
+      content,
+      stock_symbol: featuredStock.symbol ?? null,
+      stock_price: featuredStock.current_price ?? null,
+      stock_change: featuredStock.daily_change_percent ?? null,
+      tags: [PULSE_TAG],
+      visibility: 'PUBLIC',
+      is_pinned: true,
+    },
+  });
+
+  log.info('[PulseMarché] ✅ Post publié dans le feed social public (/community).');
 }
 
 // ─── Planification ────────────────────────────────────────────────────────────
@@ -242,3 +212,41 @@ cron.schedule('0 17 * * 1-5', async () => {
 }, { timezone: 'UTC' });
 
 log.info('[PulseMarché] Job planifié — lun–ven à 17h00 UTC');
+
+// ─── Rattrapage au démarrage ──────────────────────────────────────────────────
+// Si le serveur a redémarré après 17h un jour de bourse et que le Pulse du jour
+// n'a pas encore été publié, on le publie immédiatement.
+
+async function catchUpIfMissed(): Promise<void> {
+  try {
+    const now = new Date();
+    const dayOfWeek = now.getUTCDay(); // 0=dim, 6=sam
+    const hourUTC = now.getUTCHours();
+
+    // Uniquement lun–ven après 17h UTC
+    if (dayOfWeek === 0 || dayOfWeek === 6 || hourUTC < 17) return;
+
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+
+    const alreadyPosted = await prisma.communityPost.findFirst({
+      where: {
+        tags: { has: PULSE_TAG },
+        created_at: { gte: todayStart },
+      },
+      select: { id: true },
+    });
+
+    if (alreadyPosted) {
+      log.info('[PulseMarché] Rattrapage : post du jour déjà publié.');
+      return;
+    }
+
+    log.info('[PulseMarché] Rattrapage : post manqué détecté, publication immédiate...');
+    await runPulseMarche();
+  } catch (err) {
+    log.error('[PulseMarché] Erreur dans le rattrapage au démarrage :', err);
+  }
+}
+
+// Délai de 10s pour laisser le serveur et Prisma se connecter complètement
+setTimeout(catchUpIfMissed, 10_000);

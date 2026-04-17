@@ -192,6 +192,14 @@ export default function PostCard({ post }: PostCardProps) {
                         {post.author.profile?.verified_investor && (
                             <CheckCircle className="w-4 h-4 text-blue-600" />
                         )}
+                        {(post.author.profile?.current_streak ?? 0) >= 3 && (
+                            <span
+                                className="text-xs font-semibold text-orange-500 flex items-center gap-0.5"
+                                title={`${post.author.profile!.current_streak} jours consécutifs`}
+                            >
+                                🔥 {post.author.profile!.current_streak}j
+                            </span>
+                        )}
                         {/* Follow Button - only show if not owner */}
                         {!isOwner && (
                             <button

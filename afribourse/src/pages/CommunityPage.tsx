@@ -37,6 +37,7 @@ interface CommunityPost {
             verified_investor?: boolean;
             level?: number;
             country?: string;
+            current_streak?: number;
         };
     };
     hasLiked?: boolean;

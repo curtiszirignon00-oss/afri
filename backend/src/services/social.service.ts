@@ -939,6 +939,7 @@ export async function getPublicPosts(
                                 country: true,
                                 followers_count: true,
                                 following_count: true,
+                                current_streak: true,
                             },
                         },
                     },
