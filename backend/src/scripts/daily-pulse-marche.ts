@@ -164,35 +164,24 @@ function buildPostContent(data: MarketData, simbaQuestion: string): string {
 
 const PULSE_TAG = 'pulse_du_marche';
 
-async function publishToCommunity(
-  communityId: string,
-  communityName: string,
+async function publishToSocialFeed(
   adminId: string,
   content: string,
   topGainer: StockSummary,
 ): Promise<void> {
-  // Dépingler les anciens posts Pulse de cette communauté
-  const oldPulse = await prisma.communityPost.findFirst({
-    where: {
-      community_id: communityId,
-      tags: { has: PULSE_TAG },
-      is_pinned: true,
-    },
+  // Dépingler l'ancien Pulse social
+  const oldPulse = await prisma.post.findFirst({
+    where: { tags: { has: PULSE_TAG }, is_pinned: true },
     orderBy: { created_at: 'desc' },
   });
-
   if (oldPulse) {
-    await prisma.communityPost.update({
-      where: { id: oldPulse.id },
-      data: { is_pinned: false },
-    });
+    await prisma.post.update({ where: { id: oldPulse.id }, data: { is_pinned: false } });
     console.log(`   📌 Dépinglé : post du ${oldPulse.created_at.toLocaleDateString('fr-FR')}`);
   }
 
-  // Créer le nouveau post épinglé
-  await prisma.communityPost.create({
+  // Créer le nouveau post épinglé dans le feed social (/community)
+  await prisma.post.create({
     data: {
-      community_id: communityId,
       author_id: adminId,
       type: 'ANALYSIS',
       title: `Pulse du marché — ${new Date().toLocaleDateString('fr-FR', { timeZone: 'UTC' })}`,
@@ -201,18 +190,12 @@ async function publishToCommunity(
       stock_price: topGainer.current_price ?? null,
       stock_change: topGainer.daily_change_percent ?? null,
       tags: [PULSE_TAG],
+      visibility: 'PUBLIC',
       is_pinned: true,
-      is_approved: true,
     },
   });
 
-  // Incrémenter le compteur de posts de la communauté
-  await prisma.community.update({
-    where: { id: communityId },
-    data: { posts_count: { increment: 1 } },
-  });
-
-  console.log(`   ✅ Post épinglé publié dans "${communityName}"`);
+  console.log('   ✅ Post épinglé publié dans le feed social (/community)');
 }
 
 // ─── 5. Main ──────────────────────────────────────────────────────────────────
@@ -259,59 +242,14 @@ async function main() {
 
     console.log(`\n👤 Auteur : ${admin.name ?? admin.id} (admin)`);
 
-    // e. Toutes les communautés publiques actives
-    const communities = await prisma.community.findMany({
-      where: { visibility: 'PUBLIC' },
-      select: { id: true, name: true, slug: true },
-      orderBy: { members_count: 'desc' },
-    });
+    // e. Publication dans le feed social public (/community)
+    console.log('\n📌 Publication dans /community...');
+    await publishToSocialFeed(admin.id, content, featuredStock ?? data.topVolume[0]);
 
-    console.log(`\n🏘️  ${communities.length} communauté(s) publique(s) trouvée(s)\n`);
-    console.log('='.repeat(60));
-
-    let success = 0;
-    let errors = 0;
-
-    for (const community of communities) {
-      process.stdout.write(`📌 ${community.name} (${community.slug})... `);
-      try {
-        // S'assurer que l'admin est bien membre (upsert silencieux)
-        await prisma.communityMember.upsert({
-          where: {
-            community_id_user_id: {
-              community_id: community.id,
-              user_id: admin.id,
-            },
-          },
-          update: {},
-          create: {
-            community_id: community.id,
-            user_id: admin.id,
-            role: 'ADMIN',
-          },
-        });
-
-        await publishToCommunity(
-          community.id,
-          community.name,
-          admin.id,
-          content,
-          featuredStock ?? data.topVolume[0],
-        );
-        success++;
-      } catch (err: any) {
-        console.log(`❌ ERREUR : ${err.message}`);
-        errors++;
-      }
-    }
-
-    // f. Résumé
     console.log('\n' + '='.repeat(60));
     console.log('📊 RÉSUMÉ');
     console.log('='.repeat(60));
-    console.log(`Communautés : ${communities.length}`);
-    console.log(`✅ Succès   : ${success}`);
-    console.log(`❌ Erreurs  : ${errors}`);
+    console.log('✅ Post Pulse du marché publié sur /community');
     console.log('='.repeat(60));
   } catch (err) {
     console.error('\n💥 Erreur fatale :', err);

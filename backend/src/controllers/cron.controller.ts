@@ -27,6 +27,7 @@ import { cacheInvalidatePattern } from '../services/cache.service';
 import { checkWatchlistSignals } from '../services/watchlist-signal.service';
 import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
 import { sendReengagementEmails } from '../services/reengagement.service';
+import { runPulseMarche } from '../jobs/pulse-marche.job';
 
 // ============================================================
 // POST /api/cron/scrape-stocks
@@ -270,6 +271,27 @@ export async function cronSendReengagementEmails(req: Request, res: Response) {
         });
     } catch (error: any) {
         log.error('[CRON API] Erreur réengagement:', error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// ============================================================
+// POST /api/cron/pulse-marche
+// Post quotidien Pulse du marché (lun–ven 17h00 UTC)
+// ============================================================
+export async function cronPulseMarche(req: Request, res: Response) {
+    const startTime = Date.now();
+    try {
+        log.debug('[CRON API] Pulse du marché — publication...');
+        await runPulseMarche();
+        const duration = Date.now() - startTime;
+        return res.status(200).json({
+            success: true,
+            message: 'Pulse du marché publié',
+            duration_ms: duration,
+        });
+    } catch (error: any) {
+        log.error('[CRON API] Erreur Pulse du marché:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }

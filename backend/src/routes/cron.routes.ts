@@ -13,6 +13,7 @@ import {
     cronCheckWatchlistSignals,
     cronSendWatchlistSummaries,
     cronSendReengagementEmails,
+    cronPulseMarche,
 } from '../controllers/cron.controller';
 
 const router = Router();
@@ -55,5 +56,8 @@ router.post('/send-watchlist-summaries', cronSendWatchlistSummaries);
 
 // Quotidien 09h00: Séquence emails réengagement post-inscription
 router.post('/send-reengagement-emails', cronSendReengagementEmails);
+
+// Lun–ven 17h00 UTC: Pulse du marché — post épinglé BRVM
+router.post('/pulse-marche', cronPulseMarche);
 
 export default router;
