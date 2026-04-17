@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, getCsrfToken, fetchCsrfToken, getAuthToken } from '../config/api';
+import { SESSION_EXPIRED_EVENT } from '../contexts/AuthContext';
 
 // ========================================
 // 🔧 FONCTION UTILITAIRE FETCH
@@ -62,6 +63,26 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
   // Gestion des erreurs HTTP
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+
+    // 401 — session expirée : notifier le AuthContext via un événement global
+    if (response.status === 401) {
+      // Ne pas déclencher sur les routes de login/refresh (boucle infinie)
+      const isAuthRoute = endpoint.startsWith('/login') || endpoint.startsWith('/refresh') || endpoint.startsWith('/me');
+      if (!isAuthRoute) {
+        window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+      }
+    }
+
+    // 429 — trop de requêtes
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After') || errorData.retryAfter;
+      const minutes = retryAfter ? Math.ceil(Number(retryAfter) / 60) : null;
+      const msg = minutes
+        ? `Trop de requêtes. Réessayez dans ${minutes} min.`
+        : errorData.message || 'Trop de requêtes. Veuillez patienter avant de réessayer.';
+      throw new Error(msg);
+    }
+
     const errorMessage = errorData.error || errorData.message || `Erreur ${response.status}`;
     throw new Error(errorMessage);
   }

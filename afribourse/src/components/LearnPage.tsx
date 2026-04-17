@@ -34,6 +34,7 @@ import confetti from 'canvas-confetti';
 import PremiumPaywall from './PremiumPaywall';
 import { AITutor } from './AITutor';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+import CertificateModal from './CertificateModal';
 
 // Gamification imports
 import { useGamificationSummary } from '../hooks/useGamification';
@@ -97,9 +98,12 @@ export default function LearnPage() {
     const [showAITutor, setShowAITutor] = useState(false);
     const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
     const [showModulePaywall, setShowModulePaywall] = useState(false);
+    const [showCertificate, setShowCertificate] = useState(false);
+    const [showCertPaywall, setShowCertPaywall] = useState(false);
 
     const isPremiumModule = (orderIndex: number) => orderIndex === 14 || orderIndex === 15;
     const userHasPremium = ['premium', 'max', 'pro'].includes(userProfile?.subscriptionTier ?? '');
+    const userHasInvestisseurPlus = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
 
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -534,6 +538,30 @@ export default function LearnPage() {
 
             // Refresh gamification data
             refetchGamification();
+
+            // Vérifier si tous les modules publiés sont maintenant complétés
+            const updatedProgressRes = await authFetch(`${API_BASE_URL}/learning-modules/progress`).catch(() => null);
+            if (updatedProgressRes && updatedProgressRes.ok) {
+                const updatedProgress: import('../types').LearningProgress[] = await updatedProgressRes.json();
+                const publishedModules = allModules.filter(m => m.is_published);
+                const allDone = publishedModules.length > 0 &&
+                    publishedModules.every(m => updatedProgress.some(p => p.module.slug === m.slug && p.is_completed));
+                if (allDone) {
+                    setTimeout(() => {
+                        confetti({
+                            particleCount: 300,
+                            spread: 100,
+                            origin: { y: 0.5 },
+                            colors: ['#4338ca', '#f59e0b', '#10b981', '#3b82f6', '#ec4899']
+                        });
+                        if (userHasInvestisseurPlus) {
+                            setShowCertificate(true);
+                        } else {
+                            setShowCertPaywall(true);
+                        }
+                    }, 800);
+                }
+            }
 
         } catch (err: any) {
             console.error('Erreur complétion:', err);
@@ -1219,8 +1247,56 @@ export default function LearnPage() {
     const totalModules = modules.length;
     const progressPercentage = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
+    // --- Données pour le certificat ---
+    const publishedModules = allModules.filter(m => m.is_published);
+    const allModulesCompleted =
+        isLoggedIn &&
+        publishedModules.length > 0 &&
+        publishedModules.every(m => progress.some(p => p.module.slug === m.slug && p.is_completed));
+
+    const certCompletedProgress = progress.filter(p => p.is_completed);
+    const scoresWithQuiz = certCompletedProgress.filter(p => p.quiz_score !== null && p.quiz_score !== undefined);
+    const certAverageScore = scoresWithQuiz.length > 0
+        ? Math.round(scoresWithQuiz.reduce((sum, p) => sum + (p.quiz_score ?? 0), 0) / scoresWithQuiz.length)
+        : 87;
+
+    const certDates = certCompletedProgress
+        .filter(p => p.completed_at)
+        .map(p => new Date(p.completed_at!).getTime());
+    const certDurationDays = certDates.length >= 2
+        ? Math.max(1, Math.ceil((Math.max(...certDates) - Math.min(...certDates)) / (1000 * 60 * 60 * 24)))
+        : certDates.length === 1 ? 1 : 14;
+
+    const certUserName = [userProfile?.name, userProfile?.lastname]
+        .filter(Boolean)
+        .join(' ') || 'Investisseur';
+
+    const certId = (() => {
+        const uid = userProfile?.id || 'anon';
+        const hash = uid.split('').reduce((acc: number, c: string) => ((acc * 31 + c.charCodeAt(0)) & 0xfffff), 0);
+        return `AF-${new Date().getFullYear()}-${String(Math.abs(hash)).padStart(5, '0')}`;
+    })();
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+            {showCertificate && (
+                <CertificateModal
+                    onClose={() => setShowCertificate(false)}
+                    userName={certUserName}
+                    modulesCompleted={certCompletedProgress.length}
+                    totalModules={publishedModules.length}
+                    averageScore={certAverageScore}
+                    durationDays={certDurationDays}
+                    certId={certId}
+                />
+            )}
+
+            <PremiumPaywall
+                isOpen={showCertPaywall}
+                onClose={() => setShowCertPaywall(false)}
+                feature="Télécharger et partager votre certificat officiel AfriBourse. Passez à Investisseur+ pour débloquer votre attestation de réussite."
+                plan="investisseur-plus"
+            />
             <div className="mb-8 sm:mb-12">
                 <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
                     <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
@@ -1282,17 +1358,96 @@ export default function LearnPage() {
                                         <p className="text-xs sm:text-sm text-gray-600">{completedCount} / {totalModules} modules</p>
                                     </div>
                                 </div>
-                                <div className="text-right">
+                                <div className="flex items-center gap-3">
+                                    {allModulesCompleted && (
+                                        <button
+                                            onClick={() => userHasInvestisseurPlus ? setShowCertificate(true) : setShowCertPaywall(true)}
+                                            className={`flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${userHasInvestisseurPlus ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-amber-500 hover:bg-amber-600'}`}
+                                        >
+                                            {userHasInvestisseurPlus ? <Award className="w-3.5 h-3.5" /> : <Crown className="w-3.5 h-3.5" />}
+                                            Certificat
+                                        </button>
+                                    )}
                                     <span className="text-2xl sm:text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
                                 </div>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                <div
-                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
-                                    style={{ width: `${progressPercentage}%` }}
-                                />
+                            {/* Barre de progression avec objectif certificat */}
+                            <div className="relative">
+                                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                    <div
+                                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
+                                        style={{ width: `${progressPercentage}%` }}
+                                    />
+                                </div>
+                                {/* Icône certificat à la fin de la barre */}
+                                <div className="absolute -right-1 -top-3.5 flex flex-col items-center">
+                                    <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-md transition-all ${allModulesCompleted ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-200'}`}>
+                                        {allModulesCompleted
+                                            ? <Award className="w-5 h-5 text-yellow-300" />
+                                            : <Lock className="w-4 h-4 text-gray-400" />
+                                        }
+                                    </div>
+                                    <span className={`text-xs font-semibold mt-1 whitespace-nowrap ${allModulesCompleted ? 'text-indigo-600' : 'text-gray-400'}`}>
+                                        Certificat
+                                    </span>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* Bandeau certificat débloqué */}
+                {allModulesCompleted && (
+                    <div className="max-w-4xl mx-auto mb-8">
+                        {userHasInvestisseurPlus ? (
+                            /* Abonné Investisseur+ → certificat disponible */
+                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 sm:p-6 shadow-xl">
+                                <div className="flex flex-col sm:flex-row items-center gap-4">
+                                    <div className="w-14 h-14 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
+                                        <Award className="w-8 h-8 text-yellow-300" />
+                                    </div>
+                                    <div className="flex-1 text-center sm:text-left">
+                                        <div className="text-white font-extrabold text-lg sm:text-xl mb-1">
+                                            Félicitations ! Parcours complété
+                                        </div>
+                                        <div className="text-indigo-200 text-sm">
+                                            Vous avez terminé tous les modules du Parcours Investisseur BRVM. Votre certificat est disponible.
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowCertificate(true)}
+                                        className="flex-shrink-0 flex items-center gap-2 bg-white text-indigo-700 font-bold text-sm px-5 py-2.5 rounded-xl shadow-md hover:bg-indigo-50 transition-colors active:scale-95"
+                                    >
+                                        <Award className="w-4 h-4" />
+                                        Voir mon certificat
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Non abonné → incitation à passer Investisseur+ */
+                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 sm:p-6 shadow-xl">
+                                <div className="flex flex-col sm:flex-row items-center gap-4">
+                                    <div className="w-14 h-14 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
+                                        <Crown className="w-8 h-8 text-white" />
+                                    </div>
+                                    <div className="flex-1 text-center sm:text-left">
+                                        <div className="text-white font-extrabold text-lg sm:text-xl mb-1">
+                                            Parcours complété — Certificat verrouillé
+                                        </div>
+                                        <div className="text-amber-100 text-sm">
+                                            Passez à Investisseur+ pour débloquer et télécharger votre certificat officiel AfriBourse.
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowCertPaywall(true)}
+                                        className="flex-shrink-0 flex items-center gap-2 bg-white text-amber-700 font-bold text-sm px-5 py-2.5 rounded-xl shadow-md hover:bg-amber-50 transition-colors active:scale-95"
+                                    >
+                                        <Crown className="w-4 h-4" />
+                                        Débloquer le certificat
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -1312,6 +1467,46 @@ export default function LearnPage() {
                     </div>
                 )}
             </div>
+
+            {/* Teaser certificat — visible tant que le parcours n'est pas complété */}
+            {isLoggedIn && !allModulesCompleted && (
+                <div className="max-w-4xl mx-auto mb-8">
+                    <div className="relative overflow-hidden bg-gradient-to-r from-slate-800 to-indigo-900 rounded-2xl px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-4 shadow-lg">
+                        {/* Halo décoratif */}
+                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full opacity-10 blur-2xl pointer-events-none" />
+                        <div className="absolute right-16 -bottom-8 w-28 h-28 bg-purple-500 rounded-full opacity-10 blur-2xl pointer-events-none" />
+
+                        {/* Icône cadenas + award */}
+                        <div className="relative flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14">
+                            <div className="w-full h-full rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                                <Award className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-300" />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-slate-800">
+                                <Lock className="w-2.5 h-2.5 text-amber-900" />
+                            </div>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                            <div className="text-white font-bold text-sm sm:text-base leading-snug">
+                                Certificat officiel à débloquer
+                            </div>
+                            <div className="text-indigo-300 text-xs sm:text-sm mt-0.5">
+                                Complétez les {publishedModules.length - completedCount} modules restants
+                                {!userHasInvestisseurPlus && ' et passez à Investisseur+'} pour obtenir votre attestation de réussite AfriBourse.
+                            </div>
+                        </div>
+
+                        {/* Mini aperçu */}
+                        <div className="hidden sm:flex flex-col items-center flex-shrink-0 bg-white/10 border border-white/20 rounded-xl px-4 py-2 gap-0.5">
+                            <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Récompense</span>
+                            <div className="flex items-center gap-1.5">
+                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                <span className="text-sm font-bold text-white">Certifié BRVM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Filtres */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-10 sticky top-20 z-10">

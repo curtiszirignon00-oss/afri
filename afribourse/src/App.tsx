@@ -66,6 +66,7 @@ import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { PushNotificationPrompt } from './components/pwa/PushNotificationPrompt';
 import { InstallPrompt } from './components/pwa/InstallPrompt';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
+import { SessionExpiredModal } from './components/ui/SessionExpiredModal';
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -113,6 +114,9 @@ function Layout() {
       {isLoggedIn && showWelcomePopup && (
         <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
       )}
+
+      {/* Modal session expirée — affiché globalement, hors flux de pages */}
+      <SessionExpiredModal />
 
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
