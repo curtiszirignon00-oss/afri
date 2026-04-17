@@ -19,6 +19,9 @@ interface UserProfile {
   avatar_url?: string | null;
 }
 
+// Événement global émis quand le serveur répond 401 depuis n'importe quel appel API
+export const SESSION_EXPIRED_EVENT = 'afribourse:session-expired';
+
 // --- Amplitude identify helper ---
 function identifyAmplitudeUser(profile: UserProfile) {
   amplitude.setUserId(profile.email);
@@ -37,9 +40,11 @@ interface AuthContextType {
   isLoggedIn: boolean;
   userProfile: UserProfile | null;
   loading: boolean;
+  sessionExpired: boolean;
   checkAuth: () => Promise<boolean>;
   initAuthFromLogin: (user: UserProfile, token?: string) => void;
   logout: () => Promise<void>;
+  dismissSessionExpired: () => void;
 }
 
 // --- Création du Context ---
@@ -55,12 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
   // Ref pour annuler le checkAuth() initial si un login manuel se produit avant sa complétion
   const initialCheckAborted = useRef(false);
   // Timer pour le refresh proactif du token
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Timestamp de la dernière émission du token (pour calculer quand rafraîchir)
   const tokenIssuedAtRef = useRef<number>(Date.now());
+  // Évite de déclencher l'événement "session expirée" en boucle
+  const sessionExpiredFiredRef = useRef(false);
 
   // Planifie un refresh proactif du token avant son expiration
   const scheduleTokenRefresh = (issuedAt: number = Date.now()) => {
@@ -70,6 +78,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshTimerRef.current = setTimeout(() => {
       silentRefresh();
     }, delay);
+  };
+
+  // Déclenche l'expiration de session (une seule fois)
+  const triggerSessionExpired = () => {
+    if (sessionExpiredFiredRef.current) return;
+    sessionExpiredFiredRef.current = true;
+    setIsLoggedIn(false);
+    setUserProfile(null);
+    setAuthToken(null);
+    setSessionExpired(true);
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
   };
 
   // Rafraîchit silencieusement le token sans bloquer l'UI
@@ -83,10 +102,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         scheduleTokenRefresh();
       }
     } catch {
-      // Si le refresh échoue (refresh token expiré ou révoqué), déconnecter
-      setIsLoggedIn(false);
-      setUserProfile(null);
-      setAuthToken(null);
+      // Si le refresh échoue (refresh token expiré ou révoqué), afficher le modal de session expirée
+      if (isLoggedIn) {
+        triggerSessionExpired();
+      } else {
+        setIsLoggedIn(false);
+        setUserProfile(null);
+        setAuthToken(null);
+      }
     }
   };
 
@@ -105,6 +128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setUserProfile(profile);
       setIsLoggedIn(true);
+      setSessionExpired(false);
+      sessionExpiredFiredRef.current = false;
       if (profile) identifyAmplitudeUser(profile);
       // Stocker le token en mémoire pour les clients Safari iOS (ITP bloque les cookies cross-site)
       if (token) {
@@ -130,12 +155,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Évite la race condition entre le checkAuth() initial et le login manuel.
   const initAuthFromLogin = (user: UserProfile, token?: string) => {
     initialCheckAborted.current = true;
+    sessionExpiredFiredRef.current = false;
     if (user?.role === 'admin') {
       user.subscriptionTier = 'max';
     }
     setUserProfile(user);
     setIsLoggedIn(true);
     setLoading(false);
+    setSessionExpired(false);
     identifyAmplitudeUser(user);
     if (token) {
       setAuthToken(token);
@@ -153,11 +180,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Ignorer les erreurs réseau au logout
     } finally {
       initialCheckAborted.current = false;
+      sessionExpiredFiredRef.current = false;
       setIsLoggedIn(false);
       setUserProfile(null);
+      setSessionExpired(false);
       amplitude.reset();
       setAuthToken(null);
     }
+  };
+
+  // Ferme le modal "session expirée" (ex: l'utilisateur clique sur "Se reconnecter")
+  const dismissSessionExpired = () => {
+    setSessionExpired(false);
+    sessionExpiredFiredRef.current = false;
   };
 
   // Vérification initiale au montage — le cookie OAuth est déjà set par le backend
@@ -177,21 +212,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (document.visibilityState === 'visible') {
         const elapsed = Date.now() - tokenIssuedAtRef.current;
         // Si le token est expiré ou expire dans moins de 2 min, rafraîchir
-        if (elapsed >= ACCESS_TOKEN_MS - REFRESH_BEFORE_MS && getAuthToken()) {
+        if (elapsed >= ACCESS_TOKEN_MS - REFRESH_BEFORE_MS) {
           silentRefresh();
         }
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Écouter les 401 émis par n'importe quel appel API (voir apiFetch)
+    const handleGlobalSessionExpired = () => {
+      if (isLoggedIn || userProfile) {
+        triggerSessionExpired();
+      }
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleGlobalSessionExpired);
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleGlobalSessionExpired);
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     };
-  }, []);
+  }, [isLoggedIn, userProfile]);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userProfile, loading, checkAuth, initAuthFromLogin, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, userProfile, loading, sessionExpired, checkAuth, initAuthFromLogin, logout, dismissSessionExpired }}>
       {children}
     </AuthContext.Provider>
   );

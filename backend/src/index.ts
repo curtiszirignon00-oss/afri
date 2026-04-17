@@ -175,13 +175,19 @@ class App {
       rateLimit({
         windowMs: config.rateLimit.windowMs,
         max: config.rateLimit.maxRequests,
-        message: {
-          error: 'Trop de requêtes. Réessayez dans quelques instants.',
-        },
-        standardHeaders: true,
+        standardHeaders: true,   // envoie RateLimit-* headers (RFC 6585)
         legacyHeaders: false,
         keyGenerator: (req: any) => req.user?.id ?? req.ip ?? 'unknown',
         skip: (req: any) => req.user?.role === 'ADMIN',
+        handler: (req, res) => {
+          const windowSec = Math.ceil(config.rateLimit.windowMs / 1000);
+          res.setHeader('Retry-After', windowSec);
+          res.status(429).json({
+            error: 'Trop de requêtes.',
+            message: `Vous avez effectué trop de requêtes. Veuillez patienter ${Math.ceil(windowSec / 60)} minute(s) avant de réessayer.`,
+            retryAfter: windowSec,
+          });
+        },
       })
     );
 
