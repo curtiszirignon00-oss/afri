@@ -69,13 +69,15 @@ export interface WeeklyStocks {
 /**
  * Récupère le statut de participation de l'utilisateur
  */
-export function useChallengeStatus() {
+export function useChallengeStatus(enabled: boolean = true) {
     return useQuery({
         queryKey: ['challenge', 'status'],
         queryFn: async () => {
             const response = await apiClient.get('/challenge/status');
             return response.data.data as ChallengeStatus;
         },
+        enabled,
+        staleTime: 5 * 60 * 1000, // 5 minutes
         retry: 1,
     });
 }

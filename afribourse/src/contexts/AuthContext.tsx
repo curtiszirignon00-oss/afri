@@ -69,6 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const tokenIssuedAtRef = useRef<number>(Date.now());
   // Évite de déclencher l'événement "session expirée" en boucle
   const sessionExpiredFiredRef = useRef(false);
+  // Ref miroir de isLoggedIn pour les closures d'event listeners (évite les dépendances cycliques)
+  const isLoggedInRef = useRef(false);
 
   // Planifie un refresh proactif du token avant son expiration
   const scheduleTokenRefresh = (issuedAt: number = Date.now()) => {
@@ -84,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const triggerSessionExpired = () => {
     if (sessionExpiredFiredRef.current) return;
     sessionExpiredFiredRef.current = true;
+    isLoggedInRef.current = false;
     setIsLoggedIn(false);
     setUserProfile(null);
     setAuthToken(null);
@@ -103,9 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch {
       // Si le refresh échoue (refresh token expiré ou révoqué), afficher le modal de session expirée
-      if (isLoggedIn) {
+      if (isLoggedInRef.current) {
         triggerSessionExpired();
       } else {
+        isLoggedInRef.current = false;
         setIsLoggedIn(false);
         setUserProfile(null);
         setAuthToken(null);
@@ -127,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile.subscriptionTier = 'max';
       }
       setUserProfile(profile);
+      isLoggedInRef.current = true;
       setIsLoggedIn(true);
       setSessionExpired(false);
       sessionExpiredFiredRef.current = false;
@@ -141,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ne pas écraser l'état si un login manuel vient d'aboutir
       if (!initialCheckAborted.current) {
+        isLoggedInRef.current = false;
         setIsLoggedIn(false);
         setUserProfile(null);
         setAuthToken(null);
@@ -160,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user.subscriptionTier = 'max';
     }
     setUserProfile(user);
+    isLoggedInRef.current = true;
     setIsLoggedIn(true);
     setLoading(false);
     setSessionExpired(false);
@@ -181,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       initialCheckAborted.current = false;
       sessionExpiredFiredRef.current = false;
+      isLoggedInRef.current = false;
       setIsLoggedIn(false);
       setUserProfile(null);
       setSessionExpired(false);
@@ -196,6 +204,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Vérification initiale au montage — le cookie OAuth est déjà set par le backend
+  // Dépendances vides : ne s'exécute qu'une seule fois au montage pour éviter la boucle infinie.
+  // isLoggedInRef (ref) est utilisé dans les closures pour accéder à l'état courant sans dépendances.
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const oauthStatus = urlParams.get('oauth');
@@ -220,8 +230,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Écouter les 401 émis par n'importe quel appel API (voir apiFetch)
+    // triggerSessionExpired est idempotent (sessionExpiredFiredRef), pas besoin de vérifier isLoggedIn ici
     const handleGlobalSessionExpired = () => {
-      if (isLoggedIn || userProfile) {
+      if (isLoggedInRef.current) {
         triggerSessionExpired();
       }
     };
@@ -232,7 +243,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener(SESSION_EXPIRED_EVENT, handleGlobalSessionExpired);
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     };
-  }, [isLoggedIn, userProfile]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, userProfile, loading, sessionExpired, checkAuth, initAuthFromLogin, logout, dismissSessionExpired }}>

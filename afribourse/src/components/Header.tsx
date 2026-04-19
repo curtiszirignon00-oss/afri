@@ -27,8 +27,8 @@ export default function Header() {
   // ✅ Utilisation du hook useAuth
   const { isLoggedIn, logout, loading, userProfile } = useAuth();
 
-  // Unseen community posts count
-  const { data: unseenCount } = useUnseenCommunityCount();
+  // Unseen community posts count — seulement pour les utilisateurs connectés
+  const { data: unseenCount } = useUnseenCommunityCount(isLoggedIn);
 
   // ✅ Fonction de déconnexion simplifiée
   const handleLogout = async () => {

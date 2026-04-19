@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { WalletMode } from '../components/challenge';
 import { useChallengeStatus } from '../hooks/useChallenge';
+import { useAuth } from './AuthContext';
 
 interface ChallengeContextType {
     walletMode: WalletMode;
@@ -14,7 +15,8 @@ const ChallengeContext = createContext<ChallengeContextType | null>(null);
 
 export function ChallengeProvider({ children }: { children: React.ReactNode }) {
     const [walletMode, setWalletMode] = useState<WalletMode>('SANDBOX');
-    const { data: challengeStatus, isLoading } = useChallengeStatus();
+    const { isLoggedIn } = useAuth();
+    const { data: challengeStatus, isLoading } = useChallengeStatus(isLoggedIn);
 
     // Auto-switch to SANDBOX if user tries to go to CONCOURS but isn't enrolled
     useEffect(() => {

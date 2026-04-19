@@ -12,6 +12,7 @@ import { queryClient } from './lib/queryClient';
 // Context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ChallengeProvider } from './contexts/ChallengeContext';
+import { CelebrationProvider } from './contexts/CelebrationContext';
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
@@ -386,9 +387,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ChallengeProvider>
-            <BrowserRouter>
-              <Layout />
-            </BrowserRouter>
+            <CelebrationProvider>
+              <BrowserRouter>
+                <Layout />
+              </BrowserRouter>
+            </CelebrationProvider>
           </ChallengeProvider>
         </AuthProvider>
         {/* DevTools React Query (visible uniquement en développement) */}

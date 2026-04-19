@@ -39,6 +39,7 @@ import CertificateModal from './CertificateModal';
 // Gamification imports
 import { useGamificationSummary } from '../hooks/useGamification';
 import { XPProgressBar, LevelBadge, StreakCounter, showXPGainToast } from './gamification';
+import { useCelebration } from '../contexts/CelebrationContext';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -68,6 +69,7 @@ export default function LearnPage() {
 
     // Gamification data
     const { data: gamificationSummary, refetch: refetchGamification } = useGamificationSummary();
+    const { triggerMilestone, checkNewAchievements } = useCelebration();
 
     const [modules, setModules] = useState<LearningModule[]>([]);
     const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
@@ -422,13 +424,36 @@ export default function LearnPage() {
                 });
 
                 // Show XP gain toast
-                const xpGained = result.score === 100 ? 100 : 50; // 100 XP for perfect, 50 for pass
+                const xpGained = result.score === 100 ? 100 : 50;
                 showXPGainToast({
                     xpGained,
                     bonusXP: result.score === 100 ? { reason: 'Quiz parfait', amount: 50 } : undefined,
                     newAchievements: result.newAchievements || [],
                     levelUp: result.levelUp || undefined
                 });
+
+                // Célébrations selon contexte
+                const completedBefore = progress.filter(p => p.is_completed && p.quiz_score != null).length;
+                if (completedBefore === 0) {
+                    // Tout premier quiz validé de la carrière
+                    triggerMilestone('first_quiz', { xp: xpGained });
+                } else if (result.score === 100) {
+                    // Quiz parfait
+                    triggerMilestone('perfect_quiz', {
+                        value: `Score : ${result.score}%`,
+                        xp: xpGained,
+                    });
+                }
+
+                // Level up détecté par le backend
+                if (result.levelUp) {
+                    triggerMilestone('level_up', {
+                        value: result.levelUp.newLevel ? `Niveau ${result.levelUp.newLevel}` : undefined,
+                    });
+                }
+
+                // Vérifier les nouveaux badges débloqués
+                setTimeout(() => checkNewAchievements(), 800);
 
                 // Refresh gamification data
                 refetchGamification();
@@ -530,11 +555,20 @@ export default function LearnPage() {
 
             // Show XP gain toast for module completion
             showXPGainToast({
-                xpGained: 200, // Standard XP for module completion
+                xpGained: 200,
                 bonusXP: undefined,
                 newAchievements: [],
                 levelUp: undefined
             });
+
+            // Célébration premier module terminé
+            const completedModules = progress.filter(p => p.is_completed).length;
+            if (completedModules === 0) {
+                triggerMilestone('first_module', { xp: 200 });
+            }
+
+            // Vérifier les nouveaux badges débloqués
+            setTimeout(() => checkNewAchievements(), 800);
 
             // Refresh gamification data
             refetchGamification();
