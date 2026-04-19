@@ -4,6 +4,24 @@ import { log } from '../config/logger';
 
 import { Request, Response, NextFunction } from 'express';
 import * as achievementService from '../services/achievement.service';
+
+/**
+ * GET /api/achievements/me/new
+ * Retourne les achievements récemment débloqués (non notifiés) et les marque comme notifiés
+ */
+export async function getNewAchievements(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+    const achievements = await achievementService.getNewAchievements(userId);
+    return res.status(200).json(achievements);
+  } catch (error) {
+    log.error('❌ Erreur getNewAchievements:', error);
+    return next(error);
+  }
+}
 import { parsePagination } from '../utils/pagination.util';
 
 // =====================================

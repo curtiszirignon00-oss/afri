@@ -5,15 +5,17 @@ import { apiClient } from '../lib/api-client';
 /**
  * Get unseen community posts count
  */
-export function useUnseenCommunityCount() {
+export function useUnseenCommunityCount(enabled: boolean = true) {
     return useQuery({
         queryKey: ['community-unseen-count'],
         queryFn: async () => {
             const response = await apiClient.get<{ count: number }>('/communities/unseen-count');
             return response.data.count;
         },
-        refetchInterval: 30000,
-        staleTime: 10000,
+        enabled,
+        refetchInterval: 60000, // Réduit de 30s à 60s
+        refetchIntervalInBackground: false, // Ne pas poller en arrière-plan
+        staleTime: 30000,
     });
 }
 

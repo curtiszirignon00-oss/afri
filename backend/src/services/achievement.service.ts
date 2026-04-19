@@ -37,6 +37,32 @@ export async function getAllAchievements() {
 }
 
 /**
+ * Récupère les achievements non encore notifiés (nouveaux) d'un utilisateur
+ * et les marque comme notifiés
+ */
+export async function getNewAchievements(userId: string) {
+  try {
+    const newAchievements = await prisma.userAchievement.findMany({
+      where: { userId, is_notified: false },
+      include: { achievement: true },
+      orderBy: { unlocked_at: 'asc' }
+    });
+
+    if (newAchievements.length > 0) {
+      await prisma.userAchievement.updateMany({
+        where: { userId, is_notified: false },
+        data: { is_notified: true }
+      });
+    }
+
+    return newAchievements;
+  } catch (error) {
+    log.error('❌ Erreur getNewAchievements:', error);
+    throw error;
+  }
+}
+
+/**
  * Récupère les achievements d'un utilisateur
  */
 export async function getUserAchievements(userId: string) {

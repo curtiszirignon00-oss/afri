@@ -1,0 +1,271 @@
+import { log } from '../config/logger';
+import { prisma } from '../config/database';
+import { sendWeeklyReportEmail } from './email.service';
+import { getPortfolioStatsForUser } from './portfolio-summary.service';
+import { getLearningStatsForUser } from './learning-summary.service';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface MarketMover {
+  symbol: string;
+  companyName: string;
+  currentPrice: number;
+  weeklyChangePercent: number;
+}
+
+export interface WeeklyMarketData {
+  topGainers: MarketMover[];
+  topLosers: MarketMover[];
+  weekLabel: string; // ex: "du 14 au 18 avril 2025"
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getWeeklyPeriod(): string {
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+
+  const fmt = (d: Date) => {
+    const day = d.getDate();
+    const month = d.toLocaleDateString('fr-FR', { month: 'long' });
+    const year = d.getFullYear();
+    return `${day === 1 ? '1er' : day} ${month} ${year}`;
+  };
+
+  return `du ${fmt(sevenDaysAgo)} au ${fmt(now)}`;
+}
+
+/**
+ * Calcule le top/flop marché de la semaine à partir de l'historique BRVM.
+ * Compare le dernier close de la période aux closes d'il y a 7 jours.
+ */
+async function getWeeklyMarketData(): Promise<WeeklyMarketData> {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  // Récupérer l'historique de la semaine pour tous les titres actifs
+  const history = await prisma.stockHistory.findMany({
+    where: { date: { gte: sevenDaysAgo } },
+    orderBy: { date: 'asc' },
+    select: { stock_ticker: true, date: true, close: true },
+  });
+
+  // Grouper par ticker : premier et dernier close de la semaine
+  const byTicker = new Map<string, { first: number; last: number }>();
+  for (const row of history) {
+    const existing = byTicker.get(row.stock_ticker);
+    if (!existing) {
+      byTicker.set(row.stock_ticker, { first: row.close, last: row.close });
+    } else {
+      existing.last = row.close; // l'historique est trié par date asc
+    }
+  }
+
+  // Calculer la variation hebdomadaire
+  const changes: Array<{ ticker: string; changePercent: number }> = [];
+  for (const [ticker, { first, last }] of byTicker) {
+    if (first > 0) {
+      changes.push({ ticker, changePercent: ((last - first) / first) * 100 });
+    }
+  }
+
+  // Si aucune donnée d'historique, fallback sur daily_change_percent
+  if (changes.length === 0) {
+    log.warn('[WEEKLY REPORT] Pas de données historiques — fallback daily_change_percent');
+    const stocks = await prisma.stock.findMany({
+      where: { is_active: true },
+      select: { symbol: true, company_name: true, current_price: true, daily_change_percent: true },
+    });
+    for (const s of stocks) {
+      changes.push({ ticker: s.symbol, changePercent: s.daily_change_percent });
+    }
+  }
+
+  // Récupérer les prix courants et noms des titres actifs
+  const activeStocks = await prisma.stock.findMany({
+    where: { is_active: true },
+    select: { symbol: true, company_name: true, current_price: true },
+  });
+  const stockMap = new Map(activeStocks.map(s => [s.symbol, s]));
+
+  // Trier et prendre top 5 et flop 5
+  changes.sort((a, b) => b.changePercent - a.changePercent);
+
+  const mapMover = (c: { ticker: string; changePercent: number }): MarketMover | null => {
+    const s = stockMap.get(c.ticker);
+    if (!s) return null;
+    return {
+      symbol: s.symbol,
+      companyName: s.company_name,
+      currentPrice: s.current_price,
+      weeklyChangePercent: c.changePercent,
+    };
+  };
+
+  const topGainers = changes
+    .filter(c => c.changePercent > 0)
+    .slice(0, 5)
+    .map(mapMover)
+    .filter((m): m is MarketMover => m !== null);
+
+  const topLosers = changes
+    .filter(c => c.changePercent < 0)
+    .slice(-5)
+    .reverse()
+    .map(mapMover)
+    .filter((m): m is MarketMover => m !== null);
+
+  return { topGainers, topLosers, weekLabel: getWeeklyPeriod() };
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+
+/**
+ * Envoie le rapport hebdomadaire combiné à tous les utilisateurs éligibles.
+ * Remplace les deux anciens emails séparés (portefeuille + apprentissage).
+ */
+export async function sendWeeklyReports(): Promise<void> {
+  log.debug('📬 Début de l\'envoi des rapports hebdomadaires combinés...');
+
+  try {
+    // 1. Données de marché (communes à tous)
+    const marketData = await getWeeklyMarketData();
+    log.debug(`📊 Marché: ${marketData.topGainers.length} hausses, ${marketData.topLosers.length} baisses`);
+
+    // 2. Récupérer l'union des utilisateurs éligibles
+    //    (portfolio actif OU activité d'apprentissage)
+    const [portfolioUsers, learningUsers] = await Promise.all([
+      prisma.user.findMany({
+        where: {
+          portfolios: {
+            some: {
+              is_virtual: true,
+              positions: { some: { quantity: { gt: 0 } } },
+            },
+          },
+        },
+        select: { id: true },
+      }),
+      prisma.user.findMany({
+        where: { learningProgress: { some: {} } },
+        select: { id: true },
+      }),
+    ]);
+
+    const allUserIds = new Set([
+      ...portfolioUsers.map(u => u.id),
+      ...learningUsers.map(u => u.id),
+    ]);
+
+    log.debug(`👥 ${allUserIds.size} utilisateur(s) éligible(s) au rapport hebdomadaire`);
+
+    let successCount = 0;
+    let skippedCount = 0;
+    let errorCount = 0;
+
+    for (const userId of allUserIds) {
+      try {
+        // Récupérer les données de base de l'utilisateur
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { email: true, name: true, lastname: true },
+        });
+
+        if (!user) { skippedCount++; continue; }
+
+        const displayName = user.name
+          ? `${user.name}${user.lastname ? ' ' + user.lastname : ''}`
+          : 'Investisseur';
+
+        // Calculer les stats (en parallèle)
+        const [portfolioStats, learningStats] = await Promise.all([
+          getPortfolioStatsForUser(userId),
+          getLearningStatsForUser(userId),
+        ]);
+
+        // Si aucune donnée utile pour cet utilisateur, skip
+        if (!portfolioStats && !learningStats) {
+          log.debug(`⏭️  Aucune donnée pour user ${userId}`);
+          skippedCount++;
+          continue;
+        }
+
+        // Construire les params de l'email
+        const portfolioEmailStats = portfolioStats ? {
+          totalValue: portfolioStats.totalValue,
+          cashBalance: portfolioStats.cashBalance,
+          investedValue: portfolioStats.investedValue,
+          totalGainLoss: portfolioStats.totalGainLoss,
+          totalGainLossPercent: portfolioStats.totalGainLossPercent,
+          topPerformers: portfolioStats.topPerformers,
+          topLosers: portfolioStats.topLosers,
+          positionsCount: portfolioStats.positionsCount,
+          biweeklyEvolution: portfolioStats.biweeklyEvolution,
+        } : undefined;
+
+        const learningEmailStats = learningStats ? {
+          weeklyModulesCompleted: learningStats.weeklyModulesCompleted,
+          weeklyQuizzesTaken: learningStats.weeklyQuizzesTaken,
+          weeklyXpEarned: learningStats.weeklyXpEarned,
+          weeklyTimeSpentMinutes: learningStats.weeklyTimeSpentMinutes,
+          currentStreak: learningStats.currentStreak,
+          currentLevel: learningStats.currentLevel,
+          totalXp: learningStats.totalXp,
+          completionPercent: learningStats.completionPercent,
+          totalModulesCompleted: learningStats.totalModulesCompleted,
+          totalModulesAvailable: learningStats.totalModulesAvailable,
+          recentCompletedModules: learningStats.recentCompletedModules,
+          suggestedModules: learningStats.suggestedModules.slice(0, 2),
+          recentAchievements: learningStats.recentAchievements,
+          isReminder: !learningStats.weeklyModulesCompleted && !learningStats.weeklyQuizzesTaken && learningStats.totalModulesCompleted > 0,
+        } : undefined;
+
+        await sendWeeklyReportEmail({
+          email: user.email,
+          name: displayName,
+          period: marketData.weekLabel,
+          marketData,
+          portfolioStats: portfolioEmailStats,
+          learningStats: learningEmailStats,
+        });
+
+        log.debug(`✅ Rapport envoyé à ${user.email} (${displayName})`);
+        successCount++;
+
+        // Snapshot du portefeuille pour suivre l'évolution la semaine prochaine
+        if (portfolioStats) {
+          await prisma.portfolioSnapshot.create({
+            data: {
+              portfolioId: portfolioStats.portfolioId,
+              total_value: portfolioStats.totalValue,
+              cash_balance: portfolioStats.cashBalance,
+              invested_value: portfolioStats.investedValue,
+              positions_value: portfolioStats.totalValue - portfolioStats.cashBalance,
+              gain_loss: portfolioStats.totalGainLoss,
+              gain_loss_percent: portfolioStats.totalGainLossPercent,
+              positions_count: portfolioStats.positionsCount,
+              snapshot_type: 'weekly_report',
+            },
+          });
+        }
+
+        // Throttle SMTP
+        await new Promise(r => setTimeout(r, 800));
+      } catch (err: any) {
+        log.error(`❌ Erreur rapport hebdo pour user ${userId}:`, err.message);
+        errorCount++;
+      }
+    }
+
+    log.debug(`\n📬 Rapport hebdomadaire — résumé:`);
+    log.debug(`   → Succès : ${successCount}`);
+    log.debug(`   → Ignorés: ${skippedCount}`);
+    log.debug(`   → Erreurs: ${errorCount}`);
+    log.debug(`   → Total  : ${allUserIds.size}`);
+  } catch (error) {
+    log.error('[WEEKLY REPORT] Erreur globale:', error);
+    throw error;
+  }
+}

@@ -10,7 +10,8 @@ import {
   getUserAchievements,
   checkMyAchievements,
   checkCategoryAchievements,
-  getNextAchievements
+  getNextAchievements,
+  getNewAchievements
 } from '../controllers/achievement.controller';
 
 const router = Router();
@@ -52,6 +53,12 @@ router.get('/me/progress', auth, getMyAchievementsProgress);
  * Les 3 prochains badges les plus proches
  */
 router.get('/me/next', auth, getNextAchievements);
+
+/**
+ * GET /api/achievements/me/new
+ * Badges récemment débloqués non encore montrés (marque comme notifiés)
+ */
+router.get('/me/new', auth, getNewAchievements);
 
 /**
  * POST /api/achievements/check

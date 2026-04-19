@@ -1,6 +1,29 @@
 // src/lib/api-client.ts
 import axios from 'axios';
+import toast from 'react-hot-toast';
 import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken, setAuthToken } from '../config/api';
+
+// Endpoints de polling en arrière-plan — les erreurs 429 sur ces routes sont silencieuses
+const POLLING_ENDPOINTS = [
+  '/notifications/unread-count',
+  '/notifications',
+  '/communities/unseen-count',
+  '/achievements/me/new',
+  '/gamification/streak/me',
+  '/gamification/xp/me',
+];
+
+// Anti-spam du toast 429 — au maximum un toast par minute
+let lastRateLimitToastAt = 0;
+function showRateLimitToast() {
+  const now = Date.now();
+  if (now - lastRateLimitToastAt < 60_000) return;
+  lastRateLimitToastAt = now;
+  toast.error('Trop de requêtes. Patientez un instant avant de continuer.', {
+    duration: 5000,
+    id: 'rate-limit',
+  });
+}
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -119,6 +142,19 @@ apiClient.interceptors.response.use(
                     isRefreshing = false;
                 }
             }
+        }
+
+        // Gestion 429 — rate limit atteint
+        if (status === 429) {
+          const url: string = originalConfig?.url ?? '';
+          const isPolling = POLLING_ENDPOINTS.some(ep => url.includes(ep));
+          if (!isPolling) {
+            // Action utilisateur (navigation, formulaire, etc.) → toast informatif
+            showRateLimitToast();
+          }
+          // Dans tous les cas on rejette — React Query gardera les données stale
+          // et ne retentera pas immédiatement (retry: 1 dans queryClient avec back-off)
+          return Promise.reject(error);
         }
 
         return Promise.reject(error);

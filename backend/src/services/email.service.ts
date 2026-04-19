@@ -3143,12 +3143,361 @@ export async function sendReengagementEmail3({
   });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// RAPPORT HEBDOMADAIRE COMBINÉ
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface MarketMoverEmail {
+  symbol: string;
+  companyName: string;
+  currentPrice: number;
+  weeklyChangePercent: number;
+}
+
+interface SendWeeklyReportEmailParams {
+  email: string;
+  name: string;
+  period: string;
+  marketData: {
+    topGainers: MarketMoverEmail[];
+    topLosers: MarketMoverEmail[];
+    weekLabel: string;
+  };
+  portfolioStats?: {
+    totalValue: number;
+    cashBalance: number;
+    investedValue: number;
+    totalGainLoss: number;
+    totalGainLossPercent: number;
+    topPerformers: Array<{ ticker: string; gainLossPercent: number; value: number }>;
+    topLosers: Array<{ ticker: string; gainLossPercent: number; value: number }>;
+    positionsCount: number;
+    biweeklyEvolution?: {
+      previousValue: number;
+      currentValue: number;
+      change: number;
+      changePercent: number;
+    };
+  };
+  learningStats?: {
+    weeklyModulesCompleted: number;
+    weeklyQuizzesTaken: number;
+    weeklyXpEarned: number;
+    weeklyTimeSpentMinutes: number;
+    currentStreak: number;
+    currentLevel: number;
+    totalXp: number;
+    completionPercent: number;
+    totalModulesCompleted: number;
+    totalModulesAvailable: number;
+    recentCompletedModules: Array<{ title: string; slug: string; quizScore?: number; completedAt: Date }>;
+    suggestedModules: Array<{ title: string; slug: string; difficulty: string; durationMinutes?: number }>;
+    recentAchievements: Array<{ name: string; description: string; unlockedAt: Date }>;
+    isReminder?: boolean;
+  };
+}
+
+export async function sendWeeklyReportEmail({
+  email,
+  name,
+  period,
+  marketData,
+  portfolioStats,
+  learningStats,
+}: SendWeeklyReportEmailParams): Promise<void> {
+  const displayName = name || 'Investisseur';
+
+  const formatFCFA = (n: number) => n.toLocaleString('fr-FR') + ' FCFA';
+  const formatPct = (n: number, showPlus = true) =>
+    `${showPlus && n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+  const formatTime = (min: number) => {
+    if (min < 60) return `${Math.round(min)} min`;
+    const h = Math.floor(min / 60);
+    const m = Math.round(min % 60);
+    return m > 0 ? `${h}h ${m}min` : `${h}h`;
+  };
+
+  // ── Section marché ─────────────────────────────────────────────────────────
+  const gainersRows = marketData.topGainers.map(s => `
+    <tr>
+      <td style="padding:8px 12px;font-weight:600;color:#1f2937;">${s.symbol}</td>
+      <td style="padding:8px 12px;color:#6b7280;font-size:13px;">${s.companyName}</td>
+      <td style="padding:8px 12px;text-align:right;font-weight:700;color:#10b981;">${formatPct(s.weeklyChangePercent)}</td>
+      <td style="padding:8px 12px;text-align:right;color:#4b5563;">${s.currentPrice.toLocaleString('fr-FR')}</td>
+    </tr>`).join('');
+
+  const losersRows = marketData.topLosers.map(s => `
+    <tr>
+      <td style="padding:8px 12px;font-weight:600;color:#1f2937;">${s.symbol}</td>
+      <td style="padding:8px 12px;color:#6b7280;font-size:13px;">${s.companyName}</td>
+      <td style="padding:8px 12px;text-align:right;font-weight:700;color:#ef4444;">${formatPct(s.weeklyChangePercent)}</td>
+      <td style="padding:8px 12px;text-align:right;color:#4b5563;">${s.currentPrice.toLocaleString('fr-FR')}</td>
+    </tr>`).join('');
+
+  // ── Section portefeuille ───────────────────────────────────────────────────
+  let portfolioSection = '';
+  if (portfolioStats) {
+    const isProfit = portfolioStats.totalGainLoss >= 0;
+    const glColor = isProfit ? '#10b981' : '#ef4444';
+    const glIcon = isProfit ? '📈' : '📉';
+
+    const evolutionBlock = portfolioStats.biweeklyEvolution ? `
+      <div style="background:linear-gradient(135deg,#10b981,#059669);color:white;padding:16px 20px;border-radius:10px;margin:16px 0;text-align:center;">
+        <div style="font-size:13px;opacity:.9;margin-bottom:10px;">📊 Évolution depuis la semaine dernière</div>
+        <div style="display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div><div style="font-size:11px;opacity:.8;">Précédent</div><div style="font-weight:bold;">${formatFCFA(portfolioStats.biweeklyEvolution.previousValue)}</div></div>
+          <div style="font-size:20px;">→</div>
+          <div><div style="font-size:11px;opacity:.8;">Actuel</div><div style="font-weight:bold;">${formatFCFA(portfolioStats.biweeklyEvolution.currentValue)}</div></div>
+        </div>
+        <div style="margin-top:12px;padding:8px 16px;background:rgba(255,255,255,.2);border-radius:6px;display:inline-block;font-weight:bold;">
+          ${portfolioStats.biweeklyEvolution.change >= 0 ? '↗' : '↘'} ${formatFCFA(portfolioStats.biweeklyEvolution.change)} (${formatPct(portfolioStats.biweeklyEvolution.changePercent)})
+        </div>
+      </div>` : '';
+
+    const performersBlock = portfolioStats.topPerformers.length > 0 ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">🏆 Meilleures positions</div>
+        ${portfolioStats.topPerformers.map(p => `
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:#f0fdf4;border-left:3px solid #10b981;border-radius:4px;margin-bottom:6px;">
+            <span style="font-weight:600;">${p.ticker}</span>
+            <span style="color:#10b981;font-weight:700;">${formatPct(p.gainLossPercent)}</span>
+          </div>`).join('')}
+      </div>` : '';
+
+    const losersBlock = portfolioStats.topLosers.length > 0 ? `
+      <div style="margin-top:12px;">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📉 Positions en recul</div>
+        ${portfolioStats.topLosers.map(p => `
+          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:#fef2f2;border-left:3px solid #ef4444;border-radius:4px;margin-bottom:6px;">
+            <span style="font-weight:600;">${p.ticker}</span>
+            <span style="color:#ef4444;font-weight:700;">${formatPct(p.gainLossPercent)}</span>
+          </div>`).join('')}
+      </div>` : '';
+
+    portfolioSection = `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;">
+        <h2 style="margin:0 0 16px;font-size:18px;color:#1f2937;">📊 Votre Portefeuille</h2>
+
+        <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;padding:20px;border-radius:10px;text-align:center;">
+          <div style="font-size:13px;opacity:.9;">Valeur Totale</div>
+          <div style="font-size:32px;font-weight:bold;margin:8px 0;">${formatFCFA(portfolioStats.totalValue)}</div>
+          <div style="display:inline-block;padding:6px 16px;background:rgba(255,255,255,.2);border-radius:6px;font-weight:600;color:${glColor};">
+            ${glIcon} ${formatFCFA(portfolioStats.totalGainLoss)} (${formatPct(portfolioStats.totalGainLossPercent)})
+          </div>
+        </div>
+
+        ${evolutionBlock}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+          <div style="background:#f9fafb;padding:14px;border-radius:8px;border:1px solid #e5e7eb;">
+            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:600;">Liquidités</div>
+            <div style="font-size:18px;font-weight:bold;color:#1f2937;">${formatFCFA(portfolioStats.cashBalance)}</div>
+          </div>
+          <div style="background:#f9fafb;padding:14px;border-radius:8px;border:1px solid #e5e7eb;">
+            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:600;">Investi</div>
+            <div style="font-size:18px;font-weight:bold;color:#1f2937;">${formatFCFA(portfolioStats.investedValue)}</div>
+          </div>
+        </div>
+
+        ${performersBlock}
+        ${losersBlock}
+      </div>`;
+  }
+
+  // ── Section apprentissage ──────────────────────────────────────────────────
+  let learningSection = '';
+  if (learningStats) {
+    const hasActivity = learningStats.weeklyModulesCompleted > 0
+      || learningStats.weeklyQuizzesTaken > 0
+      || learningStats.weeklyXpEarned > 0;
+
+    const motivationMsg = learningStats.isReminder
+      ? "Pas de cours cette semaine ? Revenez apprendre pour ne pas perdre votre streak !"
+      : learningStats.weeklyModulesCompleted >= 3
+        ? "Excellent rythme cette semaine ! Vous progressez vite."
+        : learningStats.weeklyModulesCompleted >= 1
+          ? "Bon effort ! Chaque module vous rapproche de vos objectifs."
+          : "Continuez votre apprentissage pour devenir un investisseur averti !";
+
+    const recentModulesBlock = learningStats.recentCompletedModules.length > 0 ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">✅ Modules complétés cette semaine</div>
+        ${learningStats.recentCompletedModules.map(m => `
+          <div style="padding:8px 12px;background:#f0f9ff;border-left:3px solid #3b82f6;border-radius:4px;margin-bottom:6px;">
+            <span style="font-weight:600;color:#1e40af;">${m.title}</span>
+            ${m.quizScore !== undefined ? `<span style="margin-left:8px;font-size:12px;color:#6b7280;">Quiz: ${m.quizScore}%</span>` : ''}
+          </div>`).join('')}
+      </div>` : '';
+
+    const suggestedBlock = learningStats.suggestedModules.length > 0 ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📖 Prochains modules suggérés</div>
+        ${learningStats.suggestedModules.map(m => `
+          <div style="padding:8px 12px;background:#fefce8;border-left:3px solid #eab308;border-radius:4px;margin-bottom:6px;">
+            <span style="font-weight:600;">${m.title}</span>
+            ${m.durationMinutes ? `<span style="margin-left:8px;font-size:12px;color:#6b7280;">${m.durationMinutes} min</span>` : ''}
+          </div>`).join('')}
+      </div>` : '';
+
+    const achievementsBlock = learningStats.recentAchievements.length > 0 ? `
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">🏅 Badges débloqués</div>
+        ${learningStats.recentAchievements.map(a => `
+          <div style="padding:8px 12px;background:#fdf4ff;border-left:3px solid #a855f7;border-radius:4px;margin-bottom:6px;">
+            <span style="font-weight:600;">${a.name}</span>
+            ${a.description ? `<div style="font-size:12px;color:#6b7280;">${a.description}</div>` : ''}
+          </div>`).join('')}
+      </div>` : '';
+
+    learningSection = `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;">
+        <h2 style="margin:0 0 16px;font-size:18px;color:#1f2937;">📚 Votre Apprentissage</h2>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:#f0f9ff;padding:14px;border-radius:8px;text-align:center;">
+            <div style="font-size:22px;font-weight:bold;color:#3b82f6;">${learningStats.weeklyModulesCompleted}</div>
+            <div style="font-size:11px;color:#6b7280;">modules</div>
+          </div>
+          <div style="background:#fdf4ff;padding:14px;border-radius:8px;text-align:center;">
+            <div style="font-size:22px;font-weight:bold;color:#a855f7;">${learningStats.weeklyXpEarned}</div>
+            <div style="font-size:11px;color:#6b7280;">XP gagnés</div>
+          </div>
+          <div style="background:#fff7ed;padding:14px;border-radius:8px;text-align:center;">
+            <div style="font-size:22px;font-weight:bold;color:#f97316;">🔥 ${learningStats.currentStreak}</div>
+            <div style="font-size:11px;color:#6b7280;">jours streak</div>
+          </div>
+        </div>
+
+        <div style="background:#f9fafb;padding:12px 16px;border-radius:8px;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;color:#374151;">Progression globale</span>
+            <span style="font-size:13px;font-weight:600;">${learningStats.completionPercent.toFixed(0)}%</span>
+          </div>
+          <div style="background:#e5e7eb;border-radius:4px;height:8px;">
+            <div style="background:#3b82f6;height:8px;border-radius:4px;width:${Math.min(learningStats.completionPercent, 100).toFixed(0)}%;"></div>
+          </div>
+          <div style="font-size:12px;color:#6b7280;margin-top:4px;">${learningStats.totalModulesCompleted} / ${learningStats.totalModulesAvailable} modules</div>
+        </div>
+
+        <div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:4px;font-size:13px;color:#92400e;">
+          💡 ${motivationMsg}
+        </div>
+
+        ${recentModulesBlock}
+        ${suggestedBlock}
+        ${achievementsBlock}
+      </div>`;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rapport Hebdomadaire - AfriBourse</title>
+</head>
+<body style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.6;color:#333;max-width:620px;margin:0 auto;padding:20px;background-color:#f4f4f4;">
+  <div style="background:#fff;border-radius:12px;padding:40px;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span style="font-size:28px;font-weight:bold;color:#f97316;">AfriBourse</span>
+      </div>
+      <h1 style="margin:0;font-size:22px;color:#1f2937;">Rapport Hebdomadaire</h1>
+      <p style="margin:4px 0 0;font-size:13px;color:#6b7280;">${period}</p>
+    </div>
+
+    <p style="color:#4b5563;margin-bottom:24px;">Bonjour <strong>${displayName}</strong>,<br>Voici votre bilan de la semaine : marché BRVM, portefeuille et progression en apprentissage.</p>
+
+    <!-- Section marché -->
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;">
+      <h2 style="margin:0 0 16px;font-size:18px;color:#1f2937;">🌍 Marché BRVM — Top / Flop de la semaine</h2>
+
+      ${marketData.topGainers.length > 0 ? `
+      <div style="margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📈 Meilleures hausses</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#f9fafb;">
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Titre</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Société</th>
+              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Variation</th>
+              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Prix (FCFA)</th>
+            </tr>
+          </thead>
+          <tbody>${gainersRows}</tbody>
+        </table>
+      </div>` : ''}
+
+      ${marketData.topLosers.length > 0 ? `
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📉 Plus fortes baisses</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#f9fafb;">
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Titre</th>
+              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Société</th>
+              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Variation</th>
+              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Prix (FCFA)</th>
+            </tr>
+          </thead>
+          <tbody>${losersRows}</tbody>
+        </table>
+      </div>` : ''}
+
+      ${marketData.topGainers.length === 0 && marketData.topLosers.length === 0
+        ? '<p style="color:#6b7280;text-align:center;font-style:italic;">Données de marché non disponibles pour cette semaine.</p>'
+        : ''}
+    </div>
+
+    <!-- Sections dynamiques -->
+    ${portfolioSection}
+    ${learningSection}
+
+    <!-- CTA -->
+    <div style="text-align:center;margin:28px 0 20px;">
+      <a href="${config.app.frontendUrl}/dashboard"
+         style="display:inline-block;padding:14px 32px;background:#f97316;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">
+        Voir Mon Dashboard
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center;">
+      <p style="margin:0;">Rapport hebdomadaire AfriBourse · <a href="${config.app.frontendUrl}" style="color:#f97316;">afribourse.com</a></p>
+      <p style="margin:4px 0 0;">Questions ? <a href="mailto:contact@afribourse.com" style="color:#f97316;">contact@afribourse.com</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const hasPortfolio = !!portfolioStats;
+  const hasLearning = !!learningStats;
+  const subjectParts: string[] = [];
+  if (hasPortfolio) subjectParts.push('Portefeuille');
+  if (hasLearning) subjectParts.push('Apprentissage');
+  subjectParts.push('Marché BRVM');
+
+  await sendEmail({
+    to: email,
+    subject: `📬 Rapport hebdo AfriBourse — ${subjectParts.join(' · ')} (${period})`,
+    html,
+    text: `Bonjour ${displayName},\n\nVoici votre rapport hebdomadaire AfriBourse (${period}).\n\nConsultez votre dashboard : ${config.app.frontendUrl}/dashboard\n\nAfriBourse · afribourse.com`,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
   sendPriceAlertEmail,
   sendPortfolioSummaryEmail,
   sendLearningSummaryEmail,
+  sendWeeklyReportEmail,
   sendLeaderboardCongratulationEmail,
   sendPWAAnnouncementEmail,
   sendGrandChallengeAnnouncementEmail,

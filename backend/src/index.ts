@@ -1,5 +1,5 @@
 import path from 'path';
-import Express, { Application, json, urlencoded } from 'express';
+import Express, { Application, json, urlencoded, Request, Response, NextFunction } from 'express';
 import { Server } from 'http';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -8,6 +8,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import config from './config/environnement';
 import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandlers';
 import { doubleCsrfProtection, generateCsrfToken } from './middlewares/csrf.middleware';
 // Seule l'importation de la connexion Prisma est conservée
@@ -167,21 +168,40 @@ class App {
     this.app?.use(passportConfig.session());
 
 
-    // Rate Limiting global — seuil généreux pour une SPA (nombreux appels simultanés par page)
-    // Clé = user ID si authentifié (évite que plusieurs utilisateurs partagent le même compteur
-    // derrière un NAT/proxy), sinon IP pour protéger les routes publiques.
+    // Middleware léger : décode le JWT sans base de données pour identifier l'utilisateur
+    // avant que le rate limiter ne tourne. Cela évite que des utilisateurs derrière le
+    // même NAT/proxy partagent le même compteur de rate limit.
+    this.app?.use('/api/', (req: any, _res: Response, next: NextFunction) => {
+      try {
+        let token: string | undefined = req.headers['authorization']?.split(' ')[1];
+        if (!token) token = req.cookies?.token;
+        if (token) {
+          const decoded = jwt.verify(token, config.jwt.secret) as any;
+          if (decoded?.id) req._rateLimitUserId = decoded.id;
+        }
+      } catch {
+        // Token invalide ou absent — le rate limiter utilisera l'IP comme fallback
+      }
+      next();
+    });
+
+    // Rate Limiting global — clé = user ID (JWT décodé sans DB) si authentifié, sinon IP.
+    // Limite plus généreuse pour les utilisateurs authentifiés car une SPA fait
+    // de nombreux appels simultanés au chargement de chaque page.
     this.app?.use(
       '/api/',
       rateLimit({
-        windowMs: config.rateLimit.windowMs,
-        max: config.rateLimit.maxRequests,
+        windowMs: config.rateLimit.windowMs,       // 15 min par défaut
+        max: (req: any) => req._rateLimitUserId
+          ? config.rateLimit.maxRequests           // authentifié : limite configurée
+          : Math.min(config.rateLimit.maxRequests, 300), // non-authentifié : 300 max
         standardHeaders: true,   // envoie RateLimit-* headers (RFC 6585)
         legacyHeaders: false,
-        keyGenerator: (req: any) => req.user?.id ?? req.ip ?? 'unknown',
-        skip: (req: any) => req.user?.role === 'ADMIN',
+        keyGenerator: (req: any) => req._rateLimitUserId ?? req.ip ?? 'unknown',
+        skip: (req: any) => req._rateLimitUserId && req.user?.role === 'ADMIN',
         handler: (req, res) => {
           const windowSec = Math.ceil(config.rateLimit.windowMs / 1000);
-          res.setHeader('Retry-After', windowSec);
+          res.setHeader('Retry-After', String(windowSec));
           res.status(429).json({
             error: 'Trop de requêtes.',
             message: `Vous avez effectué trop de requêtes. Veuillez patienter ${Math.ceil(windowSec / 60)} minute(s) avant de réessayer.`,

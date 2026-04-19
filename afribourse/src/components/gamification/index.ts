@@ -26,5 +26,9 @@ export { GamificationLeaderboard } from './GamificationLeaderboard';
 export { RewardCard } from './RewardCard';
 export { RewardsShop } from './RewardsShop';
 
+// Célébrations / Milestones
+export { MilestonePopup } from './MilestonePopup';
+export type { MilestoneType, MilestoneData } from './MilestonePopup';
+
 // Notifications
 export { default as showXPGainToast, XPGainDisplay } from './XPGainToast';

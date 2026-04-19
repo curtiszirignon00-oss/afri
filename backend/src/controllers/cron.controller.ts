@@ -12,8 +12,7 @@ import {
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
 import { notifyPriceAlert } from '../services/notification.service';
-import { sendBiweeklyPortfolioSummaries } from '../services/portfolio-summary.service';
-import { sendWeeklyLearningSummaries } from '../services/learning-summary.service';
+import { sendWeeklyReports } from '../services/weekly-report.service';
 import { runFullBackup } from '../services/backup.service';
 import {
     runStreakCheck,
@@ -207,45 +206,24 @@ export async function cronBackup(req: Request, res: Response) {
 }
 
 // ============================================================
-// POST /api/cron/send-portfolio-summaries
-// Resumes de portefeuille bi-hebdomadaires (Vendredi 18h00)
+// POST /api/cron/send-weekly-reports
+// Rapport hebdomadaire combiné : marché BRVM + portefeuille + apprentissage
+// (Vendredi 18h00 UTC)
 // ============================================================
-export async function cronSendPortfolioSummaries(req: Request, res: Response) {
+export async function cronSendWeeklyReports(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        log.debug('[CRON API] Envoi des resumes de portefeuille...');
-        await sendBiweeklyPortfolioSummaries();
+        log.debug('[CRON API] Envoi des rapports hebdomadaires combinés...');
+        await sendWeeklyReports();
 
         const duration = Date.now() - startTime;
         return res.status(200).json({
             success: true,
-            message: 'Resumes de portefeuille envoyes',
+            message: 'Rapports hebdomadaires envoyés',
             duration_ms: duration,
         });
     } catch (error: any) {
-        log.error('[CRON API] Envoi resumes echoue:', error.message);
-        return res.status(500).json({ success: false, error: error.message });
-    }
-}
-
-// ============================================================
-// POST /api/cron/send-learning-summaries
-// Resumes d'apprentissage hebdomadaires (Samedi 10h00 UTC)
-// ============================================================
-export async function cronSendLearningSummaries(req: Request, res: Response) {
-    const startTime = Date.now();
-    try {
-        log.debug('[CRON API] Envoi des resumes d\'apprentissage...');
-        await sendWeeklyLearningSummaries();
-
-        const duration = Date.now() - startTime;
-        return res.status(200).json({
-            success: true,
-            message: 'Resumes d\'apprentissage envoyes',
-            duration_ms: duration,
-        });
-    } catch (error: any) {
-        log.error('[CRON API] Envoi resumes apprentissage echoue:', error.message);
+        log.error('[CRON API] Envoi rapports hebdomadaires échoué:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }

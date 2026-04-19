@@ -8,8 +8,7 @@ import {
     cronResetWeeklyChallenges,
     cronCleanup,
     cronBackup,
-    cronSendPortfolioSummaries,
-    cronSendLearningSummaries,
+    cronSendWeeklyReports,
     cronCheckWatchlistSignals,
     cronSendWatchlistSummaries,
     cronSendReengagementEmails,
@@ -42,11 +41,8 @@ router.post('/cleanup', cronCleanup);
 // Dimanche 23h00: Backup de la base de donnees
 router.post('/backup', cronBackup);
 
-// Vendredi 18h00 (bi-hebdomadaire): Resumes de portefeuille
-router.post('/send-portfolio-summaries', cronSendPortfolioSummaries);
-
-// Samedi 10h00 UTC: Resumes d'apprentissage
-router.post('/send-learning-summaries', cronSendLearningSummaries);
+// Vendredi 18h00 UTC: Rapport hebdomadaire combiné (marché + portefeuille + apprentissage)
+router.post('/send-weekly-reports', cronSendWeeklyReports);
 
 // Quotidien 18h00: Vérification des signaux watchlist (après clôture BRVM)
 router.post('/check-watchlist-signals', cronCheckWatchlistSignals);
