@@ -153,6 +153,7 @@ export function useChallengeInfo() {
             const response = await apiClient.get('/challenge/info');
             return response.data.data;
         },
+        staleTime: 30 * 60 * 1000,
     });
 }
 

@@ -1,6 +1,7 @@
 // src/hooks/useNotifications.ts
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
+import { usePollingQuery } from './usePollingQuery';
 
 export interface Notification {
     id: string;
@@ -32,7 +33,7 @@ export interface NotificationsResponse {
  * Get user notifications
  */
 export function useNotifications(page: number = 1, unreadOnly: boolean = false) {
-    return useQuery({
+    return usePollingQuery({
         queryKey: ['notifications', page, unreadOnly],
         queryFn: async () => {
             const response = await apiClient.get<NotificationsResponse>(
@@ -40,8 +41,7 @@ export function useNotifications(page: number = 1, unreadOnly: boolean = false) 
             );
             return response.data;
         },
-        refetchInterval: 60 * 1000, // 60s — base du groupe de polling
-        refetchIntervalInBackground: false,
+        refetchInterval: 60 * 1000, // 60s — seul l'onglet leader poll
         staleTime: 30000,
     });
 }
@@ -50,14 +50,13 @@ export function useNotifications(page: number = 1, unreadOnly: boolean = false) 
  * Get unread notification count
  */
 export function useUnreadNotificationCount() {
-    return useQuery({
+    return usePollingQuery({
         queryKey: ['notifications-unread-count'],
         queryFn: async () => {
             const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
             return response.data.count;
         },
-        refetchInterval: 67 * 1000, // 67s — décalé de 7s pour éviter la synchronisation avec useNotifications
-        refetchIntervalInBackground: false,
+        refetchInterval: 67 * 1000, // 67s — décalé, seul l'onglet leader poll
         staleTime: 30000,
     });
 }

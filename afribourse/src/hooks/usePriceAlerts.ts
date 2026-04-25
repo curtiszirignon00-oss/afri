@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePollingQuery } from './usePollingQuery';
 import {
   fetchPriceAlerts,
   createPriceAlert,
@@ -14,11 +15,11 @@ import { toast } from 'react-hot-toast';
  * Hook pour récupérer toutes les alertes de l'utilisateur
  */
 export function usePriceAlerts() {
-  return useQuery({
+  return usePollingQuery({
     queryKey: ['price-alerts'],
     queryFn: () => fetchPriceAlerts(),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchInterval: 79 * 1000, // 79s — décalé par rapport aux autres polls (60s/67s/73s)
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 79 * 1000, // 79s — décalé, seul l'onglet leader poll
   });
 }
 

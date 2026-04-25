@@ -141,7 +141,8 @@ export function useStock(symbol: string | undefined) {
   return useQuery({
     queryKey: ['stock', symbol],
     queryFn: () => apiFetch<Stock>(`/stocks/${symbol}`),
-    enabled: !!symbol, // Ne lance la requête que si symbol existe
+    enabled: !!symbol,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -180,7 +181,8 @@ export function usePortfolio() {
   return useQuery({
     queryKey: ['portfolio'],
     queryFn: () => apiFetch<Portfolio>('/portfolios/my'),
-    retry: false, // Ne pas réessayer si non connecté
+    retry: false,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -276,6 +278,7 @@ export function useTransactions() {
   return useQuery({
     queryKey: ['transactions'],
     queryFn: () => apiFetch<Transaction[]>('/portfolios/my/transactions'),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -304,6 +307,7 @@ export function useWatchlist() {
     queryKey: ['watchlist'],
     queryFn: () => apiFetch<WatchlistItem[]>('/watchlist/my'),
     retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -380,6 +384,7 @@ export function useWatchlistEnriched() {
     queryKey: ['watchlist', 'enriched'],
     queryFn: () => apiFetch<WatchlistItemEnriched[]>('/watchlist/my/enriched'),
     retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -427,6 +432,7 @@ export function useHomePageData() {
   return useQuery({
     queryKey: ['homepage'],
     queryFn: () => apiFetch<HomePageData>('/homepage'),
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -453,6 +459,7 @@ export function useUserProfile() {
     queryKey: ['user', 'profile'],
     queryFn: () => apiFetch<UserProfile>('/users/me'),
     retry: false,
+    staleTime: 10 * 60 * 1000,
   });
 }
 
