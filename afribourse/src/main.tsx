@@ -1,11 +1,14 @@
 // src/main.tsx
 import * as amplitude from '@amplitude/unified'
+import { captureUTMParams } from './lib/amplitude'
 
 amplitude.initAll('445eb89bf34759faaed0372e035fdbff', {
   serverZone: 'EU',
   analytics: { autocapture: true },
   sessionReplay: { sampleRate: 1 },
 })
+
+captureUTMParams()
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'

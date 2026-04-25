@@ -1,5 +1,6 @@
 // src/components/MarketsPageRefactored.tsx
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { trackStockSearch } from '../lib/amplitude';
 import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
@@ -68,6 +69,13 @@ export default function MarketsPageRefactored() {
     ...(minDividend !== undefined && { minDividend: minDividend.toString() }),
     ...(maxDividend !== undefined && { maxDividend: maxDividend.toString() }),
   }), [debouncedSearchTerm, selectedSector, sortBy, minMarketCap, maxMarketCap, minPE, maxPE, minDividend, maxDividend]);
+
+  // Tracker les recherches (skip le premier rendu)
+  const isFirstSearch = useRef(true);
+  useEffect(() => {
+    if (isFirstSearch.current) { isFirstSearch.current = false; return; }
+    if (debouncedSearchTerm) trackStockSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   // Indices du marché
   const [marketIndices, setMarketIndices] = useState<MarketIndex[]>([]);

@@ -12,6 +12,7 @@ import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import OptimizedImage from './ui/OptimizedImage';
 import { API_BASE_URL } from '../config/api';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+import { trackPortfolioViewed } from '../lib/amplitude';
 import DashboardPriceAlerts from './price-alerts/DashboardPriceAlerts';
 import { ShareButton, ShareModal } from './share';
 import { useShare } from '../hooks/useShare';
@@ -41,6 +42,8 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { checkAuth } = useAuth();
+
+  useEffect(() => { trackPortfolioViewed(); }, []);
 
   // Gérer le retour OAuth — le cookie httpOnly est déjà set par le backend
   useEffect(() => {
