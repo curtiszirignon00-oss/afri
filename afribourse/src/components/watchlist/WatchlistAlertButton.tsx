@@ -1,7 +1,7 @@
 // src/components/watchlist/WatchlistAlertButton.tsx
 import { useState, useRef, useEffect } from 'react';
 import { Bell, Plus, Trash2, TrendingUp, TrendingDown, X, Loader2 } from 'lucide-react';
-import { useStockAlerts, useCreatePriceAlert, useDeletePriceAlert } from '../../hooks/usePriceAlerts';
+import { usePriceAlerts, useCreatePriceAlert, useDeletePriceAlert } from '../../hooks/usePriceAlerts';
 
 interface Props {
   ticker: string;
@@ -15,7 +15,10 @@ export default function WatchlistAlertButton({ ticker, currentPrice, isDark = tr
   const [targetPrice, setTargetPrice] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: alerts = [], isLoading } = useStockAlerts(ticker);
+  // Utilise le cache global des alertes (1 seule requête partagée entre toutes les cartes)
+  // au lieu de useStockAlerts(ticker) qui ferait 1 requête par carte.
+  const { data: allAlerts = [], isLoading } = usePriceAlerts();
+  const alerts = allAlerts.filter(a => a.stock_ticker === ticker);
   const createMut = useCreatePriceAlert();
   const deleteMut = useDeletePriceAlert();
 
