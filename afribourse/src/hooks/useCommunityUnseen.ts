@@ -1,20 +1,20 @@
 // src/hooks/useCommunityUnseen.ts
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
+import { usePollingQuery } from './usePollingQuery';
 
 /**
  * Get unseen community posts count
  */
 export function useUnseenCommunityCount(enabled: boolean = true) {
-    return useQuery({
+    return usePollingQuery({
         queryKey: ['community-unseen-count'],
         queryFn: async () => {
             const response = await apiClient.get<{ count: number }>('/communities/unseen-count');
             return response.data.count;
         },
         enabled,
-        refetchInterval: 73 * 1000, // 73s — décalé de 13s pour éviter la synchronisation avec les autres polls
-        refetchIntervalInBackground: false,
+        refetchInterval: 73 * 1000, // 73s — décalé, seul l'onglet leader poll
         staleTime: 30000,
     });
 }
