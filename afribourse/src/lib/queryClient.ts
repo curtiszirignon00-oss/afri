@@ -13,8 +13,14 @@ export const queryClient = new QueryClient({
         if (status === 429 || status === 401 || status === 403) return false;
         return failureCount < 1;
       },
-      refetchOnWindowFocus: false, // Désactivé globalement — chaque hook gère son propre cycle
-      refetchOnReconnect: true,    // Recharger quand la connexion internet revient
+      refetchOnWindowFocus: false,
+      // Sur reconnexion réseau, ne refetch que les données critiques pour éviter le burst
+      // de 50+ requêtes simultanées quand l'utilisateur retrouve du réseau.
+      refetchOnReconnect: (query) => {
+        const criticalKeys = ['me', 'notifications-unread-count', 'price-alerts', 'portfolios'];
+        const firstKey = query.queryKey[0];
+        return typeof firstKey === 'string' && criticalKeys.includes(firstKey);
+      },
     },
     mutations: {
       retry: 0, // Ne pas réessayer les mutations (POST, PUT, DELETE)

@@ -13,8 +13,8 @@ export function useUnseenCommunityCount(enabled: boolean = true) {
             return response.data.count;
         },
         enabled,
-        refetchInterval: 60000, // Réduit de 30s à 60s
-        refetchIntervalInBackground: false, // Ne pas poller en arrière-plan
+        refetchInterval: 73 * 1000, // 73s — décalé de 13s pour éviter la synchronisation avec les autres polls
+        refetchIntervalInBackground: false,
         staleTime: 30000,
     });
 }
