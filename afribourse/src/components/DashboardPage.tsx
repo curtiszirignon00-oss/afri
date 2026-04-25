@@ -18,6 +18,7 @@ import { useShare } from '../hooks/useShare';
 import type { ShareablePortfolioData, ShareablePerformanceData, ShareablePositionData } from '../types/share';
 import { WalletSwitcher } from './challenge';
 import { useChallengeContext } from '../contexts/ChallengeContext';
+import { getStockLogo } from '../utils/stockLogos';
 import { useCanTrade } from '../hooks/useChallenge';
 import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
@@ -774,20 +775,25 @@ export default function DashboardPage() {
                         const gainLoss = currentValue - costBasis;
                         const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
+                        const logoUrl = getStockLogo(position.stock_ticker, stockData.logo_url);
+
                         return (
                           <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                             <td className="py-4 px-2">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                                  {stockData.logo_url ? (
-                                    <OptimizedImage src={stockData.logo_url} alt={stockData.symbol} className="w-full h-full object-cover rounded-lg" />
+                              <div
+                                className="flex items-center space-x-3 cursor-pointer group"
+                                onClick={() => navigate(`/stock/${position.stock_ticker}`)}
+                              >
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
+                                  {logoUrl ? (
+                                    <OptimizedImage src={logoUrl} alt={stockData.symbol} className="w-full h-full object-cover rounded-lg" />
                                   ) : (
                                     stockData.symbol.substring(0, 2)
                                   )}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-gray-900">{position.stock_ticker}</p>
-                                  <p className="text-xs text-gray-500">{stockData.company_name}</p>
+                                  <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{position.stock_ticker}</p>
+                                  <p className="text-xs text-gray-500 group-hover:text-indigo-400 transition-colors">{stockData.company_name}</p>
                                 </div>
                               </div>
                             </td>

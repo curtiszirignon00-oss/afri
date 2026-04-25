@@ -90,7 +90,8 @@
       "Bash(xargs grep -l \"credentials.*include\")",
       "Bash(ls -la c:UsersHPOneDriveDesktopafribackend.env*)",
       "Bash(ls c:/Users/HP/OneDrive/Desktop/afri/backend/.env*)",
-      "Bash(grep -r \"$where\\\\|ObjectId\\\\|vulnerable\\\\|injection\" /c/Users/HP/OneDrive/Desktop/afri/backend/src --include=\"*.ts\")"
+      "Bash(grep -r \"$where\\\\|ObjectId\\\\|vulnerable\\\\|injection\" /c/Users/HP/OneDrive/Desktop/afri/backend/src --include=\"*.ts\")",
+      "Bash(npm --version)"
     ],
     "deny": [],
     "ask": []
