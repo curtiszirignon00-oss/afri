@@ -1,12 +1,12 @@
 // src/pages/WatchlistPage.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { trackWatchlistAction } from '../lib/amplitude';
 import { useNavigate } from 'react-router-dom';
 import {
   Star, TrendingUp, TrendingDown, Edit3, Trash2, Tag,
   StickyNote, DollarSign, Search, RefreshCw, ArrowLeft,
   Plus, X, Check, ArrowUpRight, ArrowDownRight, Target,
-  Activity, Zap, Sun, Moon,
+  Activity, Zap, Sun, Moon, LayoutGrid, List,
 } from 'lucide-react';
 import {
   useWatchlistEnriched,
@@ -219,11 +219,14 @@ function EditModal({ item, onClose, onSave, isSaving, isDark }: EditModalProps) 
 interface WatchlistCardProps {
   item: WatchlistItemEnriched; score: TickerScore | undefined;
   onEdit: (item: WatchlistItemEnriched) => void; onRemove: (ticker: string) => void;
-  isDark: boolean;
+  isDark: boolean; index: number; listView?: boolean;
 }
 
-function WatchlistCard({ item, score, onEdit, onRemove, isDark }: WatchlistCardProps) {
+function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView = false }: WatchlistCardProps) {
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), index * 55); return () => clearTimeout(t); }, [index]);
+
   const posDay = (item.change_pct ?? 0) >= 0;
   const posPnl = (item.pnl_pct ?? 0) >= 0;
   const zone = score?.zone;
@@ -264,7 +267,10 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark }: WatchlistCardP
   const ntIco  = isDark ? 'w-3 h-3 flex-shrink-0 text-slate-700' : 'w-3 h-3 flex-shrink-0 text-slate-300';
 
   return (
-    <div className={card}>
+    <div
+      className={`card-enter ${card}`}
+      style={{ animationDelay: `${index * 55}ms`, opacity: mounted ? undefined : 0 }}
+    >
       {/* Dark: top gradient line | Light: left accent stripe */}
       {isDark ? (
         <div className="h-[2px] w-full flex-shrink-0"
@@ -294,7 +300,7 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark }: WatchlistCardP
             <p className={sub}>BRVM · Équité</p>
           </div>
           <div className="flex items-center gap-0.5 flex-shrink-0">
-            <WatchlistAlertButton ticker={item.stock_ticker} currentPrice={item.current_price} />
+            <WatchlistAlertButton ticker={item.stock_ticker} currentPrice={item.current_price} isDark={isDark} />
             <button onClick={() => onEdit(item)} className={actBtn} title="Modifier"><Edit3 className="w-3.5 h-3.5" /></button>
             <button onClick={() => onRemove(item.stock_ticker)} className={delBtn} title="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
@@ -381,6 +387,40 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark }: WatchlistCardP
   );
 }
 
+// ── Skeleton card ──────────────────────────────────────────────────────────────
+
+function SkeletonCard({ isDark }: { isDark: boolean }) {
+  const bg  = isDark ? 'bg-slate-800/40' : 'bg-slate-200/70';
+  const box = isDark ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm';
+  const sh  = `rounded animate-pulse ${bg}`;
+  return (
+    <div className={`rounded-2xl p-4 flex flex-col gap-3.5 ${box}`}>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl flex-shrink-0 ${sh}`} />
+        <div className="flex-1 space-y-1.5">
+          <div className={`h-3.5 w-20 rounded ${sh}`} />
+          <div className={`h-2.5 w-14 rounded ${sh}`} />
+        </div>
+        <div className={`h-6 w-16 rounded-lg ${sh}`} />
+      </div>
+      <div className="space-y-1.5">
+        <div className={`h-6 w-36 rounded ${sh}`} />
+        <div className={`h-3 w-24 rounded ${sh}`} />
+      </div>
+      <div className={`h-14 rounded-xl ${sh}`} />
+      <div className={`h-px w-full ${bg} rounded`} />
+      <div className="flex items-center gap-3">
+        <div className={`w-14 h-14 rounded-full ${sh}`} />
+        <div className="flex-1 space-y-2">
+          <div className={`h-4 w-20 rounded-full ${sh}`} />
+          <div className={`h-2 w-full rounded ${sh}`} />
+          <div className={`h-2 w-3/4 rounded ${sh}`} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 type SortKey = 'default' | 'perf' | 'pnl' | 'score';
@@ -389,13 +429,17 @@ const SORT_OPTS: { key: SortKey; label: string }[] = [
   { key: 'pnl', label: 'P&L' }, { key: 'score', label: 'Score' },
 ];
 
+const ALL_ZONES: SignalZone[] = ['Achat Fort', 'Signal Achat', 'Neutre', 'Signal Vente', 'Vente Forte'];
+
 export default function WatchlistPage() {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('default');
+  const [zoneFilter, setZoneFilter] = useState<SignalZone | null>(null);
   const [editItem, setEditItem] = useState<WatchlistItemEnriched | null>(null);
   const [isDark, setIsDark] = useState(true);
+  const [listView, setListView] = useState(false);
 
   const { data: items = [], isLoading, refetch } = useWatchlistEnriched();
   const { data: scoresData = [] } = useWatchlistScores();
@@ -409,18 +453,27 @@ export default function WatchlistPage() {
   const avgPnl    = withPnl.length > 0 ? withPnl.reduce((s, i) => s + i.pnl_pct!, 0) / withPnl.length : null;
   const avgScore  = scoresData.length > 0 ? Math.round(scoresData.reduce((s, x) => s + x.score, 0) / scoresData.length) : null;
 
+  // Zones présentes dans la watchlist actuelle
+  const presentZones = ALL_ZONES.filter(z => scoresData.some(s => s.zone === z));
+
   const filtered = items
-    .filter(i =>
-      i.stock_ticker.toLowerCase().includes(search.toLowerCase()) ||
-      (i.note ?? '').toLowerCase().includes(search.toLowerCase()) ||
-      (i.tags ?? []).some(t => t.toLowerCase().includes(search.toLowerCase()))
-    )
+    .filter(i => {
+      const matchSearch = i.stock_ticker.toLowerCase().includes(search.toLowerCase()) ||
+        (i.note ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (i.tags ?? []).some(t => t.toLowerCase().includes(search.toLowerCase()));
+      const matchZone = !zoneFilter || scoreMap[i.stock_ticker]?.zone === zoneFilter;
+      return matchSearch && matchZone;
+    })
     .sort((a, b) => {
       if (sortBy === 'perf')  return (b.change_pct ?? -Infinity) - (a.change_pct ?? -Infinity);
       if (sortBy === 'pnl')   return (b.pnl_pct ?? -Infinity) - (a.pnl_pct ?? -Infinity);
       if (sortBy === 'score') return (scoreMap[b.stock_ticker]?.score ?? 0) - (scoreMap[a.stock_ticker]?.score ?? 0);
       return 0;
     });
+
+  // Barre bullish/bearish
+  const totalWithChange = items.filter(i => i.change_pct != null).length;
+  const bullishPct = totalWithChange > 0 ? Math.round((bullish / totalWithChange) * 100) : 0;
 
   // Page-level theme classes
   const pg       = isDark ? 'min-h-screen bg-gradient-to-b from-[#060d1f] via-[#080f1e] to-[#060d1f]' : 'min-h-screen bg-[#F8FAFC]';
@@ -434,7 +487,9 @@ export default function WatchlistPage() {
   const sortPnl  = isDark ? 'flex items-center gap-0.5 bg-slate-900 border border-slate-700/50 rounded-2xl p-1 flex-shrink-0' : 'flex items-center gap-0.5 bg-white border border-slate-200 rounded-2xl p-1 flex-shrink-0 shadow-sm';
   const srtAct   = isDark ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-blue-50 text-blue-700 border border-blue-200';
   const srtIn    = isDark ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700';
-  const sklLoad  = isDark ? 'h-64 rounded-2xl animate-pulse bg-slate-900/60 border border-slate-800' : 'h-64 rounded-2xl animate-pulse bg-slate-200/60';
+  const viewBtn  = isDark ? 'p-1.5 rounded-lg transition-colors cursor-pointer' : 'p-1.5 rounded-lg transition-colors cursor-pointer';
+  const viewAct  = isDark ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700';
+  const viewInact = isDark ? 'text-slate-600 hover:text-slate-400' : 'text-slate-400 hover:text-slate-600';
 
   return (
     <div className={pg}>
@@ -510,7 +565,69 @@ export default function WatchlistPage() {
           </div>
         )}
 
-        {/* Search + Sort */}
+        {/* Barre bullish/bearish */}
+        {items.length > 1 && (
+          <div className={`rounded-2xl p-4 space-y-2 ${isDark ? 'bg-slate-900/60 border border-slate-800' : 'bg-white border border-slate-200 shadow-sm'}`}>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-emerald-500 font-semibold flex items-center gap-1">
+                <TrendingUp className="w-3.5 h-3.5" /> {bullish} haussières
+              </span>
+              <span className={`font-medium ${subClr}`}>{bullishPct}% positif</span>
+              <span className="text-red-500 font-semibold flex items-center gap-1">
+                {bearish} baissières <TrendingDown className="w-3.5 h-3.5" />
+              </span>
+            </div>
+            <div className={`h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-700"
+                style={{ width: `${bullishPct}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Zone filter chips */}
+        {presentZones.length > 1 && (
+          <div className="flex gap-2 flex-wrap">
+            {presentZones.map(zone => {
+              const cfg = isDark ? ZONE_DARK[zone] : ZONE_LIGHT[zone];
+              const isActive = zoneFilter === zone;
+              return (
+                <button
+                  key={zone}
+                  onClick={() => setZoneFilter(isActive ? null : zone)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                    isActive
+                      ? `border text-white`
+                      : isDark
+                        ? 'bg-slate-900 border-slate-700 text-slate-500 hover:text-slate-300'
+                        : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
+                  }`}
+                  style={isActive ? { backgroundColor: cfg.color, borderColor: cfg.color } : undefined}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: isActive ? 'white' : cfg.color }}
+                  />
+                  {cfg.label}
+                  {isActive && (
+                    <X className="w-3 h-3 ml-0.5 opacity-80" />
+                  )}
+                </button>
+              );
+            })}
+            {zoneFilter && (
+              <button
+                onClick={() => setZoneFilter(null)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${isDark ? 'border-slate-700 text-slate-500 hover:text-slate-300' : 'border-slate-200 text-slate-400 hover:text-slate-600'}`}
+              >
+                Tout afficher
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Search + Sort + View toggle */}
         <div className="flex gap-3 items-center">
           <div className={srchBar}>
             <Search className={`w-4 h-4 flex-shrink-0 ${srchIco}`} />
@@ -533,12 +650,28 @@ export default function WatchlistPage() {
               ))}
             </div>
           )}
+          {/* Grid / List toggle */}
+          <div className={`flex items-center gap-0.5 p-1 rounded-xl ${isDark ? 'bg-slate-900 border border-slate-700/50' : 'bg-white border border-slate-200 shadow-sm'}`}>
+            <button onClick={() => setListView(false)} className={`${viewBtn} ${!listView ? viewAct : viewInact}`} title="Vue grille">
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button onClick={() => setListView(true)} className={`${viewBtn} ${listView ? viewAct : viewInact}`} title="Vue liste">
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Grid */}
+        {/* Résultat count */}
+        {(search || zoneFilter) && filtered.length > 0 && (
+          <p className={`text-xs ${subClr}`}>
+            {filtered.length} résultat{filtered.length > 1 ? 's' : ''} sur {items.length}
+          </p>
+        )}
+
+        {/* Cards */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => <div key={i} className={sklLoad} />)}
+          <div className={listView ? 'space-y-3' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}>
+            {[...Array(3)].map((_, i) => <SkeletonCard key={i} isDark={isDark} />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
@@ -553,15 +686,19 @@ export default function WatchlistPage() {
             ) : (
               <>
                 <Search className={`w-10 h-10 mx-auto mb-3 ${isDark ? 'text-slate-700' : 'text-slate-300'}`} />
-                <p className={isDark ? 'text-slate-500' : 'text-slate-500'}>Aucun résultat pour « {search} »</p>
+                <p className={`${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                  Aucun résultat
+                  {search ? ` pour « ${search} »` : ''}
+                  {zoneFilter ? ` — zone « ${ZONE_DARK[zoneFilter].label} »` : ''}
+                </p>
               </>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map(item => (
+          <div className={listView ? 'space-y-3' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'}>
+            {filtered.map((item, i) => (
               <WatchlistCard key={item.id} item={item} score={scoreMap[item.stock_ticker]}
-                onEdit={setEditItem} isDark={isDark}
+                onEdit={setEditItem} isDark={isDark} index={i} listView={listView}
                 onRemove={ticker => { trackWatchlistAction('remove', ticker); removeMut.mutate(ticker); }} />
             ))}
           </div>
