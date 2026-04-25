@@ -1,5 +1,5 @@
 // src/pages/WatchlistPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { trackWatchlistAction } from '../lib/amplitude';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,6 +19,8 @@ import {
 } from '../hooks/useApi';
 import { useAuth } from '../contexts/AuthContext';
 import WatchlistAlertButton from '../components/watchlist/WatchlistAlertButton';
+import { useStockHistory } from '../hooks/useStockHistory';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -93,17 +95,42 @@ function ScoreArc({ score, zone, isDark }: { score: number; zone: SignalZone; is
   );
 }
 
-// ── Spark bars ─────────────────────────────────────────────────────────────────
+// ── Real sparkline ─────────────────────────────────────────────────────────────
 
-function SparkBars({ positive }: { positive: boolean }) {
-  const h = [3, 5, 4, 7, 5, 8, 6, 9, 7, 10];
+function RealSparkline({ data, positive, ticker }: { data: { v: number }[]; positive: boolean; ticker: string }) {
   const color = positive ? '#10b981' : '#ef4444';
+  const gradId = `spark-${ticker}`;
+
+  if (data.length < 3) {
+    const h = [3, 5, 4, 7, 5, 8, 6, 9, 7, 10];
+    return (
+      <div className="flex items-end gap-[2px]">
+        {h.map((v, i) => (
+          <div key={i} className="w-[3px] rounded-sm"
+            style={{ height: `${v * 2.2}px`, backgroundColor: color, opacity: 0.2 + (i / h.length) * 0.65 }} />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-end gap-[2px]">
-      {h.map((v, i) => (
-        <div key={i} className="w-[3px] rounded-sm"
-          style={{ height: `${v * 2.2}px`, backgroundColor: color, opacity: 0.2 + (i / h.length) * 0.65 }} />
-      ))}
+    <div style={{ width: 80, height: 34 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 2, right: 0, bottom: 2, left: 0 }}>
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="95%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone" dataKey="v"
+            stroke={color} strokeWidth={1.5}
+            fill={`url(#${gradId})`}
+            dot={false} isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -220,12 +247,11 @@ interface WatchlistCardProps {
   item: WatchlistItemEnriched; score: TickerScore | undefined;
   onEdit: (item: WatchlistItemEnriched) => void; onRemove: (ticker: string) => void;
   isDark: boolean; index: number; listView?: boolean;
+  sparkData: { v: number }[];
 }
 
-function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView = false }: WatchlistCardProps) {
+function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView = false, sparkData }: WatchlistCardProps) {
   const navigate = useNavigate();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setMounted(true), index * 55); return () => clearTimeout(t); }, [index]);
 
   const posDay = (item.change_pct ?? 0) >= 0;
   const posPnl = (item.pnl_pct ?? 0) >= 0;
@@ -269,7 +295,7 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView 
   return (
     <div
       className={`card-enter ${card}`}
-      style={{ animationDelay: `${index * 55}ms`, opacity: mounted ? undefined : 0 }}
+      style={{ animationDelay: `${index * 55}ms` }}
     >
       {/* Dark: top gradient line | Light: left accent stripe */}
       {isDark ? (
@@ -316,7 +342,7 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView 
               <span className={dayLbl}>aujourd'hui</span>
             </div>
           </div>
-          <SparkBars positive={posDay} />
+          <RealSparkline data={sparkData} positive={posDay} ticker={item.stock_ticker} />
         </div>
 
         {/* Row 3: P&L */}
@@ -444,6 +470,22 @@ export default function WatchlistPage() {
   const { data: items = [], isLoading, refetch } = useWatchlistEnriched();
   const { data: scoresData = [] } = useWatchlistScores();
   const scoreMap = Object.fromEntries(scoresData.map(s => [s.ticker, s]));
+
+  const tickers = useMemo(() => items.map(i => i.stock_ticker), [items]);
+  const { data: historyRaw = [] } = useStockHistory(tickers, 30);
+  const sparkMap = useMemo<Record<string, { v: number }[]>>(() => {
+    const map: Record<string, { v: number }[]> = {};
+    historyRaw.forEach(point => {
+      Object.entries(point).forEach(([key, val]) => {
+        if (key !== 'date') {
+          if (!map[key]) map[key] = [];
+          const num = typeof val === 'number' ? val : parseFloat(val as string);
+          if (!isNaN(num)) map[key].push({ v: num });
+        }
+      });
+    });
+    return map;
+  }, [historyRaw]);
   const removeMut = useRemoveFromWatchlist();
   const updateMut = useUpdateWatchlistItem();
 
@@ -699,6 +741,7 @@ export default function WatchlistPage() {
             {filtered.map((item, i) => (
               <WatchlistCard key={item.id} item={item} score={scoreMap[item.stock_ticker]}
                 onEdit={setEditItem} isDark={isDark} index={i} listView={listView}
+                sparkData={sparkMap[item.stock_ticker] ?? []}
                 onRemove={ticker => { trackWatchlistAction('remove', ticker); removeMut.mutate(ticker); }} />
             ))}
           </div>
