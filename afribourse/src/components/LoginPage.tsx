@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { apiClient } from '../lib/api-client';
 import { fetchCsrfToken, setAuthToken } from '../config/api';
 import OAuthButtons from './auth/OAuthButtons';
+import { trackLogin } from '../lib/amplitude';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ export default function LoginPage() {
       // Alimenter l'état auth directement depuis la réponse — sans second appel réseau
       // Évite la race condition avec le checkAuth() initial du AuthContext
       initAuthFromLogin(user, token);
+      trackLogin('email');
 
       toast.success('Connexion réussie !');
 

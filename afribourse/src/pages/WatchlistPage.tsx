@@ -1,5 +1,6 @@
 // src/pages/WatchlistPage.tsx
 import { useState } from 'react';
+import { trackWatchlistAction } from '../lib/amplitude';
 import { useNavigate } from 'react-router-dom';
 import {
   Star, TrendingUp, TrendingDown, Edit3, Trash2, Tag,
@@ -403,7 +404,7 @@ export default function WatchlistPage() {
               item={item}
               score={scoreMap[item.stock_ticker]}
               onEdit={setEditItem}
-              onRemove={ticker => removeMut.mutate(ticker)}
+              onRemove={ticker => { trackWatchlistAction('remove', ticker); removeMut.mutate(ticker); }}
             />
           ))}
         </div>

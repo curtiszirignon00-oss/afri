@@ -1,6 +1,7 @@
 // src/components/share/ShareModal.tsx
 import { useState, useRef } from 'react';
 import { X, Send, Loader2, Download, Smartphone } from 'lucide-react';
+import { trackShare } from '../../lib/amplitude';
 import { useCreatePost } from '../../hooks/useSocial';
 import type { ShareData } from '../../types/share';
 import { formatShareData } from '../../utils/shareFormatters';
@@ -50,6 +51,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
             {
                 onSuccess: () => {
                     toast.success('Partagé avec succès !');
+                    trackShare(shareData.type.toLowerCase(), '', 'community');
                     onClose();
                     setCustomMessage('');
                 },
@@ -66,6 +68,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
         try {
             const filename = `afribourse-${shareData.type.toLowerCase()}`;
             await downloadCardAsImage(cardRef.current, filename);
+            trackShare(shareData.type.toLowerCase(), '', 'download');
             toast.success('Image téléchargée !');
         } catch {
             toast.error('Erreur lors du téléchargement');
@@ -79,6 +82,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
         setIsDownloading(true);
         try {
             const shared = await shareCardNative(cardRef.current, shareText + `\n\n${SITE_URL}`);
+            if (shared) trackShare(shareData.type.toLowerCase(), '', 'native');
             if (!shared) {
                 toast.error('Le partage natif n\'est pas supporté sur cet appareil');
             }

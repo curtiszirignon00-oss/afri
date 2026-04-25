@@ -12,6 +12,8 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.41.1",
+    "@amplitude/plugin-session-replay-browser": "^1.28.0",
     "@amplitude/unified": "^1.0.3",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.57.4",

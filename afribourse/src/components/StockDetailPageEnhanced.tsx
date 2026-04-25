@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { trackStockViewed } from '../lib/amplitude';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import toast from 'react-hot-toast';
@@ -73,6 +74,10 @@ export default function StockDetailPageEnhanced() {
   const [showMobileOrder, setShowMobileOrder] = useState(false);
   const [showEmailVerifModal, setShowEmailVerifModal] = useState(false);
   const { phase: emailPhase } = useEmailVerificationPhase();
+
+  useEffect(() => {
+    if (symbol) trackStockViewed(symbol, 'BRVM');
+  }, [symbol]);
 
   // Charger le stock depuis l'API si non disponible dans state
   useEffect(() => {

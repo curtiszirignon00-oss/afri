@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+import { trackUpgradeStarted } from '../lib/amplitude';
 
 interface PlanFeature {
   text: string;
@@ -133,6 +134,7 @@ export default function SubscriptionPage() {
       price,
       userEmail: userProfile.email
     });
+    trackUpgradeStarted(userProfile.subscriptionTier || 'free', planId);
 
     // Rediriger vers la page de paiement avec les informations du plan
     navigate('/checkout', {

@@ -5,6 +5,7 @@ import { Button, Input, Card } from './ui';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import OAuthButtons from './auth/OAuthButtons';
+import { trackSignUp } from '../lib/amplitude';
 
 const passwordRules = [
   { label: '8 caractères minimum', test: (p: string) => p.length >= 8 },
@@ -80,6 +81,7 @@ export default function SignupPage() {
       }
 
       setSuccess(true);
+      trackSignUp('email');
 
       setTimeout(() => {
         navigate('/verifier-email', { state: { email } });
