@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "strict": false,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "ignoreDeprecations": "5.0",
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["../node_modules/@types"],
+    "types": ["node"],
+    "paths": {
+      "@prisma/client": ["../node_modules/@prisma/client"]
+    },
+    "baseUrl": ".."
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "include": ["./**/*.ts"]
+}

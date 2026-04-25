@@ -22,6 +22,12 @@ interface UserProfile {
 // Événement global émis quand le serveur répond 401 depuis n'importe quel appel API
 export const SESSION_EXPIRED_EVENT = 'afribourse:session-expired';
 
+// Clés localStorage pour la coordination du refresh token entre onglets
+const REFRESH_LOCK_KEY = 'afribourse:token-refresh-lock';
+const REFRESH_DONE_KEY = 'afribourse:token-refresh-done';
+// Durée max pendant laquelle un verrou de refresh est considéré valide (10 secondes)
+const REFRESH_LOCK_TTL_MS = 10_000;
+
 // --- Amplitude identify helper ---
 function identifyAmplitudeUser(profile: UserProfile) {
   amplitude.setUserId(profile.email);
@@ -94,8 +100,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
   };
 
-  // Rafraîchit silencieusement le token sans bloquer l'UI
+  // Rafraîchit silencieusement le token sans bloquer l'UI.
+  // Utilise un verrou localStorage pour éviter que deux onglets ne refreshent en même temps
+  // (le second refresh échouerait car le refresh token aurait déjà été roté par le premier onglet).
   const silentRefresh = async () => {
+    const now = Date.now();
+
+    // Vérifier si un autre onglet est déjà en train de rafraîchir
+    const lockValue = localStorage.getItem(REFRESH_LOCK_KEY);
+    if (lockValue && now - parseInt(lockValue, 10) < REFRESH_LOCK_TTL_MS) {
+      // Un autre onglet tient le verrou — attendre qu'il finisse, puis resynchroniser
+      setTimeout(() => {
+        if (isLoggedInRef.current) checkAuth();
+      }, REFRESH_LOCK_TTL_MS);
+      return;
+    }
+
+    // Poser le verrou pour signaler aux autres onglets qu'on refresh
+    localStorage.setItem(REFRESH_LOCK_KEY, String(now));
+
     try {
       const response = await apiClient.post('/refresh', {});
       const { token } = response.data;
@@ -103,6 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthToken(token);
         tokenIssuedAtRef.current = Date.now();
         scheduleTokenRefresh();
+        // Signaler aux autres onglets que le refresh a réussi
+        localStorage.setItem(REFRESH_DONE_KEY, String(Date.now()));
       }
     } catch {
       // Si le refresh échoue (refresh token expiré ou révoqué), afficher le modal de session expirée
@@ -114,6 +139,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserProfile(null);
         setAuthToken(null);
       }
+    } finally {
+      localStorage.removeItem(REFRESH_LOCK_KEY);
     }
   };
 
@@ -230,7 +257,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Écouter les 401 émis par n'importe quel appel API (voir apiFetch)
-    // triggerSessionExpired est idempotent (sessionExpiredFiredRef), pas besoin de vérifier isLoggedIn ici
     const handleGlobalSessionExpired = () => {
       if (isLoggedInRef.current) {
         triggerSessionExpired();
@@ -238,9 +264,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener(SESSION_EXPIRED_EVENT, handleGlobalSessionExpired);
 
+    // Quand un autre onglet termine un refresh avec succès, resynchroniser le token en mémoire.
+    // Cela évite que cet onglet tente un second refresh avec un refresh token déjà roté.
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (e.key === REFRESH_DONE_KEY && e.newValue && isLoggedInRef.current) {
+        checkAuth();
+      }
+    };
+    window.addEventListener('storage', handleStorageEvent);
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener(SESSION_EXPIRED_EVENT, handleGlobalSessionExpired);
+      window.removeEventListener('storage', handleStorageEvent);
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps

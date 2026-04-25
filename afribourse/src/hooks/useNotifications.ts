@@ -40,8 +40,8 @@ export function useNotifications(page: number = 1, unreadOnly: boolean = false) 
             );
             return response.data;
         },
-        refetchInterval: 60000, // Refetch every 60 seconds
-        refetchIntervalInBackground: false, // Ne pas poller quand l'onglet est inactif
+        refetchInterval: 60 * 1000, // 60s — base du groupe de polling
+        refetchIntervalInBackground: false,
         staleTime: 30000,
     });
 }
@@ -56,8 +56,8 @@ export function useUnreadNotificationCount() {
             const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
             return response.data.count;
         },
-        refetchInterval: 60000, // Refetch every 60 seconds (was 15s)
-        refetchIntervalInBackground: false, // Ne pas poller quand l'onglet est inactif
+        refetchInterval: 67 * 1000, // 67s — décalé de 7s pour éviter la synchronisation avec useNotifications
+        refetchIntervalInBackground: false,
         staleTime: 30000,
     });
 }
