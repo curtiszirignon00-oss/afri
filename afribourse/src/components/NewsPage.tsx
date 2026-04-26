@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, ChevronRight, Lock, Sparkles, Newspaper, BarChart2 } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Newspaper, BarChart2 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import FundamentalsGrid from './FundamentalsGrid';
-import BRVMNewsGrid from './BRVMNewsGrid';
+import { BRVM_NEWS, BRVMArticle } from '../data/brvm2026News';
+import { BRVMDetailPanel, BRVMArticleCard } from './BRVMNewsGrid';
 
-// --- Updated Type Definition ---
+const BRVM_CATEGORY_MAP: Record<string, string> = {
+  'Marché':             'marches',
+  'Macroéconomie':      'economie',
+  'Matières premières': 'analyse',
+  'Secteur bancaire':   'analyse',
+  'Télécoms':           'analyse',
+  'Dividendes':         'dividendes',
+  'Réglementation':     'economie',
+  'Agro-industrie':     'analyse',
+};
+
+const STATIC_ONLY = ['resultats', 'dividendes'];
+
 type NewsArticle = {
   id: string;
   title: string;
@@ -22,124 +35,110 @@ type NewsArticle = {
   published_at: string | null;
   created_at: string | null;
 };
-// --- End Type Definition ---
 
 export default function NewsPage() {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [articles, setArticles]       = useState<NewsArticle[]>([]);
+  const [loading, setLoading]         = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
 
-  // --- UPDATED useEffect to load articles based on category ---
   useEffect(() => {
+    if (STATIC_ONLY.includes(selectedCategory)) {
+      setLoading(false);
+      setArticles([]);
+      return;
+    }
     async function loadArticles() {
       setLoading(true);
-      setError(null);
       const url = `${API_BASE_URL}/news${selectedCategory !== 'all' ? `?category=${selectedCategory}` : ''}`;
-
       try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Erreur ${response.status}: Impossible de charger les actualités.`);
-        }
-        const data: NewsArticle[] = await response.json();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Erreur ${res.status}`);
+        const data: NewsArticle[] = await res.json();
         setArticles(data || []);
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error loading articles:', err);
-        setError(err.message || "Une erreur est survenue.");
         setArticles([]);
       } finally {
         setLoading(false);
       }
     }
-
     loadArticles();
   }, [selectedCategory]);
 
-  // --- Helper functions ---
   function formatTimeAgo(dateString: string | null): string {
     if (!dateString) return 'Date inconnue';
     try {
-      const now = new Date();
+      const now  = new Date();
       const date = new Date(dateString);
-      const diffInMs = now.getTime() - date.getTime();
-      const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-
-      if (diffInHours < 1) return "moins d'une heure";
-      if (diffInHours < 24) return `${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
-
-      const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 7) return `${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
-
-      return date.toLocaleDateString('fr-FR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch (e) {
-      return 'Date invalide';
-    }
+      const diffH = Math.floor((now.getTime() - date.getTime()) / 3600000);
+      if (diffH < 1)  return "moins d'une heure";
+      if (diffH < 24) return `${diffH} heure${diffH > 1 ? 's' : ''}`;
+      const diffD = Math.floor(diffH / 24);
+      if (diffD < 7)  return `${diffD} jour${diffD > 1 ? 's' : ''}`;
+      return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    } catch { return 'Date invalide'; }
   }
 
-  function calculateReadTime(content: string | null): number {
-    const wordsPerMinute = 200;
-    const words = content ? content.split(/\s+/).length : 0;
-    return Math.ceil(words / wordsPerMinute) || 3;
+  function calcReadTime(content: string | null): number {
+    return Math.ceil((content ? content.split(/\s+/).length : 0) / 200) || 3;
   }
 
-  function getCategoryLabel(category: string | null): string {
-    if (!category) return 'Non classé';
-    const labels: Record<string, string> = {
-      'marches':   'Marchés',
-      'analyse':   'Analyse',
-      'startup':   'Startup',
-      'economie':  'Économie',
-      'interview': 'Interview',
-      'resultats': 'Résultats 2025',
-      'brvm2026':  'BRVM 2026',
+  function getCategoryLabel(cat: string | null): string {
+    if (!cat) return 'Non classé';
+    const map: Record<string, string> = {
+      marches:    'Marchés',
+      analyse:    'Analyse',
+      startup:    'Startup',
+      economie:   'Économie',
+      interview:  'Interview',
+      resultats:  'Résultats 2025',
+      dividendes: 'Dividendes',
     };
-    return labels[category.toLowerCase()] || category.charAt(0).toUpperCase() + category.slice(1);
+    const k = cat.toLowerCase();
+    return map[k] ?? cat.charAt(0).toUpperCase() + cat.slice(1);
   }
 
-  function getCategoryColor(category: string | null): string {
-    if (!category) return 'bg-slate-100 text-slate-700';
-    const colors: Record<string, string> = {
-      'marches': 'bg-blue-50 text-blue-600 border-blue-100',
-      'analyse': 'bg-green-50 text-green-600 border-green-100',
-      'startup': 'bg-purple-50 text-purple-600 border-purple-100',
-      'economie': 'bg-orange-50 text-orange-600 border-orange-100',
-      'interview': 'bg-pink-50 text-pink-600 border-pink-100',
+  function getCategoryColor(cat: string | null): string {
+    if (!cat) return 'bg-slate-100 text-slate-700';
+    const map: Record<string, string> = {
+      marches:    'bg-blue-50 text-blue-600 border-blue-100',
+      analyse:    'bg-green-50 text-green-600 border-green-100',
+      startup:    'bg-purple-50 text-purple-600 border-purple-100',
+      economie:   'bg-orange-50 text-orange-600 border-orange-100',
+      interview:  'bg-pink-50 text-pink-600 border-pink-100',
+      dividendes: 'bg-teal-50 text-teal-700 border-teal-200',
     };
-    return colors[category.toLowerCase()] || 'bg-slate-50 text-slate-600 border-slate-100';
+    return map[cat.toLowerCase()] ?? 'bg-slate-50 text-slate-600 border-slate-100';
   }
 
-  const categories = ['all', 'marches', 'analyse', 'economie', 'interview', 'resultats', 'brvm2026'];
+  const categories = ['all', 'marches', 'analyse', 'economie', 'interview', 'resultats', 'dividendes'];
 
-  // Get featured article and list articles
+  const brvmFiltered = BRVM_NEWS
+    .filter(a => selectedCategory === 'all' || BRVM_CATEGORY_MAP[a.category] === selectedCategory)
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+
   const featuredArticle = articles.find(a => a.is_featured);
-  const listArticles = selectedCategory === 'all'
-    ? articles.filter(a => !a.is_featured)
-    : articles;
+  const listArticles    = selectedCategory === 'all' ? articles.filter(a => !a.is_featured) : articles;
+  const isStaticOnly    = STATIC_ONLY.includes(selectedCategory);
 
-  // --- Loading State (not for fundamentals tab) ---
-  if (loading && articles.length === 0 && selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026') {
+  if (loading && articles.length === 0 && !isStaticOnly) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
       </div>
     );
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 animate-in fade-in duration-500">
-      {/* Header with filters */}
+
+      {/* Header + category tabs */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Actualités Financières</h1>
           <p className="text-slate-500 mt-1">L'essentiel de l'information boursière de l'UEMOA.</p>
         </div>
-
-        {/* Filter tabs */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           {categories.map(cat => (
             <button
@@ -157,19 +156,7 @@ export default function NewsPage() {
         </div>
       </div>
 
-      {/* Intelligence de marché BRVM 2026 */}
-      {selectedCategory === 'brvm2026' && (
-        <div className="mt-2">
-          <div className="flex items-center gap-2 mb-5">
-            <BarChart2 size={18} className="text-[#00D4A8]" />
-            <h2 className="text-lg font-bold text-slate-900">Intelligence de marché BRVM 2026</h2>
-            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">12 articles · 47 sociétés</span>
-          </div>
-          <BRVMNewsGrid />
-        </div>
-      )}
-
-      {/* Résultats fondamentaux 2025 */}
+      {/* Résultats fondamentaux */}
       {selectedCategory === 'resultats' && (
         <div className="mt-2">
           <div className="flex items-center gap-2 mb-5">
@@ -181,42 +168,32 @@ export default function NewsPage() {
         </div>
       )}
 
-      {/* Loading Indicator (for filtering) */}
-      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && loading && articles.length > 0 && (
+      {/* Dividendes tab — static BRVM articles only */}
+      {selectedCategory === 'dividendes' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {brvmFiltered.map(a => (
+            <BRVMArticleCard key={a.id} article={a} onOpen={() => setSelectedBRVM(a)} />
+          ))}
+          {brvmFiltered.length === 0 && (
+            <div className="col-span-full py-16 text-center text-slate-400">
+              Aucun article dans cette catégorie pour le moment.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Filtering spinner */}
+      {!isStaticOnly && loading && articles.length > 0 && (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
         </div>
       )}
 
-      {/* Premium Feature Display */}
-      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && !loading && error && (
-        <div className="flex flex-col items-center justify-center py-20 px-4">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-              <Lock className="w-9 h-9 text-white" />
-            </div>
-            <div className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Fonctionnalité Premium</h2>
-          <p className="text-slate-500 text-center max-w-sm mb-6">
-            L'accès aux actualités financières en temps réel est réservé aux membres <span className="font-semibold text-amber-600">AfriBourse Premium</span>.
-          </p>
-          <a
-            href="/premium"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
-          >
-            <Sparkles className="w-4 h-4" />
-            Passer à Premium
-          </a>
-        </div>
-      )}
-
-      {/* Main Content Grid */}
-      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && !loading && !error && (
+      {/* Main content — API articles */}
+      {!isStaticOnly && !loading && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Featured Article (2/3) */}
+
+          {/* Featured (2/3) */}
           {selectedCategory === 'all' && featuredArticle && (
             <div className="lg:col-span-2 group cursor-pointer">
               <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-md">
@@ -226,8 +203,7 @@ export default function NewsPage() {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
-
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8 w-full">
                   <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider mb-3 inline-block">
                     {getCategoryLabel(featuredArticle.category)}
@@ -235,50 +211,37 @@ export default function NewsPage() {
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight group-hover:text-blue-200 transition-colors">
                     {featuredArticle.title}
                   </h2>
-                  <p className="text-slate-200 line-clamp-2 mb-4 max-w-2xl">
-                    {featuredArticle.summary}
-                  </p>
+                  <p className="text-slate-200 line-clamp-2 mb-4 max-w-2xl">{featuredArticle.summary}</p>
                   <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Il y a {formatTimeAgo(featuredArticle.published_at)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {calculateReadTime(featuredArticle.content)} min de lecture
-                    </span>
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(featuredArticle.published_at)}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(featuredArticle.content)} min de lecture</span>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* News List */}
-          <div className={`${selectedCategory === 'all' && featuredArticle ? 'lg:col-span-1' : 'lg:col-span-3'}`}>
+          {/* Article list */}
+          <div className={selectedCategory === 'all' && featuredArticle ? 'lg:col-span-1' : 'lg:col-span-3'}>
             {selectedCategory === 'all' && featuredArticle && (
               <h3 className="font-bold text-slate-900 mb-4">Dernières dépêches</h3>
             )}
 
-            <div className={`${selectedCategory === 'all' && featuredArticle ? 'space-y-4' : 'grid md:grid-cols-2 lg:grid-cols-3 gap-6'}`}>
-              {listArticles.map((article) => (
+            <div className={selectedCategory === 'all' && featuredArticle ? 'space-y-4' : 'grid md:grid-cols-2 lg:grid-cols-3 gap-6'}>
+              {listArticles.map(article => (
                 <div
                   key={article.id}
                   className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden ${
                     selectedCategory === 'all' && featuredArticle ? 'p-4' : ''
                   }`}
                 >
-                  {/* Compact layout for sidebar */}
                   {selectedCategory === 'all' && featuredArticle ? (
                     <div className="flex items-start gap-4">
                       {article.image_url && (
                         <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
-                          <OptimizedImage
-                            src={article.image_url}
-                            alt=""
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                          />
+                          <OptimizedImage src={article.image_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                         </div>
                       )}
-
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
@@ -291,20 +254,15 @@ export default function NewsPage() {
                         <div className="flex items-center gap-3 text-slate-400 text-[10px]">
                           <span>Il y a {formatTimeAgo(article.published_at)}</span>
                           <span>•</span>
-                          <span>{calculateReadTime(article.content)} min</span>
+                          <span>{calcReadTime(article.content)} min</span>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    /* Card layout for grid view */
                     <>
                       {article.image_url && (
                         <div className="h-40 overflow-hidden bg-slate-200">
-                          <OptimizedImage
-                            src={article.image_url}
-                            alt=""
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
+                          <OptimizedImage src={article.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                       )}
                       <div className="p-5">
@@ -321,17 +279,10 @@ export default function NewsPage() {
                         <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
                           {article.title}
                         </h4>
-                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">
-                          {article.summary}
-                        </p>
+                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">{article.summary}</p>
                         <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-100">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            Il y a {formatTimeAgo(article.published_at)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {calculateReadTime(article.content)} min
-                          </span>
+                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(article.published_at)}</span>
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(article.content)} min</span>
                         </div>
                       </div>
                     </>
@@ -339,7 +290,7 @@ export default function NewsPage() {
                 </div>
               ))}
 
-              {listArticles.length === 0 && (
+              {listArticles.length === 0 && brvmFiltered.length === 0 && (
                 <div className="py-12 text-center text-slate-400 col-span-full">
                   Aucune actualité dans cette catégorie pour le moment.
                 </div>
@@ -355,13 +306,36 @@ export default function NewsPage() {
         </div>
       )}
 
-      {/* No Articles Found State */}
-      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && !loading && !error && articles.length === 0 && (
-        <div className="text-center py-16">
-          <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-500">Aucun article trouvé {selectedCategory !== 'all' ? `dans la catégorie "${getCategoryLabel(selectedCategory)}"` : ''}.</p>
+      {/* BRVM 2026 intelligence — inline below API articles */}
+      {!isStaticOnly && !loading && brvmFiltered.length > 0 && (
+        <div className="mt-10">
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart2 size={15} className="text-[#00D4A8]" />
+            <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wide">Intelligence de marché BRVM 2026</h3>
+            <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+              {brvmFiltered.length} article{brvmFiltered.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {brvmFiltered.map(a => (
+              <BRVMArticleCard key={a.id} article={a} onOpen={() => setSelectedBRVM(a)} />
+            ))}
+          </div>
         </div>
       )}
+
+      {/* Empty state */}
+      {!isStaticOnly && !loading && articles.length === 0 && brvmFiltered.length === 0 && (
+        <div className="text-center py-16">
+          <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-4" />
+          <p className="text-slate-500">
+            Aucun article trouvé{selectedCategory !== 'all' ? ` dans "${getCategoryLabel(selectedCategory)}"` : ''}.
+          </p>
+        </div>
+      )}
+
+      {/* BRVM article detail panel */}
+      {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
     </div>
   );
 }

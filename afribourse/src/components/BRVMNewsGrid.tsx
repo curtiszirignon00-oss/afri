@@ -370,3 +370,5 @@ export default function BRVMNewsGrid() {
     </div>
   );
 }
+
+export { DetailPanel as BRVMDetailPanel, ArticleCard as BRVMArticleCard };
