@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell } from 'lucide-react';
-import { apiFetch } from '../hooks/useApi';
+import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon } from 'lucide-react';
+import { apiFetch, useStocks, type Stock as ApiStock } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { Stock, Portfolio, WatchlistItem } from '../types';
@@ -12,6 +12,9 @@ import StockQuickSearch from './stock/StockQuickSearch';
 import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
 import { getStockLogo } from '../utils/stockLogos';
+import { useAuth } from '../contexts/AuthContext';
+import { useDebounce } from '../hooks/useDebounce';
+import StockComparison from './markets/StockComparison';
 
 // Import des nouveaux composants
 import {
@@ -75,6 +78,38 @@ export default function StockDetailPageEnhanced() {
   const [showMobileOrder, setShowMobileOrder] = useState(false);
   const [showEmailVerifModal, setShowEmailVerifModal] = useState(false);
   const { phase: emailPhase } = useEmailVerificationPhase();
+
+  // Comparaison de titres
+  const { userProfile } = useAuth();
+  const COMPARISON_LIMITS: Record<string, number> = {
+    free: 2, premium: 4, 'investisseur-plus': Infinity, pro: Infinity, max: Infinity,
+  };
+  const subscriptionTier = (userProfile as any)?.subscriptionTier || 'free';
+  const comparisonLimit = COMPARISON_LIMITS[subscriptionTier] ?? 2;
+
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonStocks, setComparisonStocks] = useState<ApiStock[]>([]);
+  const [compareQuery, setCompareQuery] = useState('');
+  const [showCompareDropdown, setShowCompareDropdown] = useState(false);
+  const compareContainerRef = useRef<HTMLDivElement>(null);
+  const debouncedCompareQuery = useDebounce(compareQuery, 250);
+
+  const { data: compareResults = [] } = useStocks(
+    debouncedCompareQuery.trim().length > 0 ? { search: debouncedCompareQuery.trim() } : {}
+  );
+  const filteredCompareResults = compareResults
+    .filter(s => !comparisonStocks.find(cs => cs.id === s.id))
+    .slice(0, 6);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (compareContainerRef.current && !compareContainerRef.current.contains(e.target as Node)) {
+        setShowCompareDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (symbol) trackStockViewed(symbol, 'BRVM');
@@ -346,6 +381,42 @@ export default function StockDetailPageEnhanced() {
     return { score: totalScore, label: 'Très Négatif', color: 'red' };
   }
 
+  function openComparison() {
+    if (!stock) return;
+    setComparisonStocks([stock as unknown as ApiStock]);
+    setShowComparison(true);
+  }
+
+  function addToComparison(s: ApiStock) {
+    if (comparisonStocks.length >= comparisonLimit) {
+      toast.error(
+        `Limite atteinte (${comparisonLimit === Infinity ? '∞' : comparisonLimit} titres max).${subscriptionTier === 'free' || subscriptionTier === 'premium' ? ' Passez à un plan supérieur.' : ''}`,
+        { duration: 4000 }
+      );
+      return;
+    }
+    setComparisonStocks(prev => [...prev, s]);
+    setCompareQuery('');
+    setShowCompareDropdown(false);
+    toast.success(`${s.symbol} ajouté à la comparaison`);
+  }
+
+  function removeFromComparison(stockId: string) {
+    const next = comparisonStocks.filter(s => s.id !== stockId);
+    setComparisonStocks(next);
+    if (next.length === 0) {
+      setShowComparison(false);
+      setCompareQuery('');
+    }
+  }
+
+  function closeComparison() {
+    setShowComparison(false);
+    setComparisonStocks([]);
+    setCompareQuery('');
+    setShowCompareDropdown(false);
+  }
+
   function calculateTechnicalSignal(): { label: string; color: string; description: string } {
     if (!stock) return { label: 'Neutre', color: 'yellow', description: 'Pas de données' };
 
@@ -433,6 +504,18 @@ export default function StockDetailPageEnhanced() {
                 >
                   <Bell className="w-5 h-5 text-gray-400 hover:text-orange-600" />
                 </button>
+                {/* Compare Button */}
+                <button
+                  onClick={showComparison ? closeComparison : openComparison}
+                  className={`p-2 rounded-full transition-colors ${
+                    showComparison
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'hover:bg-blue-100 text-gray-400 hover:text-blue-600'
+                  }`}
+                  title={showComparison ? 'Fermer la comparaison' : 'Comparer avec un autre titre'}
+                >
+                  <Scale className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
@@ -468,6 +551,90 @@ export default function StockDetailPageEnhanced() {
           </div>
         </div>
       </div>
+
+      {/* Panel de comparaison */}
+      {showComparison && (
+        <div className="bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            {/* Barre de recherche pour ajouter un titre */}
+            {comparisonStocks.length < comparisonLimit && (
+              <div ref={compareContainerRef} className="relative mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1 max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      value={compareQuery}
+                      onChange={e => { setCompareQuery(e.target.value); setShowCompareDropdown(true); }}
+                      onFocus={() => setShowCompareDropdown(true)}
+                      placeholder="Ajouter un titre à comparer..."
+                      className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                    />
+                    {compareQuery && (
+                      <button
+                        onClick={() => { setCompareQuery(''); setShowCompareDropdown(false); }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                    {comparisonStocks.length} / {comparisonLimit === Infinity ? '∞' : comparisonLimit} titres
+                  </span>
+                </div>
+
+                {/* Dropdown résultats */}
+                {showCompareDropdown && compareQuery.trim().length > 0 && (
+                  <div className="absolute top-full left-0 mt-1.5 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                    {filteredCompareResults.length === 0 ? (
+                      <div className="px-4 py-3 text-sm text-gray-500 text-center">Aucune action trouvée</div>
+                    ) : (
+                      filteredCompareResults.map((s, idx) => {
+                        const logo = getStockLogo(s.symbol, s.logo_url);
+                        const positive = s.daily_change_percent >= 0;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => addToComparison(s)}
+                            className={`w-full flex items-center space-x-3 px-4 py-2.5 text-left hover:bg-blue-50 transition-colors ${idx > 0 ? 'border-t border-gray-100' : ''}`}
+                          >
+                            {logo ? (
+                              <img
+                                src={logo}
+                                alt={s.symbol}
+                                className="w-8 h-8 rounded-lg object-contain bg-gray-50 border border-gray-100 flex-shrink-0"
+                                onError={e => (e.target as HTMLImageElement).style.display = 'none'}
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-bold text-blue-600">{s.symbol.slice(0, 2)}</span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-gray-900 text-sm">{s.symbol}</div>
+                              <p className="text-xs text-gray-500 truncate">{s.company_name}</p>
+                            </div>
+                            <span className={`text-xs font-medium flex-shrink-0 ${positive ? 'text-green-600' : 'text-red-500'}`}>
+                              {positive ? '+' : ''}{s.daily_change_percent.toFixed(2)}%
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <StockComparison
+              stocks={comparisonStocks}
+              onRemove={removeFromComparison}
+              onClose={closeComparison}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Navigation par onglets */}
       <StockTabs activeTab={activeTab} onTabChange={setActiveTab} />
