@@ -80,29 +80,36 @@ export default function StockDetailPageEnhanced() {
     if (symbol) trackStockViewed(symbol, 'BRVM');
   }, [symbol]);
 
-  // Charger le stock depuis l'API si non disponible dans state
+  // Charger le stock depuis l'API à chaque changement de symbole
   useEffect(() => {
+    if (!symbol) return;
+
+    // Si location.state correspond déjà au bon symbole, on l'utilise directement
+    const stateStock = location.state as Stock | null;
+    if (stateStock?.symbol === symbol) {
+      setStock(stateStock);
+      setLoading(false);
+      return;
+    }
+
+    setStock(null);
+    setLoading(true);
+    setError(null);
+
     async function loadStock() {
-      if (!stock && symbol) {
-        setLoading(true);
-        try {
-          const stockData = await apiFetch<Stock>(`/stocks/${symbol}`);
-          setStock(stockData);
-        } catch (err) {
-          console.error("Erreur chargement stock:", err);
-          setError("Impossible de charger les informations de l'action");
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        // Si le stock est déjà dans le state, on n'est plus en loading
+      try {
+        const stockData = await apiFetch<Stock>(`/stocks/${symbol}`);
+        setStock(stockData);
+      } catch (err) {
+        console.error("Erreur chargement stock:", err);
+        setError("Impossible de charger les informations de l'action");
+      } finally {
         setLoading(false);
       }
     }
 
-    // Appeler la fonction async sans retourner la promesse
     void loadStock();
-  }, [symbol, stock]);
+  }, [symbol]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Charger portfolio et watchlist status
   useEffect(() => {

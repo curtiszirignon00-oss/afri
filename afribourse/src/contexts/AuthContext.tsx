@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import { apiClient } from '../lib/api-client';
+import { apiClient, getIsAxiosRefreshing } from '../lib/api-client';
 import { setAuthToken, getAuthToken } from '../config/api';
 import * as amplitude from '@amplitude/unified';
 
@@ -58,8 +58,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Durée access token en ms (doit correspondre à ACCESS_TOKEN_TTL backend, 15m par défaut)
 const ACCESS_TOKEN_MS = 15 * 60 * 1000;
-// Rafraîchir 2 minutes avant l'expiration
-const REFRESH_BEFORE_MS = 2 * 60 * 1000;
+// Rafraîchir 3 minutes avant l'expiration (marge plus large pour connexions lentes)
+const REFRESH_BEFORE_MS = 3 * 60 * 1000;
 
 // --- Provider Component ---
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -101,22 +101,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Rafraîchit silencieusement le token sans bloquer l'UI.
-  // Utilise un verrou localStorage pour éviter que deux onglets ne refreshent en même temps
-  // (le second refresh échouerait car le refresh token aurait déjà été roté par le premier onglet).
+  // Trois protections :
+  // 1. Verrou localStorage — évite que deux onglets refreshent simultanément
+  // 2. getIsAxiosRefreshing() — évite la race condition avec l'intercepteur axios
+  // 3. Distinction erreur réseau / erreur auth — une coupure réseau ne déclenche PAS "session expirée"
   const silentRefresh = async () => {
     const now = Date.now();
 
-    // Vérifier si un autre onglet est déjà en train de rafraîchir
+    // Protection 2 : l'intercepteur axios est déjà en train de refresher dans ce même onglet
+    // (ex : une requête a obtenu 401 en même temps que le timer proactif s'est déclenché)
+    if (getIsAxiosRefreshing()) {
+      // Attendre que l'intercepteur finisse, puis resynchroniser l'état
+      setTimeout(() => {
+        if (isLoggedInRef.current) checkAuth();
+      }, 3_000);
+      return;
+    }
+
+    // Protection 1 : un autre onglet tient le verrou
     const lockValue = localStorage.getItem(REFRESH_LOCK_KEY);
     if (lockValue && now - parseInt(lockValue, 10) < REFRESH_LOCK_TTL_MS) {
-      // Un autre onglet tient le verrou — attendre qu'il finisse, puis resynchroniser
       setTimeout(() => {
         if (isLoggedInRef.current) checkAuth();
       }, REFRESH_LOCK_TTL_MS);
       return;
     }
 
-    // Poser le verrou pour signaler aux autres onglets qu'on refresh
     localStorage.setItem(REFRESH_LOCK_KEY, String(now));
 
     try {
@@ -126,19 +136,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthToken(token);
         tokenIssuedAtRef.current = Date.now();
         scheduleTokenRefresh();
-        // Signaler aux autres onglets que le refresh a réussi
         localStorage.setItem(REFRESH_DONE_KEY, String(Date.now()));
       }
-    } catch {
-      // Si le refresh échoue (refresh token expiré ou révoqué), afficher le modal de session expirée
-      if (isLoggedInRef.current) {
-        triggerSessionExpired();
-      } else {
-        isLoggedInRef.current = false;
-        setIsLoggedIn(false);
-        setUserProfile(null);
-        setAuthToken(null);
+    } catch (err: any) {
+      // Protection 3 : distinguer erreur réseau et erreur d'authentification
+      const isNetworkError = !err?.response; // pas de réponse = pas de connexion
+      const isAuthError = err?.response?.status === 401 || err?.response?.status === 403;
+
+      if (isNetworkError) {
+        // Coupure réseau temporaire — réessayer dans 30 secondes, NE PAS expirer la session
+        // (le token est potentiellement encore valide, le réseau reviendra)
+        if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = setTimeout(() => {
+          if (isLoggedInRef.current) silentRefresh();
+        }, 30_000);
+      } else if (isAuthError) {
+        // Token vraiment révoqué ou expiré côté serveur
+        if (isLoggedInRef.current) {
+          triggerSessionExpired();
+        } else {
+          isLoggedInRef.current = false;
+          setIsLoggedIn(false);
+          setUserProfile(null);
+          setAuthToken(null);
+        }
       }
+      // Autres erreurs (5xx serveur) : on ignore — le timer proactif retentera au prochain cycle
     } finally {
       localStorage.removeItem(REFRESH_LOCK_KEY);
     }
