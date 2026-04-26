@@ -3,6 +3,7 @@ import { Calendar, Clock, ChevronRight, Lock, Sparkles, Newspaper, BarChart2 } f
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import FundamentalsGrid from './FundamentalsGrid';
+import BRVMNewsGrid from './BRVMNewsGrid';
 
 // --- Updated Type Definition ---
 type NewsArticle = {
@@ -95,6 +96,7 @@ export default function NewsPage() {
       'economie':  'Économie',
       'interview': 'Interview',
       'resultats': 'Résultats 2025',
+      'brvm2026':  'BRVM 2026',
     };
     return labels[category.toLowerCase()] || category.charAt(0).toUpperCase() + category.slice(1);
   }
@@ -111,7 +113,7 @@ export default function NewsPage() {
     return colors[category.toLowerCase()] || 'bg-slate-50 text-slate-600 border-slate-100';
   }
 
-  const categories = ['all', 'marches', 'analyse', 'economie', 'interview', 'resultats'];
+  const categories = ['all', 'marches', 'analyse', 'economie', 'interview', 'resultats', 'brvm2026'];
 
   // Get featured article and list articles
   const featuredArticle = articles.find(a => a.is_featured);
@@ -120,7 +122,7 @@ export default function NewsPage() {
     : articles;
 
   // --- Loading State (not for fundamentals tab) ---
-  if (loading && articles.length === 0 && selectedCategory !== 'resultats') {
+  if (loading && articles.length === 0 && selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -155,6 +157,18 @@ export default function NewsPage() {
         </div>
       </div>
 
+      {/* Intelligence de marché BRVM 2026 */}
+      {selectedCategory === 'brvm2026' && (
+        <div className="mt-2">
+          <div className="flex items-center gap-2 mb-5">
+            <BarChart2 size={18} className="text-[#00D4A8]" />
+            <h2 className="text-lg font-bold text-slate-900">Intelligence de marché BRVM 2026</h2>
+            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">12 articles · 47 sociétés</span>
+          </div>
+          <BRVMNewsGrid />
+        </div>
+      )}
+
       {/* Résultats fondamentaux 2025 */}
       {selectedCategory === 'resultats' && (
         <div className="mt-2">
@@ -168,14 +182,14 @@ export default function NewsPage() {
       )}
 
       {/* Loading Indicator (for filtering) */}
-      {selectedCategory !== 'resultats' && loading && articles.length > 0 && (
+      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && loading && articles.length > 0 && (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       )}
 
       {/* Premium Feature Display */}
-      {selectedCategory !== 'resultats' && !loading && error && (
+      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && !loading && error && (
         <div className="flex flex-col items-center justify-center py-20 px-4">
           <div className="relative mb-6">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
@@ -200,7 +214,7 @@ export default function NewsPage() {
       )}
 
       {/* Main Content Grid */}
-      {selectedCategory !== 'resultats' && !loading && !error && (
+      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && !loading && !error && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Featured Article (2/3) */}
           {selectedCategory === 'all' && featuredArticle && (
@@ -342,7 +356,7 @@ export default function NewsPage() {
       )}
 
       {/* No Articles Found State */}
-      {selectedCategory !== 'resultats' && !loading && !error && articles.length === 0 && (
+      {selectedCategory !== 'resultats' && selectedCategory !== 'brvm2026' && !loading && !error && articles.length === 0 && (
         <div className="text-center py-16">
           <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-4" />
           <p className="text-slate-500">Aucun article trouvé {selectedCategory !== 'all' ? `dans la catégorie "${getCategoryLabel(selectedCategory)}"` : ''}.</p>
