@@ -49,6 +49,9 @@ apiClient.interceptors.request.use(async (config) => {
 let isRefreshing = false;
 let refreshQueue: Array<{ resolve: (token: string) => void; reject: (err: any) => void }> = [];
 
+// Exposé à AuthContext pour éviter la race condition entre refresh proactif et intercepteur
+export const getIsAxiosRefreshing = () => isRefreshing;
+
 function processRefreshQueue(newToken: string) {
     refreshQueue.forEach(({ resolve }) => resolve(newToken));
     refreshQueue = [];

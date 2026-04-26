@@ -4,6 +4,7 @@
   "description": "node-express-typescript-boilerplate",
   "main": "dist/index.js",
   "scripts": {
+    "import-fundamentals-2025": "ts-node scripts/importFundamentals2025.ts",
     "init-challenge": "ts-node src/scripts/init-challenge-classement.ts",
     "update-streaks": "ts-node src/scripts/update-leaderboard-streaks.ts",
     "update-roi-ranks": "ts-node src/scripts/update-roi-ranks.ts",
