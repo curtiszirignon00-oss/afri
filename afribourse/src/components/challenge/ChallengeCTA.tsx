@@ -55,31 +55,24 @@ export function ChallengeCTA() {
 
       <section className="relative mx-4 sm:mx-6 lg:mx-auto max-w-7xl mt-8 md:mt-12 rounded-2xl overflow-hidden shadow-2xl">
 
-        {/* Dark premium background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900" />
+        {/* White background */}
+        <div className="absolute inset-0 bg-white" />
 
         {/* Subtle grid */}
         <div
-          className="absolute inset-0 opacity-[0.05]"
+          className="absolute inset-0 opacity-30"
           style={{
-            backgroundImage: 'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)',
+            backgroundImage: 'linear-gradient(#f0f4f8 1px,transparent 1px),linear-gradient(90deg,#f0f4f8 1px,transparent 1px)',
             backgroundSize: '40px 40px',
           }}
         />
 
-        {/* Glow orbs */}
+        {/* Soft orange glow top-right */}
         <div
           className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 65%)',
+            background: 'radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 65%)',
             transform: 'translate(30%,-30%)',
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-96 h-96 rounded-full pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle, rgba(129,140,248,0.12) 0%, transparent 65%)',
-            transform: 'translate(-30%,30%)',
           }}
         />
 
@@ -100,30 +93,30 @@ export function ChallengeCTA() {
           </div>
 
           {/* Label badge */}
-          <div className="inline-flex items-center gap-2 bg-orange-500/15 border border-orange-500/30 text-orange-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-5">
+          <div className="inline-flex items-center gap-2 bg-orange-100 border border-orange-200 text-orange-600 px-4 py-1.5 rounded-full text-sm font-semibold mb-5">
             <TrendingUp className="w-4 h-4" />
             Challenge Officiel AfriBourse 2026
           </div>
 
           {/* Title */}
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white leading-tight tracking-tight mb-4 max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight tracking-tight mb-4 max-w-3xl mx-auto">
             Qui sera le meilleur{' '}
             <span
               className="text-transparent bg-clip-text"
-              style={{ backgroundImage: 'linear-gradient(135deg, #FB923C, #FCD34D)' }}
+              style={{ backgroundImage: 'linear-gradient(135deg, #FF6B35, #F7931E)' }}
             >
               gestionnaire de portefeuille ?
             </span>
           </h2>
 
           {/* Subtitle */}
-          <p className="text-slate-300 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
+          <p className="text-gray-600 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
             Gérez{' '}
-            <span className="text-white font-bold">1 000 000 FCFA</span> virtuels,
+            <span className="text-gray-900 font-bold">1 000 000 FCFA</span> virtuels,
             affrontez les meilleurs investisseurs de la zone UEMOA et gagnez jusqu'à{' '}
             <span
               className="font-extrabold text-2xl text-transparent bg-clip-text"
-              style={{ backgroundImage: 'linear-gradient(135deg, #FB923C, #FCD34D)' }}
+              style={{ backgroundImage: 'linear-gradient(135deg, #FF6B35, #F7931E)' }}
             >
               10 000 000 FCFA
             </span>{' '}
@@ -133,13 +126,13 @@ export function ChallengeCTA() {
           {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-3 mb-10">
             {[
-              { icon: Banknote, label: '1M FCFA de capital virtuel',  cls: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-300' },
-              { icon: Target,   label: 'Objectif top 10',             cls: 'bg-blue-500/10   border-blue-500/25   text-blue-300'    },
-              { icon: Medal,    label: "Prix jusqu'à 10M FCFA",       cls: 'bg-orange-500/10 border-orange-500/25 text-orange-300'  },
+              { icon: Banknote, label: '1M FCFA de capital virtuel', cls: 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:border-emerald-400' },
+              { icon: Target,   label: 'Objectif top 10',            cls: 'bg-blue-50   border-blue-200   text-blue-700   hover:border-blue-400'    },
+              { icon: Medal,    label: "Prix jusqu'à 10M FCFA",      cls: 'bg-orange-50 border-orange-200 text-orange-700 hover:border-orange-400'  },
             ].map(({ icon: Icon, label, cls }) => (
               <div
                 key={label}
-                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border backdrop-blur-sm font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 ${cls}`}
+                className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border bg-white font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${cls}`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 {label}
@@ -149,10 +142,10 @@ export function ChallengeCTA() {
 
           {/* Countdown — only when launch is in the future and user is enrolled */}
           {!isChallengeOpen && challengeStatus?.enrolled && daysLeft > 0 && (
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-slate-300 px-5 py-2.5 rounded-full text-sm font-medium mb-8 backdrop-blur-sm">
-              <Clock className="w-4 h-4 text-orange-400 shrink-0" />
+            <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium mb-8">
+              <Clock className="w-4 h-4 text-orange-500 shrink-0" />
               Le trading ouvre le 2 mars —{' '}
-              <span className="text-white font-bold ml-1">dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}</span>
+              <span className="text-gray-900 font-bold ml-1">dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}</span>
             </div>
           )}
 
@@ -160,7 +153,7 @@ export function ChallengeCTA() {
           <div className="mb-6">
             <button
               onClick={handleCTAClick}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-white font-bold text-lg transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-slate-900 cursor-pointer group"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-white font-bold text-lg transition-all duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-white cursor-pointer group"
               style={{
                 background: 'linear-gradient(135deg, #FF6B35, #F7931E)',
                 boxShadow: '0 12px 32px rgba(255,107,53,0.40)',
