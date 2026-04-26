@@ -32,6 +32,7 @@ import { API_BASE_URL, authFetch } from '../config/api';
 import { ChallengeCTA } from './challenge';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { InstallInstructions } from './pwa/InstallPrompt';
+import { NEWS_DATA } from '../data/newsData';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -573,82 +574,129 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* === Section Actualités du Jour AVEC CAROUSEL === */}
-      {displayedNews.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">Actualités du Jour</h2>
-              <p className="text-gray-600 mt-1">Restez informé des dernières nouvelles de la BRVM</p> {/* <-- AJOUT: Sous-titre */}
+      {/* === Section Actualités — Résultats fondamentaux BRVM === */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+        {/* En-tête */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#00D4A8]" />
+              <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-widest">Résultats 2025</span>
             </div>
-            <div className="flex items-center space-x-2">
-              {/* <-- AJOUT: Boutons de navigation carousel */}
-              <Button variant="ghost" size="sm" onClick={() => scrollNews('left')}>
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => scrollNews('right')}>
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-              {/* <-- AJOUT: Bouton "Voir tout" demandé */}
-              <Button variant="ghost" onClick={() => navigate('/news')} className="ml-4">
-                Voir tout
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            <h2 className="text-3xl font-bold text-gray-900">Actualités du Jour</h2>
+            <p className="text-gray-600 mt-1">Résultats annuels et dividendes des sociétés cotées à la BRVM</p>
           </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => scrollNews('left')}>
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => scrollNews('right')}>
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" onClick={() => navigate('/news')} className="ml-2">
+              Voir tout <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
 
-          {/* <-- CORRECTION: Carousel avec scroll amélioré */}
-          <div
-            ref={newsContainerRef}
-            className="flex space-x-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
-            style={{ scrollPadding: '1rem' }}
-          >
-            {displayedNews.map((article) => (
+        {/* Carousel */}
+        <div
+          ref={newsContainerRef}
+          className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+          style={{ scrollPadding: '1rem' }}
+        >
+          {NEWS_DATA.map((item) => {
+            const last = item.history[item.history.length - 1];
+            const prev = item.history[item.history.length - 2];
+            const divVar = ((last.dividend - prev.dividend) / Math.abs(prev.dividend)) * 100;
+            const trendColor = item.dividendTrend === 'hausse' ? '#00D4A8' : item.dividendTrend === 'baisse' ? '#ef4444' : '#94a3b8';
+            const COUNTRY_FLAG: Record<string, string> = { CI: '🇨🇮', BF: '🇧🇫', SN: '🇸🇳' };
+
+            return (
               <div
-                key={article.id}
-                className="snap-start flex-shrink-0 w-[85%] sm:w-[48%] md:w-[32%] lg:w-[24%]"
+                key={item.id}
+                className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%]"
               >
-                {/* <-- CORRECTION: Card améliorée avec hover et ombres */}
-                <Card hoverable className="h-full flex flex-col transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl">
-                  {article.image_url ? (
-                    <img
-                      src={article.image_url}
-                      alt={article.title}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center rounded-t-lg">
-                      <Newspaper className="w-12 h-12 text-white opacity-50" />
+                <article
+                  className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden flex flex-col"
+                  onClick={() => navigate('/news')}
+                >
+                  {/* Barre accent top */}
+                  <div className="h-1 rounded-t-xl" style={{ background: trendColor }} />
+
+                  {/* Visuel de fond stylisé */}
+                  <div className="relative h-28 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
+                    <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, #00D4A8 0%, transparent 60%)' }} />
+                    <div className="text-center z-10 px-4">
+                      <span className="font-mono text-2xl font-bold text-white tracking-wide">{item.ticker.split(' ')[0]}</span>
+                      <div className="flex items-center justify-center gap-1.5 mt-1">
+                        <span className="text-lg">{COUNTRY_FLAG[item.country]}</span>
+                        <span className="text-xs text-slate-400">{item.shortName}</span>
+                      </div>
                     </div>
-                  )}
+                    {/* Badge DY */}
+                    <div className="absolute top-3 right-3 bg-[#00D4A8]/10 border border-[#00D4A8]/30 rounded-lg px-2 py-1 text-center">
+                      <p className="text-[9px] text-[#00D4A8]/80 uppercase tracking-wide leading-none mb-0.5">DY</p>
+                      <p className="text-sm font-bold text-[#00D4A8] leading-none">{item.dyAnnual.toFixed(1)}%</p>
+                    </div>
+                  </div>
 
                   <div className="p-4 flex-1 flex flex-col">
-                    {article.category && (
-                      <span className="inline-block px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 text-xs font-semibold rounded-full mb-2 self-start">
-                        {article.category}
-                      </span>
-                    )}
+                    {/* Secteur */}
+                    <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 border border-slate-200 rounded-full px-2 py-0.5 self-start mb-2">
+                      {item.sector}
+                    </span>
 
-                    <h3 className="font-bold text-sm text-gray-900 mb-2 line-clamp-2 flex-1">
-                      {article.title}
+                    {/* Titre */}
+                    <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2 mb-3 group-hover:text-[#00D4A8] transition-colors flex-1">
+                      {item.headline}
                     </h3>
 
-                    {article.summary && (
-                      <p className="text-xs text-gray-600 line-clamp-2 mb-3">{article.summary}</p>
-                    )}
+                    {/* Métriques clés */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="bg-slate-50 rounded-lg p-2 text-center">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-wide">Dividende</p>
+                        <p className="text-xs font-bold text-slate-800">{last.dividend.toLocaleString('fr-FR')} XOF</p>
+                        <p className={`text-[9px] font-medium ${divVar >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                          {divVar >= 0 ? '+' : ''}{divVar.toFixed(1)}%
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-2 text-center">
+                        <p className="text-[9px] text-slate-400 uppercase tracking-wide">PER</p>
+                        <p className="text-xs font-bold text-slate-800">{item.per.toFixed(1)}x</p>
+                        <p className="text-[9px] text-slate-400">valorisation</p>
+                      </div>
+                    </div>
 
-                    {article.published_at && (
-                      <p className="text-xs text-gray-500 font-medium">
-                        {new Date(article.published_at).toLocaleDateString('fr-FR')}
-                      </p>
-                    )}
+                    {/* Footer : trend badge + CTA */}
+                    <div className="flex items-center justify-between">
+                      {item.dividendTrend === 'hausse' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                          <TrendingUp size={9} /> Div. en hausse
+                        </span>
+                      ) : item.dividendTrend === 'baisse' ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                          <TrendingDown size={9} /> Div. en baisse
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+                          Stable
+                        </span>
+                      )}
+                      <span className="text-[10px] text-[#00D4A8] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Analyse <ChevronRight size={11} />
+                      </span>
+                    </div>
                   </div>
-                </Card>
+                </article>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+            );
+          })}
+        </div>
+
+        {/* Indicateur de scroll mobile */}
+        <p className="text-center text-xs text-slate-400 mt-3 sm:hidden">← Faites glisser pour voir plus →</p>
+      </section>
 
       {/* <-- AJOUT: Section Témoignages (Social Proof) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
