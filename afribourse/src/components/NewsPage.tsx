@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, ChevronRight, Lock, Sparkles, Newspaper } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Lock, Sparkles, Newspaper, BarChart2 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
+import FundamentalsGrid from './FundamentalsGrid';
 
 // --- Updated Type Definition ---
 type NewsArticle = {
@@ -88,11 +89,12 @@ export default function NewsPage() {
   function getCategoryLabel(category: string | null): string {
     if (!category) return 'Non classé';
     const labels: Record<string, string> = {
-      'marches': 'Marchés',
-      'analyse': 'Analyse',
-      'startup': 'Startup',
-      'economie': 'Économie',
+      'marches':   'Marchés',
+      'analyse':   'Analyse',
+      'startup':   'Startup',
+      'economie':  'Économie',
       'interview': 'Interview',
+      'resultats': 'Résultats 2025',
     };
     return labels[category.toLowerCase()] || category.charAt(0).toUpperCase() + category.slice(1);
   }
@@ -109,7 +111,7 @@ export default function NewsPage() {
     return colors[category.toLowerCase()] || 'bg-slate-50 text-slate-600 border-slate-100';
   }
 
-  const categories = ['all', 'marches', 'analyse', 'economie', 'interview'];
+  const categories = ['all', 'marches', 'analyse', 'economie', 'interview', 'resultats'];
 
   // Get featured article and list articles
   const featuredArticle = articles.find(a => a.is_featured);
@@ -117,8 +119,8 @@ export default function NewsPage() {
     ? articles.filter(a => !a.is_featured)
     : articles;
 
-  // --- Loading State ---
-  if (loading && articles.length === 0) {
+  // --- Loading State (not for fundamentals tab) ---
+  if (loading && articles.length === 0 && selectedCategory !== 'resultats') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -153,15 +155,27 @@ export default function NewsPage() {
         </div>
       </div>
 
+      {/* Résultats fondamentaux 2025 */}
+      {selectedCategory === 'resultats' && (
+        <div className="mt-2">
+          <div className="flex items-center gap-2 mb-5">
+            <BarChart2 size={18} className="text-[#00D4A8]" />
+            <h2 className="text-lg font-bold text-slate-900">Résultats annuels 2025</h2>
+            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Fondamentaux BRVM</span>
+          </div>
+          <FundamentalsGrid />
+        </div>
+      )}
+
       {/* Loading Indicator (for filtering) */}
-      {loading && articles.length > 0 && (
+      {selectedCategory !== 'resultats' && loading && articles.length > 0 && (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       )}
 
       {/* Premium Feature Display */}
-      {!loading && error && (
+      {selectedCategory !== 'resultats' && !loading && error && (
         <div className="flex flex-col items-center justify-center py-20 px-4">
           <div className="relative mb-6">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
@@ -186,7 +200,7 @@ export default function NewsPage() {
       )}
 
       {/* Main Content Grid */}
-      {!loading && !error && (
+      {selectedCategory !== 'resultats' && !loading && !error && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Featured Article (2/3) */}
           {selectedCategory === 'all' && featuredArticle && (
@@ -328,7 +342,7 @@ export default function NewsPage() {
       )}
 
       {/* No Articles Found State */}
-      {!loading && !error && articles.length === 0 && (
+      {selectedCategory !== 'resultats' && !loading && !error && articles.length === 0 && (
         <div className="text-center py-16">
           <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-4" />
           <p className="text-slate-500">Aucun article trouvé {selectedCategory !== 'all' ? `dans la catégorie "${getCategoryLabel(selectedCategory)}"` : ''}.</p>

@@ -593,7 +593,7 @@ export default function StockDetailPageEnhanced() {
                 symbol={stock.symbol}
               />
             )}
-            {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} />}
+            {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} ticker={symbol} />}
           </div>
 
           {/* Colonne latérale - Panel d'ordre (DESKTOP ONLY) */}
