@@ -94,12 +94,15 @@ export default function StockDetailPageEnhanced() {
   const compareContainerRef = useRef<HTMLDivElement>(null);
   const debouncedCompareQuery = useDebounce(compareQuery, 250);
 
+  const isCompareSearching = debouncedCompareQuery.trim().length > 0;
   const { data: compareResults = [] } = useStocks(
-    debouncedCompareQuery.trim().length > 0 ? { search: debouncedCompareQuery.trim() } : {}
+    isCompareSearching
+      ? { search: debouncedCompareQuery.trim() }
+      : stock?.sector ? { sector: stock.sector } : {}
   );
   const filteredCompareResults = compareResults
     .filter(s => !comparisonStocks.find(cs => cs.id === s.id))
-    .slice(0, 6);
+    .slice(0, 7);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -585,12 +588,18 @@ export default function StockDetailPageEnhanced() {
                 </div>
 
                 {/* Dropdown résultats */}
-                {showCompareDropdown && compareQuery.trim().length > 0 && (
+                {showCompareDropdown && (
                   <div className="absolute top-full left-0 mt-1.5 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
                     {filteredCompareResults.length === 0 ? (
                       <div className="px-4 py-3 text-sm text-gray-500 text-center">Aucune action trouvée</div>
                     ) : (
-                      filteredCompareResults.map((s, idx) => {
+                      <>
+                        <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
+                          <span className="text-xs font-medium text-gray-500">
+                            {isCompareSearching ? 'Résultats de recherche' : `Même secteur${stock?.sector ? ` · ${stock.sector}` : ''}`}
+                          </span>
+                        </div>
+                      {filteredCompareResults.map((s, idx) => {
                         const logo = getStockLogo(s.symbol, s.logo_url);
                         const positive = s.daily_change_percent >= 0;
                         return (
@@ -620,7 +629,8 @@ export default function StockDetailPageEnhanced() {
                             </span>
                           </button>
                         );
-                      })
+                      })}
+                      </>
                     )}
                   </div>
                 )}
