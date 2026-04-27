@@ -42,6 +42,8 @@ export function useModerationStats() {
             const response = await apiClient.get('/moderation/stats');
             return response.data as ModerationStats;
         },
+        throwOnError: false,
+        retry: false,
     });
 }
 
@@ -58,6 +60,8 @@ export function useReports(page: number = 1, status?: string) {
             const response = await apiClient.get(`/moderation/reports?${params}`);
             return response.data;
         },
+        throwOnError: false,
+        retry: false,
     });
 }
 
@@ -90,6 +94,8 @@ export function useBannedKeywords() {
             const response = await apiClient.get('/moderation/keywords');
             return response.data;
         },
+        throwOnError: false,
+        retry: false,
     });
 }
 
