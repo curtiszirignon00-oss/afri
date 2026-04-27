@@ -101,44 +101,44 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshot/accueil.png",
+      "src": "/screenshot/accueil.webp",
       "sizes": "412x892",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Page d'accueil AfriBourse"
     },
     {
-      "src": "/screenshot/market.png",
+      "src": "/screenshot/market.webp",
       "sizes": "412x892",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Marche BRVM en temps reel"
     },
     {
-      "src": "/screenshot/learn.png",
+      "src": "/screenshot/learn.webp",
       "sizes": "412x892",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Modules d'apprentissage"
     },
     {
-      "src": "/screenshot/dashboard.png",
+      "src": "/screenshot/dashboard.webp",
       "sizes": "412x892",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Tableau de bord portefeuille"
     },
     {
-      "src": "/screenshot/profil.png",
+      "src": "/screenshot/profil.webp",
       "sizes": "412x892",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Profil investisseur"
     },
     {
-      "src": "/screenshot/communaute.png",
+      "src": "/screenshot/communaute.webp",
       "sizes": "412x892",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "narrow",
       "label": "Communaute des investisseurs"
     }
