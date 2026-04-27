@@ -25,6 +25,9 @@ import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
 import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
 import type { PortfolioCtx } from '../services/geminiService';
+import WelcomeModal from './onboarding/WelcomeModal';
+import PulseDot from './onboarding/PulseDot';
+import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 // Gamification imports
 import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward, useMyRewards } from '../hooks/useGamification';
 import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
@@ -89,6 +92,9 @@ export default function DashboardPage() {
 
   // ✅ Challenge: Vérification des horaires de trading
   const { canTrade, reason: tradingBlockedReason } = useCanTrade(walletMode);
+
+  // Onboarding guidé nouveaux utilisateurs
+  const { isActive, steps, completeStep } = useOnboardingGuideContext();
 
   // ✅ Analytics: Hook pour tracker les actions
   const { trackAction } = useAnalytics();
@@ -265,6 +271,11 @@ export default function DashboardPage() {
           walletType: walletMode,
         }
       );
+
+      // Onboarding : marquer le premier achat simulé
+      if (isActive && !steps.achat) {
+        completeStep('achat');
+      }
 
       setBuyModalOpen(false);
       await reloadPortfolio();
@@ -515,6 +526,9 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* Onboarding : modal de bienvenue pour les nouveaux utilisateurs */}
+      <WelcomeModal />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -868,14 +882,16 @@ export default function DashboardPage() {
                 <div className="text-center py-12 text-gray-500">
                   <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p>Vous n'avez aucune position actuellement.</p>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => navigate('/markets')}
-                    className="mt-4"
-                  >
-                    Explorer le Marché
-                  </Button>
+                  <div className="relative inline-block mt-4">
+                    <PulseDot visible={isActive && !steps.achat} />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => navigate('/markets')}
+                    >
+                      Explorer le Marché
+                    </Button>
+                  </div>
                 </div>
               )}
             </Card>
@@ -1247,13 +1263,16 @@ export default function DashboardPage() {
                 <div className="text-center py-8 text-gray-500">
                   <Eye className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p className="text-sm mb-3">Aucune action dans votre watchlist.</p>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => navigate('/markets')}
-                  >
-                    Ajouter des Actions
-                  </Button>
+                  <div className="relative inline-block">
+                    <PulseDot visible={isActive && !steps.achat} />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => navigate('/markets')}
+                    >
+                      Ajouter des Actions
+                    </Button>
+                  </div>
                 </div>
               )}
             </Card>

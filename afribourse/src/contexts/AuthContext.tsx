@@ -17,6 +17,7 @@ interface UserProfile {
   created_at?: string | null;
   telephone?: string | null;
   avatar_url?: string | null;
+  isNewUser?: boolean;
 }
 
 // Événement global émis quand le serveur répond 401 depuis n'importe quel appel API

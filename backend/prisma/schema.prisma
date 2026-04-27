@@ -203,6 +203,10 @@ model User {
   reengagement_email2_sent   Boolean   @default(false) // Marché BRVM J+3
   reengagement_email3_sent   Boolean   @default(false) // Simulateur & Top 5 J+7
 
+  // --- Onboarding guidé (premiers pas) ---
+  isNewUser   Boolean?  @default(true)  // true = n'a jamais vu l'onboarding guidé
+  onboardedAt DateTime?                 // horodatage du premier accès au dashboard
+
   // --- OAuth ---
   oauth_accounts OAuthAccount[]
 
