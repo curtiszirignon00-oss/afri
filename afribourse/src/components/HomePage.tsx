@@ -109,9 +109,9 @@ export default function HomePage() {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
   const backgroundImages = [
-    '/images/brvm-growth.png',
-    '/images/financial-ratios.png',
-    '/images/sonatel-dividend.png',
+    '/images/brvm-growth.webp',
+    '/images/financial-ratios.webp',
+    '/images/sonatel-dividend.webp',
   ];
 
   const { data, isLoading, error, refetch } = useHomePageData();
@@ -144,7 +144,7 @@ export default function HomePage() {
       role: 'Investisseuse depuis 2 ans',
       countryCode: 'SN',
       countryName: 'Sénégal',
-      avatar: '/avatars/aminata.png',
+      avatar: '/avatars/aminata.webp',
       rating: 5,
       comment:
         "AfriBourse m'a permis de comprendre la BRVM et de faire mes premiers investissements en toute confiance. Les formations sont exceptionnelles !",
@@ -155,7 +155,7 @@ export default function HomePage() {
       role: 'Entrepreneur',
       countryCode: 'GH',
       countryName: 'Ghana',
-      avatar: '/avatars/kwame.png',
+      avatar: '/avatars/kwame.webp',
       rating: 5,
       comment:
         "Interface intuitive, données en temps réel et analyses pertinentes. C'est l'outil qu'il manquait pour investir en Afrique de l'Ouest.",
@@ -166,7 +166,7 @@ export default function HomePage() {
       role: 'Cadre bancaire',
       countryCode: 'CI',
       countryName: "Côte d'Ivoire",
-      avatar: '/avatars/fatou.png',
+      avatar: '/avatars/fatou.webp',
       rating: 5,
       comment:
         "Grâce à AfriBourse, j'ai diversifié mon portefeuille et augmenté mes rendements de 35% en 1 an. Je recommande vivement !",
