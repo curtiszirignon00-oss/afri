@@ -2,47 +2,79 @@
 import axios from 'axios';
 import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken, setAuthToken } from '../config/api';
 
-// Délai de retry sur 429 — respecte le header Retry-After du serveur, plafonné à 5s
+// ── Token bucket ──────────────────────────────────────────────────────────────
+// Plafonne le débit sortant à 80 req/min, en-dessous de la limite serveur (100/min).
+// Principe : chaque requête consomme un « jeton ». Si le seau est vide, la requête
+// attend silencieusement qu'un jeton se régénère — jamais d'erreur visible pour l'user.
+//
+// Maths : 1 jeton / 750 ms = 80 jetons / min. Le seau contient jusqu'à 80 jetons,
+// ce qui autorise un burst initial de 80 requêtes simultanées (ex : premier chargement)
+// puis régule à 80/min ensuite.
+const BUCKET_CAPACITY = 80;
+const REFILL_MS = 750; // 1 jeton toutes les 750 ms
+
+let _tokens = BUCKET_CAPACITY;
+const _pendingRequests: Array<() => void> = [];
+
+setInterval(() => {
+  _tokens = Math.min(BUCKET_CAPACITY, _tokens + 1);
+  // Débloquer la prochaine requête en attente dès qu'un jeton arrive
+  if (_pendingRequests.length > 0 && _tokens > 0) {
+    _tokens--;
+    _pendingRequests.shift()!();
+  }
+}, REFILL_MS);
+
+function acquireToken(): Promise<void> {
+  if (_tokens > 0) { _tokens--; return Promise.resolve(); }
+  // Seau vide — rejoindre la file, sera résolu à la prochaine régénération
+  return new Promise(resolve => _pendingRequests.push(resolve));
+}
+
+// ── Retry 429 (fallback si le token bucket n'a pas suffi) ─────────────────────
+// Lit le header Retry-After du serveur, plafonné à 30s pour ne pas bloquer l'UI.
 function get429RetryDelay(headers: Record<string, string> | undefined): number {
   const raw = headers?.['retry-after'];
   if (raw) {
     const parsed = parseInt(raw, 10);
-    if (!isNaN(parsed)) return Math.min(parsed * 1000, 5000);
+    if (!isNaN(parsed)) return Math.min(parsed * 1000, 30_000);
   }
-  return 1500; // délai par défaut si le serveur n'indique rien
+  return 2_000;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    withCredentials: true, // Cookie httpOnly envoyé automatiquement par le navigateur
-    timeout: 15000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  timeout: 15000,
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Intercepteur requête — CSRF + Authorization Bearer (fallback Safari iOS ITP)
 const MUTATION_METHODS = ['post', 'put', 'patch', 'delete'];
+
+// Intercepteur requête — token bucket + CSRF + Authorization Bearer
 apiClient.interceptors.request.use(async (config) => {
-    // CSRF sur toutes les mutations
-    if (config.method && MUTATION_METHODS.includes(config.method.toLowerCase())) {
-        let token = getCsrfToken();
-        if (!token) {
-            await fetchCsrfToken();
-            token = getCsrfToken();
-        }
-        if (token) {
-            config.headers['X-CSRF-Token'] = token;
-        }
+  // Attendre un jeton avant de partir — garantit qu'on ne dépasse jamais 80 req/min
+  await acquireToken();
+
+  if (config.method && MUTATION_METHODS.includes(config.method.toLowerCase())) {
+    let token = getCsrfToken();
+    if (!token) {
+      await fetchCsrfToken();
+      token = getCsrfToken();
     }
-    // Authorization Bearer si token en mémoire (Safari iOS bloque les cookies cross-site)
-    const authToken = getAuthToken();
-    if (authToken && !config.headers['Authorization']) {
-        config.headers['Authorization'] = `Bearer ${authToken}`;
-    }
-    return config;
+    if (token) config.headers['X-CSRF-Token'] = token;
+  }
+
+  const authToken = getAuthToken();
+  if (authToken && !config.headers['Authorization']) {
+    config.headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
+  return config;
 });
 
 // Flag pour éviter les boucles infinies de refresh
@@ -53,96 +85,92 @@ let refreshQueue: Array<{ resolve: (token: string) => void; reject: (err: any) =
 export const getIsAxiosRefreshing = () => isRefreshing;
 
 function processRefreshQueue(newToken: string) {
-    refreshQueue.forEach(({ resolve }) => resolve(newToken));
-    refreshQueue = [];
+  refreshQueue.forEach(({ resolve }) => resolve(newToken));
+  refreshQueue = [];
 }
 
 function rejectRefreshQueue(err: any) {
-    refreshQueue.forEach(({ reject }) => reject(err));
-    refreshQueue = [];
+  refreshQueue.forEach(({ reject }) => reject(err));
+  refreshQueue = [];
 }
 
-// Intercepteur réponse — gestion 401 (refresh token) + retry CSRF automatique sur 403
+// Intercepteur réponse — 401 (refresh token) + 403 (CSRF) + 429 (rate limit)
 apiClient.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const status = error.response?.status;
-        const originalConfig = error.config;
+  (response) => response,
+  async (error) => {
+    const status = error.response?.status;
+    const originalConfig = error.config;
 
-        // Retry automatique si token CSRF expiré (403) — renouvelle et retente une fois
-        if (status === 403 && !originalConfig?._csrfRetried) {
-            const method = originalConfig?.method?.toLowerCase();
-            if (method && MUTATION_METHODS.includes(method)) {
-                originalConfig._csrfRetried = true;
-                invalidateCsrfToken();
-                await fetchCsrfToken();
-                const newToken = getCsrfToken();
-                if (newToken) {
-                    originalConfig.headers['X-CSRF-Token'] = newToken;
-                }
-                return apiClient.request(originalConfig);
-            }
-        }
-
-        // Auto-refresh sur 401 — utilise le refresh token (cookie rtk ou body mobile)
-        if (status === 401 && !originalConfig?._authRetried) {
-            // Ne pas tenter de refresh sur les routes d'auth elles-mêmes
-            const isAuthRoute = originalConfig?.url?.includes('/login') ||
-                originalConfig?.url?.includes('/refresh') ||
-                originalConfig?.url?.includes('/logout');
-            if (!isAuthRoute) {
-                originalConfig._authRetried = true;
-
-                if (isRefreshing) {
-                    // Mettre en file d'attente les requêtes pendant le refresh en cours
-                    return new Promise<string>((resolve, reject) => {
-                        refreshQueue.push({ resolve, reject });
-                    }).then((newToken) => {
-                        originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
-                        return apiClient.request(originalConfig);
-                    });
-                }
-
-                isRefreshing = true;
-                try {
-                    const refreshResponse = await apiClient.post('/refresh', {});
-                    const { token: newToken } = refreshResponse.data;
-                    if (newToken) {
-                        setAuthToken(newToken);
-                        processRefreshQueue(newToken);
-                        originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
-                    }
-                    return apiClient.request(originalConfig);
-                } catch (refreshErr) {
-                    // Refresh token expiré ou révoqué → rejeter toutes les requêtes en attente
-                    rejectRefreshQueue(refreshErr);
-                    setAuthToken(null);
-                    // Ne rediriger vers login que sur les pages protégées (pas les pages publiques)
-                    const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
-                        '/glossary', '/about', '/contact', '/privacy', '/help', '/subscriptions',
-                        '/community', '/communities', '/classement', '/login', '/signup',
-                        '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email',
-                        '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'];
-                    const currentPath = window.location.pathname;
-                    const isPublic = PUBLIC_PATHS.some(p => currentPath === p || currentPath.startsWith(p + '/'));
-                    if (!isPublic) {
-                        window.location.href = '/login';
-                    }
-                } finally {
-                    isRefreshing = false;
-                }
-            }
-        }
-
-        // Gestion 429 — retry silencieux après le délai Retry-After
-        // L'utilisateur ne voit jamais d'erreur : la requête aboutit avec un léger délai.
-        if (status === 429 && !originalConfig?._rateLimitRetried) {
-          originalConfig._rateLimitRetried = true;
-          const delay = get429RetryDelay(error.response?.headers);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          return apiClient.request(originalConfig);
-        }
-
-        return Promise.reject(error);
+    // ── CSRF expiré (403) — renouvelle et retente une fois ───────────────────
+    if (status === 403 && !originalConfig?._csrfRetried) {
+      const method = originalConfig?.method?.toLowerCase();
+      if (method && MUTATION_METHODS.includes(method)) {
+        originalConfig._csrfRetried = true;
+        invalidateCsrfToken();
+        await fetchCsrfToken();
+        const newToken = getCsrfToken();
+        if (newToken) originalConfig.headers['X-CSRF-Token'] = newToken;
+        return apiClient.request(originalConfig);
+      }
     }
+
+    // ── Token expiré (401) — refresh automatique + file d'attente ────────────
+    if (status === 401 && !originalConfig?._authRetried) {
+      const isAuthRoute = originalConfig?.url?.includes('/login') ||
+        originalConfig?.url?.includes('/refresh') ||
+        originalConfig?.url?.includes('/logout');
+
+      if (!isAuthRoute) {
+        originalConfig._authRetried = true;
+
+        if (isRefreshing) {
+          return new Promise<string>((resolve, reject) => {
+            refreshQueue.push({ resolve, reject });
+          }).then((newToken) => {
+            originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
+            return apiClient.request(originalConfig);
+          });
+        }
+
+        isRefreshing = true;
+        try {
+          const refreshResponse = await apiClient.post('/refresh', {});
+          const { token: newToken } = refreshResponse.data;
+          if (newToken) {
+            setAuthToken(newToken);
+            processRefreshQueue(newToken);
+            originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
+          }
+          return apiClient.request(originalConfig);
+        } catch (refreshErr) {
+          rejectRefreshQueue(refreshErr);
+          setAuthToken(null);
+          const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
+            '/glossary', '/about', '/contact', '/privacy', '/help', '/subscriptions',
+            '/community', '/communities', '/classement', '/login', '/signup',
+            '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email',
+            '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'];
+          const currentPath = window.location.pathname;
+          const isPublic = PUBLIC_PATHS.some(p => currentPath === p || currentPath.startsWith(p + '/'));
+          if (!isPublic) window.location.href = '/login';
+        } finally {
+          isRefreshing = false;
+        }
+      }
+    }
+
+    // ── Rate limit (429) — retry avec backoff, 2 tentatives maximum ──────────
+    // Le token bucket empêche ce cas en temps normal.
+    // Si on arrive ici c'est un cas extrême (autre appareil connecté en parallèle, etc.).
+    // On retente silencieusement sans jamais afficher le message d'erreur du serveur.
+    const retryCount: number = originalConfig?._rateLimitRetries ?? 0;
+    if (status === 429 && retryCount < 2) {
+      originalConfig._rateLimitRetries = retryCount + 1;
+      const delay = get429RetryDelay(error.response?.headers);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return apiClient.request(originalConfig);
+    }
+
+    return Promise.reject(error);
+  }
 );

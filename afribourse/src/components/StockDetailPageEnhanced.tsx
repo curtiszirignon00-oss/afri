@@ -305,7 +305,7 @@ export default function StockDetailPageEnhanced() {
 
   // Handler pour l'achat
   async function handleBuy() {
-    if (!stock) return;
+    if (!stock || isBuying) return;
     if (emailPhase >= 2) { setShowEmailVerifModal(true); return; }
 
     if (!portfolio) {
@@ -316,8 +316,28 @@ export default function StockDetailPageEnhanced() {
       return toast.error("Fonds insuffisants.");
     }
 
+    // 1. Optimistic update immédiat — solde et position mis à jour avant l'appel réseau
+    setPortfolio(prev => {
+      if (!prev) return prev;
+      const existingPos = prev.positions.find(p => p.stock_ticker === stock.symbol);
+      const newPositions: typeof prev.positions = existingPos
+        ? prev.positions.map(p =>
+            p.stock_ticker === stock.symbol
+              ? { ...p, quantity: p.quantity + quantity }
+              : p
+          )
+        : [...prev.positions, {
+            id: `optimistic-${stock.symbol}`,
+            portfolioId: prev.id,
+            stock_ticker: stock.symbol,
+            quantity,
+            average_buy_price: stock.current_price,
+          }];
+      return { ...prev, cash_balance: prev.cash_balance - totalCost, positions: newPositions };
+    });
+
+    // 2. Requête réseau (isBuying empêche le double-clic pendant le vol)
     setIsBuying(true);
-    const toastId = toast.loading('Achat en cours...');
     setError(null);
 
     try {
@@ -329,51 +349,25 @@ export default function StockDetailPageEnhanced() {
           stockTicker: stock.symbol,
           quantity: quantity,
           pricePerShare: stock.current_price,
-          walletType: walletMode // Multi-wallet support
+          walletType: walletMode,
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        // Le backend renvoie "error" pour les erreurs du middleware challenge
-        const errorMessage = result.error || result.message || "Erreur lors de l'achat";
-        throw new Error(errorMessage);
+        throw new Error(result.error || result.message || "Erreur lors de l'achat");
       }
 
       const walletLabel = walletMode === 'CONCOURS' ? '(Challenge)' : '(Simulation)';
-      toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi ! ${walletLabel}`, { id: toastId });
+      toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi ! ${walletLabel}`);
 
-      // Onboarding : marquer le premier achat simulé
+      // Onboarding uniquement après confirmation serveur
       if (onboardingRef.current.isActive && !onboardingRef.current.steps.achat) {
         onboardingRef.current.completeStep('achat');
       }
 
-      // Optimistic update immédiat du portfolio (solde + positions)
-      if (stock) {
-        setPortfolio(prev => {
-          if (!prev) return prev;
-          const cost = quantity * stock.current_price;
-          const existingPos = prev.positions.find(p => p.stock_ticker === stock.symbol);
-          const newPositions: typeof prev.positions = existingPos
-            ? prev.positions.map(p =>
-                p.stock_ticker === stock.symbol
-                  ? { ...p, quantity: p.quantity + quantity }
-                  : p
-              )
-            : [...prev.positions, {
-                id: `optimistic-${stock.symbol}`,
-                portfolioId: prev.id,
-                stock_ticker: stock.symbol,
-                quantity,
-                average_buy_price: stock.current_price,
-              }];
-          return { ...prev, cash_balance: prev.cash_balance - cost, positions: newPositions };
-        });
-      }
-      setIsBuying(false); // Réactiver le bouton immédiatement
-
-      // Sync en arrière-plan pour récupérer l'état exact du serveur
+      // Sync serveur en arrière-plan
       authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
@@ -384,14 +378,30 @@ export default function StockDetailPageEnhanced() {
             initial_balance: data.initial_balance || 0,
             cash_balance: data.cash_balance,
             wallet_type: data.wallet_type,
-            positions: data.positions || []
+            positions: data.positions || [],
           });
         })
         .catch(() => {});
     } catch (error: any) {
       console.error("Erreur achat:", error);
-      toast.error(error.message, { id: toastId });
+      toast.error(error.message);
       setError(error.message);
+      // Rollback : recharger le vrai état du serveur
+      authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) setPortfolio({
+            id: data.id,
+            userId: data.userId || '',
+            name: data.name || 'Mon Portfolio',
+            initial_balance: data.initial_balance || 0,
+            cash_balance: data.cash_balance,
+            wallet_type: data.wallet_type,
+            positions: data.positions || [],
+          });
+        })
+        .catch(() => {});
+    } finally {
       setIsBuying(false);
     }
   }

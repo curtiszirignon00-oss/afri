@@ -83,7 +83,8 @@ export default function DashboardPage() {
     error: portfolioError,
     refetch: reloadPortfolio,
     createPortfolio,
-    calculateTotalValue
+    calculateTotalValue,
+    updatePortfolio,
   } = usePortfolio({ walletType: walletMode });
 
   // ✅ React Query: Hooks pour achat/vente
@@ -213,13 +214,38 @@ export default function DashboardPage() {
     }
   }
 
-  // ✅ Vente avec React Query mutation
+  // ✅ Vente avec optimistic update — modal se ferme immédiatement
   async function handleSell() {
     if (!selectedPosition || !portfolio) return;
     if (emailPhase >= 2) { setShowEmailVerifModal(true); return; }
     const stockMarketData = stocksData[selectedPosition.stock_ticker];
     if (!stockMarketData) return;
 
+    const proceeds = sellQuantity * stockMarketData.current_price;
+
+    // 1. Optimistic update + fermeture immédiate de la modal
+    updatePortfolio(prev => {
+      if (!prev) return prev;
+      const newPositions = prev.positions
+        .map(p => p.stock_ticker === selectedPosition.stock_ticker
+          ? { ...p, quantity: p.quantity - sellQuantity }
+          : p
+        )
+        .filter(p => p.quantity > 0);
+      return { ...prev, cash_balance: prev.cash_balance + proceeds, positions: newPositions };
+    });
+    setSellModalOpen(false);
+
+    // 2. Analytics (synchrones)
+    trackAction(ACTION_TYPES.SIMULATE_SELL, 'Simulation de vente', {
+      ticker: selectedPosition.stock_ticker,
+      quantity: sellQuantity,
+      price: stockMarketData.current_price,
+      totalValue: proceeds,
+      walletType: walletMode,
+    });
+
+    // 3. Requête réseau en arrière-plan
     try {
       await sellStock.mutateAsync({
         stockTicker: selectedPosition.stock_ticker,
@@ -227,33 +253,51 @@ export default function DashboardPage() {
         pricePerShare: stockMarketData.current_price,
         walletType: walletMode,
       });
-
-      // Track la vente
-      trackAction(
-        ACTION_TYPES.SIMULATE_SELL,
-        'Simulation de vente',
-        {
-          ticker: selectedPosition.stock_ticker,
-          quantity: sellQuantity,
-          price: stockMarketData.current_price,
-          totalValue: sellQuantity * stockMarketData.current_price,
-          walletType: walletMode,
-        }
-      );
-
-      setSellModalOpen(false);
-      await reloadPortfolio();
-      await loadUserData(); // <-- AJOUT: Recharger les transactions
+      reloadPortfolio();
     } catch (err) {
+      reloadPortfolio(); // rollback via rechargement réel
       console.error('Erreur vente:', err);
     }
   }
 
-  // ✅ Achat avec React Query mutation
+  // ✅ Achat avec optimistic update — modal se ferme immédiatement
   async function handleBuy() {
     if (!selectedStockToBuy || !portfolio) return;
     if (emailPhase >= 2) { setShowEmailVerifModal(true); return; }
 
+    const cost = buyQuantity * selectedStockToBuy.current_price;
+
+    // 1. Optimistic update + fermeture immédiate de la modal
+    updatePortfolio(prev => {
+      if (!prev) return prev;
+      const existingPos = prev.positions.find(p => p.stock_ticker === selectedStockToBuy.symbol);
+      const newPositions = existingPos
+        ? prev.positions.map(p =>
+            p.stock_ticker === selectedStockToBuy.symbol
+              ? { ...p, quantity: p.quantity + buyQuantity }
+              : p
+          )
+        : [...prev.positions, {
+            id: `optimistic-${selectedStockToBuy.symbol}`,
+            portfolioId: prev.id,
+            stock_ticker: selectedStockToBuy.symbol,
+            quantity: buyQuantity,
+            average_buy_price: selectedStockToBuy.current_price,
+          }];
+      return { ...prev, cash_balance: prev.cash_balance - cost, positions: newPositions };
+    });
+    setBuyModalOpen(false);
+
+    // 2. Analytics (synchrone)
+    trackAction(ACTION_TYPES.SIMULATE_BUY, "Simulation d'achat", {
+      ticker: selectedStockToBuy.symbol,
+      quantity: buyQuantity,
+      price: selectedStockToBuy.current_price,
+      totalValue: cost,
+      walletType: walletMode,
+    });
+
+    // 3. Requête réseau — confirmation serveur
     try {
       await buyStock.mutateAsync({
         stockTicker: selectedStockToBuy.symbol,
@@ -261,28 +305,13 @@ export default function DashboardPage() {
         pricePerShare: selectedStockToBuy.current_price,
         walletType: walletMode,
       });
-
-      // Track l'achat
-      trackAction(
-        ACTION_TYPES.SIMULATE_BUY,
-        "Simulation d'achat",
-        {
-          ticker: selectedStockToBuy.symbol,
-          quantity: buyQuantity,
-          price: selectedStockToBuy.current_price,
-          totalValue: buyQuantity * selectedStockToBuy.current_price,
-          walletType: walletMode,
-        }
-      );
-
-      // Onboarding : marquer le premier achat simulé (via ref — valeurs toujours fraîches)
+      // Onboarding uniquement après confirmation serveur
       if (onboardingRef.current.isActive && !onboardingRef.current.steps.achat) {
         onboardingRef.current.completeStep('achat');
       }
-
-      setBuyModalOpen(false);
-      reloadPortfolio(); // fire-and-forget — la modal est déjà fermée
+      reloadPortfolio();
     } catch (err) {
+      reloadPortfolio(); // rollback — restaure l'état réel
       console.error('Erreur achat:', err);
     }
   }

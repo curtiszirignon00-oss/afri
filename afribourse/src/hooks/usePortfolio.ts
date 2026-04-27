@@ -13,6 +13,7 @@ interface UsePortfolioReturn {
   refetch: () => Promise<void>;
   createPortfolio: () => Promise<void>;
   calculateTotalValue: () => number;
+  updatePortfolio: (updater: (prev: Portfolio | null) => Portfolio | null) => void;
 }
 
 interface UsePortfolioParams {
@@ -141,6 +142,10 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
     };
   }, [refreshPrices]);
 
+  const updatePortfolio = useCallback((updater: (prev: Portfolio | null) => Portfolio | null) => {
+    setPortfolio(updater);
+  }, []);
+
   return {
     portfolio,
     stocksData,
@@ -149,6 +154,7 @@ export function usePortfolio(params?: UsePortfolioParams): UsePortfolioReturn {
     error,
     refetch: loadPortfolio,
     createPortfolio,
-    calculateTotalValue
+    calculateTotalValue,
+    updatePortfolio,
   };
 }
