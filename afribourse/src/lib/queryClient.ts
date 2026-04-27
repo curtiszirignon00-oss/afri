@@ -9,10 +9,14 @@ export const queryClient = new QueryClient({
       // Ne jamais réessayer sur 429 (rate limit) — cela aggraverait la situation.
       // Réessayer une fois sur les autres erreurs (réseau, 5xx).
       retry: (failureCount, error: any) => {
+        // 429 silencieux (GET) : ne pas réessayer, React Query garde les données stale
+        if ((error as any)?.silent) return false;
         const status = error?.response?.status;
         if (status === 429 || status === 401 || status === 403) return false;
         return failureCount < 1;
       },
+      // Ne pas marquer comme erreur les 429 silencieux sur les requêtes GET
+      throwOnError: (error: any) => !(error as any)?.silent,
       refetchOnWindowFocus: false,
       // Sur reconnexion réseau, ne refetch que les données critiques pour éviter le burst
       // de 50+ requêtes simultanées quand l'utilisateur retrouve du réseau.

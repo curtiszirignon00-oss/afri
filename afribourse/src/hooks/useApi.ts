@@ -74,13 +74,11 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     }
 
     // 429 — trop de requêtes
+    // GET : silencieux — React Query garde les données stale, l'user ne voit rien
+    // Mutations : on remonte l'erreur mais sans afficher le délai exact
     if (response.status === 429) {
-      const retryAfter = response.headers.get('Retry-After') || errorData.retryAfter;
-      const minutes = retryAfter ? Math.ceil(Number(retryAfter) / 60) : null;
-      const msg = minutes
-        ? `Trop de requêtes. Réessayez dans ${minutes} min.`
-        : errorData.message || 'Trop de requêtes. Veuillez patienter avant de réessayer.';
-      throw new Error(msg);
+      if (method === 'GET') throw Object.assign(new Error('rate-limited'), { silent: true });
+      throw new Error('Trop de requêtes. Veuillez patienter quelques instants.');
     }
 
     const errorMessage = errorData.error || errorData.message || `Erreur ${response.status}`;
