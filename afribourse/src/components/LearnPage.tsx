@@ -73,7 +73,12 @@ export default function LearnPage() {
     const { triggerMilestone, checkNewAchievements } = useCelebration();
 
     // Onboarding guidé nouveaux utilisateurs
-    const { isActive: isOnboardingActive, steps: onboardingSteps, completeStep: completeOnboardingStep } = useOnboardingGuideContext();
+    // On utilise un ref pour éviter le stale-closure dans les useCallback
+    // (handleMarkAsCompleted et submitQuiz ont des deps fixes, le ref garantit
+    //  qu'ils voient toujours la valeur courante sans se recréer)
+    const onboardingGuide = useOnboardingGuideContext();
+    const onboardingRef = useRef(onboardingGuide);
+    useEffect(() => { onboardingRef.current = onboardingGuide; });
 
     const [modules, setModules] = useState<LearningModule[]>([]);
     const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
@@ -461,16 +466,18 @@ export default function LearnPage() {
 
                 // Refresh gamification data
                 refetchGamification();
+            } else {
+                toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
+            }
 
-                // Onboarding : marquer le quiz du Module 1 comme complété
-                if (isOnboardingActive && !onboardingSteps.quiz && selectedModule?.order_index === 1) {
-                    completeOnboardingStep('quiz');
+            // Onboarding : marquer l'étape quiz comme faite (peu importe le score)
+            if (onboardingRef.current.isActive && !onboardingRef.current.steps.quiz) {
+                onboardingRef.current.completeStep('quiz');
+                if (result.passed) {
                     setTimeout(() => {
                         toast('🚀 Excellent ! Prêt(e) pour ton premier achat simulé virtuel.', { duration: 5000 });
                     }, 1200);
                 }
-            } else {
-                toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
             }
 
             // Scroller vers les résultats pour que l'utilisateur puisse les voir
@@ -579,9 +586,9 @@ export default function LearnPage() {
                 triggerMilestone('first_module', { xp: 200 });
             }
 
-            // Onboarding : marquer le cours du Module 1 comme complété
-            if (isOnboardingActive && !onboardingSteps.cours && selectedModule?.order_index === 1) {
-                completeOnboardingStep('cours');
+            // Onboarding : marquer l'étape cours comme faite (via ref pour éviter le stale-closure)
+            if (onboardingRef.current.isActive && !onboardingRef.current.steps.cours) {
+                onboardingRef.current.completeStep('cours');
                 setTimeout(() => {
                     toast('🎯 Bien joué ! Teste maintenant tes connaissances avec le quiz.', { duration: 5000 });
                 }, 800);

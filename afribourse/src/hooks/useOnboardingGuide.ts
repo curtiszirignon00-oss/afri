@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 const LS_KEY = 'afribourse_onboarding_guide';
 
-interface OnboardingSteps {
+export interface OnboardingSteps {
   cours: boolean;
   quiz: boolean;
   achat: boolean;
@@ -31,9 +31,13 @@ function readStorage(): StoredState | null {
 function writeStorage(state: StoredState) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(state));
-  } catch {
-    // ignore quota errors
-  }
+  } catch {}
+}
+
+function clearStorage() {
+  try {
+    localStorage.removeItem(LS_KEY);
+  } catch {}
 }
 
 export interface OnboardingGuideState {
@@ -48,7 +52,7 @@ export interface OnboardingGuideState {
   forceHideChecklist: () => void;
 }
 
-const INACTIVE: OnboardingGuideState = {
+export const INACTIVE_STATE: OnboardingGuideState = {
   isActive: false,
   showWelcome: false,
   steps: { cours: false, quiz: false, achat: false },
@@ -61,49 +65,72 @@ const INACTIVE: OnboardingGuideState = {
 };
 
 export function useOnboardingGuide(isNewUser: boolean | undefined): OnboardingGuideState {
-  const [stored, setStored] = useState<StoredState>(() => {
-    if (!isNewUser) return DEFAULT_STATE;
-    return readStorage() ?? DEFAULT_STATE;
+  /**
+   * `stored === null`  → flux inactif
+   * `stored !== null`  → flux actif, localStorage est la source de vérité
+   *
+   * On vérifie le localStorage EN PREMIER — si l'utilisateur était en cours
+   * d'onboarding et a rafraîchi la page, on restaure son état même si
+   * isNewUser est maintenant false (le flag est flippé au premier /me).
+   */
+  const [stored, setStored] = useState<StoredState | null>(() => {
+    const saved = readStorage();
+    if (saved) return saved;                // reprise mid-onboarding
+    if (isNewUser === true) return DEFAULT_STATE; // tout premier démarrage
+    return null;                            // utilisateur existant
   });
 
   const [isChecklistVisible, setIsChecklistVisible] = useState(true);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync state to localStorage on every change
+  // Initialisation différée : auth peut être encore en cours au premier render
   useEffect(() => {
-    if (!isNewUser) return;
-    writeStorage(stored);
-  }, [stored, isNewUser]);
+    if (isNewUser === true && stored === null) {
+      const saved = readStorage();
+      setStored(saved ?? DEFAULT_STATE);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNewUser]);
 
-  const completedCount = [stored.steps.cours, stored.steps.quiz, stored.steps.achat].filter(Boolean).length;
+  // Persistance localStorage à chaque changement d'état
+  useEffect(() => {
+    if (stored === null) return;
+    writeStorage(stored);
+  }, [stored]);
+
+  const isActive = stored !== null;
+  const completedCount = stored
+    ? [stored.steps.cours, stored.steps.quiz, stored.steps.achat].filter(Boolean).length
+    : 0;
   const isComplete = completedCount === 3;
 
-  // Masquer la checklist 5 secondes après la complétion totale
+  // Masquer la checklist 5 s après complétion totale
   useEffect(() => {
-    if (!isNewUser || !isComplete) return;
+    if (!isActive || !isComplete) return;
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => setIsChecklistVisible(false), 5000);
-    return () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    };
-  }, [isComplete, isNewUser]);
+    return () => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); };
+  }, [isComplete, isActive]);
 
   const dismissWelcome = useCallback(() => {
-    setStored(prev => ({ ...prev, hasSeenWelcome: true }));
+    setStored(prev => prev ? { ...prev, hasSeenWelcome: true } : prev);
   }, []);
 
   const completeStep = useCallback((key: keyof OnboardingSteps) => {
     setStored(prev => {
-      if (prev.steps[key]) return prev; // idempotent
+      if (!prev || prev.steps[key]) return prev; // null ou déjà fait → no-op
       return { ...prev, steps: { ...prev.steps, [key]: true } };
     });
   }, []);
 
+  // Appelé à la fermeture de CelebrationModal : efface l'état définitivement
   const forceHideChecklist = useCallback(() => {
     setIsChecklistVisible(false);
+    clearStorage();
+    setStored(null);
   }, []);
 
-  if (!isNewUser) return INACTIVE;
+  if (!isActive || !stored) return INACTIVE_STATE;
 
   return {
     isActive: true,
