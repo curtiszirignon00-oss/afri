@@ -485,7 +485,7 @@ export default function LearnPage() {
                                         <p className="font-bold text-gray-900 text-sm leading-snug">Tu as la finance dans le sang !</p>
                                         <p className="text-xs text-gray-500 mt-1 leading-relaxed">Le savoir c'est bien, le terrain c'est mieux. Place ton premier ordre simulé et regarde ton portefeuille prendre vie.</p>
                                         <button
-                                            onClick={() => { toast.dismiss(t.id); nav('/dashboard'); }}
+                                            onClick={() => { toast.dismiss(t.id); nav('/markets'); }}
                                             className="mt-3 px-4 py-1.5 text-xs font-bold text-white rounded-xl transition-opacity hover:opacity-90 w-full"
                                             style={{ backgroundColor: '#00D4A8' }}>
                                             Acheter ma première action →
@@ -504,7 +504,7 @@ export default function LearnPage() {
                                         <p className="font-bold text-gray-900 text-sm leading-snug">L'échec fait partie du chemin.</p>
                                         <p className="text-xs text-gray-500 mt-1 leading-relaxed">Les meilleurs investisseurs ont tous tâtonné au début. La mentalité, c'est tout. Tu peux dès maintenant tester ton premier achat simulé — sans aucun risque.</p>
                                         <button
-                                            onClick={() => { toast.dismiss(t.id); nav('/dashboard'); }}
+                                            onClick={() => { toast.dismiss(t.id); nav('/markets'); }}
                                             className="mt-3 px-4 py-1.5 text-xs font-bold text-white rounded-xl transition-opacity hover:opacity-90 w-full"
                                             style={{ backgroundColor: '#f97316' }}>
                                             Essayer d'acheter quand même →
