@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { BookOpen, Brain, TrendingUp, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
 
@@ -24,6 +25,7 @@ const STEPS = [
 export default function WelcomeModal() {
   const { userProfile } = useAuth();
   const { showWelcome, dismissWelcome } = useOnboardingGuideContext();
+  const navigate = useNavigate();
 
   if (!showWelcome) return null;
 
@@ -89,11 +91,11 @@ export default function WelcomeModal() {
         {/* Actions */}
         <div className="px-6 pb-6 space-y-2">
           <button
-            onClick={dismissWelcome}
+            onClick={() => { dismissWelcome(); navigate('/learn'); }}
             className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#00D4A8' }}
           >
-            Commencer mon parcours
+            Commencer mon parcours →
           </button>
           <button
             onClick={dismissWelcome}

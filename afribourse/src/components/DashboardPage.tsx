@@ -1,5 +1,5 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
@@ -93,8 +93,11 @@ export default function DashboardPage() {
   // ✅ Challenge: Vérification des horaires de trading
   const { canTrade, reason: tradingBlockedReason } = useCanTrade(walletMode);
 
-  // Onboarding guidé nouveaux utilisateurs
-  const { isActive, steps, completeStep } = useOnboardingGuideContext();
+  // Onboarding guidé nouveaux utilisateurs — ref pour accès toujours frais dans handleBuy
+  const onboardingGuide = useOnboardingGuideContext();
+  const { isActive, steps } = onboardingGuide;
+  const onboardingRef = useRef(onboardingGuide);
+  useEffect(() => { onboardingRef.current = onboardingGuide; });
 
   // ✅ Analytics: Hook pour tracker les actions
   const { trackAction } = useAnalytics();
@@ -272,9 +275,9 @@ export default function DashboardPage() {
         }
       );
 
-      // Onboarding : marquer le premier achat simulé
-      if (isActive && !steps.achat) {
-        completeStep('achat');
+      // Onboarding : marquer le premier achat simulé (via ref — valeurs toujours fraîches)
+      if (onboardingRef.current.isActive && !onboardingRef.current.steps.achat) {
+        onboardingRef.current.completeStep('achat');
       }
 
       setBuyModalOpen(false);
