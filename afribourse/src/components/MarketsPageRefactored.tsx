@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 import { useNavigate } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
+import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 
 // Limites de comparaison selon l'abonnement
 const COMPARISON_LIMITS: Record<string, number> = {
@@ -49,6 +50,10 @@ export default function MarketsPageRefactored() {
 
   // Vue : liste ou carte de marché
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  // Onboarding guidé nouveaux utilisateurs
+  const { isActive: isOnboardingActive, steps: onboardingSteps } = useOnboardingGuideContext();
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   // Stock comparison
   const [comparisonStocks, setComparisonStocks] = useState<Stock[]>([]);
@@ -261,6 +266,27 @@ export default function MarketsPageRefactored() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+
+        {/* Bannière onboarding — simulateur sans risque */}
+        {isOnboardingActive && !onboardingSteps.achat && !bannerDismissed && (
+          <div className="flex items-start gap-3 p-4 mb-5 rounded-xl border text-sm"
+            style={{ backgroundColor: '#f0fdfb', borderColor: '#00D4A8' }}>
+            <span className="text-lg flex-shrink-0">ℹ️</span>
+            <p className="flex-1" style={{ color: '#065f46' }}>
+              C'est un simulateur — tu peux acheter et vendre sans aucun risque financier.
+              Observe comment ton portefeuille évolue en temps réel !
+            </p>
+            <button
+              onClick={() => setBannerDismissed(true)}
+              className="flex-shrink-0 text-lg leading-none opacity-60 hover:opacity-100 transition-opacity"
+              aria-label="Fermer"
+              style={{ color: '#065f46' }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Marchés BRVM</h1>

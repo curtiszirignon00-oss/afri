@@ -13,6 +13,7 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ChallengeProvider } from './contexts/ChallengeContext';
 import { CelebrationProvider } from './contexts/CelebrationContext';
+import { OnboardingGuideProvider } from './context/OnboardingGuideContext';
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
@@ -62,6 +63,8 @@ import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
 import AchievementsPage from './pages/AchievementsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import WelcomePopup from './components/WelcomePopup';
+import OnboardingChecklist from './components/onboarding/OnboardingChecklist';
+import CelebrationModal from './components/onboarding/CelebrationModal';
 import { UpdatePrompt } from './components/pwa/UpdatePrompt';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { PushNotificationPrompt } from './components/pwa/PushNotificationPrompt';
@@ -118,6 +121,10 @@ function Layout() {
 
       {/* Modal session expirée — affiché globalement, hors flux de pages */}
       <SessionExpiredModal />
+
+      {/* Onboarding guidé nouveaux utilisateurs — global, persistant entre les pages */}
+      <OnboardingChecklist />
+      <CelebrationModal />
 
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
@@ -389,7 +396,9 @@ function App() {
           <ChallengeProvider>
             <CelebrationProvider>
               <BrowserRouter>
-                <Layout />
+                <OnboardingGuideProvider>
+                  <Layout />
+                </OnboardingGuideProvider>
               </BrowserRouter>
             </CelebrationProvider>
           </ChallengeProvider>

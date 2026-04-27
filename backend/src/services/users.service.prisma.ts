@@ -196,6 +196,8 @@ export const getUserById = async (id: string) => {
             telephone: true,
             address: true,
             created_at: true,
+            isNewUser: true,
+            onboardedAt: true,
         }
     });
     return user;

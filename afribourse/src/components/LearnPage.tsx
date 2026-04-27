@@ -40,6 +40,7 @@ import CertificateModal from './CertificateModal';
 import { useGamificationSummary } from '../hooks/useGamification';
 import { XPProgressBar, LevelBadge, StreakCounter, showXPGainToast } from './gamification';
 import { useCelebration } from '../contexts/CelebrationContext';
+import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -70,6 +71,9 @@ export default function LearnPage() {
     // Gamification data
     const { data: gamificationSummary, refetch: refetchGamification } = useGamificationSummary();
     const { triggerMilestone, checkNewAchievements } = useCelebration();
+
+    // Onboarding guidé nouveaux utilisateurs
+    const { isActive: isOnboardingActive, steps: onboardingSteps, completeStep: completeOnboardingStep } = useOnboardingGuideContext();
 
     const [modules, setModules] = useState<LearningModule[]>([]);
     const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
@@ -457,6 +461,14 @@ export default function LearnPage() {
 
                 // Refresh gamification data
                 refetchGamification();
+
+                // Onboarding : marquer le quiz du Module 1 comme complété
+                if (isOnboardingActive && !onboardingSteps.quiz && selectedModule?.order_index === 1) {
+                    completeOnboardingStep('quiz');
+                    setTimeout(() => {
+                        toast('🚀 Excellent ! Prêt(e) pour ton premier achat simulé virtuel.', { duration: 5000 });
+                    }, 1200);
+                }
             } else {
                 toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
             }
@@ -565,6 +577,14 @@ export default function LearnPage() {
             const completedModules = progress.filter(p => p.is_completed).length;
             if (completedModules === 0) {
                 triggerMilestone('first_module', { xp: 200 });
+            }
+
+            // Onboarding : marquer le cours du Module 1 comme complété
+            if (isOnboardingActive && !onboardingSteps.cours && selectedModule?.order_index === 1) {
+                completeOnboardingStep('cours');
+                setTimeout(() => {
+                    toast('🎯 Bien joué ! Teste maintenant tes connaissances avec le quiz.', { duration: 5000 });
+                }, 800);
             }
 
             // Vérifier les nouveaux badges débloqués
