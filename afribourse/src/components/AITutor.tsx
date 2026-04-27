@@ -105,7 +105,7 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-[360px] h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[360px] h-[70vh] max-h-[520px] sm:h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">

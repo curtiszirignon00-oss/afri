@@ -117,7 +117,7 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-[380px] h-[540px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[380px] h-[70vh] max-h-[540px] sm:h-[540px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
       {/* Header */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-3">
