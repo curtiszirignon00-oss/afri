@@ -349,21 +349,45 @@ export default function StockDetailPageEnhanced() {
         onboardingRef.current.completeStep('achat');
       }
 
-      // Rafraîchir le portfolio pour mettre à jour le solde sans quitter la page
-      const portfolioRes = await authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`);
-      if (portfolioRes.ok) {
-        const portfolioData = await portfolioRes.json();
-        setPortfolio({
-          id: portfolioData.id,
-          userId: portfolioData.userId || '',
-          name: portfolioData.name || 'Mon Portfolio',
-          initial_balance: portfolioData.initial_balance || 0,
-          cash_balance: portfolioData.cash_balance,
-          wallet_type: portfolioData.wallet_type,
-          positions: portfolioData.positions || []
+      // Optimistic update immédiat du portfolio (solde + positions)
+      if (stock) {
+        setPortfolio(prev => {
+          if (!prev) return prev;
+          const cost = quantity * stock.current_price;
+          const existingPos = prev.positions.find(p => p.stock_ticker === stock.symbol);
+          const newPositions: typeof prev.positions = existingPos
+            ? prev.positions.map(p =>
+                p.stock_ticker === stock.symbol
+                  ? { ...p, quantity: p.quantity + quantity }
+                  : p
+              )
+            : [...prev.positions, {
+                id: `optimistic-${stock.symbol}`,
+                portfolioId: prev.id,
+                stock_ticker: stock.symbol,
+                quantity,
+                average_buy_price: stock.current_price,
+              }];
+          return { ...prev, cash_balance: prev.cash_balance - cost, positions: newPositions };
         });
       }
-      setIsBuying(false);
+      setIsBuying(false); // Réactiver le bouton immédiatement
+
+      // Sync en arrière-plan pour récupérer l'état exact du serveur
+      authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) setPortfolio({
+            id: data.id,
+            userId: data.userId || '',
+            name: data.name || 'Mon Portfolio',
+            initial_balance: data.initial_balance || 0,
+            cash_balance: data.cash_balance,
+            wallet_type: data.wallet_type,
+            positions: data.positions || []
+          });
+        })
+        .catch(() => {});
     } catch (error: any) {
       console.error("Erreur achat:", error);
       toast.error(error.message, { id: toastId });
