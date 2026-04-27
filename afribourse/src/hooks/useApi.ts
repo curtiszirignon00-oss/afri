@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, getCsrfToken, fetchCsrfToken, getAuthToken } from '../config/api';
 import { SESSION_EXPIRED_EVENT } from '../contexts/AuthContext';
+import { RateLimitError } from '../lib/errors';
 
 // ========================================
 // 🔧 FONCTION UTILITAIRE FETCH
@@ -77,8 +78,7 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     // GET : silencieux — React Query garde les données stale, l'user ne voit rien
     // Mutations : on remonte l'erreur mais sans afficher le délai exact
     if (response.status === 429) {
-      if (method === 'GET') throw Object.assign(new Error('rate-limited'), { silent: true });
-      throw new Error('Trop de requêtes. Veuillez patienter quelques instants.');
+      throw new RateLimitError(method === 'GET');
     }
 
     const errorMessage = errorData.error || errorData.message || `Erreur ${response.status}`;

@@ -1,6 +1,7 @@
 // src/lib/api-client.ts
 import axios from 'axios';
 import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken, setAuthToken } from '../config/api';
+import { RateLimitError } from './errors';
 
 function get429RetryDelay(headers: Record<string, string> | undefined): number {
   const raw = headers?.['retry-after'];
@@ -130,7 +131,7 @@ apiClient.interceptors.response.use(
     // Mutations : 2 retries avec backoff plafonné à 30s.
     if (status === 429) {
       const isGet = !MUTATION_METHODS.includes(originalConfig?.method?.toLowerCase() ?? '');
-      if (isGet) return Promise.reject(Object.assign(new Error('rate-limited'), { silent: true }));
+      if (isGet) return Promise.reject(new RateLimitError(true));
 
       const retryCount: number = originalConfig?._rateLimitRetries ?? 0;
       if (retryCount < 2) {
@@ -139,6 +140,7 @@ apiClient.interceptors.response.use(
         await new Promise(resolve => setTimeout(resolve, delay));
         return apiClient.request(originalConfig);
       }
+      return Promise.reject(new RateLimitError(false));
     }
 
     return Promise.reject(error);
