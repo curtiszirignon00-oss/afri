@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
 import { useAuth } from '../contexts/AuthContext';
 import { usePortfolio } from '../hooks/usePortfolio';
@@ -748,7 +748,7 @@ export default function DashboardPage() {
 
               {filteredHistory.length > 0 ? (
                 <ResponsiveContainer width="100%" height={320}>
-                  <LineChart data={filteredHistory}>
+                  <AreaChart data={filteredHistory}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -759,28 +759,36 @@ export default function DashboardPage() {
                     <XAxis
                       dataKey="date"
                       stroke="#6b7280"
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 11 }}
+                      interval={Math.max(0, Math.ceil(filteredHistory.length / 6) - 1)}
+                      tickFormatter={(dateStr: string) => {
+                        const d = new Date(dateStr);
+                        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+                      }}
                     />
                     <YAxis
                       stroke="#6b7280"
                       tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => `${(value / 1000)}k`}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
                     />
                     <Tooltip
                       formatter={(value: number | undefined) => [`${formatNumber(value ?? 0)} FCFA`, 'Valeur']}
+                      labelFormatter={(dateStr: string) =>
+                        new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+                      }
                       labelStyle={{ color: '#374151' }}
                       contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="value"
                       stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ fill: '#3b82f6', r: 4 }}
-                      activeDot={{ r: 6 }}
+                      strokeWidth={2}
                       fill="url(#colorValue)"
+                      dot={false}
+                      activeDot={{ r: 5, fill: '#3b82f6' }}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-80 text-gray-500">
