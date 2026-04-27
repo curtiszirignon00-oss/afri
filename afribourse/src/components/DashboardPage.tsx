@@ -281,8 +281,7 @@ export default function DashboardPage() {
       }
 
       setBuyModalOpen(false);
-      await reloadPortfolio();
-      await loadUserData(); // <-- AJOUT: Recharger les transactions
+      reloadPortfolio(); // fire-and-forget — la modal est déjà fermée
     } catch (err) {
       console.error('Erreur achat:', err);
     }

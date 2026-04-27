@@ -584,8 +584,56 @@ export default function LearnPage() {
             return;
         }
 
-        const toastId = toast.loading('Marquage en cours...');
+        // Sauvegarde pour rollback éventuel
+        const previousProgress = progress;
 
+        // 1. Optimistic update immédiat — l'UI répond avant l'appel réseau
+        setProgress(prev => {
+            const exists = prev.find(p => p.module.slug === moduleSlug);
+            if (exists) {
+                return prev.map(p =>
+                    p.module.slug === moduleSlug
+                        ? { ...p, is_completed: true, completed_at: new Date().toISOString() }
+                        : p
+                );
+            }
+            return [...prev, {
+                id: `optimistic-${moduleSlug}`,
+                is_completed: true,
+                quiz_score: null,
+                quiz_attempts: 0,
+                last_quiz_attempt_at: null,
+                time_spent_minutes: null,
+                last_accessed_at: new Date().toISOString(),
+                completed_at: new Date().toISOString(),
+                userId: '',
+                moduleId: '',
+                module: {
+                    slug: moduleSlug,
+                    title: selectedModule?.title || '',
+                    order_index: selectedModule?.order_index ?? 0,
+                },
+            }];
+        });
+
+        // 2. Feedbacks visuels immédiats (avant l'appel réseau)
+        toast.success('Module terminé avec succès ! 🎉');
+        showXPGainToast({ xpGained: 200, bonusXP: undefined, newAchievements: [], levelUp: undefined });
+
+        const completedModules = previousProgress.filter(p => p.is_completed).length;
+        if (completedModules === 0) triggerMilestone('first_module', { xp: 200 });
+
+        if (onboardingRef.current.isActive && !onboardingRef.current.steps.cours) {
+            onboardingRef.current.completeStep('cours');
+            setTimeout(() => {
+                toast('🎯 Bien joué ! Teste maintenant tes connaissances avec le quiz.', { duration: 5000 });
+            }, 800);
+        }
+
+        setTimeout(() => checkNewAchievements(), 800);
+        refetchGamification();
+
+        // 3. Appel réseau (l'utilisateur a déjà son feedback)
         try {
             const response = await authFetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/complete`, {
                 method: 'POST',
@@ -597,7 +645,6 @@ export default function LearnPage() {
                 throw new Error(errorData.error || errorData.message || `Erreur ${response.status}: Impossible de marquer comme complété.`);
             }
 
-            // Track la complétion du module
             if (selectedModule) {
                 trackAction(ACTION_TYPES.COMPLETE_MODULE, 'Module complété', {
                     moduleSlug: selectedModule.slug,
@@ -606,65 +653,34 @@ export default function LearnPage() {
                 });
             }
 
-            await loadData();
-            toast.success('Module terminé avec succès ! 🎉', { id: toastId });
+            // Sync silencieux en arrière-plan (pas d'await → pas de spinner)
+            loadData(true);
 
-            // Show XP gain toast for module completion
-            showXPGainToast({
-                xpGained: 200,
-                bonusXP: undefined,
-                newAchievements: [],
-                levelUp: undefined
-            });
-
-            // Célébration premier module terminé
-            const completedModules = progress.filter(p => p.is_completed).length;
-            if (completedModules === 0) {
-                triggerMilestone('first_module', { xp: 200 });
-            }
-
-            // Onboarding : marquer l'étape cours comme faite (via ref pour éviter le stale-closure)
-            if (onboardingRef.current.isActive && !onboardingRef.current.steps.cours) {
-                onboardingRef.current.completeStep('cours');
+            // Certificate check avec l'état optimistic local (pas de 2ème requête réseau)
+            const updatedProgress = previousProgress.map(p =>
+                p.module.slug === moduleSlug ? { ...p, is_completed: true } : p
+            );
+            const publishedModules = allModules.filter(m => m.is_published);
+            const allDone = publishedModules.length > 0 &&
+                publishedModules.every(m => updatedProgress.some(p => p.module.slug === m.slug && p.is_completed));
+            if (allDone) {
                 setTimeout(() => {
-                    toast('🎯 Bien joué ! Teste maintenant tes connaissances avec le quiz.', { duration: 5000 });
+                    confetti({
+                        particleCount: 300,
+                        spread: 100,
+                        origin: { y: 0.5 },
+                        colors: ['#4338ca', '#f59e0b', '#10b981', '#3b82f6', '#ec4899']
+                    });
+                    if (userHasInvestisseurPlus) setShowCertificate(true);
+                    else setShowCertPaywall(true);
                 }, 800);
             }
 
-            // Vérifier les nouveaux badges débloqués
-            setTimeout(() => checkNewAchievements(), 800);
-
-            // Refresh gamification data
-            refetchGamification();
-
-            // Vérifier si tous les modules publiés sont maintenant complétés
-            const updatedProgressRes = await authFetch(`${API_BASE_URL}/learning-modules/progress`).catch(() => null);
-            if (updatedProgressRes && updatedProgressRes.ok) {
-                const updatedProgress: import('../types').LearningProgress[] = await updatedProgressRes.json();
-                const publishedModules = allModules.filter(m => m.is_published);
-                const allDone = publishedModules.length > 0 &&
-                    publishedModules.every(m => updatedProgress.some(p => p.module.slug === m.slug && p.is_completed));
-                if (allDone) {
-                    setTimeout(() => {
-                        confetti({
-                            particleCount: 300,
-                            spread: 100,
-                            origin: { y: 0.5 },
-                            colors: ['#4338ca', '#f59e0b', '#10b981', '#3b82f6', '#ec4899']
-                        });
-                        if (userHasInvestisseurPlus) {
-                            setShowCertificate(true);
-                        } else {
-                            setShowCertPaywall(true);
-                        }
-                    }, 800);
-                }
-            }
-
         } catch (err: any) {
+            // Rollback si l'API échoue
+            setProgress(previousProgress);
             console.error('Erreur complétion:', err);
-            const errorMessage = err?.message || "Erreur lors du marquage du module.";
-            toast.error(errorMessage, { id: toastId });
+            toast.error(err?.message || "Erreur lors du marquage du module.");
         }
     }, [isLoggedIn, loadData, selectedModule, trackAction]);
 
