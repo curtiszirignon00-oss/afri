@@ -15,6 +15,7 @@ import { getStockLogo } from '../utils/stockLogos';
 import { useAuth } from '../contexts/AuthContext';
 import { useDebounce } from '../hooks/useDebounce';
 import StockComparison from './markets/StockComparison';
+import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 
 // Import des nouveaux composants
 import {
@@ -60,6 +61,11 @@ export default function StockDetailPageEnhanced() {
 
   // Multi-wallet support - Challenge AfriBourse 2026
   const [walletMode, setWalletMode] = useState<'SANDBOX' | 'CONCOURS'>('SANDBOX');
+
+  // Onboarding guidé nouveaux utilisateurs
+  const onboardingGuide = useOnboardingGuideContext();
+  const onboardingRef = React.useRef(onboardingGuide);
+  React.useEffect(() => { onboardingRef.current = onboardingGuide; });
 
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
@@ -337,6 +343,11 @@ export default function StockDetailPageEnhanced() {
 
       const walletLabel = walletMode === 'CONCOURS' ? '(Challenge)' : '(Simulation)';
       toast.success(`Achat de ${quantity} action(s) de ${stock.symbol} réussi ! ${walletLabel}`, { id: toastId });
+
+      // Onboarding : marquer le premier achat simulé
+      if (onboardingRef.current.isActive && !onboardingRef.current.steps.achat) {
+        onboardingRef.current.completeStep('achat');
+      }
 
       // Rafraîchir le portfolio pour mettre à jour le solde sans quitter la page
       const portfolioRes = await authFetch(`${API_BASE_URL}/portfolios/my?wallet_type=${walletMode}`);
