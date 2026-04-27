@@ -278,6 +278,18 @@ export async function getMe(req: Request, res: Response, next: NextFunction) {
 
         const userResponse: Record<string, unknown> = { ...user };
 
+        // Onboarding guidé : basculer isNewUser à false exactement une fois
+        // Les anciens utilisateurs n'ont pas ce champ → undefined traité comme false
+        if (user.isNewUser === true) {
+            await prisma.user.update({
+                where: { id: userId },
+                data: { isNewUser: false, onboardedAt: new Date() },
+            });
+            userResponse.isNewUser = true; // retourner true une seule fois
+        } else {
+            userResponse.isNewUser = false;
+        }
+
         // Les admins ont accès max à toutes les fonctionnalités
         if (user.role === 'admin') {
             userResponse.subscriptionTier = 'max';
