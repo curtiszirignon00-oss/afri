@@ -4,7 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TrendingUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 
 // Query Client
 import { queryClient } from './lib/queryClient';
@@ -18,59 +18,73 @@ import { OnboardingGuideProvider } from './context/OnboardingGuideContext';
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
 
-// Components
+// Composants chemin critique (eager) — visibles dès le premier paint
 import Header from './components/Header';
 import HomePage from './components/HomePage';
-import MarketsPageRefactored from './components/MarketsPageRefactored';
-import IndicesPage from './components/IndicesPage';
-import OnboardingFlow from './components/onboarding/OnboardingFlow';
-import DiscoverySurvey from './components/onboarding/DiscoverySurvey';
-import SurveyPage from './pages/SurveyPage';
-import SurveyPopup from './components/survey/SurveyPopup';
-import ProfilePage from './pages/ProfilePage';
-import CommunityPage from './pages/CommunityPage';
-import CommunitiesPage from './pages/CommunitiesPage';
-import CommunityDetailPage from './pages/CommunityDetailPage';
-import StockDetailPageEnhanced from './components/StockDetailPageEnhanced';
-import UniWaxDashboardPage from './pages/UniWaxDashboardPage';
-import LearnPage from './components/LearnPage';
-import NewsPage from './components/NewsPage';
-import GlossaryPage from './components/GlossaryPage';
-import SignupPage from './components/SignupPage';
-import LoginPage from './components/LoginPage';
-import DashboardPage from './components/DashboardPage';
-import TransactionsPage from './components/TransactionsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import ConfirmEmailPage from './components/ConfirmEmailPage';
-import ResendConfirmationPage from './components/ResendConfirmationPage';
-import VerifyEmailPage from './components/VerifyEmailPage';
-import ForgotPasswordPage from './components/ForgotPasswordPage';
-import ResetPasswordPage from './components/ResetPasswordPage';
-import AboutPage from './components/AboutPage';
-import ContactPage from './components/ContactPage';
-import PrivacyPage from './components/PrivacyPage';
-import HelpCenterPage from './components/HelpCenterPage';
-import SubscriptionPage from './components/SubscriptionPage';
-import AdminSubscriptionStats from './components/AdminSubscriptionStats';
-import CheckoutPage from './components/CheckoutPage';
-import TrialClaimPage from './pages/TrialClaimPage';
-import AdminDashboard from './components/AdminDashboard';
-import AdminAnalyticsDashboard from './components/AdminAnalyticsDashboard';
-import NotificationsPage from './pages/NotificationsPage';
-import WatchlistPage from './pages/WatchlistPage';
-import ChallengeCommunityPage from './pages/ChallengeCommunityPage';
-import AchievementsPage from './pages/AchievementsPage';
-import LeaderboardPage from './pages/LeaderboardPage';
-import WelcomePopup from './components/WelcomePopup';
-import OnboardingChecklist from './components/onboarding/OnboardingChecklist';
-import CelebrationModal from './components/onboarding/CelebrationModal';
-import { UpdatePrompt } from './components/pwa/UpdatePrompt';
-import { OfflineBanner } from './components/pwa/OfflineBanner';
-import { PushNotificationPrompt } from './components/pwa/PushNotificationPrompt';
-import { InstallPrompt } from './components/pwa/InstallPrompt';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
+import WelcomePopup from './components/WelcomePopup';
+import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { SessionExpiredModal } from './components/ui/SessionExpiredModal';
+
+// Routes lazy — chargées à la demande
+const MarketsPageRefactored = lazy(() => import('./components/MarketsPageRefactored'));
+const IndicesPage = lazy(() => import('./components/IndicesPage'));
+const StockDetailPageEnhanced = lazy(() => import('./components/StockDetailPageEnhanced'));
+const UniWaxDashboardPage = lazy(() => import('./pages/UniWaxDashboardPage'));
+const NewsPage = lazy(() => import('./components/NewsPage'));
+const LearnPage = lazy(() => import('./components/LearnPage'));
+const GlossaryPage = lazy(() => import('./components/GlossaryPage'));
+const AboutPage = lazy(() => import('./components/AboutPage'));
+const ContactPage = lazy(() => import('./components/ContactPage'));
+const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
+const HelpCenterPage = lazy(() => import('./components/HelpCenterPage'));
+const SubscriptionPage = lazy(() => import('./components/SubscriptionPage'));
+const CheckoutPage = lazy(() => import('./components/CheckoutPage'));
+const DashboardPage = lazy(() => import('./components/DashboardPage'));
+const TransactionsPage = lazy(() => import('./components/TransactionsPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const CommunityPage = lazy(() => import('./pages/CommunityPage'));
+const CommunitiesPage = lazy(() => import('./pages/CommunitiesPage'));
+const CommunityDetailPage = lazy(() => import('./pages/CommunityDetailPage'));
+const TrialClaimPage = lazy(() => import('./pages/TrialClaimPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const WatchlistPage = lazy(() => import('./pages/WatchlistPage'));
+const ChallengeCommunityPage = lazy(() => import('./pages/ChallengeCommunityPage'));
+const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
+const SurveyPage = lazy(() => import('./pages/SurveyPage'));
+const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow'));
+const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
+
+// Pages auth lazy — l'utilisateur accepte un délai au moment du clic
+const SignupPage = lazy(() => import('./components/SignupPage'));
+const LoginPage = lazy(() => import('./components/LoginPage'));
+const ConfirmEmailPage = lazy(() => import('./components/ConfirmEmailPage'));
+const ResendConfirmationPage = lazy(() => import('./components/ResendConfirmationPage'));
+const VerifyEmailPage = lazy(() => import('./components/VerifyEmailPage'));
+const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage'));
+
+// Routes admin lazy — bundles séparés (très peu d'utilisateurs)
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const AdminAnalyticsDashboard = lazy(() => import('./components/AdminAnalyticsDashboard'));
+const AdminSubscriptionStats = lazy(() => import('./components/AdminSubscriptionStats'));
+
+// Composants globaux non critiques (modals/popups différés) — fallback null
+const SurveyPopup = lazy(() => import('./components/survey/SurveyPopup'));
+const OnboardingChecklist = lazy(() => import('./components/onboarding/OnboardingChecklist'));
+const CelebrationModal = lazy(() => import('./components/onboarding/CelebrationModal'));
+const UpdatePrompt = lazy(() =>
+  import('./components/pwa/UpdatePrompt').then((m) => ({ default: m.UpdatePrompt }))
+);
+const PushNotificationPrompt = lazy(() =>
+  import('./components/pwa/PushNotificationPrompt').then((m) => ({ default: m.PushNotificationPrompt }))
+);
+const InstallPrompt = lazy(() =>
+  import('./components/pwa/InstallPrompt').then((m) => ({ default: m.InstallPrompt }))
+);
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -90,6 +104,15 @@ function ScrollToTop() {
   }, [location.pathname]);
 
   return null;
+}
+
+// Fallback pour les routes lazy
+function RouteLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]" role="status" aria-label="Chargement">
+      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 }
 
 // Composant Layout pour le Header et Footer
@@ -123,17 +146,22 @@ function Layout() {
       <SessionExpiredModal />
 
       {/* Onboarding guidé nouveaux utilisateurs — global, persistant entre les pages */}
-      <OnboardingChecklist />
-      <CelebrationModal />
+      <Suspense fallback={null}>
+        <OnboardingChecklist />
+        <CelebrationModal />
+      </Suspense>
 
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
 
       {/* Discovery survey popup for users who haven't completed it */}
-      <SurveyPopup />
+      <Suspense fallback={null}>
+        <SurveyPopup />
+      </Suspense>
 
       <main className="flex-grow">
-        <Routes>
+        <Suspense fallback={<RouteLoader />}>
+          <Routes>
           {/* Routes publiques */}
           <Route path="/" element={<HomePage />} />
           <Route path="/markets" element={<MarketsPageRefactored />} />
@@ -294,7 +322,8 @@ function Layout() {
               </AdminRoute>
             }
           />
-        </Routes>
+          </Routes>
+        </Suspense>
       </main>
 
       {showLayout && (
@@ -375,14 +404,12 @@ function Layout() {
         </footer>
       )}
 
-      {/* PWA Update Prompt */}
-      <UpdatePrompt />
-
-      {/* Push Notification Prompt */}
-      <PushNotificationPrompt />
-
-      {/* PWA Install Prompt (mobile) */}
-      <InstallPrompt />
+      {/* PWA + notifications + install — différés, lazy */}
+      <Suspense fallback={null}>
+        <UpdatePrompt />
+        <PushNotificationPrompt />
+        <InstallPrompt />
+      </Suspense>
     </div>
   );
 }
