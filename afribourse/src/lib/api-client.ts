@@ -2,8 +2,6 @@
 import axios from 'axios';
 import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken, setAuthToken } from '../config/api';
 
-// ── Retry 429 ─────────────────────────────────────────────────────────────────
-// Lit le header Retry-After du serveur, plafonné à 30s pour ne pas bloquer l'UI.
 function get429RetryDelay(headers: Record<string, string> | undefined): number {
   const raw = headers?.['retry-after'];
   if (raw) {
@@ -127,16 +125,20 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // ── Rate limit (429) — retry avec backoff, 2 tentatives maximum ──────────
-    // Le token bucket empêche ce cas en temps normal.
-    // Si on arrive ici c'est un cas extrême (autre appareil connecté en parallèle, etc.).
-    // On retente silencieusement sans jamais afficher le message d'erreur du serveur.
-    const retryCount: number = originalConfig?._rateLimitRetries ?? 0;
-    if (status === 429 && retryCount < 2) {
-      originalConfig._rateLimitRetries = retryCount + 1;
-      const delay = get429RetryDelay(error.response?.headers);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return apiClient.request(originalConfig);
+    // ── Rate limit (429) ──────────────────────────────────────────────────────
+    // GET : erreur silencieuse — React Query garde les données stale, l'user ne voit rien.
+    // Mutations : 2 retries avec backoff plafonné à 30s.
+    if (status === 429) {
+      const isGet = !MUTATION_METHODS.includes(originalConfig?.method?.toLowerCase() ?? '');
+      if (isGet) return Promise.reject(Object.assign(new Error('rate-limited'), { silent: true }));
+
+      const retryCount: number = originalConfig?._rateLimitRetries ?? 0;
+      if (retryCount < 2) {
+        originalConfig._rateLimitRetries = retryCount + 1;
+        const delay = get429RetryDelay(error.response?.headers);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return apiClient.request(originalConfig);
+      }
     }
 
     return Promise.reject(error);
