@@ -1,19 +1,11 @@
-import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Lightbulb, Newspaper, Globe, DollarSign, Eye, Building2, MapPin, MessageCircle, Trophy, Award, Calendar, Users } from 'lucide-react';
+import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Newspaper, Globe, DollarSign, Eye, MessageCircle, Trophy, Award, Calendar, Users, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/api';
-// import { supabase } from '../lib/supabase'; // <-- REMOVE Supabase
+import { BRVM_NEWS } from '../data/brvm2026News';
 
 // --- Type Definitions ---
-// Define types based on what your API endpoints return
-type NewsArticle = {
-  id: string;
-  title: string;
-  summary: string | null;
-  // Add other fields if needed
-};
-
 type MarketIndex = {
   id: string;
   index_name: string;
@@ -52,68 +44,136 @@ export function LearnMegaMenu() {
 }
 // --- END LearnMegaMenu ---
 
-// --- UPDATED NewsMegaMenu ---
+// Couleurs de catégorie pour le mega menu
+const CAT_BADGE: Record<string, string> = {
+  'Marché':             'bg-blue-100 text-blue-700',
+  'Macroéconomie':      'bg-violet-100 text-violet-700',
+  'Matières premières': 'bg-amber-100 text-amber-700',
+  'Secteur bancaire':   'bg-emerald-100 text-emerald-700',
+  'Télécoms':           'bg-cyan-100 text-cyan-700',
+  'Dividendes':         'bg-teal-100 text-teal-700',
+  'Réglementation':     'bg-slate-200 text-slate-600',
+  'Agro-industrie':     'bg-lime-100 text-lime-700',
+};
+
+function fmtDateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// --- NewsMegaMenu ---
 export function NewsMegaMenu() {
   const navigate = useNavigate();
-  const [latestArticle, setLatestArticle] = useState<NewsArticle | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  // Fetch latest article from backend API
-  useEffect(() => {
-    async function loadLatest() {
-      setLoading(true);
-      try {
-        const response = await fetch(`${API_BASE_URL}/news/latest`);
-        if (response.ok) {
-          const data: NewsArticle = await response.json();
-          setLatestArticle(data);
-        } else {
-          console.error("Failed to load latest article");
-          setLatestArticle(null);
-        }
-      } catch (error) {
-        console.error("Error fetching latest article:", error);
-        setLatestArticle(null);
-      } finally {
-          setLoading(false);
-      }
-    }
-    loadLatest();
-  }, []); // Run once on mount
+  const previewArticles = [...BRVM_NEWS]
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+    .slice(0, 3);
+
+  const NAV_CATS = [
+    { label: 'Tout',          icon: Newspaper,  bg: 'bg-slate-100', fg: 'text-slate-600' },
+    { label: 'Marchés',       icon: TrendingUp, bg: 'bg-blue-100',  fg: 'text-blue-600'  },
+    { label: 'Analyse',       icon: BarChart3,  bg: 'bg-green-100', fg: 'text-green-600' },
+    { label: 'Économie',      icon: Globe,      bg: 'bg-orange-100',fg: 'text-orange-600'},
+    { label: 'Dividendes',    icon: DollarSign, bg: 'bg-teal-100',  fg: 'text-teal-600', isNew: true },
+    { label: 'Résultats 2025',icon: BarChart3,  bg: 'bg-purple-100',fg: 'text-purple-600'},
+  ] as const;
 
   return (
     <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Column 1: Categories */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Catégories</h3>
-            {/* Markets */}
-            <button onClick={() => navigate('/news', { state: { category: 'marches' }})} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors"><TrendingUp className="w-6 h-6 text-blue-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Marchés</h4> <p className="text-sm text-gray-600">Tendances BRVM.</p> </div> </button>
-            {/* Startups (Remove if you removed startups) */}
-            {/* <button onClick={() => navigate('/news', { state: { category: 'startups' })} className="..."> ... Startups ... </button> */}
-            {/* Economy */}
-            <button onClick={() => navigate('/news', { state: { category: 'economie' }})} className="group w-full flex items-start space-x-3 p-4 rounded-lg hover:bg-blue-50 transition-all text-left"> <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors"><Globe className="w-6 h-6 text-orange-600" /></div> <div> <h4 className="font-semibold text-gray-900 mb-1">Économie</h4> <p className="text-sm text-gray-600">Actus UEMOA.</p> </div> </button>
+
+          {/* Colonne 1 : navigation catégories */}
+          <div>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Catégories</h3>
+            <div className="space-y-0.5">
+              {NAV_CATS.map(({ label, icon: Icon, bg, fg, isNew }) => (
+                <button
+                  key={label}
+                  onClick={() => navigate('/news')}
+                  className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-all text-left"
+                >
+                  <div className={`flex-shrink-0 w-8 h-8 ${bg} rounded-lg flex items-center justify-center`}>
+                    <Icon className={`w-4 h-4 ${fg}`} />
+                  </div>
+                  <span className="flex-1 text-sm font-medium text-gray-800 group-hover:text-gray-900">{label}</span>
+                  {isNew && (
+                    <span className="text-[9px] font-bold bg-teal-100 text-teal-700 px-1.5 py-0.5 rounded-full">
+                      NOUVEAU
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => navigate('/news')}
+              className="mt-4 w-full flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-700 transition-colors"
+            >
+              Toutes les actualités <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-          {/* Column 2 & 3: Latest Article */}
+
+          {/* Colonnes 2-3 : aperçu des 3 derniers articles BRVM */}
           <div className="md:col-span-2">
-            {loading ? (
-                <div className="bg-gray-100 rounded-xl p-6 h-full flex items-center justify-center min-h-[150px]"> <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div> </div>
-            ) : latestArticle ? (
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 h-full flex flex-col justify-between">
-                <div> <div className="flex items-center space-x-2 mb-4"> <Newspaper className="w-5 h-5 text-orange-600" /> <span className="text-sm font-medium text-orange-600 uppercase">Dernière actualité</span> </div> <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{latestArticle.title}</h3> <p className="text-sm text-gray-700 line-clamp-3">{latestArticle.summary || 'Lire la suite pour plus de détails.'}</p> </div>
-                <button onClick={() => navigate('/news')} /* Pass article ID/slug if needed */ className="mt-6 px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold self-start text-sm">Lire la suite</button>
-              </div>
-            ) : (
-                <div className="bg-gray-100 rounded-xl p-6 h-full flex flex-col items-center justify-center text-center min-h-[150px]"> <Newspaper className="w-8 h-8 text-gray-400 mb-2"/> <p className="text-sm text-gray-500">Aucune actualité récente trouvée.</p> </div>
-            )}
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Intelligence de marché</h3>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#00D4A8]/10 text-[#00868A] border border-[#00D4A8]/25">
+                BRVM 2026
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {previewArticles.map(article => {
+                const posCount = article.tickers.filter(t => t.impact === 'Positif').length;
+                const negCount = article.tickers.filter(t => t.impact === 'Négatif').length;
+                const badgeCls = CAT_BADGE[article.category] ?? 'bg-slate-100 text-slate-600';
+
+                return (
+                  <button
+                    key={article.id}
+                    onClick={() => navigate('/news')}
+                    className="group w-full text-left px-4 py-3 bg-slate-50 hover:bg-white border border-transparent hover:border-slate-200 rounded-xl transition-all hover:shadow-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${badgeCls}`}>
+                            {article.category.toUpperCase()}
+                          </span>
+                          <span className="text-[10px] text-slate-400">{fmtDateShort(article.publishedAt)}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-800 leading-snug line-clamp-2 group-hover:text-[#00868A] transition-colors">
+                          {article.title}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        {posCount > 0 && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100">
+                            <TrendingUp className="w-2.5 h-2.5" />{posCount}
+                          </span>
+                        )}
+                        {negCount > 0 && (
+                          <span className="flex items-center gap-0.5 text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full border border-red-100">
+                            <TrendingDown className="w-2.5 h-2.5" />{negCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className="mt-3 text-[10px] text-slate-400 italic">
+              Données issues des publications officielles BRVM · Usage éducatif uniquement.
+            </p>
           </div>
+
         </div>
       </div>
     </div>
   );
 }
-// --- END UPDATED NewsMegaMenu ---
+// --- END NewsMegaMenu ---
 
 // --- UPDATED MarketsMegaMenu ---
 export function MarketsMegaMenu() {
