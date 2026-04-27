@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { lazy, Suspense, useEffect, useState, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2 } from 'lucide-react';
 import { apiFetch, useStocks, type Stock as ApiStock } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -17,17 +17,16 @@ import { useDebounce } from '../hooks/useDebounce';
 import StockComparison from './markets/StockComparison';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 
-// Import des nouveaux composants
-import {
-  StockChart,
-  StockChartNew,
-  StockTabs,
-  StockOverview,
-  StockNews,
-  StockFundamentals,
-  StockAnalysis,
-  TabId
-} from './stock';
+// Composants utilisés au render initial — eager
+import StockChartNew from './stock/StockChartNew';
+import StockTabs from './stock/StockTabs';
+import type { TabId } from './stock/StockTabs';
+
+// Contenus des onglets — lazy: seul l'onglet actif est chargé
+const StockOverview = lazy(() => import('./stock/StockOverview'));
+const StockNews = lazy(() => import('./stock/StockNews'));
+const StockFundamentals = lazy(() => import('./stock/StockFundamentals'));
+const StockAnalysis = lazy(() => import('./stock/StockAnalysis'));
 import { convertToLightweightData } from '../utils/simpleLightweightAdapter';
 
 // Import des hooks
@@ -798,24 +797,32 @@ export default function StockDetailPageEnhanced() {
               </p>
             </div>
 
-            {/* Contenu selon l'onglet actif */}
-            {activeTab === 'overview' && <StockOverview stock={stock} companyInfo={companyInfo} />}
-            {activeTab === 'analysis' && (
-              <StockAnalysis
-                data={lightweightData}
-                fundamentals={fundamentals}
-                annualFinancials={annualFinancialsData?.data}
-                stock={stock}
-              />
-            )}
-            {activeTab === 'fundamentals' && (
-              <StockFundamentals
-                fundamentals={fundamentals}
-                isLoading={fundamentalsLoading}
-                symbol={stock.symbol}
-              />
-            )}
-            {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} ticker={symbol} />}
+            {/* Contenu selon l'onglet actif — chaque tab est lazy */}
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                </div>
+              }
+            >
+              {activeTab === 'overview' && <StockOverview stock={stock} companyInfo={companyInfo} />}
+              {activeTab === 'analysis' && (
+                <StockAnalysis
+                  data={lightweightData}
+                  fundamentals={fundamentals}
+                  annualFinancials={annualFinancialsData?.data}
+                  stock={stock}
+                />
+              )}
+              {activeTab === 'fundamentals' && (
+                <StockFundamentals
+                  fundamentals={fundamentals}
+                  isLoading={fundamentalsLoading}
+                  symbol={stock.symbol}
+                />
+              )}
+              {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} ticker={symbol} />}
+            </Suspense>
           </div>
 
           {/* Colonne latérale - Panel d'ordre (DESKTOP ONLY) */}
@@ -932,7 +939,7 @@ export default function StockDetailPageEnhanced() {
       </div>
 
       {/* ===== MOBILE: Fixed Bottom Bar ===== */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 pb-[env(safe-area-inset-bottom)]">
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-500">Prix actuel</p>
@@ -957,7 +964,7 @@ export default function StockDetailPageEnhanced() {
           />
 
           {/* Modal Content */}
-          <div className="relative w-full bg-white rounded-t-2xl p-6 pb-8 max-h-[80vh] overflow-y-auto animate-slide-up">
+          <div className="relative w-full bg-white rounded-t-2xl p-6 pb-[max(2rem,env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto animate-slide-up">
             {/* Handle */}
             <div className="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4" />
 

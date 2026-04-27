@@ -103,7 +103,7 @@ export default function CertificateModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8 bg-black/60 backdrop-blur-sm overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-start justify-center p-2 pt-4 sm:p-4 sm:pt-8 bg-black/60 backdrop-blur-sm overflow-y-auto"
             onClick={onClose}
         >
             <div
@@ -157,7 +157,7 @@ export default function CertificateModal({
                             style={{ fontFamily: "'Segoe UI', Arial, sans-serif" }}
                         >
                             {/* Cert header */}
-                            <div className="flex justify-between items-start px-8 py-6 border-b-2 border-gray-100">
+                            <div className="flex justify-between items-start px-4 py-4 sm:px-8 sm:py-6 border-b-2 border-gray-100">
                                 <div>
                                     <div className="text-2xl font-bold">
                                         <span className="text-indigo-600">Afri</span>
@@ -178,7 +178,7 @@ export default function CertificateModal({
                             </div>
 
                             {/* Cert body */}
-                            <div className="px-8 py-8 relative">
+                            <div className="px-4 py-6 sm:px-8 sm:py-8 relative">
                                 {/* Watermark */}
                                 <div
                                     className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
@@ -236,12 +236,12 @@ export default function CertificateModal({
                                     </div>
 
                                     {/* Footer */}
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                        <div className="text-xs text-gray-400">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t border-gray-100">
+                                        <div className="text-xs text-gray-400 break-all sm:break-normal">
                                             Vérifier ce certificat :{' '}
                                             <span className="text-indigo-600 font-medium">{verifyUrl}</span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1">
+                                        <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-full px-3 py-1 self-start sm:self-auto">
                                             <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                                             <span className="text-xs font-semibold text-green-600">
                                                 Certifié valide
