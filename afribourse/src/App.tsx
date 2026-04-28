@@ -18,6 +18,7 @@ import { OnboardingGuideProvider } from './context/OnboardingGuideContext';
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
+import SilentErrorBoundary from './components/SilentErrorBoundary';
 
 // Composants chemin critique (eager) — visibles dès le premier paint
 import Header from './components/Header';
@@ -147,18 +148,26 @@ function Layout() {
       <SessionExpiredModal />
 
       {/* Onboarding guidé nouveaux utilisateurs — global, persistant entre les pages */}
-      <Suspense fallback={null}>
-        <OnboardingChecklist />
-        <CelebrationModal />
-      </Suspense>
+      <SilentErrorBoundary name="OnboardingChecklist">
+        <Suspense fallback={null}>
+          <OnboardingChecklist />
+        </Suspense>
+      </SilentErrorBoundary>
+      <SilentErrorBoundary name="CelebrationModal">
+        <Suspense fallback={null}>
+          <CelebrationModal />
+        </Suspense>
+      </SilentErrorBoundary>
 
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
 
       {/* Discovery survey popup for users who haven't completed it */}
-      <Suspense fallback={null}>
-        <SurveyPopup />
-      </Suspense>
+      <SilentErrorBoundary name="SurveyPopup">
+        <Suspense fallback={null}>
+          <SurveyPopup />
+        </Suspense>
+      </SilentErrorBoundary>
 
       <main className="flex-grow">
         <Suspense fallback={<RouteLoader />}>
@@ -405,12 +414,22 @@ function Layout() {
         </footer>
       )}
 
-      {/* PWA + notifications + install — différés, lazy */}
-      <Suspense fallback={null}>
-        <UpdatePrompt />
-        <PushNotificationPrompt />
-        <InstallPrompt />
-      </Suspense>
+      {/* PWA + notifications + install — différés, lazy, isolés */}
+      <SilentErrorBoundary name="UpdatePrompt">
+        <Suspense fallback={null}>
+          <UpdatePrompt />
+        </Suspense>
+      </SilentErrorBoundary>
+      <SilentErrorBoundary name="PushNotificationPrompt">
+        <Suspense fallback={null}>
+          <PushNotificationPrompt />
+        </Suspense>
+      </SilentErrorBoundary>
+      <SilentErrorBoundary name="InstallPrompt">
+        <Suspense fallback={null}>
+          <InstallPrompt />
+        </Suspense>
+      </SilentErrorBoundary>
     </div>
   );
 }
