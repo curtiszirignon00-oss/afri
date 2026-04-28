@@ -15,8 +15,19 @@ export const queryClient = new QueryClient({
         if (status === 429 || status === 401 || status === 403) return false;
         return failureCount < 1;
       },
-      // Ne pas propager aux error boundaries les 429 silencieux (GET)
-      throwOnError: (error: unknown) => !(error instanceof RateLimitError && error.silent),
+      // Ne pas propager aux error boundaries :
+      // - 429 silencieux (rate limit GET)
+      // - 401 (non authentifié — géré par AuthContext / SessionExpiredModal / redirect login)
+      // - 403 (interdit — la page concernée affiche son propre message)
+      // - 404 (ressource absente — la page affiche un état vide)
+      // Sans ce filtre, n'importe quel échec API d'une query (ex: visiteur non loggé qui charge
+      // la home avec une query auth-required) casse toute l'app derrière l'ErrorBoundary.
+      throwOnError: (error: unknown) => {
+        if (error instanceof RateLimitError && error.silent) return false;
+        const status = (error as any)?.response?.status;
+        if (status === 401 || status === 403 || status === 404 || status === 429) return false;
+        return true;
+      },
       refetchOnWindowFocus: false,
       // Sur reconnexion réseau, ne refetch que les données critiques pour éviter le burst
       // de 50+ requêtes simultanées quand l'utilisateur retrouve du réseau.
