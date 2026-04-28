@@ -1,4 +1,5 @@
-import React, { lazy, Suspense, useEffect, useState, useRef } from 'react';
+import React, { Suspense, useEffect, useState, useRef } from 'react';
+import { lazyWithRetry as lazy } from '../lib/lazyWithRetry';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2 } from 'lucide-react';

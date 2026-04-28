@@ -1,11 +1,12 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, TrendingDown, Activity, BarChart3, Loader2 } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
+import { lazyWithRetry } from '../lib/lazyWithRetry';
 
 // IndexChart importe lightweight-charts (~150 KB) — chargé seulement au clic sur une carte
-const IndexChart = lazy(() => import('./IndexChart'));
+const IndexChart = lazyWithRetry(() => import('./IndexChart'));
 
 const formatNumber = (num: number, decimals = 2) =>
   new Intl.NumberFormat('fr-FR', {

@@ -4,7 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TrendingUp } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { lazyWithRetry as lazy } from './lib/lazyWithRetry';
 
 // Query Client
 import { queryClient } from './lib/queryClient';
