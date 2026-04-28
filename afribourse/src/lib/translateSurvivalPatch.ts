@@ -2,14 +2,14 @@
 //
 // Problème : quand un traducteur remplace les nœuds texte d'un élément, le DOM réel diverge du
 // virtual DOM de React. Au prochain rendu, React appelle `removeChild` ou `insertBefore` sur des
-// nœuds qui ne sont plus enfants du parent attendu, ce qui jette `NotFoundError: The node to be
-// removed is not a child of this node`. L'erreur remonte dans l'ErrorBoundary qui affiche
-// "Une erreur est survenue".
+// nœuds qui ne sont plus enfants du parent attendu, ce qui jette `NotFoundError`.
 //
-// On patche ces deux méthodes pour échouer en silence quand le parent ne correspond plus, ce qui
-// laisse React continuer son cycle de rendu sans planter. C'est une mitigation utilisée en prod par
-// plusieurs grosses apps (LinkedIn, Discord) — coût négligeable, gain de stabilité majeur sur
-// mobile où l'auto-traduction est très fréquente.
+// On patche ces deux méthodes pour devenir des no-op silencieux quand le parent ne correspond
+// plus, ce qui permet à React de continuer son cycle. Au prochain rendu cohérent, React
+// rectifiera le DOM.
+//
+// Version canonique (cf. React issue #11538) — pas de fallback `appendChild`, qui pourrait
+// déplacer le nœud à une position inattendue et faire diverger le virtual DOM davantage.
 //
 // À appeler une seule fois, avant le premier `createRoot().render()`.
 
@@ -19,9 +19,7 @@ export function applyTranslateSurvivalPatch(): void {
   const originalRemoveChild = Node.prototype.removeChild;
   Node.prototype.removeChild = function <T extends Node>(this: Node, child: T): T {
     if (child.parentNode !== this) {
-      if (import.meta.env.DEV) {
-        console.warn('[translate-survival] removeChild: parent mismatch, ignoré', { child, parent: this });
-      }
+      // Nœud déjà retiré (probablement par un traducteur). On ignore.
       return child;
     }
     return originalRemoveChild.call(this, child) as T;
@@ -34,19 +32,10 @@ export function applyTranslateSurvivalPatch(): void {
     referenceNode: Node | null
   ): T {
     if (referenceNode && referenceNode.parentNode !== this) {
-      if (import.meta.env.DEV) {
-        console.warn('[translate-survival] insertBefore: référence détachée, append à la place', {
-          newNode,
-          referenceNode,
-          parent: this,
-        });
-      }
-      // Fallback : on tente un appendChild plutôt que de jeter
-      try {
-        return (this as Node).appendChild(newNode) as T;
-      } catch {
-        return newNode;
-      }
+      // Référence détachée. On ne tente PAS d'appendChild en fallback : ça déplacerait
+      // le nœud à une position que React ne s'attend pas, créant des bugs en cascade.
+      // React détectera le mismatch et rectifiera au prochain cycle.
+      return newNode;
     }
     return originalInsertBefore.call(this, newNode, referenceNode) as T;
   } as typeof Node.prototype.insertBefore;
