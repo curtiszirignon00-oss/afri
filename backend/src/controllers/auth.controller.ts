@@ -172,7 +172,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         const newRefreshToken = crypto.randomBytes(32).toString('hex');
         await prisma.user.update({
             where: { id: user.id },
-            data: { remember_token: newRefreshToken, last_login_at: new Date() } as any,
+            data: {
+                remember_token: newRefreshToken,
+                previous_remember_token: null,
+                previous_token_rotated_at: null,
+                last_login_at: new Date(),
+            } as any,
         });
 
         // Access token court-vivant (15m par défaut)
@@ -340,7 +345,11 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
         if (logoutUserId) {
             await prisma.user.update({
                 where: { id: logoutUserId },
-                data: { remember_token: null },
+                data: {
+                    remember_token: null,
+                    previous_remember_token: null,
+                    previous_token_rotated_at: null,
+                } as any,
             });
         }
 
@@ -391,7 +400,11 @@ export async function confirmEmail(req: Request, res: Response, next: NextFuncti
         const newRefreshToken = crypto.randomBytes(32).toString('hex');
         await prisma.user.update({
             where: { id: user.id },
-            data: { remember_token: newRefreshToken },
+            data: {
+                remember_token: newRefreshToken,
+                previous_remember_token: null,
+                previous_token_rotated_at: null,
+            } as any,
         });
 
         const accessToken = signJWT({ id: user.id, email: user.email, role: user.role });
@@ -589,7 +602,11 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
         await usersServicePrisma.resetUserPassword(user.id, hashedPassword);
         await prisma.user.update({
             where: { id: user.id },
-            data: { remember_token: null },
+            data: {
+                remember_token: null,
+                previous_remember_token: null,
+                previous_token_rotated_at: null,
+            } as any,
         });
 
 
@@ -615,7 +632,19 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
 
 // ─── REFRESH TOKEN ────────────────────────────────────────────────────────────
 // POST /api/auth/refresh
-// Échange un refresh token valide contre un nouveau access token + nouveau refresh token (rotation)
+// Échange un refresh token valide contre un nouveau access token + nouveau refresh token (rotation).
+//
+// Période de grâce de 10 minutes : si une requête arrive avec le RTK qui vient d'être roté
+// (deux onglets qui refreshent simultanément, retry réseau, race entre timer proactif et
+// intercepteur axios, onglet en background throttlé, téléphone en veille, réseau lent…),
+// on retourne le token courant sans roter à nouveau.
+//
+// 10 minutes couvre tous les scénarios réels : c'est plus long que la durée de vie de
+// l'access token (15 min) - 5 min de marge - et bien au-delà du timing de toute race
+// condition plausible. Au-delà, l'ancien RTK est invalide (sécurité — reuse detection
+// reste fonctionnelle pour détecter un vol de token réutilisé tardivement).
+const RTK_GRACE_PERIOD_MS = 10 * 60 * 1000;
+
 export async function refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
         // Cookie web en priorité, body pour les clients mobiles
@@ -625,25 +654,10 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
             return next(createError.unauthorized('Refresh token manquant'));
         }
 
-        // Trouver l'utilisateur possédant ce remember_token
-        const user = await prisma.user.findFirst({
+        // 1. Tenter d'abord le token courant
+        let user = await prisma.user.findFirst({
             where: { remember_token: rtkValue },
         });
-
-        if (!user) {
-            // Token invalide ou déjà utilisé (reuse detection)
-            return next(createError.unauthorized('Refresh token invalide ou expiré. Veuillez vous reconnecter.'));
-        }
-
-        // Rotation du refresh token (invalide l'ancien immédiatement)
-        const newRefreshToken = crypto.randomBytes(32).toString('hex');
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { remember_token: newRefreshToken },
-        });
-
-        // Nouvel access token court-vivant
-        const newAccessToken = signJWT({ id: user.id, email: user.email, role: user.role });
 
         const isProduction = config.nodeEnv === 'production';
         const cookieOptions: CookieOptions = {
@@ -652,6 +666,50 @@ export async function refreshToken(req: Request, res: Response, next: NextFuncti
             sameSite: isProduction ? 'none' : 'lax',
             path: '/',
         };
+
+        // 2. Sinon, chercher dans le previous_remember_token (période de grâce 30s)
+        if (!user) {
+            const userByPrevious = await prisma.user.findFirst({
+                where: { previous_remember_token: rtkValue } as any,
+            }) as any;
+
+            if (userByPrevious?.previous_token_rotated_at) {
+                const rotatedAt = new Date(userByPrevious.previous_token_rotated_at).getTime();
+                const elapsed = Date.now() - rotatedAt;
+
+                if (elapsed < RTK_GRACE_PERIOD_MS && userByPrevious.remember_token) {
+                    // Race condition détectée : retourner le token courant sans nouvelle rotation
+                    const accessToken = signJWT({
+                        id: userByPrevious.id,
+                        email: userByPrevious.email,
+                        role: userByPrevious.role,
+                    });
+                    res.cookie('token', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
+                    res.cookie('rtk', userByPrevious.remember_token, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
+                    return res.json({
+                        success: true,
+                        token: accessToken,
+                        refreshToken: userByPrevious.remember_token,
+                    });
+                }
+            }
+
+            // Token totalement invalide (révoqué, expiré, ou hors période de grâce)
+            return next(createError.unauthorized('Refresh token invalide ou expiré. Veuillez vous reconnecter.'));
+        }
+
+        // 3. Rotation normale : déplace l'actuel vers previous, génère un nouveau
+        const newRefreshToken = crypto.randomBytes(32).toString('hex');
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                remember_token: newRefreshToken,
+                previous_remember_token: rtkValue,
+                previous_token_rotated_at: new Date(),
+            } as any,
+        });
+
+        const newAccessToken = signJWT({ id: user.id, email: user.email, role: user.role });
 
         res.cookie('token', newAccessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
         res.cookie('rtk', newRefreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });

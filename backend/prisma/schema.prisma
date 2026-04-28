@@ -124,6 +124,10 @@ model User {
   password_reset_token       String?
   password_reset_expires     DateTime?
   remember_token             String?
+  // Période de grâce 30s : ancien RTK accepté juste après rotation
+  // pour éviter "Session expirée" sur race conditions multi-onglets/retry
+  previous_remember_token    String?
+  previous_token_rotated_at  DateTime?
   created_at                 DateTime? @default(now())
   updated_at                 DateTime? @updatedAt
   telephone                  String?
