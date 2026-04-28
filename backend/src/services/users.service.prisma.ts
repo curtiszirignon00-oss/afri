@@ -150,7 +150,9 @@ export const resetUserPassword = async (userId: string, hashedPassword: string) 
             password_reset_token: null,
             password_reset_expires: null,
             remember_token: crypto.randomBytes(16).toString('hex'), // invalide les JWT précédents
-        },
+            previous_remember_token: null,
+            previous_token_rotated_at: null,
+        } as any,
     });
     return user;
 };

@@ -78,15 +78,6 @@ const AdminSubscriptionStats = lazy(() => import('./components/AdminSubscription
 const SurveyPopup = lazy(() => import('./components/survey/SurveyPopup'));
 const OnboardingChecklist = lazy(() => import('./components/onboarding/OnboardingChecklist'));
 const CelebrationModal = lazy(() => import('./components/onboarding/CelebrationModal'));
-const UpdatePrompt = lazy(() =>
-  import('./components/pwa/UpdatePrompt').then((m) => ({ default: m.UpdatePrompt }))
-);
-const PushNotificationPrompt = lazy(() =>
-  import('./components/pwa/PushNotificationPrompt').then((m) => ({ default: m.PushNotificationPrompt }))
-);
-const InstallPrompt = lazy(() =>
-  import('./components/pwa/InstallPrompt').then((m) => ({ default: m.InstallPrompt }))
-);
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
@@ -414,22 +405,6 @@ function Layout() {
         </footer>
       )}
 
-      {/* PWA + notifications + install — différés, lazy, isolés */}
-      <SilentErrorBoundary name="UpdatePrompt">
-        <Suspense fallback={null}>
-          <UpdatePrompt />
-        </Suspense>
-      </SilentErrorBoundary>
-      <SilentErrorBoundary name="PushNotificationPrompt">
-        <Suspense fallback={null}>
-          <PushNotificationPrompt />
-        </Suspense>
-      </SilentErrorBoundary>
-      <SilentErrorBoundary name="InstallPrompt">
-        <Suspense fallback={null}>
-          <InstallPrompt />
-        </Suspense>
-      </SilentErrorBoundary>
     </div>
   );
 }
