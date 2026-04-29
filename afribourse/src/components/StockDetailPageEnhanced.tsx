@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState, useRef } from 'react';
 import { lazyWithRetry as lazy } from '../lib/lazyWithRetry';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
+import { metaPixel } from '../utils/metaPixel';
 import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2 } from 'lucide-react';
 import { apiFetch, useStocks, type Stock as ApiStock } from '../hooks/useApi';
 import toast from 'react-hot-toast';
@@ -121,7 +122,10 @@ export default function StockDetailPageEnhanced() {
   }, []);
 
   useEffect(() => {
-    if (symbol) trackStockViewed(symbol, 'BRVM');
+    if (symbol) {
+      trackStockViewed(symbol, 'BRVM');
+      metaPixel.viewContent(symbol);
+    }
   }, [symbol]);
 
   // Charger le stock depuis l'API à chaque changement de symbole

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Sparkles, CheckCircle, AlertCircle, Loader2, Bot, TrendingUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../lib/api-client';
+import { metaPixel } from '../utils/metaPixel';
 
 type Status = 'idle' | 'loading' | 'success' | 'already_claimed' | 'error' | 'not_logged_in';
 
@@ -46,6 +47,8 @@ export default function TrialClaimPage() {
             } else {
                 setStatus('success');
                 setTrialExpiresAt(data.data?.expiresAt ?? null);
+                metaPixel.startTrial();
+                metaPixel.lead('trial_claim');
                 // Rafraîchir le profil utilisateur pour mettre à jour subscriptionTier
                 await checkAuth();
             }

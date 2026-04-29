@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, SkipForward, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useDiscoverySurvey } from '../hooks/useOnboarding';
+import { metaPixel } from '../utils/metaPixel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,7 @@ export default function SurveyPage() {
     try {
       const data = await submitSurvey({ q1: q1!, q2, q3: answer });
       setResult(data);
+      metaPixel.lead('onboarding_survey');
       setStep('result');
     } catch {
       const profileMap: Record<string, ProfileType> = {

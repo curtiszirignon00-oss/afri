@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import { trackUpgradeStarted } from '../lib/amplitude';
+import { metaPixel } from '../utils/metaPixel';
 
 interface PlanFeature {
   text: string;
@@ -135,6 +136,8 @@ export default function SubscriptionPage() {
       userEmail: userProfile.email
     });
     trackUpgradeStarted(userProfile.subscriptionTier || 'free', planId);
+    const priceNum = parseInt(price.replace(/\s/g, ''), 10) || 0;
+    metaPixel.initiateCheckout(planName, priceNum);
 
     // Rediriger vers la page de paiement avec les informations du plan
     navigate('/checkout', {
