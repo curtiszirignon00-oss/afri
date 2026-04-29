@@ -1,6 +1,7 @@
 // src/components/MarketsPageRefactored.tsx
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { trackStockSearch } from '../lib/amplitude';
+import { metaPixel } from '../utils/metaPixel';
 import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
@@ -79,7 +80,10 @@ export default function MarketsPageRefactored() {
   const isFirstSearch = useRef(true);
   useEffect(() => {
     if (isFirstSearch.current) { isFirstSearch.current = false; return; }
-    if (debouncedSearchTerm) trackStockSearch(debouncedSearchTerm);
+    if (debouncedSearchTerm) {
+      trackStockSearch(debouncedSearchTerm);
+      metaPixel.search(debouncedSearchTerm);
+    }
   }, [debouncedSearchTerm]);
 
   // Indices du marché

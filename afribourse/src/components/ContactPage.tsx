@@ -3,6 +3,7 @@ import { Mail, MessageSquare, Phone, MapPin, Send, CheckCircle, Twitter, Linkedi
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { useLocation } from 'react-router-dom';
+import { metaPixel } from '../utils/metaPixel';
 
 const ContactPage: React.FC = () => {
   const location = useLocation();
@@ -40,6 +41,7 @@ const ContactPage: React.FC = () => {
 
       if (response.status === 201) {
         setIsSubmitted(true);
+        metaPixel.contact();
         setFormData({ name: '', email: '', subject: '', message: '' });
 
         // Réinitialiser le message de succès après 5 secondes
