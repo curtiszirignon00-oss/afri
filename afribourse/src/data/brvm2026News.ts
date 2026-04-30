@@ -21,6 +21,7 @@ export interface BRVMArticle {
   tags: string[];
   tickers: TickerImpact[];
   isFeatured: boolean;
+  image_url?: string;
 }
 
 export const BRVM_NEWS: BRVMArticle[] = [
@@ -371,7 +372,111 @@ Le risque commun aux deux groupes reste l'impact indirect de la crise du cacao s
   },
 ];
 
+  {
+    id: "safc-augmentation-capital-2026",
+    category: "Finance & Marchés UEMOA",
+    isFeatured: true,
+    image_url: "/images/safc-chart-2026.png",
+    title: "SAFC (Alios Finance CI) : Augmentation de Capital 2026 — Décryptage complet d'une opération stratégique",
+    summary: "SAFC lance une augmentation de capital de 1,5 milliard FCFA. Après 8 ans de pertes, un redressement spectaculaire en 2025 (+701 M FCFA de résultat net) et l'arrivée de CREDAF GROUP. Décryptage complet : qui souscrit, à quel prix, et pourquoi le cours a chuté de 50 % depuis les sommets.",
+    publishedAt: "2026-04-30T08:00:00Z",
+    content: `Avertissement : Cet article est fourni à titre informatif et éducatif uniquement. Il ne constitue pas un conseil en investissement. Tout investissement comporte des risques, y compris la perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.
+
+INTRODUCTION — L'ÉVÉNEMENT BOURSIER DU PRINTEMPS 2026
+
+SAFC (Alios Finance Côte d'Ivoire, anciennement SAFCA — Société Africaine de Crédit Automobile) a lancé une augmentation de capital de 1,5 milliard FCFA. Cet article décrypte pourquoi cette opération a lieu, qui peut y participer, et ce que cela signifie concrètement pour les investisseurs.
+
+1. QUI EST ALIOS FINANCE CI (ex-SAFCA) ?
+
+Fondée en 1956, siège à Treichville (Abidjan), agence à San Pedro, succursales au Burkina Faso, Mali et Sénégal. Métier principal : crédit-bail (leasing) pour véhicules, équipements agricoles/industriels, immobilier et crédits à la consommation.
+
+Données clés : Total bilan de 73,3 milliards FCFA à fin 2024. Part de marché de 52,2 % dans le crédit-bail en Côte d'Ivoire. Cotée BRVM sous le code SAFC. Participation de 52,02 % détenue par CREDAF GROUP.
+
+2. UN NOUVEAU CHAPITRE : L'ARRIVÉE DE CREDAF GROUP
+
+Alios Finance SA (Luxembourg) détenait 52,02 % de SAFCA CI. En décembre 2023, accord de rachat par CREDAF GROUP, holding panafricain fondé par l'industriel ivoirien Serge Aimé Bilé. Prise de contrôle effective le 30 avril 2025. Objectif déclaré : faire d'Alios Finance CI la plus grande compagnie de leasing de la sous-région.
+
+3. LE REDRESSEMENT SPECTACULAIRE DE 2025
+
+Entre 2022 et 2024, la société accumulait des pertes nettes. Pire année : 2023 (résultat d'exploitation -385 %). En 2024, la perte nette était réduite à -165 millions FCFA (vs -579 M en 2023).
+
+Puis retournement total en 2025 :
+• T1 2025 : +13 M FCFA (vs -406 M FCFA au T1 2024), PNB +34 %, Coût du risque -61 %
+• T2 2025 : +226 M FCFA (+710 % vs T2 2024), Créances clientèle +12 %
+• Année 2025 : Résultat net +701 M FCFA (+525 % vs 2024), PNB +44 % (3,98 → 5,73 Mds)
+
+Résultat net annuel : +701 M FCFA, dépassant les objectifs du CA de 36 % (vs 514 M prévus). Fin de 8 années consécutives de déficit. Les leviers : recentrage sur les segments rentables, renforcement du recouvrement, discipline opérationnelle, sélectivité accrue, impact de la gouvernance CREDAF.
+
+4. L'AUGMENTATION DE CAPITAL : LES DÉTAILS DE L'OPÉRATION
+
+Raison n°1 — Obligation réglementaire : La Commission Bancaire de l'UMOA a imposé une augmentation du capital social d'au moins 1 milliard FCFA suite à l'érosion des fonds propres sous les seuils prudentiels.
+
+Raison n°2 — Financer la croissance : Capitaux propres renforcés pour emprunter davantage, développer de nouveaux produits et répondre à la demande croissante de leasing.
+
+Paramètres clés de l'opération :
+• Montant total levé : 1 500 000 000 FCFA (1,5 milliard)
+• Nombre d'actions nouvelles : 3 750 000 actions
+• Prix d'émission : 400 FCFA par action
+• Parité de souscription : 6 nouvelles actions pour 13 anciennes (DPS)
+• Ouverture des souscriptions : 27 avril 2026
+• Clôture des souscriptions : 11 juin 2026
+• Négociation des DPS (BRVM) : 27 avril — 9 juin 2026
+• Date de jouissance : 1er janvier 2025 (rétroactive)
+• Fonds propres avant opération : 5,2 milliards FCFA
+• Fonds propres après opération : 6,7 milliards FCFA (+1,5 Md)
+
+Le Droit Préférentiel de Souscription (DPS) permet aux actionnaires existants d'acheter 6 nouvelles actions pour 13 DPS détenus, au prix de 400 FCFA. Les DPS peuvent aussi être vendus sur la BRVM jusqu'au 9 juin 2026.
+
+5. L'ÉVOLUTION DU COURS BOURSIER : UNE LEÇON DE MARCHÉ
+
+Le graphique ci-dessous (Source : AfriBourse) retrace l'évolution du titre SAFC de septembre 2024 à avril 2026.
+
+Acte I — Léthargie (sept. 2024 — juin 2025) : Cours stable autour de 1 000 FCFA, titre peu suivi.
+
+Acte II — Envol spéculatif (juil. 2025 — début 2026) : Montée jusqu'à ~7 500 FCFA. Titre multiplié par 7 en moins de 6 mois, porté par l'annonce des résultats 2025 et les ambitions de CREDAF GROUP.
+
+Acte III — Correction post-annonce (avr. 2026) : Annonce le 13 avril 2026 → cours revenu autour de 3 900 FCFA (divisé par ~2 depuis le pic).
+
+Mécanique du DPS et baisse du cours — le TERP : (13 × 7 500 + 6 × 400) / 19 ≈ 5 257 FCFA est la valeur théorique ex-droit. Le marché a anticipé et accentué la dilution.
+
+6. PERSPECTIVES : OÙ VA ALIOS FINANCE CI ?
+
+Projections financières :
+• 701 M FCFA — Résultat net 2025 (point de départ)
+• +30 %/an — Croissance annuelle visée
+• 2,78 Mds FCFA — Bénéfice ciblé en 2030
+• 2028 — Horizon retour aux dividendes
+
+Points de surveillance : Résultats T1 2026 (attendus mai 2026), taux de souscription à l'augmentation de capital, évolution du cours après la clôture (11 juin 2026), retour éventuel aux dividendes en 2028, expansion sous-régionale (Sénégal, Mali, Burkina Faso).
+
+7. QUE FAIRE ? LE GUIDE PRATIQUE DE L'INVESTISSEUR
+
+Si vous êtes déjà actionnaire SAFC :
+• Option 1 — Souscrire : Acheter 6 nouvelles actions pour 13 DPS à 400 FCFA. Avantage : maintient votre % de participation, prix attractif. Risque : mobilise de la trésorerie.
+• Option 2 — Vendre vos DPS : Céder vos droits sur la BRVM jusqu'au 9 juin. Avantage : liquidité immédiate. Risque : dilution de votre participation.
+• Option 3 — Ne rien faire : Laisser expirer les DPS. C'est la moins avantageuse — vous perdez la valeur des DPS ET subissez la dilution maximale.
+
+Si vous n'êtes pas encore actionnaire : L'augmentation s'adresse en priorité aux actionnaires existants. Des actions nouvelles pourraient être allouées à d'autres investisseurs si des droits restent non exercés. La vigilance s'impose car le cours a déjà fortement progressé depuis les creux de 2024.
+
+CONCLUSION : UN PARI SUR LE RENOUVEAU DU CRÉDIT-BAIL IVOIRIEN
+
+L'augmentation de capital cristallise une transition profonde. Les chiffres de 2025 (résultat net +701 M FCFA, PNB +44 %, objectifs dépassés de 36 %) prouvent le redressement. La correction de 50 % depuis les sommets offre peut-être une fenêtre de réflexion, mais le passé ne préjuge pas de l'avenir.`,
+    sources: [
+      "BRVM — Bulletin Officiel de la Cotation · avr. 2026 · brvm.org",
+      "Agence Ecofin — Analyse SAFC augmentation capital · avr. 2026 · agenceecofin.com",
+      "Sika Finance — Résultats trimestriels SAFC 2025 · sikafinance.com",
+      "Financial Afrik — CREDAF GROUP prise de contrôle · 2025 · financialafrik.com",
+      "AllAfrica — Alios Finance CI rapport annuel 2025 · allAfrica.com",
+      "Rapports officiels SAFCA CI (T1–T4 2025) · brvm.org",
+    ],
+    tags: ["SAFC", "SAFCA", "Alios-Finance", "augmentation-capital", "DPS", "crédit-bail", "CREDAF-GROUP", "BRVM", "Côte-d'Ivoire", "analyse", "leasing"],
+    tickers: [
+      { ticker: "SAFC", impact: "Mixte", note: "Augmentation de capital 1,5 Md FCFA — parité 6/13 à 400 FCFA. Redressement spectaculaire 2025 (+701 M), mais cours divisé par 2 depuis le pic. DPS à vendre avant le 9 juin 2026." },
+    ],
+  },
+];
+
 export const BRVM_CATEGORIES = [
   "Marché", "Macroéconomie", "Matières premières", "Secteur bancaire",
-  "Télécoms", "Dividendes", "Réglementation", "Agro-industrie",
+  "Télécoms", "Dividendes", "Réglementation", "Agro-industrie", "Finance & Marchés UEMOA",
 ] as const;

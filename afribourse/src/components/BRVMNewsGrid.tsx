@@ -33,14 +33,15 @@ const IMPACT_DOT: Record<ImpactType, string> = {
 };
 
 const CAT_COLORS: Record<string, string> = {
-  'Marché':           'bg-blue-50 text-blue-700 border-blue-200',
-  'Macroéconomie':    'bg-violet-50 text-violet-700 border-violet-200',
-  'Matières premières': 'bg-amber-50 text-amber-700 border-amber-200',
-  'Secteur bancaire': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'Télécoms':         'bg-cyan-50 text-cyan-700 border-cyan-200',
-  'Dividendes':       'bg-[#00D4A8]/10 text-[#00868A] border-[#00D4A8]/30',
-  'Réglementation':   'bg-slate-100 text-slate-600 border-slate-300',
-  'Agro-industrie':   'bg-lime-50 text-lime-700 border-lime-200',
+  'Marché':                   'bg-blue-50 text-blue-700 border-blue-200',
+  'Macroéconomie':            'bg-violet-50 text-violet-700 border-violet-200',
+  'Matières premières':       'bg-amber-50 text-amber-700 border-amber-200',
+  'Secteur bancaire':         'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Télécoms':                 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  'Dividendes':               'bg-[#00D4A8]/10 text-[#00868A] border-[#00D4A8]/30',
+  'Réglementation':           'bg-slate-100 text-slate-600 border-slate-300',
+  'Agro-industrie':           'bg-lime-50 text-lime-700 border-lime-200',
+  'Finance & Marchés UEMOA': 'bg-indigo-50 text-indigo-700 border-indigo-200',
 };
 
 // ── DetailPanel ───────────────────────────────────────────────────────────────
@@ -84,6 +85,20 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
           <p className="text-sm font-medium text-slate-700 leading-relaxed border-l-2 border-[#00D4A8] pl-4 py-1">
             {article.summary}
           </p>
+
+          {/* Image du graphique */}
+          {article.image_url && (
+            <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+              <img
+                src={article.image_url}
+                alt={`Graphique — ${article.title}`}
+                className="w-full h-auto object-contain"
+              />
+              <p className="text-[10px] text-slate-400 italic text-center px-3 py-2 bg-slate-50 border-t border-slate-100">
+                Source : AfriBourse
+              </p>
+            </div>
+          )}
 
           {/* Contenu */}
           <div className="space-y-3">
@@ -182,6 +197,16 @@ function ArticleCard({ article, onOpen }: { article: BRVMArticle; onOpen: () => 
     >
       <div className={`h-0.5 ${article.isFeatured ? 'bg-[#00D4A8]' : 'bg-slate-100 group-hover:bg-[#00D4A8] transition-colors'}`} />
 
+      {article.image_url && (
+        <div className="h-40 overflow-hidden bg-slate-100">
+          <img
+            src={article.image_url}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+      )}
+
       <div className="p-5 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -272,7 +297,7 @@ export default function BRVMNewsGrid() {
       {/* Bande stats */}
       <div className="flex items-center gap-6 mb-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
         <div className="text-center">
-          <p className="text-xl font-bold text-slate-900">12</p>
+          <p className="text-xl font-bold text-slate-900">13</p>
           <p className="text-[11px] text-slate-500">articles</p>
         </div>
         <div className="w-px h-8 bg-slate-200" />
