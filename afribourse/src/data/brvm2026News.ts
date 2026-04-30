@@ -10,6 +10,16 @@ export interface TickerImpact {
   note: string;
 }
 
+export type ContentBlock =
+  | { type: 'disclaimer'; text: string }
+  | { type: 'heading'; level: 1 | 2; text: string }
+  | { type: 'paragraph'; text: string }
+  | { type: 'image'; src: string; caption?: string }
+  | { type: 'table'; caption?: string; headers?: string[]; rows: string[][] }
+  | { type: 'key-stats'; items: { label: string; value: string }[] }
+  | { type: 'highlight'; text: string }
+  | { type: 'list'; items: string[] };
+
 export interface BRVMArticle {
   id: string;
   category: string;
@@ -22,6 +32,7 @@ export interface BRVMArticle {
   tickers: TickerImpact[];
   isFeatured: boolean;
   image_url?: string;
+  richContent?: ContentBlock[];
 }
 
 export const BRVM_NEWS: BRVMArticle[] = [
@@ -470,6 +481,138 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
     tags: ["SAFC", "SAFCA", "Alios-Finance", "augmentation-capital", "DPS", "crédit-bail", "CREDAF-GROUP", "BRVM", "Côte-d'Ivoire", "analyse", "leasing"],
     tickers: [
       { ticker: "SAFC", impact: "Mixte", note: "Augmentation de capital 1,5 Md FCFA — parité 6/13 à 400 FCFA. Redressement spectaculaire 2025 (+701 M), mais cours divisé par 2 depuis le pic. DPS à vendre avant le 9 juin 2026." },
+    ],
+    richContent: [
+      {
+        type: 'disclaimer',
+        text: "Avertissement : Cet article est fourni à titre informatif et éducatif uniquement. Il ne constitue pas un conseil en investissement. Tout investissement comporte des risques, y compris la perte en capital. Consultez un conseiller financier agréé avant toute décision d'investissement.",
+      },
+      { type: 'paragraph', text: "SAFC (Alios Finance Côte d'Ivoire, anciennement SAFCA — Société Africaine de Crédit Automobile) a lancé une augmentation de capital de 1,5 milliard FCFA. Cet article décrypte pourquoi cette opération a lieu, qui peut y participer, et ce que cela signifie concrètement pour les investisseurs." },
+
+      { type: 'heading', level: 1, text: "1. Qui est Alios Finance CI (ex-SAFCA) ?" },
+      { type: 'heading', level: 2, text: "Une institution presque septuagénaire" },
+      { type: 'paragraph', text: "Fondée en 1956, siège à Treichville (Abidjan), agence à San Pedro, succursales au Burkina Faso, Mali et Sénégal. Métier principal : crédit-bail (leasing) pour véhicules, équipements agricoles/industriels, immobilier et crédits à la consommation." },
+      { type: 'heading', level: 2, text: "Leader incontesté du crédit-bail en Côte d'Ivoire" },
+      { type: 'paragraph', text: "Total bilan : 73,3 milliards FCFA à fin 2024. Part de marché : 52,2 % dans le crédit-bail en CI. Cotée BRVM sous code SAFC." },
+      {
+        type: 'key-stats',
+        items: [
+          { value: '1956', label: 'Année de création' },
+          { value: '52,2 %', label: 'Part de marché CI' },
+          { value: '73,3 Mds FCFA', label: 'Total bilan 2024' },
+          { value: '52,02 %', label: 'Participation CREDAF GROUP' },
+        ],
+      },
+
+      { type: 'heading', level: 1, text: "2. Un nouveau chapitre : l'arrivée de CREDAF GROUP" },
+      { type: 'paragraph', text: "Alios Finance SA (Luxembourg) détenait 52,02 % de SAFCA CI. En décembre 2023, accord de rachat par CREDAF GROUP, holding panafricain fondé par l'industriel ivoirien Serge Aimé Bilé. Prise de contrôle effective le 30 avril 2025. Objectif déclaré : faire d'Alios Finance CI la plus grande compagnie de leasing de la sous-région." },
+      { type: 'highlight', text: "Qu'est-ce que le crédit-bail ? Le leasing est un contrat par lequel une société financière acquiert un bien (véhicule, équipement, immobilier) pour le louer à une entreprise ou un particulier. À la fin du contrat, le locataire peut racheter le bien à sa valeur résiduelle. Alios Finance CI est le leader de cette activité en Côte d'Ivoire avec 52,2 % de part de marché." },
+
+      { type: 'heading', level: 1, text: "3. Le redressement spectaculaire de 2025 : la renaissance" },
+      { type: 'paragraph', text: "Entre 2022 et 2024, la société accumulait des pertes nettes. Pire année : 2023 (résultat d'exploitation -385 %). En 2024, la perte nette était réduite à -165 millions FCFA (vs -579 M en 2023). Puis retournement total en 2025 :" },
+      {
+        type: 'table',
+        caption: 'Résultats trimestriels 2025',
+        headers: ['Période', 'Résultat Net', 'Variation vs N-1', 'Indicateur clé'],
+        rows: [
+          ['T1 2025', '+13 M FCFA', 'vs -406 M FCFA', 'PNB +34 %, Coût risque -61 %'],
+          ['T2 2025', '+226 M FCFA', '+710 % vs T2 2024', 'Créances clientèle +12 %'],
+          ['Année 2025', '+701 M FCFA', '+525 % vs 2024', 'PNB +44 % (3,98 → 5,73 Mds)'],
+        ],
+      },
+      { type: 'paragraph', text: "Résultat net annuel : +701 M FCFA, dépassant les objectifs du CA de 36 % (vs 514 M prévus). Fin de 8 années consécutives de déficit." },
+      {
+        type: 'table',
+        caption: 'Les leviers du redressement',
+        headers: ['Levier', 'Impact'],
+        rows: [
+          ['Recentrage sur les segments rentables', 'Amélioration des marges'],
+          ['Renforcement du recouvrement', 'Coût du risque -61 %'],
+          ['Discipline opérationnelle', 'PNB +44 %'],
+          ['Sélectivité accrue', 'Créances clientèle +12 %'],
+          ['Impact gouvernance CREDAF', 'Objectifs dépassés de 36 %'],
+        ],
+      },
+
+      { type: 'heading', level: 1, text: "4. L'augmentation de capital : les détails de l'opération" },
+      { type: 'heading', level: 2, text: "Raison n°1 — Obligation réglementaire" },
+      { type: 'paragraph', text: "La Commission Bancaire de l'UMOA a imposé une augmentation du capital social d'au moins 1 milliard FCFA suite à l'érosion des fonds propres sous les seuils prudentiels." },
+      { type: 'heading', level: 2, text: "Raison n°2 — Financer la croissance" },
+      { type: 'paragraph', text: "Capitaux propres renforcés pour emprunter davantage, développer de nouveaux produits et répondre à la demande croissante de leasing dans la sous-région." },
+      {
+        type: 'table',
+        caption: "Paramètres clés de l'opération",
+        headers: ['Paramètre', 'Détail'],
+        rows: [
+          ['Montant total levé', '1 500 000 000 FCFA (1,5 milliard)'],
+          ["Nombre d'actions nouvelles", '3 750 000 actions'],
+          ["Prix d'émission", '400 FCFA par action'],
+          ['Parité de souscription', '6 nouvelles actions pour 13 anciennes'],
+          ['Ouverture des souscriptions', '27 avril 2026'],
+          ['Clôture des souscriptions', '11 juin 2026'],
+          ['Négociation des DPS (BRVM)', '27 avril — 9 juin 2026'],
+          ['Date de jouissance', '1er janvier 2025 (rétroactive)'],
+          ['Fonds propres avant opération', '5,2 milliards FCFA'],
+          ['Fonds propres après opération', '6,7 milliards FCFA (+1,5 Md)'],
+        ],
+      },
+      { type: 'highlight', text: "Le DPS (Droit Préférentiel de Souscription) est votre ticket prioritaire. Vous possédez 13 actions SAFC ? Vous pouvez acheter 6 nouvelles actions à seulement 400 FCFA l'unité. Ou vendre ce droit sur la BRVM (jusqu'au 9 juin 2026) si vous préférez la liquidité immédiate." },
+
+      { type: 'heading', level: 1, text: "5. L'évolution du cours boursier : une leçon de marché" },
+      { type: 'paragraph', text: "Acte I — Léthargie (sept. 2024 — juin 2025) : Cours stable autour de 1 000 FCFA, titre peu suivi par le marché." },
+      { type: 'image', src: '/images/safc-chart-2026.png', caption: 'Cours du titre SAFC (SAFCA / Alios Finance CI) — sept. 2024 à avr. 2026 — Source : AfriBourse' },
+      { type: 'paragraph', text: "Acte II — Envol spéculatif (juil. 2025 — début 2026) : Montée jusqu'à ~7 500 FCFA. Titre multiplié par 7 en moins de 6 mois, porté par l'annonce des résultats 2025 et les ambitions de CREDAF GROUP." },
+      { type: 'paragraph', text: "Acte III — Correction post-annonce (avr. 2026) : Annonce le 13 avril 2026 → cours revenu autour de 3 900 FCFA (divisé par ~2 depuis le pic)." },
+      {
+        type: 'table',
+        caption: 'Mécanique du DPS et baisse du cours — le TERP',
+        headers: ['Calcul', 'Résultat'],
+        rows: [
+          ['(13 × 7 500 FCFA + 6 × 400 FCFA) ÷ 19', '≈ 5 257 FCFA — valeur théorique ex-droit'],
+          ['Cours actuel (avr. 2026)', '≈ 3 900 FCFA'],
+          ['Correction depuis le pic (7 500 FCFA)', '≈ -48 %'],
+        ],
+      },
+
+      { type: 'heading', level: 1, text: "6. Perspectives : où va Alios Finance CI ?" },
+      {
+        type: 'key-stats',
+        items: [
+          { value: '701 M', label: 'Résultat net 2025 (FCFA)' },
+          { value: '+30 %/an', label: 'Croissance annuelle visée' },
+          { value: '2,78 Mds', label: 'Bénéfice ciblé en 2030 (FCFA)' },
+          { value: '2028', label: 'Horizon retour aux dividendes' },
+        ],
+      },
+      { type: 'heading', level: 2, text: "Points de surveillance pour les investisseurs" },
+      {
+        type: 'list',
+        items: [
+          'Résultats T1 2026 (attendus mai 2026)',
+          "Taux de souscription à l'augmentation de capital",
+          'Évolution du cours après la clôture (11 juin 2026)',
+          'Retour éventuel aux dividendes en 2028',
+          'Expansion sous-régionale (Sénégal, Mali, Burkina Faso)',
+        ],
+      },
+
+      { type: 'heading', level: 1, text: "7. Que faire ? Le guide pratique de l'investisseur" },
+      { type: 'heading', level: 2, text: "Si vous êtes déjà actionnaire SAFC" },
+      {
+        type: 'table',
+        headers: ['Option', 'Action', 'Avantage', 'Risque'],
+        rows: [
+          ['1. Souscrire', 'Acheter 6 nouvelles actions pour 13 DPS à 400 FCFA', 'Maintient % de participation, prix attractif', 'Mobilise de la trésorerie'],
+          ['2. Vendre vos DPS', 'Céder droits sur BRVM (jusqu\'au 9 juin)', 'Liquidité immédiate', 'Dilution'],
+          ['3. Ne rien faire', 'Laisser expirer les DPS', 'Aucune action requise', 'Perte valeur DPS + dilution maximale'],
+        ],
+      },
+      { type: 'highlight', text: "⚠ Conseil : L'option 3 (ne rien faire) est la moins avantageuse. Vendez au moins vos DPS sur la BRVM avant le 9 juin 2026 pour récupérer leur valeur." },
+      { type: 'heading', level: 2, text: "Si vous n'êtes pas encore actionnaire" },
+      { type: 'paragraph', text: "L'augmentation s'adresse en priorité aux actionnaires existants. Si des droits restent non exercés, des actions nouvelles pourraient être allouées à d'autres investisseurs. La vigilance s'impose car le cours a déjà fortement progressé depuis les creux de 2024." },
+
+      { type: 'heading', level: 1, text: "Conclusion : Un pari sur le renouveau du crédit-bail ivoirien" },
+      { type: 'paragraph', text: "L'augmentation de capital cristallise une transition profonde. Les chiffres de 2025 (résultat net +701 M FCFA, PNB +44 %, objectifs dépassés de 36 %) prouvent le redressement. La correction de 50 % depuis les sommets offre peut-être une fenêtre de réflexion, mais le passé ne préjuge pas de l'avenir." },
     ],
   },
 ];

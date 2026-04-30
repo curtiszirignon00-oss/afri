@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, Minus, ExternalLink,
   BarChart2, Tag,
 } from 'lucide-react';
-import { BRVM_NEWS, BRVMArticle, ImpactType, BRVM_CATEGORIES } from '../data/brvm2026News';
+import { BRVM_NEWS, BRVMArticle, ImpactType, BRVM_CATEGORIES, ContentBlock } from '../data/brvm2026News';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +43,94 @@ const CAT_COLORS: Record<string, string> = {
   'Agro-industrie':           'bg-lime-50 text-lime-700 border-lime-200',
   'Analyse':                 'bg-indigo-50 text-indigo-700 border-indigo-200',
 };
+
+// ── Rich content renderer ─────────────────────────────────────────────────────
+
+function renderBlock(block: ContentBlock, i: number): React.ReactNode {
+  switch (block.type) {
+    case 'disclaimer':
+      return (
+        <div key={i} className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-xs text-amber-800 italic leading-relaxed">
+          {block.text}
+        </div>
+      );
+    case 'heading':
+      return block.level === 1
+        ? <h2 key={i} className="text-sm font-bold text-slate-900 mt-5 mb-1 border-b border-slate-100 pb-1">{block.text}</h2>
+        : <h3 key={i} className="text-xs font-bold text-slate-700 mt-3 mb-1">{block.text}</h3>;
+    case 'paragraph':
+      return <p key={i} className="text-sm text-slate-600 leading-relaxed">{block.text}</p>;
+    case 'image':
+      return (
+        <div key={i} className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+          <img src={block.src} alt={block.caption ?? ''} className="w-full h-auto object-contain" />
+          {block.caption && (
+            <p className="text-[10px] text-slate-400 italic text-center px-3 py-2 bg-slate-50 border-t border-slate-100">
+              {block.caption}
+            </p>
+          )}
+        </div>
+      );
+    case 'table':
+      return (
+        <div key={i} className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+          {block.caption && (
+            <p className="text-[11px] font-semibold text-slate-600 bg-slate-50 px-4 py-2 border-b border-slate-200">
+              {block.caption}
+            </p>
+          )}
+          <table className="w-full text-xs">
+            {block.headers && (
+              <thead>
+                <tr className="bg-slate-800 text-white">
+                  {block.headers.map((h, j) => (
+                    <th key={j} className="text-left px-4 py-2.5 font-medium whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {block.rows.map((row, j) => (
+                <tr key={j} className={j % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  {row.map((cell, k) => (
+                    <td key={k} className={`px-4 py-2.5 text-slate-700 ${k === 0 ? 'font-medium' : ''}`}>{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    case 'key-stats':
+      return (
+        <div key={i} className="grid grid-cols-2 gap-3">
+          {block.items.map((item, j) => (
+            <div key={j} className="bg-slate-900 rounded-lg p-3 text-center">
+              <p className="text-sm font-bold text-[#00D4A8]">{item.value}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">{item.label}</p>
+            </div>
+          ))}
+        </div>
+      );
+    case 'highlight':
+      return (
+        <div key={i} className="bg-[#00D4A8]/10 border-l-4 border-[#00D4A8] rounded-r-lg px-4 py-3 text-xs text-slate-700 leading-relaxed">
+          {block.text}
+        </div>
+      );
+    case 'list':
+      return (
+        <ul key={i} className="space-y-2">
+          {block.items.map((item, j) => (
+            <li key={j} className="text-sm text-slate-600 flex items-start gap-2">
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#00D4A8] shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      );
+  }
+}
 
 // ── DetailPanel ───────────────────────────────────────────────────────────────
 
@@ -86,28 +174,20 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
             {article.summary}
           </p>
 
-          {/* Image du graphique */}
-          {article.image_url && (
-            <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-              <img
-                src={article.image_url}
-                alt={`Graphique — ${article.title}`}
-                className="w-full h-auto object-contain"
-              />
-              <p className="text-[10px] text-slate-400 italic text-center px-3 py-2 bg-slate-50 border-t border-slate-100">
-                Source : AfriBourse
-              </p>
+          {/* Contenu */}
+          {article.richContent ? (
+            <div className="space-y-4">
+              {article.richContent.map((block, i) => renderBlock(block, i))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {article.content.split('\n\n').map((para, i) =>
+                para.trim() ? (
+                  <p key={i} className="text-sm text-slate-600 leading-relaxed">{para.trim()}</p>
+                ) : null
+              )}
             </div>
           )}
-
-          {/* Contenu */}
-          <div className="space-y-3">
-            {article.content.split('\n\n').map((para, i) => (
-              para.trim() ? (
-                <p key={i} className="text-sm text-slate-600 leading-relaxed">{para.trim()}</p>
-              ) : null
-            ))}
-          </div>
 
           {/* Tickers impactés */}
           {article.tickers.length > 0 && (
