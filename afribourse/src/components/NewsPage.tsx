@@ -7,14 +7,15 @@ import { BRVM_NEWS, BRVMArticle } from '../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from './BRVMNewsGrid';
 
 const BRVM_CATEGORY_MAP: Record<string, string> = {
-  'Marché':             'marches',
-  'Macroéconomie':      'economie',
-  'Matières premières': 'analyse',
-  'Secteur bancaire':   'analyse',
-  'Télécoms':           'analyse',
-  'Dividendes':         'dividendes',
-  'Réglementation':     'economie',
-  'Agro-industrie':     'analyse',
+  'Marché':                 'marches',
+  'Macroéconomie':          'economie',
+  'Matières premières':     'analyse',
+  'Secteur bancaire':       'analyse',
+  'Télécoms':               'analyse',
+  'Dividendes':             'dividendes',
+  'Réglementation':         'economie',
+  'Agro-industrie':         'analyse',
+  'Finance & Marchés UEMOA': 'analyse',
 };
 
 const STATIC_ONLY = ['resultats', 'dividendes'];
