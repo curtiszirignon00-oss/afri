@@ -370,11 +370,9 @@ Le risque commun aux deux groupes reste l'impact indirect de la crise du cacao s
       { ticker: "SOGC", impact: "Mixte", note: "CA +10,3% mais environnement agro dégradé globalement" },
     ],
   },
-];
-
   {
     id: "safc-augmentation-capital-2026",
-    category: "Finance & Marchés UEMOA",
+    category: "Analyse",
     isFeatured: true,
     image_url: "/images/safc-chart-2026.png",
     title: "SAFC (Alios Finance CI) : Augmentation de Capital 2026 — Décryptage complet d'une opération stratégique",
@@ -478,5 +476,5 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
 
 export const BRVM_CATEGORIES = [
   "Marché", "Macroéconomie", "Matières premières", "Secteur bancaire",
-  "Télécoms", "Dividendes", "Réglementation", "Agro-industrie", "Finance & Marchés UEMOA",
+  "Télécoms", "Dividendes", "Réglementation", "Agro-industrie", "Analyse",
 ] as const;

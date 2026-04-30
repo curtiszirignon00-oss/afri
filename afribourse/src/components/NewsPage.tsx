@@ -15,7 +15,7 @@ const BRVM_CATEGORY_MAP: Record<string, string> = {
   'Dividendes':             'dividendes',
   'Réglementation':         'economie',
   'Agro-industrie':         'analyse',
-  'Finance & Marchés UEMOA': 'analyse',
+  'Analyse':                 'analyse',
 };
 
 const STATIC_ONLY = ['resultats', 'dividendes'];
