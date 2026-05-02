@@ -22,7 +22,8 @@ function isChunkLoadError(error: Error | null): boolean {
     name === 'ChunkLoadError' ||
     /Loading chunk \d+ failed/i.test(msg) ||
     /Failed to fetch dynamically imported module/i.test(msg) ||
-    /error loading dynamically imported module/i.test(msg)
+    /error loading dynamically imported module/i.test(msg) ||
+    /is not a valid javascript mime type/i.test(msg)
   );
 }
 
