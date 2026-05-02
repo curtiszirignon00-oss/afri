@@ -82,7 +82,9 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     }
 
     const errorMessage = errorData.error || errorData.message || `Erreur ${response.status}`;
-    throw new Error(errorMessage);
+    const err = new Error(errorMessage);
+    (err as any).status = response.status;
+    throw err;
   }
 
   return response.json();
