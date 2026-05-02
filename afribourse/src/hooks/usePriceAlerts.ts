@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePollingQuery } from './usePollingQuery';
+import { useAuth } from '../contexts/AuthContext';
 import {
   fetchPriceAlerts,
   createPriceAlert,
@@ -15,11 +16,13 @@ import { toast } from 'react-hot-toast';
  * Hook pour récupérer toutes les alertes de l'utilisateur
  */
 export function usePriceAlerts() {
+  const { isLoggedIn } = useAuth();
   return usePollingQuery({
     queryKey: ['price-alerts'],
     queryFn: () => fetchPriceAlerts(),
     staleTime: 2 * 60 * 1000,
     refetchInterval: 79 * 1000, // 79s — décalé, seul l'onglet leader poll
+    enabled: isLoggedIn,
   });
 }
 
@@ -27,10 +30,11 @@ export function usePriceAlerts() {
  * Hook pour récupérer les alertes d'un ticker spécifique
  */
 export function useStockAlerts(stockTicker: string) {
+  const { isLoggedIn } = useAuth();
   return useQuery({
     queryKey: ['price-alerts', stockTicker],
     queryFn: () => fetchPriceAlerts(stockTicker),
-    enabled: !!stockTicker,
+    enabled: isLoggedIn && !!stockTicker,
     staleTime: 2 * 60 * 1000,
   });
 }
