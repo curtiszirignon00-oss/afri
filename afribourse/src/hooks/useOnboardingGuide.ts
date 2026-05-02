@@ -4,7 +4,6 @@ const LS_KEY = 'afribourse_onboarding_guide';
 
 export interface OnboardingSteps {
   cours: boolean;
-  quiz: boolean;
   achat: boolean;
 }
 
@@ -15,7 +14,7 @@ interface StoredState {
 
 const DEFAULT_STATE: StoredState = {
   hasSeenWelcome: false,
-  steps: { cours: false, quiz: false, achat: false },
+  steps: { cours: false, achat: false },
 };
 
 function readStorage(): StoredState | null {
@@ -55,7 +54,7 @@ export interface OnboardingGuideState {
 export const INACTIVE_STATE: OnboardingGuideState = {
   isActive: false,
   showWelcome: false,
-  steps: { cours: false, quiz: false, achat: false },
+  steps: { cours: false, achat: false },
   completedCount: 0,
   isComplete: false,
   isChecklistVisible: false,
@@ -100,9 +99,9 @@ export function useOnboardingGuide(isNewUser: boolean | undefined): OnboardingGu
 
   const isActive = stored !== null;
   const completedCount = stored
-    ? [stored.steps.cours, stored.steps.quiz, stored.steps.achat].filter(Boolean).length
+    ? [stored.steps.cours, stored.steps.achat].filter(Boolean).length
     : 0;
-  const isComplete = completedCount === 3;
+  const isComplete = completedCount === 2;
 
   // Masquer la checklist 5 s après complétion totale
   useEffect(() => {

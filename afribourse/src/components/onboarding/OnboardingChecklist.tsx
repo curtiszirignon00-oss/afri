@@ -4,8 +4,7 @@ import { Check, ChevronDown, ChevronUp, ArrowRight, Trophy } from 'lucide-react'
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
 
 const ITEMS = [
-  { key: 'cours' as const, label: 'Lire un cours', route: '/learn' },
-  { key: 'quiz' as const, label: 'Faire un quiz', route: '/learn' },
+  { key: 'cours' as const, label: 'Terminer un module', route: '/learn' },
   { key: 'achat' as const, label: 'Acheter une action', route: '/markets' },
 ];
 
@@ -16,7 +15,7 @@ export default function OnboardingChecklist() {
 
   if (!isActive || !isChecklistVisible) return null;
 
-  const progress = (completedCount / 3) * 100;
+  const progress = (completedCount / 2) * 100;
 
   return (
     <>
@@ -37,7 +36,7 @@ export default function OnboardingChecklist() {
         >
           <span>Premiers Pas</span>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-normal opacity-75">{completedCount}/3</span>
+            <span className="text-xs font-normal opacity-75">{completedCount}/2</span>
             {collapsed ? (
               <ChevronUp className="w-3.5 h-3.5 opacity-75" />
             ) : (
