@@ -245,7 +245,9 @@ export async function fetchPriceAlerts(stockTicker?: string): Promise<PriceAlert
   });
 
   if (!response.ok) {
-    throw new Error(`Erreur lors de la récupération des alertes: ${response.statusText}`);
+    const err = new Error(`Erreur lors de la récupération des alertes: ${response.statusText}`);
+    (err as any).status = response.status;
+    throw err;
   }
 
   return response.json();
