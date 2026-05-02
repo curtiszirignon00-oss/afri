@@ -30,7 +30,7 @@ type MarketsPageRefactoredProps = {};
 export default function MarketsPageRefactored() {
   const navigate = useNavigate();
   const { trackAction } = useAnalytics();
-  const { userProfile } = useAuth();
+  const { userProfile, isLoggedIn } = useAuth();
 
   // Déterminer la limite de comparaison selon le tier
   const subscriptionTier = (userProfile as any)?.subscriptionTier || 'free';
@@ -94,7 +94,7 @@ export default function MarketsPageRefactored() {
 
   // Hooks React Query
   const { data: stocks = [], isLoading, error, refetch } = useStocks(filters);
-  const { data: watchlist = [] } = useWatchlist();
+  const { data: watchlist = [] } = useWatchlist(isLoggedIn);
   const addToWatchlist = useAddToWatchlist();
   const removeFromWatchlist = useRemoveFromWatchlist();
 

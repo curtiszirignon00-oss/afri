@@ -302,12 +302,13 @@ export interface WatchlistItemEnriched extends WatchlistItem {
 }
 
 // Hook pour récupérer la watchlist
-export function useWatchlist() {
+export function useWatchlist(enabled = true) {
   return useQuery({
     queryKey: ['watchlist'],
     queryFn: () => apiFetch<WatchlistItem[]>('/watchlist/my'),
     retry: false,
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 
