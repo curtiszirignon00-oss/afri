@@ -470,50 +470,28 @@ export default function LearnPage() {
                 toast.error(`Score insuffisant: ${result.score}%. Minimum requis: ${result.passingScore}%`, { id: toastId });
             }
 
-            // Onboarding : marquer l'étape quiz comme faite (peu importe le score)
-            if (onboardingRef.current.isActive && !onboardingRef.current.steps.quiz) {
-                onboardingRef.current.completeStep('quiz');
-                const nav = navigate;
+            // Onboarding : le quiz compte aussi comme "module terminé"
+            if (onboardingRef.current.isActive && !onboardingRef.current.steps.cours) {
+                onboardingRef.current.completeStep('cours');
                 setTimeout(() => {
-                    if (result.passed) {
-                        toast.custom((t) => (
-                            <div style={{ opacity: t.visible ? 1 : 0, transition: 'opacity 0.3s', pointerEvents: 'all' }}
-                                className="bg-white rounded-2xl shadow-2xl border border-teal-100 p-4 max-w-xs w-full">
-                                <div className="flex items-start gap-3">
-                                    <span className="text-2xl flex-shrink-0">🔥</span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-gray-900 text-sm leading-snug">Tu as la finance dans le sang !</p>
-                                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">Le savoir c'est bien, le terrain c'est mieux. Place ton premier ordre simulé et regarde ton portefeuille prendre vie.</p>
-                                        <button
-                                            onClick={() => { toast.dismiss(t.id); nav('/markets'); }}
-                                            className="mt-3 px-4 py-1.5 text-xs font-bold text-white rounded-xl transition-opacity hover:opacity-90 w-full"
-                                            style={{ backgroundColor: '#00D4A8' }}>
-                                            Acheter ma première action →
-                                        </button>
-                                    </div>
+                    toast.custom((t) => (
+                        <div style={{ opacity: t.visible ? 1 : 0, transition: 'opacity 0.3s', pointerEvents: 'all' }}
+                            className="bg-white rounded-2xl shadow-2xl border border-teal-100 p-4 max-w-xs w-full">
+                            <div className="flex items-start gap-3">
+                                <span className="text-2xl flex-shrink-0">🔥</span>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-gray-900 text-sm leading-snug">Tu as la finance dans le sang !</p>
+                                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">Le savoir c'est bien, le terrain c'est mieux. Place ton premier ordre simulé et regarde ton portefeuille prendre vie.</p>
+                                    <button
+                                        onClick={() => { toast.dismiss(t.id); navigate('/markets'); }}
+                                        className="mt-3 px-4 py-1.5 text-xs font-bold text-white rounded-xl transition-opacity hover:opacity-90 w-full"
+                                        style={{ backgroundColor: '#00D4A8' }}>
+                                        Acheter ma première action →
+                                    </button>
                                 </div>
                             </div>
-                        ), { duration: 9000 });
-                    } else {
-                        toast.custom((t) => (
-                            <div style={{ opacity: t.visible ? 1 : 0, transition: 'opacity 0.3s', pointerEvents: 'all' }}
-                                className="bg-white rounded-2xl shadow-2xl border border-orange-100 p-4 max-w-xs w-full">
-                                <div className="flex items-start gap-3">
-                                    <span className="text-2xl flex-shrink-0">💪</span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-gray-900 text-sm leading-snug">L'échec fait partie du chemin.</p>
-                                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">Les meilleurs investisseurs ont tous tâtonné au début. La mentalité, c'est tout. Tu peux dès maintenant tester ton premier achat simulé — sans aucun risque.</p>
-                                        <button
-                                            onClick={() => { toast.dismiss(t.id); nav('/markets'); }}
-                                            className="mt-3 px-4 py-1.5 text-xs font-bold text-white rounded-xl transition-opacity hover:opacity-90 w-full"
-                                            style={{ backgroundColor: '#f97316' }}>
-                                            Essayer d'acheter quand même →
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        ), { duration: 9000 });
-                    }
+                        </div>
+                    ), { duration: 9000 });
                 }, 1200);
             }
 

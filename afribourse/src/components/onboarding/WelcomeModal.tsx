@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { BookOpen, Brain, TrendingUp, X } from 'lucide-react';
+import { BookOpen, TrendingUp, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
@@ -7,13 +7,8 @@ import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext'
 const STEPS = [
   {
     icon: BookOpen,
-    title: 'Lire ton premier cours',
-    sub: 'Module 1 · 5 min',
-  },
-  {
-    icon: Brain,
-    title: 'Valider le quiz',
-    sub: 'Teste tes connaissances',
+    title: 'Terminer un module',
+    sub: 'Lis ou fais le quiz du Module 1',
   },
   {
     icon: TrendingUp,

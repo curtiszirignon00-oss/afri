@@ -45,8 +45,7 @@ const FEATURES = [
 ];
 
 const ACTIONS_DONE = [
-  'Tu as lu ton premier cours',
-  'Tu as validé le quiz du Module 1',
+  'Tu as terminé ton premier module',
   'Tu as réalisé ton premier achat simulé',
 ];
 
