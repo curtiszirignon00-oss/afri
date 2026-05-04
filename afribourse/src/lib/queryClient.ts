@@ -12,7 +12,7 @@ export const queryClient = new QueryClient({
       retry: (failureCount, error: unknown) => {
         if (error instanceof RateLimitError) return false;
         const status = (error as any)?.response?.status ?? (error as any)?.status;
-        if (status === 429 || status === 401 || status === 403) return false;
+        if (status === 400 || status === 401 || status === 403 || status === 404 || status === 429) return false;
         return failureCount < 1;
       },
       // Toute erreur HTTP (4xx/5xx) reste dans l'état de la query — le composant
