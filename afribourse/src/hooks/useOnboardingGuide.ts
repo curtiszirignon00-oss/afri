@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 const LS_KEY = 'afribourse_onboarding_guide';
+const SESSION_KEY = 'onboarding_guide_start';
 
 export interface OnboardingSteps {
   cours: boolean;
@@ -63,35 +64,46 @@ export const INACTIVE_STATE: OnboardingGuideState = {
   forceHideChecklist: () => {},
 };
 
-export function useOnboardingGuide(isNewUser: boolean | undefined): OnboardingGuideState {
-  /**
-   * `stored === null`  → flux inactif
-   * `stored !== null`  → flux actif, localStorage est la source de vérité
-   *
-   * On vérifie le localStorage EN PREMIER — si l'utilisateur était en cours
-   * d'onboarding et a rafraîchi la page, on restaure son état même si
-   * isNewUser est maintenant false (le flag est flippé au premier /me).
-   */
+/**
+ * Activation: set sessionStorage key 'onboarding_guide_start' before navigating
+ * away from the onboarding survey. The guide activates on the next page render.
+ * Deactivation: cleared automatically on logout (isLoggedIn = false).
+ */
+export function useOnboardingGuide(isLoggedIn: boolean, pathname: string): OnboardingGuideState {
   const [stored, setStored] = useState<StoredState | null>(() => {
-    const saved = readStorage();
-    if (saved) return saved;                // reprise mid-onboarding
-    if (isNewUser === true) return DEFAULT_STATE; // tout premier démarrage
-    return null;                            // utilisateur existant
+    // Restore in-progress guide on page refresh (user was mid-guide).
+    // Do NOT activate here for new users — that's handled by the session flag effect.
+    return readStorage();
   });
 
   const [isChecklistVisible, setIsChecklistVisible] = useState(true);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialisation différée : auth peut être encore en cours au premier render
+  // ── Clear guide on logout ─────────────────────────────────────────────────
   useEffect(() => {
-    if (isNewUser === true && stored === null) {
-      const saved = readStorage();
-      setStored(saved ?? DEFAULT_STATE);
+    if (!isLoggedIn) {
+      clearStorage();
+      sessionStorage.removeItem(SESSION_KEY);
+      setStored(null);
+      setIsChecklistVisible(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNewUser]);
+  }, [isLoggedIn]);
 
-  // Persistance localStorage à chaque changement d'état
+  // ── Activate guide when DiscoverySurvey sets the session flag ────────────
+  // Re-checked on every navigation so the guide starts on whichever page the
+  // user lands on after completing the survey.
+  useEffect(() => {
+    if (!isLoggedIn || stored !== null) return;
+    const flag = sessionStorage.getItem(SESSION_KEY);
+    if (flag) {
+      sessionStorage.removeItem(SESSION_KEY);
+      setStored(DEFAULT_STATE);
+    }
+  // pathname is intentionally included so this re-runs on navigation
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, isLoggedIn]);
+
+  // ── Persist to localStorage ──────────────────────────────────────────────
   useEffect(() => {
     if (stored === null) return;
     writeStorage(stored);
@@ -103,7 +115,7 @@ export function useOnboardingGuide(isNewUser: boolean | undefined): OnboardingGu
     : 0;
   const isComplete = completedCount === 2;
 
-  // Masquer la checklist 5 s après complétion totale
+  // ── Hide checklist 5s after full completion ──────────────────────────────
   useEffect(() => {
     if (!isActive || !isComplete) return;
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
@@ -117,12 +129,12 @@ export function useOnboardingGuide(isNewUser: boolean | undefined): OnboardingGu
 
   const completeStep = useCallback((key: keyof OnboardingSteps) => {
     setStored(prev => {
-      if (!prev || prev.steps[key]) return prev; // null ou déjà fait → no-op
+      if (!prev || prev.steps[key]) return prev;
       return { ...prev, steps: { ...prev.steps, [key]: true } };
     });
   }, []);
 
-  // Appelé à la fermeture de CelebrationModal : efface l'état définitivement
+  // Called when CelebrationModal closes — permanently ends the guide flow
   const forceHideChecklist = useCallback(() => {
     setIsChecklistVisible(false);
     clearStorage();

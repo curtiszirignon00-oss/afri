@@ -110,6 +110,8 @@ export default function DiscoverySurvey({ onComplete }: DiscoverySurveyProps) {
   }
 
   function handleGoToDashboard() {
+    // Signal the onboarding guide to activate on the next page
+    sessionStorage.setItem('onboarding_guide_start', '1');
     if (onComplete) {
       onComplete();
     } else {
