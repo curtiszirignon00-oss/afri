@@ -1,6 +1,6 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
+import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock, BookOpen, GraduationCap } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
@@ -34,6 +34,15 @@ import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from '.
 import { Target, Flame, Zap, Trophy } from 'lucide-react';
 
 type DashboardPageProps = {};
+
+interface LearningProgressSummary {
+  completedModules: number;
+  totalModules: number;
+  completedQuizzes: number;
+  averageScore: number;
+  totalTimeSpent: number;
+  progressPercent: number;
+}
 
 // <-- AJOUT: Couleurs pour le graphique d'allocation
 const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
@@ -112,6 +121,8 @@ export default function DashboardPage() {
   const claimChallengeMutation = useClaimChallengeReward();
   const { data: myRewards } = useMyRewards();
 
+  const [learningProgress, setLearningProgress] = useState<LearningProgressSummary | null>(null);
+
   // États locaux
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [watchlistStocks, setWatchlistStocks] = useState<Stock[]>([]);
@@ -162,7 +173,7 @@ export default function DashboardPage() {
       console.log('📊 [DASHBOARD] Loading user data...');
 
       // Utiliser apiFetch qui ajoute automatiquement le token sur mobile
-      const [profileData, watchlistItems, transactionsData, indicesData, rankData] = await Promise.all([
+      const [profileData, watchlistItems, transactionsData, indicesData, rankData, learningData] = await Promise.all([
         apiFetch<any>('/users/me').catch(err => {
           console.error('Profile fetch error:', err);
           if (err.message.includes('401') || err.message.includes('Unauthorized')) {
@@ -185,7 +196,8 @@ export default function DashboardPage() {
         }),
         apiFetch<{ rank: number | null; totalParticipants: number; percentile?: number }>(
           `/portfolios/my/rank?wallet_type=${walletMode}`
-        ).catch(() => null)
+        ).catch(() => null),
+        apiFetch<{ success: boolean; data: LearningProgressSummary }>('/learning-modules/progress/summary').catch(() => null),
       ]);
 
       console.log('✅ [DASHBOARD] Data loaded successfully');
@@ -201,6 +213,7 @@ export default function DashboardPage() {
       setRecentTransactions(transactionsData.slice(0, 5)); // Les 5 dernières
       setMarketIndices(indicesData);
       setUserRank(rankData);
+      if (learningData?.data) setLearningProgress(learningData.data);
       setUserDataLoaded(true);
 
     } catch (err: any) {
@@ -1151,6 +1164,83 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )}
+              </Card>
+            )}
+
+            {/* Widget Progression Apprentissage */}
+            {learningProgress && (
+              <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-emerald-600" />
+                    Mon Apprentissage
+                  </h3>
+                  {learningProgress.averageScore > 0 && (
+                    <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                      Moy. quiz : {learningProgress.averageScore}%
+                    </span>
+                  )}
+                </div>
+
+                {/* Barre de progression */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-sm mb-1.5">
+                    <span className="font-medium text-gray-700">
+                      {learningProgress.completedModules} / {learningProgress.totalModules} modules
+                    </span>
+                    <span className="font-bold text-emerald-700">{learningProgress.progressPercent}%</span>
+                  </div>
+                  <div className="w-full bg-emerald-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
+                      style={{ width: `${learningProgress.progressPercent}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Modules restants */}
+                <div className="flex items-center gap-2 p-3 bg-white/60 rounded-xl mb-4">
+                  <BookOpen className="w-4 h-4 text-teal-600 flex-shrink-0" />
+                  <p className="text-sm text-gray-700">
+                    {learningProgress.totalModules - learningProgress.completedModules > 0 ? (
+                      <>
+                        <span className="font-bold text-teal-700">
+                          {learningProgress.totalModules - learningProgress.completedModules} module{learningProgress.totalModules - learningProgress.completedModules > 1 ? 's' : ''}
+                        </span>
+                        {' '}restant{learningProgress.totalModules - learningProgress.completedModules > 1 ? 's' : ''} pour obtenir votre certificat
+                      </>
+                    ) : (
+                      <span className="font-bold text-emerald-700">Tous les modules complétés !</span>
+                    )}
+                  </p>
+                </div>
+
+                {/* Score moyen des quiz */}
+                {learningProgress.completedQuizzes > 0 && (
+                  <div className="flex items-center justify-between p-3 bg-white/60 rounded-xl mb-4">
+                    <span className="text-sm font-medium text-gray-700">Score moyen aux quiz</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-500 ${learningProgress.averageScore >= 70 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                          style={{ width: `${learningProgress.averageScore}%` }}
+                        />
+                      </div>
+                      <span className={`text-sm font-bold ${learningProgress.averageScore >= 70 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        {learningProgress.averageScore}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bouton Continuer */}
+                <button
+                  onClick={() => navigate('/learn')}
+                  className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm shadow-sm"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Continuer votre apprentissage
+                </button>
               </Card>
             )}
 
