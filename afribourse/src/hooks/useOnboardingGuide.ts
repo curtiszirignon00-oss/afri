@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 const LS_KEY = 'afribourse_onboarding_guide';
-const SESSION_KEY = 'onboarding_guide_start';
 
 export interface OnboardingSteps {
   cours: boolean;
@@ -64,46 +63,50 @@ export const INACTIVE_STATE: OnboardingGuideState = {
   forceHideChecklist: () => {},
 };
 
-/**
- * Activation: set sessionStorage key 'onboarding_guide_start' before navigating
- * away from the onboarding survey. The guide activates on the next page render.
- * Deactivation: cleared automatically on logout (isLoggedIn = false).
- */
-export function useOnboardingGuide(isLoggedIn: boolean, pathname: string): OnboardingGuideState {
+export function useOnboardingGuide(
+  isNewUser: boolean | undefined,
+  isLoggedIn: boolean
+): OnboardingGuideState {
+  /**
+   * Activation rules:
+   *  - restore from localStorage if there is in-progress data (page refresh)
+   *  - start fresh when isNewUser === true (first ever login after signup)
+   * Deactivation:
+   *  - cleared on logout (isLoggedIn becomes false)
+   */
   const [stored, setStored] = useState<StoredState | null>(() => {
-    // Restore in-progress guide on page refresh (user was mid-guide).
-    // Do NOT activate here for new users — that's handled by the session flag effect.
-    return readStorage();
+    const saved = readStorage();
+    if (saved) return saved;                      // resume mid-guide
+    if (isNewUser === true) return DEFAULT_STATE; // first start
+    return null;
   });
 
   const [isChecklistVisible, setIsChecklistVisible] = useState(true);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Clear guide on logout ─────────────────────────────────────────────────
+  // Delayed init: auth context may still be loading on first render
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (isNewUser === true && stored === null) {
+      const saved = readStorage();
+      setStored(saved ?? DEFAULT_STATE);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNewUser]);
+
+  // Clear guide on logout so the widget disappears immediately
+  const prevLoggedInRef = useRef(isLoggedIn);
+  useEffect(() => {
+    const wasLoggedIn = prevLoggedInRef.current;
+    prevLoggedInRef.current = isLoggedIn;
+    // Only act on a real logout transition (true → false), not the initial false state
+    if (wasLoggedIn && !isLoggedIn) {
       clearStorage();
-      sessionStorage.removeItem(SESSION_KEY);
       setStored(null);
       setIsChecklistVisible(true);
     }
   }, [isLoggedIn]);
 
-  // ── Activate guide when DiscoverySurvey sets the session flag ────────────
-  // Re-checked on every navigation so the guide starts on whichever page the
-  // user lands on after completing the survey.
-  useEffect(() => {
-    if (!isLoggedIn || stored !== null) return;
-    const flag = sessionStorage.getItem(SESSION_KEY);
-    if (flag) {
-      sessionStorage.removeItem(SESSION_KEY);
-      setStored(DEFAULT_STATE);
-    }
-  // pathname is intentionally included so this re-runs on navigation
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, isLoggedIn]);
-
-  // ── Persist to localStorage ──────────────────────────────────────────────
+  // Persist to localStorage
   useEffect(() => {
     if (stored === null) return;
     writeStorage(stored);
@@ -115,7 +118,7 @@ export function useOnboardingGuide(isLoggedIn: boolean, pathname: string): Onboa
     : 0;
   const isComplete = completedCount === 2;
 
-  // ── Hide checklist 5s after full completion ──────────────────────────────
+  // Hide checklist 5 s after full completion
   useEffect(() => {
     if (!isActive || !isComplete) return;
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
