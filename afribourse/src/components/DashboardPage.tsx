@@ -1,6 +1,6 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock, BookOpen, GraduationCap } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
+import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock, BookOpen, GraduationCap, Users2, MessageSquare, BarChart2, HelpCircle, Star, Heart } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
@@ -32,6 +32,7 @@ import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward, useMyRewards } from '../hooks/useGamification';
 import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
 import { Target, Flame, Zap, Trophy } from 'lucide-react';
+import { useFeed } from '../hooks/useSocial';
 
 type DashboardPageProps = {};
 
@@ -120,6 +121,9 @@ export default function DashboardPage() {
   const { data: challengesProgress } = useMyChallengesProgress();
   const claimChallengeMutation = useClaimChallengeReward();
   const { data: myRewards } = useMyRewards();
+
+  // ✅ Feed: Posts récents des personnes suivies
+  const { data: feedData } = useFeed(1);
 
   const [learningProgress, setLearningProgress] = useState<LearningProgressSummary | null>(null);
 
@@ -1244,6 +1248,131 @@ export default function DashboardPage() {
               </Card>
             )}
 
+            {/* Widget Fil des Relations */}
+            {(() => {
+              const recentFollowingPosts: any[] = (feedData?.data || feedData?.posts || []).slice(0, 3);
+
+              const postTypeInfo: Record<string, { label: string; color: string; Icon: any }> = {
+                ANALYSIS: { label: 'une analyse', color: 'bg-blue-100 text-blue-700', Icon: BarChart2 },
+                OPINION:  { label: 'une opinion', color: 'bg-purple-100 text-purple-700', Icon: MessageSquare },
+                QUESTION: { label: 'une question', color: 'bg-orange-100 text-orange-700', Icon: HelpCircle },
+                TRANSACTION: { label: 'une transaction', color: 'bg-green-100 text-green-700', Icon: TrendingUp },
+                ACHIEVEMENT: { label: 'un succès', color: 'bg-yellow-100 text-yellow-700', Icon: Star },
+                ARTICLE:  { label: 'un article', color: 'bg-gray-100 text-gray-700', Icon: BookOpen },
+              };
+
+              const timeAgo = (dateStr: string) => {
+                const diff = Date.now() - new Date(dateStr).getTime();
+                const m = Math.floor(diff / 60000);
+                if (m < 1) return "à l'instant";
+                if (m < 60) return `il y a ${m} min`;
+                const h = Math.floor(m / 60);
+                if (h < 24) return `il y a ${h}h`;
+                return `il y a ${Math.floor(h / 24)}j`;
+              };
+
+              return (
+                <Card className="border-violet-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                      <Users2 className="w-5 h-5 text-violet-600" />
+                      Fil de vos relations
+                    </h3>
+                    <button
+                      onClick={() => navigate('/community?following=true')}
+                      className="text-xs font-semibold text-violet-600 hover:text-violet-800 transition-colors"
+                    >
+                      Voir tout
+                    </button>
+                  </div>
+
+                  {recentFollowingPosts.length === 0 ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <Users2 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                      <p className="text-sm font-medium text-gray-600 mb-1">Aucune publication récente</p>
+                      <p className="text-xs text-gray-400">Suivez des investisseurs pour voir leurs analyses ici.</p>
+                      <button
+                        onClick={() => navigate('/community')}
+                        className="mt-3 text-xs font-semibold text-violet-600 hover:underline"
+                      >
+                        Découvrir la communauté
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentFollowingPosts.map((post: any) => {
+                        const type = post.type as string;
+                        const cfg = postTypeInfo[type] || { label: 'une publication', color: 'bg-gray-100 text-gray-700', Icon: MessageSquare };
+                        const { Icon } = cfg;
+                        const authorName = post.author?.name
+                          ? `${post.author.name}${post.author.lastname ? ' ' + post.author.lastname : ''}`
+                          : post.author?.profile?.username || 'Un investisseur';
+                        const avatarUrl = post.author?.profile?.avatar_url;
+                        const preview = (post.content || '').slice(0, 110) + ((post.content || '').length > 110 ? '…' : '');
+
+                        return (
+                          <button
+                            key={post.id}
+                            onClick={() => navigate(`/community?postId=${post.id}`)}
+                            className="w-full text-left p-3 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50/40 transition-all duration-150 group"
+                          >
+                            {/* En-tête : avatar + nom + type */}
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                                {avatarUrl
+                                  ? <img src={avatarUrl} alt={authorName} className="w-full h-full object-cover" />
+                                  : authorName.charAt(0).toUpperCase()
+                                }
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-gray-800 truncate">{authorName}</p>
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${cfg.color}`}>
+                                    <Icon className="w-2.5 h-2.5" />
+                                    {cfg.label.charAt(0).toUpperCase() + cfg.label.slice(1)}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400">{timeAgo(post.created_at)}</span>
+                                </div>
+                              </div>
+                              <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-violet-500 transition-colors flex-shrink-0" />
+                            </div>
+
+                            {/* Titre si présent */}
+                            {post.title && (
+                              <p className="text-xs font-semibold text-gray-800 mb-1 line-clamp-1">{post.title}</p>
+                            )}
+
+                            {/* Aperçu du contenu */}
+                            <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">{preview}</p>
+
+                            {/* Pied : likes + commentaires */}
+                            <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-50">
+                              <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                                <Heart className="w-3 h-3" />{post.likes_count ?? 0}
+                              </span>
+                              <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                                <MessageSquare className="w-3 h-3" />{post.comments_count ?? 0}
+                              </span>
+                              {post.stock_symbol && (
+                                <span className="text-[10px] font-bold text-violet-600 ml-auto">{post.stock_symbol}</span>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+
+                      <button
+                        onClick={() => navigate('/community?following=true')}
+                        className="w-full py-2 text-xs font-semibold text-violet-600 hover:text-violet-800 hover:bg-violet-50 rounded-lg transition-colors"
+                      >
+                        Voir toutes les publications →
+                      </button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })()}
+
             {/* <-- AJOUT: Allocation du Portefeuille (Donut Chart) */}
             <Card>
               <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
@@ -1330,81 +1459,6 @@ export default function DashboardPage() {
               )}
             </Card>
 
-            {/* <-- CORRECTION: Ma Watchlist avec Bouton Acheter Rapide */}
-            <Card>
-              <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
-                <Eye className="w-5 h-5 text-indigo-600" />
-                <span>Ma Watchlist</span>
-              </h3>
-
-              {watchlistStocks.length > 0 ? (
-                <div className="space-y-3">
-                  {watchlistStocks.map((stock) => (
-                    <div
-                      key={stock.id}
-                      className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/stock/${stock.symbol}`)}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">
-                            {stock.logo_url ? (
-                              <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover rounded-lg" />
-                            ) : (
-                              stock.symbol.substring(0, 2)
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900 text-sm">{stock.symbol}</p>
-                            <p className="text-xs text-gray-500">{stock.company_name}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-gray-900">{formatNumber(stock.current_price)} F</p>
-                          <p className={`text-xs font-semibold ${stock.daily_change_percent >= 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
-                            {stock.daily_change_percent >= 0 ? '+' : ''}{stock.daily_change_percent.toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                      {/* <-- AJOUT: Bouton Acheter Rapide */}
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!canTrade) {
-                            toast.error(tradingBlockedReason || 'Trading non autorisé');
-                            return;
-                          }
-                          setSelectedStockToBuy(stock);
-                          setBuyQuantity(1);
-                          setBuyModalOpen(true);
-                        }}
-                        className="w-full"
-                      >
-                        Acheter
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Eye className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p className="text-sm mb-3">Aucune action dans votre watchlist.</p>
-                  <div className="relative inline-block">
-                    <PulseDot visible={isActive && !steps.achat} />
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => navigate('/markets')}
-                    >
-                      Ajouter des Actions
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </Card>
           </div>
         </div>
       </div>

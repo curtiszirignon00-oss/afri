@@ -1,7 +1,7 @@
 // src/pages/CommunityPage.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound, PenSquare } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
@@ -62,6 +62,9 @@ const DATE_RANGES = [
 
 export default function CommunityPage() {
     const { isLoggedIn } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const highlightedPostId = searchParams.get('postId');
+    const highlightedRef = useRef<HTMLDivElement>(null);
     const [page, setPage] = useState(1);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showRulesModal, setShowRulesModal] = useState(() => {
@@ -72,7 +75,7 @@ export default function CommunityPage() {
     // Filters
     const [filterType, setFilterType] = useState('');
     const [filterDate, setFilterDate] = useState('');
-    const [filterFollowing, setFilterFollowing] = useState(false);
+    const [filterFollowing, setFilterFollowing] = useState(() => searchParams.get('following') === 'true');
 
     const hasActiveFilters = filterType !== '' || filterDate !== '' || filterFollowing;
 
@@ -127,6 +130,25 @@ export default function CommunityPage() {
     const posts: CommunityPost[] = data?.data || [];
     const totalPages = data?.totalPages || 1;
     const total = data?.total || 0;
+
+    // Fetch du post mis en avant (depuis le dashboard)
+    const { data: highlightedPost } = useQuery({
+        queryKey: ['post', highlightedPostId],
+        queryFn: async () => {
+            const response = await apiClient.get(`/social/post/${highlightedPostId}`);
+            return response.data.data as CommunityPost;
+        },
+        enabled: !!highlightedPostId,
+    });
+
+    // Scroll vers le post mis en avant une fois chargé
+    useEffect(() => {
+        if (highlightedPost && highlightedRef.current) {
+            setTimeout(() => {
+                highlightedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 150);
+        }
+    }, [highlightedPost]);
 
     const getVisibilityIcon = (visibility: string) => {
         switch (visibility) {
@@ -501,6 +523,29 @@ export default function CommunityPage() {
                                 <p className="text-gray-600">
                                     Les publications des comptes publics et les posts partages apparaitront ici.
                                 </p>
+                            </div>
+                        )}
+
+                        {/* Post mis en avant (depuis dashboard) */}
+                        {highlightedPost && (
+                            <div ref={highlightedRef} className="scroll-mt-4">
+                                <div className="flex items-center gap-2 mb-2 px-1">
+                                    <span className="flex-1 h-px bg-violet-200" />
+                                    <span className="text-xs font-semibold text-violet-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-200">
+                                        Publication mise en avant
+                                    </span>
+                                    <span className="flex-1 h-px bg-violet-200" />
+                                </div>
+                                <div className="ring-2 ring-violet-400 ring-offset-2 rounded-xl">
+                                    <PostCard post={highlightedPost} />
+                                </div>
+                                <button
+                                    onClick={() => setSearchParams({})}
+                                    className="mt-2 mx-auto block text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    Masquer la mise en avant
+                                </button>
+                                <div className="my-6 border-t border-gray-100" />
                             </div>
                         )}
 
