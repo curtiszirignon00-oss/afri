@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, ChevronDown, ChevronUp, ArrowRight, Trophy } from 'lucide-react';
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
 
@@ -10,10 +10,12 @@ const ITEMS = [
 
 export default function OnboardingChecklist() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { isActive, steps, completedCount, isComplete, isChecklistVisible } = useOnboardingGuideContext();
   const [collapsed, setCollapsed] = useState(false);
 
   if (!isActive || !isChecklistVisible) return null;
+  if (pathname.startsWith('/onboarding') || pathname.startsWith('/survey')) return null;
 
   const progress = (completedCount / 2) * 100;
 
