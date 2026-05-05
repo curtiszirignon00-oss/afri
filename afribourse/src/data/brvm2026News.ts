@@ -18,7 +18,10 @@ export type ContentBlock =
   | { type: 'table'; caption?: string; headers?: string[]; rows: string[][] }
   | { type: 'key-stats'; items: { label: string; value: string }[] }
   | { type: 'highlight'; text: string }
-  | { type: 'list'; items: string[] };
+  | { type: 'list'; items: string[] }
+  | { type: 'callout'; variant: 'info' | 'warn' | 'ok' | 'note'; title: string; paragraphs: string[] }
+  | { type: 'pull-quote'; text: string }
+  | { type: 'verdict'; title: string; items: { label: string; text: string }[] };
 
 export interface BRVMArticle {
   id: string;
@@ -613,6 +616,178 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
 
       { type: 'heading', level: 1, text: "Conclusion : Un pari sur le renouveau du crédit-bail ivoirien" },
       { type: 'paragraph', text: "L'augmentation de capital cristallise une transition profonde. Les chiffres de 2025 (résultat net +701 M FCFA, PNB +44 %, objectifs dépassés de 36 %) prouvent le redressement. La correction de 50 % depuis les sommets offre peut-être une fenêtre de réflexion, mais le passé ne préjuge pas de l'avenir." },
+    ],
+  },
+
+  // ── SGBCI T1 2026 ──────────────────────────────────────────────────────────
+  {
+    id: "sgbci-analyse-t1-2026",
+    category: "Analyse",
+    isFeatured: true,
+    image_url: "/images/sgbci-building.jpg",
+    title: "Société Générale Côte d'Ivoire : solidité sous pression — Analyse T1 2026",
+    summary: "Résultat net T1 2026 en recul de −11,5% à 23,9 Md FCFA. Coefficient d'exploitation remonté à 40,6%. Mais à PER 10× et rendement dividende 7,9%, la SGBCI intègre-t-elle déjà les mauvaises nouvelles ? Analyse approfondie sur 5 ans de données.",
+    publishedAt: "2026-05-05T08:00:00Z",
+    sources: [
+      "Rapport d'activité annuel SGCI 2024 (données auditées, 07/02/2025) · brvm.org",
+      "Rapport d'activité annuel SGCI 2025 (données auditées, 17/04/2026) · brvm.org",
+      "Rapports trimestriels T1 2024, T1 2025, T1 2026 (30/04/2026, non audités) · SGBCI",
+      "APBEF-CI — Statistiques secteur bancaire CI · oct. 2024",
+      "Bloomfield Investment Corporation — Note AAA · 2024",
+    ],
+    tags: ["SGBCI", "SGBC", "Société-Générale", "T1-2026", "analyse", "banque", "coefficient-exploitation", "dividende", "NPL", "PER", "BRVM"],
+    tickers: [
+      { ticker: "SGBC", impact: "Mixte", note: "RN T1 2026 −11,5%, coeff. exploitation 40,6%, NPL 8%. Mais PER 10×, rendement 7,9%, AAA Bloomfield. Catalyseur : T2 2026." },
+    ],
+    content: "Analyse approfondie des résultats du premier trimestre 2026 de SGBCI. Résultat net −11,5% à 23,9 Md FCFA. Coefficient d'exploitation remonté à 40,6%. Trois mécanismes simultanés : effet ciseaux revenues/coûts, escalade du coût du risque (NPL 8%), compression des commissions. À PER 10× et rendement 7,9%, le titre intègre une partie des mauvaises nouvelles. Catalyseur : T2 2026.",
+    richContent: [
+      { type: 'disclaimer', text: "Analyse financière · BRVM / UEMOA — Édition éducative. Données : rapports annuels 2024–2025 + T1 2026. Non auditées (T1). Cette étude est produite à des fins éducatives et ne constitue pas un conseil en investissement. Tout investissement en bourse comporte un risque de perte en capital." },
+
+      { type: 'key-stats', items: [
+        { value: '33 000 FCFA', label: 'Cours · 02/05/2026' },
+        { value: '1 026,7 Md', label: 'Capitalisation' },
+        { value: '10,1×', label: 'PER (base 2025)' },
+        { value: '2,07×', label: 'Price-to-Book' },
+        { value: '7,9%', label: 'Rendement dividende 2025' },
+        { value: 'AAA', label: 'Note Bloomfield 2024' },
+        { value: '20%', label: 'Part de marché crédits' },
+        { value: '31 111 110', label: 'Actions' },
+      ]},
+
+      { type: 'heading', level: 1, text: "01 · Portrait de l'entreprise" },
+      { type: 'paragraph', text: "Société Générale Côte d'Ivoire (SGCI) est la première banque privée de Côte d'Ivoire et l'un des acteurs financiers les plus puissants de toute la zone UEMOA. Filiale du groupe français Société Générale, elle détient 20% de part de marché sur les crédits et 16% sur les dépôts selon les statistiques APBEF-CI d'octobre 2024 — des positions de leader incontestées." },
+      { type: 'paragraph', text: "Son bilan dépasse 3 769 milliards FCFA. Son résultat net excède 100 milliards par an. En 2024, l'agence Bloomfield Investment Corporation lui a attribué la note AAA — une première dans le secteur bancaire ivoirien, et la seule banque de la place à porter cette distinction." },
+      { type: 'paragraph', text: "L'action est cotée sur la BRVM sous le ticker SGBCI. Avec plus de 1 000 milliards FCFA de capitalisation boursière, elle figure parmi les titres les plus liquides et les plus suivis de la bourse régionale." },
+      { type: 'callout', variant: 'info', title: "Repère — Qu'est-ce que le Produit Net Bancaire (PNB) ?", paragraphs: [
+        "Le PNB est l'équivalent du chiffre d'affaires pour une banque. Il additionne deux sources de revenus : la marge nette d'intérêt (différence entre ce que la banque prête à 7% et emprunte à 3%) et les commissions (frais de tenue de compte, virements, services). Pour SGCI en 2025 : 276 milliards FCFA de PNB, dont ~84% viennent des intérêts et ~16% des commissions nettes.",
+      ]},
+
+      { type: 'heading', level: 1, text: "02 · Cinq ans de résultats : la trajectoire de fond (2021–2025)" },
+      { type: 'paragraph', text: "Avant de lire le T1 2026, il est indispensable de comprendre d'où vient la banque. Le tableau ci-dessous présente les états financiers annuels complets sur cinq exercices." },
+      { type: 'table', caption: 'Compte de résultat (M FCFA)', headers: ['', '2021', '2022', '2023', '2024', '2025'], rows: [
+        ['Produit Net Bancaire', '189 096', '215 101', '253 286', '263 207', '276 048'],
+        ['Frais Généraux', '—', '—', '-105 585', '-99 723', '-106 974'],
+        ['Résultat Brut d\'Exploitation', '98 446', '118 708', '147 701', '163 484', '169 074'],
+        ['Coût Net du Risque', '—', '—', '-27 654', '-36 235', '-46 829'],
+        ['Résultat Avant Impôt', '—', '—', '119 617', '127 561', '126 507'],
+        ['Résultat Net', '67 438', '74 612', '97 230', '101 228', '101 352'],
+      ]},
+      { type: 'table', caption: 'Ratios clés', headers: ['', '2021', '2022', '2023', '2024', '2025'], rows: [
+        ['Coefficient d\'exploitation', '42,6%', '40,1%', '41,7%', '37,9%', '38,8%'],
+        ['ROE', '22,1%', '21,6%', '24,1%', '22,4%', '20,5%'],
+        ['ROA', '2,2%', '2,2%', '2,8%', '2,8%', '2,7%'],
+        ['NPL (créances douteuses)', '—', '—', '6,8%', '7,5%', '8,0%'],
+        ['Dividende brut / action', '—', '—', '1 719 F', '1 863 F', '2 606 F'],
+        ['Taux de distribution', '—', '—', '55,0%', '57,3%', '80,0%'],
+      ]},
+      { type: 'image', src: '/images/sgbci-graphique-1.png', caption: 'Résultat Net annuel et PNB (Md FCFA) · 2021–2025 — Source : AfriBourse / Rapports SGCI' },
+      { type: 'paragraph', text: "L'histoire de SGCI sur cinq ans est celle d'une croissance organique soutenue, avec une rupture positive en 2023 où le résultat net a bondi de +30%. Deux tendances méritent l'attention : d'une part, le coût net du risque en accélération continue (+31% en 2024, +29% en 2025), signal que la qualité du portefeuille se détériore progressivement. D'autre part, le dividende qui fait un saut remarquable de +40% en 2025, passant de 1 863 à 2 606 FCFA — avec un taux de distribution qui monte à 80%, ce qui est inhabituellement élevé pour une banque en phase d'investissement." },
+      { type: 'callout', variant: 'note', title: "Point d'analyse — Le dividende 2025 à 80% de distribution", paragraphs: [
+        "Un taux de distribution de 80% signifie que la banque reverse aux actionnaires 80 FCFA sur chaque 100 FCFA gagnés. C'est généreux — et c'est un signal fort envoyé au marché en amont d'une période d'investissements lourds (rénovation siège, IT). La logique : récompenser les actionnaires avant la phase de dépenses, qui pèsera sur les résultats 2026. Au cours de 33 000 FCFA, le rendement brut du dividende 2025 est de 7,9% — exceptionnel pour un titre de cette qualité sur la BRVM.",
+      ]},
+
+      { type: 'heading', level: 1, text: "03 · L'évolution trimestrielle T1 : quatre ans de perspective" },
+      { type: 'table', caption: 'T1 comparaison (M FCFA)', headers: ['T1', 'T1 2023', 'T1 2024', 'T1 2025', 'T1 2026', 'Var. 25→26'], rows: [
+        ['Produit Net Bancaire', '59 476', '65 427', '66 275', '65 644', '−1,0%'],
+        ['Frais Généraux', '—', '~26 800', '24 515', '26 646', '+8,7%'],
+        ['Coeff. d\'exploitation', '—', '41,0%', '37,0%', '40,6%', '+3,6 pp'],
+        ['Résultat Avant Impôt', '27 134', '32 588', '33 862', '29 987', '−11,4%'],
+        ['Résultat Net', '22 509', '26 498', '27 081', '23 976', '−11,5%'],
+      ]},
+      { type: 'image', src: '/images/sgbci-graphique-2.png', caption: 'Résultat Net T1 · 2023–2026 (Md FCFA) — Source : AfriBourse / Rapports SGCI' },
+      { type: 'paragraph', text: "Le T1 2026 rompt une progression trimestrielle régulière sur trois ans. Mais la perspective historique révèle un détail capital : le coefficient d'exploitation à 40,6% au T1 2026 est exactement le niveau qui prévalait au T1 2024. Et la direction avait réussi à le ramener à 37% dès le T1 2025 grâce à une stratégie active de maîtrise des coûts. Ce n'est pas la première fois que SGCI traverse ce type de pic de charges — et elle en est sortie par le haut." },
+      { type: 'pull-quote', text: "Le T1 2026 n'est pas une dégradation sans précédent. C'est un retour au niveau de 2024 — que la banque avait déjà su dépasser." },
+
+      { type: 'heading', level: 1, text: "04 · Anatomie de la baisse : trois mécanismes simultanés" },
+      { type: 'heading', level: 2, text: "Mécanisme 1 — L'effet ciseaux revenus/coûts" },
+      { type: 'paragraph', text: "Le PNB recule de 631 millions FCFA (−1%) tandis que les frais généraux progressent de 2 131 millions (+9%). Les deux courbes s'écartent comme les lames d'une paire de ciseaux : revenus stagnants, coûts en hausse. L'espace entre les deux — le bénéfice brut d'exploitation — se comprime mécaniquement." },
+      { type: 'paragraph', text: "L'origine de la hausse des frais : rénovation du siège social, construction d'un nouveau site, et surtout migration IT des clients entreprises vers une nouvelle plateforme de banque à distance. Ce dernier poste est le plus incertain : les migrations informatiques dépassent régulièrement leurs délais et leurs budgets." },
+      { type: 'image', src: '/images/sgbci-graphique-3.png', caption: 'PNB vs Frais généraux T1 (Md FCFA) · 2024–2026 — Effet ciseaux' },
+      { type: 'heading', level: 2, text: "Mécanisme 2 — Le coût du risque en escalade structurelle" },
+      { type: 'paragraph', text: "C'est le signal le plus préoccupant et le moins commenté. Depuis 2023, le coût net du risque (provisions pour mauvaises créances) ne cesse d'accélérer : +31% en 2024, +29% en 2025. Parallèlement, le taux de NPL (créances douteuses) progresse de 6,8% à 7,5% puis 8,0%. Le rapport T1 2026 ne donne pas de chiffre précis, mais l'écart entre le RBE (−7%) et le RAI (−11%) suggère environ 1,1 milliard de provisions supplémentaires au T1 2026." },
+      { type: 'callout', variant: 'warn', title: "Signal structurel — La dégradation du portefeuille", paragraphs: [
+        "Quand le taux de NPL passe de 6,8% à 8,0% en deux ans sur un portefeuille de 2 546 milliards FCFA, cela représente environ 30 milliards FCFA de créances supplémentaires en souffrance. La banque maintient un taux de couverture à 82% (en baisse depuis les 95% de 2023), ce qui signifie qu'une partie du risque résiduel n'est pas encore pleinement provisionnée. Ce point mérite une surveillance attentive sur 2026.",
+      ]},
+      { type: 'heading', level: 2, text: "Mécanisme 3 — La compression des commissions" },
+      { type: 'paragraph', text: "Les commissions nettes représentaient 39,7% du PNB en 2023 — elles n'en représentent plus que 24,8% en 2025. La migration IT des clients entreprises perturbe précisément cette ligne : pendant la transition, les services numériques générant des commissions sont partiellement indisponibles. La direction le reconnaît explicitement dans le rapport T1 2026." },
+      { type: 'callout', variant: 'info', title: "Repère — Pourquoi les commissions sont-elles importantes ?", paragraphs: [
+        "Les commissions sont des revenus stables et peu risqués — une banque n'a aucun risque de crédit sur un virement ou une tenue de compte. À l'inverse, les intérêts sur crédits génèrent du risque de non-remboursement. Un PNB avec une forte proportion de commissions est donc structurellement plus solide. La baisse de la part des commissions chez SGCI (de ~40% à ~25% du PNB) est un recul qualitatif, au-delà du seul recul quantitatif.",
+      ]},
+
+      { type: 'heading', level: 1, text: "05 · L'histoire du coefficient d'exploitation" },
+      { type: 'paragraph', text: "Le coefficient d'exploitation est la variable centrale de cette analyse. Son évolution sur l'ensemble de la période disponible :" },
+      { type: 'image', src: '/images/sgbci-graphique-4.png', caption: 'Coefficient d\'exploitation annuel et trimestriel T1 (%) · SGCI — Source : AfriBourse' },
+      { type: 'paragraph', text: "Sur base annuelle, le coefficient d'exploitation s'est amélioré de 2,9 points entre 2023 et 2025, passant de 41,7% à 38,8%. La direction a tenu sa promesse d'efficacité opérationnelle. Mais les T1 sont systématiquement plus élevés que la moyenne annuelle (phénomène de saisonnalité). Le T1 2026 à 40,6% n'est donc pas aussi éloigné de la 'normale trimestrielle' qu'il n'y paraît au premier regard." },
+
+      { type: 'heading', level: 1, text: "06 · Valorisation de l'action SGBCI" },
+      { type: 'paragraph', text: "Avec 31 111 110 actions et un cours de 33 000 FCFA au 2 mai 2026, voici les métriques de valorisation calculées à partir des données auditées :" },
+      { type: 'key-stats', items: [
+        { value: '1 026,7 Md FCFA', label: 'Capitalisation boursière' },
+        { value: '3 258 FCFA', label: 'BPA 2025 (annuel audité)' },
+        { value: '10,1×', label: 'PER sur BPA 2025' },
+        { value: '3 082 FCFA', label: 'BPA T1 2026 annualisé' },
+        { value: '10,7×', label: 'PER sur T1 annualisé' },
+        { value: '15 913 FCFA', label: 'Valeur comptable / action' },
+        { value: '2,07×', label: 'Price-to-Book' },
+        { value: '7,9%', label: 'Rendement dividende 2025' },
+      ]},
+      { type: 'callout', variant: 'info', title: "Repère — Lire ces métriques ensemble", paragraphs: [
+        "PER de 10,1× : Pour chaque 100 FCFA de bénéfice annuel, le marché paie 1 010 FCFA. C'est modéré pour une banque AAA à 20% de part de marché — les banques comparables en Afrique de l'Ouest s'échangent entre 7× et 14×.",
+        "P/B de 2,07× : Le marché valorise la banque au double de sa valeur comptable, justifié par son ROE de 20%+. Si le ROE baissait vers 12-15%, ce multiple deviendrait difficile à défendre.",
+        "Rendement de 7,9% : C'est le 'loyer' annuel que l'actionnaire perçoit en dividende. À titre de comparaison, les obligations d'État ivoiriennes à 10 ans offrent environ 6-7%. SGBCI offre donc un rendement supérieur aux obligations souveraines — ce qui est rare pour un titre aussi solide.",
+      ]},
+      { type: 'heading', level: 2, text: "Sensibilité du BPA au coefficient d'exploitation" },
+      { type: 'paragraph', text: "Le tableau ci-dessous quantifie l'impact direct du coefficient d'exploitation sur le bénéfice par action, à PNB constant (276 Md, niveau 2025) :" },
+      { type: 'table', caption: 'Scénarios de valorisation (PNB fixe 276 Md)', headers: ['Scénario', 'Coeff.', 'RN estimé', 'BPA estimé', 'PER à 33 000', 'Rendement div.'], rows: [
+        ['Dégradation continue', '44,0%', '~83 Md', '2 668 F', '12,4×', '~6,5%'],
+        ['Stabilisation au T1', '40,6%', '~88 Md', '2 828 F', '11,7×', '~6,9%'],
+        ['Rebond partiel', '38,8%', '~94 Md', '3 022 F', '10,9×', '~7,3%'],
+        ['Retour niveau 2024', '37,9%', '~98 Md', '3 150 F', '10,5×', '~7,6%'],
+        ['Retour niveau 2025 ✓', '38,8%', '~101 Md', '3 248 F', '10,2×', '~7,9%'],
+      ]},
+
+      { type: 'heading', level: 1, text: "07 · Le dividende : l'argument souvent oublié" },
+      { type: 'paragraph', text: "La progression du dividende est l'une des données les plus remarquables de ces rapports annuels, et l'une des moins discutées dans la lecture des résultats trimestriels." },
+      { type: 'table', caption: 'Dividende brut par action (FCFA) · 2023–2025', headers: ['Exercice', 'Dividende brut', 'Variation', 'Taux de distribution', 'Rendement à 33 000 F'], rows: [
+        ['2023', '1 719 FCFA', '—', '55,0%', '5,2%'],
+        ['2024', '1 863 FCFA', '+8,4%', '57,3%', '5,6%'],
+        ['2025', '2 606 FCFA', '+39,9%', '80,0%', '7,9%'],
+      ]},
+      { type: 'paragraph', text: "En deux ans, le dividende par action a progressé de +51,6% (de 1 719 à 2 606 FCFA). Pour un investisseur ayant acheté l'action à 34 000 FCFA avant l'annonce des résultats T1 2026, le dividende 2025 de 2 606 FCFA représente un rendement de 7,66% — entièrement encaissé quel que soit le cours. C'est l'argument de l'investisseur de valeur : on peut accepter une pression temporaire sur le cours si le flux de dividendes reste solide." },
+      { type: 'callout', variant: 'ok', title: "Perspective long terme — Le rendement total", paragraphs: [
+        "Un investisseur qui aurait acheté SGBCI il y a deux ans à, disons, 28 000 FCFA, aurait encaissé : dividende 2023 (1 719 F) + dividende 2024 (1 863 F) + dividende 2025 (2 606 F) = 6 188 FCFA de dividendes, soit 22,1% du prix d'achat en trois ans — sans compter la plus-value de cours. C'est le profil d'un titre de rendement de très haute qualité.",
+      ]},
+
+      { type: 'heading', level: 1, text: "08 · La réaction du marché et ce qu'elle signifie" },
+      { type: 'paragraph', text: "Le rapport a été publié jeudi 30 avril. Les marchés BRVM étant fermés vendredi 1er mai (fête du Travail), la première réaction n'a pu s'exprimer que le lundi 4 mai. En un seul jour de cotation, l'action est passée de 34 000 à 33 000 FCFA : −1 000 FCFA par action, soit −2,9%." },
+      { type: 'paragraph', text: "En termes de destruction de valeur absolue : 31 111 110 × 1 000 = 31,1 milliards FCFA de capitalisation boursière évaporés en une séance. Soit l'équivalent de 1,3 fois le résultat net trimestriel de la banque." },
+      { type: 'callout', variant: 'info', title: "Lecture de marché — Ce que −2,9% révèle", paragraphs: [
+        "Ce n'est pas une panique. Une réaction de −2,9% sur une banque ayant publié −11% de résultat net suggère que la dégradation était partiellement anticipée. Sur la BRVM, des publications vraiment négatives provoquent des baisses de 5 à 15%.",
+        "Ce n'est pas non plus de l'indifférence. La baisse est réelle et significative. Le marché sanctionne la rupture du trend de croissance et la dégradation du coefficient d'exploitation.",
+        "Le test de vérité sera le T2 2026. Si la migration IT se stabilise comme annoncé et que le coefficient revient vers 38-39%, la thèse d'investissement à 33 000 FCFA sera confortée. Dans le cas contraire, un nouveau palier de correction est possible.",
+      ]},
+
+      { type: 'heading', level: 1, text: "09 · Les signaux à surveiller en 2026" },
+      { type: 'callout', variant: 'ok', title: "Signaux positifs", paragraphs: [
+        "Dividende 2025 de 2 606 FCFA — rendement 7,9% au cours de 33 000 F, supérieur aux obligations souveraines ivoiriennes.",
+        "Notation AAA Bloomfield — unique dans le secteur bancaire ivoirien. Signal de solidité financière maximale.",
+        "Bilan solide — ratio de solvabilité à 16,3% (seuil réglementaire : 12,5%). Coussin de 300+ bps au-dessus des exigences.",
+        "Précédent 2024–2025 — la banque a déjà redressé un coefficient à 41% vers 37% en un an. Elle sait le faire.",
+      ]},
+      { type: 'callout', variant: 'warn', title: "Signaux de vigilance", paragraphs: [
+        "NPL à 8,0% — en progression constante depuis 2023 (6,8% → 7,5% → 8,0%). Le taux de couverture recule (95% → 84% → 82%). Tension sur les PME ivoiriennes.",
+        "Coût du risque structurellement haut — +29% en 2025, accélère depuis 2023. Le résultat net 2025 est quasi-stable non pas grâce à la performance commerciale mais grâce à la fiscalité.",
+        "Commissions en recul — de 39,7% à 24,8% du PNB en 2 ans. Baisse qualitative de la structure du PNB.",
+        "ROE en baisse continue — 24,1% (2023) → 22,4% (2024) → 20,5% (2025). Trend à surveiller.",
+      ]},
+      { type: 'paragraph', text: "Le catalyseur numéro un reste la publication du rapport d'activité T2 2026 (attendue vers fin juillet 2026). Si le coefficient d'exploitation revient sous 39% et que le PNB rebondit grâce à la stabilisation de la migration IT, la thèse constructive est confirmée. C'est le seul élément qui peut catalyser un rebond significatif du cours." },
+
+      { type: 'verdict', title: "Synthèse pour l'investisseur BRVM", items: [
+        { label: "Ce que les données confirment :", text: "SGCI est l'une des institutions financières les plus solides de la zone UEMOA. Bilan de 3 769 Md, résultat net >100 Md par an, notation AAA, dividende en croissance de +51% en deux ans, leader de marché avec 20% de part sur les crédits. Ces fondamentaux ne se discutent pas." },
+        { label: "Ce que le T1 2026 révèle :", text: "La banque entre dans un cycle d'investissements lourds (IT, immobilier) simultanément à une dégradation graduelle de la qualité de son portefeuille de crédits (NPL 8%, coût du risque +29%). Le résultat net 2025 aurait été en forte baisse sans un impact fiscal favorable." },
+        { label: "La question centrale :", text: "Le coefficient d'exploitation va-t-il rebondir rapidement (scénario direction) ou rester élevé pendant plusieurs trimestres (scénario prudent) ? La réponse dictera la trajectoire du cours en 2026." },
+        { label: "Pour l'investisseur de valeur :", text: "À 33 000 FCFA, PER 10× et rendement dividende 7,9%, SGBCI intègre déjà une bonne partie des mauvaises nouvelles. Le titre n'est pas cher au regard de sa qualité fondamentale. Mais il manque un catalyseur positif — et ce catalyseur s'appelle T2 2026." },
+      ]},
     ],
   },
 ];

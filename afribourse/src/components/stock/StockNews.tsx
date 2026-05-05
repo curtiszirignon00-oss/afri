@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { ExternalLink, Newspaper, BarChart2, ChevronRight, X, TrendingUp, TrendingDown, Minus, Clock, ArrowUpRight, ArrowDownRight, Landmark, Leaf, Fuel, Radio } from 'lucide-react';
+import { ExternalLink, Newspaper, BarChart2, ChevronRight, X, TrendingUp, TrendingDown, Minus, Clock, ArrowUpRight, ArrowDownRight, Landmark, Leaf, Fuel, Radio, Star } from 'lucide-react';
 import { findNewsByTicker, StockNews as FundamentalsNews, Sector } from '../../data/newsData';
+import { BRVM_NEWS, BRVMArticle } from '../../data/brvm2026News';
+import { BRVMDetailPanel, BRVMArticleCard } from '../BRVMNewsGrid';
 
 type NewsItem = {
   id: string;
@@ -307,7 +309,11 @@ function FundCard({ news, onOpen }: { news: FundamentalsNews; onOpen: () => void
 
 export default function StockNews({ news, isLoading = false, ticker }: StockNewsProps) {
   const [fundDetail, setFundDetail] = useState<FundamentalsNews | null>(null);
+  const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
   const fundamentalsNews = ticker ? findNewsByTicker(ticker) : undefined;
+  const brvmArticles = ticker
+    ? BRVM_NEWS.filter(a => a.tickers.some(t => t.ticker === ticker || t.ticker === ticker.split(' ')[0]))
+    : [];
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
     return d.toLocaleDateString('fr-FR', {
@@ -357,6 +363,20 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
             {fundDetail && <FundDetailPanel news={fundDetail} onClose={() => setFundDetail(null)} />}
           </>
         )}
+        {brvmArticles.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Star size={13} className="text-indigo-500 fill-indigo-500" />
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses AfriBourse</span>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {brvmArticles.map(a => (
+                <BRVMArticleCard key={a.id} article={a} onOpen={() => setSelectedBRVM(a)} />
+              ))}
+            </div>
+          </div>
+        )}
+        {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
         <div className="py-8 text-center">
           <div className="flex flex-col items-center justify-center text-gray-400">
             <Newspaper className="w-16 h-16 mb-4" />
@@ -377,6 +397,22 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
         <FundCard news={fundamentalsNews} onOpen={() => setFundDetail(fundamentalsNews)} />
       )}
       {fundDetail && <FundDetailPanel news={fundDetail} onClose={() => setFundDetail(null)} />}
+
+      {/* Analyses BRVM pour ce ticker */}
+      {brvmArticles.length > 0 && (
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Star size={13} className="text-indigo-500 fill-indigo-500" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses AfriBourse</span>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {brvmArticles.map(a => (
+              <BRVMArticleCard key={a.id} article={a} onOpen={() => setSelectedBRVM(a)} />
+            ))}
+          </div>
+        </div>
+      )}
+      {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
 
       <h3 className="text-xl font-bold text-gray-900 mb-6">
         Dernières Actualités ({news.length})
