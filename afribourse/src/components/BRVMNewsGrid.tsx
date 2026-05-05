@@ -129,6 +129,46 @@ function renderBlock(block: ContentBlock, i: number): React.ReactNode {
           ))}
         </ul>
       );
+    case 'callout': {
+      const calloutStyles = {
+        info: 'bg-blue-50 border-blue-300 text-blue-900',
+        warn: 'bg-amber-50 border-amber-300 text-amber-900',
+        ok:   'bg-emerald-50 border-emerald-300 text-emerald-900',
+        note: 'bg-slate-100 border-slate-300 text-slate-700',
+      };
+      const titleStyles = {
+        info: 'text-blue-700',
+        warn: 'text-amber-700',
+        ok:   'text-emerald-700',
+        note: 'text-slate-600',
+      };
+      return (
+        <div key={i} className={`border-l-4 rounded-r-lg px-4 py-3 space-y-1.5 ${calloutStyles[block.variant]}`}>
+          <p className={`text-xs font-bold uppercase tracking-wide ${titleStyles[block.variant]}`}>{block.title}</p>
+          {block.paragraphs.map((p, j) => (
+            <p key={j} className="text-sm leading-relaxed">{p}</p>
+          ))}
+        </div>
+      );
+    }
+    case 'pull-quote':
+      return (
+        <blockquote key={i} className="border-l-4 border-red-400 pl-4 py-1 italic text-slate-700 text-sm leading-relaxed bg-red-50 rounded-r-lg">
+          {block.text}
+        </blockquote>
+      );
+    case 'verdict':
+      return (
+        <div key={i} className="bg-slate-900 rounded-xl px-5 py-4 space-y-3">
+          <p className="text-xs font-bold text-[#00D4A8] uppercase tracking-widest">{block.title}</p>
+          {block.items.map((item, j) => (
+            <div key={j} className="flex flex-col gap-0.5">
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{item.label}</p>
+              <p className="text-sm text-white leading-snug">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      );
   }
 }
 
@@ -377,7 +417,7 @@ export default function BRVMNewsGrid() {
       {/* Bande stats */}
       <div className="flex items-center gap-6 mb-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
         <div className="text-center">
-          <p className="text-xl font-bold text-slate-900">13</p>
+          <p className="text-xl font-bold text-slate-900">14</p>
           <p className="text-[11px] text-slate-500">articles</p>
         </div>
         <div className="w-px h-8 bg-slate-200" />
