@@ -12,6 +12,7 @@ type Tab = {
 type StockTabsProps = {
   activeTab: TabId;
   onTabChange: (tabId: TabId) => void;
+  newsCount?: number;
 };
 
 const TABS: Tab[] = [
@@ -37,7 +38,7 @@ const TABS: Tab[] = [
   }
 ];
 
-export default function StockTabs({ activeTab, onTabChange }: StockTabsProps) {
+export default function StockTabs({ activeTab, onTabChange, newsCount = 0 }: StockTabsProps) {
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto">
@@ -54,6 +55,15 @@ export default function StockTabs({ activeTab, onTabChange }: StockTabsProps) {
             >
               {tab.icon}
               <span>{tab.label}</span>
+              {tab.id === 'news' && newsCount > 0 && (
+                <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold ${
+                  activeTab === 'news'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-red-500 text-white'
+                }`}>
+                  {newsCount}
+                </span>
+              )}
             </button>
           ))}
         </div>

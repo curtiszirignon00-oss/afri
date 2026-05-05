@@ -23,6 +23,8 @@ import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import StockChartNew from './stock/StockChartNew';
 import StockTabs from './stock/StockTabs';
 import type { TabId } from './stock/StockTabs';
+import { BRVM_NEWS } from '../data/brvm2026News';
+import { findNewsByTicker } from '../data/newsData';
 
 // Contenus des onglets — lazy: seul l'onglet actif est chargé
 const StockOverview = lazy(() => import('./stock/StockOverview'));
@@ -79,6 +81,9 @@ export default function StockDetailPageEnhanced() {
   const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(symbol || '');
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(symbol || '');
   const { data: newsData, isLoading: newsLoading } = useStockNews(symbol || '', 10);
+  const brvmNewsCount = symbol ? BRVM_NEWS.filter(a => a.tickers.some(t => t.ticker === symbol || t.ticker === symbol.split(' ')[0])).length : 0;
+  const hasFundamentalsCard = !!findNewsByTicker(symbol || '');
+  const newsCount = (newsData?.length || 0) + brvmNewsCount + (hasFundamentalsCard ? 1 : 0);
   const { data: annualFinancialsData } = useAnnualFinancials(symbol || '', 5);
 
   // État pour afficher/cacher le panneau d'ordre sur mobile - DOIT être avant les early returns
@@ -696,7 +701,7 @@ export default function StockDetailPageEnhanced() {
       )}
 
       {/* Navigation par onglets */}
-      <StockTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <StockTabs activeTab={activeTab} onTabChange={setActiveTab} newsCount={newsCount} />
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">

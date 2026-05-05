@@ -22,7 +22,8 @@ export type ContentBlock =
   | { type: 'callout'; variant: 'info' | 'warn' | 'ok' | 'note'; title: string; paragraphs: string[] }
   | { type: 'pull-quote'; text: string }
   | { type: 'verdict'; title: string; items: { label: string; text: string }[] }
-  | { type: 'chart'; chartId: string };
+  | { type: 'chart'; chartId: string }
+  | { type: 'glossary'; items: { term: string; definition: string }[] };
 
 export interface BRVMArticle {
   id: string;
@@ -790,6 +791,19 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
         { label: "Ce que le T1 2026 révèle :", text: "La banque entre dans un cycle d'investissements lourds (IT, immobilier) simultanément à une dégradation graduelle de la qualité de son portefeuille de crédits (NPL 8%, coût du risque +29%). Le résultat net 2025 aurait été en forte baisse sans un impact fiscal favorable." },
         { label: "La question centrale :", text: "Le coefficient d'exploitation va-t-il rebondir rapidement (scénario direction) ou rester élevé pendant plusieurs trimestres (scénario prudent) ? La réponse dictera la trajectoire du cours en 2026." },
         { label: "Pour l'investisseur de valeur :", text: "À 33 000 FCFA, PER 10× et rendement dividende 7,9%, SGBCI intègre déjà une bonne partie des mauvaises nouvelles. Le titre n'est pas cher au regard de sa qualité fondamentale. Mais il manque un catalyseur positif — et ce catalyseur s'appelle T2 2026." },
+      ]},
+
+      { type: 'glossary', items: [
+        { term: 'PNB — Produit Net Bancaire', definition: "Équivalent du chiffre d'affaires pour une banque. Additionne la marge nette d'intérêt (différence entre taux prêteurs et emprunteurs) et les commissions sur services." },
+        { term: "Coefficient d'exploitation", definition: "Frais généraux / PNB. Plus il est bas, plus la banque transforme efficacement ses revenus en profits. Seuil sain : sous 50%. Excellent : sous 40%." },
+        { term: 'Coût Net du Risque (CNR)', definition: "Provisions constituées pour couvrir les risques de non-remboursement des crédits accordés. Un CNR en hausse signale une dégradation de la qualité du portefeuille ou une politique prudentielle plus stricte." },
+        { term: 'NPL — Non Performing Loans', definition: "Créances douteuses ou en souffrance. Un NPL de 8% signifie que 8% de l'encours de crédits présente des signes de difficulté de remboursement. Seuil de confort habituel : sous 5-6% pour une banque saine." },
+        { term: 'ROE — Return on Equity', definition: "Résultat net / capitaux propres. Mesure le rendement généré pour chaque franc investi par les actionnaires. Un ROE de 20% = 20 FCFA de profit pour 100 FCFA de fonds propres." },
+        { term: 'PER — Price Earnings Ratio', definition: "Cours / bénéfice par action. Combien de fois les profits annuels les investisseurs paient-ils pour posséder l'action. PER 10× : il faudrait théoriquement 10 ans de profits pour « récupérer » le prix payé." },
+        { term: 'Price-to-Book (P/B)', definition: "Cours / valeur comptable par action. Un P/B de 2× signifie que le marché valorise la banque au double de ce que ses livres comptables indiquent. Justifié si le ROE est durablement élevé." },
+        { term: 'Rendement du dividende', definition: "Dividende par action / cours de l'action. Mesure le « revenu » annuel versé à l'actionnaire en pourcentage de son investissement. À comparer aux taux obligataires pour évaluer l'attractivité relative." },
+        { term: 'Ratio de solvabilité', definition: "Mesure la robustesse financière d'une banque face à ses risques. Réglementation UEMOA : minimum 12,5%. SGCI : 16,3% en 2024, soit +300 points de base de coussin de sécurité." },
+        { term: 'Effet ciseaux', definition: "Phénomène où les revenus stagnent ou reculent pendant que les coûts progressent, comprimant le résultat. Les deux courbes s'écartent visuellement comme les lames de ciseaux." },
       ]},
     ],
   },
