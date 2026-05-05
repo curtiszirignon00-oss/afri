@@ -176,6 +176,24 @@ function renderBlock(block: ContentBlock, i: number): React.ReactNode {
       );
     case 'chart':
       return <ChartById key={i} chartId={block.chartId} />;
+    case 'glossary':
+      return (
+        <div key={i} className="mt-2">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-widest px-2">Glossaire</span>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+          <div className="divide-y divide-slate-100">
+            {block.items.map((item, j) => (
+              <div key={j} className="py-2.5">
+                <p className="text-[11px] font-mono font-semibold text-slate-800 mb-0.5">{item.term}</p>
+                <p className="text-xs text-slate-500 leading-relaxed">{item.definition}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
   }
 }
 
