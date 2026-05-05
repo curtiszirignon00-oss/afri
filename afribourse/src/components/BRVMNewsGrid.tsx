@@ -5,6 +5,7 @@ import {
   BarChart2, Tag,
 } from 'lucide-react';
 import { BRVM_NEWS, BRVMArticle, ImpactType, BRVM_CATEGORIES, ContentBlock } from '../data/brvm2026News';
+import { ChartById } from './charts/SGBCICharts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -16,6 +17,10 @@ function relTime(iso: string): string {
   if (diff < 7) return `Il y a ${diff} jours`;
   if (diff < 30) return `Il y a ${Math.floor(diff / 7)} sem.`;
   return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function isNew(iso: string): boolean {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) <= 7;
 }
 
 const IMPACT_STYLES: Record<ImpactType, string> = {
@@ -169,6 +174,8 @@ function renderBlock(block: ContentBlock, i: number): React.ReactNode {
           ))}
         </div>
       );
+    case 'chart':
+      return <ChartById key={i} chartId={block.chartId} />;
   }
 }
 
@@ -193,6 +200,12 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
                   {article.isFeatured && <Star size={10} className="fill-current" />}
                   {article.category}
                 </span>
+                {isNew(article.publishedAt) && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    NOUVEAU
+                  </span>
+                )}
                 <span className="flex items-center gap-1 text-xs text-slate-400">
                   <Clock size={11} />{relTime(article.publishedAt)}
                 </span>
@@ -335,6 +348,12 @@ function ArticleCard({ article, onOpen }: { article: BRVMArticle; onOpen: () => 
               {article.isFeatured && <Star size={9} className="fill-current" />}
               {article.category}
             </span>
+            {isNew(article.publishedAt) && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500 text-white">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                NOUVEAU
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1 text-[10px] text-slate-400 shrink-0">
             <Clock size={10} />{relTime(article.publishedAt)}

@@ -21,7 +21,8 @@ export type ContentBlock =
   | { type: 'list'; items: string[] }
   | { type: 'callout'; variant: 'info' | 'warn' | 'ok' | 'note'; title: string; paragraphs: string[] }
   | { type: 'pull-quote'; text: string }
-  | { type: 'verdict'; title: string; items: { label: string; text: string }[] };
+  | { type: 'verdict'; title: string; items: { label: string; text: string }[] }
+  | { type: 'chart'; chartId: string };
 
 export interface BRVMArticle {
   id: string;
@@ -680,7 +681,7 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
         ['Dividende brut / action', '—', '—', '1 719 F', '1 863 F', '2 606 F'],
         ['Taux de distribution', '—', '—', '55,0%', '57,3%', '80,0%'],
       ]},
-      { type: 'image', src: '/images/sgbci-graphique-1.png', caption: 'Résultat Net annuel et PNB (Md FCFA) · 2021–2025 — Source : AfriBourse / Rapports SGCI' },
+      { type: 'chart', chartId: 'sgbci-annuel' },
       { type: 'paragraph', text: "L'histoire de SGCI sur cinq ans est celle d'une croissance organique soutenue, avec une rupture positive en 2023 où le résultat net a bondi de +30%. Deux tendances méritent l'attention : d'une part, le coût net du risque en accélération continue (+31% en 2024, +29% en 2025), signal que la qualité du portefeuille se détériore progressivement. D'autre part, le dividende qui fait un saut remarquable de +40% en 2025, passant de 1 863 à 2 606 FCFA — avec un taux de distribution qui monte à 80%, ce qui est inhabituellement élevé pour une banque en phase d'investissement." },
       { type: 'callout', variant: 'note', title: "Point d'analyse — Le dividende 2025 à 80% de distribution", paragraphs: [
         "Un taux de distribution de 80% signifie que la banque reverse aux actionnaires 80 FCFA sur chaque 100 FCFA gagnés. C'est généreux — et c'est un signal fort envoyé au marché en amont d'une période d'investissements lourds (rénovation siège, IT). La logique : récompenser les actionnaires avant la phase de dépenses, qui pèsera sur les résultats 2026. Au cours de 33 000 FCFA, le rendement brut du dividende 2025 est de 7,9% — exceptionnel pour un titre de cette qualité sur la BRVM.",
@@ -694,7 +695,7 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
         ['Résultat Avant Impôt', '27 134', '32 588', '33 862', '29 987', '−11,4%'],
         ['Résultat Net', '22 509', '26 498', '27 081', '23 976', '−11,5%'],
       ]},
-      { type: 'image', src: '/images/sgbci-graphique-2.png', caption: 'Résultat Net T1 · 2023–2026 (Md FCFA) — Source : AfriBourse / Rapports SGCI' },
+      { type: 'chart', chartId: 'sgbci-rn-t1' },
       { type: 'paragraph', text: "Le T1 2026 rompt une progression trimestrielle régulière sur trois ans. Mais la perspective historique révèle un détail capital : le coefficient d'exploitation à 40,6% au T1 2026 est exactement le niveau qui prévalait au T1 2024. Et la direction avait réussi à le ramener à 37% dès le T1 2025 grâce à une stratégie active de maîtrise des coûts. Ce n'est pas la première fois que SGCI traverse ce type de pic de charges — et elle en est sortie par le haut." },
       { type: 'pull-quote', text: "Le T1 2026 n'est pas une dégradation sans précédent. C'est un retour au niveau de 2024 — que la banque avait déjà su dépasser." },
 
@@ -702,7 +703,7 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
       { type: 'heading', level: 2, text: "Mécanisme 1 — L'effet ciseaux revenus/coûts" },
       { type: 'paragraph', text: "Le PNB recule de 631 millions FCFA (−1%) tandis que les frais généraux progressent de 2 131 millions (+9%). Les deux courbes s'écartent comme les lames d'une paire de ciseaux : revenus stagnants, coûts en hausse. L'espace entre les deux — le bénéfice brut d'exploitation — se comprime mécaniquement." },
       { type: 'paragraph', text: "L'origine de la hausse des frais : rénovation du siège social, construction d'un nouveau site, et surtout migration IT des clients entreprises vers une nouvelle plateforme de banque à distance. Ce dernier poste est le plus incertain : les migrations informatiques dépassent régulièrement leurs délais et leurs budgets." },
-      { type: 'image', src: '/images/sgbci-graphique-3.png', caption: 'PNB vs Frais généraux T1 (Md FCFA) · 2024–2026 — Effet ciseaux' },
+      { type: 'chart', chartId: 'sgbci-ciseaux' },
       { type: 'heading', level: 2, text: "Mécanisme 2 — Le coût du risque en escalade structurelle" },
       { type: 'paragraph', text: "C'est le signal le plus préoccupant et le moins commenté. Depuis 2023, le coût net du risque (provisions pour mauvaises créances) ne cesse d'accélérer : +31% en 2024, +29% en 2025. Parallèlement, le taux de NPL (créances douteuses) progresse de 6,8% à 7,5% puis 8,0%. Le rapport T1 2026 ne donne pas de chiffre précis, mais l'écart entre le RBE (−7%) et le RAI (−11%) suggère environ 1,1 milliard de provisions supplémentaires au T1 2026." },
       { type: 'callout', variant: 'warn', title: "Signal structurel — La dégradation du portefeuille", paragraphs: [
@@ -716,7 +717,7 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
 
       { type: 'heading', level: 1, text: "05 · L'histoire du coefficient d'exploitation" },
       { type: 'paragraph', text: "Le coefficient d'exploitation est la variable centrale de cette analyse. Son évolution sur l'ensemble de la période disponible :" },
-      { type: 'image', src: '/images/sgbci-graphique-4.png', caption: 'Coefficient d\'exploitation annuel et trimestriel T1 (%) · SGCI — Source : AfriBourse' },
+      { type: 'chart', chartId: 'sgbci-coeff' },
       { type: 'paragraph', text: "Sur base annuelle, le coefficient d'exploitation s'est amélioré de 2,9 points entre 2023 et 2025, passant de 41,7% à 38,8%. La direction a tenu sa promesse d'efficacité opérationnelle. Mais les T1 sont systématiquement plus élevés que la moyenne annuelle (phénomène de saisonnalité). Le T1 2026 à 40,6% n'est donc pas aussi éloigné de la 'normale trimestrielle' qu'il n'y paraît au premier regard." },
 
       { type: 'heading', level: 1, text: "06 · Valorisation de l'action SGBCI" },
@@ -745,6 +746,7 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
         ['Retour niveau 2024', '37,9%', '~98 Md', '3 150 F', '10,5×', '~7,6%'],
         ['Retour niveau 2025 ✓', '38,8%', '~101 Md', '3 248 F', '10,2×', '~7,9%'],
       ]},
+      { type: 'chart', chartId: 'sgbci-sensib' },
 
       { type: 'heading', level: 1, text: "07 · Le dividende : l'argument souvent oublié" },
       { type: 'paragraph', text: "La progression du dividende est l'une des données les plus remarquables de ces rapports annuels, et l'une des moins discutées dans la lecture des résultats trimestriels." },
@@ -753,6 +755,7 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
         ['2024', '1 863 FCFA', '+8,4%', '57,3%', '5,6%'],
         ['2025', '2 606 FCFA', '+39,9%', '80,0%', '7,9%'],
       ]},
+      { type: 'chart', chartId: 'sgbci-div' },
       { type: 'paragraph', text: "En deux ans, le dividende par action a progressé de +51,6% (de 1 719 à 2 606 FCFA). Pour un investisseur ayant acheté l'action à 34 000 FCFA avant l'annonce des résultats T1 2026, le dividende 2025 de 2 606 FCFA représente un rendement de 7,66% — entièrement encaissé quel que soit le cours. C'est l'argument de l'investisseur de valeur : on peut accepter une pression temporaire sur le cours si le flux de dividendes reste solide." },
       { type: 'callout', variant: 'ok', title: "Perspective long terme — Le rendement total", paragraphs: [
         "Un investisseur qui aurait acheté SGBCI il y a deux ans à, disons, 28 000 FCFA, aurait encaissé : dividende 2023 (1 719 F) + dividende 2024 (1 863 F) + dividende 2025 (2 606 F) = 6 188 FCFA de dividendes, soit 22,1% du prix d'achat en trois ans — sans compter la plus-value de cours. C'est le profil d'un titre de rendement de très haute qualité.",
