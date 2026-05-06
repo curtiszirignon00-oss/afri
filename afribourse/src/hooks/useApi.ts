@@ -437,6 +437,15 @@ export function useHomePageData() {
   });
 }
 
+export function useRecentNews(limit = 8) {
+  return useQuery({
+    queryKey: ['news', 'recent', limit],
+    queryFn: () => apiFetch<NewsArticle[]>(`/news?limit=${limit}`),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 // ========================================
 // 👤 HOOKS POUR LE PROFIL UTILISATEUR
 // ========================================
