@@ -25,17 +25,27 @@ export async function getLatestNewsArticle(): Promise<NewsArticle | null> {
 export async function getFeaturedNews(limit: number = 3): Promise<NewsArticle[]> {
   try {
     const featuredArticles = await prisma.newsArticle.findMany({
-      where: {
-        is_featured: true, // Filtre par le champ 'is_featured'
-      },
-      orderBy: {
-        published_at: 'desc', // Les plus récents d'abord
-      },
-      take: limit, // Limite le nombre de résultats
+      where: { is_featured: true },
+      orderBy: { published_at: 'desc' },
+      take: limit,
     });
     return featuredArticles;
   } catch (error) {
     log.error("❌ Erreur récupération featured news:", error);
+    throw error;
+  }
+}
+
+export async function getRecentNews(limit: number = 8, category?: string): Promise<NewsArticle[]> {
+  try {
+    const articles = await prisma.newsArticle.findMany({
+      where: category ? { category } : undefined,
+      orderBy: { published_at: 'desc' },
+      take: limit,
+    });
+    return articles;
+  } catch (error) {
+    log.error("❌ Erreur récupération recent news:", error);
     throw error;
   }
 }

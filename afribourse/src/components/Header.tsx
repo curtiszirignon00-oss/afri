@@ -5,6 +5,22 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
 import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
+import {
+  useUnseenNewsCount,
+  markNewsVisited,
+  useUnseenCommunityPublicCount,
+  markCommunityVisited,
+} from '../hooks/useContentUnseen';
+
+// Badge compact pour les indicateurs de nouveauté
+function Badge({ count }: { count: number }) {
+  const label = count > 99 ? '99+' : String(count);
+  return (
+    <span className="min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full ring-2 ring-white">
+      {label}
+    </span>
+  );
+}
 
 // --- MegaMenu Mapping ---
 const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
@@ -27,8 +43,13 @@ export default function Header() {
   // ✅ Utilisation du hook useAuth
   const { isLoggedIn, logout, loading, userProfile } = useAuth();
 
-  // Unseen community posts count — seulement pour les utilisateurs connectés
-  const { data: unseenCount } = useUnseenCommunityCount(isLoggedIn);
+  // Badges de nouveauté
+  const { data: unseenCommunityCount } = useUnseenCommunityCount(isLoggedIn);
+  const unseenCommunityPublic          = useUnseenCommunityPublicCount(!isLoggedIn);
+  const unseenNewsCount                = useUnseenNewsCount();
+
+  // Compte effectif selon l'état de connexion
+  const communityBadge = isLoggedIn ? (unseenCommunityCount ?? 0) : unseenCommunityPublic;
 
   // ✅ Fonction de déconnexion simplifiée
   const handleLogout = async () => {
@@ -88,7 +109,12 @@ export default function Header() {
                     tabIndex={-1}
                   >
                     <button
-                      onClick={() => { navigate(`/${item.id}`); setActiveMegaMenu(null); }}
+                      onClick={() => {
+                        navigate(`/${item.id}`);
+                        setActiveMegaMenu(null);
+                        if (item.id === 'news')      markNewsVisited();
+                        if (item.id === 'community') markCommunityVisited();
+                      }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
                         currentPage === item.id || activeMegaMenu === item.id
                           ? 'bg-blue-50 text-blue-700'
@@ -99,10 +125,11 @@ export default function Header() {
                     >
                       <Icon className="w-4 h-4" />
                       <span>{item.name}</span>
-                      {item.id === 'community' && isLoggedIn && !!unseenCount && unseenCount > 0 && (
-                        <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
-                          {unseenCount > 99 ? '99+' : unseenCount}
-                        </span>
+                      {item.id === 'news' && unseenNewsCount > 0 && (
+                        <Badge count={unseenNewsCount} />
+                      )}
+                      {item.id === 'community' && communityBadge > 0 && (
+                        <Badge count={communityBadge} />
                       )}
                     </button>
                   </div>
@@ -260,6 +287,8 @@ export default function Header() {
                     onClick={() => {
                       navigate(`/${item.id}`);
                       setMobileMenuOpen(false);
+                      if (item.id === 'news')      markNewsVisited();
+                      if (item.id === 'community') markCommunityVisited();
                     }}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === item.id
@@ -268,11 +297,12 @@ export default function Header() {
                     }`}
                   >
                     <Icon className="w-5 h-5" />
-                    <span>{item.name}</span>
-                    {item.id === 'community' && isLoggedIn && !!unseenCount && unseenCount > 0 && (
-                      <span className="min-w-[20px] h-5 flex items-center justify-center px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
-                        {unseenCount > 99 ? '99+' : unseenCount}
-                      </span>
+                    <span className="flex-1 text-left">{item.name}</span>
+                    {item.id === 'news' && unseenNewsCount > 0 && (
+                      <Badge count={unseenNewsCount} />
+                    )}
+                    {item.id === 'community' && communityBadge > 0 && (
+                      <Badge count={communityBadge} />
                     )}
                   </button>
                 );

@@ -12,6 +12,7 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Star,
   Quote,
   CheckCircle,
@@ -20,7 +21,7 @@ import {
   MessageCircle,
   Flame
 } from 'lucide-react';
-import { useHomePageData } from '../hooks/useApi';
+import { useHomePageData, useRecentNews, NewsArticle } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
@@ -116,6 +117,9 @@ export default function HomePage() {
 
   const { data, isLoading, error, refetch } = useHomePageData();
   const topStocks = data?.topStocks || [];
+
+  // Actualités dynamiques — les plus récentes en BDD
+  const { data: recentNewsData, isLoading: newsLoading } = useRecentNews(8);
 
   const { data: communityData } = useQuery({
     queryKey: ['home-community-preview'],
@@ -639,16 +643,22 @@ export default function HomePage() {
           </AnimatedSection>
         )}
 
-        {/* === Actualités — Résultats BRVM === */}
+        {/* === Actualités du Jour — dynamiques + fallback fondamentaux === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className="flex items-center justify-between mb-8">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#00D4A8]" />
-                <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-widest">Résultats 2025</span>
+                <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-widest">
+                  {recentNewsData && recentNewsData.length > 0 ? 'En direct' : 'Résultats 2025'}
+                </span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900">Actualités du Jour</h2>
-              <p className="text-gray-600 mt-1">Résultats annuels et dividendes des sociétés cotées à la BRVM</p>
+              <p className="text-gray-600 mt-1">
+                {recentNewsData && recentNewsData.length > 0
+                  ? 'Les dernières actualités des marchés financiers africains'
+                  : 'Résultats annuels et dividendes des sociétés cotées à la BRVM'}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => scrollNews('left')}>
@@ -668,16 +678,100 @@ export default function HomePage() {
             className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
             style={{ scrollPadding: '1rem' }}
           >
-            {NEWS_DATA.map((item) => {
+            {/* Skeleton pendant le chargement */}
+            {newsLoading && Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%]">
+                <div className="h-full bg-white border border-slate-200 rounded-xl overflow-hidden animate-pulse">
+                  <div className="h-1 bg-slate-200" />
+                  <div className="h-28 bg-slate-100" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-3 bg-slate-200 rounded w-1/3" />
+                    <div className="h-4 bg-slate-200 rounded w-full" />
+                    <div className="h-4 bg-slate-200 rounded w-4/5" />
+                    <div className="h-3 bg-slate-200 rounded w-1/2 mt-4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Articles dynamiques depuis l'API */}
+            {!newsLoading && recentNewsData && recentNewsData.length > 0 && recentNewsData.map((article) => {
+              const catKey = (article.category ?? '').toUpperCase();
+              const catStyles: Record<string, { bar: string; badge: string; text: string }> = {
+                'MARCHÉ':      { bar: '#3b82f6', badge: 'bg-blue-50 border-blue-200',    text: 'text-blue-700'    },
+                'MARCHE':      { bar: '#3b82f6', badge: 'bg-blue-50 border-blue-200',    text: 'text-blue-700'    },
+                'DIVIDENDES':  { bar: '#00D4A8', badge: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' },
+                'FORMATION':   { bar: '#8b5cf6', badge: 'bg-purple-50 border-purple-200',  text: 'text-purple-700'  },
+                'ANALYSE':     { bar: '#6366f1', badge: 'bg-indigo-50 border-indigo-200',  text: 'text-indigo-700'  },
+                'RÉSULTATS':   { bar: '#f59e0b', badge: 'bg-amber-50 border-amber-200',    text: 'text-amber-700'   },
+                'RESULTATS':   { bar: '#f59e0b', badge: 'bg-amber-50 border-amber-200',    text: 'text-amber-700'   },
+              };
+              const style = catStyles[catKey] ?? { bar: '#94a3b8', badge: 'bg-slate-50 border-slate-200', text: 'text-slate-600' };
+
+              const timeAgo = (dateStr: string | null) => {
+                if (!dateStr) return '';
+                const diffH = Math.floor((Date.now() - new Date(dateStr).getTime()) / 3_600_000);
+                if (diffH < 1)  return "moins d'1h";
+                if (diffH < 24) return `il y a ${diffH}h`;
+                const diffD = Math.floor(diffH / 24);
+                if (diffD < 7)  return `il y a ${diffD}j`;
+                return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+              };
+
+              return (
+                <div key={article.id} className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%]">
+                  <article
+                    className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden flex flex-col"
+                    onClick={() => navigate('/news')}
+                  >
+                    <div className="h-1 rounded-t-xl" style={{ background: style.bar }} />
+
+                    {/* Image ou placeholder */}
+                    <div className="relative h-28 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                      {article.image_url ? (
+                        <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-70" loading="lazy" />
+                      ) : (
+                        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, #00D4A8 0%, transparent 60%)' }} />
+                      )}
+                      {article.category && (
+                        <span className={`absolute bottom-2 left-3 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${style.badge} ${style.text}`}>
+                          {article.category}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-3 mb-2 group-hover:text-[#00D4A8] transition-colors flex-1">
+                        {article.title}
+                      </h3>
+
+                      {article.summary && (
+                        <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed">
+                          {article.summary}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                          <Clock size={10} />
+                          {timeAgo(article.published_at)}
+                        </span>
+                        <span className="text-[10px] text-[#00D4A8] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          Lire <ChevronRight size={11} />
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              );
+            })}
+
+            {/* Fallback statique si l'API ne retourne rien */}
+            {!newsLoading && (!recentNewsData || recentNewsData.length === 0) && NEWS_DATA.map((item) => {
               const last = item.history[item.history.length - 1];
               const prev = item.history[item.history.length - 2];
               const divVar = ((last.dividend - prev.dividend) / Math.abs(prev.dividend)) * 100;
-              const trendColor =
-                item.dividendTrend === 'hausse'
-                  ? '#00D4A8'
-                  : item.dividendTrend === 'baisse'
-                  ? '#ef4444'
-                  : '#94a3b8';
+              const trendColor = item.dividendTrend === 'hausse' ? '#00D4A8' : item.dividendTrend === 'baisse' ? '#ef4444' : '#94a3b8';
 
               return (
                 <div key={item.id} className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%]">
@@ -686,13 +780,10 @@ export default function HomePage() {
                     onClick={() => navigate('/news')}
                   >
                     <div className="h-1 rounded-t-xl" style={{ background: trendColor }} />
-
                     <div className="relative h-28 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center overflow-hidden">
                       <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, #00D4A8 0%, transparent 60%)' }} />
                       <div className="text-center z-10 px-4">
-                        <span className="font-mono text-2xl font-bold text-white tracking-wide">
-                          {item.ticker.split(' ')[0]}
-                        </span>
+                        <span className="font-mono text-2xl font-bold text-white tracking-wide">{item.ticker.split(' ')[0]}</span>
                         <div className="flex items-center justify-center gap-1.5 mt-1">
                           <CountryBadge code={item.country} name={COUNTRY_NAME[item.country] ?? item.country} />
                         </div>
@@ -702,23 +793,14 @@ export default function HomePage() {
                         <p className="text-sm font-bold text-[#00D4A8] leading-none">{item.dyAnnual.toFixed(1)}%</p>
                       </div>
                     </div>
-
                     <div className="p-4 flex-1 flex flex-col">
-                      <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 border border-slate-200 rounded-full px-2 py-0.5 self-start mb-2">
-                        {item.sector}
-                      </span>
-
-                      <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2 mb-3 group-hover:text-[#00D4A8] transition-colors flex-1">
-                        {item.headline}
-                      </h3>
-
+                      <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 border border-slate-200 rounded-full px-2 py-0.5 self-start mb-2">{item.sector}</span>
+                      <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2 mb-3 group-hover:text-[#00D4A8] transition-colors flex-1">{item.headline}</h3>
                       <div className="grid grid-cols-2 gap-2 mb-3">
                         <div className="bg-slate-50 rounded-lg p-2 text-center">
                           <p className="text-[9px] text-slate-400 uppercase tracking-wide">Dividende</p>
                           <p className="text-xs font-bold text-slate-800">{last.dividend.toLocaleString('fr-FR')} XOF</p>
-                          <p className={`text-[9px] font-medium ${divVar >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {divVar >= 0 ? '+' : ''}{divVar.toFixed(1)}%
-                          </p>
+                          <p className={`text-[9px] font-medium ${divVar >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>{divVar >= 0 ? '+' : ''}{divVar.toFixed(1)}%</p>
                         </div>
                         <div className="bg-slate-50 rounded-lg p-2 text-center">
                           <p className="text-[9px] text-slate-400 uppercase tracking-wide">PER</p>
@@ -726,24 +808,15 @@ export default function HomePage() {
                           <p className="text-[9px] text-slate-400">valorisation</p>
                         </div>
                       </div>
-
                       <div className="flex items-center justify-between">
                         {item.dividendTrend === 'hausse' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
-                            <TrendingUp size={9} /> Div. en hausse
-                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5"><TrendingUp size={9} /> Div. en hausse</span>
                         ) : item.dividendTrend === 'baisse' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
-                            <TrendingDown size={9} /> Div. en baisse
-                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5"><TrendingDown size={9} /> Div. en baisse</span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
-                            Stable
-                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">Stable</span>
                         )}
-                        <span className="text-[10px] text-[#00D4A8] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          Analyse <ChevronRight size={11} />
-                        </span>
+                        <span className="text-[10px] text-[#00D4A8] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Analyse <ChevronRight size={11} /></span>
                       </div>
                     </div>
                   </article>
