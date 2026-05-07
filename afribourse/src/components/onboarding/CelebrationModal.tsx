@@ -6,44 +6,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
 import { useNavigate } from 'react-router-dom';
 
-const FEATURES = [
-  {
-    emoji: '🎓',
-    title: 'Académie',
-    desc: 'Continue ton apprentissage — de débutant à avancé. Chaque cours débloque des XP.',
-  },
-  {
-    emoji: '📈',
-    title: 'Simulation de marché',
-    desc: 'Achète, vends, et suis tes positions en temps réel avec ta monnaie virtuelle.',
-  },
-  {
-    emoji: '🤖',
-    title: 'SIMBA — Ton IA',
-    desc: 'Pose toutes tes questions sur la BRVM à SIMBA, ton assistant IA personnel.',
-  },
-  {
-    emoji: '⚡',
-    title: 'Signal Score',
-    desc: 'Consulte le score composite 0–100 de chaque action BRVM.',
-  },
-  {
-    emoji: '💼',
-    title: 'Portefeuille',
-    desc: 'Suis ton portefeuille simulé, ta performance par secteur, et compare-toi à la communauté.',
-  },
-  {
-    emoji: '👥',
-    title: 'Communauté',
-    desc: 'Partage tes analyses et participe aux challenges hebdomadaires.',
-  },
-  {
-    emoji: '🧬',
-    title: 'Profil Investisseur',
-    desc: 'Ton ADN Investisseur établit ton profil et te suggère des secteurs alignés avec ta stratégie.',
-  },
-];
-
 const ACTIONS_DONE = [
   'Tu as terminé ton premier module',
   'Tu as réalisé ton premier achat simulé',
@@ -74,14 +36,9 @@ export default function CelebrationModal() {
     forceHideChecklist();
   };
 
-  const handleExplore = () => {
-    handleClose();
-    navigate('/dashboard');
-  };
-
   if (!visible) return null;
 
-  const firstName = userProfile?.name ?? null;
+  const firstName = userProfile?.name?.split(' ')[0] ?? null;
 
   return createPortal(
     <div
@@ -89,7 +46,7 @@ export default function CelebrationModal() {
       style={{ backgroundColor: 'rgba(10,22,40,0.75)', animation: 'ob-fadeIn 0.25s ease-out' }}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-4"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-4"
         style={{ animation: 'ob-scaleIn 0.3s ease-out' }}
       >
         {/* Header */}
@@ -130,28 +87,49 @@ export default function CelebrationModal() {
           </ul>
         </div>
 
-        {/* Fonctionnalités */}
+        {/* Badge débloqué */}
         <div className="px-6 pb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Ce que tu peux faire</p>
-          <div className="grid grid-cols-1 gap-2">
-            {FEATURES.map((f, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="text-lg flex-shrink-0">{f.emoji}</span>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-800">{f.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{f.desc}</p>
-                </div>
-              </div>
-            ))}
+          <div
+            className="flex items-center gap-3 p-4 rounded-xl border"
+            style={{ backgroundColor: 'rgba(0,212,168,0.06)', borderColor: 'rgba(0,212,168,0.3)' }}
+          >
+            <span className="text-2xl flex-shrink-0">🎖️</span>
+            <div>
+              <p className="text-sm font-bold text-gray-900">Badge débloqué : <span style={{ color: '#00D4A8' }}>Éveillé BRVM</span></p>
+              <p className="text-xs text-gray-500 mt-0.5">Tu as les bases pour investir intelligemment</p>
+            </div>
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="px-6 pb-6">
+        {/* Prochaine étape */}
+        <div className="px-6 pb-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Prochaine étape</p>
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div
+              className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs"
+              style={{ backgroundColor: '#0A1628' }}
+            >
+              2
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Module 2 — Lire les marchés</p>
+              <p className="text-xs text-gray-500 mt-0.5">Analyse technique · <span className="font-semibold" style={{ color: '#00D4A8' }}>+75 XP</span></p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTAs */}
+        <div className="px-6 pb-6 space-y-2">
           <button
-            onClick={handleExplore}
+            onClick={() => { handleClose(); navigate('/learn'); }}
             className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#00D4A8' }}
+          >
+            Continuer avec SIMBA →
+          </button>
+          <button
+            onClick={() => { handleClose(); navigate('/dashboard'); }}
+            className="w-full py-2.5 rounded-xl font-semibold text-sm transition-colors border border-gray-200 text-gray-700 hover:bg-gray-50"
           >
             Explorer le dashboard
           </button>

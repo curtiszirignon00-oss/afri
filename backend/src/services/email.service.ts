@@ -1702,6 +1702,7 @@ interface SendLeaderboardCongratulationParams {
   name: string;
   rank: number;
   roi: number;
+  topSignalTicker?: string;
 }
 
 export async function sendLeaderboardCongratulationEmail({
@@ -1709,12 +1710,15 @@ export async function sendLeaderboardCongratulationEmail({
   name,
   rank,
   roi,
+  topSignalTicker,
 }: SendLeaderboardCongratulationParams): Promise<void> {
-  const displayName = name || 'Investisseur';
-  const classementUrl = `${config.app.frontendUrl}/classement`;
-
-  const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
+  const firstName = (name || 'Investisseur').split(' ')[0];
   const rankLabel = rank === 1 ? '1er' : `${rank}ème`;
+  const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
+  const roiDisplay = `${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`;
+  const ctaUrl = topSignalTicker
+    ? `${config.app.frontendUrl}/stock/${topSignalTicker}`
+    : `${config.app.frontendUrl}/classement`;
 
   const html = `
     <!DOCTYPE html>
@@ -1722,142 +1726,140 @@ export async function sendLeaderboardCongratulationEmail({
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Félicitations ! Vous êtes dans le Top 5 - AfriBourse</title>
+      <title>Top classement — AfriBourse</title>
       <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          line-height: 1.6;
-          color: #333;
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-          background-color: #f4f4f4;
-        }
-        .container {
-          background-color: #ffffff;
-          border-radius: 10px;
-          padding: 40px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 30px;
-        }
-        .logo-container {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          margin-bottom: 10px;
-        }
-        .logo-text {
-          font-size: 28px;
-          font-weight: bold;
-          color: #f97316;
-        }
-        .rank-badge {
-          display: inline-block;
-          font-size: 48px;
-          margin: 20px 0;
-        }
-        .rank-text {
-          font-size: 24px;
-          font-weight: bold;
+          background-color: #f0f4f8;
           color: #1e293b;
-          margin: 10px 0;
         }
-        .roi-badge {
+        .wrapper { max-width: 600px; margin: 0 auto; padding: 32px 16px; }
+        .card {
+          background: #ffffff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .hero {
+          background: linear-gradient(135deg, #0A1628 0%, #1a3a5c 100%);
+          padding: 40px 32px 32px;
+          text-align: center;
+        }
+        .hero-emoji { font-size: 52px; display: block; margin-bottom: 12px; }
+        .hero-title { font-size: 22px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
+        .hero-sub { font-size: 14px; color: rgba(255,255,255,0.7); }
+        .roi-pill {
           display: inline-block;
-          background-color: ${roi >= 0 ? '#ecfdf5' : '#fef2f2'};
-          color: ${roi >= 0 ? '#059669' : '#dc2626'};
-          padding: 8px 20px;
-          border-radius: 20px;
+          background: ${roi >= 0 ? 'rgba(0,212,168,0.15)' : 'rgba(239,68,68,0.15)'};
+          color: ${roi >= 0 ? '#00D4A8' : '#ef4444'};
+          border: 1px solid ${roi >= 0 ? '#00D4A8' : '#ef4444'};
+          border-radius: 100px;
+          padding: 6px 18px;
           font-size: 18px;
-          font-weight: bold;
-          margin: 10px 0;
+          font-weight: 700;
+          margin-top: 14px;
         }
-        .button {
-          display: inline-block;
-          background: linear-gradient(135deg, #6366f1, #8b5cf6);
-          color: white !important;
-          text-decoration: none;
-          padding: 14px 30px;
-          border-radius: 10px;
-          font-weight: bold;
-          font-size: 16px;
-          margin: 20px 0;
+        .body { padding: 32px; }
+        .section-title {
+          font-size: 11px;
+          font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 12px;
         }
-        .new-badge {
-          display: inline-block;
-          background-color: #dbeafe;
-          color: #2563eb;
-          padding: 4px 12px;
+        .option-row {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 24px;
+        }
+        .option-box {
+          flex: 1;
+          border: 1.5px solid #e2e8f0;
           border-radius: 12px;
-          font-size: 12px;
-          font-weight: bold;
-          margin-bottom: 15px;
+          padding: 16px;
         }
-        .feature-box {
-          background-color: #f8fafc;
+        .option-label {
+          font-size: 13px;
+          font-weight: 700;
+          color: #0A1628;
+          margin-bottom: 4px;
+        }
+        .option-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+        .cta-wrap { text-align: center; margin: 8px 0 24px; }
+        .cta-btn {
+          display: inline-block;
+          background: linear-gradient(135deg, #00D4A8, #00b894);
+          color: #ffffff !important;
+          text-decoration: none;
+          padding: 14px 32px;
           border-radius: 10px;
-          padding: 20px;
-          margin: 20px 0;
-          border-left: 4px solid #6366f1;
+          font-weight: 700;
+          font-size: 15px;
         }
+        .signature { font-size: 14px; color: #64748b; line-height: 1.7; }
+        .signature strong { color: #0A1628; }
         .footer {
           text-align: center;
-          margin-top: 30px;
-          padding-top: 20px;
-          border-top: 1px solid #eee;
-          color: #999;
-          font-size: 12px;
+          padding: 20px 32px;
+          border-top: 1px solid #f1f5f9;
+          font-size: 11px;
+          color: #94a3b8;
         }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo-container">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="logo-text">AfriBourse</span>
+      <div class="wrapper">
+        <div class="card">
+          <!-- Hero -->
+          <div class="hero">
+            <span class="hero-emoji">${rankEmoji}</span>
+            <div class="hero-title">🏆 ${firstName}, vous êtes ${rankLabel} du classement</div>
+            <div class="hero-sub">et votre stratégie fonctionne</div>
+            <div class="roi-pill">${roiDisplay} cette semaine</div>
           </div>
-        </div>
 
-        <div style="text-align: center;">
-          <div class="rank-badge">${rankEmoji}</div>
-          <h1 style="color: #1e293b; margin: 0;">Félicitations ${displayName} !</h1>
-          <p class="rank-text">Vous êtes ${rankLabel} du classement !</p>
-          <div class="roi-badge">${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% de rendement</div>
-        </div>
+          <!-- Body -->
+          <div class="body">
+            <p style="font-size:15px;color:#334155;line-height:1.7;margin-bottom:24px;">
+              Bravo, ${firstName}. Être <strong>${rankLabel}</strong> du classement AfriBourse avec <strong>${roiDisplay}</strong>,
+              ce n'est pas de la chance — c'est le résultat d'une analyse rigoureuse.<br><br>
+              Maintenant, deux options s'offrent à vous :
+            </p>
 
-        <p style="text-align: center; font-size: 16px; color: #64748b; margin-top: 20px;">
-          Votre stratégie d'investissement porte ses fruits. Vous faites partie des <strong>5 meilleurs portfolios simulés</strong> sur AfriBourse. Bravo !
-        </p>
+            <p class="section-title">Votre prochaine étape</p>
+            <div class="option-row">
+              <div class="option-box">
+                <div class="option-label">🛡️ Consolider</div>
+                <div class="option-desc">
+                  Sécurisez vos gains. Diversifiez sur des valeurs défensives pour protéger votre avance.
+                </div>
+              </div>
+              <div class="option-box">
+                <div class="option-label">⚡ Attaquer</div>
+                <div class="option-desc">
+                  SIMBA a repéré des signaux forts cette semaine. Agissez avant que le marché ne réagisse.
+                </div>
+              </div>
+            </div>
 
-        <div class="feature-box">
-          <span class="new-badge">🆕 NOUVEAU</span>
-          <h3 style="margin: 0 0 10px 0; color: #1e293b;">Le classement est maintenant public !</h3>
-          <p style="margin: 0; color: #64748b; font-size: 14px;">
-            Nous avons lancé une nouvelle page <strong>Classement</strong> visible par toute la communauté. Votre performance est désormais affichée dans la section communauté et sur la page classement dédiée. Continuez à investir intelligemment pour garder votre place au sommet !
-          </p>
-        </div>
+            <div class="cta-wrap">
+              <a href="${ctaUrl}" class="cta-btn">
+                Voir les recommandations SIMBA →
+              </a>
+            </div>
 
-        <div style="text-align: center;">
-          <a href="${classementUrl}" class="button">🏆 Voir le classement</a>
-        </div>
+            <p class="signature">
+              Bravo, ${firstName}. Le marché BRVM vous appartient cette semaine.<br><br>
+              — <strong>KOFI</strong><br>
+              <span style="font-size:12px;color:#94a3b8;">Équipe AfriBourse</span>
+            </p>
+          </div>
 
-        <p style="text-align: center; font-size: 14px; color: #94a3b8;">
-          Continuez à analyser, diversifier et prendre des décisions éclairées.<br/>
-          La communauté AfriBourse vous observe ! 💪
-        </p>
-
-        <div class="footer">
-          <p>Cet email a été envoyé par AfriBourse</p>
-          <p>Si vous avez des questions, contactez-nous à contact@africbourse.com</p>
-          <p style="margin-top: 10px;">© ${new Date().getFullYear()} AfriBourse. Tous droits réservés.</p>
+          <div class="footer">
+            <p>© ${new Date().getFullYear()} AfriBourse · <a href="${config.app.frontendUrl}" style="color:#00D4A8;text-decoration:none;">afribourse.com</a></p>
+          </div>
         </div>
       </div>
     </body>
@@ -1865,25 +1867,24 @@ export async function sendLeaderboardCongratulationEmail({
   `;
 
   const text = `
-Félicitations ${displayName} ! ${rankEmoji}
+🏆 ${firstName}, vous êtes ${rankLabel} du classement — et votre stratégie fonctionne
 
-Vous êtes ${rankLabel} du classement des meilleurs portfolios simulés sur AfriBourse avec un rendement de ${roi >= 0 ? '+' : ''}${roi.toFixed(1)}% !
+${roiDisplay} cette semaine. Être ${rankLabel} du classement AfriBourse, ce n'est pas de la chance.
 
-🆕 NOUVEAU : Le classement est maintenant public !
-Nous avons lancé une nouvelle page Classement visible par toute la communauté. Votre performance est affichée dans la section communauté et sur la page classement dédiée.
+Deux options s'offrent à vous :
 
-Voir le classement : ${classementUrl}
+🛡️ Consolider — Sécurisez vos gains sur des valeurs défensives.
+⚡ Attaquer — SIMBA a repéré des signaux forts cette semaine.
 
-Continuez à analyser, diversifier et prendre des décisions éclairées.
-La communauté AfriBourse vous observe !
+Voir les recommandations SIMBA : ${ctaUrl}
 
----
-AfriBourse - Apprenez, simulez et investissez en toute confiance.
+Bravo, ${firstName}. Le marché BRVM vous appartient cette semaine.
+— KOFI, Équipe AfriBourse
   `;
 
   await sendEmail({
     to: email,
-    subject: `${rankEmoji} Félicitations ! Vous êtes ${rankLabel} du classement AfriBourse`,
+    subject: `🏆 ${firstName}, vous êtes ${rankLabel} du classement — et votre stratégie fonctionne`,
     html,
     text,
   });
@@ -2893,43 +2894,44 @@ export async function sendReengagementEmail0({
   confirmationToken,
 }: { email: string; name: string; confirmationToken: string }): Promise<void> {
   const confirmationUrl = `${config.app.frontendUrl}/confirmer-inscription?token=${confirmationToken}`;
+  const firstName = name.split(' ')[0];
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Votre compte Afribourse n'est pas encore activé</title>
+  <title>${firstName}, votre place dans le classement vous attend</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
     .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
-    h1 { color: #1f2937; font-size: 22px; }
+    h1 { color: #1f2937; font-size: 22px; margin-bottom: 20px; }
     p { color: #4b5563; margin-bottom: 15px; }
-    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-    .feature-list { list-style: none; padding: 0; }
-    .feature-list li { padding: 6px 0; color: #374151; }
+    .button { display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #f97316, #ea580c); color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; margin: 20px 0; }
+    .feature-list { list-style: none; padding: 0; margin: 16px 0; }
+    .feature-list li { padding: 8px 0; color: #374151; font-size: 15px; }
+    .community-badge { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 14px 18px; margin: 20px 0; text-align: center; color: #c2410c; font-weight: 600; font-size: 15px; }
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
   </style>
 </head>
 <body>
   <div class="container">
     <p class="logo-text">AfriBourse</p>
-    <h1>⚠️ Votre compte Afribourse n'est pas encore activé</h1>
-    <p>Bonjour ${name},</p>
-    <p>Vous vous êtes inscrit(e) sur Afribourse il y a 24 heures — mais votre compte n'est pas encore actif.</p>
-    <p>Un seul clic vous sépare de l'accès à :</p>
+    <h1>${firstName}, votre place dans le classement vous attend</h1>
+    <p>Je suis <strong>SIMBA</strong>, votre coach IA sur AfriBourse.</p>
+    <p>Pendant que vous lisez cet email, <strong>2 500+ investisseurs</strong> de la communauté UEMOA suivent déjà leurs positions, apprennent, et s'affrontent dans le classement.</p>
+    <p>Votre compte est créé — mais pas encore activé. Un seul clic vous sépare de :</p>
     <ul class="feature-list">
-      <li>▸ Le simulateur de portefeuille BRVM — investissez sans risque</li>
-      <li>▸ Les cours en temps réel des 45 titres cotés</li>
-      <li>▸ Les modules de formation animés par Simba, votre coach IA</li>
+      <li>▸ Votre premier achat simulé (sans risquer un seul franc)</li>
+      <li>▸ L'accès aux 47 titres BRVM en temps réel</li>
+      <li>▸ Votre score de signal sur chaque action</li>
     </ul>
-    <p>Le lien de confirmation est valable 48h.</p>
     <div style="text-align: center;">
-      <a href="${confirmationUrl}" class="button">✅ Confirmer mon adresse email</a>
+      <a href="${confirmationUrl}" class="button">✅ Activer mon compte maintenant →</a>
     </div>
-    <p style="font-size: 13px; color: #6b7280;">Si vous n'avez pas reçu l'email précédent ou si le lien a expiré, vous pouvez en demander un nouveau directement depuis la page de connexion.</p>
-    <p>À tout de suite sur la plateforme,<br><strong>Simba — Votre coach BRVM</strong><br>Afribourse · africbourse.com</p>
+    <div class="community-badge">Le marché n'attend pas. Moi non plus.</div>
+    <p style="margin-top: 20px;">— <strong>SIMBA, votre coach BRVM</strong><br><span style="color: #9ca3af; font-size: 13px;">Afribourse · africbourse.com</span></p>
     <div class="footer"><p>Afribourse · africbourse.com</p></div>
   </div>
 </body>
@@ -2937,9 +2939,9 @@ export async function sendReengagementEmail0({
 
   await sendEmail({
     to: email,
-    subject: '⚠️ Votre compte Afribourse n\'est pas encore activé',
+    subject: `${firstName}, votre place dans le classement vous attend — 1 clic suffit`,
     html,
-    text: `Bonjour ${name},\n\nVous vous êtes inscrit(e) sur Afribourse il y a 24 heures mais votre compte n'est pas encore actif.\n\nConfirmez votre email : ${confirmationUrl}\n\nSimba — Votre coach BRVM\nAfribourse · africbourse.com`,
+    text: `${firstName},\n\nJe suis SIMBA, votre coach IA sur AfriBourse.\n\nPendant que vous lisez cet email, 2 500+ investisseurs de la communauté UEMOA suivent déjà leurs positions.\n\nVotre compte est créé — mais pas encore activé. Activez-le ici :\n${confirmationUrl}\n\nLe marché n'attend pas. Moi non plus.\n— SIMBA, votre coach BRVM\nAfribourse · africbourse.com`,
   });
 }
 
@@ -2949,50 +2951,50 @@ export async function sendReengagementEmail1({
   email,
   name,
 }: { email: string; name: string }): Promise<void> {
-  const platformUrl = `${config.app.frontendUrl}/dashboard`;
+  const learnUrl = `${config.app.frontendUrl}/learn`;
+  const firstName = name.split(' ')[0];
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voici ce qui vous attend sur Afribourse</title>
+  <title>SIMBA vous attend, ${firstName}</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
     .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
-    h1 { color: #1f2937; font-size: 22px; }
+    h1 { color: #1f2937; font-size: 22px; margin-bottom: 20px; }
     p { color: #4b5563; margin-bottom: 15px; }
-    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-    .step-card { background: #f9fafb; border-radius: 8px; padding: 16px; margin: 12px 0; border-left: 4px solid #f97316; }
-    .step-card p { margin: 0; color: #374151; }
+    .button { display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #f97316, #ea580c); color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; margin: 20px 0; }
+    .action-card { background: #f9fafb; border-radius: 10px; padding: 18px; margin: 14px 0; border-left: 4px solid #f97316; display: flex; align-items: center; gap: 14px; }
+    .action-card .num { flex-shrink: 0; background: #f97316; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+    .action-card p { margin: 0; color: #1f2937; font-size: 14px; }
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
   </style>
 </head>
 <body>
   <div class="container">
     <p class="logo-text">AfriBourse</p>
-    <h1>🌱 Voici ce qui vous attend sur Afribourse, ${name}</h1>
-    <p>Bonjour ${name},</p>
-    <p>Je suis Simba, votre coach IA sur Afribourse. Votre compte est activé — maintenant, le vrai voyage commence.</p>
-    <p>Voici ce que vous allez apprendre et maîtriser sur la plateforme :</p>
-    <div class="step-card">
-      <p><strong>📚 Les bases</strong><br>Comprendre la BRVM, son fonctionnement et les 45 titres cotés. Lisez les cours comme un pro.</p>
+    <h1>SIMBA vous attend, ${firstName}</h1>
+    <p>${firstName},</p>
+    <p>Votre compte est actif. Vous faites maintenant partie des personnes qui apprennent vraiment à investir sur la BRVM.</p>
+    <p>Je m'appelle <strong>SIMBA</strong>. Je suis votre coach IA — formé uniquement sur les marchés UEMOA.</p>
+    <p>Ma première recommandation : commencez par le <strong>Module 1</strong>. Il dure <strong>8 minutes</strong>. À la fin, vous maîtriserez les fondamentaux de la BRVM comme un Pro.</p>
+    <p>Ensuite, faites votre premier achat simulé. Choisissez un titre, investissez virtuellement, et voyez votre portefeuille prendre vie — sans risquer un franc.</p>
+    <p>Ce sont les 2 actions que font tous nos meilleurs investisseurs dès leur premier jour :</p>
+    <div class="action-card">
+      <div class="num">1</div>
+      <p><strong>Module 1</strong> — 8 min pour maîtriser les bases de la BRVM</p>
     </div>
-    <div class="step-card">
-      <p><strong>📊 Analyser un titre</strong><br>Décrypter un bilan, lire un graphique de cours, identifier les signaux d'achat et de vente.</p>
+    <div class="action-card">
+      <div class="num">2</div>
+      <p><strong>Premier achat simulé</strong> — Sans risquer un seul franc</p>
     </div>
-    <div class="step-card">
-      <p><strong>🎮 Simulateur — Sans risque</strong><br>Construisez votre portefeuille virtuel avec de vraies données BRVM. Apprenez à investir sans perdre un franc.</p>
-    </div>
-    <div class="step-card">
-      <p><strong>🏆 Construire une stratégie</strong><br>Diversification, gestion du risque, horizon d'investissement — les mêmes techniques que les pros.</p>
-    </div>
-    <p>Tout ça vous attend. Gratuit. Maintenant.</p>
     <div style="text-align: center;">
-      <a href="${platformUrl}" class="button">🚀 Commencer mon parcours BRVM</a>
+      <a href="${learnUrl}" class="button">🚀 Commencer avec SIMBA →</a>
     </div>
-    <p>À bientôt sur la plateforme,<br><strong>Simba — Votre coach BRVM</strong><br>Afribourse · africbourse.com</p>
+    <p>À tout de suite sur la plateforme,<br>— <strong>SIMBA</strong><br><span style="color: #9ca3af; font-size: 13px;">Afribourse · africbourse.com</span></p>
     <div class="footer"><p>Afribourse · africbourse.com</p></div>
   </div>
 </body>
@@ -3000,9 +3002,9 @@ export async function sendReengagementEmail1({
 
   await sendEmail({
     to: email,
-    subject: `🌱 Voici ce qui vous attend sur Afribourse, ${name}`,
+    subject: `SIMBA vous attend, ${firstName} — voici par où commencer`,
     html,
-    text: `Bonjour ${name},\n\nJe suis Simba, votre coach IA sur Afribourse. Votre compte est activé — le vrai voyage commence.\n\nCommencez votre parcours : ${platformUrl}\n\nSimba — Votre coach BRVM\nAfribourse · africbourse.com`,
+    text: `${firstName},\n\nVotre compte est actif. Vous faites maintenant partie des personnes qui apprennent vraiment à investir sur la BRVM.\n\nJe m'appelle SIMBA. Je suis votre coach IA — formé uniquement sur les marchés UEMOA.\n\nÉtape 1 : Module 1 (8 min) — les bases de la BRVM\nÉtape 2 : Premier achat simulé — sans risquer un franc\n\nDémarrez ici : ${learnUrl}\n\n— SIMBA\nAfribourse · africbourse.com`,
   });
 }
 
@@ -3011,49 +3013,80 @@ export async function sendReengagementEmail1({
 export async function sendReengagementEmail2({
   email,
   name,
-}: { email: string; name: string }): Promise<void> {
-  const platformUrl = `${config.app.frontendUrl}/dashboard`;
+  stocks,
+}: {
+  email: string;
+  name: string;
+  stocks: { symbol: string; companyName: string; weeklyChangePercent: number }[];
+}): Promise<void> {
+  const firstName = name.split(' ')[0];
+  const topStock = stocks[0];
+  const stockUrl = `${config.app.frontendUrl}/stock/${topStock.symbol}`;
+
+  const fmt = (pct: number) => {
+    const sign = pct >= 0 ? '+' : '';
+    return `${sign}${pct.toFixed(1).replace('.', ',')}%`;
+  };
+
+  const topChange = fmt(topStock.weeklyChangePercent);
+
+  const rows = stocks.map(s => {
+    const isUp = s.weeklyChangePercent >= 0;
+    const cls = isUp ? 'up' : 'down';
+    const signal = isUp
+      ? 'Signal haussier — à surveiller de près'
+      : 'Repli en cours — opportunité potentielle';
+    return `<tr><td><strong>${s.symbol}</strong><br><span style="color:#9ca3af;font-size:11px;">${s.companyName}</span></td><td class="${cls}">${fmt(s.weeklyChangePercent)}</td><td>${signal}</td></tr>`;
+  }).join('');
+
+  const textRows = stocks.map(s =>
+    `${s.symbol} : ${fmt(s.weeklyChangePercent)} (${s.companyName})`
+  ).join('\n');
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ce qui s'est passé sur le BRVM cette semaine</title>
+  <title>${topStock.symbol} ${topChange} cette semaine — SIMBA a une analyse pour vous</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
     .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
-    h1 { color: #1f2937; font-size: 22px; }
+    h1 { color: #1f2937; font-size: 22px; margin-bottom: 20px; }
     p { color: #4b5563; margin-bottom: 15px; }
-    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background: #f97316; color: white; padding: 10px; text-align: left; font-size: 13px; }
-    td { padding: 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    .button { display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #f97316, #ea580c); color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; border-radius: 8px; overflow: hidden; }
+    th { background: #1f2937; color: white; padding: 11px 12px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    tr:last-child td { border-bottom: none; }
     tr:nth-child(even) { background: #f9fafb; }
-    .up { color: #16a34a; font-weight: 600; }
-    .down { color: #dc2626; font-weight: 600; }
+    .up { color: #16a34a; font-weight: 700; font-size: 14px; }
+    .down { color: #dc2626; font-weight: 700; font-size: 14px; }
+    .simba-note { background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 14px 16px; margin: 20px 0; }
+    .simba-note p { margin: 0; color: #1e40af; font-size: 14px; }
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
   </style>
 </head>
 <body>
   <div class="container">
     <p class="logo-text">AfriBourse</p>
-    <h1>📈 Ce qui s'est passé sur le BRVM cette semaine, ${name}</h1>
-    <p>Bonjour ${name},</p>
-    <p>Pendant que vous étiez absent(e), le BRVM n'a pas chômé. Voici 3 mouvements que tout investisseur informé devrait connaître :</p>
+    <h1>📈 ${topStock.symbol} ${topChange} cette semaine — SIMBA a une analyse pour vous</h1>
+    <p>${firstName},</p>
+    <p>Trois choses se sont passées sur le BRVM depuis votre inscription :</p>
     <table>
-      <tr><th>Titre</th><th>Variation</th><th>Ce que ça signifie</th></tr>
-      <tr><td>SONATEL SN</td><td class="up">+3,2%</td><td>Signal haussier après résultats semestriels — bon momentum</td></tr>
-      <tr><td>ECOBANK CI</td><td class="down">-1,8%</td><td>Prise de bénéfices après un pic — surveiller le support</td></tr>
-      <tr><td>CFAO CI</td><td class="up">+5,1%</td><td>Fort volume, annonce d'un partenariat — à analyser</td></tr>
+      <tr><th>Titre</th><th>Variation</th><th>Signal</th></tr>
+      ${rows}
     </table>
-    <p>Vous souhaitez comprendre comment interpréter ces mouvements ? Sur Afribourse, je vous explique pas à pas comment analyser chaque titre — et comment réagir en simulant vos décisions d'investissement sans risque.</p>
-    <div style="text-align: center;">
-      <a href="${platformUrl}" class="button">📊 Analyser ces titres sur Afribourse</a>
+    <div class="simba-note">
+      <p>Sur AfriBourse, SIMBA analyse ces signaux en temps réel et note chaque titre de <strong>0 à 100</strong>.<br>
+      <strong>${topStock.symbol} est actuellement noté par SIMBA. Voici pourquoi →</strong></p>
     </div>
-    <p>Les marchés ne s'arrêtent pas. Votre formation non plus.</p>
-    <p><strong>Simba — Votre coach BRVM</strong><br>Afribourse · africbourse.com</p>
+    <div style="text-align: center;">
+      <a href="${stockUrl}" class="button">Voir l'analyse SIMBA de ${topStock.symbol}</a>
+    </div>
+    <p style="text-align:center; font-size:13px; color:#6b7280;">(Vous pouvez aussi l'acheter dans votre simulateur et suivre sa performance en direct)</p>
+    <p>— <strong>SIMBA</strong><br><span style="color: #9ca3af; font-size: 13px;">Afribourse · africbourse.com</span></p>
     <div class="footer"><p>Afribourse · africbourse.com</p></div>
   </div>
 </body>
@@ -3061,75 +3094,98 @@ export async function sendReengagementEmail2({
 
   await sendEmail({
     to: email,
-    subject: `📈 Ce qui s'est passé sur le BRVM cette semaine, ${name}`,
+    subject: `${topStock.symbol} ${topChange} cette semaine — SIMBA a une analyse pour vous`,
     html,
-    text: `Bonjour ${name},\n\nPendant que vous étiez absent(e), le BRVM n'a pas chômé.\n\nSONATEL SN : +3,2% — Signal haussier après résultats semestriels\nECOBANK CI : -1,8% — Prise de bénéfices après un pic\nCFAO CI : +5,1% — Fort volume, annonce d'un partenariat\n\nAnalysez ces titres : ${platformUrl}\n\nSimba — Votre coach BRVM\nAfribourse · africbourse.com`,
+    text: `${firstName},\n\nTrois choses se sont passées sur le BRVM depuis votre inscription :\n\n${textRows}\n\nSur AfriBourse, SIMBA analyse ces signaux en temps réel et note chaque titre de 0 à 100.\n\nVoir l'analyse SIMBA de ${topStock.symbol} : ${stockUrl}\n\n— SIMBA\nAfribourse · africbourse.com`,
   });
 }
 
-// ─── EMAIL 3 — Simulateur & Top 5 J+7 ────────────────────────────────────────
+// ─── EMAIL 3 — Simulateur & Top 3 réel J+7 ───────────────────────────────────
 
 export async function sendReengagementEmail3({
   email,
   name,
-}: { email: string; name: string }): Promise<void> {
-  const simulatorUrl = `${config.app.frontendUrl}/simulateur`;
+  leaders,
+}: {
+  email: string;
+  name: string;
+  leaders: { rank: number; displayName: string; totalValue: number; roi: number }[];
+}): Promise<void> {
+  const firstName = name.split(' ')[0];
+  const classementUrl = `${config.app.frontendUrl}/classement`;
+
+  const fmt = (roi: number) => {
+    const sign = roi >= 0 ? '+' : '';
+    return `${sign}${roi.toFixed(1).replace('.', ',')}%`;
+  };
+
+  const top1 = leaders[0] ?? { displayName: 'Kouassi A.', totalValue: 1_450_000, roi: 18.4 };
+  const rankEmojis = ['🥇', '🥈', '🥉'];
+
+  const rows = leaders.slice(0, 3).map((l, i) =>
+    `<tr><td>${rankEmojis[i] ?? l.rank}</td><td><strong>${l.displayName}</strong></td><td>${l.totalValue.toLocaleString('fr-FR')} FCFA</td><td class="perf">${fmt(l.roi)}</td></tr>`
+  ).join('');
+
+  const textRows = leaders.slice(0, 3).map((l, i) =>
+    `${rankEmojis[i] ?? l.rank} ${l.displayName} — ${fmt(l.roi)} (${l.totalValue.toLocaleString('fr-FR')} FCFA)`
+  ).join('\n');
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Le Top 5 de la communauté Afribourse cette semaine</title>
+  <title>${firstName}, ${top1.displayName} fait ${fmt(top1.roi)} cette semaine. Voici son secret.</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
     .container { background-color: #ffffff; border-radius: 10px; padding: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .logo-text { font-size: 28px; font-weight: bold; color: #f97316; }
-    h1 { color: #1f2937; font-size: 22px; }
+    h1 { color: #1f2937; font-size: 22px; margin-bottom: 20px; }
     p { color: #4b5563; margin-bottom: 15px; }
-    .button { display: inline-block; padding: 14px 28px; background-color: #f97316; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background: #f97316; color: white; padding: 10px; text-align: left; font-size: 13px; }
-    td { padding: 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    .button { display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, #f97316, #ea580c); color: #ffffff !important; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; border-radius: 8px; overflow: hidden; }
+    th { background: #1f2937; color: white; padding: 11px 12px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #374151; }
+    tr:last-child td { border-bottom: none; }
     tr:nth-child(even) { background: #f9fafb; }
-    .perf { color: #16a34a; font-weight: 600; }
-    .steps { list-style: none; padding: 0; }
-    .steps li { padding: 6px 0; color: #374151; }
-    .stat-bar { background: #fff7ed; border-radius: 8px; padding: 16px; text-align: center; margin: 20px 0; }
-    .stat-bar p { margin: 0; color: #c2410c; font-weight: 600; font-size: 15px; }
+    .perf { color: #16a34a; font-weight: 700; font-size: 14px; }
+    .secret-card { background: #f9fafb; border-radius: 10px; padding: 18px; margin: 14px 0; border-left: 4px solid #f97316; display: flex; align-items: flex-start; gap: 12px; }
+    .secret-card .num { flex-shrink: 0; background: #f97316; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; margin-top: 2px; }
+    .secret-card p { margin: 0; color: #1f2937; font-size: 14px; }
+    .stat-bar { background: #fff7ed; border-radius: 8px; padding: 14px 18px; text-align: center; margin: 20px 0; color: #c2410c; font-weight: 600; font-size: 14px; }
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; text-align: center; }
   </style>
 </head>
 <body>
   <div class="container">
     <p class="logo-text">AfriBourse</p>
-    <h1>🏆 Le Top 5 de la communauté Afribourse cette semaine</h1>
-    <p>Bonjour ${name},</p>
-    <p>Cela fait une semaine que vous avez créé votre compte Afribourse. Pendant ce temps, les meilleurs investisseurs de la communauté ont fait travailler leur simulateur.</p>
-    <p><strong>Voici le Top 5 de cette semaine :</strong></p>
+    <h1>🏆 ${firstName}, ${top1.displayName} fait ${fmt(top1.roi)} cette semaine. Voici son secret.</h1>
+    <p>Cela fait 7 jours que vous avez créé votre compte.</p>
+    <p>Pendant ce temps, voici ce que font les meilleurs investisseurs AfriBourse :</p>
     <table>
-      <tr><th>Rang</th><th>Investisseur</th><th>Performance</th><th>Stratégie</th></tr>
-      <tr><td>🥇 1</td><td>Kouassi A.</td><td class="perf">+18,4%</td><td>Concentration SONATEL + ECOBANK</td></tr>
-      <tr><td>🥈 2</td><td>Mariama D.</td><td class="perf">+15,2%</td><td>Diversification 8 titres UEMOA</td></tr>
-      <tr><td>🥉 3</td><td>Ousmane T.</td><td class="perf">+12,7%</td><td>Secteur bancaire + agroalimentaire</td></tr>
-      <tr><td>4</td><td>Awa S.</td><td class="perf">+10,1%</td><td>Blue chips + attente dividendes</td></tr>
-      <tr><td>5</td><td>Ibrahima K.</td><td class="perf">+8,9%</td><td>Stratégie défensive long terme</td></tr>
+      <tr><th>Rang</th><th>Investisseur</th><th>Portefeuille</th><th>ROI</th></tr>
+      ${rows}
     </table>
-    <p>Ces 5 investisseurs ont commencé exactement comme vous — un compte, un simulateur, et la volonté d'apprendre. Chaque semaine, le classement est remis à zéro. <strong>Vous pouvez faire partie du Top 5 dès cette semaine.</strong></p>
-    <p>Voici comment commencer en moins de 5 minutes :</p>
-    <ul class="steps">
-      <li>▸ Connectez-vous à votre compte</li>
-      <li>▸ Allez dans l'onglet Simulateur</li>
-      <li>▸ Choisissez 2-3 titres BRVM et construisez votre premier portefeuille</li>
-      <li>▸ Suivez vos performances en temps réel</li>
-    </ul>
+    <p>${top1.displayName} a commencé exactement comme vous — avec <strong>1 000 000 FCFA virtuels</strong> et zéro expérience.</p>
+    <p><strong>Sa stratégie en 3 étapes :</strong></p>
+    <div class="secret-card">
+      <div class="num">1</div>
+      <p>Il a terminé le <strong>Module 1 (8 min)</strong> pour comprendre les bases</p>
+    </div>
+    <div class="secret-card">
+      <div class="num">2</div>
+      <p>Il a acheté <strong>2-3 titres BRVM</strong> dans le simulateur</p>
+    </div>
+    <div class="secret-card">
+      <div class="num">3</div>
+      <p>Il suit ses positions <strong>chaque matin</strong> depuis le dashboard</p>
+    </div>
+    <p>Vous pouvez faire exactement la même chose — maintenant.</p>
     <div style="text-align: center;">
-      <a href="${simulatorUrl}" class="button">🏆 Rejoindre le classement cette semaine</a>
+      <a href="${classementUrl}" class="button">🏆 Rejoindre le classement cette semaine →</a>
     </div>
-    <div class="stat-bar">
-      <p>2 100+ investisseurs déjà actifs sur la BRVM · 0 XOF pour commencer</p>
-    </div>
-    <p>On vous attend dans l'arène,<br><strong>Simba — Votre coach BRVM</strong><br>Afribourse · afribourse.com</p>
+    <div class="stat-bar">2 100+ investisseurs actifs · Gratuit · Sans risque</div>
+    <p>— <strong>SIMBA</strong><br><span style="color: #9ca3af; font-size: 13px;">Afribourse · afribourse.com</span></p>
     <div class="footer"><p>Afribourse · afribourse.com · <a href="${config.app.frontendUrl}/desabonnement">Se désabonner</a></p></div>
   </div>
 </body>
@@ -3137,9 +3193,9 @@ export async function sendReengagementEmail3({
 
   await sendEmail({
     to: email,
-    subject: '🏆 Le Top 5 de la communauté Afribourse cette semaine',
+    subject: `${firstName}, ${top1.displayName} fait ${fmt(top1.roi)} cette semaine. Voici son secret.`,
     html,
-    text: `Bonjour ${name},\n\nCela fait une semaine que vous avez créé votre compte. Voici le Top 5 simulateur de la semaine :\n\n1. Kouassi A. — +18,4%\n2. Mariama D. — +15,2%\n3. Ousmane T. — +12,7%\n4. Awa S. — +10,1%\n5. Ibrahima K. — +8,9%\n\nRejoingnez le classement : ${simulatorUrl}\n\nSimba — Votre coach BRVM\nAfribourse · afribourse.com`,
+    text: `Cela fait 7 jours que vous avez créé votre compte.\n\nVoici le classement cette semaine :\n\n${textRows}\n\n${top1.displayName} a commencé comme vous — 1 000 000 FCFA virtuels, zéro expérience.\n\nSa stratégie : Module 1 (8 min) → 2-3 titres dans le simulateur → suivi quotidien.\n\nRejoignez le classement : ${classementUrl}\n\n— SIMBA\nAfribourse · afribourse.com`,
   });
 }
 
@@ -3158,11 +3214,7 @@ interface SendWeeklyReportEmailParams {
   email: string;
   name: string;
   period: string;
-  marketData: {
-    topGainers: MarketMoverEmail[];
-    topLosers: MarketMoverEmail[];
-    weekLabel: string;
-  };
+  segment: 'A' | 'B' | 'C';
   portfolioStats?: {
     totalValue: number;
     cashBalance: number;
@@ -3181,18 +3233,16 @@ interface SendWeeklyReportEmailParams {
   };
   learningStats?: {
     weeklyModulesCompleted: number;
-    weeklyQuizzesTaken: number;
     weeklyXpEarned: number;
-    weeklyTimeSpentMinutes: number;
     currentStreak: number;
     currentLevel: number;
     totalXp: number;
     completionPercent: number;
     totalModulesCompleted: number;
     totalModulesAvailable: number;
-    recentCompletedModules: Array<{ title: string; slug: string; quizScore?: number; completedAt: Date }>;
     suggestedModules: Array<{ title: string; slug: string; difficulty: string; durationMinutes?: number }>;
-    recentAchievements: Array<{ name: string; description: string; unlockedAt: Date }>;
+    recentAchievements: Array<{ name: string; description: string }>;
+    rank?: number;
     isReminder?: boolean;
   };
 }
@@ -3201,293 +3251,608 @@ export async function sendWeeklyReportEmail({
   email,
   name,
   period,
-  marketData,
+  segment,
   portfolioStats,
   learningStats,
 }: SendWeeklyReportEmailParams): Promise<void> {
-  const displayName = name || 'Investisseur';
+  const firstName = (name || 'Investisseur').split(' ')[0];
 
-  const formatFCFA = (n: number) => n.toLocaleString('fr-FR') + ' FCFA';
-  const formatPct = (n: number, showPlus = true) =>
-    `${showPlus && n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
-  const formatTime = (min: number) => {
-    if (min < 60) return `${Math.round(min)} min`;
-    const h = Math.floor(min / 60);
-    const m = Math.round(min % 60);
-    return m > 0 ? `${h}h ${m}min` : `${h}h`;
-  };
+  const fmtFCFA = (n: number) =>
+    Math.round(n).toLocaleString('fr-FR') + ' FCFA';
+  const fmtPct = (n: number) =>
+    `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
 
-  // ── Section marché ─────────────────────────────────────────────────────────
-  const gainersRows = marketData.topGainers.map(s => `
-    <tr>
-      <td style="padding:8px 12px;font-weight:600;color:#1f2937;">${s.symbol}</td>
-      <td style="padding:8px 12px;color:#6b7280;font-size:13px;">${s.companyName}</td>
-      <td style="padding:8px 12px;text-align:right;font-weight:700;color:#10b981;">${formatPct(s.weeklyChangePercent)}</td>
-      <td style="padding:8px 12px;text-align:right;color:#4b5563;">${s.currentPrice.toLocaleString('fr-FR')}</td>
-    </tr>`).join('');
+  // ── Subject ────────────────────────────────────────────────────────────────
+  let subject: string;
+  if (segment === 'A' && learningStats && portfolioStats) {
+    subject = `${firstName}, votre semaine BRVM — 📚 ${learningStats.weeklyModulesCompleted} module(s) · 📊 ${fmtPct(portfolioStats.totalGainLossPercent)} portefeuille`;
+  } else if (segment === 'B' && learningStats) {
+    subject = `${firstName}, votre semaine BRVM — 📚 ${learningStats.weeklyModulesCompleted} module(s) complété(s)`;
+  } else {
+    subject = `${firstName}, votre semaine BRVM — 📊 ${portfolioStats ? fmtPct(portfolioStats.totalGainLossPercent) : ''} sur votre portefeuille`;
+  }
 
-  const losersRows = marketData.topLosers.map(s => `
-    <tr>
-      <td style="padding:8px 12px;font-weight:600;color:#1f2937;">${s.symbol}</td>
-      <td style="padding:8px 12px;color:#6b7280;font-size:13px;">${s.companyName}</td>
-      <td style="padding:8px 12px;text-align:right;font-weight:700;color:#ef4444;">${formatPct(s.weeklyChangePercent)}</td>
-      <td style="padding:8px 12px;text-align:right;color:#4b5563;">${s.currentPrice.toLocaleString('fr-FR')}</td>
-    </tr>`).join('');
+  // ── Section 1 — Apprentissage (segments A & B) ─────────────────────────────
+  let learnSection = '';
+  if (learningStats && (segment === 'A' || segment === 'B')) {
+    const rankCell = learningStats.rank
+      ? `<td style="width:25%;padding:0 6px 0 0;">
+           <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="14" cellspacing="0">
+             <tr><td style="text-align:center;">
+               <div style="font-size:20px;font-weight:800;color:#0A1628;">${learningStats.rank}e</div>
+               <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Classement</div>
+             </td></tr>
+           </table>
+         </td>`
+      : '';
 
-  // ── Section portefeuille ───────────────────────────────────────────────────
+    const badgeBlock = learningStats.recentAchievements.length > 0
+      ? learningStats.recentAchievements.slice(0, 1).map(a => `
+        <tr><td style="padding:16px 0 0;">
+          <table width="100%" cellpadding="14" cellspacing="0" style="background:rgba(0,212,168,0.06);border:1.5px solid rgba(0,212,168,0.25);border-radius:10px;">
+            <tr><td>
+              <span style="font-size:13px;font-weight:700;color:#0A1628;">🎖️ Badge débloqué : <span style="color:#00D4A8;">${a.name}</span></span>
+              ${a.description ? `<div style="font-size:12px;color:#64748b;margin-top:3px;">${a.description}</div>` : ''}
+            </td></tr>
+          </table>
+        </td></tr>`).join('')
+      : '';
+
+    const suggestedRows = learningStats.suggestedModules.slice(0, 2).map((m, i) => `
+      <tr><td style="padding:${i === 0 ? '12px 0 6px' : '0 0 0'} 0;">
+        <table width="100%" cellpadding="10" cellspacing="0" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+          <tr>
+            <td>
+              <div style="font-size:12px;font-weight:700;color:#0A1628;">→ ${m.title}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${m.durationMinutes ? m.durationMinutes + ' min · ' : ''}+50 XP</div>
+            </td>
+            <td style="text-align:right;white-space:nowrap;">
+              <a href="${config.app.frontendUrl}/learn" style="font-size:11px;font-weight:700;color:#00D4A8;text-decoration:none;">Suivre →</a>
+            </td>
+          </tr>
+        </table>
+      </td></tr>`).join('');
+
+    learnSection = `
+      <!-- Section 1: Apprentissage -->
+      <tr><td style="padding-bottom:20px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding-bottom:12px;">
+            <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;">📚 Section 1 — Votre semaine d'apprentissage</span>
+          </td></tr>
+
+          <!-- 4 metric tiles -->
+          <tr>
+            <td style="width:25%;padding:0 6px 0 0;">
+              <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="14" cellspacing="0">
+                <tr><td style="text-align:center;">
+                  <div style="font-size:20px;font-weight:800;color:#00D4A8;">${learningStats.weeklyModulesCompleted}</div>
+                  <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Modules</div>
+                </td></tr>
+              </table>
+            </td>
+            <td style="width:25%;padding:0 6px;">
+              <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="14" cellspacing="0">
+                <tr><td style="text-align:center;">
+                  <div style="font-size:20px;font-weight:800;color:#00D4A8;">+${learningStats.weeklyXpEarned}</div>
+                  <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">XP gagnés</div>
+                </td></tr>
+              </table>
+            </td>
+            <td style="width:25%;padding:0 6px;">
+              <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="14" cellspacing="0">
+                <tr><td style="text-align:center;">
+                  <div style="font-size:20px;font-weight:800;color:#f97316;">🔥 ${learningStats.currentStreak}</div>
+                  <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Streak jours</div>
+                </td></tr>
+              </table>
+            </td>
+            ${rankCell || `<td style="width:25%;padding:0 0 0 6px;">
+              <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="14" cellspacing="0">
+                <tr><td style="text-align:center;">
+                  <div style="font-size:20px;font-weight:800;color:#0A1628;">${learningStats.totalModulesCompleted}</div>
+                  <div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;">Total modules</div>
+                </td></tr>
+              </table>
+            </td>`}
+          </tr>
+
+          ${badgeBlock}
+
+          <!-- Modules suggérés -->
+          ${suggestedRows ? `<tr><td style="padding-top:16px;">
+            <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Prochains modules suggérés par KOFI</div>
+            <table width="100%" cellpadding="0" cellspacing="0">${suggestedRows}</table>
+          </td></tr>` : ''}
+        </table>
+      </td></tr>`;
+  }
+
+  // ── Teaser simulateur (segment B uniquement) ───────────────────────────────
+  const simulatorTeaser = segment === 'B' ? `
+    <tr><td style="padding-bottom:20px;">
+      <table width="100%" cellpadding="20" cellspacing="0" style="background:linear-gradient(135deg,#0A1628,#1a3a5c);border-radius:12px;">
+        <tr><td>
+          <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:6px;">📊 Tu n'as pas encore de positions simulées</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px;">
+            Essaie le simulateur — achète ta première action BRVM sans aucun risque financier.
+          </div>
+          <a href="${config.app.frontendUrl}/markets" style="display:inline-block;padding:10px 22px;background:#00D4A8;color:#0A1628;text-decoration:none;border-radius:8px;font-weight:700;font-size:13px;">
+            Découvrir le simulateur →
+          </a>
+        </td></tr>
+      </table>
+    </td></tr>` : '';
+
+  // ── Section 2 — Portefeuille (segments A & C) ──────────────────────────────
   let portfolioSection = '';
-  if (portfolioStats) {
-    const isProfit = portfolioStats.totalGainLoss >= 0;
-    const glColor = isProfit ? '#10b981' : '#ef4444';
-    const glIcon = isProfit ? '📈' : '📉';
+  if (portfolioStats && (segment === 'A' || segment === 'C')) {
+    const isProfit = portfolioStats.totalGainLossPercent >= 0;
+    const roiColor = isProfit ? '#00D4A8' : '#ef4444';
 
-    const evolutionBlock = portfolioStats.biweeklyEvolution ? `
-      <div style="background:linear-gradient(135deg,#10b981,#059669);color:white;padding:16px 20px;border-radius:10px;margin:16px 0;text-align:center;">
-        <div style="font-size:13px;opacity:.9;margin-bottom:10px;">📊 Évolution depuis la semaine dernière</div>
-        <div style="display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:12px;">
-          <div><div style="font-size:11px;opacity:.8;">Précédent</div><div style="font-weight:bold;">${formatFCFA(portfolioStats.biweeklyEvolution.previousValue)}</div></div>
-          <div style="font-size:20px;">→</div>
-          <div><div style="font-size:11px;opacity:.8;">Actuel</div><div style="font-weight:bold;">${formatFCFA(portfolioStats.biweeklyEvolution.currentValue)}</div></div>
-        </div>
-        <div style="margin-top:12px;padding:8px 16px;background:rgba(255,255,255,.2);border-radius:6px;display:inline-block;font-weight:bold;">
-          ${portfolioStats.biweeklyEvolution.change >= 0 ? '↗' : '↘'} ${formatFCFA(portfolioStats.biweeklyEvolution.change)} (${formatPct(portfolioStats.biweeklyEvolution.changePercent)})
-        </div>
-      </div>` : '';
+    const biweeklyRow = portfolioStats.biweeklyEvolution ? `
+      <tr><td style="padding-top:12px;">
+        <table width="100%" cellpadding="10" cellspacing="0" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+          <tr>
+            <td style="text-align:center;border-right:1px solid #e2e8f0;">
+              <div style="font-size:11px;color:#94a3b8;">Semaine préc.</div>
+              <div style="font-size:14px;font-weight:700;color:#0A1628;">${fmtFCFA(portfolioStats.biweeklyEvolution.previousValue)}</div>
+            </td>
+            <td style="text-align:center;padding:0 8px;">
+              <div style="font-size:18px;color:#94a3b8;">→</div>
+            </td>
+            <td style="text-align:center;border-left:1px solid #e2e8f0;">
+              <div style="font-size:11px;color:#94a3b8;">Cette semaine</div>
+              <div style="font-size:14px;font-weight:700;color:#0A1628;">${fmtFCFA(portfolioStats.biweeklyEvolution.currentValue)}</div>
+            </td>
+          </tr>
+        </table>
+      </td></tr>` : '';
 
-    const performersBlock = portfolioStats.topPerformers.length > 0 ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">🏆 Meilleures positions</div>
-        ${portfolioStats.topPerformers.map(p => `
-          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:#f0fdf4;border-left:3px solid #10b981;border-radius:4px;margin-bottom:6px;">
-            <span style="font-weight:600;">${p.ticker}</span>
-            <span style="color:#10b981;font-weight:700;">${formatPct(p.gainLossPercent)}</span>
-          </div>`).join('')}
-      </div>` : '';
+    const topPerformersBlock = portfolioStats.topPerformers.length > 0 ? `
+      <tr><td style="padding-top:16px;">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">🏆 Meilleures performances</div>
+        ${portfolioStats.topPerformers.slice(0, 2).map(p => `
+          <table width="100%" cellpadding="8" cellspacing="0" style="background:#f0fdf4;border-left:3px solid #00D4A8;border-radius:4px;margin-bottom:6px;">
+            <tr>
+              <td style="font-weight:700;color:#0A1628;">${p.ticker}</td>
+              <td style="text-align:right;font-weight:700;color:#00D4A8;">${fmtPct(p.gainLossPercent)}</td>
+            </tr>
+          </table>`).join('')}
+      </td></tr>` : '';
 
-    const losersBlock = portfolioStats.topLosers.length > 0 ? `
-      <div style="margin-top:12px;">
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📉 Positions en recul</div>
-        ${portfolioStats.topLosers.map(p => `
-          <div style="display:flex;justify-content:space-between;padding:8px 12px;background:#fef2f2;border-left:3px solid #ef4444;border-radius:4px;margin-bottom:6px;">
-            <span style="font-weight:600;">${p.ticker}</span>
-            <span style="color:#ef4444;font-weight:700;">${formatPct(p.gainLossPercent)}</span>
-          </div>`).join('')}
-      </div>` : '';
+    const flopBlock = portfolioStats.topLosers.length > 0 ? `
+      <tr><td style="padding-top:8px;">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">📉 Moins bonnes</div>
+        ${portfolioStats.topLosers.slice(0, 1).map(p => `
+          <table width="100%" cellpadding="8" cellspacing="0" style="background:#fef2f2;border-left:3px solid #ef4444;border-radius:4px;margin-bottom:6px;">
+            <tr>
+              <td style="font-weight:700;color:#0A1628;">${p.ticker}</td>
+              <td style="text-align:right;font-weight:700;color:#ef4444;">${fmtPct(p.gainLossPercent)}</td>
+            </tr>
+          </table>`).join('')}
+      </td></tr>` : '';
+
+    const simbaAdvice = portfolioStats.positionsCount < 2
+      ? 'Diversifiez votre portefeuille sur 2–3 secteurs pour réduire le risque non-systémique.'
+      : isProfit
+        ? 'Excellent travail ! Pensez à rééquilibrer vos gains sur 2–3 secteurs pour protéger votre avance.'
+        : 'La BRVM récompense la patience. Restez dans votre plan et évitez les décisions sous pression.';
 
     portfolioSection = `
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;">
-        <h2 style="margin:0 0 16px;font-size:18px;color:#1f2937;">📊 Votre Portefeuille</h2>
+      <!-- Section 2: Portefeuille -->
+      <tr><td style="padding-bottom:20px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding-bottom:12px;">
+            <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;">📊 Section 2 — Votre portefeuille simulé</span>
+          </td></tr>
 
-        <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;padding:20px;border-radius:10px;text-align:center;">
-          <div style="font-size:13px;opacity:.9;">Valeur Totale</div>
-          <div style="font-size:32px;font-weight:bold;margin:8px 0;">${formatFCFA(portfolioStats.totalValue)}</div>
-          <div style="display:inline-block;padding:6px 16px;background:rgba(255,255,255,.2);border-radius:6px;font-weight:600;color:${glColor};">
-            ${glIcon} ${formatFCFA(portfolioStats.totalGainLoss)} (${formatPct(portfolioStats.totalGainLossPercent)})
-          </div>
-        </div>
+          <!-- Hero valeur -->
+          <tr><td>
+            <table width="100%" cellpadding="20" cellspacing="0" style="background:linear-gradient(135deg,#0A1628,#1a3a5c);border-radius:12px;">
+              <tr><td style="text-align:center;">
+                <div style="font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:.08em;">Valeur totale</div>
+                <div style="font-size:28px;font-weight:800;color:#ffffff;margin:6px 0;">${fmtFCFA(portfolioStats.totalValue)}</div>
+                <div style="display:inline-block;padding:5px 16px;background:${isProfit ? 'rgba(0,212,168,0.15)' : 'rgba(239,68,68,0.15)'};border:1px solid ${roiColor};border-radius:100px;font-size:14px;font-weight:700;color:${roiColor};">
+                  ${fmtPct(portfolioStats.totalGainLossPercent)} &nbsp;·&nbsp; ${fmtFCFA(portfolioStats.totalGainLoss)}
+                </div>
+              </td></tr>
+            </table>
+          </td></tr>
 
-        ${evolutionBlock}
+          <!-- 3 secondary tiles -->
+          <tr><td style="padding-top:10px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width:33%;padding-right:6px;">
+                  <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="12" cellspacing="0">
+                    <tr><td style="text-align:center;">
+                      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Liquidités</div>
+                      <div style="font-size:14px;font-weight:700;color:#0A1628;margin-top:4px;">${fmtFCFA(portfolioStats.cashBalance)}</div>
+                    </td></tr>
+                  </table>
+                </td>
+                <td style="width:33%;padding:0 3px;">
+                  <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="12" cellspacing="0">
+                    <tr><td style="text-align:center;">
+                      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Positions</div>
+                      <div style="font-size:14px;font-weight:700;color:#0A1628;margin-top:4px;">${portfolioStats.positionsCount}</div>
+                    </td></tr>
+                  </table>
+                </td>
+                <td style="width:33%;padding-left:6px;">
+                  <table width="100%" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;" cellpadding="12" cellspacing="0">
+                    <tr><td style="text-align:center;">
+                      <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">Performance</div>
+                      <div style="font-size:14px;font-weight:700;color:${roiColor};margin-top:4px;">${fmtPct(portfolioStats.totalGainLossPercent)}</div>
+                    </td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td></tr>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
-          <div style="background:#f9fafb;padding:14px;border-radius:8px;border:1px solid #e5e7eb;">
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:600;">Liquidités</div>
-            <div style="font-size:18px;font-weight:bold;color:#1f2937;">${formatFCFA(portfolioStats.cashBalance)}</div>
-          </div>
-          <div style="background:#f9fafb;padding:14px;border-radius:8px;border:1px solid #e5e7eb;">
-            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:600;">Investi</div>
-            <div style="font-size:18px;font-weight:bold;color:#1f2937;">${formatFCFA(portfolioStats.investedValue)}</div>
-          </div>
-        </div>
+          ${biweeklyRow}
+          ${topPerformersBlock}
+          ${flopBlock}
 
-        ${performersBlock}
-        ${losersBlock}
-      </div>`;
+          <!-- Conseil SIMBA -->
+          <tr><td style="padding-top:14px;">
+            <table width="100%" cellpadding="14" cellspacing="0" style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;">
+              <tr><td style="font-size:13px;color:#92400e;">💡 <strong>Conseil SIMBA :</strong> ${simbaAdvice}</td></tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>`;
   }
 
-  // ── Section apprentissage ──────────────────────────────────────────────────
-  let learningSection = '';
-  if (learningStats) {
-    const hasActivity = learningStats.weeklyModulesCompleted > 0
-      || learningStats.weeklyQuizzesTaken > 0
-      || learningStats.weeklyXpEarned > 0;
-
-    const motivationMsg = learningStats.isReminder
-      ? "Pas de cours cette semaine ? Revenez apprendre pour ne pas perdre votre streak !"
-      : learningStats.weeklyModulesCompleted >= 3
-        ? "Excellent rythme cette semaine ! Vous progressez vite."
-        : learningStats.weeklyModulesCompleted >= 1
-          ? "Bon effort ! Chaque module vous rapproche de vos objectifs."
-          : "Continuez votre apprentissage pour devenir un investisseur averti !";
-
-    const recentModulesBlock = learningStats.recentCompletedModules.length > 0 ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">✅ Modules complétés cette semaine</div>
-        ${learningStats.recentCompletedModules.map(m => `
-          <div style="padding:8px 12px;background:#f0f9ff;border-left:3px solid #3b82f6;border-radius:4px;margin-bottom:6px;">
-            <span style="font-weight:600;color:#1e40af;">${m.title}</span>
-            ${m.quizScore !== undefined ? `<span style="margin-left:8px;font-size:12px;color:#6b7280;">Quiz: ${m.quizScore}%</span>` : ''}
-          </div>`).join('')}
-      </div>` : '';
-
-    const suggestedBlock = learningStats.suggestedModules.length > 0 ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📖 Prochains modules suggérés</div>
-        ${learningStats.suggestedModules.map(m => `
-          <div style="padding:8px 12px;background:#fefce8;border-left:3px solid #eab308;border-radius:4px;margin-bottom:6px;">
-            <span style="font-weight:600;">${m.title}</span>
-            ${m.durationMinutes ? `<span style="margin-left:8px;font-size:12px;color:#6b7280;">${m.durationMinutes} min</span>` : ''}
-          </div>`).join('')}
-      </div>` : '';
-
-    const achievementsBlock = learningStats.recentAchievements.length > 0 ? `
-      <div style="margin-top:16px;">
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">🏅 Badges débloqués</div>
-        ${learningStats.recentAchievements.map(a => `
-          <div style="padding:8px 12px;background:#fdf4ff;border-left:3px solid #a855f7;border-radius:4px;margin-bottom:6px;">
-            <span style="font-weight:600;">${a.name}</span>
-            ${a.description ? `<div style="font-size:12px;color:#6b7280;">${a.description}</div>` : ''}
-          </div>`).join('')}
-      </div>` : '';
-
-    learningSection = `
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;">
-        <h2 style="margin:0 0 16px;font-size:18px;color:#1f2937;">📚 Votre Apprentissage</h2>
-
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
-          <div style="background:#f0f9ff;padding:14px;border-radius:8px;text-align:center;">
-            <div style="font-size:22px;font-weight:bold;color:#3b82f6;">${learningStats.weeklyModulesCompleted}</div>
-            <div style="font-size:11px;color:#6b7280;">modules</div>
+  // ── Nudge module (segment C uniquement) ───────────────────────────────────
+  const moduleNudge = segment === 'C' && learningStats?.suggestedModules?.[0] ? `
+    <tr><td style="padding-bottom:20px;">
+      <table width="100%" cellpadding="16" cellspacing="0" style="background:#f8fafc;border:1.5px dashed #e2e8f0;border-radius:12px;">
+        <tr><td>
+          <div style="font-size:13px;font-weight:700;color:#0A1628;margin-bottom:4px;">📚 KOFI te suggère cette semaine</div>
+          <div style="font-size:13px;color:#64748b;margin-bottom:12px;">
+            ${learningStats.suggestedModules[0].title}${learningStats.suggestedModules[0].durationMinutes ? ' · ' + learningStats.suggestedModules[0].durationMinutes + ' min' : ''} · <strong style="color:#00D4A8;">+50 XP</strong>
           </div>
-          <div style="background:#fdf4ff;padding:14px;border-radius:8px;text-align:center;">
-            <div style="font-size:22px;font-weight:bold;color:#a855f7;">${learningStats.weeklyXpEarned}</div>
-            <div style="font-size:11px;color:#6b7280;">XP gagnés</div>
-          </div>
-          <div style="background:#fff7ed;padding:14px;border-radius:8px;text-align:center;">
-            <div style="font-size:22px;font-weight:bold;color:#f97316;">🔥 ${learningStats.currentStreak}</div>
-            <div style="font-size:11px;color:#6b7280;">jours streak</div>
-          </div>
-        </div>
+          <a href="${config.app.frontendUrl}/learn" style="display:inline-block;padding:9px 20px;background:#0A1628;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:12px;">
+            Commencer ce module →
+          </a>
+        </td></tr>
+      </table>
+    </td></tr>` : '';
 
-        <div style="background:#f9fafb;padding:12px 16px;border-radius:8px;margin-bottom:12px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <span style="font-size:13px;color:#374151;">Progression globale</span>
-            <span style="font-size:13px;font-weight:600;">${learningStats.completionPercent.toFixed(0)}%</span>
-          </div>
-          <div style="background:#e5e7eb;border-radius:4px;height:8px;">
-            <div style="background:#3b82f6;height:8px;border-radius:4px;width:${Math.min(learningStats.completionPercent, 100).toFixed(0)}%;"></div>
-          </div>
-          <div style="font-size:12px;color:#6b7280;margin-top:4px;">${learningStats.totalModulesCompleted} / ${learningStats.totalModulesAvailable} modules</div>
-        </div>
+  // ── CTAs ───────────────────────────────────────────────────────────────────
+  const ctaLearn = `<a href="${config.app.frontendUrl}/learn" style="display:inline-block;padding:13px 28px;background:#00D4A8;color:#0A1628;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;">📚 Continuer mon parcours →</a>`;
+  const ctaPortfolio = `<a href="${config.app.frontendUrl}/dashboard" style="display:inline-block;padding:13px 28px;background:#0A1628;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;font-size:14px;">📊 Voir mon portefeuille →</a>`;
 
-        <div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:4px;font-size:13px;color:#92400e;">
-          💡 ${motivationMsg}
-        </div>
+  const ctaBlock = segment === 'A'
+    ? `<table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+        <td style="padding-right:12px;">${ctaLearn}</td>
+        <td>${ctaPortfolio}</td>
+       </tr></table>`
+    : segment === 'B'
+      ? `<div style="text-align:center;">${ctaLearn}</div>`
+      : `<div style="text-align:center;">${ctaPortfolio}</div>`;
 
-        ${recentModulesBlock}
-        ${suggestedBlock}
-        ${achievementsBlock}
-      </div>`;
-  }
-
+  // ── Full HTML ──────────────────────────────────────────────────────────────
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rapport Hebdomadaire - AfriBourse</title>
+  <title>Bilan Hebdo BRVM — AfriBourse</title>
 </head>
-<body style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.6;color:#333;max-width:620px;margin:0 auto;padding:20px;background-color:#f4f4f4;">
-  <div style="background:#fff;border-radius:12px;padding:40px;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+<body style="margin:0;padding:0;background-color:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:28px;">
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M17 6H23V12" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span style="font-size:28px;font-weight:bold;color:#f97316;">AfriBourse</span>
-      </div>
-      <h1 style="margin:0;font-size:22px;color:#1f2937;">Rapport Hebdomadaire</h1>
-      <p style="margin:4px 0 0;font-size:13px;color:#6b7280;">${period}</p>
-    </div>
+        <!-- HERO HEADER -->
+        <tr><td style="background:linear-gradient(135deg,#0A1628 0%,#1a3a5c 100%);border-radius:16px 16px 0 0;padding:36px 32px 28px;text-align:center;">
+          <div style="font-size:11px;font-weight:700;color:#00D4A8;text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px;">AfriBourse · Bilan Hebdo</div>
+          <h1 style="margin:0;font-size:22px;font-weight:800;color:#ffffff;line-height:1.3;">
+            ${firstName}, votre semaine BRVM
+          </h1>
+          <p style="margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.6);">${period}</p>
+          <p style="margin:16px 0 0;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.6;">
+            SIMBA a compilé vos progrès${segment !== 'C' ? ' en formation' : ''}${segment !== 'B' ? ' et les performances de votre portefeuille simulé' : ''}.
+          </p>
+        </td></tr>
 
-    <p style="color:#4b5563;margin-bottom:24px;">Bonjour <strong>${displayName}</strong>,<br>Voici votre bilan de la semaine : marché BRVM, portefeuille et progression en apprentissage.</p>
+        <!-- BODY -->
+        <tr><td style="background:#ffffff;padding:32px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
 
-    <!-- Section marché -->
-    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:24px;">
-      <h2 style="margin:0 0 16px;font-size:18px;color:#1f2937;">🌍 Marché BRVM — Top / Flop de la semaine</h2>
+            ${learnSection}
+            ${simulatorTeaser}
+            ${portfolioSection}
+            ${moduleNudge}
 
-      ${marketData.topGainers.length > 0 ? `
-      <div style="margin-bottom:20px;">
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📈 Meilleures hausses</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead>
-            <tr style="background:#f9fafb;">
-              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Titre</th>
-              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Société</th>
-              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Variation</th>
-              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Prix (FCFA)</th>
-            </tr>
-          </thead>
-          <tbody>${gainersRows}</tbody>
-        </table>
-      </div>` : ''}
+            <!-- CTA -->
+            <tr><td style="padding:8px 0 24px;">
+              ${ctaBlock}
+            </td></tr>
 
-      ${marketData.topLosers.length > 0 ? `
-      <div>
-        <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;">📉 Plus fortes baisses</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead>
-            <tr style="background:#f9fafb;">
-              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Titre</th>
-              <th style="padding:8px 12px;text-align:left;color:#6b7280;font-weight:600;">Société</th>
-              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Variation</th>
-              <th style="padding:8px 12px;text-align:right;color:#6b7280;font-weight:600;">Prix (FCFA)</th>
-            </tr>
-          </thead>
-          <tbody>${losersRows}</tbody>
-        </table>
-      </div>` : ''}
+            <!-- Signature -->
+            <tr><td style="padding-top:20px;border-top:1px solid #f1f5f9;">
+              <p style="margin:0;font-size:13px;color:#64748b;line-height:1.8;">
+                — <strong style="color:#0A1628;">SIMBA</strong>, votre coach BRVM<br>
+                <span style="font-size:11px;color:#94a3b8;">Équipe AfriBourse</span>
+              </p>
+            </td></tr>
 
-      ${marketData.topGainers.length === 0 && marketData.topLosers.length === 0
-        ? '<p style="color:#6b7280;text-align:center;font-style:italic;">Données de marché non disponibles pour cette semaine.</p>'
-        : ''}
-    </div>
+          </table>
+        </td></tr>
 
-    <!-- Sections dynamiques -->
-    ${portfolioSection}
-    ${learningSection}
+        <!-- FOOTER -->
+        <tr><td style="background:#f8fafc;border-radius:0 0 16px 16px;border-top:1px solid #e2e8f0;padding:20px 32px;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#94a3b8;">
+            © ${new Date().getFullYear()} AfriBourse ·
+            <a href="${config.app.frontendUrl}" style="color:#00D4A8;text-decoration:none;">afribourse.com</a>
+          </p>
+        </td></tr>
 
-    <!-- CTA -->
-    <div style="text-align:center;margin:28px 0 20px;">
-      <a href="${config.app.frontendUrl}/dashboard"
-         style="display:inline-block;padding:14px 32px;background:#f97316;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">
-        Voir Mon Dashboard
-      </a>
-    </div>
-
-    <!-- Footer -->
-    <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center;">
-      <p style="margin:0;">Rapport hebdomadaire AfriBourse · <a href="${config.app.frontendUrl}" style="color:#f97316;">afribourse.com</a></p>
-      <p style="margin:4px 0 0;">Questions ? <a href="mailto:contact@afribourse.com" style="color:#f97316;">contact@afribourse.com</a></p>
-    </div>
-  </div>
+      </table>
+    </td></tr>
+  </table>
 </body>
 </html>`;
 
-  const hasPortfolio = !!portfolioStats;
-  const hasLearning = !!learningStats;
-  const subjectParts: string[] = [];
-  if (hasPortfolio) subjectParts.push('Portefeuille');
-  if (hasLearning) subjectParts.push('Apprentissage');
-  subjectParts.push('Marché BRVM');
+  const textParts: string[] = [
+    `Bonjour ${firstName},\n\nVoici votre bilan de la semaine (${period}).`,
+  ];
+  if (learningStats && segment !== 'C') {
+    textParts.push(`\n📚 Apprentissage\n${learningStats.weeklyModulesCompleted} module(s) · +${learningStats.weeklyXpEarned} XP · 🔥 ${learningStats.currentStreak} jours streak`);
+  }
+  if (portfolioStats && segment !== 'B') {
+    textParts.push(`\n📊 Portefeuille\nValeur : ${fmtFCFA(portfolioStats.totalValue)} · Performance : ${fmtPct(portfolioStats.totalGainLossPercent)}`);
+  }
+  textParts.push(`\nDashboard : ${config.app.frontendUrl}/dashboard\n\n— SIMBA, votre coach BRVM`);
 
   await sendEmail({
     to: email,
-    subject: `📬 Rapport hebdo AfriBourse — ${subjectParts.join(' · ')} (${period})`,
+    subject,
     html,
-    text: `Bonjour ${displayName},\n\nVoici votre rapport hebdomadaire AfriBourse (${period}).\n\nConsultez votre dashboard : ${config.app.frontendUrl}/dashboard\n\nAfriBourse · afribourse.com`,
+    text: textParts.join(''),
+  });
+}
+
+export async function sendSAFCArticleEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const articleUrl = 'https://www.africbourse.com/news';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>SAFC : Tout comprendre sur l'augmentation de capital d'Alios Finance CI</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 12px;
+          padding: 40px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo-text {
+          font-size: 28px;
+          font-weight: bold;
+          color: #f97316;
+        }
+        .hero-banner {
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          border-radius: 12px;
+          padding: 28px 24px;
+          text-align: center;
+          margin: 20px 0 30px;
+        }
+        .hero-label {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: #64748b;
+          margin: 0 0 10px;
+        }
+        .hero-title {
+          font-size: 22px;
+          font-weight: bold;
+          color: #f97316;
+          margin: 0 0 8px;
+          line-height: 1.3;
+        }
+        .hero-subtitle {
+          font-size: 13px;
+          color: #94a3b8;
+          margin: 0;
+        }
+        .greeting {
+          font-size: 16px;
+          color: #1e293b;
+          margin-bottom: 12px;
+          font-weight: 600;
+        }
+        .intro-text {
+          font-size: 15px;
+          color: #475569;
+          margin-bottom: 8px;
+        }
+        .verdict-box {
+          background-color: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-left: 4px solid #f97316;
+          border-radius: 0 10px 10px 0;
+          padding: 16px 20px;
+          margin: 20px 0 24px;
+          font-size: 14px;
+          color: #334155;
+          line-height: 1.6;
+        }
+        .checklist-title {
+          font-size: 14px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0 0 14px;
+        }
+        .checklist-item {
+          display: flex;
+          align-items: flex-start;
+          font-size: 14px;
+          color: #334155;
+          margin-bottom: 12px;
+          line-height: 1.5;
+        }
+        .check-icon {
+          color: #22c55e;
+          font-weight: bold;
+          margin-right: 10px;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+        .deadline-box {
+          background: linear-gradient(135deg, #fef3c7, #fde68a);
+          border: 1px solid #fbbf24;
+          border-radius: 10px;
+          padding: 18px 22px;
+          margin: 28px 0;
+          text-align: center;
+        }
+        .deadline-text {
+          font-size: 15px;
+          font-weight: 700;
+          color: #92400e;
+          margin: 0;
+        }
+        .cta-wrapper {
+          text-align: center;
+          margin: 28px 0;
+        }
+        .button-primary {
+          display: inline-block;
+          background: linear-gradient(135deg, #f97316, #ea580c);
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 36px;
+          border-radius: 10px;
+          font-weight: bold;
+          font-size: 16px;
+        }
+        .divider {
+          border: none;
+          border-top: 1px solid #e5e7eb;
+          margin: 28px 0;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 28px;
+          font-size: 12px;
+          color: #9ca3af;
+          line-height: 1.6;
+        }
+        .footer a {
+          color: #f97316;
+          text-decoration: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+
+        <div class="header">
+          <div class="logo-text">AfriBourse</div>
+        </div>
+
+        <div class="hero-banner">
+          <div class="hero-label">🔔 Analyse de marché</div>
+          <div class="hero-title">SAFC — Alios Finance CI (ex-SAFCA)</div>
+          <div class="hero-subtitle">Augmentation de capital 2026 : décryptage complet</div>
+        </div>
+
+        <p class="greeting">Bonjour ${displayName},</p>
+
+        <p class="intro-text">
+          Depuis quelques semaines, un titre concentre toute l'attention sur la BRVM : <strong>SAFC — Alios Finance CI (ex-SAFCA)</strong>.
+        </p>
+
+        <div class="verdict-box">
+          Le verdict ? Une augmentation de capital de <strong>1,5 milliard FCFA</strong> lancée le 27 avril 2026.
+          Et un cours qui a été <strong>divisé par 2</strong> depuis l'annonce. Mais pourquoi ?
+        </div>
+
+        <p class="checklist-title">Nous avons décrypté l'intégralité de cette opération pour vous :</p>
+
+        <div class="checklist-item">
+          <span class="check-icon">✅</span>
+          <span>Pourquoi la Commission Bancaire de l'UMOA a mis la pression sur l'entreprise</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check-icon">✅</span>
+          <span>Comment fonctionne le DPS — et ce que vous risquez si vous ne faites rien avant le <strong>9 juin</strong></span>
+        </div>
+        <div class="checklist-item">
+          <span class="check-icon">✅</span>
+          <span>Pourquoi le cours a chuté de <strong>7 500 à 3 900 FCFA</strong> — et la mécanique derrière</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check-icon">✅</span>
+          <span>Les chiffres du redressement 2025 : <strong>+525 % de bénéfice</strong>, une performance inédite depuis 10 ans</span>
+        </div>
+        <div class="checklist-item">
+          <span class="check-icon">✅</span>
+          <span>Les perspectives jusqu'en 2030 — et quand les dividendes pourraient revenir</span>
+        </div>
+
+        <div class="deadline-box">
+          <p class="deadline-text">🗓️ Vous avez jusqu'au 11 juin 2026 pour agir.</p>
+        </div>
+
+        <div class="cta-wrapper">
+          <a href="${articleUrl}" class="button-primary">→ Lire l'analyse complète</a>
+        </div>
+
+        <hr class="divider" />
+
+        <p style="font-size: 14px; color: #475569; margin: 0;">
+          Bonne lecture,<br />
+          <strong style="color: #1e293b;">L'équipe d'AfriBourse</strong>
+        </p>
+
+        <div class="footer">
+          <p>
+            Vous recevez cet email car vous êtes inscrit sur <a href="https://www.africbourse.com">AfriBourse</a>.<br />
+            Cet article est fourni à titre informatif uniquement — il ne constitue pas un conseil en investissement.
+          </p>
+          <p>© 2026 AfriBourse · <a href="https://www.africbourse.com">africbourse.com</a></p>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: '🔔 SAFC : Tout comprendre sur l\'augmentation de capital d\'Alios Finance CI',
+    html,
+    text: `Bonjour ${displayName},\n\nDepuis quelques semaines, un titre concentre toute l'attention sur la BRVM : SAFC — Alios Finance CI (ex-SAFCA).\n\nLe verdict ? Une augmentation de capital de 1,5 milliard FCFA lancée le 27 avril 2026. Et un cours qui a été divisé par 2 depuis l'annonce.\n\nNous avons décrypté l'intégralité de cette opération :\n✅ Pourquoi la Commission Bancaire de l'UMOA a mis la pression\n✅ Comment fonctionne le DPS — et ce que vous risquez si vous ne faites rien avant le 9 juin\n✅ Pourquoi le cours a chuté de 7 500 à 3 900 FCFA\n✅ Les chiffres du redressement 2025 : +525 % de bénéfice\n✅ Les perspectives jusqu'en 2030\n\n🗓️ Vous avez jusqu'au 11 juin 2026 pour agir.\n\n→ Lire l'analyse complète : ${articleUrl}\n\nBonne lecture,\nL'équipe d'AfriBourse\n\nCet article est fourni à titre informatif uniquement — il ne constitue pas un conseil en investissement.`,
   });
 }
 
@@ -3503,6 +3868,7 @@ export default {
   sendGrandChallengeAnnouncementEmail,
   sendCompleteProfileEmail,
   sendNewsletterMarch2026Email,
+  sendSAFCArticleEmail,
   sendReengagementEmail0,
   sendReengagementEmail1,
   sendReengagementEmail2,

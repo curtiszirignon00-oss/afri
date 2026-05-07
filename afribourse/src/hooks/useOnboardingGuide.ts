@@ -10,12 +10,16 @@ export interface OnboardingSteps {
 interface StoredState {
   hasSeenWelcome: boolean;
   steps: OnboardingSteps;
+  startedAt: number;
 }
 
-const DEFAULT_STATE: StoredState = {
-  hasSeenWelcome: false,
-  steps: { cours: false, achat: false },
-};
+function makeDefaultState(): StoredState {
+  return {
+    hasSeenWelcome: false,
+    steps: { cours: false, achat: false },
+    startedAt: Date.now(),
+  };
+}
 
 function readStorage(): StoredState | null {
   try {
@@ -46,6 +50,7 @@ export interface OnboardingGuideState {
   completedCount: number;
   isComplete: boolean;
   isChecklistVisible: boolean;
+  startedAt: number;
   dismissWelcome: () => void;
   completeStep: (key: keyof OnboardingSteps) => void;
   forceHideChecklist: () => void;
@@ -58,6 +63,7 @@ export const INACTIVE_STATE: OnboardingGuideState = {
   completedCount: 0,
   isComplete: false,
   isChecklistVisible: false,
+  startedAt: 0,
   dismissWelcome: () => {},
   completeStep: () => {},
   forceHideChecklist: () => {},
@@ -76,8 +82,8 @@ export function useOnboardingGuide(
    */
   const [stored, setStored] = useState<StoredState | null>(() => {
     const saved = readStorage();
-    if (saved) return saved;                      // resume mid-guide
-    if (isNewUser === true) return DEFAULT_STATE; // first start
+    if (saved) return saved;                          // resume mid-guide
+    if (isNewUser === true) return makeDefaultState(); // first start
     return null;
   });
 
@@ -88,7 +94,7 @@ export function useOnboardingGuide(
   useEffect(() => {
     if (isNewUser === true && stored === null) {
       const saved = readStorage();
-      setStored(saved ?? DEFAULT_STATE);
+      setStored(saved ?? makeDefaultState());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNewUser]);
@@ -153,6 +159,7 @@ export function useOnboardingGuide(
     completedCount,
     isComplete,
     isChecklistVisible,
+    startedAt: stored.startedAt,
     dismissWelcome,
     completeStep,
     forceHideChecklist,
