@@ -377,15 +377,17 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
           </div>
         )}
         {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
-        <div className="py-8 text-center">
-          <div className="flex flex-col items-center justify-center text-gray-400">
-            <Newspaper className="w-16 h-16 mb-4" />
-            <p className="text-lg font-medium text-gray-600">Aucune actualité disponible</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Les actualités concernant cette action apparaîtront ici.
-            </p>
+        {!fundamentalsNews && brvmArticles.length === 0 && (
+          <div className="py-8 text-center">
+            <div className="flex flex-col items-center justify-center text-gray-400">
+              <Newspaper className="w-16 h-16 mb-4" />
+              <p className="text-lg font-medium text-gray-600">Aucune actualité disponible</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Les actualités concernant cette action apparaîtront ici.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
