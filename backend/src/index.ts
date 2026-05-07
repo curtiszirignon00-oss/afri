@@ -61,7 +61,6 @@ import passportConfig from './config/passport'; // OAuth Passport
 import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
 import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
 import trialRoutes from './routes/trial.routes'; // Essai gratuit 2 semaines
-import stripeRoutes from './routes/stripe.routes'; // Stripe Checkout (paiement)
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -140,15 +139,7 @@ class App {
     // --- END CORS Configuration ---
 
     // Body Parsers
-    // On sauvegarde le raw body pour la vérification de signature Stripe webhook
-    this.app?.use(json({
-      limit: '10mb',
-      verify: (req: any, _res, buf) => {
-        if (req.originalUrl?.includes('/stripe/webhook')) {
-          req.rawBody = buf;
-        }
-      },
-    }));
+    this.app?.use(json({ limit: '10mb' }));
     this.app?.use(urlencoded({ extended: true, limit: '10mb' }));
 
     // Other Middlewares
@@ -228,8 +219,6 @@ class App {
       '/confirm-email', '/resend-confirmation', '/csrf-token',
       // Analytics visiteurs non-authentifiés
       '/analytics/page-view', '/analytics/page-duration',
-      // Webhook Stripe — appelé par les serveurs Stripe, pas un navigateur
-      '/stripe/webhook',
     ]);
     this.app?.use('/api/', (req, res, next) => {
       // req.path est relatif au préfixe /api/ (ex: /login pour /api/login)
@@ -295,7 +284,6 @@ class App {
     this.app?.use('/api/push', pushRoutes);                              // Push notifications (Web Push API)
     this.app?.use('/api/ai', aiRoutes);                                   // IA Proxy — Gemini (clé côté serveur uniquement)
     this.app?.use('/api/trial', trialRoutes);                              // Essai gratuit 2 semaines features IA
-    this.app?.use('/api/stripe', stripeRoutes);                            // Stripe Checkout (paiement)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

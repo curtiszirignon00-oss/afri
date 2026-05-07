@@ -123,19 +123,35 @@ async function getWeeklyMarketData(): Promise<WeeklyMarketData> {
 // ─── Main export ──────────────────────────────────────────────────────────────
 
 /**
- * Envoie le rapport hebdomadaire combiné à tous les utilisateurs éligibles.
- * Remplace les deux anciens emails séparés (portefeuille + apprentissage).
+ * Segmentation :
+ *  A — Learner+Trader : a complété des modules CETTE SEMAINE + a des positions ouvertes
+ *  B — Learner only   : a complété des modules, pas de positions ouvertes
+ *  C — Trader only    : a des positions ouvertes, n'a pas complété de module cette semaine
+ */
+function getSegment(
+  hasPositions: boolean,
+  weeklyModulesCompleted: number,
+): 'A' | 'B' | 'C' {
+  if (weeklyModulesCompleted > 0 && hasPositions) return 'A';
+  if (weeklyModulesCompleted > 0 && !hasPositions) return 'B';
+  return 'C'; // hasPositions guaranteed (only eligible users reach here)
+}
+
+/**
+ * Envoie le bilan hebdo fusionné à tous les utilisateurs éligibles.
+ * Vendredi 18h UTC — remplace les anciens emails séparés apprentissage + portefeuille.
  */
 export async function sendWeeklyReports(): Promise<void> {
-  log.debug('📬 Début de l\'envoi des rapports hebdomadaires combinés...');
+  log.debug('📬 Début de l\'envoi des bilans hebdomadaires fusionnés...');
 
   try {
-    // 1. Données de marché (communes à tous)
-    const marketData = await getWeeklyMarketData();
-    log.debug(`📊 Marché: ${marketData.topGainers.length} hausses, ${marketData.topLosers.length} baisses`);
+    const weekLabel = getWeeklyPeriod();
 
-    // 2. Récupérer l'union des utilisateurs éligibles
-    //    (portfolio actif OU activité d'apprentissage)
+    // Utilisateurs éligibles : portfolio actif OU activité d'apprentissage cette semaine
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    oneWeekAgo.setHours(0, 0, 0, 0);
+
     const [portfolioUsers, learningUsers] = await Promise.all([
       prisma.user.findMany({
         where: {
@@ -149,7 +165,11 @@ export async function sendWeeklyReports(): Promise<void> {
         select: { id: true },
       }),
       prisma.user.findMany({
-        where: { learningProgress: { some: {} } },
+        where: {
+          learningProgress: {
+            some: { completed_at: { gte: oneWeekAgo } },
+          },
+        },
         select: { id: true },
       }),
     ]);
@@ -159,7 +179,9 @@ export async function sendWeeklyReports(): Promise<void> {
       ...learningUsers.map(u => u.id),
     ]);
 
-    log.debug(`👥 ${allUserIds.size} utilisateur(s) éligible(s) au rapport hebdomadaire`);
+    const portfolioUserIdSet = new Set(portfolioUsers.map(u => u.id));
+
+    log.debug(`👥 ${allUserIds.size} utilisateur(s) éligible(s) au bilan hebdo`);
 
     let successCount = 0;
     let skippedCount = 0;
@@ -167,10 +189,14 @@ export async function sendWeeklyReports(): Promise<void> {
 
     for (const userId of allUserIds) {
       try {
-        // Récupérer les données de base de l'utilisateur
         const user = await prisma.user.findUnique({
           where: { id: userId },
-          select: { email: true, name: true, lastname: true },
+          select: {
+            email: true,
+            name: true,
+            lastname: true,
+            profile: { select: { global_rank: true } },
+          },
         });
 
         if (!user) { skippedCount++; continue; }
@@ -179,20 +205,24 @@ export async function sendWeeklyReports(): Promise<void> {
           ? `${user.name}${user.lastname ? ' ' + user.lastname : ''}`
           : 'Investisseur';
 
-        // Calculer les stats (en parallèle)
+        // Calculer les stats en parallèle
         const [portfolioStats, learningStats] = await Promise.all([
-          getPortfolioStatsForUser(userId),
+          portfolioUserIdSet.has(userId) ? getPortfolioStatsForUser(userId) : Promise.resolve(null),
           getLearningStatsForUser(userId),
         ]);
 
-        // Si aucune donnée utile pour cet utilisateur, skip
         if (!portfolioStats && !learningStats) {
-          log.debug(`⏭️  Aucune donnée pour user ${userId}`);
           skippedCount++;
           continue;
         }
 
-        // Construire les params de l'email
+        const hasPositions = !!(portfolioStats && portfolioStats.positionsCount > 0);
+        const weeklyModules = learningStats?.weeklyModulesCompleted ?? 0;
+        const segment = getSegment(hasPositions, weeklyModules);
+
+        // Segment C without any learning data at all — skip (nothing to send)
+        if (segment === 'C' && !portfolioStats) { skippedCount++; continue; }
+
         const portfolioEmailStats = portfolioStats ? {
           totalValue: portfolioStats.totalValue,
           cashBalance: portfolioStats.cashBalance,
@@ -207,34 +237,35 @@ export async function sendWeeklyReports(): Promise<void> {
 
         const learningEmailStats = learningStats ? {
           weeklyModulesCompleted: learningStats.weeklyModulesCompleted,
-          weeklyQuizzesTaken: learningStats.weeklyQuizzesTaken,
           weeklyXpEarned: learningStats.weeklyXpEarned,
-          weeklyTimeSpentMinutes: learningStats.weeklyTimeSpentMinutes,
           currentStreak: learningStats.currentStreak,
           currentLevel: learningStats.currentLevel,
           totalXp: learningStats.totalXp,
           completionPercent: learningStats.completionPercent,
           totalModulesCompleted: learningStats.totalModulesCompleted,
           totalModulesAvailable: learningStats.totalModulesAvailable,
-          recentCompletedModules: learningStats.recentCompletedModules,
           suggestedModules: learningStats.suggestedModules.slice(0, 2),
-          recentAchievements: learningStats.recentAchievements,
-          isReminder: !learningStats.weeklyModulesCompleted && !learningStats.weeklyQuizzesTaken && learningStats.totalModulesCompleted > 0,
+          recentAchievements: learningStats.recentAchievements.map(a => ({
+            name: a.name,
+            description: a.description,
+          })),
+          rank: user.profile?.global_rank ?? undefined,
+          isReminder: weeklyModules === 0 && learningStats.totalModulesCompleted > 0,
         } : undefined;
 
         await sendWeeklyReportEmail({
           email: user.email,
           name: displayName,
-          period: marketData.weekLabel,
-          marketData,
+          period: weekLabel,
+          segment,
           portfolioStats: portfolioEmailStats,
           learningStats: learningEmailStats,
         });
 
-        log.debug(`✅ Rapport envoyé à ${user.email} (${displayName})`);
+        log.debug(`✅ Bilan hebdo [${segment}] envoyé à ${user.email}`);
         successCount++;
 
-        // Snapshot du portefeuille pour suivre l'évolution la semaine prochaine
+        // Snapshot portefeuille pour suivre l'évolution la semaine prochaine
         if (portfolioStats) {
           await prisma.portfolioSnapshot.create({
             data: {
@@ -254,12 +285,12 @@ export async function sendWeeklyReports(): Promise<void> {
         // Throttle SMTP
         await new Promise(r => setTimeout(r, 800));
       } catch (err: any) {
-        log.error(`❌ Erreur rapport hebdo pour user ${userId}:`, err.message);
+        log.error(`❌ Erreur bilan hebdo pour user ${userId}:`, err.message);
         errorCount++;
       }
     }
 
-    log.debug(`\n📬 Rapport hebdomadaire — résumé:`);
+    log.debug(`\n📬 Bilan hebdomadaire — résumé:`);
     log.debug(`   → Succès : ${successCount}`);
     log.debug(`   → Ignorés: ${skippedCount}`);
     log.debug(`   → Erreurs: ${errorCount}`);

@@ -3,28 +3,28 @@ import { BookOpen, TrendingUp, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
+import { useUserProfile } from '../../hooks/useApi';
 
-const STEPS = [
-  {
-    icon: BookOpen,
-    title: 'Terminer un module',
-    sub: 'Lis ou fais le quiz du Module 1',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Faire ton premier achat simulé',
-    sub: 'Sans aucun risque financier',
-  },
-];
+const PROFILE_META: Record<string, { label: string; emoji: string; goal: string }> = {
+  apprenti:    { label: "L'Apprenti",      emoji: '📚', goal: 'apprendre les bases de la BRVM' },
+  decideur:    { label: 'Le Décideur',     emoji: '💼', goal: 'prendre des décisions éclairées' },
+  investisseur:{ label: "L'Investisseur",  emoji: '📈', goal: 'faire fructifier ton capital' },
+  explorateur: { label: "L'Explorateur",   emoji: '🌍', goal: 'explorer les marchés africains' },
+};
 
 export default function WelcomeModal() {
-  const { userProfile } = useAuth();
+  const { userProfile: authProfile } = useAuth();
+  const { data: fullProfile } = useUserProfile();
   const { showWelcome, dismissWelcome } = useOnboardingGuideContext();
   const navigate = useNavigate();
 
   if (!showWelcome) return null;
 
-  const firstName = userProfile?.name ?? null;
+  const firstName = authProfile?.name?.split(' ')[0] ?? null;
+  const profileType = fullProfile?.profile_type ?? null;
+  const meta = profileType ? PROFILE_META[profileType] ?? null : null;
+  const goalLabel = meta?.goal ?? null;
+  const profileLabel = meta ? `${meta.emoji} ${meta.label}` : null;
 
   return createPortal(
     <div
@@ -54,33 +54,51 @@ export default function WelcomeModal() {
             {firstName ? `Bienvenue, ${firstName} !` : 'Bienvenue sur AfriBourse !'}
           </h2>
           <p className="text-sm text-white/70">
-            Voici 3 actions pour bien démarrer ton aventure BRVM
+            {goalLabel
+              ? `Tu veux ${goalLabel} — on t'y aide pas à pas.`
+              : 'Voici 2 actions pour bien démarrer ton aventure BRVM'}
           </p>
+
+          {/* Profile badge */}
+          {profileLabel && (
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{ backgroundColor: 'rgba(0,212,168,0.15)', color: '#00D4A8', border: '1px solid rgba(0,212,168,0.4)' }}>
+              Profil {profileLabel}
+            </div>
+          )}
         </div>
 
         {/* Steps */}
         <div className="p-6 space-y-3">
-          {STEPS.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border border-gray-100"
-              >
-                <div
-                  className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: '#00D4A8' }}
-                >
-                  {i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">{step.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{step.sub}</p>
-                </div>
-                <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              </div>
-            );
-          })}
+          {/* Step 1 — Module */}
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div
+              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: '#00D4A8' }}
+            >
+              1
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900">Terminer un module</p>
+              <p className="text-xs text-gray-500 mt-0.5">8 min · Quiz · <span className="font-semibold" style={{ color: '#00D4A8' }}>+50 XP</span></p>
+            </div>
+            <BookOpen className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          </div>
+
+          {/* Step 2 — Achat simulé */}
+          <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <div
+              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: '#00D4A8' }}
+            >
+              2
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900">Faire ton premier achat simulé</p>
+              <p className="text-xs text-gray-500 mt-0.5">Sans aucun risque financier</p>
+            </div>
+            <TrendingUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          </div>
         </div>
 
         {/* Actions */}
@@ -90,7 +108,7 @@ export default function WelcomeModal() {
             className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#00D4A8' }}
           >
-            Commencer mon parcours →
+            Commencer avec SIMBA →
           </button>
           <button
             onClick={dismissWelcome}
