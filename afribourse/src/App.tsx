@@ -44,6 +44,8 @@ const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
 const HelpCenterPage = lazy(() => import('./components/HelpCenterPage'));
 const SubscriptionPage = lazy(() => import('./components/SubscriptionPage'));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage'));
+const PaymentSuccess = lazy(() => import('./components/PaymentSuccess'));
+const PaymentCancel = lazy(() => import('./components/PaymentCancel'));
 const DashboardPage = lazy(() => import('./components/DashboardPage'));
 const TransactionsPage = lazy(() => import('./components/TransactionsPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
@@ -237,6 +239,11 @@ function Layout() {
               </ProtectedRoute>
             }
           />
+
+          {/* Retour Stripe Checkout */}
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/cancel" element={<PaymentCancel />} />
+
           {/* Routes d'authentification */}
           {/* Survey onboarding nouveaux utilisateurs — sans header */}
           <Route path="/survey" element={<SurveyPage />} />

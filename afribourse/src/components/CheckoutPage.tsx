@@ -85,13 +85,11 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
 
-    // Logger l'intention d'abonnement avec la méthode de paiement sélectionnée
+    // Logger l'intention d'abonnement
     try {
-      const response = await authFetch(`${API_BASE_URL}/subscriptions/intent`, {
+      await authFetch(`${API_BASE_URL}/subscriptions/intent`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planId,
           planName,
@@ -102,16 +100,40 @@ export default function CheckoutPage() {
           paymentMethod: selectedMethod,
         }),
       });
-
-      if (!response.ok) {
-        console.error('Erreur lors du tracking d\'intention');
-      }
-
-      // Le chargement infini simule un "bug" - on ne désactive jamais setIsProcessing
-      // L'utilisateur va attendre indéfiniment
-    } catch (error) {
-      console.error('Erreur:', error);
+    } catch {
+      // Le tracking est non-bloquant
     }
+
+    // Redirection vers Stripe Checkout
+    if (selectedMethod === 'stripe') {
+      try {
+        const response = await authFetch(`${API_BASE_URL}/stripe/create-checkout-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planId }),
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error((err as any).message || 'Erreur Stripe');
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+        throw new Error('URL de paiement manquante');
+      } catch (error) {
+        console.error('Erreur Stripe:', error);
+        alert('Une erreur est survenue avec Stripe. Veuillez réessayer.');
+        setIsProcessing(false);
+      }
+      return;
+    }
+
+    // Pour les autres méthodes : simulation (à implémenter)
+    // On laisse isProcessing=true pour montrer que c'est en attente
   };
 
   return (
