@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
@@ -12,46 +12,48 @@ const ConfirmEmailPage = () => {
   const { initAuthFromLogin } = useAuth();
   const [status, setStatus] = useState<Status>('loading');
   const [message, setMessage] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
+
+  const confirmEmail = useCallback(async () => {
+    const token = searchParams.get('token');
+
+    if (!token) {
+      setStatus('error');
+      setMessage('Token de confirmation manquant dans l\'URL.');
+      return;
+    }
+
+    setStatus('loading');
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/confirm-email`,
+        { params: { token }, withCredentials: true, timeout: 30000 }
+      );
+
+      const { user, token: accessToken, surveyCompleted } = response.data;
+
+      if (user && accessToken) {
+        initAuthFromLogin(user, accessToken);
+      }
+
+      setStatus('success');
+      setMessage(response.data.message);
+      const destination = surveyCompleted ? '/dashboard' : '/survey';
+      setTimeout(() => navigate(destination), 2000);
+    } catch (error: any) {
+      setStatus('error');
+      setMessage(
+        error.response?.data?.error ||
+        (error.code === 'ECONNABORTED' ? 'Le serveur met du temps à répondre. Veuillez réessayer.' :
+        'Une erreur est survenue lors de la confirmation de votre email.')
+      );
+    }
+  }, [searchParams, navigate, initAuthFromLogin, retryCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const confirmEmail = async () => {
-      const token = searchParams.get('token');
-
-      if (!token) {
-        setStatus('error');
-        setMessage('Token de confirmation manquant dans l\'URL.');
-        return;
-      }
-
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/confirm-email`,
-          { params: { token }, withCredentials: true }
-        );
-
-        const { user, token: accessToken, surveyCompleted } = response.data;
-
-        // Connecter l'utilisateur automatiquement (magic link)
-        if (user && accessToken) {
-          initAuthFromLogin(user, accessToken);
-        }
-
-        setStatus('success');
-        setMessage(response.data.message);
-        // Survey pas encore fait → /survey, sinon → /dashboard
-        const destination = surveyCompleted ? '/dashboard' : '/survey';
-        setTimeout(() => navigate(destination), 2000);
-      } catch (error: any) {
-        setStatus('error');
-        setMessage(
-          error.response?.data?.error ||
-          'Une erreur est survenue lors de la confirmation de votre email.'
-        );
-      }
-    };
-
     confirmEmail();
-  }, [searchParams, navigate, initAuthFromLogin]);
+  }, [retryCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
@@ -107,10 +109,17 @@ const ConfirmEmailPage = () => {
 
             <div className="space-y-3">
               <button
+                onClick={() => setRetryCount(c => c + 1)}
+                className="w-full bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Réessayer
+              </button>
+
+              <button
                 onClick={() => navigate('/renvoyer-confirmation')}
                 className="w-full bg-blue-600 text-white rounded-lg px-6 py-3 hover:bg-blue-700 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                Renvoyer l'email de confirmation
+                Recevoir un nouveau lien par email
               </button>
 
               <button
@@ -126,9 +135,9 @@ const ConfirmEmailPage = () => {
                 💡 <strong>Raisons possibles :</strong>
               </p>
               <ul className="text-sm text-yellow-700 mt-2 space-y-1 text-left">
-                <li>• Le lien a expiré (valide 24h)</li>
+                <li>• Le lien a expiré (valide 72h)</li>
                 <li>• Le lien a déjà été utilisé</li>
-                <li>• Le lien est invalide</li>
+                <li>• Le serveur redémarre — réessayez dans quelques secondes</li>
               </ul>
             </div>
           </div>

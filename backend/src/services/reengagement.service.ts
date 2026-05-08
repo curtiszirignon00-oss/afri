@@ -17,6 +17,8 @@ import {
   sendReengagementEmail2,
   sendReengagementEmail3,
 } from './email.service';
+import { generateConfirmationToken, getTokenExpirationDate } from '../utils/token.utils';
+import { updateConfirmationToken } from './users.service.prisma';
 
 // ─── Helpers données marché / classement ─────────────────────────────────────
 
@@ -139,8 +141,8 @@ async function processEmail0(): Promise<{ sent: number; errors: number }> {
       email_verified_at: null,
       created_at: { lte: hoursAgo(24) },
       reengagement_email0_sent: false,
-      // Exclure les comptes créés il y a plus de 3 jours (fenêtre maximale)
-      AND: [{ created_at: { gte: daysAgo(3) } }],
+      // Exclure les comptes créés il y a plus de 7 jours (fenêtre maximale)
+      AND: [{ created_at: { gte: daysAgo(7) } }],
     },
     select: {
       id: true,
@@ -155,23 +157,23 @@ async function processEmail0(): Promise<{ sent: number; errors: number }> {
 
   for (const user of candidates) {
     try {
-      // Si le token a expiré, on ne peut pas envoyer un lien valide — on skip
-      if (!user.email_confirmation_token || !user.email_confirmation_expires) {
+      // Si le token manque complètement, on ne peut rien faire
+      if (!user.email_confirmation_token && !user.email_confirmation_expires) {
         continue;
       }
-      if (user.email_confirmation_expires < new Date()) {
-        // Token expiré — on marque quand même pour ne pas re-tenter
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { reengagement_email0_sent: true },
-        });
-        continue;
+
+      // Si le token a expiré, on en génère un nouveau avant d'envoyer
+      let activeToken = user.email_confirmation_token!;
+      if (!user.email_confirmation_expires || user.email_confirmation_expires < new Date()) {
+        activeToken = generateConfirmationToken();
+        const newExpiry = getTokenExpirationDate(72); // 72h de validité
+        await updateConfirmationToken(user.id, activeToken, newExpiry);
       }
 
       await sendReengagementEmail0({
         email: user.email,
         name: user.name,
-        confirmationToken: user.email_confirmation_token,
+        confirmationToken: activeToken,
       });
 
       await prisma.user.update({

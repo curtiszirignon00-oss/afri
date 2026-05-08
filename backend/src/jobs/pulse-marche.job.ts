@@ -14,6 +14,7 @@
 import cron from 'node-cron';
 import prisma from '../config/prisma';
 import { log } from '../config/logger';
+import { generatePulseQuestion } from '../services/simba-micro';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -34,48 +35,8 @@ function formatVolume(v: number | null): string {
   return String(v);
 }
 
-function fallbackQuestion(stock: StockSummary): string {
-  const change = stock.daily_change_percent != null
-    ? `${stock.daily_change_percent >= 0 ? '+' : ''}${stock.daily_change_percent.toFixed(2)}%`
-    : 'en mouvement';
-  return `${stock.symbol} est à ${change} aujourd'hui — est-ce le moment d'agir ou préférez-vous attendre une confirmation ? 👇`;
-}
-
 // ─── Core ─────────────────────────────────────────────────────────────────────
 
-async function generateSimbaQuestion(stock: StockSummary): Promise<string> {
-  try {
-    const Groq = (await import('groq-sdk')).default;
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const change = stock.daily_change_percent != null
-      ? `${stock.daily_change_percent >= 0 ? '+' : ''}${stock.daily_change_percent.toFixed(2)}%`
-      : 'en mouvement';
-    const price = stock.current_price != null
-      ? `${stock.current_price.toLocaleString('fr-FR')} FCFA`
-      : '';
-
-    const chat = await groq.chat.completions.create({
-      model: 'llama3-8b-8192',
-      max_tokens: 120,
-      messages: [
-        {
-          role: 'system',
-          content:
-            "Tu es SIMBA, coach financier BRVM. Pose une seule question courte et engageante en français (max 2 phrases) pour lancer la discussion sur ce titre. Ton bienveillant, pas de conseils d'achat/vente directs.",
-        },
-        {
-          role: 'user',
-          content: `${stock.symbol} (${stock.company_name ?? 'N/D'}) est à ${change} aujourd'hui${price ? `, coté ${price}` : ''}. Pose une question pour la communauté.`,
-        },
-      ],
-    });
-
-    return chat.choices[0]?.message?.content?.trim() ?? fallbackQuestion(stock);
-  } catch {
-    return fallbackQuestion(stock);
-  }
-}
 
 function buildPostContent(
   topVolume: StockSummary[],
@@ -163,7 +124,7 @@ export async function runPulseMarche(): Promise<void> {
 
   // 3. Question SIMBA
   const featuredStock = topGainers[0] ?? topVolume[0];
-  const simbaQuestion = await generateSimbaQuestion(featuredStock);
+  const simbaQuestion = await generatePulseQuestion(featuredStock);
 
   // 4. Contenu
   const dateLabel = new Date().toLocaleDateString('fr-FR', {

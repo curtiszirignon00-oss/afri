@@ -19,7 +19,58 @@ export interface AllocationInput {
   investor_score?: number;
 }
 
-// Allocation de repli si Simba échoue
+// ─── Singleton Groq ───────────────────────────────────────────────────────────
+
+let _groqInstance: Groq | null = null;
+
+function getGroq(): Groq {
+  if (!_groqInstance) {
+    _groqInstance = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
+  }
+  return _groqInstance;
+}
+
+// ─── Tickers BRVM valides ─────────────────────────────────────────────────────
+
+const BRVM_VALID_TICKERS = new Set([
+  'SNTS', 'ORAC', 'BOAB', 'SGBC', 'CBIBF', 'BOAN', 'PALC', 'SIVC', 'SOGC',
+  'CFAC', 'NTLC', 'SHEC', 'STBC', 'BICC', 'ONTBF', 'SDSC', 'ETIT', 'CABC',
+  'BOABF', 'BOAC', 'BOAM', 'BOAS', 'BNBC', 'BICB', 'CFAC', 'CIEC', 'NEIC',
+  'SAFC', 'SMBC', 'SVOC', 'TTLC', 'UNLC', 'BLOC', 'ORGT', 'PRSC',
+]);
+
+// ─── Validation & normalisation ───────────────────────────────────────────────
+
+function validateAndNormalize(arr: AllocationItem[]): AllocationItem[] {
+  // 1. Filtrer les items malformés
+  const cleaned = arr.filter((item) => {
+    if (!item.sector || typeof item.pct !== 'number') return false;
+    if (!Array.isArray(item.tickers) || item.tickers.length === 0) return false;
+    return true;
+  });
+
+  // 2. Filtrer les tickers inconnus et logger les anomalies
+  const validated = cleaned.map((item) => {
+    const validTickers = item.tickers.filter((t) => {
+      const ok = BRVM_VALID_TICKERS.has(t.toUpperCase());
+      if (!ok) log.warn(`[simba-allocation] Ticker inconnu filtré : ${t}`);
+      return ok;
+    });
+    return { ...item, tickers: validTickers.length > 0 ? validTickers : item.tickers };
+  });
+
+  // 3. Normaliser sum(pct) → 100 si l'écart est < 5 pts
+  const total = validated.reduce((sum, item) => sum + item.pct, 0);
+  if (total > 0 && Math.abs(total - 100) < 5) {
+    const factor = 100 / total;
+    return validated.map((item) => ({ ...item, pct: Math.round(item.pct * factor) }));
+  }
+
+  return validated;
+}
+
+// ─── Allocation de repli ──────────────────────────────────────────────────────
+
 function getDefaultAllocation(riskProfile?: string): AllocationItem[] {
   const isConservative =
     riskProfile === 'CONSERVATIVE' || riskProfile === 'MODERATE';
@@ -63,7 +114,7 @@ function getDefaultAllocation(riskProfile?: string): AllocationItem[] {
     {
       sector: 'Banques & Finance',
       pct: 25,
-      tickers: ['BOAB', 'SGBC', 'ECOBANK'],
+      tickers: ['BOAB', 'SGBC', 'ETIT'],
       rationale: 'Croissance du crédit régional, dividendes réguliers. Source : données historiques BRVM.',
     },
     {
@@ -81,16 +132,19 @@ function getDefaultAllocation(riskProfile?: string): AllocationItem[] {
   ];
 }
 
+// ─── Génération principale ────────────────────────────────────────────────────
+
 export async function generateBRVMAllocation(
   profile: AllocationInput
 ): Promise<AllocationItem[]> {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
+  const groq = getGroq();
 
   const sectorsHint =
     profile.favorite_sectors && profile.favorite_sectors.length > 0
       ? profile.favorite_sectors.join(', ')
       : 'non spécifiés';
 
+  // Prompt aligné avec json_object — l'objet racine {"allocation":[...]} est explicite
   const prompt = `Tu es Simba, l'expert IA de la BRVM (Bourse Régionale des Valeurs Mobilières d'Afrique de l'Ouest).
 Génère une répartition sectorielle éducative pour un investisseur avec ce profil :
 - Objectif de vie : ${profile.life_goal ?? 'non spécifié'}
@@ -99,12 +153,12 @@ Génère une répartition sectorielle éducative pour un investisseur avec ce pr
 - Score investisseur : ${profile.investor_score ?? 50}/100
 - Secteurs préférés : ${sectorsHint}
 
-Retourne UNIQUEMENT un tableau JSON valide (sans markdown, sans commentaires) avec ce format exact :
-[{"sector":"Nom du secteur","pct":30,"tickers":["TICKER1","TICKER2"],"rationale":"Explication courte. Source : données historiques BRVM."}]
+Réponds avec un objet JSON ayant cette structure exacte :
+{"allocation":[{"sector":"Nom du secteur","pct":30,"tickers":["TICKER1","TICKER2"],"rationale":"Explication courte. Source : données historiques BRVM."}]}
 
 Règles impératives :
 - Les pourcentages (pct) doivent sommer à exactement 100
-- Utiliser uniquement des tickers BRVM réels : SNTS, ORAC, BOAB, SGBC, CBIBF, BOAN, PALC, SIVC, SOGC, CFAC, NTLC, SHEC, ECOBANK, STBC, BICC, ONTBF, SDSC
+- Utiliser uniquement des tickers BRVM réels : SNTS, ORAC, BOAB, SGBC, CBIBF, BOAN, PALC, SIVC, SOGC, CFAC, NTLC, SHEC, ETIT, STBC, BICC, ONTBF, SDSC
 - Ne jamais mentionner de rendements futurs ni de performances promises
 - La BRVM est un marché à faible liquidité : privilégier 3-5 secteurs maximum
 - Chaque rationale doit se terminer par "Source : données historiques BRVM."`;
@@ -119,24 +173,26 @@ Règles impératives :
     });
 
     const raw = completion.choices[0]?.message?.content ?? '';
-
-    // Le mode json_object retourne un objet — on cherche le tableau dedans
     const parsed = JSON.parse(raw);
-    const arr: AllocationItem[] = Array.isArray(parsed)
-      ? parsed
-      : parsed.allocation ?? parsed.sectors ?? parsed.data ?? [];
 
-    if (!Array.isArray(arr) || arr.length === 0) {
+    // Extraction directe de parsed.allocation — plus d'heuristique fragile
+    const arr: AllocationItem[] = Array.isArray(parsed.allocation)
+      ? parsed.allocation
+      : [];
+
+    if (arr.length === 0) {
       throw new Error('Réponse vide ou invalide de Simba');
     }
 
-    // Vérifier que les pct somment à ~100
-    const total = arr.reduce((sum: number, item: AllocationItem) => sum + (item.pct ?? 0), 0);
+    const validated = validateAndNormalize(arr);
+
+    // Vérifier que la somme finale est acceptable
+    const total = validated.reduce((sum, item) => sum + item.pct, 0);
     if (Math.abs(total - 100) > 5) {
-      throw new Error(`Somme des pct invalide : ${total}`);
+      throw new Error(`Somme des pct invalide après validation : ${total}`);
     }
 
-    return arr;
+    return validated;
   } catch (err: any) {
     log.warn(`[simba-allocation] Fallback sur allocation par défaut : ${err.message}`);
     return getDefaultAllocation(profile.risk_profile);

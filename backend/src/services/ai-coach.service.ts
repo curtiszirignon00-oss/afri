@@ -15,7 +15,7 @@ import {
   PortfolioHolding,
   QuizQuestion,
 } from '../ai/systemPrompt';
-import { buildContextualPrompt, retrieveStockContext } from '../ai/ragService';
+import { buildContextualPrompt } from '../ai/ragService';
 
 export type { UserContext, PortfolioHolding, QuizQuestion };
 
@@ -47,11 +47,24 @@ class AfribourseChatService {
 
   // ─── Routing de modèle ──────────────────────────────────────────────────────
 
-  private selectModel(userMessage: string): string {
-    if (userMessage.length < 100) {
-      return process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant';
-    }
-    return process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+  // Mots-clés sémantiques qui signalent une requête complexe même si la phrase est courte
+  private static readonly COMPLEX_KEYWORDS = [
+    'compare', 'analyse', 'analysé', 'analyser', 'secteur', 'dividende',
+    'portefeuille', 'performance', 'historique', 'ratio', 'top', 'flop',
+    'fondamentaux', 'bilan', 'rentabilité', 'valorisation', 'croissance',
+    'risque', 'volatilité', 'rendement', 'per', 'roe', 'roa', 'eps',
+    'vs', 'versus', 'comparer', 'différence', 'mieux',
+  ];
+
+  private selectModel(userMessage: string, forceModel?: string): string {
+    if (forceModel) return forceModel;
+    const msg = userMessage.toLowerCase();
+    const isComplex =
+      userMessage.length > 120 ||
+      AfribourseChatService.COMPLEX_KEYWORDS.some((kw) => msg.includes(kw));
+    return isComplex
+      ? (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile')
+      : (process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant');
   }
 
   // ─── Appel Groq ─────────────────────────────────────────────────────────────
@@ -60,14 +73,13 @@ class AfribourseChatService {
     if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
 
     const lastUser = [...messages].reverse().find((m) => m.role === 'user');
-    const model = options.forceModel ?? this.selectModel(lastUser?.content ?? '');
+    const model = this.selectModel(lastUser?.content ?? '', options.forceModel);
 
     const params: any = {
       model,
       messages,
       max_tokens: options.maxTokens ?? 600,
       temperature: options.temperature ?? 0.7,
-      stream: false,
     };
 
     if (options.jsonMode) {
@@ -158,7 +170,20 @@ class AfribourseChatService {
         forceModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       },
     );
-    return JSON.parse(result.text) as QuizQuestion;
+    try {
+      const clean = result.text.replace(/```json|```/g, '').trim();
+      return JSON.parse(clean) as QuizQuestion;
+    } catch (parseError) {
+      log.error('[SIMBA Quiz] Échec parsing JSON :', result.text.slice(0, 200));
+      return {
+        question: `Qu'est-ce que "${topic}" dans le contexte de la BRVM ?`,
+        options: ['A) Une notion de base', 'B) Un indicateur avancé', 'C) Un type de titre', 'D) Un marché spécifique'],
+        correct_answer: 'A',
+        explanation: `"${topic}" est un concept important en finance boursière. Explorez les modules Afribourse pour en savoir plus.`,
+        difficulty: userContext.user_level ?? 'débutant',
+        brvm_context: true,
+      };
+    }
   }
 
   // ─── Analyse de Marché (avec enrichissement RAG DB) ─────────────────────────
@@ -273,10 +298,11 @@ export const coachResponse = (
   userCtx: UserContext = {},
   lessonContext?: string,
 ) => {
-  const history: Message[] = lessonContext
-    ? [{ role: 'assistant', content: `Contexte de la leçon : ${lessonContext}` }]
-    : [];
-  return chatService.chat(question, history, userCtx, { maxTokens: 400 });
+  // Injecté dans le system prompt via current_module — pas de faux message assistant
+  const enrichedCtx: UserContext = lessonContext
+    ? { ...userCtx, current_module: lessonContext.slice(0, 100) }
+    : userCtx;
+  return chatService.chat(question, [], enrichedCtx, { maxTokens: 400 });
 };
 
 export const explainConcept = (concept: string, userCtx: UserContext = {}) =>

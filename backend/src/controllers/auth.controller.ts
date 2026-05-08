@@ -43,7 +43,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
         // 3. Générer le token de confirmation et sa date d'expiration
         const confirmationToken = generateConfirmationToken();
-        const tokenExpiration = getTokenExpirationDate(24); // 24 heures
+        const tokenExpiration = getTokenExpirationDate(72); // 72 heures
 
         // 4. Créer l'utilisateur (le service gère la création du UserProfile obligatoire)
         const newUser = await usersServicePrisma.createUser({
@@ -485,7 +485,7 @@ export async function resendConfirmationEmail(req: Request, res: Response, next:
 
         // 3. Générer un nouveau token
         const confirmationToken = generateConfirmationToken();
-        const tokenExpiration = getTokenExpirationDate(24);
+        const tokenExpiration = getTokenExpirationDate(72);
 
         // 4. Mettre à jour le token dans la base de données
         await usersServicePrisma.updateConfirmationToken(user.id, confirmationToken, tokenExpiration);

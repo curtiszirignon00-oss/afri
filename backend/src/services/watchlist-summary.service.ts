@@ -13,48 +13,7 @@ import { sendEmail } from './email.service';
 import { getWatchlistEnriched } from './watchlist.service.prisma';
 import { getWatchlistScores } from './watchlist.scores';
 import config from '../config/environnement';
-
-// ── Optional: Groq IA text generation ─────────────────────────────────────────
-
-async function generateSIMBASummary(
-  items: any[],
-  scores: any[]
-): Promise<string> {
-  try {
-    const Groq = (await import('groq-sdk')).default;
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const scoreMap = Object.fromEntries(scores.map(s => [s.ticker, s]));
-    const lines = items
-      .map(i => {
-        const s = scoreMap[i.stock_ticker];
-        const pnl = i.pnl_pct != null ? `P&L: ${i.pnl_pct >= 0 ? '+' : ''}${i.pnl_pct.toFixed(1)}%` : '';
-        const zone = s ? `Score: ${s.score}/100 (${s.zone})` : '';
-        return `${i.stock_ticker} — ${[pnl, zone].filter(Boolean).join(', ')}`;
-      })
-      .join('\n');
-
-    const chat = await groq.chat.completions.create({
-      model: 'llama3-8b-8192',
-      max_tokens: 200,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Tu es SIMBA, conseiller financier BRVM. Réponds en français, maximum 3 phrases, ton professionnel et bienveillant. Pas de bullet points.',
-        },
-        {
-          role: 'user',
-          content: `Voici la watchlist de cette semaine :\n${lines}\nFais un bref résumé de la situation et une recommandation générale.`,
-        },
-      ],
-    });
-
-    return chat.choices[0]?.message?.content?.trim() ?? '';
-  } catch {
-    return '';
-  }
-}
+import { generateWatchlistSummary } from './simba-micro';
 
 // ── Zone badge helper ──────────────────────────────────────────────────────────
 
@@ -190,7 +149,7 @@ export async function sendWeeklyWatchlistSummaries(): Promise<{ sent: number; sk
 
       if (items.length === 0) { skipped++; continue; }
 
-      const simbaSummary = await generateSIMBASummary(items, scores);
+      const simbaSummary = await generateWatchlistSummary(items, scores);
       const html = buildEmailHTML(user.name || 'Investisseur', items, scores, simbaSummary);
 
       await sendEmail({
