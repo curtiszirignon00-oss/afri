@@ -135,7 +135,10 @@ export async function analyzeStock(req: AuthenticatedRequest, res: Response, nex
 
     const completion = await groq.chat.completions.create({
       model: GROQ_MODEL,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: buildAnalystPrompt(String(symbol).slice(0, 20)) },
+        { role: 'user', content: prompt },
+      ],
       max_tokens: 400,
     });
     const text = completion.choices[0]?.message?.content ?? '';
@@ -408,8 +411,9 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
     const cleanMessage = 'processedMessage' in preCheck ? preCheck.processedMessage : message.trim();
     const currentSymbol = typeof symbol === 'string' ? symbol.toUpperCase().trim() : null;
 
-    const systemPrompt = buildAnalystPrompt(currentSymbol ?? '', typeof scoreContext === 'string' ? scoreContext : undefined);
+    const systemPrompt = buildAnalystPrompt(currentSymbol, typeof scoreContext === 'string' ? scoreContext : undefined);
 
+    // any[] requis : la boucle tool-calling ajoute des messages role:'tool' non couverts par Message
     const messages: any[] = [
       { role: 'system', content: systemPrompt },
       ...history,
@@ -661,7 +665,7 @@ export async function portfolioAdvisorIA(req: AuthenticatedRequest, res: Respons
     trackAICall({
       userId: req.user!.id,
       sessionId: req.id ?? req.ip ?? 'unknown',
-      endpoint: 'coach',
+      endpoint: 'portfolio',
       provider: 'groq',
       responseTimeMs,
       blocked: false,

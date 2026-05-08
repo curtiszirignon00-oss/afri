@@ -141,7 +141,7 @@ export async function sendConfirmationEmail({
         <p style="word-break: break-all; color: #f97316;">${confirmationUrl}</p>
 
         <div class="warning">
-          <p><strong>⏰ Ce lien expire dans 24 heures</strong></p>
+          <p><strong>⏰ Ce lien expire dans 72 heures</strong></p>
         </div>
 
         <p>Si vous n'avez pas créé de compte sur AfriBourse, vous pouvez ignorer cet email en toute sécurité.</p>
@@ -163,7 +163,7 @@ export async function sendConfirmationEmail({
     Pour confirmer votre adresse email, veuillez cliquer sur le lien suivant :
     ${confirmationUrl}
 
-    Ce lien expire dans 24 heures.
+    Ce lien expire dans 72 heures.
 
     Si vous n'avez pas créé de compte sur AfriBourse, ignorez cet email.
 
