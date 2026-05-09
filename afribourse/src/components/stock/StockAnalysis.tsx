@@ -493,16 +493,10 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
                 <p className="text-[11px] text-gray-500">Notre analyste IA connaît ce score et les données de {stock.company_name}</p>
               </div>
             </div>
-            {!isPremium && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-semibold rounded-full flex-shrink-0">
-                <Zap size={10} />
-                Premium
-              </span>
-            )}
           </div>
 
-          {/* Suggestion chips */}
-          {isPremium && !showChat && (
+          {/* Suggestion chips — accessibles à tous */}
+          {!showChat && (
             <div className="px-4 pb-3">
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {[
@@ -526,19 +520,6 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
               >
                 <MessageCircle size={15} />
                 Discuter avec SIMBA
-              </button>
-            </div>
-          )}
-
-          {/* Non-premium CTA */}
-          {!isPremium && (
-            <div className="px-4 pb-3">
-              <button
-                onClick={() => setShowPremiumPaywall(true)}
-                className="w-full flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white text-sm font-semibold rounded-lg transition-all"
-              >
-                <Zap size={14} />
-                Débloquer SIMBA
               </button>
             </div>
           )}
