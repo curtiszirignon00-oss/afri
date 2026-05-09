@@ -13,7 +13,7 @@ export interface ChatMessage {
 export const askSIMBA = async (
   message: string,
   conversationHistory: ChatMessage[] = [],
-): Promise<{ reply: string; provider: string }> => {
+): Promise<{ reply: string; provider: string; paywallHit?: boolean }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/coach`, {
       method: 'POST',
@@ -22,6 +22,7 @@ export const askSIMBA = async (
     });
 
     if (!response.ok) {
+      if (response.status === 402) return { reply: '', provider: 'paywall', paywallHit: true };
       if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.', provider: 'fallback' };
       if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser SIMBA.', provider: 'fallback' };
       return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.', provider: 'fallback' };
@@ -44,7 +45,7 @@ export const askSIMBAAnalyst = async (
   conversationHistory: ChatMessage[] = [],
   symbol: string = '',
   scoreContext?: string,
-): Promise<{ reply: string; provider: string; messageId?: string }> => {
+): Promise<{ reply: string; provider: string; messageId?: string; paywallHit?: boolean }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/analyst`, {
       method: 'POST',
@@ -53,6 +54,7 @@ export const askSIMBAAnalyst = async (
     });
 
     if (!response.ok) {
+      if (response.status === 402) return { reply: '', provider: 'paywall', paywallHit: true };
       if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.', provider: 'fallback' };
       if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser SIMBA.', provider: 'fallback' };
       return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.', provider: 'fallback' };
@@ -100,7 +102,7 @@ export const askSIMBAPortfolioAdvisor = async (
   message: string,
   conversationHistory: ChatMessage[] = [],
   portfolioContext: PortfolioCtx,
-): Promise<{ reply: string; provider: string; messageId?: string }> => {
+): Promise<{ reply: string; provider: string; messageId?: string; paywallHit?: boolean }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/portfolio-advisor`, {
       method: 'POST',
@@ -109,6 +111,7 @@ export const askSIMBAPortfolioAdvisor = async (
     });
 
     if (!response.ok) {
+      if (response.status === 402) return { reply: '', provider: 'paywall', paywallHit: true };
       if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.', provider: 'fallback' };
       if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser SIMBA.', provider: 'fallback' };
       return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.', provider: 'fallback' };
@@ -180,7 +183,7 @@ export const askGeminiTutor = async (
   message: string,
   conversationHistory: ChatMessage[] = [],
   userContext: TutorUserContext = {},
-): Promise<{ reply: string; hasModuleContext?: boolean; messageId?: string }> => {
+): Promise<{ reply: string; hasModuleContext?: boolean; messageId?: string; paywallHit?: boolean }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/tutor`, {
       method: 'POST',
@@ -189,6 +192,7 @@ export const askGeminiTutor = async (
     });
 
     if (!response.ok) {
+      if (response.status === 402) return { reply: '', paywallHit: true };
       if (response.status === 429) return { reply: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.' };
       if (response.status === 401) return { reply: '⚠️ Vous devez être connecté pour utiliser le tuteur IA.' };
       return { reply: '⚠️ Une erreur est survenue. Réessayez plus tard.' };
