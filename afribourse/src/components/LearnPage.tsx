@@ -1292,7 +1292,7 @@ export default function LearnPage() {
                     {/* Bouton flottant AI Tutor — masqué pendant le quiz */}
                     {!showAITutor && !quizState.isActive && !quizState.showResults && (
                         <button
-                            onClick={() => userHasPremium ? setShowAITutor(true) : setShowPremiumPaywall(true)}
+                            onClick={() => setShowAITutor(true)}
                             className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
                         >
                             <MessageSquarePlus className="w-6 h-6" />

@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle, ThumbsUp, ThumbsDown, TrendingUp } from 'lucide-react';
+import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Zap, Loader2, MessageCircle, ThumbsUp, ThumbsDown, TrendingUp, Lock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Stock } from '../../types';
-import PremiumPaywall from '../PremiumPaywall';
 import { StockAnalystChat } from './StockAnalystChat';
 import { getSIMBAStockAnalysis, sendAnalystFeedback } from '../../services/geminiService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -27,12 +26,12 @@ type StockOverviewProps = {
 
 export default function StockOverview({ stock, companyInfo }: StockOverviewProps) {
   const { userProfile } = useAuth();
-  const isPremium = ['investisseur-plus', 'premium', 'max'].includes(userProfile?.subscriptionTier ?? '');
+  const isPremium = ['investisseur-plus', 'premium', 'max', 'pro'].includes(userProfile?.subscriptionTier ?? '');
   const { data: weekData } = useStock52Week(stock.symbol);
 
-  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [analysisPaywallHit, setAnalysisPaywallHit] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [analysisRating, setAnalysisRating] = useState<'up' | 'down' | null>(null);
   const analysisMessageId = useRef<string>(`analysis-${stock.symbol}-${Date.now()}`);
@@ -40,16 +39,20 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
   const fetchSIMBAAnalysis = async () => {
     if (isLoadingAI || aiAnalysis) return;
     setIsLoadingAI(true);
-    const analysis = await getSIMBAStockAnalysis(stock);
-    setAiAnalysis(analysis);
+    const { text, paywallHit } = await getSIMBAStockAnalysis(stock);
+    if (paywallHit) {
+      setAnalysisPaywallHit(true);
+    } else {
+      setAiAnalysis(text);
+    }
     setIsLoadingAI(false);
   };
 
   // Charge automatiquement l'analyse pour les abonnés premium
   useEffect(() => {
     if (isPremium) fetchSIMBAAnalysis();
-    // Réinitialiser le rating quand l'action change
     setAnalysisRating(null);
+    setAnalysisPaywallHit(false);
     analysisMessageId.current = `analysis-${stock.symbol}-${Date.now()}`;
   }, [stock.symbol, isPremium]);
 
@@ -81,45 +84,42 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="text-blue-600" size={20} />
             <h3 className="text-lg font-bold text-gray-900">Analyse par SIMBA</h3>
-            {!isPremium && (
-              <span className="ml-auto text-xs bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-2 py-1 rounded-full flex items-center gap-1">
-                <Zap size={12} />
-                Premium
-              </span>
-            )}
           </div>
 
-          {/* État : non-premium → paywall */}
-          {!isPremium && (
-            <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full mb-4">
-                <Sparkles className="w-8 h-8 text-yellow-600" />
+          {/* Quota journalier atteint */}
+          {analysisPaywallHit && (
+            <div className="w-full bg-gradient-to-br from-indigo-950 to-blue-900 rounded-2xl p-4 shadow-lg border border-indigo-800/50">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="bg-yellow-400/20 p-1.5 rounded-lg">
+                  <Lock className="w-4 h-4 text-yellow-400" />
+                </div>
+                <span className="text-white font-semibold text-sm">Quota journalier atteint</span>
               </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-2">Analyse approfondie par IA</h4>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Obtenez une analyse détaillée de cette action par SIMBA, notre analyste IA spécialisé sur la BRVM.
+              <p className="text-indigo-200 text-xs leading-relaxed mb-3">
+                Tu as utilisé tes <strong className="text-white">4 questions gratuites</strong> aujourd'hui.<br />
+                Pour continuer avec SIMBA sans limite, passe à la formule <strong className="text-yellow-400">Premium</strong>.
               </p>
-              <button
-                onClick={() => setShowPremiumPaywall(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+              <a
+                href="/subscriptions"
+                className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-900 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm"
               >
-                <Zap className="w-5 h-5" />
-                Demander à l'Analyste IA
-              </button>
-              <p className="text-sm text-gray-500 mt-4">Fonctionnalité réservée aux abonnés Investisseur+</p>
+                <Zap className="w-3.5 h-3.5" />
+                Passer à Premium
+              </a>
+              <p className="text-indigo-400 text-[10px] text-center mt-2">↻ Tes questions gratuites se réinitialisent demain</p>
             </div>
           )}
 
-          {/* État : premium + chargement */}
-          {isPremium && isLoadingAI && (
+          {/* Chargement */}
+          {!analysisPaywallHit && isLoadingAI && (
             <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-500">
               <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
               <p className="text-sm">SIMBA analyse l'action...</p>
             </div>
           )}
 
-          {/* État : premium + analyse disponible */}
-          {isPremium && !isLoadingAI && aiAnalysis && (
+          {/* Analyse disponible */}
+          {!analysisPaywallHit && !isLoadingAI && aiAnalysis && (
             <div className="prose prose-sm max-w-none text-slate-700">
               <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
 
@@ -161,9 +161,9 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
             </div>
           )}
 
-          {/* État : premium + pas encore chargé */}
-          {isPremium && !isLoadingAI && !aiAnalysis && (
-            <div className="text-center py-6">
+          {/* Bouton d'analyse — visible pour tous si pas encore chargé */}
+          {!analysisPaywallHit && !isLoadingAI && !aiAnalysis && (
+            <div className="text-center py-6 space-y-3">
               <button
                 onClick={fetchSIMBAAnalysis}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:opacity-90 transition-all shadow-md"
@@ -171,23 +171,27 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
                 <Sparkles className="w-5 h-5" />
                 Demander à l'Analyste IA
               </button>
+              {!isPremium && (
+                <p className="text-xs text-slate-400">Utilise une de tes 4 analyses gratuites du jour</p>
+              )}
+              <div className="pt-1">
+                <button
+                  onClick={() => setShowChat(true)}
+                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Ou poser une question directement à SIMBA
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Chat Analyste SIMBA */}
+        {/* Chat Analyste SIMBA — accessible à tous */}
         <StockAnalystChat
           stock={stock}
           isOpen={showChat}
           onClose={() => setShowChat(false)}
-        />
-
-        {/* Paywall Modal */}
-        <PremiumPaywall
-          isOpen={showPremiumPaywall}
-          onClose={() => setShowPremiumPaywall(false)}
-          feature="Obtenir l'analyse IA approfondie de cette action par SIMBA"
-          plan="investisseur-plus"
         />
       </section>
 

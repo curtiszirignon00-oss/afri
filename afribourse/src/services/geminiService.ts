@@ -148,7 +148,7 @@ export const sendAnalystFeedback = async (
 
 // ─── SIMBA — Analyse de marché statique (Groq) ───────────────────────────────
 
-export const getSIMBAStockAnalysis = async (stock: Stock): Promise<string> => {
+export const getSIMBAStockAnalysis = async (stock: Stock): Promise<{ text: string; paywallHit?: boolean }> => {
   try {
     const response = await authFetch(`${API_BASE_URL}/ai/market-analysis`, {
       method: 'POST',
@@ -157,15 +157,16 @@ export const getSIMBAStockAnalysis = async (stock: Stock): Promise<string> => {
     });
 
     if (!response.ok) {
-      if (response.status === 429) return '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.';
-      if (response.status === 401) return '⚠️ Vous devez être connecté pour utiliser l\'analyse IA.';
-      return '⚠️ Impossible de générer l\'analyse IA pour le moment. Veuillez réessayer plus tard.';
+      if (response.status === 402) return { text: '', paywallHit: true };
+      if (response.status === 429) return { text: '⚠️ Limite d\'appels IA atteinte. Réessayez dans une heure.' };
+      if (response.status === 401) return { text: '⚠️ Vous devez être connecté pour utiliser l\'analyse IA.' };
+      return { text: '⚠️ Impossible de générer l\'analyse IA pour le moment. Veuillez réessayer plus tard.' };
     }
 
     const data = await response.json();
-    return data?.data?.text || 'L\'analyse n\'est pas disponible pour le moment.';
+    return { text: data?.data?.text || 'L\'analyse n\'est pas disponible pour le moment.' };
   } catch {
-    return '⚠️ Impossible de générer l\'analyse IA pour le moment. Veuillez réessayer plus tard.';
+    return { text: '⚠️ Impossible de générer l\'analyse IA pour le moment. Veuillez réessayer plus tard.' };
   }
 };
 
