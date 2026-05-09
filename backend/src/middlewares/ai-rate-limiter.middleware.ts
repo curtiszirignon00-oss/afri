@@ -143,21 +143,100 @@ async function checkLimit(
   }
 }
 
+// ─── Quota freemium : 4 messages IA par jour ─────────────────────────────────
+
+const FREE_DAILY_LIMIT = 4;
+
+/** TTL en secondes jusqu'à minuit UTC (reset quotidien). */
+function secondsUntilMidnightUTC(): number {
+  const now = new Date();
+  const midnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  return Math.ceil((midnight.getTime() - now.getTime()) / 1000);
+}
+
+// Fallback in-memory pour le quota freemium (si Redis indisponible)
+const freeQuotaMemory = new Map<string, { count: number; resetAt: number }>();
+
+async function checkFreeQuota(userId: string): Promise<{
+  allowed: boolean;
+  used: number;
+  resetAt: Date;
+}> {
+  const key = `rl:ai:free_daily:${userId}`;
+  const ttl = secondsUntilMidnightUTC();
+  const resetAt = new Date(Date.now() + ttl * 1000);
+
+  try {
+    const redis = getRedisClient();
+    if (!redis) throw new Error('Redis non disponible');
+
+    // INCR atomique + EXPIRE si nouvelle clé
+    const count = await redis.incr(key);
+    if (count === 1) {
+      await redis.expire(key, ttl);
+    }
+
+    if (count > FREE_DAILY_LIMIT) {
+      // Annuler l'incrément — on a dépassé
+      await redis.decr(key);
+      return { allowed: false, used: FREE_DAILY_LIMIT, resetAt };
+    }
+    return { allowed: true, used: count, resetAt };
+  } catch {
+    // Fallback in-memory
+    const now = Date.now();
+    const entry = freeQuotaMemory.get(userId);
+
+    if (!entry || now >= entry.resetAt) {
+      freeQuotaMemory.set(userId, { count: 1, resetAt: now + ttl * 1000 });
+      return { allowed: true, used: 1, resetAt };
+    }
+    if (entry.count >= FREE_DAILY_LIMIT) {
+      return { allowed: false, used: FREE_DAILY_LIMIT, resetAt: new Date(entry.resetAt) };
+    }
+    entry.count++;
+    return { allowed: true, used: entry.count, resetAt: new Date(entry.resetAt) };
+  }
+}
+
 // ─── Middleware factory ───────────────────────────────────────────────────────
 
 /**
  * Retourne un middleware Express de rate limiting pour un endpoint IA spécifique.
  * Usage : router.post('/coach', auth, aiRateLimit('coach'), coachIA)
+ *
+ * Pour les comptes freemium (subscriptionTier === 'free'), applique en premier
+ * un quota de FREE_DAILY_LIMIT messages par jour avant le rate limit Redis standard.
  */
 export function aiRateLimit(endpoint: string) {
   const config = AI_LIMITS[endpoint] ?? { windowMs: 60 * 60 * 1000, max: 20, label: endpoint };
 
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const userId = (req as AuthenticatedRequest).user?.id ?? req.ip ?? 'anon';
+    const user = (req as AuthenticatedRequest).user;
+    const userId = user?.id ?? req.ip ?? 'anon';
 
+    // ── Quota freemium (avant le rate limit standard) ──────────────────────
+    if (user?.subscriptionTier === 'free') {
+      const quota = await checkFreeQuota(userId);
+      res.setHeader('X-AI-Questions-Used', quota.used);
+      res.setHeader('X-AI-Questions-Limit', FREE_DAILY_LIMIT);
+
+      if (!quota.allowed) {
+        res.status(402).json({
+          success: false,
+          paywallHit: true,
+          message: `Vous avez utilisé vos ${FREE_DAILY_LIMIT} questions IA gratuites aujourd'hui.`,
+          questionsUsed: FREE_DAILY_LIMIT,
+          questionsLimit: FREE_DAILY_LIMIT,
+          resetAt: quota.resetAt.toISOString(),
+        });
+        return;
+      }
+    }
+
+    // ── Rate limit standard (anti-abus, tous comptes) ──────────────────────
     const { allowed, remaining, resetIn, label } = await checkLimit(userId, endpoint, config);
 
-    // Headers standard
     res.setHeader('X-RateLimit-Limit', config.max);
     res.setHeader('X-RateLimit-Remaining', remaining);
     res.setHeader('X-RateLimit-Reset', Math.ceil((Date.now() + resetIn) / 1000));

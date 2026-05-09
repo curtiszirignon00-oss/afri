@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BarChart2, Send, TrendingUp, ThumbsUp, ThumbsDown, X } from 'lucide-react';
+import { BarChart2, Send, TrendingUp, ThumbsUp, ThumbsDown, X, Lock, Zap } from 'lucide-react';
 import { askSIMBAAnalyst, sendAnalystFeedback, ChatMessage } from '../../services/geminiService';
 import { Stock } from '../../types';
 
@@ -9,7 +9,8 @@ interface UIMessage {
   text: string;
   timestamp: number;
   rating?: 'up' | 'down';
-  messageId?: string; // ID backend pour persister le feedback
+  messageId?: string;
+  paywallHit?: boolean;
 }
 
 interface StockAnalystChatProps {
@@ -38,6 +39,7 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [paywallHit, setPaywallHit] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,18 +101,26 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       .filter((m) => m.id !== 'welcome')
       .map((m) => ({ role: m.role, content: m.text }));
 
-    const { reply, messageId } = await askSIMBAAnalyst(messageText, history, stock.symbol, scoreContext);
+    const { reply, messageId, paywallHit: hit } = await askSIMBAAnalyst(messageText, history, stock.symbol, scoreContext);
 
-    setMessages((prev) => [
-      ...prev,
-      {
+    if (hit) {
+      setPaywallHit(true);
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        text: '',
+        timestamp: Date.now(),
+        paywallHit: true,
+      }]);
+    } else {
+      setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         text: reply,
         timestamp: Date.now(),
         messageId,
-      },
-    ]);
+      }]);
+    }
     setIsLoading(false);
   };
 
@@ -144,16 +154,39 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-            <div
-              className={`max-w-[88%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
-                msg.role === 'user'
-                  ? 'bg-emerald-600 text-white rounded-br-sm'
-                  : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
-              }`}
-            >
-              {msg.text}
-            </div>
-            {msg.role === 'assistant' && msg.id !== 'welcome' && (
+            {msg.paywallHit ? (
+              <div className="w-full max-w-[92%] bg-gradient-to-br from-emerald-950 to-teal-900 rounded-2xl p-4 shadow-lg border border-emerald-800/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="bg-yellow-400/20 p-1.5 rounded-lg">
+                    <Lock className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <span className="text-white font-semibold text-sm">Quota journalier atteint</span>
+                </div>
+                <p className="text-emerald-200 text-xs leading-relaxed mb-3">
+                  Tu as utilisé tes <strong className="text-white">4 questions gratuites</strong> aujourd'hui.<br />
+                  Pour continuer à analyser avec SIMBA sans limite, passe à la formule <strong className="text-yellow-400">Premium</strong>.
+                </p>
+                <a
+                  href="/subscriptions"
+                  className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-900 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  Passer à Premium
+                </a>
+                <p className="text-emerald-400 text-[10px] text-center mt-2">↻ Tes questions gratuites se réinitialisent demain</p>
+              </div>
+            ) : (
+              <div
+                className={`max-w-[88%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
+                  msg.role === 'user'
+                    ? 'bg-emerald-600 text-white rounded-br-sm'
+                    : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
+                }`}
+              >
+                {msg.text}
+              </div>
+            )}
+            {msg.role === 'assistant' && msg.id !== 'welcome' && !msg.paywallHit && (
               <div className="flex gap-1 mt-1 ml-1">
                 <button
                   onClick={() => rateMessage(msg.id, 'up')}
@@ -217,26 +250,36 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
         Analyse IA — pas un conseil financier réglementé
       </p>
 
-      {/* Input */}
+      {/* Input / Paywall lock */}
       <div className="p-3 bg-white border-t border-slate-100">
-        <div className="relative flex items-center">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Analysez, comparez, questionnez..."
-            maxLength={1000}
-            className="w-full pl-4 pr-12 py-3 bg-slate-100 border-transparent focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded-xl text-sm transition-all outline-none placeholder:text-slate-400"
-          />
-          <button
-            onClick={() => handleSend()}
-            disabled={!input.trim() || isLoading}
-            className="absolute right-2 p-1.5 bg-emerald-600 text-white rounded-lg disabled:opacity-50 hover:bg-emerald-700 transition-colors shadow-sm"
+        {paywallHit ? (
+          <a
+            href="/subscriptions"
+            className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-sm py-3 rounded-xl transition-all shadow-sm"
           >
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
+            <Zap className="w-4 h-4" />
+            Passer à Premium pour continuer
+          </a>
+        ) : (
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Analysez, comparez, questionnez..."
+              maxLength={1000}
+              className="w-full pl-4 pr-12 py-3 bg-slate-100 border-transparent focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 rounded-xl text-sm transition-all outline-none placeholder:text-slate-400"
+            />
+            <button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || isLoading}
+              className="absolute right-2 p-1.5 bg-emerald-600 text-white rounded-lg disabled:opacity-50 hover:bg-emerald-700 transition-colors shadow-sm"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
