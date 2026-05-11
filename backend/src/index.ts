@@ -63,6 +63,7 @@ import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
 import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
 import trialRoutes from './routes/trial.routes'; // Essai gratuit 2 semaines
 import webinarRoutes from './routes/webinar.routes'; // Préinscriptions webinaires
+import timeMachineRoutes from './routes/time-machine.routes'; // Time Machine — Apprentissage guidé
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -289,6 +290,7 @@ class App {
     this.app?.use('/api/ai', aiRoutes);                                   // IA Proxy — Gemini (clé côté serveur uniquement)
     this.app?.use('/api/trial', trialRoutes);                              // Essai gratuit 2 semaines features IA
     this.app?.use('/api/webinars', webinarRoutes);                         // Préinscriptions webinaires
+    this.app?.use('/api/time-machine', timeMachineRoutes);                 // Time Machine — Apprentissage guidé historique
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

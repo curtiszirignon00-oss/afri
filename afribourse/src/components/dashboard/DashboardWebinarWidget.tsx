@@ -77,6 +77,10 @@ const QuickRegisterModal: React.FC<{ registeredCount: number; onClose: () => voi
       toast.error('Veuillez renseigner votre nom et email');
       return;
     }
+    if (!form.phoneNumber.trim()) {
+      toast.error('Le numéro WhatsApp est requis pour recevoir le lien de connexion');
+      return;
+    }
     setLoading(true);
     try {
       const res = await authFetch(`${API_BASE_URL}/webinars/preregister`, {
@@ -170,7 +174,7 @@ const QuickRegisterModal: React.FC<{ registeredCount: number; onClose: () => voi
                 type="tel"
                 value={form.phoneNumber}
                 onChange={(e) => setForm({ ...form, phoneNumber: e.target.value.replace(/[^\d\s\-]/g, '') })}
-                placeholder="Numéro (optionnel)"
+                placeholder="Numéro WhatsApp *"
                 className="flex-1 px-3 py-3 text-sm focus:outline-none bg-white placeholder:text-gray-400"
               />
             </div>

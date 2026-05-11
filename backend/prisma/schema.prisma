@@ -214,6 +214,9 @@ model User {
   // --- OAuth ---
   oauth_accounts OAuthAccount[]
 
+  // --- Time Machine ---
+  timeMachineSessions TimeMachineSession[]
+
   @@map("users")
 }
 
@@ -1982,4 +1985,61 @@ model WebinarRegistration {
   @@index([webinarId])
   @@index([email])
   @@map("webinar_registrations")
+}
+
+// ─── Time Machine ──────────────────────────────────────────────────────────────
+
+model TimeMachineScenario {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug                  String   @unique
+  title                 String
+  description           String
+  category              String   // WORLD_CRISIS | BULL_RUN | BRVM_EVENT | SECTOR_SHOCK | STRATEGY
+  tier                  String   @default("FREE") // FREE | PLUS | MAX
+  years                 Int[]
+  availableStocks       String[]
+  startBudget           Int
+  // { "2010": { kofiIntro, kofiPresentation, news[], macro[] } }
+  contextByYear         Json
+  // { "2010": { SNTS: { per, pbr, bna, div, cours, note, kofiAnalysis } } }
+  fundamentalsByYear    Json
+  // { "2010": { SNTS: 700, SGBC: 500 } }
+  dividendsByYear       Json
+  // { "2010": { canBuy[], canSell[], suggestedDecisions[], consequences[] } }
+  availableActionsByYear Json
+  // { "2010": [{ title, content }] }
+  lessonsByYear         Json
+  // { "2010": [{ question, options, answer, explanation }] }
+  quizByYear            Json
+  isActive              Boolean  @default(false)
+  createdAt             DateTime @default(now())
+
+  sessions TimeMachineSession[]
+
+  @@map("time_machine_scenarios")
+}
+
+model TimeMachineSession {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenarioId        String    @db.ObjectId
+  scenario          TimeMachineScenario @relation(fields: [scenarioId], references: [id])
+  currentStep       Int       @default(0)
+  status            String    @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | ABANDONED
+  // { "0": { SNTS: 14, SGBC: 16 } }
+  portfolioByStep   Json      @default("{}")
+  // { "0": "Je choisis SONATEL car..." }
+  noteByStep        Json      @default("{}")
+  // { "0": 500000 }
+  capitalByStep     Json      @default("{}")
+  // { "0": { pfVal, pfDivCum, perfCapital, perfTotal, cagr } }
+  performanceByStep Json      @default("{}")
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([scenarioId])
+  @@map("time_machine_sessions")
 }

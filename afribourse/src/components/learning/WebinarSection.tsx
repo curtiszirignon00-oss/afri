@@ -237,6 +237,10 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
       toast.error('Veuillez renseigner votre nom et email');
       return;
     }
+    if (!form.phoneNumber.trim()) {
+      toast.error('Le numéro WhatsApp est requis pour recevoir le lien de connexion');
+      return;
+    }
     setLoading(true);
     try {
       const res = await authFetch(`${API_BASE_URL}/webinars/preregister`, {
@@ -327,7 +331,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Numéro WhatsApp <span className="font-normal text-gray-400">(optionnel)</span>
+                  Numéro WhatsApp <span className="text-red-500">*</span>
                 </label>
                 <PhoneInput
                   dialCode={form.dialCode}
@@ -335,7 +339,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
                   onDialChange={(code) => setForm(f => ({ ...f, dialCode: code }))}
                   onNumberChange={(n) => setForm(f => ({ ...f, phoneNumber: n }))}
                 />
-                <p className="text-xs text-gray-400 mt-1">Pour recevoir le lien de connexion sur WhatsApp</p>
+                <p className="text-xs text-gray-400 mt-1">Le lien de connexion au webinaire vous sera envoyé sur WhatsApp</p>
               </div>
             </div>
 
