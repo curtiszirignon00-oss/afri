@@ -20,7 +20,7 @@ function PerfPill({ value }: { value: number }) {
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${pos ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
       {pos ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-      {pos ? '+' : ''}{(value * 100).toFixed(2)}%
+      {pos ? '+' : ''}{value.toFixed(2)}%
     </span>
   );
 }
@@ -69,7 +69,7 @@ export default function PerformanceSnapshot({ perf, year, capital }: Props) {
                   <td className="px-4 py-2 text-right text-gray-600">{row.qty}</td>
                   <td className="px-4 py-2 text-right text-gray-600">{Math.round(row.valeur).toLocaleString('fr-FR')}</td>
                   <td className="px-4 py-2 text-right">
-                    <PerfPill value={row.gainPct / 100} />
+                    <PerfPill value={row.gainPct} />
                   </td>
                 </tr>
               ))}

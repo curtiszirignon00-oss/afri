@@ -1,10 +1,12 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface MacroItem {
-  indicator: string;
+  label: string;
   value: string;
-  trend?: 'up' | 'down' | 'flat';
+  signal?: string;
+  signification?: string;
   note?: string;
+  trend?: 'up' | 'down' | 'flat';
 }
 
 interface Props {
@@ -26,13 +28,18 @@ export default function MacroGrid({ items }: Props) {
         <div key={i} className="bg-white border border-gray-100 rounded-xl p-3 flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider truncate">
-              {item.indicator}
+              {item.label}
             </p>
             <TrendIcon trend={item.trend} />
           </div>
           <p className="text-base font-bold text-gray-900">{item.value}</p>
-          {item.note && (
-            <p className="text-[10px] text-gray-400 leading-relaxed">{item.note}</p>
+          {item.signification && (
+            <p className="text-[10px] text-gray-400 leading-relaxed italic border-t border-gray-50 pt-1">
+              {item.signification}
+            </p>
+          )}
+          {item.signal && (
+            <p className="text-[10px] text-gray-500 leading-relaxed">{item.signal}</p>
           )}
         </div>
       ))}

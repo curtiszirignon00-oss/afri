@@ -1,8 +1,6 @@
-import { TrendingUp, TrendingDown, Trophy, Repeat, ArrowRight, RefreshCcw, CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
+import { TrendingUp, TrendingDown, Trophy, Repeat, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import KofiBubble from './KofiBubble';
-import { useImportTimeMachineToSandbox } from '../../hooks/useTimeMachine';
 
 interface StepSummary {
   year: number;
@@ -20,7 +18,6 @@ interface Props {
   kofiLoading: boolean;
   onRequestRecap: () => void;
   onRestart?: () => void;
-  sessionId?: string;
 }
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -42,13 +39,10 @@ export default function BilanFinal({
   kofiLoading,
   onRequestRecap,
   onRestart,
-  sessionId,
 }: Props) {
   const navigate = useNavigate();
   const isPos = totalReturn >= 0;
   const cagrPos = cagr >= 0;
-  const importMutation = useImportTimeMachineToSandbox();
-  const [imported, setImported] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -65,12 +59,12 @@ export default function BilanFinal({
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <StatCard
           label="Rendement total"
-          value={`${isPos ? '+' : ''}${(totalReturn * 100).toFixed(1)}%`}
+          value={`${isPos ? '+' : ''}${totalReturn.toFixed(1)}%`}
           sub="dividendes inclus"
         />
         <StatCard
           label="CAGR annualisé"
-          value={`${cagrPos ? '+' : ''}${(cagr * 100).toFixed(2)}%`}
+          value={`${cagrPos ? '+' : ''}${cagr.toFixed(2)}%`}
           sub="par an"
         />
         <StatCard
@@ -86,7 +80,7 @@ export default function BilanFinal({
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">Votre portefeuille BRVM</span>
           <span className={`font-bold ${isPos ? 'text-emerald-600' : 'text-red-500'}`}>
-            {isPos ? '+' : ''}{(totalReturn * 100).toFixed(1)}%
+            {isPos ? '+' : ''}{totalReturn.toFixed(1)}%
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
@@ -107,61 +101,21 @@ export default function BilanFinal({
               <span className="text-sm text-gray-500">{Math.round(s.pfVal).toLocaleString('fr-FR')} FCFA</span>
               <span className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${s.perfTotal >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
                 {s.perfTotal >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {s.perfTotal >= 0 ? '+' : ''}{(s.perfTotal * 100).toFixed(1)}%
+                {s.perfTotal >= 0 ? '+' : ''}{s.perfTotal.toFixed(1)}%
               </span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* KOFI Recap */}
+      {/* Simba Recap */}
       <KofiBubble
         message={kofiRecap}
         loading={kofiLoading}
         mode="recap"
         onRequest={!kofiRecap ? onRequestRecap : undefined}
-        buttonLabel="Obtenir le récapitulatif KOFI"
+        buttonLabel="Obtenir le récapitulatif Simba"
       />
-
-      {/* Bridge SANDBOX */}
-      {sessionId && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
-          <p className="text-xs font-bold text-gray-600 uppercase tracking-wider">Transférer vers le simulateur</p>
-          <p className="text-sm text-gray-500">
-            Importez votre portefeuille final dans le simulateur SANDBOX pour continuer à le gérer en live.
-          </p>
-          {imported ? (
-            <div className="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
-              <CheckCircle2 className="w-4 h-4" />
-              Portefeuille transféré avec succès !
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="ml-auto text-blue-600 underline text-xs"
-              >
-                Voir le dashboard
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={async () => {
-                await importMutation.mutateAsync(sessionId);
-                setImported(true);
-              }}
-              disabled={importMutation.isPending}
-              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-            >
-              {importMutation.isPending ? (
-                <><RefreshCcw className="w-4 h-4 animate-spin" />Import en cours…</>
-              ) : (
-                <><RefreshCcw className="w-4 h-4" />Transférer vers le simulateur</>
-              )}
-            </button>
-          )}
-          {importMutation.isError && (
-            <p className="text-xs text-red-500">{(importMutation.error as any)?.response?.data?.error ?? 'Erreur lors du transfert'}</p>
-          )}
-        </div>
-      )}
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-3">

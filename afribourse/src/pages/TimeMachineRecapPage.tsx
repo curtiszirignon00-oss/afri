@@ -83,7 +83,6 @@ export default function TimeMachineRecapPage() {
           kofiLoading={kofiLoading}
           onRequestRecap={requestKofiRecap}
           onRestart={handleRestart}
-          sessionId={sessionId ?? session.id}
         />
       </div>
     </div>

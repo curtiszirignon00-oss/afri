@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
 import { useTimeMachine } from '../contexts/TimeMachineContext';
+import { useScenarioStockData } from '../hooks/useTimeMachine';
 import StepProgress from '../components/time-machine/StepProgress';
 import ContextPanel from '../components/time-machine/ContextPanel';
 import AllocationZone from '../components/time-machine/AllocationZone';
@@ -21,7 +22,8 @@ export default function TimeMachinePlayPage() {
     session,
     currentAllocation,
     currentNote,
-    availableCapital,
+    cash,
+    portfolioValue,
     kofiMessage,
     kofiLoading,
     isSubmitting,
@@ -36,15 +38,32 @@ export default function TimeMachinePlayPage() {
   const [phase, setPhase] = useState<'choosing' | 'submitted'>('choosing');
   const [loading, setLoading] = useState(true);
 
+  const step = session?.currentStep ?? 0;
+  const year = scenario?.years[step];
+
+  // Fetch real stock prices from DB for this year
+  const { data: stockData } = useScenarioStockData(slug, year);
+
+  // Build fundamentals map from DB data (fallback to seed)
+  const fundamentals: Record<string, any> = {};
+  if (stockData && stockData.length > 0) {
+    for (const s of stockData) {
+      fundamentals[s.ticker] = s;
+    }
+  } else if (scenario?.fundamentalsByYear && year) {
+    const seedFund = scenario.fundamentalsByYear[String(year)] ?? {};
+    Object.assign(fundamentals, seedFund);
+  }
+
+  // Tickers: from DB stock data if available, else from scenario
+  const tickers = stockData && stockData.length > 0
+    ? stockData.map(s => s.ticker)
+    : (scenario?.availableStocks ?? []);
+
   useEffect(() => {
     async function init() {
-      if (session) {
-        setLoading(false);
-        return;
-      }
-      if (sessionId) {
-        await loadSession(sessionId);
-      }
+      if (session) { setLoading(false); return; }
+      if (sessionId) { await loadSession(sessionId); }
       setLoading(false);
     }
     init();
@@ -81,15 +100,17 @@ export default function TimeMachinePlayPage() {
     );
   }
 
-  const step = session.currentStep;
-  const year = scenario.years[step];
   const isLastStep = step === scenario.years.length - 1;
   const contextData = scenario.contextByYear?.[String(year)] ?? {};
-  const fundamentals = scenario.fundamentalsByYear?.[String(year)] ?? {};
-  const totalBudget = session.capitalByStep?.[String(step)] ?? scenario.startBudget;
   const stepPerf = session.performanceByStep?.[String(step)];
   const prevPfVal = step > 0 ? (session.performanceByStep?.[String(step - 1)]?.pfVal ?? 0) : 0;
   const prevDivCum = step > 0 ? (session.performanceByStep?.[String(step - 1)]?.pfDivCum ?? 0) : 0;
+  const totalCapital = session.capitalByStep?.[String(step)] ?? scenario.startBudget;
+
+  // Previous holdings for sell/buy delta display
+  const prevHoldings: Record<string, number> = step > 0
+    ? (session.portfolioByStep?.[String(step - 1)] ?? {})
+    : {};
 
   async function handleSubmit() {
     try {
@@ -136,7 +157,7 @@ export default function TimeMachinePlayPage() {
                 portfolioValue={prevPfVal}
                 dividendsCumulative={prevDivCum}
                 newContribution={500000}
-                totalCapital={totalBudget}
+                totalCapital={totalCapital}
               />
             )}
 
@@ -145,7 +166,7 @@ export default function TimeMachinePlayPage() {
               <ContextPanel
                 context={contextData}
                 fundamentals={fundamentals}
-                tickers={scenario.availableStocks ?? []}
+                tickers={tickers}
               />
             </div>
           </div>
@@ -157,11 +178,12 @@ export default function TimeMachinePlayPage() {
                 <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
                   <h2 className="text-lg font-bold text-gray-900">Votre allocation — {year}</h2>
                   <AllocationZone
-                    tickers={scenario.availableStocks ?? []}
+                    tickers={tickers}
                     allocation={currentAllocation}
+                    prevHoldings={prevHoldings}
                     fundamentals={fundamentals}
-                    availableCapital={availableCapital}
-                    totalBudget={totalBudget}
+                    cash={cash}
+                    portfolioValue={portfolioValue}
                     onQtyChange={setQty}
                   />
                 </div>
@@ -176,7 +198,7 @@ export default function TimeMachinePlayPage() {
 
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || availableCapital < 0}
+                  disabled={isSubmitting || cash < -1}
                   className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-2xl transition-colors"
                 >
                   {isSubmitting ? (
@@ -195,7 +217,7 @@ export default function TimeMachinePlayPage() {
                     <h2 className="text-lg font-bold text-gray-900">Résultats — {year}</h2>
                   </div>
                   {stepPerf && (
-                    <PerformanceSnapshot perf={stepPerf} year={year} capital={totalBudget} />
+                    <PerformanceSnapshot perf={stepPerf} year={year!} capital={totalCapital} />
                   )}
                 </div>
 
@@ -204,7 +226,7 @@ export default function TimeMachinePlayPage() {
                   loading={kofiLoading}
                   mode="feedback"
                   onRequest={!kofiMessage ? () => requestKofiFeedback(step) : undefined}
-                  buttonLabel="Obtenir le feedback KOFI"
+                  buttonLabel="Obtenir le feedback Simba"
                 />
 
                 <button
