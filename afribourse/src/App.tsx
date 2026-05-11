@@ -12,6 +12,7 @@ import { queryClient } from './lib/queryClient';
 
 // Context
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TimeMachineProvider } from './contexts/TimeMachineContext';
 import { ChallengeProvider } from './contexts/ChallengeContext';
 import { CelebrationProvider } from './contexts/CelebrationContext';
 import { OnboardingGuideProvider } from './context/OnboardingGuideContext';
@@ -30,6 +31,12 @@ import WelcomePopup from './components/WelcomePopup';
 import WebinarAnnouncementPopup from './components/WebinarAnnouncementPopup';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { SessionExpiredModal } from './components/ui/SessionExpiredModal';
+
+// Time Machine — Apprentissage guidé historique
+const TimeMachinePage = lazy(() => import('./pages/TimeMachinePage'));
+const TimeMachineScenarioPage = lazy(() => import('./pages/TimeMachineScenarioPage'));
+const TimeMachinePlayPage = lazy(() => import('./pages/TimeMachinePlayPage'));
+const TimeMachineRecapPage = lazy(() => import('./pages/TimeMachineRecapPage'));
 
 // Routes lazy — chargées à la demande
 const MarketsPageRefactored = lazy(() => import('./components/MarketsPageRefactored'));
@@ -177,6 +184,12 @@ function Layout() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />
+
+          {/* Time Machine — Apprentissage guidé historique */}
+          <Route path="/time-machine" element={<ProtectedRoute requireOnboarding={false}><TimeMachinePage /></ProtectedRoute>} />
+          <Route path="/time-machine/:slug" element={<ProtectedRoute requireOnboarding={false}><TimeMachineScenarioPage /></ProtectedRoute>} />
+          <Route path="/time-machine/:slug/play" element={<ProtectedRoute requireOnboarding={false}><TimeMachinePlayPage /></ProtectedRoute>} />
+          <Route path="/time-machine/:slug/recap" element={<ProtectedRoute requireOnboarding={false}><TimeMachineRecapPage /></ProtectedRoute>} />
           <Route path="/glossary" element={<GlossaryPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -429,11 +442,13 @@ function App() {
         <AuthProvider>
           <ChallengeProvider>
             <CelebrationProvider>
-              <BrowserRouter>
-                <OnboardingGuideProvider>
-                  <Layout />
-                </OnboardingGuideProvider>
-              </BrowserRouter>
+              <TimeMachineProvider>
+                <BrowserRouter>
+                  <OnboardingGuideProvider>
+                    <Layout />
+                  </OnboardingGuideProvider>
+                </BrowserRouter>
+              </TimeMachineProvider>
             </CelebrationProvider>
           </ChallengeProvider>
         </AuthProvider>
