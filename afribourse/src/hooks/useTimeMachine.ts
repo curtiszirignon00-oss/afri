@@ -26,6 +26,28 @@ export function useTimeMachineScenario(slug: string | undefined) {
   });
 }
 
+export interface StockData {
+  ticker: string;
+  cours: number;
+  per?: number | null;
+  bna?: number | null;
+  div?: number | null;
+  roe?: number | null;
+  note?: string;
+}
+
+export function useScenarioStockData(slug: string | undefined, year: number | undefined) {
+  return useQuery({
+    queryKey: ['timeMachine', 'stockData', slug, year],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/time-machine/scenarios/${slug}/stock-data/${year}`);
+      return data.stocks as StockData[];
+    },
+    enabled: !!slug && !!year,
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
 export function useTimeMachineStepContext(slug: string | undefined, year: number | undefined) {
   return useQuery({
     queryKey: ['timeMachine', 'step', slug, year],
@@ -121,11 +143,3 @@ export function useRequestKofiRecap() {
   });
 }
 
-export function useImportTimeMachineToSandbox() {
-  return useMutation({
-    mutationFn: async (sessionId: string) => {
-      const { data } = await apiClient.post(`/time-machine/sessions/${sessionId}/import-to-sandbox`);
-      return data as { imported: string[]; portfolioId: string };
-    },
-  });
-}

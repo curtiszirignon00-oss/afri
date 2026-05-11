@@ -25,8 +25,8 @@ export default function KofiBubble({ message, loading, mode = 'feedback', onRequ
           <Brain className={`w-4 h-4 ${cfg.text}`} />
         </div>
         <div>
-          <p className={`text-xs font-bold uppercase tracking-wider ${cfg.text}`}>KOFI</p>
-          <p className="text-[10px] text-gray-400">Votre conseiller IA</p>
+          <p className={`text-xs font-bold uppercase tracking-wider ${cfg.text}`}>Simba</p>
+          <p className="text-[10px] text-gray-400">Analyste IA BRVM</p>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export default function KofiBubble({ message, loading, mode = 'feedback', onRequ
           className={`flex items-center gap-2 text-xs font-semibold text-white px-4 py-2 rounded-lg transition-colors ${cfg.btn}`}
         >
           {message ? <RefreshCw className="w-3.5 h-3.5" /> : <Brain className="w-3.5 h-3.5" />}
-          {buttonLabel ?? 'Demander l\'analyse KOFI'}
+          {buttonLabel ?? 'Demander l\'analyse Simba'}
         </button>
       )}
     </div>

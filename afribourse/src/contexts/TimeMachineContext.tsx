@@ -41,7 +41,8 @@ interface TimeMachineState {
   session: TimeMachineSession | null;
   currentAllocation: Record<string, number>;
   currentNote: string;
-  availableCapital: number;
+  cash: number;
+  portfolioValue: number;
   kofiMessage: string | null;
   kofiLoading: boolean;
   isSubmitting: boolean;
@@ -53,7 +54,6 @@ type Action =
   | { type: 'SET_SESSION'; payload: TimeMachineSession }
   | { type: 'SET_QTY'; payload: { ticker: string; qty: number } }
   | { type: 'SET_NOTE'; payload: string }
-  | { type: 'SET_CAPITAL'; payload: number }
   | { type: 'SET_KOFI'; payload: string | null }
   | { type: 'SET_KOFI_LOADING'; payload: boolean }
   | { type: 'SET_SUBMITTING'; payload: boolean }
@@ -61,55 +61,138 @@ type Action =
   | { type: 'RESET_ALLOCATION' };
 
 const STORAGE_KEY = 'tm_session';
+const COMMISSION_BUY  = 0.012;
+const COMMISSION_SELL = 0.006;
 
-function calcCost(allocation: Record<string, number>, fundamentals: any, year: number): number {
-  const fund = fundamentals?.[String(year)] ?? {};
-  return Object.entries(allocation).reduce((sum, [ticker, qty]) => {
-    const cours = fund[ticker]?.cours ?? 0;
-    return sum + qty * cours * 1.012;
+function getCours(fundamentalsByYear: any, year: number, ticker: string, stockDataMap?: Record<string, number>): number {
+  if (stockDataMap?.[ticker]) return stockDataMap[ticker];
+  return fundamentalsByYear?.[String(year)]?.[ticker]?.cours ?? 0;
+}
+
+function calcPortfolioValue(
+  allocation: Record<string, number>,
+  fundamentalsByYear: any,
+  year: number,
+  stockDataMap?: Record<string, number>,
+): number {
+  return Object.entries(allocation).reduce((total, [ticker, qty]) => {
+    const cours = getCours(fundamentalsByYear, year, ticker, stockDataMap);
+    return total + qty * cours;
   }, 0);
+}
+
+function calcCashAfterAllocChange(
+  newAlloc: Record<string, number>,
+  prevHoldings: Record<string, number>,
+  fundamentalsByYear: any,
+  year: number,
+  baseCash: number,
+  stockDataMap?: Record<string, number>,
+): number {
+  let cash = baseCash;
+  const allTickers = new Set([...Object.keys(prevHoldings), ...Object.keys(newAlloc)]);
+  for (const ticker of allTickers) {
+    const prevQty = prevHoldings[ticker] ?? 0;
+    const targetQty = newAlloc[ticker] ?? 0;
+    const delta = targetQty - prevQty;
+    const cours = getCours(fundamentalsByYear, year, ticker, stockDataMap);
+    if (cours <= 0) continue;
+    if (delta > 0) {
+      cash -= delta * cours * (1 + COMMISSION_BUY);
+    } else if (delta < 0) {
+      cash += Math.abs(delta) * cours * (1 - COMMISSION_SELL);
+    }
+  }
+  return cash;
 }
 
 function reducer(state: TimeMachineState, action: Action): TimeMachineState {
   switch (action.type) {
     case 'SET_SCENARIO':
       return { ...state, scenario: action.payload, error: null };
+
     case 'SET_SESSION': {
       const s = action.payload;
       const step = s.currentStep;
-      const capital = s.capitalByStep?.[String(step)] ?? s.scenario?.startBudget ?? 0;
-      const existingAlloc = s.portfolioByStep?.[String(step)] ?? {};
+      const scenario = s.scenario as TimeMachineScenario | undefined;
+      const year = scenario?.years[step] ?? 0;
+
+      // Cash available at start of this step
+      const baseCash = s.capitalByStep?.[String(step)] ?? scenario?.startBudget ?? 0;
+
+      // Previous holdings (inherited from last step)
+      const prevHoldings: Record<string, number> = step > 0
+        ? (s.portfolioByStep?.[String(step - 1)] ?? {})
+        : {};
+
+      // Current allocation for this step (if already submitted, use it; else inherit)
+      const savedAlloc = s.portfolioByStep?.[String(step)];
+      const currentAllocation = savedAlloc ?? { ...prevHoldings };
+
+      // Calculate portfolio value (at current year prices from seed)
+      const pfVal = calcPortfolioValue(currentAllocation, scenario?.fundamentalsByYear, year);
+
+      // Cash after accounting for current allocation vs inherited
+      const cash = calcCashAfterAllocChange(
+        currentAllocation,
+        prevHoldings,
+        scenario?.fundamentalsByYear,
+        year,
+        baseCash,
+      );
+
       return {
         ...state,
         session: s,
-        currentAllocation: existingAlloc,
+        scenario: scenario ?? state.scenario,
+        currentAllocation,
         currentNote: s.noteByStep?.[String(step)] ?? '',
-        availableCapital: capital,
+        cash,
+        portfolioValue: pfVal,
       };
     }
+
     case 'SET_QTY': {
       const newAlloc = { ...state.currentAllocation, [action.payload.ticker]: action.payload.qty };
       if (action.payload.qty === 0) delete newAlloc[action.payload.ticker];
+
       const step = state.session?.currentStep ?? 0;
       const year = state.scenario?.years[step] ?? 0;
-      const cost = calcCost(newAlloc, state.scenario?.fundamentalsByYear, year);
-      const maxCapital = state.session?.capitalByStep?.[String(step)] ?? state.scenario?.startBudget ?? 0;
-      return { ...state, currentAllocation: newAlloc, availableCapital: maxCapital - cost };
+      const prevHoldings: Record<string, number> = step > 0
+        ? (state.session?.portfolioByStep?.[String(step - 1)] ?? {})
+        : {};
+      const baseCash = state.session?.capitalByStep?.[String(step)] ?? state.scenario?.startBudget ?? 0;
+
+      const cash = calcCashAfterAllocChange(
+        newAlloc,
+        prevHoldings,
+        state.scenario?.fundamentalsByYear,
+        year,
+        baseCash,
+      );
+      const portfolioValue = calcPortfolioValue(newAlloc, state.scenario?.fundamentalsByYear, year);
+
+      return { ...state, currentAllocation: newAlloc, cash, portfolioValue };
     }
+
     case 'SET_NOTE':
       return { ...state, currentNote: action.payload };
-    case 'SET_CAPITAL':
-      return { ...state, availableCapital: action.payload };
+
     case 'SET_KOFI':
       return { ...state, kofiMessage: action.payload };
+
     case 'SET_KOFI_LOADING':
       return { ...state, kofiLoading: action.payload };
+
     case 'SET_SUBMITTING':
       return { ...state, isSubmitting: action.payload };
+
     case 'SET_ERROR':
       return { ...state, error: action.payload };
+
     case 'RESET_ALLOCATION':
       return { ...state, currentAllocation: {}, currentNote: '' };
+
     default:
       return state;
   }
@@ -120,7 +203,8 @@ const initialState: TimeMachineState = {
   session: null,
   currentAllocation: {},
   currentNote: '',
-  availableCapital: 0,
+  cash: 0,
+  portfolioValue: 0,
   kofiMessage: null,
   kofiLoading: false,
   isSubmitting: false,
@@ -138,6 +222,8 @@ interface TimeMachineContextType extends TimeMachineState {
   submitStep: () => Promise<void>;
   requestKofiFeedback: (stepIndex: number) => Promise<void>;
   requestKofiRecap: () => Promise<void>;
+  // Derived
+  availableCapital: number;
 }
 
 const TimeMachineContext = createContext<TimeMachineContextType | null>(null);
@@ -176,7 +262,7 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
     try {
       const { data } = await apiClient.get(`/time-machine/scenarios/${slug}`);
       dispatch({ type: 'SET_SCENARIO', payload: data.scenario });
-    } catch (err: any) {
+    } catch {
       dispatch({ type: 'SET_ERROR', payload: 'Impossible de charger le scénario.' });
     }
   }, []);
@@ -211,7 +297,7 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
       if (data.session.scenario) {
         dispatch({ type: 'SET_SCENARIO', payload: data.session.scenario });
       }
-    } catch (err: any) {
+    } catch {
       dispatch({ type: 'SET_ERROR', payload: 'Impossible de charger la session.' });
     }
   }, []);
@@ -265,7 +351,7 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
       const { data } = await apiClient.post(`/time-machine/sessions/${state.session.id}/kofi`, { stepIndex });
       dispatch({ type: 'SET_KOFI', payload: data.feedback });
     } catch {
-      dispatch({ type: 'SET_KOFI', payload: 'Analyse KOFI temporairement indisponible.' });
+      dispatch({ type: 'SET_KOFI', payload: 'Analyse Simba temporairement indisponible.' });
     } finally {
       dispatch({ type: 'SET_KOFI_LOADING', payload: false });
     }
@@ -283,7 +369,7 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
       const { data } = await apiClient.post(`/time-machine/sessions/${state.session.id}/kofi-recap`, {});
       dispatch({ type: 'SET_KOFI', payload: data.recap });
     } catch {
-      dispatch({ type: 'SET_KOFI', payload: 'Récapitulatif KOFI temporairement indisponible.' });
+      dispatch({ type: 'SET_KOFI', payload: 'Récapitulatif Simba temporairement indisponible.' });
     } finally {
       dispatch({ type: 'SET_KOFI_LOADING', payload: false });
     }
@@ -300,6 +386,7 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
       submitStep,
       requestKofiFeedback,
       requestKofiRecap,
+      availableCapital: state.cash, // backwards compat alias
     }}>
       {children}
     </TimeMachineContext.Provider>

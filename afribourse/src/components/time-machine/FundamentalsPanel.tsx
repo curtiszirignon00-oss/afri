@@ -65,7 +65,10 @@ function TickerRow({ ticker, data }: { ticker: string; data: FundamentalData }) 
           {data.kofiAnalysis && (
             <div className="flex gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3">
               <Brain className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-800 leading-relaxed">{data.kofiAnalysis}</p>
+              <div>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Analyse Simba</p>
+                <p className="text-xs text-blue-800 leading-relaxed">{data.kofiAnalysis}</p>
+              </div>
             </div>
           )}
         </div>

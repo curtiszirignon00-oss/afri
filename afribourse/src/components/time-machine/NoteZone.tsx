@@ -34,7 +34,7 @@ export default function NoteZone({ value, onChange }: Props) {
       />
 
       <p className="text-[10px] text-amber-500">
-        KOFI analysera votre logique, pas uniquement vos résultats.
+        Simba analysera votre logique, pas uniquement vos résultats.
       </p>
     </div>
   );

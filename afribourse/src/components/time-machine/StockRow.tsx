@@ -8,22 +8,23 @@ interface FundData {
 interface Props {
   ticker: string;
   qty: number;
+  prevQty: number;
   fundData: FundData;
   onQtyChange: (ticker: string, qty: number) => void;
-  maxAffordable?: number;
+  cash: number;
 }
 
-const COMMISSION = 0.012;
+const COMMISSION_BUY  = 0.012;
+const COMMISSION_SELL = 0.006;
 
-export default function StockRow({ ticker, qty, fundData, onQtyChange, maxAffordable }: Props) {
+export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, cash }: Props) {
   const cours = fundData?.cours ?? 0;
-  const costPerShare = cours * (1 + COMMISSION);
-  const totalCost = qty * costPerShare;
+  const delta = qty - prevQty;
 
   function increment() {
-    const next = qty + 1;
-    if (maxAffordable !== undefined && next * costPerShare > (qty * costPerShare) + maxAffordable) return;
-    onQtyChange(ticker, next);
+    const addCost = cours * (1 + COMMISSION_BUY);
+    if (addCost > cash + 1) return;
+    onQtyChange(ticker, qty + 1);
   }
 
   function decrement() {
@@ -37,14 +38,41 @@ export default function StockRow({ ticker, qty, fundData, onQtyChange, maxAfford
     onQtyChange(ticker, v);
   }
 
+  const totalValue = qty * cours;
+
+  let deltaBadge: React.ReactNode = null;
+  if (delta > 0) {
+    deltaBadge = (
+      <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">
+        +{delta} achat
+      </span>
+    );
+  } else if (delta < 0) {
+    deltaBadge = (
+      <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+        {delta} vente
+      </span>
+    );
+  } else if (prevQty > 0 && qty === prevQty) {
+    deltaBadge = (
+      <span className="text-[9px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
+        conservé
+      </span>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-white border border-gray-100 rounded-xl hover:border-blue-200 transition-colors">
+    <div className={`flex items-center gap-3 px-4 py-3 bg-white border rounded-xl hover:border-blue-200 transition-colors ${delta > 0 ? 'border-emerald-200' : delta < 0 ? 'border-red-200' : 'border-gray-100'}`}>
       {/* Ticker */}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm text-gray-900">{ticker}</p>
-        <p className="text-xs text-gray-500">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <p className="font-bold text-sm text-gray-900">{ticker}</p>
+          {deltaBadge}
+        </div>
+        <p className="text-xs text-gray-500 mt-0.5">
           {cours > 0 ? `${cours.toLocaleString('fr-FR')} FCFA` : '—'}
-          {cours > 0 && <span className="text-gray-400"> · +1.2% SGI</span>}
+          {cours > 0 && delta > 0 && <span className="text-gray-400"> · +1.2% SGI</span>}
+          {cours > 0 && delta < 0 && <span className="text-gray-400"> · −0.6% SGI</span>}
         </p>
       </div>
 
@@ -68,18 +96,19 @@ export default function StockRow({ ticker, qty, fundData, onQtyChange, maxAfford
 
         <button
           onClick={increment}
-          className="w-7 h-7 rounded-full bg-gray-100 hover:bg-green-100 flex items-center justify-center transition-colors"
+          disabled={cours > 0 && cours * (1 + COMMISSION_BUY) > cash + 1}
+          className="w-7 h-7 rounded-full bg-gray-100 hover:bg-green-100 disabled:opacity-30 flex items-center justify-center transition-colors"
         >
           <Plus className="w-3.5 h-3.5 text-gray-600" />
         </button>
       </div>
 
-      {/* Cost */}
+      {/* Value */}
       <div className="text-right shrink-0 min-w-[90px]">
         <p className="text-sm font-bold text-gray-900">
-          {totalCost > 0 ? `${Math.round(totalCost).toLocaleString('fr-FR')}` : '—'}
+          {totalValue > 0 ? `${Math.round(totalValue).toLocaleString('fr-FR')}` : '—'}
         </p>
-        {totalCost > 0 && <p className="text-[10px] text-gray-400">FCFA</p>}
+        {totalValue > 0 && <p className="text-[10px] text-gray-400">FCFA</p>}
       </div>
     </div>
   );

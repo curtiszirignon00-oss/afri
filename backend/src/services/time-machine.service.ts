@@ -5,7 +5,8 @@ import { log } from '../config/logger';
 const prisma = new PrismaClient();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
 
-const COMMISSION_RATE = 0.012; // 1.2% SGI
+const COMMISSION_RATE = 0.012;  // 1.2% à l'achat
+const COMMISSION_SELL = 0.006;  // 0.6% à la vente
 const NEW_CONTRIBUTION = 500000; // FCFA ajouté à chaque saut
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -222,16 +223,32 @@ export async function submitStep(
   if (!session) throw new Error('Session not found or not in progress');
 
   const scenario = session.scenario as any;
-  const capital = (session.capitalByStep as any)?.[String(stepIndex)] ?? scenario.startBudget;
+  const year = scenario.years[stepIndex];
+  const prevHoldings: PortfolioAllocation = stepIndex > 0
+    ? ((session.portfolioByStep as any)?.[String(stepIndex - 1)] ?? {})
+    : {};
 
-  // Valider le budget (valeur achetée × (1 + commission) <= capital)
-  const costWithCommission = Object.entries(allocation).reduce((total, [ticker, qty]) => {
-    const cours = getCours(scenario, scenario.years[stepIndex], ticker);
-    return total + qty * cours * (1 + COMMISSION_RATE);
-  }, 0);
+  // Cash disponible au début de cette étape
+  let cash = (session.capitalByStep as any)?.[String(stepIndex)] ?? scenario.startBudget;
 
-  if (costWithCommission > capital + 1) {
-    throw new Error(`Budget dépassé : ${Math.round(costWithCommission)} FCFA > ${capital} FCFA disponibles`);
+  // Calculer les transactions (delta entre holdings hérités et allocation cible)
+  const allTickers = new Set([...Object.keys(prevHoldings), ...Object.keys(allocation)]);
+  for (const ticker of allTickers) {
+    const prevQty = prevHoldings[ticker] ?? 0;
+    const targetQty = allocation[ticker] ?? 0;
+    const delta = targetQty - prevQty;
+    const cours = getCours(scenario, year, ticker);
+    if (cours <= 0) continue;
+
+    if (delta > 0) {
+      cash -= delta * cours * (1 + COMMISSION_RATE);
+    } else if (delta < 0) {
+      cash += Math.abs(delta) * cours * (1 - COMMISSION_SELL);
+    }
+  }
+
+  if (cash < -1) {
+    throw new Error(`Budget dépassé : liquidités insuffisantes`);
   }
 
   const portfolioByStep = { ...(session.portfolioByStep as any), [String(stepIndex)]: allocation };
@@ -240,11 +257,18 @@ export async function submitStep(
   const perf = calculateStepPerformance(scenario, portfolioByStep, stepIndex);
   const performanceByStep = { ...(session.performanceByStep as any), [String(stepIndex)]: perf };
 
-  // Calculer le capital pour l'étape suivante
+  // Capital pour l'étape suivante = valeur PF + cash restant + dividendes + contribution
   const nextStepIndex = stepIndex + 1;
   const capitalByStep = { ...(session.capitalByStep as any) };
   if (nextStepIndex < scenario.years.length) {
-    capitalByStep[String(nextStepIndex)] = calculateCapitalForStep(scenario, portfolioByStep, nextStepIndex);
+    const nextYear = scenario.years[nextStepIndex];
+    const pfValNextYear = calcPortfolioValue(scenario, nextYear, allocation);
+    const divForPeriod = Object.entries(allocation).reduce((sum, [ticker, qty]) => {
+      const divAnnuel = getDividend(scenario, year, ticker);
+      const nbYears = nextYear - year;
+      return sum + (qty as number) * divAnnuel * nbYears;
+    }, 0);
+    capitalByStep[String(nextStepIndex)] = pfValNextYear + Math.max(0, cash) + divForPeriod + NEW_CONTRIBUTION;
   }
 
   const isLastStep = stepIndex >= scenario.years.length - 1;
@@ -278,17 +302,18 @@ export async function completeSession(sessionId: string, userId: string) {
   });
 }
 
-// ─── KOFI IA ─────────────────────────────────────────────────────────────────
+// ─── SIMBA IA ────────────────────────────────────────────────────────────────
 
-const KOFI_SYSTEM_PROMPT = `Tu es KOFI, l'analyste IA de la Time Machine Afribourse.
+const SIMBA_SYSTEM_PROMPT = `Tu es Simba, l'analyste IA de la Time Machine AfriBourse.
 
-Tu analysés les décisions d'investissement historiques d'un utilisateur sur la BRVM (Bourse Régionale des Valeurs Mobilières de l'UEMOA).
+Tu analyses les décisions d'investissement historiques d'un utilisateur sur la BRVM (Bourse Régionale des Valeurs Mobilières de l'UEMOA).
 
 Tes principes :
+- Tu t'adresses directement à l'utilisateur par son prénom quand il est fourni
 - Tu analyses la LOGIQUE de l'allocation, pas juste le résultat financier
 - Tu identifies les biais comportementaux (aversion aux pertes, momentum, comportement moutonnier)
 - Tu enseignes toujours une règle générale applicable aux marchés BRVM futurs
-- Ton ton est pédagogique, direct, bienveillant
+- Ton ton est pédagogique, direct, bienveillant et personnalisé
 - Maximum 3 paragraphes courts par réponse
 - Tu parles en français, avec des chiffres concrets quand disponibles
 - Tu ne félicites pas si le choix était mauvais — tu expliques pourquoi`;
@@ -297,6 +322,7 @@ export async function generateKofiFeedback(
   sessionId: string,
   userId: string,
   stepIndex: number,
+  userName?: string,
 ): Promise<string> {
   const session = await prisma.timeMachineSession.findFirst({
     where: { id: sessionId, userId },
@@ -330,7 +356,9 @@ export async function generateKofiFeedback(
     })
     .join('\n');
 
-  const prompt = `Contexte historique — ${year} :
+  const userPrefix = userName ? `Utilisateur : ${userName}. Adresse-toi à lui directement par son prénom.\n\n` : '';
+
+  const prompt = `${userPrefix}Contexte historique — ${year} :
 ${macro.map((m: any) => `• ${m.label}: ${m.value} — ${m.signal}`).join('\n')}
 
 Allocation de l'utilisateur (${nbTitres} titre${nbTitres > 1 ? 's' : ''} sur capital de ${capital.toLocaleString()} FCFA) :
@@ -352,20 +380,20 @@ Si l'utilisateur a fourni une justification, évalue explicitement la qualité d
     const completion = await groq.chat.completions.create({
       model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: KOFI_SYSTEM_PROMPT },
+        { role: 'system', content: SIMBA_SYSTEM_PROMPT },
         { role: 'user', content: prompt },
       ],
       max_tokens: 600,
       temperature: 0.65,
     });
-    return completion.choices[0]?.message?.content ?? 'Analyse KOFI temporairement indisponible.';
+    return completion.choices[0]?.message?.content ?? 'Analyse Simba temporairement indisponible.';
   } catch (err: any) {
-    log.error('[KOFI] Groq error:', err?.message);
-    return 'Analyse KOFI temporairement indisponible. Veuillez réessayer.';
+    log.error('[Simba] Groq error:', err?.message);
+    return 'Analyse Simba temporairement indisponible. Veuillez réessayer.';
   }
 }
 
-export async function generateKofiRecap(sessionId: string, userId: string): Promise<string> {
+export async function generateKofiRecap(sessionId: string, userId: string, userName?: string): Promise<string> {
   const session = await prisma.timeMachineSession.findFirst({
     where: { id: sessionId, userId },
     include: { scenario: true },
@@ -387,7 +415,9 @@ export async function generateKofiRecap(sessionId: string, userId: string): Prom
     return `Étape ${i + 1} (${year}) : ${nbTitres} titre${nbTitres > 1 ? 's' : ''}${note ? ` — Note: "${note}"` : ''} | Perf capital: ${perf ? perf.perfCapital.toFixed(1) + '%' : 'N/A'}`;
   }).join('\n');
 
-  const prompt = `Scénario complété : "${scenario.title}" (${scenario.years[0]} → ${scenario.years[scenario.years.length - 1]})
+  const userPrefix = userName ? `Utilisateur : ${userName}. Adresse-toi à lui directement par son prénom.\n\n` : '';
+
+  const prompt = `${userPrefix}Scénario complété : "${scenario.title}" (${scenario.years[0]} → ${scenario.years[scenario.years.length - 1]})
 
 Résumé des étapes :
 ${stepsStr}
@@ -403,16 +433,16 @@ Génère un récapitulatif pédagogique de 3 règles clés que cet investisseur 
     const completion = await groq.chat.completions.create({
       model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: KOFI_SYSTEM_PROMPT },
+        { role: 'system', content: SIMBA_SYSTEM_PROMPT },
         { role: 'user', content: prompt },
       ],
       max_tokens: 700,
       temperature: 0.65,
     });
-    return completion.choices[0]?.message?.content ?? 'Récapitulatif KOFI indisponible.';
+    return completion.choices[0]?.message?.content ?? 'Récapitulatif Simba indisponible.';
   } catch (err: any) {
-    log.error('[KOFI] Recap Groq error:', err?.message);
-    return 'Récapitulatif KOFI temporairement indisponible.';
+    log.error('[Simba] Recap Groq error:', err?.message);
+    return 'Récapitulatif Simba temporairement indisponible.';
   }
 }
 
@@ -488,6 +518,45 @@ export async function importToSandbox(sessionId: string, userId: string) {
   }
 
   return { imported, portfolioId: portfolio.id };
+}
+
+// ─── Données de marché historiques depuis la DB ───────────────────────────────
+
+export async function getStockDataForYear(tickers: string[], year: number, scenarioFallback?: any) {
+  const startOfYear = new Date(year, 0, 1);
+  const endOfYear   = new Date(year, 11, 31);
+
+  const [histories, fundamentalsList] = await Promise.all([
+    Promise.all(tickers.map(ticker =>
+      prisma.stockHistory.findFirst({
+        where: { stock_ticker: ticker, date: { gte: startOfYear, lte: endOfYear } },
+        orderBy: { date: 'desc' },
+      }),
+    )),
+    prisma.annualFinancials.findMany({
+      where: { stock_ticker: { in: tickers }, year },
+    }),
+  ]);
+
+  const results = tickers.map((ticker, i) => {
+    const hist = histories[i];
+    const fund = fundamentalsList.find(f => f.stock_ticker === ticker);
+    // Fallback to seed data if DB has no price
+    const seedFund = scenarioFallback?.[String(year)]?.[ticker];
+    const cours = (hist as any)?.close ?? seedFund?.cours ?? 0;
+
+    return {
+      ticker,
+      cours,
+      per:  (fund as any)?.pe_ratio  ?? seedFund?.per  ?? null,
+      bna:  (fund as any)?.eps       ?? seedFund?.bna  ?? null,
+      div:  (fund as any)?.dividend  ?? seedFund?.div  ?? null,
+      roe:  (fund as any)?.roe       ?? seedFund?.roe  ?? null,
+      note: seedFund?.note ?? undefined,
+    };
+  }).filter(s => s.cours > 0);
+
+  return results;
 }
 
 // ─── Fondamentaux & Prix historiques (utilitaires) ────────────────────────────

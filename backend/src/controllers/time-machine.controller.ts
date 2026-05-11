@@ -168,7 +168,8 @@ export async function getKofiFeedback(req: Request, res: Response) {
 
     if (typeof stepIndex !== 'number') return res.status(400).json({ error: 'stepIndex requis' });
 
-    const feedback = await tmService.generateKofiFeedback(id, user.id, stepIndex);
+    const userName = user?.name ?? user?.firstname ?? undefined;
+    const feedback = await tmService.generateKofiFeedback(id, user.id, stepIndex, userName);
     res.json({ feedback });
   } catch (err: any) {
     log.error('[TimeMachine] getKofiFeedback error:', err.message);
@@ -180,10 +181,27 @@ export async function getKofiRecap(req: Request, res: Response) {
   try {
     const user = (req as any).user;
     const { id } = req.params;
-    const recap = await tmService.generateKofiRecap(id, user.id);
+    const userName = user?.name ?? user?.firstname ?? undefined;
+    const recap = await tmService.generateKofiRecap(id, user.id, userName);
     res.json({ recap });
   } catch (err: any) {
     log.error('[TimeMachine] getKofiRecap error:', err.message);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
+
+export async function getScenarioStockData(req: Request, res: Response) {
+  try {
+    const { slug, year } = req.params;
+    const scenario = await tmService.getScenario(slug);
+    if (!scenario) return res.status(404).json({ error: 'Scénario introuvable' });
+
+    const tickers = (scenario as any).availableStocks ?? [];
+    const fundamentalsFallback = (scenario as any).fundamentalsByYear;
+    const stocks = await tmService.getStockDataForYear(tickers, parseInt(year), fundamentalsFallback);
+    res.json({ stocks });
+  } catch (err: any) {
+    log.error('[TimeMachine] getScenarioStockData error:', err.message);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 }
