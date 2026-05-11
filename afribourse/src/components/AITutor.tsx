@@ -16,6 +16,7 @@ interface AITutorProps {
   userContext: TutorUserContext;
   isOpen: boolean;
   onClose: () => void;
+  motivationMode?: boolean;
 }
 
 const QUICK_SUGGESTIONS = [
@@ -24,16 +25,24 @@ const QUICK_SUGGESTIONS = [
   'Expliquer le PER',
 ];
 
-export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }) => {
+const MOTIVATION_WELCOME = `Félicitations pour ton premier module ! 🎉
+
+Dis-moi — qu'est-ce qui t'a motivé à apprendre sur la BRVM et les marchés financiers africains ?`;
+
+export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose, motivationMode = false }) => {
   const moduleLabel = userContext.currentModule ?? 'ce module';
 
+  const buildWelcome = (label: string, isMotivation: boolean): UIMessage => ({
+    id: 'welcome',
+    role: 'assistant',
+    text: isMotivation
+      ? MOTIVATION_WELCOME
+      : `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${label}** — pose-moi tes questions !`,
+    timestamp: Date.now(),
+  });
+
   const [messages, setMessages] = useState<UIMessage[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      text: `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${moduleLabel}** — pose-moi tes questions !`,
-      timestamp: Date.now(),
-    },
+    buildWelcome(moduleLabel, motivationMode),
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,18 +53,12 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Réinitialiser quand le module change
+  // Réinitialiser quand le module change ou le mode change
   useEffect(() => {
     const label = userContext.currentModule ?? 'ce module';
-    setMessages([
-      {
-        id: 'welcome',
-        role: 'assistant',
-        text: `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${label}** — pose-moi tes questions !`,
-        timestamp: Date.now(),
-      },
-    ]);
-  }, [userContext.currentModule]);
+    setMessages([buildWelcome(label, motivationMode)]);
+    setPaywallHit(false);
+  }, [userContext.currentModule, motivationMode]);
 
   const rateMessage = (id: string, rating: 'up' | 'down') => {
     setMessages((prev) =>
@@ -89,7 +92,10 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
       .filter((m) => m.id !== 'welcome')
       .map((m) => ({ role: m.role, content: m.text }));
 
-    const { reply, messageId, paywallHit: hit } = await askGeminiTutor(messageText, history, userContext);
+    const { reply, messageId, paywallHit: hit } = await askGeminiTutor(messageText, history, {
+      ...userContext,
+      motivationMode: motivationMode || undefined,
+    });
 
     if (hit) {
       setPaywallHit(true);
@@ -123,10 +129,10 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-sm">SIMBA — Tuteur Afribourse</h3>
+            <h3 className="font-bold text-sm">SIMBA — {motivationMode ? 'Coach Motivation' : 'Tuteur Afribourse'}</h3>
             <p className="text-xs text-blue-100 flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
-              {userContext.currentModule ?? 'Learning Academy'}
+              {motivationMode ? 'Premier module complété 🎉' : (userContext.currentModule ?? 'Learning Academy')}
             </p>
           </div>
         </div>
@@ -221,8 +227,8 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose }
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggestions rapides */}
-      {messages.length <= 1 && (
+      {/* Suggestions rapides — masquées en mode motivation (SIMBA pose la question) */}
+      {messages.length <= 1 && !motivationMode && (
         <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-slate-100 pt-2">
           {QUICK_SUGGESTIONS.map((s) => (
             <button

@@ -178,6 +178,7 @@ export interface TutorUserContext {
   currentLesson?: string;
   progress?: string;
   lastQuizScore?: number;
+  motivationMode?: boolean;
 }
 
 export const askGeminiTutor = async (

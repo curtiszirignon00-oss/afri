@@ -34,6 +34,7 @@ export interface TutorUserContext {
   currentLesson?: string;
   progress?: string;
   lastQuizScore?: number;
+  motivationMode?: boolean;
 }
 
 const TUTOR_SPECIFIC = `
@@ -57,7 +58,26 @@ Adapte la complexité au niveau de l'utilisateur. Utilise des exemples du quotid
 Termine TOUJOURS par une question ou une action pour continuer l'apprentissage.
 `.trim();
 
+const MOTIVATION_SPECIFIC = `
+## TON RÔLE (MODE MOTIVATION — PREMIER MODULE)
+L'utilisateur vient de terminer son tout premier module de formation Afribourse. Il vient de te donner sa motivation personnelle pour apprendre.
+
+Ta mission dans cette conversation :
+1. **Valide chaleureusement** sa motivation — montre que tu la comprends, qu'elle est réaliste et atteignable sur la BRVM
+2. **Relie sa motivation** aux bénéfices concrets qu'il obtiendra en complétant la formation complète (ex : comprendre les ratios, choisir ses actions, suivre son portefeuille simulé)
+3. **Donne 2-3 raisons spécifiques** de poursuivre jusqu'au bout, en lien direct avec ce qu'il t'a dit
+4. **Termine** en l'invitant concrètement à passer au module suivant maintenant
+
+## FORMAT
+- Ton : chaleureux, enthousiaste, personnel — c'est un moment clé dans son parcours
+- 200-300 mots maximum, paragraphes courts
+- 1-2 emojis seulement
+- Pas de liste à puces — des phrases directes et engageantes
+`.trim();
+
 export function buildTutorSystemPrompt(ctx: TutorUserContext = {}, contextBlock: string | null = null): string {
+  const roleBlock = ctx.motivationMode ? MOTIVATION_SPECIFIC : TUTOR_SPECIFIC;
+
   const ctxSection = `## CONTEXTE UTILISATEUR
 - Niveau : ${ctx.level ?? 'débutant'}
 - Module en cours : ${ctx.currentModule ?? 'non spécifié'}
@@ -74,7 +94,7 @@ ${contextBlock}
 ---`
     : '';
 
-  return [SIMBA_BASE_IDENTITY, TUTOR_SPECIFIC, ctxSection, ragSection]
+  return [SIMBA_BASE_IDENTITY, roleBlock, ctxSection, ragSection]
     .filter(Boolean)
     .join('\n\n');
 }

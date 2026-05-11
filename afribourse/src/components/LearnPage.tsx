@@ -107,6 +107,7 @@ export default function LearnPage() {
     const [quizPassingScore, setQuizPassingScore] = useState(70);
 
     const [showAITutor, setShowAITutor] = useState(false);
+    const [isMotivationMode, setIsMotivationMode] = useState(false);
     const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
     const [showModulePaywall, setShowModulePaywall] = useState(false);
     const [showCertificate, setShowCertificate] = useState(false);
@@ -115,6 +116,30 @@ export default function LearnPage() {
     const isPremiumModule = (orderIndex: number) => orderIndex === 14 || orderIndex === 15;
     const userHasPremium = ['premium', 'max', 'pro'].includes(userProfile?.subscriptionTier ?? '');
     const userHasInvestisseurPlus = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
+
+    // Déclenche SIMBA en mode motivation quand l'utilisateur complète son PREMIER module
+    // (uniquement si le passage de 0→1 se produit PENDANT la session, pas au chargement initial)
+    const completedCount = progress.filter((p) => p.is_completed).length;
+    const prevCompletedRef = useRef<number | null>(null);
+    useEffect(() => {
+      if (loading) return; // Attendre que les données soient chargées
+      if (prevCompletedRef.current === null) {
+        prevCompletedRef.current = completedCount; // Enregistre l'état initial
+        return;
+      }
+      const prev = prevCompletedRef.current;
+      prevCompletedRef.current = completedCount;
+      if (prev === 0 && completedCount >= 1) {
+        const key = `simba_motivation_shown_${userProfile?.id ?? 'anon'}`;
+        if (localStorage.getItem(key)) return;
+        localStorage.setItem(key, 'true');
+        const timer = setTimeout(() => {
+          setIsMotivationMode(true);
+          setShowAITutor(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }, [completedCount, loading]);
 
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -1310,8 +1335,9 @@ export default function LearnPage() {
                             level: (selectedModule?.difficulty_level as any) ?? 'débutant',
                             lastQuizScore: moduleProgress?.quiz_score ?? undefined,
                         }}
+                        motivationMode={isMotivationMode}
                         isOpen={showAITutor && !quizState.isActive && !quizState.showResults}
-                        onClose={() => setShowAITutor(false)}
+                        onClose={() => { setShowAITutor(false); setIsMotivationMode(false); }}
                     />
 
                     {/* Paywall Premium pour Coach IA */}
