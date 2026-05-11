@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Shield, Clock, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, Shield, Clock, Users, ShieldCheck } from 'lucide-react';
 import WebinarSection from '../components/learning/WebinarSection';
 
 export default function WebinarPage() {
@@ -55,11 +55,47 @@ export default function WebinarPage() {
         <WebinarSection />
       </div>
 
-      {/* FAQ / Garanties */}
+      {/* Garantie satisfaction */}
+      <div className="max-w-3xl mx-auto px-4 pt-10 sm:px-6">
+        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white">
+          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full" />
+          <div className="absolute -bottom-8 -left-4 w-24 h-24 bg-white/5 rounded-full" />
+          <div className="relative flex items-start gap-5">
+            <div className="flex-shrink-0 bg-white/20 rounded-2xl p-3">
+              <ShieldCheck className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-200 mb-1">Garantie satisfaction</p>
+              <h3 className="text-xl font-extrabold leading-snug mb-2">
+                Pas satisfait ? On vous rembourse. Sans condition.
+              </h3>
+              <p className="text-emerald-100 text-sm leading-relaxed">
+                Si à la fin du webinaire vous estimez que le contenu ne correspond pas à vos attentes,
+                envoyez-nous un email dans les 48h — nous vous remboursons intégralement.
+                Aucun justificatif, aucune question.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-4">
+                {['Remboursement en 48h', 'Sans justificatif', 'Zéro condition'].map((item) => (
+                  <span key={item} className="flex items-center gap-1.5 bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                    <span className="text-emerald-300">✓</span> {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
       <div className="max-w-3xl mx-auto px-4 pb-20 sm:px-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6 mt-4">Questions fréquentes</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-6 mt-10">Questions fréquentes</h2>
         <div className="space-y-4">
           {[
+            {
+              q: 'Et si le webinaire ne répond pas à mes attentes ?',
+              a: "On vous rembourse. Intégralement, sans condition, sans justificatif à fournir. Envoyez-nous simplement un email dans les 48h suivant la session — le remboursement est traité dans les 2 jours ouvrés. C'est notre engagement pour que vous puissiez vous inscrire en toute confiance.",
+              highlight: true,
+            },
             {
               q: 'Comment se déroule un webinaire Afribourse ?',
               a: 'Chaque session est diffusée en live via Zoom ou Google Meet. Vous recevez le lien de connexion par email 24h avant la session. Un chat en direct vous permet de poser vos questions en temps réel.',
@@ -69,18 +105,24 @@ export default function WebinarPage() {
               a: "Oui. Le replay est disponible pendant 30 jours après la session pour tous les participants inscrits, même si vous n'avez pas pu assister en direct.",
             },
             {
-              q: 'Qu\'est-ce que la préinscription ?',
-              a: 'La préinscription vous réserve votre place et vous garantit le tarif early bird si vous confirmez votre paiement avant la date limite. Vous recevrez les instructions de paiement par email.',
+              q: "Qu'est-ce que la préinscription ?",
+              a: 'La préinscription vous réserve votre place et vous garantit le tarif early bird parmi les 20 premiers. Vous recevrez les instructions de paiement par email — aucun paiement immédiat requis.',
             },
             {
               q: 'Le contenu est-il adapté aux débutants ?',
               a: 'Chaque webinaire indique son niveau. "Maîtriser les fondamentaux" est conçu pour les débutants complets. "Analyse fondamentale" et "Analyse technique" nécessitent des bases en finance.',
             },
-          ].map(({ q, a }) => (
-            <details key={q} className="bg-white rounded-xl border border-gray-200 p-5 group">
+          ].map(({ q, a, highlight }) => (
+            <details
+              key={q}
+              className={`rounded-xl border p-5 group ${highlight ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-gray-200'}`}
+            >
               <summary className="font-semibold text-gray-800 cursor-pointer list-none flex items-center justify-between gap-2">
-                {q}
-                <span className="text-gray-400 group-open:rotate-180 transition-transform text-lg leading-none">›</span>
+                <span className="flex items-center gap-2">
+                  {highlight && <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
+                  {q}
+                </span>
+                <span className="text-gray-400 group-open:rotate-180 transition-transform text-lg leading-none flex-shrink-0">›</span>
               </summary>
               <p className="text-gray-600 text-sm mt-3 leading-relaxed">{a}</p>
             </details>
