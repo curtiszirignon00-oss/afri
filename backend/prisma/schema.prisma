@@ -1968,3 +1968,18 @@ model FreeTrial {
   @@index([userId])
   @@map("free_trials")
 }
+
+model WebinarRegistration {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  webinarId  String   // ex: "w1", "w2", "w3"
+  firstName  String?
+  lastName   String?
+  email      String
+  phone      String?
+  userId     String?  @db.ObjectId // null si non connecté
+  created_at DateTime @default(now())
+
+  @@index([webinarId])
+  @@index([email])
+  @@map("webinar_registrations")
+}

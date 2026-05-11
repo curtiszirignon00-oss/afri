@@ -41,6 +41,7 @@ import { useGamificationSummary } from '../hooks/useGamification';
 import { XPProgressBar, LevelBadge, StreakCounter, showXPGainToast } from './gamification';
 import { useCelebration } from '../contexts/CelebrationContext';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
+import WebinarSection from './learning/WebinarSection';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -1875,6 +1876,8 @@ export default function LearnPage() {
                     </p>
                 </div>
             )}
+
+            <WebinarSection />
         </div>
     );
 }
