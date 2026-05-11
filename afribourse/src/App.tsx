@@ -27,6 +27,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
 import WelcomePopup from './components/WelcomePopup';
+import WebinarAnnouncementPopup from './components/WebinarAnnouncementPopup';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { SessionExpiredModal } from './components/ui/SessionExpiredModal';
 
@@ -135,6 +136,9 @@ function Layout() {
       {isLoggedIn && showWelcomePopup && (
         <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
       )}
+
+      {/* Annonce webinaires — affiché une fois par utilisateur connecté */}
+      <WebinarAnnouncementPopup />
 
       {/* Modal session expirée — affiché globalement, hors flux de pages */}
       <SessionExpiredModal />
