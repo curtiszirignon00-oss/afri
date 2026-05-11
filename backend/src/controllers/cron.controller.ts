@@ -12,7 +12,7 @@ import {
 } from '../services/price-alert.service.prisma';
 import { sendPriceAlertEmail } from '../services/email.service';
 import { notifyPriceAlert } from '../services/notification.service';
-import { sendWeeklyReports } from '../services/weekly-report.service';
+import { runWeeklyReportJob } from '../jobs/weekly-report.job';
 import { runFullBackup } from '../services/backup.service';
 import {
     runStreakCheck,
@@ -214,7 +214,7 @@ export async function cronSendWeeklyReports(req: Request, res: Response) {
     const startTime = Date.now();
     try {
         log.debug('[CRON API] Envoi des rapports hebdomadaires combinés...');
-        await sendWeeklyReports();
+        await runWeeklyReportJob();
 
         const duration = Date.now() - startTime;
         return res.status(200).json({
