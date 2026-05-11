@@ -41,7 +41,6 @@ import { useGamificationSummary } from '../hooks/useGamification';
 import { XPProgressBar, LevelBadge, StreakCounter, showXPGainToast } from './gamification';
 import { useCelebration } from '../contexts/CelebrationContext';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
-import WebinarSection from './learning/WebinarSection';
 
 // --- Types ---
 import { LearningModule, LearningProgress } from '../types';
@@ -1877,7 +1876,20 @@ export default function LearnPage() {
                 </div>
             )}
 
-            <WebinarSection />
+            {/* Bandeau Webinaires */}
+            <div className="mt-12 mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+                <div className="text-white text-center sm:text-left">
+                    <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Formation Live</p>
+                    <h3 className="text-lg font-extrabold">Rejoignez nos webinaires de formation</h3>
+                    <p className="text-blue-200 text-sm mt-1">3 sessions avec nos experts — tarif early bird disponible</p>
+                </div>
+                <a
+                    href="/webinaires"
+                    className="flex-shrink-0 bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm px-6 py-3 rounded-xl transition-colors shadow-sm whitespace-nowrap"
+                >
+                    Voir les webinaires →
+                </a>
+            </div>
         </div>
     );
 }
