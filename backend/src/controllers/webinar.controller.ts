@@ -2,25 +2,23 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import logger from '../config/logger';
 
-const WEBINAR_IDS = ['w1', 'w2', 'w3', 'w4'];
-
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
-    const { webinarId, firstName, lastName, email, phone } = req.body;
+    const { webinarId, name, firstName, lastName, email, phone } = req.body;
     const userId = (req as any).user?.id ?? null;
 
     if (!webinarId || !email) {
       return res.status(400).json({ message: 'webinarId et email sont requis.' });
     }
 
-    if (!WEBINAR_IDS.includes(webinarId)) {
-      return res.status(400).json({ message: 'webinarId invalide.' });
-    }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Format d'email invalide." });
     }
+
+    // Support both "name" (single field from frontend) and "firstName"/"lastName"
+    const resolvedFirstName = firstName ?? name ?? null;
+    const resolvedLastName = lastName ?? null;
 
     const existing = await prisma.webinarRegistration.findFirst({
       where: { webinarId, email },
@@ -36,8 +34,8 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
     const registration = await prisma.webinarRegistration.create({
       data: {
         webinarId,
-        firstName: firstName ?? null,
-        lastName: lastName ?? null,
+        firstName: resolvedFirstName,
+        lastName: resolvedLastName,
         email,
         phone: phone ?? null,
         userId,
