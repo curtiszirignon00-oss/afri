@@ -53,6 +53,20 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
   }
 }
 
+export async function getWebinarCounts(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const rows = await prisma.webinarRegistration.groupBy({
+      by: ['webinarId'],
+      _count: { id: true },
+    });
+    const counts: Record<string, number> = {};
+    for (const r of rows) counts[r.webinarId] = r._count.id;
+    return res.status(200).json({ data: counts });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function getWebinarRegistrations(req: Request, res: Response, next: NextFunction) {
   try {
     const { webinarId } = req.query;

@@ -156,7 +156,7 @@ const CountdownBadge: React.FC<{ deadline: string }> = ({ deadline }) => {
 
 // ─── Modal de pré-inscription ─────────────────────────────────────────────────
 
-const RegistrationModal: React.FC<{ webinar: Webinar; onClose: () => void }> = ({ webinar, onClose }) => {
+const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boolean) => void }> = ({ webinar, onClose }) => {
   const { userProfile } = useAuth();
   const earlyBird = isEarlyBirdActive(webinar.earlyBirdDeadline);
   const effectivePrice = earlyBird ? webinar.price * (1 - webinar.discountPercent / 100) : webinar.price;
@@ -188,7 +188,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: () => void }> = (
           effectivePrice,
         }),
       });
-      if (!res.ok && res.status !== 409) throw new Error();
+      if (!res.ok && res.status !== 200) throw new Error();
       setDone(true);
     } catch {
       toast.error('Erreur lors de l\'inscription. Réessayez dans un instant.');
@@ -302,7 +302,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: () => void }> = (
             <p className="text-xs text-gray-500 mb-6">
               Un email de confirmation vous a été envoyé avec les étapes de paiement et le lien de connexion.
             </p>
-            <button onClick={onClose} className="text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
+            <button onClick={() => onClose(true)} className="text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
               Fermer
             </button>
           </div>
@@ -314,8 +314,8 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: () => void }> = (
 
 // ─── WebinarCard ──────────────────────────────────────────────────────────────
 
-const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean }> = ({
-  webinar, onRegister, isFirst,
+const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number }> = ({
+  webinar, onRegister, isFirst, count,
 }) => {
   const earlyBird = isEarlyBirdActive(webinar.earlyBirdDeadline);
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
@@ -370,6 +370,32 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
           </div>
         )}
 
+        {(() => {
+          const MAX = 50;
+          const remaining = MAX - count;
+          const pct = Math.min(100, Math.round((count / MAX) * 100));
+          const urgent = remaining <= 15;
+          return (
+            <div className={`mb-3 rounded-xl border px-3 py-2 ${urgent ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-100'}`}>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className={`flex items-center gap-1.5 text-xs font-semibold ${urgent ? 'text-red-700' : 'text-emerald-700'}`}>
+                  <Users className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{count} / {MAX} places réservées</span>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${urgent ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                  {urgent ? `⚠ ${remaining} restantes` : `${remaining} disponibles`}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full transition-all duration-500 ${urgent ? 'bg-red-500' : 'bg-emerald-500'}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="flex items-center justify-between gap-3">
           <div>
             {earlyBird ? (
@@ -402,9 +428,22 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
 
 const WebinarSection: React.FC = () => {
   const [selectedWebinar, setSelectedWebinar] = useState<Webinar | null>(null);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/webinars/counts`)
+      .then((r) => r.json())
+      .then((d) => { if (d?.data) setCounts(d.data); })
+      .catch(() => {});
+  }, []);
 
   const handleRegister = useCallback((w: Webinar) => setSelectedWebinar(w), []);
-  const handleClose = useCallback(() => setSelectedWebinar(null), []);
+  const handleClose = useCallback((registered?: boolean) => {
+    if (registered && selectedWebinar) {
+      setCounts((prev) => ({ ...prev, [selectedWebinar.id]: (prev[selectedWebinar.id] ?? 0) + 1 }));
+    }
+    setSelectedWebinar(null);
+  }, [selectedWebinar]);
 
   return (
     <>
@@ -428,15 +467,15 @@ const WebinarSection: React.FC = () => {
           </div>
 
           <div className="flex-shrink-0 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl px-4 py-3 text-center hidden sm:block">
-            <div className="text-2xl font-black leading-none">3</div>
-            <div className="text-xs font-semibold opacity-80 mt-0.5">sessions<br />planifiées</div>
+            <div className="text-2xl font-black leading-none">50</div>
+            <div className="text-xs font-semibold opacity-80 mt-0.5">places<br />par session</div>
           </div>
         </div>
 
         {/* Grille */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {WEBINARS.map((w, i) => (
-            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} />
+            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={counts[w.id] ?? 0} />
           ))}
         </div>
 
@@ -453,6 +492,7 @@ const WebinarSection: React.FC = () => {
       {selectedWebinar && (
         <RegistrationModal webinar={selectedWebinar} onClose={handleClose} />
       )}
+
     </>
   );
 };
