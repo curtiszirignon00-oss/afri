@@ -29,6 +29,8 @@ import {
   CheckCircle2,
   Clock,
   MailOpen,
+  Video,
+  Phone,
 } from 'lucide-react';
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
@@ -118,6 +120,17 @@ interface PremiumIntent {
   };
 }
 
+interface WebinarRegistrationRecord {
+  id: string;
+  webinarId: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  phone: string | null;
+  userId: string | null;
+  created_at: string;
+}
+
 interface TrialRecord {
   id: string;
   claimed: boolean;
@@ -166,6 +179,8 @@ export default function AdminDashboard() {
   const [premiumIntents, setPremiumIntents] = useState<PremiumIntent[]>([]);
   const [trialStats, setTrialStats] = useState<TrialStats | null>(null);
   const [aiFeedbackStats, setAIFeedbackStats] = useState<AIFeedbackStats | null>(null);
+  const [webinarRegistrations, setWebinarRegistrations] = useState<WebinarRegistrationRecord[]>([]);
+  const [webinarFilter, setWebinarFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verifyEmail, setVerifyEmail] = useState('');
@@ -178,6 +193,7 @@ export default function AdminDashboard() {
     fetchPremiumIntents();
     fetchTrialStats();
     fetchAIFeedbackStats();
+    fetchWebinarRegistrations();
   }, []);
 
   const fetchStats = async () => {
@@ -272,6 +288,47 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error('Erreur AI feedback stats:', err);
     }
+  };
+
+  const fetchWebinarRegistrations = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/webinars/registrations`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWebinarRegistrations(data.data ?? []);
+      }
+    } catch (err) {
+      console.error('Erreur webinar registrations:', err);
+    }
+  };
+
+  const exportWebinarCSV = () => {
+    const rows = webinarRegistrations.filter(
+      (r) => webinarFilter === 'all' || r.webinarId === webinarFilter,
+    );
+    const WEBINAR_LABELS: Record<string, string> = {
+      'w1-fondamentaux': 'Fondamentaux (23 mai)',
+      'w2-fondamentale': 'Analyse fondamentale (30-31 mai)',
+      'w3-technique': 'Analyse technique (6-7 juin)',
+    };
+    const header = ['Webinaire', 'Prénom/Nom', 'Email', 'Téléphone', 'Date inscription'];
+    const lines = rows.map((r) => [
+      WEBINAR_LABELS[r.webinarId] ?? r.webinarId,
+      [r.firstName, r.lastName].filter(Boolean).join(' ') || '—',
+      r.email,
+      r.phone ?? '—',
+      new Date(r.created_at).toLocaleString('fr-FR'),
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const csv = [header.join(','), ...lines].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `webinaires_inscriptions_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleForceVerify = async () => {
@@ -1119,6 +1176,130 @@ export default function AdminDashboard() {
           ) : (
             <div className="bg-white rounded-xl p-8 text-center text-gray-400">Chargement des stats feedback…</div>
           )}
+        </div>
+
+        {/* ═══════════════════════════════════════════ */}
+        {/* WEBINAIRES — PRÉINSCRIPTIONS               */}
+        {/* ═══════════════════════════════════════════ */}
+        <div className="mt-10">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <Video className="w-6 h-6" />
+                  Webinaires — Préinscriptions
+                </h2>
+                <p className="text-blue-100 text-sm">
+                  {webinarRegistrations.length} inscription{webinarRegistrations.length !== 1 ? 's' : ''} au total
+                </p>
+              </div>
+              <button
+                onClick={exportWebinarCSV}
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Exporter CSV
+              </button>
+            </div>
+          </div>
+
+          {/* KPIs par webinaire */}
+          {(() => {
+            const WEBINARS = [
+              { id: 'w1-fondamentaux', label: 'Fondamentaux', date: '23 mai', color: 'blue' },
+              { id: 'w2-fondamentale', label: 'Analyse fondamentale', date: '30-31 mai', color: 'emerald' },
+              { id: 'w3-technique', label: 'Analyse technique', date: '6-7 juin', color: 'orange' },
+            ];
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                {WEBINARS.map((w) => {
+                  const count = webinarRegistrations.filter((r) => r.webinarId === w.id).length;
+                  const colorMap: Record<string, string> = {
+                    blue: 'bg-blue-50 border-blue-100 text-blue-700',
+                    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700',
+                    orange: 'bg-orange-50 border-orange-100 text-orange-700',
+                  };
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => setWebinarFilter(webinarFilter === w.id ? 'all' : w.id)}
+                      className={`rounded-xl border p-4 text-left transition-all ${colorMap[w.color]} ${webinarFilter === w.id ? 'ring-2 ring-offset-1 ring-blue-400' : ''}`}
+                    >
+                      <p className="text-xs font-semibold opacity-70 mb-1">{w.date}</p>
+                      <p className="font-bold text-base">{w.label}</p>
+                      <p className="text-3xl font-extrabold mt-1">{count}</p>
+                      <p className="text-xs opacity-60 mt-0.5">préinscrit{count !== 1 ? 's' : ''}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* Filtre actif */}
+          {webinarFilter !== 'all' && (
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-sm text-gray-500">Filtre :</span>
+              <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{webinarFilter}</span>
+              <button onClick={() => setWebinarFilter('all')} className="text-xs text-gray-400 hover:text-gray-600 underline">Réinitialiser</button>
+            </div>
+          )}
+
+          {/* Tableau */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead>
+                  <tr className="bg-gray-50 text-left text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    <th className="px-5 py-3">Webinaire</th>
+                    <th className="px-5 py-3">Nom</th>
+                    <th className="px-5 py-3">Email</th>
+                    <th className="px-5 py-3"><Phone className="w-3.5 h-3.5 inline mr-1" />Téléphone</th>
+                    <th className="px-5 py-3">Inscrit le</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {(() => {
+                    const WEBINAR_LABELS: Record<string, { label: string; color: string }> = {
+                      'w1-fondamentaux': { label: 'Fondamentaux', color: 'bg-blue-100 text-blue-700' },
+                      'w2-fondamentale': { label: 'Fondamentale', color: 'bg-emerald-100 text-emerald-700' },
+                      'w3-technique':   { label: 'Technique', color: 'bg-orange-100 text-orange-700' },
+                    };
+                    const filtered = webinarRegistrations.filter(
+                      (r) => webinarFilter === 'all' || r.webinarId === webinarFilter,
+                    );
+                    if (filtered.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan={5} className="px-5 py-12 text-center text-gray-400 text-sm">
+                            Aucune préinscription pour l'instant
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return filtered.map((r) => {
+                      const meta = WEBINAR_LABELS[r.webinarId] ?? { label: r.webinarId, color: 'bg-gray-100 text-gray-700' };
+                      return (
+                        <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-5 py-3">
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${meta.color}`}>{meta.label}</span>
+                          </td>
+                          <td className="px-5 py-3 text-sm text-gray-800 font-medium">
+                            {[r.firstName, r.lastName].filter(Boolean).join(' ') || <span className="text-gray-400">—</span>}
+                          </td>
+                          <td className="px-5 py-3 text-sm text-gray-600">{r.email}</td>
+                          <td className="px-5 py-3 text-sm text-gray-500">{r.phone ?? '—'}</td>
+                          <td className="px-5 py-3 text-xs text-gray-400">
+                            {new Date(r.created_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         {/* Moderation Section */}
