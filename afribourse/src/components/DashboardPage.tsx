@@ -24,6 +24,7 @@ import { useCanTrade } from '../hooks/useChallenge';
 import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
 import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
+import DashboardWebinarWidget from './dashboard/DashboardWebinarWidget';
 import type { PortfolioCtx } from '../services/geminiService';
 import WelcomeModal from './onboarding/WelcomeModal';
 import PulseDot from './onboarding/PulseDot';
@@ -1247,6 +1248,9 @@ export default function DashboardPage() {
                 </button>
               </Card>
             )}
+
+            {/* Widget Prochain Webinaire */}
+            <DashboardWebinarWidget />
 
             {/* Widget Fil des Relations */}
             {(() => {

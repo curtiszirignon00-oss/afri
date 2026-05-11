@@ -59,6 +59,7 @@ const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const SurveyPage = lazy(() => import('./pages/SurveyPage'));
 const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow'));
 const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
+const WebinarPage = lazy(() => import('./pages/WebinarPage'));
 
 // Pages auth lazy — l'utilisateur accepte un délai au moment du clic
 const SignupPage = lazy(() => import('./components/SignupPage'));
@@ -171,6 +172,7 @@ function Layout() {
           <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
+          <Route path="/webinaires" element={<WebinarPage />} />
           <Route path="/glossary" element={<GlossaryPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -350,6 +352,11 @@ function Layout() {
                   <li>
                     <a href="/learn" className="text-gray-400 hover:text-white transition-colors">
                       Apprendre
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/webinaires" className="text-gray-400 hover:text-white transition-colors">
+                      Webinaires
                     </a>
                   </li>
                   <li>
