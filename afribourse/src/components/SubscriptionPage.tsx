@@ -92,6 +92,7 @@ export default function SubscriptionPage() {
         { text: '🌟 Coach IA illimité', included: true },
         { text: '🌟 Réponses illimitées aux quiz', included: true },
         { text: '🌟 Audio dans les formations', included: true },
+        { text: '🎥 2 webinaires de formation offerts', included: true },
       ],
     },
     {

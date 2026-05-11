@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Calendar, Clock, Users, Zap, ChevronRight, CheckCircle,
-  Flame, Video, Tag, X, Loader2, Star, TrendingUp,
+  Flame, Video, Tag, X, Loader2, Star, TrendingUp, Gift,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
@@ -470,6 +470,27 @@ const WebinarSection: React.FC = () => {
             <div className="text-2xl font-black leading-none">50</div>
             <div className="text-xs font-semibold opacity-80 mt-0.5">places<br />par session</div>
           </div>
+        </div>
+
+        {/* Bandeau Investisseur+ */}
+        <div className="mb-5 flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl px-4 py-3.5">
+          <div className="bg-gradient-to-br from-yellow-400 to-orange-400 p-2 rounded-xl flex-shrink-0">
+            <Gift className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-yellow-800">
+              Abonnés Investisseur+ — 2 webinaires offerts 🎁
+            </p>
+            <p className="text-xs text-yellow-700 mt-0.5">
+              Votre abonnement inclut l'accès gratuit à 2 sessions de votre choix. Mentionnez-le lors de votre pré-inscription.
+            </p>
+          </div>
+          <a
+            href="/subscriptions"
+            className="flex-shrink-0 text-xs font-bold text-orange-600 hover:text-orange-800 underline underline-offset-2 transition-colors hidden sm:block"
+          >
+            Devenir Investisseur+
+          </a>
         </div>
 
         {/* Grille */}
