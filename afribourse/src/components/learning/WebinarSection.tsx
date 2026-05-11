@@ -568,7 +568,7 @@ const WebinarSection: React.FC = () => {
         <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
           <Tag className="w-3.5 h-3.5 flex-shrink-0" />
           <span>
-            La réduction de 50% est réservée aux pré-inscrits dans les 72h suivant l'ouverture des inscriptions.
+            Le tarif réduit de 50% est réservé aux 20 premiers inscrits par session — premier arrivé, premier servi.
             Aucun paiement immédiat requis à la pré-inscription.
           </span>
         </div>
