@@ -15,7 +15,7 @@ const scenarioA = {
   category: 'BULL_RUN',
   tier: 'FREE',
   years: [2010, 2013, 2016, 2019, 2022],
-  availableStocks: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
+  availableStocks: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
   startBudget: 500000,
   isActive: true,
 
@@ -24,7 +24,7 @@ const scenarioA = {
       kofiPresentation:
         "Nous sommes en janvier 2010. La Côte d'Ivoire sort de 8 ans de crise politique. La BRVM vient de réaliser sa meilleure année en une décennie. Tu as 500 000 FCFA à investir. Ce que tu vas décider dans les prochaines minutes va déterminer ce que ces 500 000 FCFA deviennent sur 15 ans. Voici ce que le marché te dit ce matin-là.",
       kofiIntro:
-        "Tu as 500 000 FCFA. 6 titres disponibles. Tu peux acheter autant de lignes que tu veux dans la limite de ton budget. Commission SGI : 1,2% sur chaque achat. Prends le temps de lire les fondamentaux dans l'onglet dédié avant de décider.",
+        "Tu as 500 000 FCFA. 11 titres disponibles — bancaires, télécoms, agro-industrie, brasserie, assurance. Tu peux acheter autant de lignes que tu veux dans la limite de ton budget. Commission SGI : 1,2% sur chaque achat. Prends le temps de lire les fondamentaux dans l'onglet dédié avant de décider.",
       news: [
         {
           src: 'BRVM — Rapport de marché',
@@ -250,6 +250,11 @@ const scenarioA = {
       SLBC: { per: '11,2×', pbr: '2,8×', bna: '+9%', div: 800, cours: 11000, note: 'Quasi-monopole sur la bière ivoirienne. Revenus défensifs — la consommation de bière est peu sensible aux cycles économiques. Dividende de 7,3% : l\'un des plus élevés de la BRVM. Valeur refuge par excellence. Croissance portée par l\'expansion de la classe moyenne ivoirienne.', kofiAnalysis: 'Rendement dividende 7,3% = flux de revenus passifs très solide. Modèle défensif : peu corrélé au cycle économique. Joue le rôle de stabilisateur dans un portefeuille par ailleurs plus offensif.' },
       SIBC: { per: '5,8×', pbr: '0,8×', bna: '+18%', div: 200, cours: 3800, note: 'Société Ivoirienne de Banque, filiale Attijariwafa. Forte croissance BNA (+18%) — la plus élevée du lot. P/B < 1 : décote significative. Moins liquide que les grandes capitalisations. Profil : fort potentiel de croissance, risque de liquidité à accepter.', kofiAnalysis: 'BNA +18% = croissance la plus forte du lot. P/B 0,8× = décote réelle. Contrepartie : moins de liquidité. Pour un investisseur avec un horizon 3+ ans, ce profil croissance/décote est historiquement très rémunérateur.' },
       CIEC: { per: '4,2×', pbr: '0,7×', bna: '+6%', div: 90, cours: 1800, note: 'Concessionnaire de la distribution électricité CI. Revenus contractuels réguliers — indépendants du cycle économique. PER 4,2× : très bas, dû au manque de liquidité du titre (pas à une faiblesse fondamentale). Stabilisateur de portefeuille : faible volatilité dans les deux sens.', kofiAnalysis: 'PER 4,2× = apparence de décote, mais dû à la faible liquidité. Revenus contractuels stables. Rôle : stabilisateur de portefeuille. Utile pour réduire la volatilité globale si le reste du portefeuille est offensif.' },
+      ETIT: { per: '7,5×', pbr: '1,1×', bna: '+10%', div: 1, cours: 18, note: "Ecobank Transnational : holding panafricain présent dans 36 pays. Faible prix unitaire (18 FCFA) — idéal pour les petits portefeuilles. Croissance rapide portée par la montée en puissance bancaire en Afrique subsaharienne. Risque : liquidité faible et exposition à plusieurs devises africaines.", kofiAnalysis: 'PER 7,5× et prix unitaire de 18 FCFA : accessible pour tous les budgets. BNA +10% dans 36 marchés. Diversification géographique maximale. À inclure pour l\'exposition panafricaine.' },
+      BICC: { per: '7×', pbr: '1,2×', bna: '+9%', div: 350, cours: 5500, note: "Banque Internationale pour le Commerce et l'Industrie de CI (BICI). L'une des plus anciennes banques ivoiriennes. Réseau de 45+ agences. Filiale BPCE France. Bilan solide, Tier 1 > 13%. Forte part de marché sur les PME ivoiriennes.", kofiAnalysis: 'Profil bancaire classique avec décote. PER 7× < SGBCI (7,2×) pour qualité comparable. Dividende 350 FCFA = rendement 6,4%. Alternative bancaire plus accessible que SGBCI.' },
+      ECOC: { per: '6,5×', pbr: '1,0×', bna: '+11%', div: 200, cours: 3500, note: "Ecobank Côte d'Ivoire, filiale locale du groupe Ecobank. Activité 100% locale en CI. Portefeuille crédit en forte croissance. Réseau en expansion. La réconciliation nationale CI relance le crédit à l'économie — ECOC en bénéficie directement.", kofiAnalysis: 'BNA +11% — croissance bancaire locale solide. PER 6,5× avec P/B à 1,0× = valorisation équilibrée. Profil intermédiaire entre SGBCI (plus cher) et SIBC (plus petit). Bon choix diversification bancaire.' },
+      CFAC: { per: '8×', pbr: '1,3×', bna: '+8%', div: 150, cours: 2400, note: "CF Assurance CI : compagnie d'assurance vie et dommages. Secteur défensif comme la brasserie — les ménages paient leurs primes en toute circonstance. Marché de l'assurance UEMOA en forte croissance (pénétration < 2% vs > 7% en Europe). Dividende régulier.", kofiAnalysis: 'Seule valeur d\'assurance du lot = diversification sectorielle réelle. Croissance structurelle du marché de l\'assurance UEMOA. PER 8× pour un secteur défensif. Idéal pour équilibrer les valeurs cycliques (PALC).' },
+      BOABF: { per: '6×', pbr: '1,0×', bna: '+10%', div: 80, cours: 1800, note: "Bank of Africa Burkina Faso : banque régionale implantée au Burkina Faso et dans 17 pays africains. Exposition à la croissance économique du Burkina (5e producteur mondial de coton). Faible prix unitaire. Portefeuille crédit agricole important.", kofiAnalysis: 'Exposition géographique Sahel = diversification hors CI. PER 6× avec BNA +10% = valorisation attractive. Prix unitaire de 1 800 FCFA accessible. Risque politique modéré en 2010 (stabilité BF à cette période).' },
     },
     '2013': {
       SNTS: { per: '13×', pbr: '3,1×', bna: '+18%', div: 900, cours: 18500, note: "Croissance data mobile accélérée. BNA +18%. Dividende porté à 900 FCFA. Mobile money en émergence.", kofiAnalysis: 'PER monte à 13× — moins de marge de sécurité qu\'en 2010. Mais croissance BNA toujours solide à +18%. Dividende en hausse. La thèse data mobile se confirme.' },
@@ -258,6 +263,11 @@ const scenarioA = {
       SLBC: { per: '14×', pbr: '3,5×', bna: '+12%', div: 1000, cours: 16000, note: 'Valorisation tendue après +45%. Dividende en hausse.', kofiAnalysis: 'PER 14× = valorisation tendue vs 2010. Dividende reste attractif. Candidat à l\'allègement partiel pour rotation.' },
       SIBC: { per: '7×', pbr: '1,1×', bna: '+22%', div: 280, cours: 5500, note: 'Croissance exceptionnelle. +45% depuis 2010.', kofiAnalysis: 'BNA +22% — accélération. Valorisation encore raisonnable. Candidat au renforcement si sous-représenté.' },
       CIEC: { per: '5×', pbr: '0,9×', bna: '+8%', div: 120, cours: 2400, note: '+33% depuis 2010. Rôle stabilisateur maintenu.', kofiAnalysis: 'Progression modérée mais stable. Continue de jouer son rôle défensif.' },
+      ETIT: { per: '9×', pbr: '1,4×', bna: '+12%', div: 1.5, cours: 22, note: "Bull run africain : ETIT bénéficie de l'expansion du crédit dans 36 marchés. Cours en hausse depuis 2010. Toujours accessible en prix unitaire.", kofiAnalysis: 'BNA +12% = accélération. Cours 22 FCFA (+22% depuis 2010). Expansion africaine en cours — la thèse long terme se confirme.' },
+      BICC: { per: '8×', pbr: '1,5×', bna: '+11%', div: 450, cours: 7200, note: 'Résultats solides portés par la reprise économique CI. Dividende en hausse.', kofiAnalysis: '+31% depuis 2010. PER 8× encore raisonnable. Dividende 450 FCFA = rendement 6,2%. Maintenir ou renforcer.' },
+      ECOC: { per: '7×', pbr: '1,2×', bna: '+14%', div: 280, cours: 4800, note: 'Portefeuille crédit doublé depuis 2010. Meilleure croissance BNA du groupe bancaire.', kofiAnalysis: 'BNA +14% = meilleure croissance bancaire du lot. Valorisation encore raisonnable (PER 7×). Candidat au renforcement.' },
+      CFAC: { per: '9×', pbr: '1,5×', bna: '+10%', div: 200, cours: 3200, note: 'Primes assurance en hausse de +18% sur 3 ans. Pénétration assurance CI en forte progression.', kofiAnalysis: 'Croissance structurelle confirmée. +33% depuis 2010. Secteur assurance en plein boom avec la classe moyenne CI. Maintenir.' },
+      BOABF: { per: '7×', pbr: '1,2×', bna: '+12%', div: 110, cours: 2400, note: 'Expansion crédit au Burkina Faso portée par la croissance agricole.', kofiAnalysis: '+33% depuis 2010. Croissance crédit agricole solide. Stabilité politique BF maintenue. Maintenir exposition Sahel.' },
     },
     '2016': {
       SNTS: { per: '10×', pbr: '2,8×', bna: '+15%', div: 850, cours: 16500, note: 'Data mobile explose. -11% depuis son sommet. Point d\'entrée attractif.', kofiAnalysis: 'Correction de -11% depuis le sommet = opportunité d\'entrée. Thèse data mobile intacte. Dividende 850 FCFA maintenu.' },
@@ -266,6 +276,11 @@ const scenarioA = {
       SLBC: { per: '11×', pbr: '2,9×', bna: '+10%', div: 1100, cours: 17000, note: 'Résiste bien. Défensif confirme son rôle. Dividende en hausse.', kofiAnalysis: 'Meilleure résistance à la correction. Dividende 1 100 FCFA = flux de revenus excellent. Valeur refuge prouvée.' },
       SIBC: { per: '6×', pbr: '1,0×', bna: '+14%', div: 300, cours: 5800, note: 'Croissance crédit +14%. Résistance bancaire confirmée.', kofiAnalysis: 'Performance relative solide. Croissance BNA maintenue à +14%. Ratio crédit sain.' },
       CIEC: { per: '4,5×', pbr: '0,8×', bna: '+5%', div: 100, cours: 2200, note: 'Stabilisateur. Performance modérée mais régulière.', kofiAnalysis: 'Continue son rôle défensif. Faible volatilité confirmée en période de correction.' },
+      ETIT: { per: '6×', pbr: '1,0×', bna: '+8%', div: 1, cours: 15, note: 'Légère correction post-bull run. Cours revenu sur support. Présence dans 36 pays.', kofiAnalysis: 'Recul depuis 2013 — mais fondamentaux intacts. BNA +8% maintenu. Cours 15 FCFA = point d\'entrée intéressant pour renforcement.' },
+      BICC: { per: '7×', pbr: '1,3×', bna: '+7%', div: 380, cours: 6200, note: 'Résistance bancaire confirmée. -14% depuis 2013 mais bilan sain.', kofiAnalysis: 'Correction sectorielle pas fondamentale. PER 7× avec bilans solides. Dividende maintenu à 380 FCFA. Point d\'achat potentiel.' },
+      ECOC: { per: '5×', pbr: '0,9×', bna: '+8%', div: 220, cours: 3800, note: 'Recul -21% depuis 2013. Croissance crédit ralentie mais maintenue.', kofiAnalysis: 'Décote sur actifs (P/B 0,9×). Fondamentaux non altérés. Pour investisseur patient avec horizon 3 ans.' },
+      CFAC: { per: '7×', pbr: '1,2×', bna: '+7%', div: 170, cours: 2800, note: 'Légère pression sur les primes. Secteur assurance résiste bien à la correction boursière.', kofiAnalysis: 'Moins touché que les bancaires en correction. Secteur défensif prouve sa valeur. Dividende stable.' },
+      BOABF: { per: '5×', pbr: '0,9×', bna: '+7%', div: 80, cours: 1900, note: 'Légère correction. Stabilité BF maintenue. Croissance crédit agricole solide.', kofiAnalysis: 'P/B 0,9× = décote sur actifs réels. Fondamentaux sains. Risque politique modéré. Maintenir ou renforcer si budget disponible.' },
     },
     '2019': {
       SNTS: { per: '11×', pbr: '3,2×', bna: '+12%', div: 1000, cours: 20000, note: 'Record historique. Mobile money transforme les revenus. Wave concurrent à surveiller.', kofiAnalysis: 'Sommet record 20 000 FCFA. PER 11× = valorisation juste. Risque de concentration si >30% du portefeuille. Candidat à l\'allègement partiel.' },
@@ -274,6 +289,11 @@ const scenarioA = {
       SLBC: { per: '13×', pbr: '3,8×', bna: '+8%', div: 1600, cours: 22000, note: 'Dividende record 1 600 FCFA. Flux de revenus passifs maximisé.', kofiAnalysis: 'Dividende exceptionnel de 1 600 FCFA. Valorisation tendue mais justifiée par la régularité. Idéal pour stratégie revenus.' },
       SIBC: { per: '8×', pbr: '1,3×', bna: '+18%', div: 400, cours: 6500, note: 'Forte croissance maintenue. Sous-représenté vs qualité.', kofiAnalysis: 'BNA +18% = accélération continue. Sous-représenté dans beaucoup de portefeuilles = candidat au renforcement.' },
       CIEC: { per: '5×', pbr: '0,9×', bna: '+6%', div: 110, cours: 2600, note: 'Stable. Continue de jouer son rôle défensif.', kofiAnalysis: 'Rôle défensif maintenu. À conserver si besoin de stabilité dans le portefeuille.' },
+      ETIT: { per: '7×', pbr: '1,2×', bna: '+10%', div: 1.5, cours: 19, note: 'Rebond depuis 2016. Expansion bancaire africaine accélérée. Mobile money Ecobank en forte hausse.', kofiAnalysis: 'Rebond +27% depuis le point bas 2016. BNA +10% soutenu. Mobile money Ecobank : nouveau moteur de revenus. Thèse long terme intacte.' },
+      BICC: { per: '9×', pbr: '1,7×', bna: '+10%', div: 500, cours: 8500, note: 'Résultats records. Crédit retail en forte hausse. Dividende 500 FCFA.', kofiAnalysis: 'Résultats records. +22% depuis 2016. PER 9× correct vs qualité bilancielle. Dividende en hausse constante depuis 2010.' },
+      ECOC: { per: '7×', pbr: '1,1×', bna: '+12%', div: 320, cours: 5200, note: 'Rebond fort depuis 2016. Meilleure croissance BNA de la période.', kofiAnalysis: 'BNA +12% = accélération. +37% depuis le point bas 2016. P/B 1,1× = valorisation raisonnable. Candidat au renforcement.' },
+      CFAC: { per: '9×', pbr: '1,6×', bna: '+11%', div: 250, cours: 4000, note: 'Primes assurance en forte croissance. Pénétration assurance CI atteint 3% — encore loin du potentiel.', kofiAnalysis: 'Croissance structurelle confirmée. +43% depuis 2016. Marché assurance UEMOA en plein développement. Maintenir.' },
+      BOABF: { per: '6×', pbr: '1,1×', bna: '+9%', div: 100, cours: 2600, note: 'Rebond post-correction. Croissance agricole BF solide. Cours palm rebondit.', kofiAnalysis: '+37% depuis 2016. Croissance soutenue. Stabilité politique BF confirmée en 2019 (avant les troubles de 2022). Conserver.' },
     },
     '2022': {
       SNTS: { per: '12×', pbr: '3,0×', bna: '+8%', div: 950, cours: 19000, note: 'Légère correction post-2019. Exposition Sahel à surveiller. Mali ~15% des revenus.', kofiAnalysis: 'Correction depuis le sommet 2019. Risque géopolitique Sahel. Dividende maintenu. À pondérer selon exposition globale du portefeuille.' },
@@ -283,20 +303,25 @@ const scenarioA = {
       SIBC: { per: '7×', pbr: '1,2×', bna: '+20%', div: 450, cours: 7000, note: 'Accélération BNA remarquable. Sous-valorisé vs croissance.', kofiAnalysis: 'BNA +20% = meilleure croissance du lot. Valorisation encore raisonnable. Candidat au renforcement si sous-représenté.' },
       CIEC: { per: '5×', pbr: '0,9×', bna: '+5%', div: 120, cours: 2800, note: 'Défensif stable. Inflation impacte peu les revenus contractuels.', kofiAnalysis: 'Résiste bien à l\'inflation (revenus contractuels indexés). Maintenir si besoin de stabilité.' },
       ORCI: { per: '15×', pbr: 'N/A', bna: 'IPO', div: 0, cours: 1050, note: "2e télécom de la BRVM. Revenus data en forte croissance. Potentiel de dividende dès 2023. Plus grande IPO de l'histoire BRVM.", kofiAnalysis: "IPO à 1 050 FCFA. Capitalisation initiale 1 100 Mds FCFA. Souscrire sur conviction fondamentale data mobile — pas sur l'euphorie médiatique. Volatilité des premières séances probable." },
+      ETIT: { per: '9×', pbr: '1,4×', bna: '+9%', div: 2, cours: 23, note: 'Présent dans 36 pays africains. Résistance COVID démontrée. Mobile money Ecobank : 7 millions d\'utilisateurs.', kofiAnalysis: 'Résistance post-COVID confirmée. BNA +9% stable. Mobile money Ecobank comme levier de croissance. Bien positionné sur la révolution fintech africaine.' },
+      BICC: { per: '10×', pbr: '2,0×', bna: '+12%', div: 600, cours: 10000, note: 'Résultats 2021 records. Digitalisation accélère la rentabilité. Dividende 600 FCFA — record historique.', kofiAnalysis: 'Résultats records. +82% depuis 2010. PER 10× = valorisation correcte vs qualité. Dividende record 600 FCFA. À maintenir en stratégie revenus.' },
+      ECOC: { per: '8×', pbr: '1,3×', bna: '+14%', div: 400, cours: 6500, note: 'Forte croissance. Digitalisation bancaire accélère. BNA +14%.', kofiAnalysis: 'BNA +14% = meilleur taux de croissance du groupe bancaire. Encore sous-évalué vs croissance. Candidat au renforcement si budget disponible.' },
+      CFAC: { per: '10×', pbr: '1,8×', bna: '+9%', div: 300, cours: 5200, note: 'Résultats solides. Assurance santé en forte demande post-COVID.', kofiAnalysis: 'Demande assurance santé post-COVID structurellement plus élevée. Croissance pérenne. PER 10× acceptable pour la visibilité des revenus.' },
+      BOABF: { per: '5×', pbr: '0,9×', bna: '+6%', div: 80, cours: 2200, note: 'Léger recul. Instabilité politique BF 2022 crée une décote. Fondamentaux préservés.', kofiAnalysis: 'PER 5× = décote liée au risque politique BF (coup d\'état 2022). Fondamentaux opérationnels solides. À pondérer selon appétit au risque géopolitique.' },
     },
   },
 
   dividendsByYear: {
-    '2010': { SNTS: 700, SGBC: 500, PALC: 250, SLBC: 800, SIBC: 200, CIEC: 90 },
-    '2013': { SNTS: 900, SGBC: 700, PALC: 320, SLBC: 1000, SIBC: 280, CIEC: 120 },
-    '2016': { SNTS: 850, SGBC: 600, PALC: 200, SLBC: 1100, SIBC: 300, CIEC: 100 },
-    '2019': { SNTS: 1000, SGBC: 800, PALC: 350, SLBC: 1600, SIBC: 400, CIEC: 110 },
-    '2022': { SNTS: 950, SGBC: 900, PALC: 300, SLBC: 1700, SIBC: 450, CIEC: 120, ORCI: 0 },
+    '2010': { SNTS: 700, SGBC: 500, PALC: 250, SLBC: 800, SIBC: 200, CIEC: 90, ETIT: 1, BICC: 350, ECOC: 200, CFAC: 150, BOABF: 80 },
+    '2013': { SNTS: 900, SGBC: 700, PALC: 320, SLBC: 1000, SIBC: 280, CIEC: 120, ETIT: 1.5, BICC: 450, ECOC: 280, CFAC: 200, BOABF: 110 },
+    '2016': { SNTS: 850, SGBC: 600, PALC: 200, SLBC: 1100, SIBC: 300, CIEC: 100, ETIT: 1, BICC: 380, ECOC: 220, CFAC: 170, BOABF: 80 },
+    '2019': { SNTS: 1000, SGBC: 800, PALC: 350, SLBC: 1600, SIBC: 400, CIEC: 110, ETIT: 1.5, BICC: 500, ECOC: 320, CFAC: 250, BOABF: 100 },
+    '2022': { SNTS: 950, SGBC: 900, PALC: 300, SLBC: 1700, SIBC: 450, CIEC: 120, ORCI: 0, ETIT: 2, BICC: 600, ECOC: 400, CFAC: 300, BOABF: 80 },
   },
 
   availableActionsByYear: {
     '2010': {
-      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
+      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
       canSell: [],
       consequences: [
         { condition: 'nbTitres >= 3', positive: true, result: '+35 à +50% en moyenne sur 3 ans, dividendes cumulés ~2 200 FCFA/action SONATEL+SGBCI', lesson: 'La diversification sectorielle (télécoms + bancaires + défensif) réduit le risque sans sacrifier le rendement.' },
@@ -305,8 +330,8 @@ const scenarioA = {
       ],
     },
     '2013': {
-      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
-      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
+      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
+      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
       consequences: [
         { condition: 'rebalance === true', positive: true, result: '+38% moyenne portefeuille sur 2013-2016 + dividendes cumulés.', lesson: 'Le rééquilibrage discipliné — vendre un peu des gagnants, renforcer les sous-représentés — est supérieur au suivi de tendance sur le long terme.' },
         { condition: 'momentum === true', positive: false, result: 'Entrée à des valorisations tendues. Correction de 2014-2015 efface une partie des gains récents.', lesson: 'Le biais de momentum est dangereux après un bull run de +87%. Les meilleures performances passées sont les plus risquées pour les nouvelles entrées.' },
@@ -314,8 +339,8 @@ const scenarioA = {
       ],
     },
     '2016': {
-      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
-      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
+      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
+      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
       consequences: [
         { condition: 'rotationAgro === true', positive: true, result: 'SONATEL progresse à 20 000 en 2019. Bon choix sur le long terme.', lesson: 'La rotation sectorielle fondée sur les fondamentaux (data vs matières premières) produit de la valeur.' },
         { condition: 'panicSell === true', positive: false, result: 'Cristallise des pertes sur des actifs sains qui rebondissent ensuite de +31% pour PALM CI.', lesson: "L'aversion aux pertes est le biais le plus documenté en finance comportementale. Il pousse à vendre trop tôt des positions qui avaient besoin de patience." },
@@ -323,16 +348,16 @@ const scenarioA = {
       ],
     },
     '2019': {
-      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
-      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
+      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
+      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
       consequences: [
         { condition: 'rebalanceSonatel === true', positive: true, result: 'Portefeuille mieux équilibré. SIB progresse à 6 500 (+45%) sur 3 ans.', lesson: "À 9 ans d'investissement, le rééquilibrage n'est plus optionnel — c'est de la maintenance obligatoire. Une position qui représente 40%+ de ton portefeuille est un risque non rémunéré." },
         { condition: 'concentration === true', positive: false, result: 'Quand SONATEL corrige en 2021-2022, ton portefeuille amplifie la correction.', lesson: "La surperformance passée d'un titre ne justifie pas de lui laisser prendre plus de 30-35% de ton portefeuille." },
       ],
     },
     '2022': {
-      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ORCI'],
-      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC'],
+      canBuy: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ORCI', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
+      canSell: ['SNTS', 'SGBC', 'PALC', 'SLBC', 'SIBC', 'CIEC', 'ETIT', 'BICC', 'ECOC', 'CFAC', 'BOABF'],
       consequences: [
         { condition: 'ipoOrangeCI === true', positive: true, result: "Orange CI s'apprécie de +15-20% sur 2023-2025. Dividende lancé dès 2023.", lesson: "Participer à une IPO de qualité sur un marché que tu connais bien est une stratégie valide. La clé : souscrire sur conviction fondamentale, pas sur l'enthousiasme médiatique." },
         { condition: 'cashHold === true', positive: false, result: "Les 500K non investis perdent en pouvoir d'achat (-7,4%/an d'inflation) et ne captent pas la progression BRVM.", lesson: "L'inflation est précisément la raison d'investir en actions, pas de rester en cash. Les sociétés cotées répercutent généralement la hausse des prix sur leurs revenus." },
