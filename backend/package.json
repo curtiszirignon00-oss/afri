@@ -48,6 +48,7 @@
     "verify-neic": "ts-node src/scripts/verify-neic-data.ts",
     "verify-sdcc": "ts-node src/scripts/verify-sdcc-data.ts",
     "export-users": "ts-node src/scripts/export-users-to-excel-direct.ts",
+    "export-db": "tsx scripts/export-database.ts",
     "export-analytics": "tsx scripts/export-analytics.ts",
     "export-analytics:7d": "tsx scripts/export-analytics.ts --days=7",
     "export-analytics:30d": "tsx scripts/export-analytics.ts --days=30",
