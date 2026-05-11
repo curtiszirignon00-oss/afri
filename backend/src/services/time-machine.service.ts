@@ -334,47 +334,96 @@ export async function generateKofiFeedback(
   const year = scenario.years[stepIndex];
   const allocation = (session.portfolioByStep as any)?.[String(stepIndex)] ?? {};
   const note = (session.noteByStep as any)?.[String(stepIndex)] ?? '';
-  const fundamentals = (scenario.fundamentalsByYear as any)?.[String(year)] ?? {};
   const macro = (scenario.contextByYear as any)?.[String(year)]?.macro ?? [];
+  const news = (scenario.contextByYear as any)?.[String(year)]?.news ?? [];
   const perf = (session.performanceByStep as any)?.[String(stepIndex)];
   const capital = (session.capitalByStep as any)?.[String(stepIndex)] ?? scenario.startBudget;
 
-  const nbTitres = Object.values(allocation).filter((q) => (q as number) > 0).length;
-  const totalInvested = Object.entries(allocation).reduce((sum, [ticker, qty]) => {
-    const cours = getCours(scenario, year, ticker);
+  // Fetch real DB prices for this year's tickers — same source as the play page
+  const allTickers = Object.keys(allocation).filter(t => (allocation[t] as number) > 0);
+  const seedFundamentals = (scenario.fundamentalsByYear as any)?.[String(year)] ?? {};
+  const dbStockData = allTickers.length > 0
+    ? await getStockDataForYear(allTickers, year, scenario.fundamentalsByYear)
+    : [];
+  const priceMap: Record<string, { cours: number; per?: any; bna?: any; div?: any; roe?: any; note?: string }> = {};
+  for (const s of dbStockData) {
+    priceMap[s.ticker] = s;
+  }
+  // Merge with seed for tickers not in DB
+  for (const ticker of allTickers) {
+    if (!priceMap[ticker] && seedFundamentals[ticker]) {
+      priceMap[ticker] = seedFundamentals[ticker];
+    }
+  }
+
+  const activePositions = Object.entries(allocation).filter(([, qty]) => (qty as number) > 0);
+  const nbTitres = activePositions.length;
+
+  const totalInvested = activePositions.reduce((sum, [ticker, qty]) => {
+    const cours = priceMap[ticker]?.cours ?? getCours(scenario, year, ticker);
     return sum + (qty as number) * cours;
   }, 0);
-  const cashRemaining = capital - totalInvested * (1 + COMMISSION_RATE);
 
-  const allocationStr = Object.entries(allocation)
-    .filter(([, qty]) => (qty as number) > 0)
+  // Previous holdings to compute deltas (buy vs sell vs hold)
+  const prevHoldings = stepIndex > 0
+    ? ((session.portfolioByStep as any)?.[String(stepIndex - 1)] ?? {})
+    : {};
+
+  const allocationStr = activePositions
     .map(([ticker, qty]) => {
-      const cours = getCours(scenario, year, ticker);
-      const fund = fundamentals[ticker];
+      const fund = priceMap[ticker];
+      const cours = fund?.cours ?? getCours(scenario, year, ticker);
       const pct = totalInvested > 0 ? (((qty as number) * cours) / totalInvested * 100).toFixed(1) : '0';
-      return `  - ${ticker}: ${qty} actions × ${cours} FCFA = ${Math.round((qty as number) * cours).toLocaleString()} FCFA (${pct}%) | PER ${fund?.per ?? 'N/A'} | BNA ${fund?.bna ?? 'N/A'} | Div ${fund?.div ?? 0} FCFA/an`;
+      const prevQty = (prevHoldings[ticker] as number) ?? 0;
+      const delta = (qty as number) - prevQty;
+      const action = delta > 0 ? `[ACHAT +${delta}]` : delta < 0 ? `[VENTE ${delta}]` : '[CONSERVÉ]';
+      return `  - ${ticker} ${action}: ${qty} actions × ${cours.toLocaleString()} FCFA = ${Math.round((qty as number) * cours).toLocaleString()} FCFA (${pct}% du PF) | PER: ${fund?.per ?? 'N/A'} | BNA: ${fund?.bna ?? 'N/A'} | Div: ${fund?.div ?? 0} FCFA/an | ROE: ${fund?.roe ?? 'N/A'}`;
     })
     .join('\n');
 
+  // Sold positions (in prev but not in current)
+  const soldStr = Object.entries(prevHoldings)
+    .filter(([t, prevQty]) => (prevQty as number) > 0 && !((allocation[t] as number) > 0))
+    .map(([t, prevQty]) => {
+      const cours = priceMap[t]?.cours ?? getCours(scenario, year, t);
+      return `  - ${t} [VENDU ENTIÈREMENT]: était ${prevQty} actions × ${cours.toLocaleString()} FCFA`;
+    })
+    .join('\n');
+
+  const cashRemaining = Math.max(0, capital - totalInvested * (1 + COMMISSION_RATE));
+
   const userPrefix = userName ? `Utilisateur : ${userName}. Adresse-toi à lui directement par son prénom.\n\n` : '';
 
-  const prompt = `${userPrefix}Contexte historique — ${year} :
+  const prompt = `${userPrefix}=== CONTEXTE HISTORIQUE ${year} ===
+INDICATEURS MACRO :
 ${macro.map((m: any) => `• ${m.label}: ${m.value} — ${m.signal}`).join('\n')}
 
-Allocation de l'utilisateur (${nbTitres} titre${nbTitres > 1 ? 's' : ''} sur capital de ${capital.toLocaleString()} FCFA) :
-${allocationStr || '  Aucune position prise (tout en cash)'}
-${cashRemaining > 100 ? `  Liquidités non investies : ${Math.round(cashRemaining).toLocaleString()} FCFA` : ''}
+ACTUALITÉS CLÉS :
+${news.slice(0, 3).map((n: any) => `• [${n.sentiment?.toUpperCase() ?? 'NEUTRE'}] ${n.text}`).join('\n')}
 
-${note ? `Justification de l'utilisateur : "${note}"` : 'Aucune note de justification fournie.'}
+=== DÉCISIONS DE L'INVESTISSEUR ===
+Capital disponible au début de l'étape : ${capital.toLocaleString()} FCFA
+Nombre de titres en portefeuille : ${nbTitres}
+Valeur totale investie : ${Math.round(totalInvested).toLocaleString()} FCFA
+${cashRemaining > 500 ? `Cash non investi : ${Math.round(cashRemaining).toLocaleString()} FCFA` : 'Cash quasi-totalement déployé.'}
 
-${perf ? `Performance calculée : valeur portefeuille ${Math.round(perf.pfVal).toLocaleString()} FCFA | Performance capital ${perf.perfCapital.toFixed(1)}% | Performance totale avec dividendes ${perf.perfTotal.toFixed(1)}%` : ''}
+DÉTAIL DES POSITIONS (avec action réalisée) :
+${allocationStr || '  ⚠️ AUCUNE POSITION — tout le capital est resté en cash'}
+${soldStr ? `\nPOSITIONS LIQUIDÉES :\n${soldStr}` : ''}
 
-Analyse cette allocation en 3 points :
-1. Qualité de la logique fondamentale (diversification, valorisation, secteurs)
-2. Biais comportementaux identifiés si présents (ou discipline démontrée)
-3. Règle générale BRVM applicable aux situations futures similaires
+${note ? `JUSTIFICATION DE L'INVESTISSEUR : "${note}"` : 'Aucune note de justification fournie.'}
 
-Si l'utilisateur a fourni une justification, évalue explicitement la qualité de son raisonnement (solide / partiel / émotionnel).`;
+=== RÉSULTATS CALCULÉS ===
+${perf ? `• Valeur portefeuille : ${Math.round(perf.pfVal).toLocaleString()} FCFA\n• Performance capital : ${perf.perfCapital.toFixed(1)}%\n• Performance totale (dividendes inclus) : ${perf.perfTotal.toFixed(1)}%\n• Dividendes cumulés : ${Math.round(perf.pfDivCum ?? 0).toLocaleString()} FCFA` : 'Performance non encore calculée.'}
+
+=== INSTRUCTIONS D'ANALYSE ===
+En te basant UNIQUEMENT sur les données ci-dessus (positions réelles, cours réels, contexte macro), analyse en 3 points :
+1. LOGIQUE FONDAMENTALE : évalue la qualité de la sélection de titres (PER, BNA, dividendes, secteurs, diversification). Sois précis sur chaque titre acheté.
+2. BIAIS COMPORTEMENTAUX : identifie les biais présents (momentum, aversion aux pertes, surconcentration, etc.) ou au contraire la discipline démontrée.
+3. RÈGLE BRVM : une règle générale actionnable applicable aux prochaines décisions sur ce marché.
+
+${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justification (solide / partiel / émotionnel).' : ''}
+⚠️ IMPORTANT : analyse les positions RÉELLEMENT prises. Ne dis pas que l'utilisateur est en cash si des positions sont listées ci-dessus.`;
 
   try {
     const completion = await groq.chat.completions.create({
@@ -404,30 +453,54 @@ export async function generateKofiRecap(sessionId: string, userId: string, userN
   const portfolioByStep = session.portfolioByStep as Record<string, PortfolioAllocation>;
   const noteByStep = session.noteByStep as Record<string, string>;
   const performanceByStep = session.performanceByStep as any;
+  const capitalByStep = session.capitalByStep as any;
   const lastStepIndex = scenario.years.length - 1;
   const lastPerf = performanceByStep?.[String(lastStepIndex)];
 
+  // Build detailed step-by-step summary with real position data
   const stepsStr = scenario.years.map((year: number, i: number) => {
     const alloc = portfolioByStep[String(i)] ?? {};
     const note = noteByStep[String(i)] ?? '';
-    const nbTitres = Object.values(alloc).filter((q) => (q as number) > 0).length;
     const perf = performanceByStep?.[String(i)];
-    return `Étape ${i + 1} (${year}) : ${nbTitres} titre${nbTitres > 1 ? 's' : ''}${note ? ` — Note: "${note}"` : ''} | Perf capital: ${perf ? perf.perfCapital.toFixed(1) + '%' : 'N/A'}`;
+    const capital = capitalByStep?.[String(i)] ?? scenario.startBudget;
+    const activePositions = Object.entries(alloc).filter(([, qty]) => (qty as number) > 0);
+    const nbTitres = activePositions.length;
+
+    const prevAlloc = i > 0 ? (portfolioByStep[String(i - 1)] ?? {}) : {};
+    const positionsStr = activePositions.map(([ticker, qty]) => {
+      const seedPrice = (scenario.fundamentalsByYear as any)?.[String(year)]?.[ticker]?.cours ?? 0;
+      const prevQty = (prevAlloc[ticker] as number) ?? 0;
+      const delta = (qty as number) - prevQty;
+      const action = delta > 0 ? `achat +${delta}` : delta < 0 ? `vente ${delta}` : 'conservé';
+      const valeur = (qty as number) * seedPrice;
+      return `${ticker}(${qty}×${seedPrice > 0 ? seedPrice.toLocaleString() : '?'}FCFA=${valeur > 0 ? Math.round(valeur).toLocaleString() : '?'}FCFA, ${action})`;
+    }).join(', ');
+
+    return `[Étape ${i + 1} — ${year}] capital=${capital.toLocaleString()}FCFA | ${nbTitres} titre(s): ${positionsStr || 'CASH'} | perf=${perf ? perf.perfCapital.toFixed(1) + '%' : 'N/A'} | divCum=${perf ? Math.round(perf.pfDivCum ?? 0).toLocaleString() + 'FCFA' : 'N/A'}${note ? ` | note="${note}"` : ''}`;
   }).join('\n');
 
-  const userPrefix = userName ? `Utilisateur : ${userName}. Adresse-toi à lui directement par son prénom.\n\n` : '';
+  const userPrefix = userName ? `Investisseur : ${userName}. Adresse-toi à lui directement par son prénom.\n\n` : '';
 
-  const prompt = `${userPrefix}Scénario complété : "${scenario.title}" (${scenario.years[0]} → ${scenario.years[scenario.years.length - 1]})
+  const prompt = `${userPrefix}=== BILAN COMPLET DU SCÉNARIO ===
+Scénario : "${scenario.title}" (${scenario.years[0]} → ${scenario.years[scenario.years.length - 1]})
+Capital initial : ${scenario.startBudget.toLocaleString()} FCFA | Contribution à chaque étape : 500 000 FCFA
 
-Résumé des étapes :
+=== HISTORIQUE DES DÉCISIONS (données réelles) ===
 ${stepsStr}
 
-Performance finale :
-- Valeur portefeuille : ${lastPerf ? Math.round(lastPerf.pfVal).toLocaleString() : 'N/A'} FCFA
-- Performance totale (capital + dividendes) : ${lastPerf ? lastPerf.perfTotal.toFixed(1) + '%' : 'N/A'}
-- CAGR annualisé : ${lastPerf ? lastPerf.cagr.toFixed(1) + '%' : 'N/A'} /an
+=== PERFORMANCE FINALE ===
+• Valeur portefeuille : ${lastPerf ? Math.round(lastPerf.pfVal).toLocaleString() : 'N/A'} FCFA
+• Performance totale (capital + dividendes) : ${lastPerf ? lastPerf.perfTotal.toFixed(1) + '%' : 'N/A'}
+• CAGR annualisé : ${lastPerf ? lastPerf.cagr.toFixed(1) + '%' : 'N/A'} /an
+• Dividendes cumulés totaux : ${lastPerf ? Math.round(lastPerf.pfDivCum ?? 0).toLocaleString() : 'N/A'} FCFA
 
-Génère un récapitulatif pédagogique de 3 règles clés que cet investisseur doit retenir en fonction de l'ensemble de ses choix. Sois spécifique à SES décisions, pas générique. Identifie ses forces et ses points d'amélioration principaux.`;
+=== INSTRUCTIONS ===
+En te basant UNIQUEMENT sur les décisions réelles listées ci-dessus, génère un récapitulatif personnalisé avec :
+1. LA FORCE PRINCIPALE de cet investisseur (ce qu'il a bien fait, avec exemple précis)
+2. LA FAIBLESSE PRINCIPALE à corriger (avec exemple précis de décision sous-optimale)
+3. LA RÈGLE D'OR personnalisée pour ses prochains investissements BRVM
+
+Sois ultra-concret. Cite les tickers, les années, les montants. Pas de généralités.`;
 
   try {
     const completion = await groq.chat.completions.create({
