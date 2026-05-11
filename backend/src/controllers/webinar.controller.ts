@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../config/database.prisma';
+import { prisma } from '../config/database';
 import logger from '../config/logger';
 
 const WEBINAR_IDS = ['w1', 'w2', 'w3', 'w4'];
