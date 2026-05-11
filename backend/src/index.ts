@@ -62,6 +62,7 @@ import passportConfig from './config/passport'; // OAuth Passport
 import oauthRoutes from './routes/oauth.routes'; // OAuth Social Login
 import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
 import trialRoutes from './routes/trial.routes'; // Essai gratuit 2 semaines
+import webinarRoutes from './routes/webinar.routes'; // Préinscriptions webinaires
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -220,6 +221,8 @@ class App {
       '/confirm-email', '/resend-confirmation', '/csrf-token',
       // Analytics visiteurs non-authentifiés
       '/analytics/page-view', '/analytics/page-duration',
+      // Préinscription webinaire — public, pas d'état auth
+      '/webinars/preregister',
     ]);
     this.app?.use('/api/', (req, res, next) => {
       // req.path est relatif au préfixe /api/ (ex: /login pour /api/login)
@@ -285,6 +288,7 @@ class App {
     this.app?.use('/api/push', pushRoutes);                              // Push notifications (Web Push API)
     this.app?.use('/api/ai', aiRoutes);                                   // IA Proxy — Gemini (clé côté serveur uniquement)
     this.app?.use('/api/trial', trialRoutes);                              // Essai gratuit 2 semaines features IA
+    this.app?.use('/api/webinars', webinarRoutes);                         // Préinscriptions webinaires
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));
