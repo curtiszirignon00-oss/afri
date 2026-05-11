@@ -1412,9 +1412,16 @@ export default function LearnPage() {
                     <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
                         Académie de l'Investissement
                     </h1>
-                    <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed">
+                    <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed mb-5">
                         Apprenez à investir intelligemment avec nos modules interactifs. Quiz, contenu progressif et audio pour une expérience d'apprentissage complète.
                     </p>
+                    <a
+                        href="/webinaires"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md transition-all"
+                    >
+                        <span>🎥</span>
+                        Voir nos webinaires de formation
+                    </a>
                 </div>
 
                 {isLoggedIn && (

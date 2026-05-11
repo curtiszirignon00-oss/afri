@@ -1,8 +1,11 @@
 import { Router } from 'express';
-import { preregisterWebinar, getWebinarRegistrations } from '../controllers/webinar.controller';
+import { preregisterWebinar, getWebinarRegistrations, getWebinarCounts } from '../controllers/webinar.controller';
 import { auth } from '../middlewares/auth.middleware';
 
 const router = Router();
+
+// GET /api/webinars/counts — public, retourne le nombre d'inscrits par webinaire
+router.get('/counts', getWebinarCounts);
 
 // POST /api/webinars/preregister — public (no auth required, email is enough)
 router.post('/preregister', preregisterWebinar);
