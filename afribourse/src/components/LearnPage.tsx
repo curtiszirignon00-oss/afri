@@ -1640,6 +1640,19 @@ export default function LearnPage() {
                             {difficulty === 'all' ? '📚 Tous' : `${getDifficultyLabel(difficulty)}`}
                         </button>
                     ))}
+
+                    {/* Séparateur */}
+                    <div className="flex-shrink-0 w-px bg-gray-200 self-stretch mx-1" />
+
+                    {/* Time Machine */}
+                    <button
+                        onClick={() => navigate('/time-machine')}
+                        className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                    >
+                        <Clock className="w-4 h-4" />
+                        Time Machine
+                        <span className="text-[9px] font-bold bg-indigo-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
+                    </button>
                 </div>
             </div>
 
