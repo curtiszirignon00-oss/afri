@@ -1,9 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Flame, ChevronRight, Video, Zap } from 'lucide-react';
+import { Calendar, Clock, Flame, ChevronRight, Video, Zap, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
+
+const EARLY_BIRD_SEATS = 20;
+const MAX_SEATS = 50;
+
+// ─── Indicatifs pays (UEMOA + courants) ──────────────────────────────────────
+
+const DIAL_CODES = [
+  { code: '+225', flag: '🇨🇮', name: "Côte d'Ivoire" },
+  { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
+  { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
+  { code: '+223', flag: '🇲🇱', name: 'Mali' },
+  { code: '+228', flag: '🇹🇬', name: 'Togo' },
+  { code: '+229', flag: '🇧🇯', name: 'Bénin' },
+  { code: '+227', flag: '🇳🇪', name: 'Niger' },
+  { code: '+224', flag: '🇬🇳', name: 'Guinée' },
+  { code: '+245', flag: '🇬🇼', name: 'Guinée-Bissau' },
+  { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
+  { code: '+233', flag: '🇬🇭', name: 'Ghana' },
+  { code: '+234', flag: '🇳🇬', name: 'Nigéria' },
+  { code: '+243', flag: '🇨🇩', name: 'RD Congo' },
+  { code: '+212', flag: '🇲🇦', name: 'Maroc' },
+  { code: '+213', flag: '🇩🇿', name: 'Algérie' },
+  { code: '+216', flag: '🇹🇳', name: 'Tunisie' },
+  { code: '+33',  flag: '🇫🇷', name: 'France' },
+  { code: '+32',  flag: '🇧🇪', name: 'Belgique' },
+  { code: '+41',  flag: '🇨🇭', name: 'Suisse' },
+  { code: '+1',   flag: '🇺🇸', name: 'États-Unis / Canada' },
+];
 
 // ─── Données partagées (prochain webinaire uniquement) ────────────────────────
 
@@ -13,25 +41,11 @@ const NEXT_WEBINAR = {
   tagline: 'De zéro à investisseur en une session',
   date: '2026-05-23T09:00:00Z',
   endDate: '2026-05-23T12:00:00Z',
-  earlyBirdDeadline: '2026-05-14T23:59:59Z',
   price: 5000,
   discountPercent: 50,
   duration: '3H',
   gradient: 'from-blue-600 to-indigo-700',
 };
-
-function getCountdownParts(targetIso: string) {
-  const diff = Math.max(0, new Date(targetIso).getTime() - Date.now());
-  return {
-    days: Math.floor(diff / 86400000),
-    hours: Math.floor((diff % 86400000) / 3600000),
-    minutes: Math.floor((diff % 3600000) / 60000),
-    seconds: Math.floor((diff % 60000) / 1000),
-    expired: diff === 0,
-  };
-}
-
-function pad(n: number) { return String(n).padStart(2, '0'); }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', {
@@ -41,17 +55,19 @@ function formatDate(iso: string) {
 
 // ─── Mini modal d'inscription rapide ─────────────────────────────────────────
 
-const QuickRegisterModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const QuickRegisterModal: React.FC<{ registeredCount: number; onClose: () => void }> = ({ registeredCount, onClose }) => {
   const { userProfile } = useAuth();
   const [form, setForm] = useState({
     name: (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
     email: (userProfile as any)?.email || '',
-    phone: '',
+    dialCode: '+225',
+    phoneNumber: '',
   });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
-  const earlyBird = new Date(NEXT_WEBINAR.earlyBirdDeadline).getTime() > Date.now();
+  const earlyBird = registeredCount < EARLY_BIRD_SEATS;
+  const remaining = Math.max(0, EARLY_BIRD_SEATS - registeredCount);
   const effectivePrice = earlyBird
     ? NEXT_WEBINAR.price * (1 - NEXT_WEBINAR.discountPercent / 100)
     : NEXT_WEBINAR.price;
@@ -70,7 +86,7 @@ const QuickRegisterModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           webinarId: NEXT_WEBINAR.id,
           name: form.name.trim(),
           email: form.email.trim(),
-          phone: form.phone.trim() || undefined,
+          phone: form.phoneNumber.trim() ? `${form.dialCode} ${form.phoneNumber.trim()}` : undefined,
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
@@ -108,13 +124,20 @@ const QuickRegisterModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
         ) : (
           <div className="p-5 space-y-4">
-            {earlyBird && (
+            {earlyBird ? (
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                <Flame className="w-4 h-4 text-amber-500" />
-                <span className="text-xs font-semibold text-amber-800">
-                  Early bird : {effectivePrice.toLocaleString('fr-FR')} XOF
-                  <span className="ml-1 line-through text-amber-400">{NEXT_WEBINAR.price.toLocaleString('fr-FR')}</span>
-                </span>
+                <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
+                <div>
+                  <p className="text-xs font-bold text-amber-800">
+                    Early bird : {effectivePrice.toLocaleString('fr-FR')} XOF
+                    <span className="ml-1 line-through font-normal text-amber-400">{NEXT_WEBINAR.price.toLocaleString('fr-FR')}</span>
+                  </p>
+                  <p className="text-[10px] text-amber-600">Il reste {remaining} place{remaining > 1 ? 's' : ''} à tarif réduit</p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+                <span className="text-xs text-gray-600">Tarif plein : {NEXT_WEBINAR.price.toLocaleString('fr-FR')} XOF</span>
               </div>
             )}
 
@@ -131,13 +154,26 @@ const QuickRegisterModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
-            <input
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Téléphone (optionnel)"
-              type="tel"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            />
+            <div className="flex items-stretch border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-400 focus-within:border-blue-400 transition-all">
+              <select
+                value={form.dialCode}
+                onChange={(e) => setForm({ ...form, dialCode: e.target.value })}
+                className="bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-700 pl-2 pr-1 py-3 focus:outline-none cursor-pointer"
+                style={{ minWidth: '88px' }}
+                aria-label="Indicatif pays"
+              >
+                {DIAL_CODES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                value={form.phoneNumber}
+                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value.replace(/[^\d\s\-]/g, '') })}
+                placeholder="Numéro (optionnel)"
+                className="flex-1 px-3 py-3 text-sm focus:outline-none bg-white placeholder:text-gray-400"
+              />
+            </div>
 
             <div className="flex gap-3">
               <button
@@ -166,18 +202,23 @@ const QuickRegisterModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 const DashboardWebinarWidget: React.FC = () => {
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(getCountdownParts(NEXT_WEBINAR.earlyBirdDeadline));
+  const [count, setCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
   const webinarPassed = new Date(NEXT_WEBINAR.date).getTime() < Date.now();
-  if (webinarPassed) return null;
 
   useEffect(() => {
-    const t = setInterval(() => setCountdown(getCountdownParts(NEXT_WEBINAR.earlyBirdDeadline)), 1000);
-    return () => clearInterval(t);
+    fetch(`${API_BASE_URL}/webinars/counts`)
+      .then((r) => r.json())
+      .then((d) => { if (d?.data?.[NEXT_WEBINAR.id] != null) setCount(d.data[NEXT_WEBINAR.id]); })
+      .catch(() => {});
   }, []);
 
-  const earlyBirdActive = !countdown.expired;
+  if (webinarPassed) return null;
+
+  const earlyBirdActive = count < EARLY_BIRD_SEATS;
+  const remaining = Math.max(0, EARLY_BIRD_SEATS - count);
+  const totalRemaining = Math.max(0, MAX_SEATS - count);
   const effectivePrice = earlyBirdActive
     ? NEXT_WEBINAR.price * (1 - NEXT_WEBINAR.discountPercent / 100)
     : NEXT_WEBINAR.price;
@@ -230,21 +271,36 @@ const DashboardWebinarWidget: React.FC = () => {
             )}
           </div>
 
-          {/* Countdown */}
-          {earlyBirdActive && (
-            <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
-              <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse flex-shrink-0" />
-              <span className="text-[10px] text-amber-700 font-semibold">Offre expire dans</span>
-              <div className="flex gap-1 font-mono ml-auto">
-                {countdown.days > 0 && (
-                  <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded">{pad(countdown.days)}j</span>
-                )}
-                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded">{pad(countdown.hours)}h</span>
-                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded">{pad(countdown.minutes)}m</span>
-                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded">{pad(countdown.seconds)}s</span>
-              </div>
+          {/* Urgence places */}
+          {earlyBirdActive ? (
+            <div className={`flex items-center gap-1.5 rounded-xl px-3 py-2 border ${remaining <= 5 ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-100'}`}>
+              <Flame className={`w-3.5 h-3.5 flex-shrink-0 animate-pulse ${remaining <= 5 ? 'text-red-500' : 'text-amber-500'}`} />
+              <span className={`text-[10px] font-semibold flex-1 ${remaining <= 5 ? 'text-red-700' : 'text-amber-700'}`}>
+                {remaining <= 5
+                  ? `⚠ Plus que ${remaining} place${remaining > 1 ? 's' : ''} à tarif réduit !`
+                  : `Il reste ${remaining} places à tarif réduit`}
+              </span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${remaining <= 5 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
+                {EARLY_BIRD_SEATS - remaining}/{EARLY_BIRD_SEATS}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+              <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[10px] text-gray-500 font-semibold">Places early bird épuisées · tarif plein</span>
             </div>
           )}
+
+          {/* Total seats bar */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-gray-100 rounded-full h-1 overflow-hidden">
+              <div
+                className="h-1 rounded-full bg-blue-400 transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.round((count / MAX_SEATS) * 100))}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{totalRemaining} places / {MAX_SEATS}</span>
+          </div>
 
           {/* CTAs */}
           <div className="flex gap-2 pt-1">
@@ -273,7 +329,7 @@ const DashboardWebinarWidget: React.FC = () => {
         </div>
       </div>
 
-      {showModal && <QuickRegisterModal onClose={() => setShowModal(false)} />}
+      {showModal && <QuickRegisterModal registeredCount={count} onClose={() => setShowModal(false)} />}
     </>
   );
 };

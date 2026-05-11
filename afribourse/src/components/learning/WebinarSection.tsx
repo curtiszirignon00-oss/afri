@@ -8,6 +8,75 @@ import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
 
+// ─── Indicatifs pays ──────────────────────────────────────────────────────────
+
+const DIAL_CODES = [
+  // UEMOA en premier
+  { code: '+225', flag: '🇨🇮', name: "Côte d'Ivoire" },
+  { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
+  { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
+  { code: '+223', flag: '🇲🇱', name: 'Mali' },
+  { code: '+228', flag: '🇹🇬', name: 'Togo' },
+  { code: '+229', flag: '🇧🇯', name: 'Bénin' },
+  { code: '+227', flag: '🇳🇪', name: 'Niger' },
+  { code: '+224', flag: '🇬🇳', name: 'Guinée' },
+  { code: '+245', flag: '🇬🇼', name: 'Guinée-Bissau' },
+  // Autres pays africains courants
+  { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
+  { code: '+233', flag: '🇬🇭', name: 'Ghana' },
+  { code: '+234', flag: '🇳🇬', name: 'Nigéria' },
+  { code: '+243', flag: '🇨🇩', name: 'RD Congo' },
+  { code: '+242', flag: '🇨🇬', name: 'Congo' },
+  { code: '+241', flag: '🇬🇦', name: 'Gabon' },
+  { code: '+212', flag: '🇲🇦', name: 'Maroc' },
+  { code: '+213', flag: '🇩🇿', name: 'Algérie' },
+  { code: '+216', flag: '🇹🇳', name: 'Tunisie' },
+  { code: '+20',  flag: '🇪🇬', name: 'Égypte' },
+  // International
+  { code: '+33',  flag: '🇫🇷', name: 'France' },
+  { code: '+32',  flag: '🇧🇪', name: 'Belgique' },
+  { code: '+41',  flag: '🇨🇭', name: 'Suisse' },
+  { code: '+1',   flag: '🇺🇸', name: 'États-Unis / Canada' },
+  { code: '+44',  flag: '🇬🇧', name: 'Royaume-Uni' },
+];
+
+// ─── PhoneInput — sélecteur d'indicatif + numéro ──────────────────────────────
+
+interface PhoneInputProps {
+  dialCode: string;
+  number: string;
+  onDialChange: (code: string) => void;
+  onNumberChange: (n: string) => void;
+}
+
+const PhoneInput: React.FC<PhoneInputProps> = ({ dialCode, number, onDialChange, onNumberChange }) => {
+  const selected = DIAL_CODES.find((c) => c.code === dialCode) ?? DIAL_CODES[0];
+  return (
+    <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+      <select
+        value={dialCode}
+        onChange={(e) => onDialChange(e.target.value)}
+        className="bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-700 pl-2 pr-1 py-2.5 focus:outline-none cursor-pointer"
+        style={{ minWidth: '90px' }}
+        aria-label="Indicatif pays"
+      >
+        {DIAL_CODES.map((c) => (
+          <option key={c.code} value={c.code}>
+            {c.flag} {c.code}
+          </option>
+        ))}
+      </select>
+      <input
+        type="tel"
+        value={number}
+        onChange={(e) => onNumberChange(e.target.value.replace(/[^\d\s\-]/g, ''))}
+        placeholder={selected.name === "Côte d'Ivoire" ? '07 00 00 00 00' : 'Numéro'}
+        className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white placeholder:text-gray-400"
+      />
+    </div>
+  );
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Webinar {
@@ -26,10 +95,6 @@ interface Webinar {
   gradient: string;
   accentColor: string;
   icon: React.ReactNode;
-}
-
-interface Countdown {
-  days: number; hours: number; minutes: number; seconds: number;
 }
 
 // ─── Données webinaires ────────────────────────────────────────────────────────
@@ -88,6 +153,11 @@ const WEBINARS: Webinar[] = [
   },
 ];
 
+// ─── Constantes ───────────────────────────────────────────────────────────────
+
+const EARLY_BIRD_SEATS = 20;
+const MAX_SEATS = 50;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatPrice(xof: number): string {
@@ -108,57 +178,49 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function getCountdown(targetIso: string): Countdown {
-  const diff = Math.max(0, new Date(targetIso).getTime() - Date.now());
-  return {
-    days: Math.floor(diff / 86400000),
-    hours: Math.floor((diff % 86400000) / 3600000),
-    minutes: Math.floor((diff % 3600000) / 60000),
-    seconds: Math.floor((diff % 60000) / 1000),
-  };
-}
+// ─── EarlyBirdSeatsIndicator ──────────────────────────────────────────────────
 
-function isEarlyBirdActive(deadline: string): boolean {
-  return new Date(deadline).getTime() > Date.now();
-}
-
-function pad(n: number): string {
-  return String(n).padStart(2, '0');
-}
-
-// ─── CountdownBadge ────────────────────────────────────────────────────────────
-
-const CountdownBadge: React.FC<{ deadline: string }> = ({ deadline }) => {
-  const [cd, setCd] = useState<Countdown>(getCountdown(deadline));
-
-  useEffect(() => {
-    const t = setInterval(() => setCd(getCountdown(deadline)), 1000);
-    return () => clearInterval(t);
-  }, [deadline]);
-
-  if (!isEarlyBirdActive(deadline)) return null;
+const EarlyBirdSeatsIndicator: React.FC<{ count: number; fullPrice: number }> = ({ count, fullPrice }) => {
+  const taken = Math.min(count, EARLY_BIRD_SEATS);
+  const remaining = Math.max(0, EARLY_BIRD_SEATS - count);
+  const earlyBirdActive = count < EARLY_BIRD_SEATS;
+  const pct = Math.min(100, Math.round((taken / EARLY_BIRD_SEATS) * 100));
+  const critical = remaining <= 5 && earlyBirdActive;
 
   return (
-    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 flex-wrap">
-      <Flame className="w-4 h-4 text-amber-500 flex-shrink-0 animate-pulse" />
-      <span className="text-xs font-semibold text-amber-700">Offre -50% expire dans</span>
-      <div className="flex items-center gap-1 font-mono">
-        {cd.days > 0 && (
-          <span className="bg-amber-100 text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded">{pad(cd.days)}j</span>
-        )}
-        <span className="bg-amber-100 text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded">{pad(cd.hours)}h</span>
-        <span className="bg-amber-100 text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded">{pad(cd.minutes)}m</span>
-        <span className="bg-amber-100 text-amber-800 text-xs font-bold px-1.5 py-0.5 rounded">{pad(cd.seconds)}s</span>
+    <div className={`rounded-xl border px-3 py-2.5 ${earlyBirdActive ? (critical ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200') : 'bg-gray-50 border-gray-200'}`}>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className={`flex items-center gap-1.5 text-xs font-bold ${earlyBirdActive ? (critical ? 'text-red-700' : 'text-amber-800') : 'text-gray-500'}`}>
+          <Flame className={`w-3.5 h-3.5 ${earlyBirdActive ? 'animate-pulse' : ''}`} />
+          {earlyBirdActive
+            ? critical
+              ? `⚠ Plus que ${remaining} place${remaining > 1 ? 's' : ''} à tarif réduit !`
+              : `Il reste ${remaining} places à tarif réduit`
+            : 'Places à tarif réduit épuisées'}
+        </span>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${earlyBirdActive ? (critical ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800') : 'bg-gray-100 text-gray-500'}`}>
+          {taken}/{EARLY_BIRD_SEATS}
+        </span>
       </div>
+      <div className={`w-full rounded-full h-1.5 overflow-hidden ${earlyBirdActive ? (critical ? 'bg-red-100' : 'bg-amber-100') : 'bg-gray-200'}`}>
+        <div
+          className={`h-1.5 rounded-full transition-all duration-500 ${earlyBirdActive ? (critical ? 'bg-red-500' : 'bg-amber-500') : 'bg-gray-400'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {earlyBirdActive && (
+        <p className="text-[10px] text-amber-600 mt-1">Ensuite : tarif plein · {formatPrice(fullPrice)}</p>
+      )}
     </div>
   );
 };
 
 // ─── Modal de pré-inscription ─────────────────────────────────────────────────
 
-const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boolean) => void }> = ({ webinar, onClose }) => {
+const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void }> = ({ webinar, count, onClose }) => {
   const { userProfile } = useAuth();
-  const earlyBird = isEarlyBirdActive(webinar.earlyBirdDeadline);
+  const earlyBird = count < EARLY_BIRD_SEATS;
+  const earlyBirdRemaining = Math.max(0, EARLY_BIRD_SEATS - count);
   const effectivePrice = earlyBird ? webinar.price * (1 - webinar.discountPercent / 100) : webinar.price;
 
   const [loading, setLoading] = useState(false);
@@ -166,7 +228,8 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boo
   const [form, setForm] = useState({
     name: (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
     email: (userProfile as any)?.email || '',
-    phone: '',
+    dialCode: '+225',
+    phoneNumber: '',
   });
 
   const handleSubmit = async () => {
@@ -183,7 +246,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boo
           webinarId: webinar.id,
           name: form.name.trim(),
           email: form.email.trim(),
-          phone: form.phone.trim() || undefined,
+          phone: form.phoneNumber.trim() ? `${form.dialCode} ${form.phoneNumber.trim()}` : undefined,
           earlyBird,
           effectivePrice,
         }),
@@ -221,18 +284,23 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boo
 
         {!done ? (
           <div className="p-6 space-y-4">
-            {earlyBird && (
+            {earlyBird ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-3">
-                <Flame className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                <Flame className="w-5 h-5 text-amber-500 flex-shrink-0 animate-pulse" />
                 <div>
                   <p className="text-sm font-bold text-amber-800">
-                    Tarif early-bird : {formatPrice(effectivePrice)}
-                    <span className="ml-2 text-xs font-normal line-through text-amber-400">
-                      {formatPrice(webinar.price)}
-                    </span>
+                    Tarif early bird : {formatPrice(effectivePrice)}
+                    <span className="ml-2 text-xs font-normal line-through text-amber-400">{formatPrice(webinar.price)}</span>
                   </p>
-                  <p className="text-xs text-amber-600">-50% valable pendant les 3 premiers jours</p>
+                  <p className="text-xs text-amber-600">
+                    Il ne reste que <strong>{earlyBirdRemaining}</strong> place{earlyBirdRemaining > 1 ? 's' : ''} à ce tarif — ensuite tarif plein
+                  </p>
                 </div>
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <p className="text-sm text-gray-600">Tarif plein : {formatPrice(webinar.price)}<br /><span className="text-xs text-gray-400">Les 20 places à tarif réduit ont été réservées</span></p>
               </div>
             )}
 
@@ -261,12 +329,11 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boo
                 <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Numéro WhatsApp <span className="font-normal text-gray-400">(optionnel)</span>
                 </label>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="+225 07 00 00 00 00"
+                <PhoneInput
+                  dialCode={form.dialCode}
+                  number={form.phoneNumber}
+                  onDialChange={(code) => setForm(f => ({ ...f, dialCode: code }))}
+                  onNumberChange={(n) => setForm(f => ({ ...f, phoneNumber: n }))}
                 />
                 <p className="text-xs text-gray-400 mt-1">Pour recevoir le lien de connexion sur WhatsApp</p>
               </div>
@@ -317,7 +384,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; onClose: (registered?: boo
 const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number }> = ({
   webinar, onRegister, isFirst, count,
 }) => {
-  const earlyBird = isEarlyBirdActive(webinar.earlyBirdDeadline);
+  const earlyBird = count < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
   const isMultiDay = new Date(webinar.date).toDateString() !== new Date(webinar.endDate).toDateString();
 
@@ -364,23 +431,20 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
           </div>
         </div>
 
-        {earlyBird && (
-          <div className="mb-4">
-            <CountdownBadge deadline={webinar.earlyBirdDeadline} />
-          </div>
-        )}
+        <div className="mb-4">
+          <EarlyBirdSeatsIndicator count={count} fullPrice={webinar.price} />
+        </div>
 
         {(() => {
-          const MAX = 50;
-          const remaining = MAX - count;
-          const pct = Math.min(100, Math.round((count / MAX) * 100));
+          const remaining = MAX_SEATS - count;
+          const pct = Math.min(100, Math.round((count / MAX_SEATS) * 100));
           const urgent = remaining <= 15;
           return (
             <div className={`mb-3 rounded-xl border px-3 py-2 ${urgent ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-100'}`}>
               <div className="flex items-center justify-between mb-1.5">
                 <div className={`flex items-center gap-1.5 text-xs font-semibold ${urgent ? 'text-red-700' : 'text-emerald-700'}`}>
                   <Users className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>{count} / {MAX} places réservées</span>
+                  <span>{count} / {MAX_SEATS} places réservées</span>
                 </div>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${urgent ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
                   {urgent ? `⚠ ${remaining} restantes` : `${remaining} disponibles`}
@@ -511,7 +575,7 @@ const WebinarSection: React.FC = () => {
       </section>
 
       {selectedWebinar && (
-        <RegistrationModal webinar={selectedWebinar} onClose={handleClose} />
+        <RegistrationModal webinar={selectedWebinar} count={counts[selectedWebinar.id] ?? 0} onClose={handleClose} />
       )}
 
     </>
