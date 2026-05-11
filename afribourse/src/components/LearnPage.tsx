@@ -117,29 +117,16 @@ export default function LearnPage() {
     const userHasPremium = ['premium', 'max', 'pro'].includes(userProfile?.subscriptionTier ?? '');
     const userHasInvestisseurPlus = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
 
-    // Déclenche SIMBA en mode motivation quand l'utilisateur complète son PREMIER module
-    // (uniquement si le passage de 0→1 se produit PENDANT la session, pas au chargement initial)
-    const completedCount = progress.filter((p) => p.is_completed).length;
-    const prevCompletedRef = useRef<number | null>(null);
-    useEffect(() => {
-      if (loading) return; // Attendre que les données soient chargées
-      if (prevCompletedRef.current === null) {
-        prevCompletedRef.current = completedCount; // Enregistre l'état initial
-        return;
-      }
-      const prev = prevCompletedRef.current;
-      prevCompletedRef.current = completedCount;
-      if (prev === 0 && completedCount >= 1) {
-        const key = `simba_motivation_shown_${userProfile?.id ?? 'anon'}`;
-        if (localStorage.getItem(key)) return;
-        localStorage.setItem(key, 'true');
-        const timer = setTimeout(() => {
-          setIsMotivationMode(true);
-          setShowAITutor(true);
-        }, 1500);
-        return () => clearTimeout(timer);
-      }
-    }, [completedCount, loading]);
+    // Ouvre SIMBA en mode motivation après le premier module complété (une seule fois par compte)
+    const triggerSimbaMotivation = useCallback(() => {
+      const key = `simba_motivation_shown_${userProfile?.id ?? 'anon'}`;
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, 'true');
+      setTimeout(() => {
+        setIsMotivationMode(true);
+        setShowAITutor(true);
+      }, 2500);
+    }, [userProfile?.id]);
 
     const [readingProgress, setReadingProgress] = useState(0);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -468,6 +455,8 @@ export default function LearnPage() {
 
                 // Célébrations selon contexte
                 const completedBefore = progress.filter(p => p.is_completed && p.quiz_score != null).length;
+                const isFirstCompletion = progress.filter(p => p.is_completed).length === 0;
+                if (isFirstCompletion) triggerSimbaMotivation();
                 if (completedBefore === 0) {
                     // Tout premier quiz validé de la carrière
                     triggerMilestone('first_quiz', { xp: xpGained });
@@ -533,7 +522,7 @@ export default function LearnPage() {
             console.error('Erreur lors de la soumission du quiz:', error);
             toast.error(error.message || 'Erreur lors de la soumission du quiz', { id: toastId });
         }
-    }, [selectedModule, quizState.answers, loadData]);
+    }, [selectedModule, quizState.answers, loadData, progress, triggerSimbaMotivation]);
 
     const retryQuiz = useCallback(() => {
         if (selectedModule) {
@@ -624,7 +613,10 @@ export default function LearnPage() {
         showXPGainToast({ xpGained: 200, bonusXP: undefined, newAchievements: [], levelUp: undefined });
 
         const completedModules = previousProgress.filter(p => p.is_completed).length;
-        if (completedModules === 0) triggerMilestone('first_module', { xp: 200 });
+        if (completedModules === 0) {
+            triggerMilestone('first_module', { xp: 200 });
+            triggerSimbaMotivation();
+        }
 
         if (onboardingRef.current.isActive && !onboardingRef.current.steps.cours) {
             onboardingRef.current.completeStep('cours');
@@ -685,7 +677,7 @@ export default function LearnPage() {
             console.error('Erreur complétion:', err);
             toast.error(err?.message || "Erreur lors du marquage du module.");
         }
-    }, [isLoggedIn, loadData, selectedModule, trackAction]);
+    }, [isLoggedIn, loadData, selectedModule, trackAction, triggerSimbaMotivation]);
 
     useEffect(() => {
         if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13) {
