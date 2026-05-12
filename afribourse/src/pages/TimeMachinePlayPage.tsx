@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, CheckCircle, Loader2, Zap } from 'lucide-react';
 import { useTimeMachine } from '../contexts/TimeMachineContext';
 import { useScenarioStockData } from '../hooks/useTimeMachine';
 import StepProgress from '../components/time-machine/StepProgress';
@@ -37,14 +37,14 @@ export default function TimeMachinePlayPage() {
 
   const [phase, setPhase] = useState<'choosing' | 'submitted'>('choosing');
   const [loading, setLoading] = useState(true);
+  const [submittedStepIndex, setSubmittedStepIndex] = useState<number | null>(null);
 
   const step = session?.currentStep ?? 0;
-  const year = scenario?.years[step];
+  const displayStep = phase === 'submitted' && submittedStepIndex !== null ? submittedStepIndex : step;
+  const year = scenario?.years[displayStep];
 
-  // Fetch real stock prices from DB for this year
   const { data: stockData } = useScenarioStockData(slug, year);
 
-  // Build fundamentals map from DB data (fallback to seed)
   const fundamentals: Record<string, any> = {};
   if (stockData && stockData.length > 0) {
     for (const s of stockData) {
@@ -55,7 +55,6 @@ export default function TimeMachinePlayPage() {
     Object.assign(fundamentals, seedFund);
   }
 
-  // Tickers: from DB stock data if available, else from scenario
   const tickers = stockData && stockData.length > 0
     ? stockData.map(s => s.ticker)
     : (scenario?.availableStocks ?? []);
@@ -69,7 +68,6 @@ export default function TimeMachinePlayPage() {
     init();
   }, [sessionId]);
 
-  // When session changes step after submit, reset phase
   useEffect(() => {
     if (session?.status === 'COMPLETED') {
       navigate(`/time-machine/${slug}/recap?session=${sessionId ?? session.id}`);
@@ -78,20 +76,26 @@ export default function TimeMachinePlayPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-3 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+          <p className="text-slate-400 text-sm">Chargement…</p>
+        </div>
       </div>
     );
   }
 
   if (!session || !scenario) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-center px-4">
-        <div className="space-y-3">
-          <p className="text-lg font-semibold text-gray-700">Session introuvable.</p>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-center px-4">
+        <div className="space-y-4">
+          <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto">
+            <Zap className="w-7 h-7 text-amber-500" />
+          </div>
+          <p className="text-lg font-semibold text-slate-200">Session introuvable.</p>
           <button
             onClick={() => navigate(`/time-machine/${slug}`)}
-            className="text-blue-600 text-sm underline"
+            className="text-amber-400 text-sm underline cursor-pointer hover:text-amber-300 transition-colors"
           >
             Retour au scénario
           </button>
@@ -100,21 +104,22 @@ export default function TimeMachinePlayPage() {
     );
   }
 
-  const isLastStep = step === scenario.years.length - 1;
+  const isLastStep = displayStep === scenario.years.length - 1;
   const contextData = scenario.contextByYear?.[String(year)] ?? {};
-  const stepPerf = session.performanceByStep?.[String(step)];
-  const prevPfVal = step > 0 ? (session.performanceByStep?.[String(step - 1)]?.pfVal ?? 0) : 0;
-  const prevDivCum = step > 0 ? (session.performanceByStep?.[String(step - 1)]?.pfDivCum ?? 0) : 0;
-  const totalCapital = session.capitalByStep?.[String(step)] ?? scenario.startBudget;
+  const stepPerf = session.performanceByStep?.[String(displayStep)];
+  const prevPfVal = displayStep > 0 ? (session.performanceByStep?.[String(displayStep - 1)]?.pfVal ?? 0) : 0;
+  const prevDivCum = displayStep > 0 ? (session.performanceByStep?.[String(displayStep - 1)]?.pfDivCum ?? 0) : 0;
+  const totalCapital = session.capitalByStep?.[String(displayStep)] ?? scenario.startBudget;
 
-  // Previous holdings for sell/buy delta display
   const prevHoldings: Record<string, number> = step > 0
     ? (session.portfolioByStep?.[String(step - 1)] ?? {})
     : {};
 
   async function handleSubmit() {
+    const stepAtSubmit = session!.currentStep;
     try {
       await submitStep();
+      setSubmittedStepIndex(stepAtSubmit);
       setPhase('submitted');
     } catch {
       // error set in context
@@ -125,32 +130,44 @@ export default function TimeMachinePlayPage() {
     if (session!.status === 'COMPLETED') {
       navigate(`/time-machine/${slug}/recap?session=${sessionId ?? session!.id}`);
     } else {
+      setSubmittedStepIndex(null);
       setPhase('choosing');
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Top bar */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div className="bg-slate-900/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
           <button
             onClick={() => navigate(`/time-machine/${slug}`)}
-            className="text-gray-400 hover:text-gray-700 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-400 truncate">{scenario.title}</p>
-            <p className="text-sm font-bold text-gray-900">Étape {step + 1} — {year}</p>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest truncate">{scenario.title}</p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-400">Étape {displayStep + 1}</span>
+              <span className="text-slate-600">·</span>
+              <span className="text-sm font-bold text-amber-400">{year}</span>
+            </div>
           </div>
-          <StepProgress years={scenario.years} currentStep={step} />
+          <StepProgress years={scenario.years} currentStep={displayStep} />
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="relative max-w-6xl mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left — Context */}
+
+          {/* ── Left — Context ─────────────────────────────────── */}
           <div className="space-y-4">
             {step > 0 && phase === 'choosing' && prevPfVal > 0 && (
               <ReinvestBanner
@@ -161,8 +178,11 @@ export default function TimeMachinePlayPage() {
               />
             )}
 
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Contexte — {year}</h2>
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5">
+              <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-amber-500 rounded-full inline-block" />
+                Contexte — <span className="text-amber-400">{year}</span>
+              </h2>
               <ContextPanel
                 context={contextData}
                 fundamentals={fundamentals}
@@ -171,12 +191,15 @@ export default function TimeMachinePlayPage() {
             </div>
           </div>
 
-          {/* Right — Action */}
+          {/* ── Right — Action ─────────────────────────────────── */}
           <div className="space-y-4">
             {phase === 'choosing' ? (
               <>
-                <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
-                  <h2 className="text-lg font-bold text-gray-900">Votre allocation — {year}</h2>
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 space-y-4">
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <span className="w-1.5 h-5 bg-violet-500 rounded-full inline-block" />
+                    Votre allocation — <span className="text-amber-400">{year}</span>
+                  </h2>
                   <AllocationZone
                     tickers={tickers}
                     allocation={currentAllocation}
@@ -191,7 +214,7 @@ export default function TimeMachinePlayPage() {
                 <NoteZone value={currentNote} onChange={setNote} />
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
                     {error}
                   </div>
                 )}
@@ -199,7 +222,7 @@ export default function TimeMachinePlayPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting || cash < -1}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-2xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2.5 py-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 font-bold rounded-2xl transition-all duration-200 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <><Loader2 className="w-5 h-5 animate-spin" />Validation…</>
@@ -209,12 +232,16 @@ export default function TimeMachinePlayPage() {
                 </button>
               </>
             ) : (
-              /* Submitted phase */
+              /* ── Submitted phase ── */
               <div className="space-y-4">
-                <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 space-y-4">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-500" />
-                    <h2 className="text-lg font-bold text-gray-900">Résultats — {year}</h2>
+                    <div className="w-7 h-7 bg-emerald-500/20 border border-emerald-500/30 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <h2 className="text-base font-bold text-white">
+                      Résultats — <span className="text-amber-400">{year}</span>
+                    </h2>
                   </div>
                   {stepPerf && (
                     <PerformanceSnapshot perf={stepPerf} year={year!} capital={totalCapital} />
@@ -225,15 +252,15 @@ export default function TimeMachinePlayPage() {
                   message={kofiMessage}
                   loading={kofiLoading}
                   mode="feedback"
-                  onRequest={!kofiMessage ? () => requestKofiFeedback(step) : undefined}
+                  onRequest={!kofiMessage ? () => requestKofiFeedback(displayStep) : undefined}
                   buttonLabel="Obtenir le feedback Simba"
                 />
 
                 <button
                   onClick={handleNext}
-                  className="w-full flex items-center justify-center gap-2 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2.5 py-4 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 cursor-pointer"
                 >
-                  {isLastStep ? 'Voir le bilan final' : `Passer à ${scenario.years[step + 1]}`}
+                  {isLastStep ? 'Voir le bilan final' : `Passer à ${scenario.years[displayStep + 1]}`}
                   <ChevronRight className="w-5 h-5" />
                 </button>
               </div>

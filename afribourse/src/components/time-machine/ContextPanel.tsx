@@ -29,23 +29,23 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
 
   return (
     <div className="space-y-4">
-      {/* KOFI intro text */}
+      {/* Simba intro */}
       {context.kofiIntro && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-          <p className="text-sm text-blue-800 leading-relaxed">{context.kofiIntro}</p>
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+          <p className="text-sm text-amber-200 leading-relaxed">{context.kofiIntro}</p>
         </div>
       )}
 
       {/* Tab bar */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+      <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1">
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
               tab === id
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -61,7 +61,7 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
             {context.news?.length ? (
               context.news.map((item, i) => <NewsCard key={i} news={item} />)
             ) : (
-              <p className="text-sm text-gray-400 text-center py-4">Aucune actualité disponible.</p>
+              <p className="text-sm text-slate-500 text-center py-6">Aucune actualité disponible.</p>
             )}
           </div>
         )}
@@ -70,7 +70,7 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
           context.macro?.length ? (
             <MacroGrid items={context.macro} />
           ) : (
-            <p className="text-sm text-gray-400 text-center py-4">Aucune donnée macro disponible.</p>
+            <p className="text-sm text-slate-500 text-center py-6">Aucune donnée macro disponible.</p>
           )
         )}
 

@@ -6,49 +6,45 @@ interface Props {
 }
 
 export default function StepProgress({ years, currentStep }: Props) {
+  const progressPct = years.length > 1 ? (currentStep / (years.length - 1)) * 100 : 0;
+
   return (
-    <div className="w-full px-2 py-4">
-      <div className="relative flex items-center justify-between">
-        {/* Connecting line */}
-        <div className="absolute inset-0 flex items-center" aria-hidden>
-          <div className="w-full h-0.5 bg-gray-200" />
-          <div
-            className="absolute h-0.5 bg-blue-500 transition-all duration-500"
-            style={{ width: `${(currentStep / (years.length - 1)) * 100}%` }}
-          />
-        </div>
+    <div className="flex items-center gap-2">
+      {years.map((year, idx) => {
+        const done = idx < currentStep;
+        const active = idx === currentStep;
 
-        {years.map((year, idx) => {
-          const done = idx < currentStep;
-          const active = idx === currentStep;
-
-          return (
-            <div key={year} className="relative flex flex-col items-center gap-1.5">
-              {/* Circle */}
+        return (
+          <div key={year} className="flex items-center gap-2">
+            {idx > 0 && (
+              <div className="w-6 h-px relative">
+                <div className="absolute inset-0 bg-white/10 rounded-full" />
+                {done && <div className="absolute inset-0 bg-amber-500 rounded-full" />}
+              </div>
+            )}
+            <div className="flex flex-col items-center gap-0.5">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-300 z-10 ${
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold border transition-all duration-300 ${
                   done
-                    ? 'bg-blue-500 border-blue-500 text-white'
+                    ? 'bg-amber-500 border-amber-500 text-slate-900'
                     : active
-                    ? 'bg-white border-blue-500 text-blue-600 shadow-md'
-                    : 'bg-white border-gray-300 text-gray-400'
+                    ? 'bg-slate-900 border-amber-500 text-amber-400 shadow-sm shadow-amber-500/30'
+                    : 'bg-white/5 border-white/15 text-slate-600'
                 }`}
               >
-                {done ? <Check className="w-4 h-4" /> : idx + 1}
+                {done ? <Check className="w-3 h-3" /> : idx + 1}
               </div>
-
-              {/* Year label */}
               <span
-                className={`text-xs font-semibold whitespace-nowrap ${
-                  active ? 'text-blue-600' : done ? 'text-gray-600' : 'text-gray-400'
+                className={`text-[9px] font-semibold whitespace-nowrap ${
+                  active ? 'text-amber-400' : done ? 'text-slate-500' : 'text-slate-700'
                 }`}
               >
                 {year}
               </span>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
