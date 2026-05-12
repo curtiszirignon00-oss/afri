@@ -41,37 +41,37 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
   const totalValue = qty * cours;
 
   const borderCls = delta > 0
-    ? 'border-emerald-500/30 bg-emerald-500/5'
+    ? 'border-emerald-300 bg-emerald-50 hover:border-emerald-400'
     : delta < 0
-    ? 'border-red-500/30 bg-red-500/5'
-    : 'border-white/10 bg-white/5';
+    ? 'border-red-300 bg-red-50 hover:border-red-400'
+    : 'border-gray-200 bg-white hover:border-amber-300';
 
   return (
-    <div className={`flex items-center gap-3 px-3 py-2.5 border rounded-xl hover:border-amber-500/30 transition-all duration-150 ${borderCls}`}>
+    <div className={`flex items-center gap-3 px-3 py-2.5 border rounded-xl transition-all duration-150 ${borderCls}`}>
       {/* Ticker + info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <p className="font-bold text-sm text-white">{ticker}</p>
+          <p className="font-bold text-sm text-gray-900">{ticker}</p>
           {delta > 0 && (
-            <span className="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full">
               +{delta} achat
             </span>
           )}
           {delta < 0 && (
-            <span className="text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-bold bg-red-100 text-red-600 border border-red-200 px-1.5 py-0.5 rounded-full">
               {delta} vente
             </span>
           )}
           {prevQty > 0 && qty === prevQty && (
-            <span className="text-[9px] font-bold bg-white/5 text-slate-500 border border-white/10 px-1.5 py-0.5 rounded-full">
+            <span className="text-[9px] font-bold bg-gray-100 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded-full">
               conservé
             </span>
           )}
         </div>
-        <p className="text-[10px] text-slate-500 mt-0.5">
+        <p className="text-[10px] text-gray-400 mt-0.5">
           {cours > 0 ? `${cours.toLocaleString('fr-FR')} FCFA` : '—'}
-          {cours > 0 && delta > 0 && <span className="text-slate-600"> · +1.2% SGI</span>}
-          {cours > 0 && delta < 0 && <span className="text-slate-600"> · −0.6% SGI</span>}
+          {cours > 0 && delta > 0 && <span className="text-gray-300"> · +1.2% SGI</span>}
+          {cours > 0 && delta < 0 && <span className="text-gray-300"> · −0.6% SGI</span>}
         </p>
       </div>
 
@@ -80,9 +80,9 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
         <button
           onClick={decrement}
           disabled={qty <= 0}
-          className="w-7 h-7 rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 disabled:opacity-20 flex items-center justify-center transition-all cursor-pointer"
+          className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-red-100 hover:text-red-600 disabled:opacity-30 flex items-center justify-center transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer"
         >
-          <Minus className="w-3 h-3 text-slate-400" />
+          <Minus className="w-3 h-3 text-gray-500" />
         </button>
 
         <input
@@ -90,15 +90,15 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
           min={0}
           value={qty}
           onChange={handleInput}
-          className="w-14 text-center text-sm font-bold bg-white/5 border border-white/10 rounded-lg py-1 text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-colors"
+          className="w-14 text-center text-sm font-bold bg-white border border-gray-200 rounded-lg py-1 text-gray-900 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all"
         />
 
         <button
           onClick={increment}
           disabled={!canBuyMore}
-          className="w-7 h-7 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 disabled:opacity-20 flex items-center justify-center transition-all cursor-pointer"
+          className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-emerald-100 hover:text-emerald-600 disabled:opacity-30 flex items-center justify-center transition-all duration-150 hover:scale-110 active:scale-90 cursor-pointer"
         >
-          <Plus className="w-3 h-3 text-slate-400" />
+          <Plus className="w-3 h-3 text-gray-500" />
         </button>
       </div>
 
@@ -106,11 +106,11 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
       <div className="text-right shrink-0 min-w-[80px]">
         {totalValue > 0 ? (
           <>
-            <p className="text-sm font-bold text-white">{Math.round(totalValue).toLocaleString('fr-FR')}</p>
-            <p className="text-[9px] text-slate-600">FCFA</p>
+            <p className="text-sm font-bold text-gray-900 tabular-nums">{Math.round(totalValue).toLocaleString('fr-FR')}</p>
+            <p className="text-[9px] text-gray-400">FCFA</p>
           </>
         ) : (
-          <p className="text-sm text-slate-700">—</p>
+          <p className="text-sm text-gray-300">—</p>
         )}
       </div>
     </div>
