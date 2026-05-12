@@ -1,4 +1,4 @@
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface FundData {
   cours?: number;
@@ -10,6 +10,7 @@ interface Props {
   qty: number;
   prevQty: number;
   fundData: FundData;
+  prevCours?: number;
   onQtyChange: (ticker: string, qty: number) => void;
   cash: number;
 }
@@ -17,10 +18,15 @@ interface Props {
 const COMMISSION_BUY  = 0.012;
 const COMMISSION_SELL = 0.006;
 
-export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, cash }: Props) {
+export default function StockRow({ ticker, qty, prevQty, fundData, prevCours, onQtyChange, cash }: Props) {
   const cours = fundData?.cours ?? 0;
   const delta = qty - prevQty;
   const canBuyMore = !(cours > 0 && cours * (1 + COMMISSION_BUY) > cash + 1);
+
+  // Évolution du cours depuis l'étape précédente
+  const evolution = prevCours && prevCours > 0 && cours > 0
+    ? ((cours - prevCours) / prevCours) * 100
+    : null;
 
   function increment() {
     if (!canBuyMore) return;
@@ -68,11 +74,30 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
             </span>
           )}
         </div>
-        <p className="text-[10px] text-gray-400 mt-0.5">
-          {cours > 0 ? `${cours.toLocaleString('fr-FR')} FCFA` : '—'}
-          {cours > 0 && delta > 0 && <span className="text-gray-300"> · +1.2% SGI</span>}
-          {cours > 0 && delta < 0 && <span className="text-gray-300"> · −0.6% SGI</span>}
-        </p>
+
+        {/* Prix courant + évolution depuis étape précédente */}
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <p className="text-[10px] text-gray-500">
+            {cours > 0 ? `${cours.toLocaleString('fr-FR')} FCFA` : '—'}
+          </p>
+
+          {evolution !== null && (
+            <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${
+              evolution >= 0
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : 'bg-red-50 text-red-600 border-red-200'
+            }`}>
+              {evolution >= 0
+                ? <TrendingUp className="w-2.5 h-2.5" />
+                : <TrendingDown className="w-2.5 h-2.5" />
+              }
+              {evolution >= 0 ? '+' : ''}{evolution.toFixed(1)}%
+            </span>
+          )}
+
+          {cours > 0 && delta > 0 && <span className="text-[9px] text-gray-300">· +1.2% SGI</span>}
+          {cours > 0 && delta < 0 && <span className="text-[9px] text-gray-300">· −0.6% SGI</span>}
+        </div>
       </div>
 
       {/* Quantity controls */}

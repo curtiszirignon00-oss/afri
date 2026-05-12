@@ -117,9 +117,6 @@ function reducer(state: TimeMachineState, action: Action): TimeMachineState {
       const scenario = s.scenario as TimeMachineScenario | undefined;
       const year = scenario?.years[step] ?? 0;
 
-      // Cash available at start of this step
-      const baseCash = s.capitalByStep?.[String(step)] ?? scenario?.startBudget ?? 0;
-
       // Previous holdings (inherited from last step)
       const prevHoldings: Record<string, number> = step > 0
         ? (s.portfolioByStep?.[String(step - 1)] ?? {})
@@ -128,6 +125,13 @@ function reducer(state: TimeMachineState, action: Action): TimeMachineState {
       // Current allocation for this step (if already submitted, use it; else inherit)
       const savedAlloc = s.portfolioByStep?.[String(step)];
       const currentAllocation = savedAlloc ?? { ...prevHoldings };
+
+      // Capital total = pfVal hérité + cash restant + dividendes + contribution
+      const totalCapital = s.capitalByStep?.[String(step)] ?? scenario?.startBudget ?? 0;
+      // Valeur des positions héritées au prix courant
+      const inheritedPfVal = calcPortfolioValue(prevHoldings, scenario?.fundamentalsByYear, year);
+      // Cash disponible = capital total − positions déjà détenues
+      const baseCash = totalCapital - inheritedPfVal;
 
       // Calculate portfolio value (at current year prices from seed)
       const pfVal = calcPortfolioValue(currentAllocation, scenario?.fundamentalsByYear, year);
@@ -161,7 +165,10 @@ function reducer(state: TimeMachineState, action: Action): TimeMachineState {
       const prevHoldings: Record<string, number> = step > 0
         ? (state.session?.portfolioByStep?.[String(step - 1)] ?? {})
         : {};
-      const baseCash = state.session?.capitalByStep?.[String(step)] ?? state.scenario?.startBudget ?? 0;
+
+      const totalCapital = state.session?.capitalByStep?.[String(step)] ?? state.scenario?.startBudget ?? 0;
+      const inheritedPfVal = calcPortfolioValue(prevHoldings, state.scenario?.fundamentalsByYear, year);
+      const baseCash = totalCapital - inheritedPfVal;
 
       const cash = calcCashAfterAllocChange(
         newAlloc,
