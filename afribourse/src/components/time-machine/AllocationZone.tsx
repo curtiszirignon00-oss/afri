@@ -6,13 +6,14 @@ interface Props {
   allocation: Record<string, number>;
   prevHoldings: Record<string, number>;
   fundamentals: Record<string, any>;
+  prevFundamentals?: Record<string, any>;
   cash: number;
   portfolioValue: number;
   onQtyChange: (ticker: string, qty: number) => void;
 }
 
 export default function AllocationZone({
-  tickers, allocation, prevHoldings, fundamentals, cash, portfolioValue, onQtyChange,
+  tickers, allocation, prevHoldings, fundamentals, prevFundamentals, cash, portfolioValue, onQtyChange,
 }: Props) {
   const totalAccount = portfolioValue + Math.max(0, cash);
   const overBudget = cash < 0;
@@ -29,7 +30,7 @@ export default function AllocationZone({
               <Wallet className="w-3.5 h-3.5 text-amber-500" />
               <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest">Cash</p>
             </div>
-            <p className={`text-base font-extrabold ${overBudget ? 'text-red-600' : 'text-amber-600'}`}>
+            <p className={`text-base font-extrabold tabular-nums ${overBudget ? 'text-red-600' : 'text-amber-600'}`}>
               {Math.round(cash).toLocaleString('fr-FR')} F
             </p>
             {!overBudget && totalAccount > 0 && (
@@ -44,7 +45,7 @@ export default function AllocationZone({
               <Briefcase className="w-3.5 h-3.5 text-violet-500" />
               <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest">Portefeuille</p>
             </div>
-            <p className="text-base font-extrabold text-violet-600">
+            <p className="text-base font-extrabold text-violet-600 tabular-nums">
               {Math.round(portfolioValue).toLocaleString('fr-FR')} F
             </p>
             {totalAccount > 0 && (
@@ -57,7 +58,7 @@ export default function AllocationZone({
 
         <div className="flex items-center justify-between border-t border-gray-200 pt-2">
           <p className="text-xs text-gray-500 font-semibold">Total compte</p>
-          <p className="text-sm font-extrabold text-gray-900">
+          <p className="text-sm font-extrabold text-gray-900 tabular-nums">
             {Math.round(totalAccount).toLocaleString('fr-FR')} FCFA
           </p>
         </div>
@@ -79,6 +80,7 @@ export default function AllocationZone({
             qty={allocation[ticker] ?? 0}
             prevQty={prevHoldings[ticker] ?? 0}
             fundData={fundamentals[ticker] ?? {}}
+            prevCours={prevFundamentals?.[ticker]?.cours}
             onQtyChange={onQtyChange}
             cash={cash}
           />

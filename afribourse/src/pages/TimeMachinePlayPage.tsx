@@ -199,6 +199,7 @@ export default function TimeMachinePlayPage() {
                     allocation={currentAllocation}
                     prevHoldings={prevHoldings}
                     fundamentals={fundamentals}
+                    prevFundamentals={prevFundamentals}
                     cash={cash}
                     portfolioValue={portfolioValue}
                     onQtyChange={setQty}

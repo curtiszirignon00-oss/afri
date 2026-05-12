@@ -228,8 +228,12 @@ export async function submitStep(
     ? ((session.portfolioByStep as any)?.[String(stepIndex - 1)] ?? {})
     : {};
 
-  // Cash disponible au début de cette étape
-  let cash = (session.capitalByStep as any)?.[String(stepIndex)] ?? scenario.startBudget;
+  // Capital total de cette étape (pfVal hérité + cash restant + dividendes + contribution)
+  const totalCapital = (session.capitalByStep as any)?.[String(stepIndex)] ?? scenario.startBudget;
+  // Valeur des positions héritées au prix de l'année courante
+  const inheritedPfVal = calcPortfolioValue(scenario, year, prevHoldings);
+  // Cash disponible = capital total − valeur des positions déjà détenues
+  let cash = totalCapital - inheritedPfVal;
 
   // Calculer les transactions (delta entre holdings hérités et allocation cible)
   const allTickers = new Set([...Object.keys(prevHoldings), ...Object.keys(allocation)]);
