@@ -100,6 +100,21 @@ export default function TimeMachinePlayPage() {
     ? (session.portfolioByStep?.[String(step - 1)] ?? {})
     : {};
 
+  // Evolution des cours entre l'étape précédente et l'étape courante
+  const prevYear = displayStep > 0 ? scenario.years[displayStep - 1] : null;
+  const prevFundamentals: Record<string, any> = prevYear
+    ? (scenario.fundamentalsByYear?.[String(prevYear)] ?? {})
+    : {};
+
+  const marketEvolution = displayStep > 0
+    ? tickers.map(ticker => {
+        const prev = prevFundamentals[ticker]?.cours;
+        const curr = fundamentals[ticker]?.cours;
+        if (!prev || !curr || prev === 0) return null;
+        return { ticker, prevCours: prev as number, currCours: curr as number, pct: ((curr - prev) / prev) * 100 };
+      }).filter(Boolean) as { ticker: string; prevCours: number; currCours: number; pct: number }[]
+    : [];
+
   async function handleSubmit() {
     const stepAtSubmit = session!.currentStep;
     try {
@@ -224,7 +239,13 @@ export default function TimeMachinePlayPage() {
                     </h2>
                   </div>
                   {stepPerf && (
-                    <PerformanceSnapshot perf={stepPerf} year={year!} capital={totalCapital} />
+                    <PerformanceSnapshot
+                      perf={stepPerf}
+                      year={year!}
+                      capital={totalCapital}
+                      prevYear={prevYear ?? undefined}
+                      marketEvolution={marketEvolution}
+                    />
                   )}
                 </div>
 
