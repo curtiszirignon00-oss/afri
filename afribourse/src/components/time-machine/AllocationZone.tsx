@@ -22,41 +22,54 @@ export default function AllocationZone({
 }: Props) {
   const totalAccount = portfolioValue + Math.max(0, cash);
   const overBudget = cash < 0;
+  const cashPct = totalAccount > 0 ? (Math.max(0, cash) / totalAccount) * 100 : 0;
+  const pfPct = totalAccount > 0 ? (portfolioValue / totalAccount) * 100 : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Account summary */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+      <div className="bg-slate-900/50 border border-white/10 rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-blue-50 rounded-lg p-3">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">
-              <Wallet className="w-3.5 h-3.5 text-blue-500" />
-              <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider">Cash disponible</p>
+              <Wallet className="w-3.5 h-3.5 text-amber-400" />
+              <p className="text-[9px] font-bold text-amber-400 uppercase tracking-widest">Cash</p>
             </div>
-            <p className={`text-base font-extrabold ${overBudget ? 'text-red-600' : 'text-blue-700'}`}>
+            <p className={`text-base font-extrabold ${overBudget ? 'text-red-400' : 'text-amber-400'}`}>
               {Math.round(cash).toLocaleString('fr-FR')} F
             </p>
+            {!overBudget && totalAccount > 0 && (
+              <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: `${cashPct}%` }} />
+              </div>
+            )}
           </div>
-          <div className="bg-gray-50 rounded-lg p-3">
+
+          <div className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">
-              <Briefcase className="w-3.5 h-3.5 text-gray-500" />
-              <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Portefeuille</p>
+              <Briefcase className="w-3.5 h-3.5 text-violet-400" />
+              <p className="text-[9px] font-bold text-violet-400 uppercase tracking-widest">Portefeuille</p>
             </div>
-            <p className="text-base font-extrabold text-gray-700">
+            <p className="text-base font-extrabold text-violet-400">
               {Math.round(portfolioValue).toLocaleString('fr-FR')} F
             </p>
+            {totalAccount > 0 && (
+              <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-violet-500 rounded-full" style={{ width: `${pfPct}%` }} />
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-gray-100 pt-2">
-          <p className="text-xs text-gray-500 font-semibold">Total compte</p>
-          <p className="text-sm font-extrabold text-gray-900">
+        <div className="flex items-center justify-between border-t border-white/5 pt-2">
+          <p className="text-xs text-slate-500 font-semibold">Total compte</p>
+          <p className="text-sm font-extrabold text-white">
             {Math.round(totalAccount).toLocaleString('fr-FR')} FCFA
           </p>
         </div>
 
         {overBudget && (
-          <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
             <span>Cash insuffisant — vendez des positions ou réduisez vos achats.</span>
           </div>

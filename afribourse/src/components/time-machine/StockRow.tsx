@@ -20,10 +20,10 @@ const COMMISSION_SELL = 0.006;
 export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, cash }: Props) {
   const cours = fundData?.cours ?? 0;
   const delta = qty - prevQty;
+  const canBuyMore = !(cours > 0 && cours * (1 + COMMISSION_BUY) > cash + 1);
 
   function increment() {
-    const addCost = cours * (1 + COMMISSION_BUY);
-    if (addCost > cash + 1) return;
+    if (!canBuyMore) return;
     onQtyChange(ticker, qty + 1);
   }
 
@@ -40,50 +40,49 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
 
   const totalValue = qty * cours;
 
-  let deltaBadge: React.ReactNode = null;
-  if (delta > 0) {
-    deltaBadge = (
-      <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">
-        +{delta} achat
-      </span>
-    );
-  } else if (delta < 0) {
-    deltaBadge = (
-      <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
-        {delta} vente
-      </span>
-    );
-  } else if (prevQty > 0 && qty === prevQty) {
-    deltaBadge = (
-      <span className="text-[9px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">
-        conservé
-      </span>
-    );
-  }
+  const borderCls = delta > 0
+    ? 'border-emerald-500/30 bg-emerald-500/5'
+    : delta < 0
+    ? 'border-red-500/30 bg-red-500/5'
+    : 'border-white/10 bg-white/5';
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 bg-white border rounded-xl hover:border-blue-200 transition-colors ${delta > 0 ? 'border-emerald-200' : delta < 0 ? 'border-red-200' : 'border-gray-100'}`}>
-      {/* Ticker */}
+    <div className={`flex items-center gap-3 px-3 py-2.5 border rounded-xl hover:border-amber-500/30 transition-all duration-150 ${borderCls}`}>
+      {/* Ticker + info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <p className="font-bold text-sm text-gray-900">{ticker}</p>
-          {deltaBadge}
+          <p className="font-bold text-sm text-white">{ticker}</p>
+          {delta > 0 && (
+            <span className="text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full">
+              +{delta} achat
+            </span>
+          )}
+          {delta < 0 && (
+            <span className="text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-full">
+              {delta} vente
+            </span>
+          )}
+          {prevQty > 0 && qty === prevQty && (
+            <span className="text-[9px] font-bold bg-white/5 text-slate-500 border border-white/10 px-1.5 py-0.5 rounded-full">
+              conservé
+            </span>
+          )}
         </div>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <p className="text-[10px] text-slate-500 mt-0.5">
           {cours > 0 ? `${cours.toLocaleString('fr-FR')} FCFA` : '—'}
-          {cours > 0 && delta > 0 && <span className="text-gray-400"> · +1.2% SGI</span>}
-          {cours > 0 && delta < 0 && <span className="text-gray-400"> · −0.6% SGI</span>}
+          {cours > 0 && delta > 0 && <span className="text-slate-600"> · +1.2% SGI</span>}
+          {cours > 0 && delta < 0 && <span className="text-slate-600"> · −0.6% SGI</span>}
         </p>
       </div>
 
       {/* Quantity controls */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         <button
           onClick={decrement}
           disabled={qty <= 0}
-          className="w-7 h-7 rounded-full bg-gray-100 hover:bg-red-100 disabled:opacity-30 flex items-center justify-center transition-colors"
+          className="w-7 h-7 rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-400 disabled:opacity-20 flex items-center justify-center transition-all cursor-pointer"
         >
-          <Minus className="w-3.5 h-3.5 text-gray-600" />
+          <Minus className="w-3 h-3 text-slate-400" />
         </button>
 
         <input
@@ -91,24 +90,28 @@ export default function StockRow({ ticker, qty, prevQty, fundData, onQtyChange, 
           min={0}
           value={qty}
           onChange={handleInput}
-          className="w-14 text-center text-sm font-bold border border-gray-200 rounded-lg py-1 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="w-14 text-center text-sm font-bold bg-white/5 border border-white/10 rounded-lg py-1 text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20 transition-colors"
         />
 
         <button
           onClick={increment}
-          disabled={cours > 0 && cours * (1 + COMMISSION_BUY) > cash + 1}
-          className="w-7 h-7 rounded-full bg-gray-100 hover:bg-green-100 disabled:opacity-30 flex items-center justify-center transition-colors"
+          disabled={!canBuyMore}
+          className="w-7 h-7 rounded-lg bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 disabled:opacity-20 flex items-center justify-center transition-all cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5 text-gray-600" />
+          <Plus className="w-3 h-3 text-slate-400" />
         </button>
       </div>
 
       {/* Value */}
-      <div className="text-right shrink-0 min-w-[90px]">
-        <p className="text-sm font-bold text-gray-900">
-          {totalValue > 0 ? `${Math.round(totalValue).toLocaleString('fr-FR')}` : '—'}
-        </p>
-        {totalValue > 0 && <p className="text-[10px] text-gray-400">FCFA</p>}
+      <div className="text-right shrink-0 min-w-[80px]">
+        {totalValue > 0 ? (
+          <>
+            <p className="text-sm font-bold text-white">{Math.round(totalValue).toLocaleString('fr-FR')}</p>
+            <p className="text-[9px] text-slate-600">FCFA</p>
+          </>
+        ) : (
+          <p className="text-sm text-slate-700">—</p>
+        )}
       </div>
     </div>
   );
