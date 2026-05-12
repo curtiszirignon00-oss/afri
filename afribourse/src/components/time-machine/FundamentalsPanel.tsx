@@ -84,19 +84,19 @@ function fmt(v: number | string | undefined): string {
 function MetricCard({ label, fullName, explanation, value }: { label: string; fullName: string; explanation: string; value: string }) {
   if (value === '—') return null;
   return (
-    <div className="relative group bg-white/8 hover:bg-white/12 rounded-lg p-2 text-center border border-white/10 cursor-help transition-colors">
+    <div className="relative group bg-white hover:bg-amber-50 rounded-lg p-2 text-center border border-gray-200 hover:border-amber-300 cursor-help transition-all duration-150 shadow-sm">
       <div className="flex items-center justify-center gap-1 mb-0.5">
-        <p className="text-[10px] text-slate-500 uppercase font-semibold tracking-wide">{label}</p>
-        <Info className="w-3 h-3 text-slate-600 group-hover:text-amber-400 transition-colors shrink-0" />
+        <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">{label}</p>
+        <Info className="w-3 h-3 text-gray-300 group-hover:text-amber-500 transition-colors shrink-0" />
       </div>
-      <p className="text-sm font-bold text-white">{value}</p>
+      <p className="text-sm font-bold text-gray-900">{value}</p>
 
       {/* Tooltip */}
-      <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 bg-slate-900 border border-amber-500/30 text-white text-xs rounded-xl p-3 shadow-2xl shadow-black/50
+      <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-60 bg-gray-900 border border-gray-700 text-white text-xs rounded-xl p-3 shadow-2xl shadow-black/30
                       opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 text-left leading-relaxed">
         <p className="font-bold text-amber-400 mb-1">{label} — {fullName}</p>
-        <p className="text-slate-300">{explanation}</p>
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+        <p className="text-gray-300">{explanation}</p>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
       </div>
     </div>
   );
@@ -108,39 +108,41 @@ function TickerRow({ ticker, data }: { ticker: string; data: FundamentalData }) 
   const visibleMetrics = METRICS.filter(m => fmt(data[m.key]) !== '—');
 
   return (
-    <div className="border border-white/10 rounded-xl overflow-visible">
+    <div className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-visible">
       <button
-        className={`w-full flex items-center justify-between px-4 py-3 bg-white/5 hover:bg-white/8 transition-colors text-left ${open ? 'rounded-t-xl border-b border-white/10' : 'rounded-xl'}`}
+        className={`w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors text-left hover:scale-[1.005] active:scale-[0.998] ${
+          open ? 'rounded-t-xl border-b border-gray-100' : 'rounded-xl'
+        }`}
         onClick={() => setOpen(v => !v)}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-sm text-white">{ticker}</span>
+              <span className="font-bold text-sm text-gray-900">{ticker}</span>
               {meta && (
-                <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded font-semibold shrink-0">
+                <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-semibold shrink-0">
                   {meta.sector}
                 </span>
               )}
             </div>
             {meta && (
-              <p className="text-xs text-slate-500 mt-0.5">{meta.name}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{meta.name}</p>
             )}
           </div>
           {data.cours !== undefined && (
-            <span className="text-xs text-slate-400 shrink-0 tabular-nums">
+            <span className="text-xs text-gray-500 shrink-0 tabular-nums font-medium">
               {data.cours.toLocaleString('fr-FR')} FCFA
             </span>
           )}
         </div>
         {open
-          ? <ChevronUp className="w-4 h-4 text-slate-500 shrink-0 ml-2" />
-          : <ChevronDown className="w-4 h-4 text-slate-500 shrink-0 ml-2" />
+          ? <ChevronUp className="w-4 h-4 text-gray-400 shrink-0 ml-2" />
+          : <ChevronDown className="w-4 h-4 text-gray-400 shrink-0 ml-2" />
         }
       </button>
 
       {open && (
-        <div className="px-4 pb-4 bg-white/3 space-y-3 rounded-b-xl">
+        <div className="px-4 pb-4 bg-gray-50 space-y-3 rounded-b-xl">
           {visibleMetrics.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3">
               {visibleMetrics.map(m => (
@@ -156,15 +158,15 @@ function TickerRow({ ticker, data }: { ticker: string; data: FundamentalData }) 
           )}
 
           {data.note && (
-            <p className="text-xs text-slate-400 leading-relaxed">{data.note}</p>
+            <p className="text-xs text-gray-500 leading-relaxed">{data.note}</p>
           )}
 
           {data.kofiAnalysis && (
-            <div className="flex gap-2 bg-violet-500/10 border border-violet-500/20 rounded-xl p-3">
-              <Brain className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
+            <div className="flex gap-2 bg-violet-50 border border-violet-200 rounded-xl p-3">
+              <Brain className="w-4 h-4 text-violet-500 shrink-0 mt-0.5" />
               <div>
-                <p className="text-[10px] font-bold text-violet-400 uppercase tracking-wider mb-0.5">Analyse Simba</p>
-                <p className="text-xs text-violet-200 leading-relaxed">{data.kofiAnalysis}</p>
+                <p className="text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-0.5">Analyse Simba</p>
+                <p className="text-xs text-violet-800 leading-relaxed">{data.kofiAnalysis}</p>
               </div>
             </div>
           )}

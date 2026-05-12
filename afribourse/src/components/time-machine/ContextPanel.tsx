@@ -17,9 +17,9 @@ interface Props {
 }
 
 const TABS = [
-  { id: 'news',          label: 'Actualités',    Icon: Newspaper },
-  { id: 'macro',         label: 'Macro',         Icon: BarChart3 },
-  { id: 'fundamentals',  label: 'Fondamentaux',  Icon: TrendingUp },
+  { id: 'news',         label: 'Actualités',   Icon: Newspaper },
+  { id: 'macro',        label: 'Macro',         Icon: BarChart3 },
+  { id: 'fundamentals', label: 'Fondamentaux',  Icon: TrendingUp },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -31,21 +31,21 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
     <div className="space-y-4">
       {/* Simba intro */}
       {context.kofiIntro && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
-          <p className="text-sm text-amber-200 leading-relaxed">{context.kofiIntro}</p>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <p className="text-sm text-amber-800 leading-relaxed">{context.kofiIntro}</p>
         </div>
       )}
 
       {/* Tab bar */}
-      <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1">
+      <div className="flex gap-1 bg-gray-100 border border-gray-200 rounded-xl p-1">
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.97] ${
               tab === id
-                ? 'bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-white hover:shadow-sm'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -61,7 +61,7 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
             {context.news?.length ? (
               context.news.map((item, i) => <NewsCard key={i} news={item} />)
             ) : (
-              <p className="text-sm text-slate-500 text-center py-6">Aucune actualité disponible.</p>
+              <p className="text-sm text-gray-400 text-center py-6">Aucune actualité disponible.</p>
             )}
           </div>
         )}
@@ -70,7 +70,7 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
           context.macro?.length ? (
             <MacroGrid items={context.macro} />
           ) : (
-            <p className="text-sm text-slate-500 text-center py-6">Aucune donnée macro disponible.</p>
+            <p className="text-sm text-gray-400 text-center py-6">Aucune donnée macro disponible.</p>
           )
         )}
 
