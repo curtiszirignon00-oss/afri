@@ -1,6 +1,5 @@
-import { Lock, Clock, TrendingUp, ChevronRight } from 'lucide-react';
+import { Lock, Clock, TrendingUp, ChevronRight, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { TimeMachineScenario } from '../../contexts/TimeMachineContext';
 
 const TIER_BADGE: Record<string, { label: string; cls: string }> = {
   FREE:  { label: 'Gratuit',        cls: 'bg-emerald-100 text-emerald-700' },
@@ -16,17 +15,30 @@ const CAT_COLOR: Record<string, string> = {
   STRATEGY:       'from-purple-50 to-violet-50 border-purple-200',
 };
 
+export interface StaticScenario {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  tier: string;
+  years: number[];
+  startBudget: number;
+  locked?: boolean;
+  comingSoon?: boolean;
+}
+
 interface Props {
-  scenario: TimeMachineScenario & { locked?: boolean };
+  scenario: StaticScenario;
 }
 
 export default function ScenarioCard({ scenario }: Props) {
   const navigate = useNavigate();
   const tier = TIER_BADGE[scenario.tier] ?? TIER_BADGE.FREE;
   const gradient = CAT_COLOR[scenario.category] ?? CAT_COLOR.BRVM_EVENT;
+  const isLocked = scenario.locked || scenario.comingSoon;
 
   function handleClick() {
-    if (scenario.locked) return;
+    if (isLocked) return;
     navigate(`/time-machine/${scenario.slug}`);
   }
 
@@ -34,13 +46,24 @@ export default function ScenarioCard({ scenario }: Props) {
     <div
       onClick={handleClick}
       className={`relative group rounded-2xl border bg-gradient-to-br ${gradient} p-5 flex flex-col gap-3 transition-all duration-200 ${
-        scenario.locked
-          ? 'opacity-70 cursor-not-allowed'
+        isLocked
+          ? 'opacity-75 cursor-not-allowed'
           : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5'
       }`}
     >
+      {/* Coming soon overlay */}
+      {scenario.comingSoon && (
+        <div className="absolute inset-0 rounded-2xl bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center z-10 gap-2">
+          <div className="bg-white rounded-xl px-4 py-2.5 shadow-md flex items-center gap-2">
+            <Timer className="w-4 h-4 text-amber-500" />
+            <span className="text-sm font-bold text-gray-700">Bientôt disponible</span>
+          </div>
+          <p className="text-[10px] text-gray-500 font-medium">En cours de développement</p>
+        </div>
+      )}
+
       {/* Lock overlay */}
-      {scenario.locked && (
+      {scenario.locked && !scenario.comingSoon && (
         <div className="absolute inset-0 rounded-2xl bg-white/50 flex items-center justify-center z-10">
           <div className="bg-white rounded-full p-3 shadow-md">
             <Lock className="w-6 h-6 text-gray-500" />
@@ -53,7 +76,7 @@ export default function ScenarioCard({ scenario }: Props) {
         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${tier.cls}`}>
           {tier.label}
         </span>
-        {!scenario.locked && (
+        {!isLocked && (
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors shrink-0 mt-0.5" />
         )}
       </div>
@@ -79,7 +102,7 @@ export default function ScenarioCard({ scenario }: Props) {
         </div>
       </div>
 
-      {scenario.locked && (
+      {scenario.locked && !scenario.comingSoon && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
           <span className={`text-xs font-bold px-3 py-1 rounded-full ${tier.cls} shadow-sm`}>
             Passer à {tier.label}

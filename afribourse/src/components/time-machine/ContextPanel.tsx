@@ -14,6 +14,9 @@ interface Props {
   context: ContextData;
   fundamentals: Record<string, any>;
   tickers: string[];
+  historicalFundamentals: Record<string, Record<string, any>>;
+  years: number[];
+  currentYear: number;
 }
 
 const TABS = [
@@ -24,7 +27,7 @@ const TABS = [
 
 type TabId = typeof TABS[number]['id'];
 
-export default function ContextPanel({ context, fundamentals, tickers }: Props) {
+export default function ContextPanel({ context, fundamentals, tickers, historicalFundamentals, years, currentYear }: Props) {
   const [tab, setTab] = useState<TabId>('news');
 
   return (
@@ -75,7 +78,13 @@ export default function ContextPanel({ context, fundamentals, tickers }: Props) 
         )}
 
         {tab === 'fundamentals' && (
-          <FundamentalsPanel tickers={tickers} fundamentals={fundamentals} />
+          <FundamentalsPanel
+            tickers={tickers}
+            fundamentals={fundamentals}
+            historicalFundamentals={historicalFundamentals}
+            years={years}
+            currentYear={currentYear}
+          />
         )}
       </div>
     </div>

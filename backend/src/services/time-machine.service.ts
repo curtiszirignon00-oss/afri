@@ -312,15 +312,16 @@ const SIMBA_SYSTEM_PROMPT = `Tu es Simba, l'analyste IA de la Time Machine AfriB
 
 Tu analyses les décisions d'investissement historiques d'un utilisateur sur la BRVM (Bourse Régionale des Valeurs Mobilières de l'UEMOA).
 
-Tes principes :
-- Tu t'adresses directement à l'utilisateur par son prénom quand il est fourni
-- Tu analyses la LOGIQUE de l'allocation, pas juste le résultat financier
-- Tu identifies les biais comportementaux (aversion aux pertes, momentum, comportement moutonnier)
-- Tu enseignes toujours une règle générale applicable aux marchés BRVM futurs
-- Ton ton est pédagogique, direct, bienveillant et personnalisé
-- Maximum 3 paragraphes courts par réponse
-- Tu parles en français, avec des chiffres concrets quand disponibles
-- Tu ne félicites pas si le choix était mauvais — tu expliques pourquoi`;
+RÈGLES ABSOLUES — respecte-les à la lettre :
+- NE COMMENCE JAMAIS par une salutation ("Bonjour", "Bien joué", "Bravo", "Salut", "Félicitations", etc.). Attaque directement l'analyse.
+- Chaque étape a un contexte historique UNIQUE. Ton analyse doit OBLIGATOIREMENT refléter ce contexte précis (l'année, la tendance de marché, la macro).
+- NE RÉPÈTE PAS les mêmes conseils génériques d'une étape à l'autre. Si tu as déjà mentionné la diversification à l'étape 1, ne la ressors pas à l'étape 3 sauf si c'est spécifiquement pertinent.
+- Cite les chiffres concrets fournis (cours, PER, BNA, dividendes, % de performance). Une analyse sans chiffres est inutile.
+- Ne félicites pas si le choix était mauvais — explique pourquoi avec des données.
+- Ne critique pas si le choix était bon — valorise la discipline ou la logique démontrée.
+- Maximum 3 paragraphes courts et denses. Zéro phrase de remplissage.
+- Tu parles en français, ton pédagogique, direct, bienveillant.
+- Tu t'adresses directement à l'utilisateur par son prénom quand il est fourni.`;
 
 export async function generateKofiFeedback(
   sessionId: string,
@@ -396,9 +397,43 @@ export async function generateKofiFeedback(
 
   const cashRemaining = Math.max(0, capital - totalInvested * (1 + COMMISSION_RATE));
 
+  const totalSteps = scenario.years.length;
+  const isFirstStep = stepIndex === 0;
+  const isLastStep = stepIndex === totalSteps - 1;
+
+  // Year-specific historical significance to anchor each analysis
+  const yearContext: Record<number, string> = {
+    2008: 'CRISE MONDIALE — la crise des subprimes ravage les marchés mondiaux. La BRVM chute de ~29%. C\'est le pire moment pour investir en bourse — ou le meilleur pour acheter à prix bradés.',
+    2009: 'DÉBUT DE REPRISE — après le choc de 2008, les marchés amorcent une reprise fragile (-3% BRVM). Patience et sélectivité sont essentielles.',
+    2010: 'BULL RUN EXCEPTIONNEL — la BRVM explose de +68% cette année. C\'est l\'un des meilleurs marchés au monde. L\'euphorie peut conduire à surpayer.',
+    2013: 'SOMMET DU CYCLE — la BRVM atteint des records (+26% sur 2013). Les valorisations sont élevées. Les PER élevés signalent une marché cher.',
+    2016: 'CORRECTION MODÉRÉE — la BRVM recule de -2% après plusieurs années de hausse. Certains titres restent à des niveaux élevés post-bull run.',
+    2019: 'MARCHÉ BAISSIER — la BRVM perd -8.4%. Plusieurs secteurs (banques régionales, agroalimentaire) subissent des restructurations douloureuses.',
+    2022: 'CHOC INFLATIONNISTE — inflation à +7.4% (niveau record depuis 10 ans), hausse des taux BCEAO à 3.5%. Les taux élevés pénalisent les actions à PER élevé.',
+  };
+
+  const stepContext = yearContext[year] ?? `Année ${year} — étape ${stepIndex + 1} du scénario.`;
+
+  // Previous step performance for comparison
+  const prevPerf = stepIndex > 0 ? (session.performanceByStep as any)?.[String(stepIndex - 1)] : null;
+  const prevYear = stepIndex > 0 ? scenario.years[stepIndex - 1] : null;
+  const prevPerfStr = prevPerf && prevYear
+    ? `À l'étape précédente (${prevYear}), performance capital : ${prevPerf.perfCapital.toFixed(1)}%, PF valeur : ${Math.round(prevPerf.pfVal).toLocaleString()} FCFA.`
+    : '';
+
+  const stepPosition = isFirstStep
+    ? 'PREMIÈRE ÉTAPE — l\'investisseur part de zéro, construire une base solide est prioritaire.'
+    : isLastStep
+    ? `DERNIÈRE ÉTAPE (${stepIndex + 1}/${totalSteps}) — bilan final en vue. Les décisions ici clôturent le portefeuille.`
+    : `ÉTAPE ${stepIndex + 1} SUR ${totalSteps} — l\'investisseur gère un portefeuille en cours de constitution. ${prevPerfStr}`;
+
   const userPrefix = userName ? `Utilisateur : ${userName}. Adresse-toi à lui directement par son prénom.\n\n` : '';
 
-  const prompt = `${userPrefix}=== CONTEXTE HISTORIQUE ${year} ===
+  const prompt = `${userPrefix}${stepPosition}
+
+=== CONTEXTE HISTORIQUE ${year} ===
+SIGNIFICATION DE CETTE ANNÉE : ${stepContext}
+
 INDICATEURS MACRO :
 ${macro.map((m: any) => `• ${m.label}: ${m.value} — ${m.signal}`).join('\n')}
 
@@ -411,23 +446,25 @@ Nombre de titres en portefeuille : ${nbTitres}
 Valeur totale investie : ${Math.round(totalInvested).toLocaleString()} FCFA
 ${cashRemaining > 500 ? `Cash non investi : ${Math.round(cashRemaining).toLocaleString()} FCFA` : 'Cash quasi-totalement déployé.'}
 
-DÉTAIL DES POSITIONS (avec action réalisée) :
+DÉTAIL DES POSITIONS (avec action réalisée vs étape précédente) :
 ${allocationStr || '  ⚠️ AUCUNE POSITION — tout le capital est resté en cash'}
 ${soldStr ? `\nPOSITIONS LIQUIDÉES :\n${soldStr}` : ''}
 
 ${note ? `JUSTIFICATION DE L'INVESTISSEUR : "${note}"` : 'Aucune note de justification fournie.'}
 
-=== RÉSULTATS CALCULÉS ===
-${perf ? `• Valeur portefeuille : ${Math.round(perf.pfVal).toLocaleString()} FCFA\n• Performance capital : ${perf.perfCapital.toFixed(1)}%\n• Performance totale (dividendes inclus) : ${perf.perfTotal.toFixed(1)}%\n• Dividendes cumulés : ${Math.round(perf.pfDivCum ?? 0).toLocaleString()} FCFA` : 'Performance non encore calculée.'}
+=== RÉSULTATS CALCULÉS POUR CETTE ÉTAPE ===
+${perf ? `• Valeur portefeuille : ${Math.round(perf.pfVal).toLocaleString()} FCFA\n• Performance capital : ${perf.perfCapital.toFixed(1)}%\n• Performance totale (dividendes inclus) : ${perf.perfTotal.toFixed(1)}%\n• Dividendes cumulés depuis le début : ${Math.round(perf.pfDivCum ?? 0).toLocaleString()} FCFA` : 'Performance non encore calculée.'}
 
-=== INSTRUCTIONS D'ANALYSE ===
-En te basant UNIQUEMENT sur les données ci-dessus (positions réelles, cours réels, contexte macro), analyse en 3 points :
-1. LOGIQUE FONDAMENTALE : évalue la qualité de la sélection de titres (PER, BNA, dividendes, secteurs, diversification). Sois précis sur chaque titre acheté.
-2. BIAIS COMPORTEMENTAUX : identifie les biais présents (momentum, aversion aux pertes, surconcentration, etc.) ou au contraire la discipline démontrée.
-3. RÈGLE BRVM : une règle générale actionnable applicable aux prochaines décisions sur ce marché.
+=== INSTRUCTIONS POUR CETTE ANALYSE SPÉCIFIQUE ===
+Tu es à l'étape ${stepIndex + 1} sur ${totalSteps} (année ${year}). Cette analyse doit être ENTIÈREMENT différente des étapes précédentes.
 
-${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justification (solide / partiel / émotionnel).' : ''}
-⚠️ IMPORTANT : analyse les positions RÉELLEMENT prises. Ne dis pas que l'utilisateur est en cash si des positions sont listées ci-dessus.`;
+Commence directement par le fond. En 3 paragraphes courts et denses :
+1. Ce que révèlent les positions prises au regard du contexte ${year} — cite les chiffres réels (cours, PER, BNA, %) et explique pourquoi ces choix sont adaptés ou non à cette phase de marché.
+2. ${stepIndex === 0 ? 'La logique de construction initiale : diversification sectorielle, valorisations choisies, cash investi vs conservé.' : stepIndex <= 1 ? 'Les ajustements opérés (ACHAT/VENTE/CONSERVÉ) — sont-ils cohérents avec la hausse ou la baisse de marché observée entre les deux étapes ?' : 'La gestion du portefeuille dans ce contexte de marché — les décisions de vente/achat face aux variations de cours réelles.'}
+3. ${isLastStep ? `Le bilan de la stratégie sur l'ensemble du scénario — qu'est-ce qui a fonctionné, qu'est-ce qui n'a pas fonctionné ?` : `Une règle BRVM SPÉCIFIQUE à ce moment du cycle (${year}) — pas un conseil générique, quelque chose d'ancré dans les données macro et les cours réels de cette année.`}
+
+${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justification (solide / partiel / émotionnel / aligné ou non avec les données macro).' : ''}
+⚠️ RAPPEL : analyse les positions RÉELLEMENT prises. Ne dis pas que l'utilisateur est en cash si des positions sont listées.`;
 
   try {
     const completion = await groq.chat.completions.create({
@@ -436,8 +473,8 @@ ${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justi
         { role: 'system', content: SIMBA_SYSTEM_PROMPT },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 600,
-      temperature: 0.65,
+      max_tokens: 650,
+      temperature: 0.5,
     });
     return completion.choices[0]?.message?.content ?? 'Analyse Simba temporairement indisponible.';
   } catch (err: any) {
@@ -645,4 +682,23 @@ export async function getFundamentals(ticker: string, year: number) {
     if (fund) return { ticker, year, ...fund };
   }
   return null;
+}
+
+export async function saveUserFeedback(
+  sessionId: string,
+  userId: string,
+  feedback: { rating: number; useful: boolean; tags: string[]; comment?: string },
+) {
+  const session = await prisma.timeMachineSession.findFirst({ where: { id: sessionId, userId } });
+  if (!session) throw new Error('Session not found');
+
+  return prisma.timeMachineSession.update({
+    where: { id: sessionId },
+    data: {
+      userFeedback: {
+        ...feedback,
+        submittedAt: new Date().toISOString(),
+      },
+    },
+  });
 }
