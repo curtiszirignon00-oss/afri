@@ -3856,6 +3856,209 @@ export async function sendSAFCArticleEmail({
   });
 }
 
+export async function sendWebinarLaunchEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const displayName = name || 'Investisseur';
+  const webinarUrl = 'https://www.africbourse.com/webinaires';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>🎓 Maîtrisez la BRVM avec nos experts — 3 webinaires exclusifs</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+
+      <!-- Preheader (invisible) -->
+      <span style="display:none;max-height:0;overflow:hidden;">Places limitées · Tarif spécial pour les 20 premiers inscrits &#847;&zwnj;&nbsp;&#847;</span>
+
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F1F5F9;">
+        <tr>
+          <td align="center" style="padding:32px 16px;">
+
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+              <!-- Logo header -->
+              <tr>
+                <td style="background-color:#FFFFFF;border-radius:16px 16px 0 0;padding:28px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+                  <span style="font-size:26px;font-weight:900;color:#1D4ED8;letter-spacing:-0.5px;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+                </td>
+              </tr>
+
+              <!-- Hero banner -->
+              <tr>
+                <td style="background:linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 50%,#4338CA 100%);padding:40px 40px 36px;text-align:center;">
+                  <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#BFDBFE;letter-spacing:2px;text-transform:uppercase;">Formation Live · BRVM</p>
+                  <h1 style="margin:0 0 12px;font-size:28px;font-weight:900;color:#FFFFFF;line-height:1.3;">🎓 Nos premiers webinaires<br>de formation arrivent !</h1>
+                  <p style="margin:0 0 20px;font-size:15px;color:#BFDBFE;line-height:1.6;">3 sessions live animées par des experts marchés et analystes BRVM.<br>Places limitées — tarif préférentiel pour les 20 premiers.</p>
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                    <tr>
+                      <td style="background-color:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:6px 18px;">
+                        <span style="font-size:12px;font-weight:700;color:#FFFFFF;">3 webinaires · 1 parcours complet · Des experts à vos côtés</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="background-color:#FFFFFF;padding:36px 40px;">
+
+                  <!-- Greeting -->
+                  <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${displayName},</p>
+                  <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.7;">Depuis que vous avez rejoint Afribourse, vous apprenez à votre rythme sur les marchés africains.</p>
+                  <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;">Aujourd'hui, nous franchissons une nouvelle étape ensemble : nos <strong>premiers webinaires de formation en direct</strong>, animés par des experts et analystes de marché.</p>
+
+                  <!-- Section title -->
+                  <h2 style="margin:0 0 20px;font-size:18px;font-weight:800;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:10px;">Les 3 sessions au programme</h2>
+
+                  <!-- Session 1 -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;border:1px solid #BFDBFE;border-radius:12px;overflow:hidden;">
+                    <tr>
+                      <td style="background-color:#EFF6FF;border-left:4px solid #1D4ED8;padding:18px 20px;">
+                        <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.5px;">Session 1 — Samedi 25 mai 2026</p>
+                        <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0F172A;">Maîtriser les fondamentaux de la bourse</p>
+                        <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">Passez de zéro à investisseur en une seule session. Comprendre la BRVM, les actions, les obligations, et poser vos premières bases solides.</p>
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <td style="padding-right:16px;font-size:13px;color:#64748B;">⏱ Durée : <strong>3H</strong></td>
+                            <td style="padding-right:16px;font-size:13px;color:#64748B;">💰 Prix : <strong>5 000 XOF</strong></td>
+                            <td style="font-size:13px;color:#92400E;">🔥 Early-bird 20 premiers : <strong>2 500 XOF</strong></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Session 2 -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;border:1px solid #A7F3D0;border-radius:12px;overflow:hidden;">
+                    <tr>
+                      <td style="background-color:#ECFDF5;border-left:4px solid #065F46;padding:18px 20px;">
+                        <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#065F46;text-transform:uppercase;letter-spacing:0.5px;">Session 2 — 30 &amp; 31 mai 2026</p>
+                        <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0F172A;">Analyse fondamentale : lire les données comme un pro</p>
+                        <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">Décryptez les bilans, les ratios financiers et les rapports annuels des entreprises cotées à la BRVM. Apprenez à évaluer si une action vaut son prix.</p>
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <td style="padding-right:16px;font-size:13px;color:#64748B;">⏱ Durée : <strong>8H</strong></td>
+                            <td style="padding-right:16px;font-size:13px;color:#64748B;">💰 Prix : <strong>10 000 XOF</strong></td>
+                            <td style="font-size:13px;color:#92400E;">🔥 Early-bird 20 premiers : <strong>5 000 XOF</strong></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Session 3 -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;border:1px solid #FED7AA;border-radius:12px;overflow:hidden;">
+                    <tr>
+                      <td style="background-color:#FFF7ED;border-left:4px solid #C2410C;padding:18px 20px;">
+                        <p style="margin:0 0 6px;font-size:13px;font-weight:800;color:#C2410C;text-transform:uppercase;letter-spacing:0.5px;">Session 3 — 6 &amp; 7 juin 2026</p>
+                        <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0F172A;">Analyse technique : lisez les graphiques avant tout le monde</p>
+                        <p style="margin:0 0 12px;font-size:14px;color:#374151;line-height:1.6;">Patterns, indicateurs, timing d'entrée et de sortie — apprenez à identifier les opportunités sur les graphiques BRVM avant qu'elles deviennent évidentes.</p>
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <td style="padding-right:16px;font-size:13px;color:#64748B;">⏱ Durée : <strong>8H</strong></td>
+                            <td style="padding-right:16px;font-size:13px;color:#64748B;">💰 Prix : <strong>10 000 XOF</strong></td>
+                            <td style="font-size:13px;color:#92400E;">🔥 Early-bird 20 premiers : <strong>5 000 XOF</strong></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- CTA -->
+                  <h2 style="margin:0 0 16px;font-size:18px;font-weight:800;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:10px;">Comment s'inscrire ?</h2>
+                  <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">Cliquez sur le bouton ci-dessous pour accéder à la page des webinaires et choisir votre session :</p>
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px;">
+                    <tr>
+                      <td style="background:linear-gradient(135deg,#1D4ED8,#4338CA);border-radius:12px;">
+                        <a href="${webinarUrl}" style="display:inline-block;padding:16px 36px;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;">
+                          🎓 Réserver ma place →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Why now -->
+                  <h2 style="margin:0 0 16px;font-size:18px;font-weight:800;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:10px;">Pourquoi ces webinaires maintenant ?</h2>
+                  <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.7;">Vous êtes plus de <strong>2 000 utilisateurs</strong> à apprendre sur Afribourse. Beaucoup d'entre vous nous ont posé la même question : <em>« Comment aller plus loin ? »</em></p>
+                  <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;">Ces webinaires sont notre réponse. Des sessions courtes, intensives, animées par des experts qui connaissent la BRVM — pas des formations génériques importées d'Europe ou d'Amérique. Des formations pensées pour vous, pour vos marchés, pour vos opportunités.<br><br>Les places sont limitées pour garantir la qualité des échanges. Les premiers inscrits bénéficient du tarif préférentiel.</p>
+
+                  <!-- Pack section -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #F59E0B;border-radius:14px;overflow:hidden;">
+                    <tr>
+                      <td style="padding:24px;">
+                        <p style="margin:0 0 10px;font-size:16px;font-weight:900;color:#92400E;text-align:center;">⭐ OFFRE PACK — Le Parcours Investisseur Complet ⭐</p>
+                        <p style="margin:0 0 14px;font-size:14px;font-weight:700;color:#0F172A;">Les 3 sessions + 4 extras exclusifs :</p>
+                        <p style="margin:0 0 6px;font-size:14px;color:#374151;">✓ &nbsp;Accès à la Communauté Afribourse — 3 mois</p>
+                        <p style="margin:0 0 6px;font-size:14px;color:#374151;">✓ &nbsp;3 Plans d'Action personnalisés (un après chaque session)</p>
+                        <p style="margin:0 0 6px;font-size:14px;color:#374151;">✓ &nbsp;Deal Flow hebdomadaire — 12 analyses exclusives sur la BRVM</p>
+                        <p style="margin:0 0 16px;font-size:14px;color:#374151;">✓ &nbsp;Certificat Investisseur BRVM Niveau 1 — partageable sur LinkedIn</p>
+                        <p style="margin:0 0 4px;font-size:16px;font-weight:900;color:#92400E;text-align:center;">Pack Early-bird : 20 000 XOF <span style="text-decoration:line-through;font-weight:400;color:#B45309;">au lieu de 35 000 XOF</span></p>
+                        <p style="margin:0;font-size:13px;color:#92400E;text-align:center;">Tarif early-bird valable 72h seulement après ouverture des inscriptions</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Important notice -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;background-color:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;">
+                    <tr>
+                      <td style="padding:20px 24px;">
+                        <p style="margin:0 0 8px;font-size:15px;font-weight:800;color:#0F172A;">ℹ️ Important : aucun paiement requis maintenant</p>
+                        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">La préinscription est gratuite et immédiate. Elle vous garantit le tarif early-bird si vous êtes parmi les 20 premiers inscrits. Les instructions de paiement (Wave, Orange Money, MTN MoMo) vous seront envoyées par message après votre préinscription.</p>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Final CTA -->
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 28px;display:block;text-align:center;">
+                    <tr>
+                      <td style="background:linear-gradient(135deg,#1D4ED8,#4338CA);border-radius:12px;">
+                        <a href="${webinarUrl}" style="display:inline-block;padding:16px 36px;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;">
+                          Je réserve ma place →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- Signature -->
+                  <p style="margin:0 0 4px;font-size:15px;color:#374151;">À très bientôt en live,</p>
+                  <p style="margin:0 0 2px;font-size:16px;font-weight:800;color:#374151;">SIMBA</p>
+                  <p style="margin:0;font-size:13px;color:#64748B;">Coach IA, Afribourse</p>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+                  <p style="margin:0 0 6px;font-size:12px;color:#94A3B8;">Vous recevez cet email car vous êtes inscrit sur <a href="https://www.africbourse.com" style="color:#1D4ED8;text-decoration:none;">AfriBourse</a>.</p>
+                  <p style="margin:0;font-size:12px;color:#94A3B8;">© 2026 AfriBourse · <a href="https://www.africbourse.com" style="color:#1D4ED8;text-decoration:none;">africbourse.com</a></p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+
+    </body>
+    </html>
+  `;
+
+  await sendEmail({
+    to: email,
+    subject: '🎓 Maîtrisez la BRVM avec nos experts — 3 webinaires exclusifs',
+    html,
+    text: `Bonjour ${displayName},\n\nNos premiers webinaires de formation en direct arrivent !\n\n3 sessions au programme :\n• Session 1 — 25 mai : Maîtriser les fondamentaux (3H · 5 000 XOF · early-bird 2 500 XOF)\n• Session 2 — 30-31 mai : Analyse fondamentale (8H · 10 000 XOF · early-bird 5 000 XOF)\n• Session 3 — 6-7 juin : Analyse technique (8H · 10 000 XOF · early-bird 5 000 XOF)\n\nOffre Pack Parcours Investisseur : 20 000 XOF early-bird (au lieu de 35 000 XOF)\n\nAucun paiement requis maintenant — la préinscription est gratuite et garantit votre tarif.\n\n→ Réserver ma place : ${webinarUrl}\n\nÀ très bientôt en live,\nSIMBA — Coach IA, Afribourse`,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -3869,6 +4072,7 @@ export default {
   sendCompleteProfileEmail,
   sendNewsletterMarch2026Email,
   sendSAFCArticleEmail,
+  sendWebinarLaunchEmail,
   sendReengagementEmail0,
   sendReengagementEmail1,
   sendReengagementEmail2,
