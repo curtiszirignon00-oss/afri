@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import logger from '../config/logger';
+import { sendWebinarConfirmationEmail } from '../services/email.service';
 
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
@@ -45,6 +46,15 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
     });
 
     logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');
+
+    // Confirmation email — fire-and-forget (ne bloque pas la réponse)
+    sendWebinarConfirmationEmail({
+      email,
+      firstName: resolvedFirstName || '',
+      webinarId,
+      earlyBird: earlyBird ?? false,
+      registrationId: registration.id,
+    }).catch((err) => logger.error({ err, email, webinarId }, '[WEBINAR] Échec envoi email confirmation'));
 
     return res.status(201).json({
       message: 'Préinscription enregistrée avec succès !',
