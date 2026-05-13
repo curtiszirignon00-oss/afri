@@ -28,6 +28,25 @@ function isChunkLoadError(err: unknown): boolean {
   );
 }
 
+// Unregister SW + clear all caches before reloading so the SW can't re-serve
+// stale HTML for JS chunk requests (iOS WebKit rejects text/html for ES modules).
+async function clearSwAndReload(): Promise<never> {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch (_) {
+    // ignore — reload anyway
+  }
+  window.location.reload();
+  return new Promise(() => {}) as never;
+}
+
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>
 ): ReturnType<typeof lazy<T>> {
@@ -46,10 +65,8 @@ export function lazyWithRetry<T extends ComponentType<any>>(
           const last = Number(sessionStorage.getItem(RELOAD_FLAG) || 0);
           if (Date.now() - last > 30_000) {
             sessionStorage.setItem(RELOAD_FLAG, String(Date.now()));
-            console.error('[lazyWithRetry] chunk introuvable après retry, reload');
-            window.location.reload();
-            // Reload imminent — on retourne une promise pendante pour éviter un re-throw
-            return new Promise(() => {}) as never;
+            console.error('[lazyWithRetry] chunk introuvable après retry, reload SW+cache clear');
+            return clearSwAndReload();
           }
         }
         throw err2;

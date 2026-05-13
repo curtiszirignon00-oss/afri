@@ -1,6 +1,24 @@
 // src/components/ErrorBoundary.tsx
 import { Component, ErrorInfo, ReactNode } from 'react';
 
+// Unregister SW + wipe all caches before reloading so the SW cannot re-serve
+// stale HTML for JS chunk requests (iOS WebKit rejects text/html for ES modules).
+async function clearSwAndReload() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch (_) {
+    // ignore — reload anyway
+  }
+  window.location.reload();
+}
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -49,8 +67,8 @@ export default class ErrorBoundary extends Component<Props, State> {
       // Anti-boucle : pas plus d'un reload auto par 30s
       if (now - lastAttempt > 30_000) {
         sessionStorage.setItem(KEY, String(now));
-        console.info('[ErrorBoundary] chunk-load error détecté, rechargement automatique');
-        setTimeout(() => window.location.reload(), 600);
+        console.info('[ErrorBoundary] chunk-load error détecté, SW clear + rechargement automatique');
+        setTimeout(() => clearSwAndReload(), 600);
       }
     }
   }
@@ -114,7 +132,11 @@ export default class ErrorBoundary extends Component<Props, State> {
             <button
               onClick={() => {
                 this.setState({ hasError: false, error: null, errorInfo: null });
-                window.location.reload();
+                if (isChunkLoadError(this.state.error)) {
+                  clearSwAndReload();
+                } else {
+                  window.location.reload();
+                }
               }}
               className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
