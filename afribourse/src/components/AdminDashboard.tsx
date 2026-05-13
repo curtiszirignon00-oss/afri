@@ -31,6 +31,10 @@ import {
   MailOpen,
   Video,
   Phone,
+  Send,
+  Loader2,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
@@ -181,6 +185,8 @@ export default function AdminDashboard() {
   const [aiFeedbackStats, setAIFeedbackStats] = useState<AIFeedbackStats | null>(null);
   const [webinarRegistrations, setWebinarRegistrations] = useState<WebinarRegistrationRecord[]>([]);
   const [webinarFilter, setWebinarFilter] = useState<string>('all');
+  const [campaignStatus, setCampaignStatus] = useState<'idle' | 'confirming' | 'sending' | 'done' | 'error'>('idle');
+  const [campaignResult, setCampaignResult] = useState<{ total: number; sent: number; failed: number; filtered: number; errors: string[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verifyEmail, setVerifyEmail] = useState('');
@@ -1300,6 +1306,142 @@ export default function AdminDashboard() {
               </table>
             </div>
           </div>
+        </div>
+
+        {/* Campagne Email — Lancement Webinaires */}
+        <div className="mt-8 mb-8">
+          <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                  <Send className="w-6 h-6" />
+                  Campagne Email — Lancement Webinaires
+                </h2>
+                <p className="text-blue-100 text-sm">
+                  Envoie l'email d'annonce à tous les utilisateurs réels (comptes afribourse exclus)
+                </p>
+              </div>
+              {campaignStatus === 'idle' && (
+                <button
+                  onClick={() => setCampaignStatus('confirming')}
+                  className="flex items-center gap-2 bg-white text-indigo-700 font-bold text-sm px-5 py-2.5 rounded-xl hover:bg-indigo-50 transition-colors shadow"
+                >
+                  <Send className="w-4 h-4" />
+                  Envoyer la campagne
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Modal de confirmation */}
+          {campaignStatus === 'confirming' && (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-6 mb-4">
+              <div className="flex items-start gap-3 mb-4">
+                <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-amber-800 text-base mb-1">Confirmer l'envoi de la campagne ?</p>
+                  <p className="text-amber-700 text-sm leading-relaxed">
+                    Cette action va envoyer l'email <strong>"🎓 Maîtrisez la BRVM avec nos experts"</strong> à <strong>tous les utilisateurs réels</strong> de la plateforme.<br />
+                    Les comptes contenant "afribourse", "africbourse" ou les adresses jetables seront exclus.<br />
+                    <strong>Action irréversible.</strong>
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={async () => {
+                    setCampaignStatus('sending');
+                    try {
+                      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/send-webinar-launch-email`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                      });
+                      const data = await res.json();
+                      if (res.ok && data.success) {
+                        setCampaignResult(data.data);
+                        setCampaignStatus('done');
+                      } else {
+                        setCampaignStatus('error');
+                      }
+                    } catch {
+                      setCampaignStatus('error');
+                    }
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                  Oui, envoyer maintenant
+                </button>
+                <button
+                  onClick={() => setCampaignStatus('idle')}
+                  className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-600 font-semibold text-sm rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                  Annuler
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* En cours d'envoi */}
+          {campaignStatus === 'sending' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex items-center gap-4">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin flex-shrink-0" />
+              <div>
+                <p className="font-bold text-blue-800 mb-1">Envoi en cours...</p>
+                <p className="text-blue-600 text-sm">Les emails sont envoyés par lots de 50 avec pause de 2s entre chaque lot. Cette opération peut prendre plusieurs minutes.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Résultat */}
+          {campaignStatus === 'done' && campaignResult && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                <p className="font-bold text-emerald-800 text-lg">Campagne envoyée avec succès !</p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                {[
+                  { label: 'Utilisateurs ciblés', value: campaignResult.total, color: 'text-gray-800' },
+                  { label: 'Comptes exclus', value: campaignResult.filtered, color: 'text-amber-600' },
+                  { label: 'Emails envoyés', value: campaignResult.sent, color: 'text-emerald-600' },
+                  { label: 'Échecs', value: campaignResult.failed, color: 'text-red-600' },
+                ].map((s) => (
+                  <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+                    <p className={`text-3xl font-extrabold ${s.color}`}>{s.value}</p>
+                    <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+              {campaignResult.errors.length > 0 && (
+                <details className="bg-white rounded-xl border border-red-100 p-4">
+                  <summary className="text-sm font-semibold text-red-700 cursor-pointer">
+                    {campaignResult.errors.length} erreur(s) d'envoi
+                  </summary>
+                  <ul className="mt-3 space-y-1">
+                    {campaignResult.errors.map((e, i) => (
+                      <li key={i} className="text-xs text-red-600 font-mono">{e}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
+
+          {/* Erreur */}
+          {campaignStatus === 'error' && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
+                <p className="text-red-700 font-semibold">Erreur lors de l'envoi de la campagne. Vérifie les logs serveur.</p>
+              </div>
+              <button onClick={() => setCampaignStatus('idle')} className="text-sm text-red-600 underline">
+                Réessayer
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Moderation Section */}

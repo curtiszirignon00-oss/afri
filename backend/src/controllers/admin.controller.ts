@@ -2,6 +2,7 @@ import { log } from '../config/logger';
 import { Request, Response } from 'express';
 import { prisma } from '../config/database';
 import { getAISummary } from '../ai/aiAnalytics.service';
+import { sendWebinarLaunchEmail } from '../services/email.service';
 
 interface AuthRequest extends Request {
   user?: {
@@ -361,5 +362,69 @@ export const getAIFeedbackStats = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// ─── Campagne email : lancement webinaires ────────────────────────────────────
+
+const FAKE_EMAIL_PATTERNS = [
+  'afribourse', 'africbourse', 'yopmail', 'mailinator',
+  'guerrillamail', 'tempmail', 'throwam', 'sharklasers',
+  'dispostable', 'trashmail', 'fakeinbox', 'spamgourmet',
+];
+
+export const sendWebinarLaunchCampaign = async (req: AuthRequest, res: Response) => {
+  try {
+    // Fetch all users with email + name
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, name: true },
+    });
+
+    // Filter out fake/internal accounts
+    const realUsers = users.filter((u) => {
+      const e = u.email.toLowerCase();
+      return !FAKE_EMAIL_PATTERNS.some((p) => e.includes(p));
+    });
+
+    let sent = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    // Send in batches of 50 with 2s delay between batches
+    const BATCH_SIZE = 50;
+    for (let i = 0; i < realUsers.length; i += BATCH_SIZE) {
+      const batch = realUsers.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(
+        batch.map(async (u) => {
+          try {
+            await sendWebinarLaunchEmail({ email: u.email, name: u.name || 'Investisseur' });
+            sent++;
+          } catch (err: any) {
+            failed++;
+            errors.push(`${u.email}: ${err?.message ?? 'unknown'}`);
+          }
+        })
+      );
+      // Rate limit pause between batches (except last)
+      if (i + BATCH_SIZE < realUsers.length) {
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+
+    log.info({ sent, failed, total: realUsers.length }, '[CAMPAIGN] Webinar launch emails sent');
+
+    return res.json({
+      success: true,
+      data: {
+        total: realUsers.length,
+        filtered: users.length - realUsers.length,
+        sent,
+        failed,
+        errors: errors.slice(0, 20), // max 20 errors returned
+      },
+    });
+  } catch (error) {
+    log.error(error, '[CAMPAIGN] Error sending webinar launch emails');
+    return res.status(500).json({ success: false, message: 'Erreur lors de l\'envoi de la campagne' });
   }
 };
