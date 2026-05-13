@@ -159,20 +159,35 @@ export default function PerformanceSnapshot({ perf, year, capital, prevYear, mar
                   <th className="text-left px-4 py-2.5 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Titre</th>
                   <th className="text-right px-4 py-2.5 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Qté</th>
                   <th className="text-right px-4 py-2.5 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Valeur</th>
-                  <th className="text-right px-4 py-2.5 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Gain</th>
+                  <th className="text-right px-4 py-2.5 text-[10px] text-gray-500 uppercase font-bold tracking-widest">Gain / Perte</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {perf.byTicker.map(row => (
-                  <tr key={row.ticker} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-2.5 font-bold text-gray-900">{row.ticker}</td>
-                    <td className="px-4 py-2.5 text-right text-gray-500 tabular-nums">{row.qty}</td>
-                    <td className="px-4 py-2.5 text-right text-gray-500 tabular-nums">{Math.round(row.valeur ?? 0).toLocaleString('fr-FR')}</td>
-                    <td className="px-4 py-2.5 text-right">
-                      <PerfPill value={row.gainPct} />
-                    </td>
-                  </tr>
-                ))}
+                {perf.byTicker.map(row => {
+                  const gainPos = (row.gain ?? 0) >= 0;
+                  const hasGain = row.gain !== undefined && row.gain !== null && row.gainPct !== undefined && row.gainPct !== null;
+                  return (
+                    <tr key={row.ticker} className={`transition-colors ${hasGain ? (gainPos ? 'hover:bg-emerald-50/40' : 'hover:bg-red-50/40') : 'hover:bg-gray-50'}`}>
+                      <td className="px-4 py-2.5 font-bold text-gray-900">{row.ticker}</td>
+                      <td className="px-4 py-2.5 text-right text-gray-500 tabular-nums">{row.qty}</td>
+                      <td className="px-4 py-2.5 text-right text-gray-600 tabular-nums font-medium">
+                        {Math.round(row.valeur ?? 0).toLocaleString('fr-FR')}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        {hasGain ? (
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className={`text-xs font-bold tabular-nums ${gainPos ? 'text-emerald-600' : 'text-red-500'}`}>
+                              {gainPos ? '+' : ''}{Math.round(row.gain).toLocaleString('fr-FR')} F
+                            </span>
+                            <PerfPill value={row.gainPct} />
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

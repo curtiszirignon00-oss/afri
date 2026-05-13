@@ -378,20 +378,33 @@ export default function BilanFinal({
                   {lastByTicker
                     .filter(t => t.qty > 0)
                     .sort((a, b) => b.valeur - a.valeur)
-                    .map(row => (
-                      <tr key={row.ticker} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-3 py-2.5">
-                          <span className="font-bold text-gray-900 text-xs">{row.ticker}</span>
-                        </td>
-                        <td className="px-3 py-2.5 text-right text-gray-500 text-xs tabular-nums">{row.qty}</td>
-                        <td className="px-3 py-2.5 text-right text-gray-600 text-xs tabular-nums font-medium">
-                          {fmt(row.valeur)}
-                        </td>
-                        <td className="px-3 py-2.5 text-right">
-                          <PerfBadge value={row.gainPct} />
-                        </td>
-                      </tr>
-                    ))}
+                    .map(row => {
+                      const gainPos = (row.gain ?? 0) >= 0;
+                      const hasGain = row.gain !== undefined && row.gain !== null;
+                      return (
+                        <tr key={row.ticker} className={`transition-colors ${hasGain ? (gainPos ? 'hover:bg-emerald-50/40' : 'hover:bg-red-50/40') : 'hover:bg-gray-50'}`}>
+                          <td className="px-3 py-2.5">
+                            <span className="font-bold text-gray-900 text-xs">{row.ticker}</span>
+                          </td>
+                          <td className="px-3 py-2.5 text-right text-gray-500 text-xs tabular-nums">{row.qty}</td>
+                          <td className="px-3 py-2.5 text-right text-gray-600 text-xs tabular-nums font-medium">
+                            {fmt(row.valeur)}
+                          </td>
+                          <td className="px-3 py-2.5 text-right">
+                            {hasGain ? (
+                              <div className="flex flex-col items-end gap-0.5">
+                                <span className={`text-[11px] font-bold tabular-nums ${gainPos ? 'text-emerald-600' : 'text-red-500'}`}>
+                                  {gainPos ? '+' : ''}{fmt(row.gain)} F
+                                </span>
+                                <PerfBadge value={row.gainPct} />
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-300">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
