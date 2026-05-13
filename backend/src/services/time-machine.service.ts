@@ -94,11 +94,22 @@ export function calculateStepPerformance(
   const divCum = calcCumulativeDividends(scenario, portfolioByStep, stepIndex + 1);
 
   const byTicker = Object.entries(allocation).map(([ticker, qty]) => {
-    const cours = getCours(scenario, currentYear, ticker);
-    const valeur = qty * cours;
-    const coursAchat = getCours(scenario, scenario.years[0], ticker);
-    const pnl = coursAchat > 0 ? ((cours - coursAchat) / coursAchat) * 100 : 0;
-    return { ticker, qty, cours, valeur, dividendesCumules: 0, pnl };
+    const prix = getCours(scenario, currentYear, ticker);
+    const valeur = qty * prix;
+
+    // Cost basis = price at the first step where this ticker was held
+    let coursAchat = getCours(scenario, scenario.years[0], ticker);
+    for (let i = 0; i <= stepIndex; i++) {
+      const stepAlloc = portfolioByStep[String(i)] ?? {};
+      if ((stepAlloc[ticker] ?? 0) > 0) {
+        coursAchat = getCours(scenario, scenario.years[i], ticker);
+        break;
+      }
+    }
+
+    const gain = coursAchat > 0 ? (prix - coursAchat) * (qty as number) : 0;
+    const gainPct = coursAchat > 0 ? ((prix - coursAchat) / coursAchat) * 100 : 0;
+    return { ticker, qty, prix, valeur, gain, gainPct };
   });
 
   const pfVal = byTicker.reduce((s, t) => s + t.valeur, 0);
