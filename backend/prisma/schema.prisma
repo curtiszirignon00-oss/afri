@@ -2035,6 +2035,8 @@ model TimeMachineSession {
   capitalByStep     Json      @default("{}")
   // { "0": { pfVal, pfDivCum, perfCapital, perfTotal, cagr } }
   performanceByStep Json      @default("{}")
+  // { rating, useful, tags, comment, submittedAt }
+  userFeedback      Json?
   completedAt       DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

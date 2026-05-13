@@ -1,4 +1,4 @@
-import { Wallet, Briefcase, AlertCircle } from 'lucide-react';
+import { Wallet, Briefcase, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import StockRow from './StockRow';
 
 interface Props {
@@ -19,6 +19,17 @@ export default function AllocationZone({
   const overBudget = cash < 0;
   const cashPct = totalAccount > 0 ? (Math.max(0, cash) / totalAccount) * 100 : 0;
   const pfPct = totalAccount > 0 ? (portfolioValue / totalAccount) * 100 : 0;
+
+  // Évolution de la valeur des positions héritées (prix précédent → prix courant)
+  const prevInheritedValue = Object.entries(prevHoldings).reduce((sum, [ticker, qty]) => {
+    return sum + qty * (prevFundamentals?.[ticker]?.cours ?? 0);
+  }, 0);
+  const currInheritedValue = Object.entries(prevHoldings).reduce((sum, [ticker, qty]) => {
+    return sum + qty * (fundamentals[ticker]?.cours ?? 0);
+  }, 0);
+  const inheritedEvolution = prevInheritedValue > 0
+    ? ((currInheritedValue - prevInheritedValue) / prevInheritedValue) * 100
+    : null;
 
   return (
     <div className="space-y-3">
@@ -48,6 +59,20 @@ export default function AllocationZone({
             <p className="text-base font-extrabold text-violet-600 tabular-nums">
               {Math.round(portfolioValue).toLocaleString('fr-FR')} F
             </p>
+            {/* Évolution des positions héritées au prix courant */}
+            {inheritedEvolution !== null && (
+              <div className={`mt-1 inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                inheritedEvolution >= 0
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-red-100 text-red-600'
+              }`}>
+                {inheritedEvolution >= 0
+                  ? <TrendingUp className="w-2.5 h-2.5" />
+                  : <TrendingDown className="w-2.5 h-2.5" />
+                }
+                {inheritedEvolution >= 0 ? '+' : ''}{inheritedEvolution.toFixed(1)}% hérité
+              </div>
+            )}
             {totalAccount > 0 && (
               <div className="mt-1.5 h-1 bg-violet-100 rounded-full overflow-hidden">
                 <div className="h-full bg-violet-400 rounded-full transition-all duration-500" style={{ width: `${pfPct}%` }} />

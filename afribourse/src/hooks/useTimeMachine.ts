@@ -143,3 +143,29 @@ export function useRequestKofiRecap() {
   });
 }
 
+export function useSubmitScenarioFeedback() {
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      rating,
+      useful,
+      tags,
+      comment,
+    }: {
+      sessionId: string;
+      rating: number;
+      useful: boolean;
+      tags: string[];
+      comment?: string;
+    }) => {
+      const { data } = await apiClient.post(`/time-machine/sessions/${sessionId}/feedback`, {
+        rating,
+        useful,
+        tags,
+        comment,
+      });
+      return data;
+    },
+  });
+}
+

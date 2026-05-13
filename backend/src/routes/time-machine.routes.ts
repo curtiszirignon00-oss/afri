@@ -14,6 +14,7 @@ import {
   getKofiRecap,
   getFundamentals,
   importToSandbox,
+  submitUserFeedback,
 } from '../controllers/time-machine.controller';
 
 const router = Router();
@@ -34,6 +35,9 @@ router.post('/sessions/:id/complete', auth, completeSession);
 // ─── Simba IA ─────────────────────────────────────────────────────────────────
 router.post('/sessions/:id/kofi', auth, getKofiFeedback);
 router.post('/sessions/:id/kofi-recap', auth, getKofiRecap);
+
+// ─── Feedback utilisateur ─────────────────────────────────────────────────────
+router.post('/sessions/:id/feedback', auth, submitUserFeedback);
 
 // ─── Bridge SANDBOX (backend kept, UI removed) ────────────────────────────────
 router.post('/sessions/:id/import-to-sandbox', auth, importToSandbox);

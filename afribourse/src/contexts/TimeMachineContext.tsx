@@ -229,6 +229,7 @@ interface TimeMachineContextType extends TimeMachineState {
   submitStep: () => Promise<void>;
   requestKofiFeedback: (stepIndex: number) => Promise<void>;
   requestKofiRecap: () => Promise<void>;
+  resetKofi: () => void;
   // Derived
   availableCapital: number;
 }
@@ -364,6 +365,10 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
     }
   }, [state.session]);
 
+  const resetKofi = useCallback(() => {
+    dispatch({ type: 'SET_KOFI', payload: null });
+  }, []);
+
   const requestKofiRecap = useCallback(async () => {
     if (!state.session) return;
     dispatch({ type: 'SET_KOFI_LOADING', payload: true });
@@ -393,7 +398,8 @@ export function TimeMachineProvider({ children }: { children: React.ReactNode })
       submitStep,
       requestKofiFeedback,
       requestKofiRecap,
-      availableCapital: state.cash, // backwards compat alias
+      resetKofi,
+      availableCapital: state.cash,
     }}>
       {children}
     </TimeMachineContext.Provider>

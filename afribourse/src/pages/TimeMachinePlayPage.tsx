@@ -7,6 +7,7 @@ import StepProgress from '../components/time-machine/StepProgress';
 import ContextPanel from '../components/time-machine/ContextPanel';
 import AllocationZone from '../components/time-machine/AllocationZone';
 import ReinvestBanner from '../components/time-machine/ReinvestBanner';
+import MarketEvolutionCard from '../components/time-machine/MarketEvolutionCard';
 import KofiBubble from '../components/time-machine/KofiBubble';
 import NoteZone from '../components/time-machine/NoteZone';
 import PerformanceSnapshot from '../components/time-machine/PerformanceSnapshot';
@@ -20,7 +21,7 @@ export default function TimeMachinePlayPage() {
   const {
     scenario, session, currentAllocation, currentNote, cash, portfolioValue,
     kofiMessage, kofiLoading, isSubmitting, error,
-    loadSession, setQty, setNote, submitStep, requestKofiFeedback,
+    loadSession, setQty, setNote, submitStep, requestKofiFeedback, resetKofi,
   } = useTimeMachine();
 
   const [phase, setPhase] = useState<'choosing' | 'submitted'>('choosing');
@@ -32,6 +33,10 @@ export default function TimeMachinePlayPage() {
   const year = scenario?.years[displayStep];
 
   const { data: stockData } = useScenarioStockData(slug, year);
+
+  // Also fetch previous year from DB so both sources align
+  const prevYearForDb = displayStep > 0 ? scenario?.years[displayStep - 1] : null;
+  const { data: prevStockData } = useScenarioStockData(slug, prevYearForDb ?? undefined);
 
   const fundamentals: Record<string, any> = {};
   if (stockData && stockData.length > 0) {
@@ -91,6 +96,9 @@ export default function TimeMachinePlayPage() {
 
   const isLastStep = displayStep === scenario.years.length - 1;
   const contextData = scenario.contextByYear?.[String(year)] ?? {};
+
+  // Historical years up to current step (for fundamentals evolution)
+  const historicalYears = scenario.years.slice(0, displayStep + 1);
   const stepPerf = session.performanceByStep?.[String(displayStep)];
   const prevPfVal = displayStep > 0 ? (session.performanceByStep?.[String(displayStep - 1)]?.pfVal ?? 0) : 0;
   const prevDivCum = displayStep > 0 ? (session.performanceByStep?.[String(displayStep - 1)]?.pfDivCum ?? 0) : 0;
@@ -102,9 +110,15 @@ export default function TimeMachinePlayPage() {
 
   // Evolution des cours entre l'étape précédente et l'étape courante
   const prevYear = displayStep > 0 ? scenario.years[displayStep - 1] : null;
-  const prevFundamentals: Record<string, any> = prevYear
-    ? (scenario.fundamentalsByYear?.[String(prevYear)] ?? {})
-    : {};
+  const prevFundamentals: Record<string, any> = {};
+  if (prevYear) {
+    // Prefer DB data (consistent source with current-year fundamentals)
+    if (prevStockData && prevStockData.length > 0) {
+      for (const s of prevStockData) prevFundamentals[s.ticker] = s;
+    } else {
+      Object.assign(prevFundamentals, scenario.fundamentalsByYear?.[String(prevYear)] ?? {});
+    }
+  }
 
   const marketEvolution = displayStep > 0
     ? tickers.map(ticker => {
@@ -121,10 +135,13 @@ export default function TimeMachinePlayPage() {
       await submitStep();
       setSubmittedStepIndex(stepAtSubmit);
       setPhase('submitted');
+      // Déclencher l'analyse Simba automatiquement, sans attendre
+      requestKofiFeedback(stepAtSubmit);
     } catch { }
   }
 
   async function handleNext() {
+    resetKofi();
     if (session!.status === 'COMPLETED') {
       navigate(`/time-machine/${slug}/recap?session=${sessionId ?? session!.id}`);
     } else {
@@ -176,12 +193,28 @@ export default function TimeMachinePlayPage() {
               />
             )}
 
+            {displayStep > 0 && phase === 'choosing' && marketEvolution.length > 0 && prevYear && (
+              <MarketEvolutionCard
+                evolutions={marketEvolution}
+                prevYear={prevYear}
+                year={year!}
+                prevHoldings={prevHoldings}
+              />
+            )}
+
             <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
               <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-5 bg-amber-500 rounded-full inline-block" />
                 Contexte — <span className="text-amber-600">{year}</span>
               </h2>
-              <ContextPanel context={contextData} fundamentals={fundamentals} tickers={tickers} />
+              <ContextPanel
+                context={contextData}
+                fundamentals={fundamentals}
+                tickers={tickers}
+                historicalFundamentals={scenario.fundamentalsByYear ?? {}}
+                years={historicalYears}
+                currentYear={year!}
+              />
             </div>
           </div>
 
@@ -254,8 +287,6 @@ export default function TimeMachinePlayPage() {
                   message={kofiMessage}
                   loading={kofiLoading}
                   mode="feedback"
-                  onRequest={!kofiMessage ? () => requestKofiFeedback(displayStep) : undefined}
-                  buttonLabel="Obtenir le feedback Simba"
                 />
 
                 {/* Animated secondary button */}

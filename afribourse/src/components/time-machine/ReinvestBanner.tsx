@@ -34,7 +34,7 @@ export default function ReinvestBanner({ portfolioValue, dividendsCumulative, ne
       <div className="space-y-2">
         <Line icon={TrendingUp} label="Valeur portefeuille (étape précédente)" value={portfolioValue} iconCls="text-emerald-500" />
         <Line icon={DollarSign} label="Dividendes cumulés"                     value={dividendsCumulative} iconCls="text-amber-500" />
-        <Line icon={PiggyBank}  label="Nouvelle épargne mensuelle"              value={newContribution} iconCls="text-violet-500" />
+        <Line icon={PiggyBank}  label="Nouvelle épargne"                         value={newContribution} iconCls="text-violet-500" />
       </div>
 
       <div className="border-t border-emerald-200 pt-2 flex items-center justify-between">

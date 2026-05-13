@@ -229,3 +229,21 @@ export async function getFundamentals(req: Request, res: Response) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 }
+
+export async function submitUserFeedback(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user?.id;
+    const { rating, useful, tags, comment } = req.body;
+
+    if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Note invalide (1–5 requis)' });
+    }
+
+    await tmService.saveUserFeedback(id, userId, { rating, useful: !!useful, tags: tags ?? [], comment });
+    res.json({ ok: true });
+  } catch (err: any) {
+    log.error('[TimeMachine] submitUserFeedback error:', err.message);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
