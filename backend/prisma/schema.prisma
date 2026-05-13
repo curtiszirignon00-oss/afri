@@ -1974,11 +1974,13 @@ model FreeTrial {
 
 model WebinarRegistration {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  webinarId  String   // ex: "w1", "w2", "w3"
+  webinarId  String   // ex: "w1-fondamentaux", "pack-parcours-investisseur"
+  type       String?  @default("webinar") // "webinar" | "pack"
   firstName  String?
   lastName   String?
   email      String
   phone      String?
+  earlyBird  Boolean? @default(false)
   userId     String?  @db.ObjectId // null si non connecté
   created_at DateTime @default(now())
 

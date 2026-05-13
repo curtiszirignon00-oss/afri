@@ -4,7 +4,7 @@ import logger from '../config/logger';
 
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
-    const { webinarId, name, firstName, lastName, email, phone } = req.body;
+    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird } = req.body;
     const userId = (req as any).user?.id ?? null;
 
     if (!webinarId || !email) {
@@ -34,15 +34,17 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
     const registration = await prisma.webinarRegistration.create({
       data: {
         webinarId,
+        type: type ?? 'webinar',
         firstName: resolvedFirstName,
         lastName: resolvedLastName,
         email,
         phone: phone ?? null,
+        earlyBird: earlyBird ?? false,
         userId,
       },
     });
 
-    logger.info({ webinarId, email, userId }, '[WEBINAR] Préinscription créée');
+    logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');
 
     return res.status(201).json({
       message: 'Préinscription enregistrée avec succès !',
