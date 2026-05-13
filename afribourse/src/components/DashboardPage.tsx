@@ -399,34 +399,30 @@ export default function DashboardPage() {
     const dayOfWeek = today.getDay(); // 0=Dimanche, 6=Samedi
     if (dayOfWeek === 0 || dayOfWeek === 6) return { value: 0, percent: 0 };
 
-    if (portfolioHistory.length === 0) return { value: 0, percent: 0 };
+    if (!portfolio || Object.keys(stocksData).length === 0) return { value: 0, percent: 0 };
 
-    const todayStr = today.toISOString().split('T')[0];
+    // Variation journalière = Σ(quantité × (cours_actuel - clôture_veille))
+    // On utilise previous_close (champ mis à jour par le scraper) plutôt que
+    // l'historique backend, qui peut fallback sur current_price pour les dates
+    // sans StockHistory → variation artificiellement nulle.
+    let dailyChange = 0;
+    let previousPositionsValue = 0;
 
-    // Utiliser la valeur live du portefeuille comme valeur actuelle du jour.
-    // Si elle n'est pas encore disponible, on tente de lire le point d'aujourd'hui
-    // dans l'historique backend en fallback.
-    const liveValue = calculateTotalValue();
-    const todayPoint = portfolioHistory.find(p => p.date === todayStr);
-    const currentValue = liveValue > 0 ? liveValue : todayPoint?.value ?? 0;
-    if (currentValue === 0) return { value: 0, percent: 0 };
-
-    // Trouver le dernier point historique AVANT aujourd'hui (clôture d'hier ou dernier jour de bourse)
-    let previousPoint: { date: string; value: number } | null = null;
-    for (let i = portfolioHistory.length - 1; i >= 0; i--) {
-      if (portfolioHistory[i].date < todayStr) {
-        previousPoint = portfolioHistory[i];
-        break;
+    portfolio.positions.forEach(position => {
+      const stock = stocksData[position.stock_ticker];
+      if (stock && stock.previous_close > 0) {
+        dailyChange += position.quantity * (stock.current_price - stock.previous_close);
+        previousPositionsValue += position.quantity * stock.previous_close;
       }
-    }
+    });
 
-    if (!previousPoint || previousPoint.value === 0) return { value: 0, percent: 0 };
+    const previousTotalValue = portfolio.cash_balance + previousPositionsValue;
+    if (previousTotalValue === 0) return { value: 0, percent: 0 };
 
-    const dailyChange = currentValue - previousPoint.value;
-    const dailyChangePercent = (dailyChange / previousPoint.value) * 100;
+    const dailyChangePercent = (dailyChange / previousTotalValue) * 100;
 
     return { value: dailyChange, percent: dailyChangePercent };
-  }, [portfolioHistory, calculateTotalValue]);
+  }, [portfolio, stocksData]);
 
   // ✅ OPTIMISATION: Mémoiser les données d'allocation
   const allocationData = useMemo(() => {
