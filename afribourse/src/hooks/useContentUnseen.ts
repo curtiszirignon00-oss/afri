@@ -6,32 +6,52 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRecentNews } from './useApi';
 import { apiClient } from '../lib/api-client';
+import { BRVM_NEWS } from '../data/brvm2026News';
 
 const NEWS_LS_KEY      = 'afribourse_last_seen_news';
 const COMMUNITY_LS_KEY = 'afribourse_last_seen_community';
+const SEVEN_DAYS_MS    = 7 * 24 * 60 * 60 * 1000;
 
 // ---------------------------------------------------------------------------
 // News
 // ---------------------------------------------------------------------------
 
-/** Returns the number of news articles published since the user last visited /news. */
+/** Synchronous helper — returns the count of new BRVM articles since last visit. */
+export function getUnseenBrvmCount(): number {
+  const raw   = localStorage.getItem(NEWS_LS_KEY);
+  const since = raw ? new Date(raw) : null;
+  const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
+  return BRVM_NEWS.filter(a => {
+    const d = new Date(a.publishedAt);
+    return d > sevenDaysAgo && (!since || d > since);
+  }).length;
+}
+
+/** Returns the number of news articles (API + BRVM) published since the user last visited /news. */
 export function useUnseenNewsCount(): number {
   const [count, setCount] = useState(0);
   const { data: articles } = useRecentNews(8);
 
   useEffect(() => {
-    if (!articles?.length) return;
-    const raw = localStorage.getItem(NEWS_LS_KEY);
-    if (!raw) {
-      // First ever visit — show a dot without an inflated count
-      setCount(1);
-      return;
+    const raw   = localStorage.getItem(NEWS_LS_KEY);
+    const since = raw ? new Date(raw) : null;
+    const sevenDaysAgo = new Date(Date.now() - SEVEN_DAYS_MS);
+
+    // BRVM static articles : publiés dans les 7 derniers jours ET depuis la dernière visite
+    const brvmCount = BRVM_NEWS.filter(a => {
+      const d = new Date(a.publishedAt);
+      return d > sevenDaysAgo && (!since || d > since);
+    }).length;
+
+    // Articles API
+    let apiCount = 0;
+    if (articles?.length) {
+      apiCount = since
+        ? articles.filter(a => a.published_at && new Date(a.published_at) > since).length
+        : 1;
     }
-    const since    = new Date(raw);
-    const newCount = articles.filter(
-      (a) => a.published_at && new Date(a.published_at) > since
-    ).length;
-    setCount(newCount);
+
+    setCount(brvmCount + apiCount);
   }, [articles]);
 
   return count;
