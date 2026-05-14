@@ -4,6 +4,8 @@ import {
   ComposedChart,
   BarChart,
   LineChart,
+  PieChart,
+  Pie,
   Bar,
   Line,
   XAxis,
@@ -266,14 +268,150 @@ export function ChartDiv() {
   );
 }
 
+// ── Palette CFAC (thème clair) ────────────────────────────────────────────────
+const CFAC_BLUE   = '#3b82f6';
+const CFAC_GREEN  = '#16a34a';
+const CFAC_RED    = '#ef4444';
+const CFAC_AMBER  = '#f59e0b';
+const CFAC_PURPLE = '#8b5cf6';
+const CFAC_NAVY   = '#1e40af';
+
+// ── Chart CFAC 1 : PNB & Résultat Net ────────────────────────────────────────
+export function ChartCFACPnbRn() {
+  const data = [
+    { label: 'T1 2025', pnb: 1080, rn: 13 },
+    { label: 'T1 2026', pnb: 1395, rn: 151 },
+  ];
+  return (
+    <ChartShell
+      title="PNB & Résultat Net (M FCFA)"
+      legend={[
+        { color: CFAC_BLUE,  label: 'PNB' },
+        { color: CFAC_GREEN, label: 'Résultat Net' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="label" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => v + ' M'} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="pnb" name="PNB"          fill={CFAC_BLUE}  radius={[3,3,0,0]} maxBarSize={40} />
+          <Bar dataKey="rn"  name="Résultat Net" fill={CFAC_GREEN} radius={[3,3,0,0]} maxBarSize={40} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+// ── Chart CFAC 2 : Coût du risque ─────────────────────────────────────────────
+export function ChartCFACCoutRisque() {
+  const data = [
+    { label: 'T1 2025', cout: 89 },
+    { label: 'T1 2026', cout: 22 },
+  ];
+  return (
+    <ChartShell
+      title="Coût du risque — évolution (M FCFA)"
+      legend={[{ color: CFAC_RED, label: 'Charge (M FCFA, valeur abs.)' }]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="label" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => v + ' M'} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="cout" name="Coût du risque" radius={[3,3,0,0]} maxBarSize={50}>
+            <Cell fill="rgba(239,68,68,0.4)" />
+            <Cell fill={CFAC_RED} />
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+// ── Chart CFAC 3 : Structure de l'actif ──────────────────────────────────────
+export function ChartCFACActif() {
+  const data = [
+    { label: 'Trésorerie', t26: 7677,  t25: 6873 },
+    { label: 'Clientèle',  t26: 64428, t25: 51337 },
+    { label: 'Titres',     t26: 11271, t25: 10587 },
+    { label: 'Immo.',      t26: 5043,  t25: 4399 },
+  ];
+  return (
+    <ChartShell
+      title="Structure de l'actif — comparaison (M FCFA)"
+      legend={[
+        { color: CFAC_BLUE, label: 'T1 2026' },
+        { color: CFAC_NAVY, label: 'T1 2025' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="label" tick={{ ...tickStyle, fontSize: 10 }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => (v / 1000).toFixed(0) + 'k'} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="t26" name="T1 2026" fill={CFAC_BLUE} radius={[3,3,0,0]} maxBarSize={24} />
+          <Bar dataKey="t25" name="T1 2025" fill={CFAC_NAVY} radius={[3,3,0,0]} maxBarSize={24} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+// ── Chart CFAC 4 : Répartition du passif (donut) ─────────────────────────────
+const PASSIF_DATA = [
+  { name: 'Interbancaire',  value: 25696, fill: CFAC_BLUE },
+  { name: 'Clientèle',      value: 11154, fill: CFAC_GREEN },
+  { name: 'Titres & divers',value: 45502, fill: CFAC_AMBER },
+  { name: 'Cap. propres',   value: 6067,  fill: CFAC_PURPLE },
+];
+
+export function ChartCFACPassif() {
+  return (
+    <ChartShell
+      title="Répartition du passif T1 2026 (M FCFA)"
+      legend={[
+        { color: CFAC_BLUE,   label: 'Interbancaire' },
+        { color: CFAC_GREEN,  label: 'Clientèle' },
+        { color: CFAC_AMBER,  label: 'Titres & divers' },
+        { color: CFAC_PURPLE, label: 'Cap. propres' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <PieChart>
+          <Pie
+            data={PASSIF_DATA}
+            cx="50%"
+            cy="50%"
+            innerRadius={48}
+            outerRadius={78}
+            paddingAngle={2}
+            dataKey="value"
+          >
+            {PASSIF_DATA.map((d, i) => <Cell key={i} fill={d.fill} />)}
+          </Pie>
+          <Tooltip formatter={(v: any, name: string) => [Number(v).toLocaleString('fr-FR') + ' M FCFA', name]} />
+        </PieChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
 // ── Dispatch par chartId ──────────────────────────────────────────────────────
 const CHART_MAP: Record<string, React.ComponentType> = {
-  'sgbci-annuel':  ChartAnnuel,
-  'sgbci-rn-t1':   ChartRNT1,
-  'sgbci-ciseaux': ChartCiseaux,
-  'sgbci-coeff':   ChartCoeff,
-  'sgbci-sensib':  ChartSensib,
-  'sgbci-div':     ChartDiv,
+  'sgbci-annuel':      ChartAnnuel,
+  'sgbci-rn-t1':       ChartRNT1,
+  'sgbci-ciseaux':     ChartCiseaux,
+  'sgbci-coeff':       ChartCoeff,
+  'sgbci-sensib':      ChartSensib,
+  'sgbci-div':         ChartDiv,
+  'cfac-pnb-rn':       ChartCFACPnbRn,
+  'cfac-cout-risque':  ChartCFACCoutRisque,
+  'cfac-actif':        ChartCFACActif,
+  'cfac-passif':       ChartCFACPassif,
 };
 
 export function ChartById({ chartId }: { chartId: string }) {
