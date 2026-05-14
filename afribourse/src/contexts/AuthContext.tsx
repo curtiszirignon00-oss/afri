@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { apiClient, getIsAxiosRefreshing } from '../lib/api-client';
 import { setAuthToken, getAuthToken } from '../config/api';
 import * as amplitude from '@amplitude/unified';
+import { metaPixelIdentify } from '../utils/metaPixel';
 
 // --- Types ---
 interface UserProfile {
@@ -186,7 +187,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(true);
       setSessionExpired(false);
       sessionExpiredFiredRef.current = false;
-      if (profile) identifyAmplitudeUser(profile);
+      if (profile) {
+        identifyAmplitudeUser(profile);
+        metaPixelIdentify(profile);
+      }
       // Stocker le token en mémoire pour les clients Safari iOS (ITP bloque les cookies cross-site)
       if (token) {
         setAuthToken(token);
@@ -222,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
     setSessionExpired(false);
     identifyAmplitudeUser(user);
+    metaPixelIdentify(user);
     if (token) {
       setAuthToken(token);
       tokenIssuedAtRef.current = Date.now();
