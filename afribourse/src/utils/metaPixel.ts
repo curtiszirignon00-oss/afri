@@ -6,9 +6,44 @@ declare global {
   }
 }
 
+const PIXEL_ID = '875398595570569';
+
 function fbq(...args: unknown[]) {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
     window.fbq(...args);
+  }
+}
+
+export interface MetaUserData {
+  id?: string;
+  email?: string | null;
+  name?: string | null;
+  lastname?: string | null;
+  telephone?: string | null;
+}
+
+/**
+ * Correspondance avancée — à appeler dès que les données utilisateur sont connues.
+ * Le pixel hache automatiquement em/fn/ln via SHA-256.
+ * Re-appeler fbq('init') avec les données utilisateur permet à Meta de lier
+ * les événements suivants à un profil réel.
+ */
+export function metaPixelIdentify(user: MetaUserData) {
+  const userData: Record<string, string> = {};
+
+  if (user.email) userData.em = user.email.toLowerCase().trim();
+  if (user.name) userData.fn = user.name.toLowerCase().trim();
+  if (user.lastname) userData.ln = user.lastname.toLowerCase().trim();
+  if (user.id) userData.external_id = user.id;
+
+  // Téléphone : garder uniquement les chiffres
+  if (user.telephone) {
+    const digits = user.telephone.replace(/\D/g, '');
+    if (digits) userData.ph = digits;
+  }
+
+  if (Object.keys(userData).length > 0) {
+    fbq('init', PIXEL_ID, userData);
   }
 }
 
