@@ -454,7 +454,7 @@ export default function BRVMNewsGrid() {
       {/* Bande stats */}
       <div className="flex items-center gap-6 mb-5 p-4 bg-slate-50 rounded-xl border border-slate-200">
         <div className="text-center">
-          <p className="text-xl font-bold text-slate-900">14</p>
+          <p className="text-xl font-bold text-slate-900">15</p>
           <p className="text-[11px] text-slate-500">articles</p>
         </div>
         <div className="w-px h-8 bg-slate-200" />

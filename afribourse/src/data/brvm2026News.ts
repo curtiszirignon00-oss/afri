@@ -42,6 +42,114 @@ export interface BRVMArticle {
 
 export const BRVM_NEWS: BRVMArticle[] = [
   {
+    id: "cfac-analyse-t1-2026",
+    category: "Analyse",
+    isFeatured: true,
+    title: "Alios Finance CI : résultats T1 2026 — résultat net ×12, solvabilité sous surveillance",
+    summary: "PNB +29%, résultat net multiplié par 12 en un an : Alios Finance CI publie un T1 2026 remarquable. Mais le ratio de solvabilité frôle la limite réglementaire à 11,64% pour une norme de 11,5%. Tout comprendre, pas à pas.",
+    publishedAt: "2026-05-14T08:00:00Z",
+    content: "",
+    sources: [
+      "Rapport d'activités T1 2026 — Alios Finance CI (données non certifiées)",
+      "BCEAO — Normes prudentielles Bâle III / UEMOA",
+    ],
+    tags: ['CFAC', 'T1 2026', 'leasing', 'crédit-bail', 'solvabilité', 'résultats', 'analyse éducative'],
+    tickers: [
+      { ticker: 'CFAC', impact: 'Mixte', note: 'RN ×12 et PNB +29% — excellente performance opérationnelle, tempérée par une solvabilité globale à seulement 14 bps au-dessus du plancher réglementaire.' },
+    ],
+    richContent: [
+      { type: 'disclaimer', text: "Les données du T1 2026 n'ont pas fait l'objet d'une certification par les commissaires aux comptes. Cet article est fourni à titre éducatif uniquement et ne constitue pas un conseil en investissement." },
+
+      { type: 'heading', level: 1, text: "01 · Qui est Alios Finance CI ?" },
+      { type: 'paragraph', text: "Alios Finance Côte d'Ivoire, cotée sur la BRVM sous le ticker CFAC, est un établissement financier spécialisé dans le crédit aux entreprises — principalement le leasing (crédit-bail) et le financement à moyen terme. Son métier : prêter de l'argent aux entreprises ivoiriennes pour qu'elles financent leurs équipements, leurs véhicules, ou leurs projets de développement. Elle fait partie du groupe Alios Finance, présent dans plusieurs pays d'Afrique subsaharienne, avec un capital social de 3,25 milliards de FCFA." },
+      { type: 'callout', variant: 'note', title: "Analogie concrète", paragraphs: [
+        "Imaginez un commerçant d'Adjamé qui veut acheter un camion de livraison à 25 millions de FCFA mais n'a pas les liquidités. Il va voir Alios Finance, qui achète le camion et le lui loue pendant 5 ans. Le commerçant paie des mensualités, et au bout du contrat, il devient propriétaire. C'est le cœur du métier d'Alios Finance.",
+      ]},
+
+      { type: 'heading', level: 1, text: "02 · Le PNB : le chiffre d'affaires d'une banque" },
+      { type: 'paragraph', text: "Dans une banque ou un établissement de crédit, on ne parle pas de « chiffre d'affaires » comme dans une entreprise classique. On parle de Produit Net Bancaire (PNB). C'est la différence entre ce que l'établissement gagne sur ses prêts (les intérêts et commissions reçus) et ce qu'il paie pour se refinancer (les intérêts versés sur les emprunts)." },
+      { type: 'callout', variant: 'note', title: "Analogie concrète", paragraphs: [
+        "Un boulanger achète sa farine à 200 FCFA le kilo et vend son pain à 600 FCFA. Sa « marge brute » est de 400 FCFA. Le PNB, c'est la même idée : Alios Finance emprunte de l'argent à un certain taux et le reprête à un taux plus élevé. La différence, c'est son PNB.",
+      ]},
+      { type: 'paragraph', text: "Au T1 2026, le PNB d'Alios Finance CI atteint 1 395 millions de FCFA, contre 1 080 millions un an plus tôt, soit une hausse de 29%. C'est une très bonne performance. Deux facteurs l'expliquent : la croissance des volumes de crédits accordés (plus de clients, plus de prêts) et une meilleure tenue des marges (l'écart entre le taux de prêt et le taux de refinancement s'est amélioré)." },
+      { type: 'callout', variant: 'ok', title: "Chiffre à retenir", paragraphs: [
+        "+29% de PNB en un an. C'est presque 3× la croissance du PIB ivoirien attendue sur la période — Alios Finance croît nettement plus vite que l'économie dans son ensemble.",
+      ]},
+
+      { type: 'heading', level: 1, text: "03 · Le coût du risque : la mauvaise dette maîtrisée" },
+      { type: 'paragraph', text: "Quand une banque prête de l'argent, elle sait que certains clients ne rembourseront pas. Le coût du risque, c'est la provision qu'elle passe en charge pour anticiper ces impayés — ou pour couvrir les créances qu'elle considère comme définitivement irrécouvrables." },
+      { type: 'callout', variant: 'note', title: "Analogie concrète", paragraphs: [
+        "Un taxi-man prête son véhicule à un collègue pour la journée. Pour se protéger, il met de côté 5 000 FCFA « au cas où il y aurait un accrochage ». C'est son « coût du risque » personnel. Plus il fait confiance à son collègue, moins il met de côté.",
+      ]},
+      { type: 'paragraph', text: "Au T1 2026, le coût du risque ressort à -22 millions de FCFA, contre -89 millions au T1 2025. Le signe négatif signifie que c'est une charge (une dépense). Mais cette charge a diminué de 75% en un an. Cela veut dire qu'Alios Finance a beaucoup mieux maîtrisé la qualité de son portefeuille de prêts : moins de clients en défaut, meilleur suivi des dossiers, recouvrement plus efficace." },
+      { type: 'callout', variant: 'ok', title: "Ce que dit la direction", paragraphs: [
+        "« Cette évolution reflète une meilleure maîtrise du portefeuille et les effets des actions de suivi, de recouvrement et de contrôle du risque. » — en clair, l'équipe de gestion du risque a bien travaillé ces 12 derniers mois.",
+      ]},
+
+      { type: 'heading', level: 1, text: "04 · Le résultat net : ce qu'il reste à la fin" },
+      { type: 'paragraph', text: "Après avoir déduit toutes les charges opérationnelles (salaires, loyers, informatique...) et le coût du risque du PNB, on obtient le résultat net. C'est ce que l'entreprise a réellement gagné sur la période — l'argent qui peut être redistribué aux actionnaires ou réinvesti dans l'activité." },
+      { type: 'paragraph', text: "Au T1 2026, le résultat net s'établit à 151 millions de FCFA, contre seulement 13 millions au T1 2025. C'est une hausse de +1 062%, soit une multiplication par environ 12. Ce chiffre spectaculaire est le résultat de la conjonction des deux dynamiques décrites ci-dessus : un PNB en forte hausse et un coût du risque en forte baisse." },
+      { type: 'callout', variant: 'info', title: "Ce que ça représente concrètement", paragraphs: [
+        "Sur un capital social de 3,25 milliards de FCFA, un résultat net trimestriel de 151 millions correspond à un ROE annualisé d'environ 18,5%. C'est un niveau de rentabilité élevé pour un établissement financier dans la zone UEMOA — comparable aux meilleures banques de la région.",
+        "Pour comparaison, un placement en bons du Trésor ivoirien rapporte environ 6-7% par an. Alios Finance génère plus de 2,5× ce rendement sur ses fonds propres.",
+      ]},
+
+      { type: 'heading', level: 1, text: "05 · Tableau de bord analytique — T1 2026" },
+      { type: 'key-stats', items: [
+        { label: 'Prod. Net Bancaire · +29%',      value: '1 395 M FCFA' },
+        { label: 'Résultat Net · +1 062%',         value: '151 M FCFA' },
+        { label: 'Coût du Risque · −75%',          value: '−22 M FCFA' },
+        { label: 'Total Bilan · +21%',             value: '88 419 M FCFA' },
+        { label: 'Créances Clientèle · +26%',      value: '64 428 M FCFA' },
+        { label: 'Capitaux Propres · +16%',        value: '6 067 M FCFA' },
+      ]},
+      { type: 'chart', chartId: 'cfac-pnb-rn' },
+      { type: 'chart', chartId: 'cfac-cout-risque' },
+      { type: 'chart', chartId: 'cfac-actif' },
+      { type: 'chart', chartId: 'cfac-passif' },
+      { type: 'table', caption: 'Ratios prudentiels BCEAO / Bâle III — au 31/03/2026', headers: ['Ratio', 'Valeur', 'Norme', 'Statut'], rows: [
+        ['Ratio CET1 (fonds propres durs)',       '10,35%', '≥ 7,5%',  'Conforme'],
+        ['Ratio Tier 1 (fonds propres de base)',  '10,35%', '≥ 8,5%',  'Conforme'],
+        ['Solvabilité globale',                   '11,64%', '≥ 11,5%', 'Marge serrée ⚠'],
+        ['Ratio de levier',                       '4,03%',  '≥ 3%',    'Conforme'],
+        ['Immob. hors exploitation',              '12,59%', '≤ 15%',   'Conforme'],
+        ['Immo. + participations / total',        '80,48%', '≤ 100%',  'Conforme'],
+      ]},
+
+      { type: 'heading', level: 1, text: "06 · Le bilan : radiographie financière en un instant T" },
+      { type: 'paragraph', text: "Le bilan d'une entreprise, c'est une photo de sa santé financière à une date précise. À gauche (l'actif) : ce que l'entreprise possède ou a prêté. À droite (le passif) : comment elle a financé tout ça — ses dettes et ses fonds propres." },
+      { type: 'paragraph', text: "Au 31 mars 2026, le total du bilan d'Alios Finance CI s'établit à 88 419 millions de FCFA, en hausse de 21% en un an. Le poste principal à l'actif, les créances sur la clientèle (les prêts accordés), représente 64 428 millions — soit 73% du bilan total. Cette concentration est normale pour un établissement de crédit spécialisé." },
+      { type: 'callout', variant: 'info', title: "Point intéressant au passif", paragraphs: [
+        "Les ressources interbancaires (l'argent emprunté auprès d'autres banques) reculent de 9% pendant que les dépôts clientèle explosent de +87%. C'est une excellente nouvelle structurelle : Alios Finance s'appuie de moins en moins sur des ressources bancaires coûteuses et volatiles, et de plus en plus sur des fonds clients, plus stables et généralement moins chers.",
+      ]},
+
+      { type: 'heading', level: 1, text: "07 · Les ratios prudentiels : les limites de vitesse réglementaires" },
+      { type: 'paragraph', text: "Les établissements financiers ne peuvent pas faire ce qu'ils veulent. La BCEAO (la banque centrale de l'UEMOA) leur impose des ratios prudentiels, c'est-à-dire des limites réglementaires qu'ils doivent respecter en permanence. Ces ratios sont conçus pour s'assurer que la banque ne prend pas trop de risques et pourra rembourser ses clients même en cas de crise." },
+      { type: 'callout', variant: 'note', title: "Analogie concrète", paragraphs: [
+        "Imaginez que vous êtes autorisé à construire un immeuble, mais le règlement dit que votre chantier ne peut pas dépasser 15 étages. Si vous en construisez 14, vous êtes conforme. Si vous en construisez 16, l'autorité de tutelle peut vous obliger à démolir. Les ratios prudentiels, c'est exactement ça pour une banque.",
+      ]},
+      { type: 'paragraph', text: "Au T1 2026, tous les ratios sont respectés. Mais le ratio de solvabilité globale à 11,64% pour une norme minimale à 11,5% laisse une marge de seulement 0,14 point de pourcentage. C'est très serré. Si le bilan continue de croître au même rythme (+21% par an) sans renforcement des fonds propres, ce ratio pourrait passer sous la norme d'ici 2-3 trimestres." },
+      { type: 'callout', variant: 'warn', title: "Qu'est-ce que le ratio de solvabilité globale ?", paragraphs: [
+        "Il mesure la proportion des fonds propres de l'établissement par rapport à ses actifs pondérés par le risque (les RWA). Plus un prêt est risqué, plus il « pèse » dans ce calcul. Le ratio dit : « Pour 100 FCFA de risques pris, combien avez-vous de fonds propres pour absorber les pertes ? » La norme BCEAO exige au minimum 11,5 FCFA pour 100 FCFA de risques.",
+      ]},
+      { type: 'paragraph', text: "La direction d'Alios Finance en est consciente et l'indique clairement dans son commentaire : elle appelle à « un pilotage rapproché de la production, du recouvrement et de la consommation des fonds propres ». En langage courant : croître, oui, mais pas n'importe comment." },
+
+      { type: 'heading', level: 1, text: "08 · Ce que ces résultats signifient pour un investisseur BRVM" },
+      { type: 'paragraph', text: "En tant qu'investisseur qui suit CFAC sur la BRVM, voici les questions pertinentes que ces résultats soulèvent :" },
+      { type: 'paragraph', text: "1. La croissance est-elle soutenable ? Le portefeuille de prêts croît de 26% en un an. C'est impressionnant, mais une croissance trop rapide du crédit peut cacher une dégradation future de la qualité des actifs. Le coût du risque très bas au T1 2026 devra être confirmé dans les prochains trimestres." },
+      { type: 'paragraph', text: "2. La solvabilité sera-t-elle un frein ? Avec 14 bps de marge sur le ratio réglementaire le plus contraignant, la direction pourrait être amenée à lever de nouveaux fonds propres (augmentation de capital) ou à ralentir volontairement la production de crédit. Les deux scénarios ont des implications différentes pour l'actionnaire." },
+      { type: 'paragraph', text: "3. Le dividende est-il envisageable ? Avec 151 millions de résultat net au T1 uniquement, si la tendance se confirme sur l'année, Alios Finance pourrait afficher un bénéfice annuel significativement plus élevé qu'en 2025 — ouvrant potentiellement la voie à un dividende ou à un renforcement des réserves." },
+
+      { type: 'verdict', title: "Résumé pour aller plus loin", items: [
+        { label: 'PNB +29%', text: "L'activité commerciale se développe fortement, portée par la croissance des volumes et des marges. Signal positif." },
+        { label: 'Coût du risque −75%', text: "La qualité du portefeuille de prêts s'améliore nettement. Signal positif, à surveiller pour confirmer la tendance." },
+        { label: 'Résultat net ×12', text: "Conjonction des deux points précédents. ROE annualisé estimé à ~18,5% — excellente rentabilité des fonds propres." },
+        { label: 'Solvabilité globale 11,64%', text: "Marge de seulement 14 bps sur la norme réglementaire. Point de vigilance important pour les prochains trimestres." },
+        { label: 'Diversification du funding', text: "Recul des ressources interbancaires au profit des dépôts clientèle (+87%) — amélioration structurelle du profil de liquidité." },
+      ]},
+    ],
+  },
+  {
     id: "brvm-record-2025",
     category: "Marché",
     isFeatured: true,
