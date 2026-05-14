@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, ChevronRight, Newspaper, BarChart2 } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import FundamentalsGrid from './FundamentalsGrid';
 import { BRVM_NEWS, BRVMArticle } from '../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from './BRVMNewsGrid';
+import { markNewsVisited, getUnseenBrvmCount } from '../hooks/useContentUnseen';
 
 const BRVM_CATEGORY_MAP: Record<string, string> = {
   'Marché':                 'marches',
@@ -42,6 +43,12 @@ export default function NewsPage() {
   const [loading, setLoading]         = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
+  // Notification banner : calculé avant de marquer comme lu
+  const [newBrvmCount]    = useState(() => getUnseenBrvmCount());
+  const [bannerVisible, setBannerVisible] = useState(() => getUnseenBrvmCount() > 0);
+
+  // Marquer la page comme visitée dès le montage → reset le badge header
+  useEffect(() => { markNewsVisited(); }, []);
 
   useEffect(() => {
     if (STATIC_ONLY.includes(selectedCategory)) {
@@ -133,6 +140,29 @@ export default function NewsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 animate-in fade-in duration-500">
+
+      {/* Banner nouvelles analyses */}
+      {bannerVisible && newBrvmCount > 0 && (
+        <div className="flex items-center justify-between bg-[#00D4A8]/10 border border-[#00D4A8]/40 rounded-xl px-4 py-3 mb-5">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D4A8] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00D4A8]" />
+            </span>
+            <span className="text-sm font-semibold text-[#007A72]">
+              {newBrvmCount} nouvelle{newBrvmCount > 1 ? 's' : ''} analyse{newBrvmCount > 1 ? 's' : ''} publiée{newBrvmCount > 1 ? 's' : ''}
+            </span>
+            <span className="text-xs text-slate-400 hidden sm:inline">— défiler vers les analyses BRVM</span>
+          </div>
+          <button
+            onClick={() => setBannerVisible(false)}
+            className="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors"
+            aria-label="Fermer"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Header + category tabs */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
