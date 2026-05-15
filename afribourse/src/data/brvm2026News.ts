@@ -53,15 +53,15 @@ export const BRVM_NEWS: BRVMArticle[] = [
       "Rapport d'activités T1 2026 — Alios Finance CI (données non certifiées)",
       "BCEAO — Normes prudentielles Bâle III / UEMOA",
     ],
-    tags: ['CFAC', 'T1 2026', 'leasing', 'crédit-bail', 'solvabilité', 'résultats', 'analyse éducative'],
+    tags: ['SAFCA', 'T1 2026', 'leasing', 'crédit-bail', 'solvabilité', 'résultats', 'analyse éducative'],
     tickers: [
-      { ticker: 'CFAC', impact: 'Mixte', note: 'RN ×12 et PNB +29% — excellente performance opérationnelle, tempérée par une solvabilité globale à seulement 14 bps au-dessus du plancher réglementaire.' },
+      { ticker: 'SAFCA', impact: 'Mixte', note: 'RN ×12 et PNB +29% — excellente performance opérationnelle, tempérée par une solvabilité globale à seulement 14 bps au-dessus du plancher réglementaire.' },
     ],
     richContent: [
       { type: 'disclaimer', text: "Les données du T1 2026 n'ont pas fait l'objet d'une certification par les commissaires aux comptes. Cet article est fourni à titre éducatif uniquement et ne constitue pas un conseil en investissement." },
 
       { type: 'heading', level: 1, text: "01 · Qui est Alios Finance CI ?" },
-      { type: 'paragraph', text: "Alios Finance Côte d'Ivoire, cotée sur la BRVM sous le ticker CFAC, est un établissement financier spécialisé dans le crédit aux entreprises — principalement le leasing (crédit-bail) et le financement à moyen terme. Son métier : prêter de l'argent aux entreprises ivoiriennes pour qu'elles financent leurs équipements, leurs véhicules, ou leurs projets de développement. Elle fait partie du groupe Alios Finance, présent dans plusieurs pays d'Afrique subsaharienne, avec un capital social de 3,25 milliards de FCFA." },
+      { type: 'paragraph', text: "Alios Finance Côte d'Ivoire, cotée sur la BRVM sous le ticker SAFCA, est un établissement financier spécialisé dans le crédit aux entreprises — principalement le leasing (crédit-bail) et le financement à moyen terme. Son métier : prêter de l'argent aux entreprises ivoiriennes pour qu'elles financent leurs équipements, leurs véhicules, ou leurs projets de développement. Elle fait partie du groupe Alios Finance, présent dans plusieurs pays d'Afrique subsaharienne, avec un capital social de 3,25 milliards de FCFA." },
       { type: 'callout', variant: 'note', title: "Analogie concrète", paragraphs: [
         "Imaginez un commerçant d'Adjamé qui veut acheter un camion de livraison à 25 millions de FCFA mais n'a pas les liquidités. Il va voir Alios Finance, qui achète le camion et le lui loue pendant 5 ans. Le commerçant paie des mensualités, et au bout du contrat, il devient propriétaire. C'est le cœur du métier d'Alios Finance.",
       ]},
@@ -135,7 +135,7 @@ export const BRVM_NEWS: BRVMArticle[] = [
       { type: 'paragraph', text: "La direction d'Alios Finance en est consciente et l'indique clairement dans son commentaire : elle appelle à « un pilotage rapproché de la production, du recouvrement et de la consommation des fonds propres ». En langage courant : croître, oui, mais pas n'importe comment." },
 
       { type: 'heading', level: 1, text: "08 · Ce que ces résultats signifient pour un investisseur BRVM" },
-      { type: 'paragraph', text: "En tant qu'investisseur qui suit CFAC sur la BRVM, voici les questions pertinentes que ces résultats soulèvent :" },
+      { type: 'paragraph', text: "En tant qu'investisseur qui suit SAFCA sur la BRVM, voici les questions pertinentes que ces résultats soulèvent :" },
       { type: 'paragraph', text: "1. La croissance est-elle soutenable ? Le portefeuille de prêts croît de 26% en un an. C'est impressionnant, mais une croissance trop rapide du crédit peut cacher une dégradation future de la qualité des actifs. Le coût du risque très bas au T1 2026 devra être confirmé dans les prochains trimestres." },
       { type: 'paragraph', text: "2. La solvabilité sera-t-elle un frein ? Avec 14 bps de marge sur le ratio réglementaire le plus contraignant, la direction pourrait être amenée à lever de nouveaux fonds propres (augmentation de capital) ou à ralentir volontairement la production de crédit. Les deux scénarios ont des implications différentes pour l'actionnaire." },
       { type: 'paragraph', text: "3. Le dividende est-il envisageable ? Avec 151 millions de résultat net au T1 uniquement, si la tendance se confirme sur l'année, Alios Finance pourrait afficher un bénéfice annuel significativement plus élevé qu'en 2025 — ouvrant potentiellement la voie à un dividende ou à un renforcement des réserves." },
