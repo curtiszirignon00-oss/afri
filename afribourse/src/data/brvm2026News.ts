@@ -45,6 +45,7 @@ export const BRVM_NEWS: BRVMArticle[] = [
     id: "cfac-analyse-t1-2026",
     category: "Analyse",
     isFeatured: true,
+    image_url: "/images/alios-building.jpg",
     title: "Alios Finance CI : résultats T1 2026 — résultat net ×12, solvabilité sous surveillance",
     summary: "PNB +29%, résultat net multiplié par 12 en un an : Alios Finance CI publie un T1 2026 remarquable. Mais le ratio de solvabilité frôle la limite réglementaire à 11,64% pour une norme de 11,5%. Tout comprendre, pas à pas.",
     publishedAt: "2026-05-14T08:00:00Z",
