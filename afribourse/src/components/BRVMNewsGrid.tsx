@@ -239,6 +239,16 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
           </div>
         </div>
 
+        {article.image_url && (
+          <div className="h-52 overflow-hidden bg-slate-100">
+            <img
+              src={article.image_url}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
         <div className="flex-1 px-6 py-6 space-y-6">
           {/* Résumé */}
           <p className="text-sm font-medium text-slate-700 leading-relaxed border-l-2 border-[#00D4A8] pl-4 py-1">
