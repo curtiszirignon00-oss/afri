@@ -84,7 +84,7 @@ export const BRVM_NEWS: BRVMArticle[] = [
 
       { type: 'paragraph', text: "Le tableau ci-dessous résume les trois indicateurs clés du compte de résultat, comparés au T1 2025 :" },
 
-      { type: 'table', caption: 'En millions FCFA · Source : Rapport d'activités T1 2026, NSIA Banque CI',
+      { type: 'table', caption: "En millions FCFA · Source : Rapport d'activités T1 2026, NSIA Banque CI",
         headers: ['Indicateur', 'T1 2026', 'T1 2025', 'Variation', 'En %'],
         rows: [
           ['Produit Net Bancaire (PNB)', '28 615', '22 402', '+6 213', '+28%'],
