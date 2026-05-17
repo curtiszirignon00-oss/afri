@@ -14,7 +14,6 @@ interface BadgeShareModalProps {
     unlockedDate?: string;
 }
 
-const SITE_URL = 'https://africbourse.com';
 const REGISTER_URL = 'https://africbourse.com/register';
 
 const RARITY_LABELS: Record<string, string> = {

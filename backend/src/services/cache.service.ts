@@ -85,7 +85,7 @@ export async function cacheInvalidatePattern(pattern: string): Promise<void> {
     let cursor = 0;
     do {
       const result = await redis.scan(cursor, { match: pattern, count: 100 });
-      cursor = result[0];
+      cursor = parseInt(result[0], 10);
       const keys = result[1];
       if (keys.length > 0) {
         await Promise.all(keys.map((key) => redis.del(key)));

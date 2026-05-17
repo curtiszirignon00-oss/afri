@@ -10,6 +10,7 @@ import {
   generateQuiz,
   StockData,
   Message,
+  PortfolioHolding,
 } from '../services/ai-coach.service';
 import { UserContext, buildAnalystPrompt, TutorUserContext, buildTutorSystemPrompt } from '../ai/systemPrompt';
 import { getUserContext } from '../ai/userContext';
@@ -74,7 +75,7 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
 
     trackAICall({
       userId: req.user!.id,
-      sessionId: req.id ?? req.ip ?? 'unknown',
+      sessionId: String(req.id ?? req.ip ?? 'unknown'),
       endpoint: 'tutor',
       provider: 'groq',
       responseTimeMs,
@@ -192,7 +193,7 @@ export async function coachIA(req: AuthenticatedRequest, res: Response, next: Ne
     const safeReply = postProcessResponse(result.text || 'Désolé, je n\'ai pas pu générer de réponse.');
 
     // 5. Analytics (fire-and-forget)
-    const sessionId = req.id ?? req.ip ?? 'unknown';
+    const sessionId = String(req.id ?? req.ip ?? 'unknown');
     trackAICall({
       userId: req.user!.id,
       sessionId,
@@ -507,7 +508,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
 
     trackAICall({
       userId: req.user!.id,
-      sessionId: req.id ?? req.ip ?? 'unknown',
+      sessionId: String(req.id ?? req.ip ?? 'unknown'),
       endpoint: 'analyst',
       provider: 'groq',
       responseTimeMs,
@@ -664,7 +665,7 @@ export async function portfolioAdvisorIA(req: AuthenticatedRequest, res: Respons
 
     trackAICall({
       userId: req.user!.id,
-      sessionId: req.id ?? req.ip ?? 'unknown',
+      sessionId: String(req.id ?? req.ip ?? 'unknown'),
       endpoint: 'portfolio',
       provider: 'groq',
       responseTimeMs,
@@ -696,7 +697,7 @@ export async function aiFeedbackHandler(req: AuthenticatedRequest, res: Response
       return res.status(400).json({ success: false, message: 'messageId et rating (positive|negative) sont requis.' });
     }
 
-    const sessionId = req.id ?? req.ip ?? 'unknown';
+    const sessionId = String(req.id ?? req.ip ?? 'unknown');
     await trackAIFeedback({
       userId: req.user!.id,
       sessionId,

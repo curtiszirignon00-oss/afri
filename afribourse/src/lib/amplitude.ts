@@ -44,6 +44,10 @@ export function trackLogin(method = 'email') {
   amplitude.track('Login', { method });
 }
 
+export function trackLogout() {
+  amplitude.track('Logout');
+}
+
 // ── Navigation ────────────────────────────────────────────────────────────────
 
 export function trackPageView(pageName: string, params: Record<string, unknown> = {}) {

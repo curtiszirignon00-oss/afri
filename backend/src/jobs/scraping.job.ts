@@ -136,7 +136,7 @@ async function checkPriceAlerts() {
                             await notifyPriceAlert(
                                 alert.userId,
                                 alert.stock_ticker,
-                                stock.name || alert.stock_ticker,
+                                stock.company_name || alert.stock_ticker,
                                 currentPrice,
                                 alert.target_price,
                                 alert.alert_type as 'ABOVE' | 'BELOW'

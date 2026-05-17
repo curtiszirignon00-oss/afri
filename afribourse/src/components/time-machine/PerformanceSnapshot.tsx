@@ -6,7 +6,7 @@ interface StepPerf {
   perfCapital: number;
   perfTotal: number;
   cagr?: number;
-  byTicker?: Array<{ ticker: string; qty: number; prix: number; valeur: number; gain: number; gainPct: number }>;
+  byTicker?: Array<{ ticker: string; qty: number; cours: number; valeur: number; dividendesCumules: number; pnl: number }>;
 }
 
 interface MarketMove {
@@ -79,7 +79,7 @@ function CoursMove({ move, held }: { move: MarketMove; held: boolean }) {
   );
 }
 
-export default function PerformanceSnapshot({ perf, year, capital, prevYear, marketEvolution = [] }: Props) {
+export default function PerformanceSnapshot({ perf, year, capital: _capital, prevYear, marketEvolution = [] }: Props) {
   const heldTickers = new Set((perf.byTicker ?? []).filter(r => r.qty > 0).map(r => r.ticker));
 
   return (
@@ -164,8 +164,8 @@ export default function PerformanceSnapshot({ perf, year, capital, prevYear, mar
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {perf.byTicker.map(row => {
-                  const gainPos = (row.gain ?? 0) >= 0;
-                  const hasGain = row.gain !== undefined && row.gain !== null && row.gainPct !== undefined && row.gainPct !== null;
+                  const gainPos = (row.pnl ?? 0) >= 0;
+                  const hasGain = row.pnl !== undefined && row.pnl !== null;
                   return (
                     <tr key={row.ticker} className={`transition-colors ${hasGain ? (gainPos ? 'hover:bg-emerald-50/40' : 'hover:bg-red-50/40') : 'hover:bg-gray-50'}`}>
                       <td className="px-4 py-2.5 font-bold text-gray-900">{row.ticker}</td>
@@ -177,9 +177,8 @@ export default function PerformanceSnapshot({ perf, year, capital, prevYear, mar
                         {hasGain ? (
                           <div className="flex flex-col items-end gap-0.5">
                             <span className={`text-xs font-bold tabular-nums ${gainPos ? 'text-emerald-600' : 'text-red-500'}`}>
-                              {gainPos ? '+' : ''}{Math.round(row.gain).toLocaleString('fr-FR')} F
+                              {gainPos ? '+' : ''}{Math.round(row.pnl).toLocaleString('fr-FR')} F
                             </span>
-                            <PerfPill value={row.gainPct} />
                           </div>
                         ) : (
                           <span className="text-xs text-gray-300">—</span>

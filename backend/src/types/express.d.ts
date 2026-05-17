@@ -29,14 +29,10 @@ declare global {
                 level: number;
                 totalXP: number;
                 unlockedFeatures: string[];
-                nextFeature: string | null;
+                nextFeature: import('../middlewares/level.middleware').LevelRequirement | null;
             };
             // Posé par challenge.middleware (validateTradingHours / checkChallengeEnrollment)
-            challengeStatus?: {
-                enrolled: boolean;
-                challengeId?: string;
-                [key: string]: unknown;
-            };
+            challengeStatus?: import('../services/challenge.service').ChallengeStatus;
             // Posé par express-rate-limit
             rateLimit?: {
                 limit: number;

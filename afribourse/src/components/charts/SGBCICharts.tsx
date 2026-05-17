@@ -256,8 +256,8 @@ export function ChartDiv() {
           <YAxis yAxisId="left" domain={[0, 3200]} tick={tickStyle} axisLine={false} tickLine={false} tickFormatter={v => v.toLocaleString('fr-FR')} />
           <YAxis yAxisId="right" orientation="right" domain={[0, 100]} tick={tickStyle} axisLine={false} tickLine={false} tickFormatter={pctFmt} />
           <Tooltip
-            formatter={(v: any, name: string) =>
-              name === 'Dividende' ? [`${Number(v).toLocaleString('fr-FR')} FCFA`, name] : [`${v}%`, name]
+            formatter={(v: any, name: string | undefined) =>
+              name === 'Dividende' ? [`${Number(v).toLocaleString('fr-FR')} FCFA`, name] : [`${v}%`, name ?? '']
             }
           />
           <Bar yAxisId="left" dataKey="div" name="Dividende" fill={GREEN} radius={[3,3,0,0]} maxBarSize={50} />
@@ -393,7 +393,7 @@ export function ChartCFACPassif() {
           >
             {PASSIF_DATA.map((d, i) => <Cell key={i} fill={d.fill} />)}
           </Pie>
-          <Tooltip formatter={(v: any, name: string) => [Number(v).toLocaleString('fr-FR') + ' M FCFA', name]} />
+          <Tooltip formatter={(v: any, name: string | undefined) => [Number(v).toLocaleString('fr-FR') + ' M FCFA', name ?? '']} />
         </PieChart>
       </ResponsiveContainer>
     </ChartShell>

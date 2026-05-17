@@ -392,7 +392,7 @@ export async function claimReward(userId: string, rewardId: string) {
  * Applique une récompense selon son type
  */
 async function applyReward(userId: string, reward: any) {
-  const rewardData = reward.reward_data as Record<string, unknown>;
+  const rewardData = reward.reward_data as Record<string, any>;
 
   switch (reward.reward_type) {
     case 'virtual_cash':

@@ -1,5 +1,5 @@
 // src/components/challenge/EnrollmentModal.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useEnrollInChallenge, type EnrollmentData } from '../../hooks/useChallenge';
 import './EnrollmentModal.css';
 
@@ -200,7 +200,12 @@ export function EnrollmentModal({ isOpen, onClose, onSuccess }: EnrollmentModalP
 }
 
 // Sous-composant pour afficher une question
-function QuestionStep({ question, options, selected, onSelect }: any) {
+function QuestionStep({ question, options, selected, onSelect }: {
+    question: string;
+    options: { value: string | boolean; label: string }[];
+    selected: string | boolean | undefined;
+    onSelect: (value: string | boolean) => void;
+}) {
     return (
         <div className="question-step">
             <h3>{question}</h3>

@@ -2,7 +2,7 @@
 // Tableau de classement gamification (par XP)
 
 import { useState } from 'react';
-import { Trophy, Globe, MapPin, Users, Flame, Zap, Medal, Crown, Award } from 'lucide-react';
+import { Trophy, Globe, MapPin, Users, Flame, Zap, Medal, Crown } from 'lucide-react';
 import { LevelBadge } from './LevelBadge';
 import RareBadgeIcon from '../common/RareBadgeIcon';
 import type { GamificationLeaderboardResponse, GamificationLeaderboardEntry } from '../../types';

@@ -50,7 +50,7 @@ export function usePollingQuery<T>({
       }
     };
     pollChannel.addEventListener('message', onMessage);
-    return () => pollChannel.removeEventListener('message', onMessage);
+    return () => pollChannel?.removeEventListener('message', onMessage);
   }, [isLeader, queryClient, queryKey]);
 
   // Fallback : si BroadcastChannel n'est pas disponible, tous les onglets pollent normalement

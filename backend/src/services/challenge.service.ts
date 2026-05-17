@@ -1,6 +1,6 @@
 // src/services/challenge.service.ts
 import { prisma } from '../config/database';
-import type { WalletStatus } from '@prisma/client';
+import type { WalletStatus, Prisma } from '@prisma/client';
 
 // ============= TYPES =============
 
@@ -155,7 +155,7 @@ export async function enrollInChallenge(userId: string, data: EnrollmentData) {
                 contest_metadata: {
                     enrollmentAnswers: data,
                     enrollmentDate: new Date().toISOString(),
-                },
+                } as unknown as Prisma.InputJsonValue,
             },
         });
 

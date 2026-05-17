@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
@@ -429,7 +428,7 @@ export default function BilanFinal({
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value: number) => [`${fmt(value)} F`, '']}
+                      formatter={(value: number | undefined) => [`${fmt(value ?? 0)} F`, '']}
                       contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', fontSize: '11px' }}
                     />
                   </PieChart>

@@ -471,7 +471,6 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
                 className={`flex-1 min-w-[60px] rounded-lg px-2 py-2 text-center transition-all ${active ? 'ring-2 ring-offset-1' : ''}`}
                 style={{
                   background: z.bg, color: z.text,
-                  ringColor: z.text,
                   boxShadow: active ? `0 0 0 2px ${z.text}` : undefined,
                 }}>
                 <p className="text-[11px] font-semibold">{z.range}</p>

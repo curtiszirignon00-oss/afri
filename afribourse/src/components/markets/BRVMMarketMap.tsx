@@ -650,7 +650,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
                 }} />
 
                 {/* Web Share API (mobile/navigateur compatible) */}
-                {(navigator.share || navigator.canShare) && (
+                {(typeof navigator.share === 'function' || typeof navigator.canShare === 'function') && (
                   <button className="mm-share-item" onClick={handleNativeShare}>
                     <span className="mm-share-icon" style={{ background: 'rgba(14,165,233,0.15)' }}>📤</span>
                     <span>Partager via…</span>

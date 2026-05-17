@@ -8,7 +8,7 @@ import { LEVEL_FEATURES } from '../types/gamification.types';
 
 // ============= TYPES =============
 
-interface LevelRequirement {
+export interface LevelRequirement {
     minLevel: number;
     feature: string;
     description: string;

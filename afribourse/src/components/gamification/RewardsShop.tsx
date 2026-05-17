@@ -50,15 +50,15 @@ export function RewardsShop({
   // Trier: disponibles d'abord, puis par coût XP
   const sortedRewards = useMemo(() => {
     return [...filteredRewards].sort((a, b) => {
-      const aAffordable = userXP >= a.xp_cost ? 0 : 1;
-      const bAffordable = userXP >= b.xp_cost ? 0 : 1;
+      const aAffordable = userXP >= a.xp_required ? 0 : 1;
+      const bAffordable = userXP >= b.xp_required ? 0 : 1;
       if (aAffordable !== bAffordable) return aAffordable - bAffordable;
-      return a.xp_cost - b.xp_cost;
+      return a.xp_required - b.xp_required;
     });
   }, [filteredRewards, userXP]);
 
   // Stats
-  const affordableCount = rewards.filter(r => userXP >= r.xp_cost && r.is_available).length;
+  const affordableCount = rewards.filter(r => userXP >= r.xp_required && r.is_active).length;
 
   return (
     <div className={className}>

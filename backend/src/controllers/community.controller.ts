@@ -1,5 +1,6 @@
 // src/controllers/community.controller.ts
 import { Request, Response } from 'express';
+import { CommunityMemberRole } from '@prisma/client';
 import * as communityService from '../services/community.service';
 import { parsePagination } from '../utils/pagination.util';
 
@@ -236,7 +237,7 @@ export async function getCommunityMembers(req: AuthRequest, res: Response) {
     try {
         const { communityId } = req.params;
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
-        const role = req.query.role as string | undefined;
+        const role = req.query.role as CommunityMemberRole | undefined;
 
         const result = await communityService.getCommunityMembers(communityId, page, limit, role);
         res.status(200).json({ success: true, ...result });

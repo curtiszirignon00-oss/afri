@@ -107,9 +107,8 @@ export function calculateStepPerformance(
       }
     }
 
-    const gain = coursAchat > 0 ? (prix - coursAchat) * (qty as number) : 0;
-    const gainPct = coursAchat > 0 ? ((prix - coursAchat) / coursAchat) * 100 : 0;
-    return { ticker, qty, prix, valeur, gain, gainPct };
+    const pnl = coursAchat > 0 ? (prix - coursAchat) * (qty as number) : 0;
+    return { ticker, qty, cours: prix, valeur, dividendesCumules: 0, pnl };
   });
 
   const pfVal = byTicker.reduce((s, t) => s + t.valeur, 0);
@@ -599,7 +598,7 @@ export async function importToSandbox(sessionId: string, userId: string) {
 
     // Try to get current market price
     const stock = await prisma.stock.findFirst({
-      where: { ticker: { equals: ticker, mode: 'insensitive' } },
+      where: { symbol: { equals: ticker, mode: 'insensitive' } },
     });
     const price = (stock as any)?.cours ?? getCours(scenario, scenario.years[lastStep], ticker);
     if (price <= 0 || quantity <= 0) continue;
@@ -632,10 +631,9 @@ export async function importToSandbox(sessionId: string, userId: string) {
       data: {
         portfolioId: portfolio.id,
         stock_ticker: ticker,
-        transaction_type: 'BUY',
+        type: 'BUY',
         quantity,
         price_per_share: price,
-        total_amount: quantity * price,
       },
     });
 
@@ -709,7 +707,7 @@ export async function saveUserFeedback(
       userFeedback: {
         ...feedback,
         submittedAt: new Date().toISOString(),
-      },
+      } as any,
     },
   });
 }

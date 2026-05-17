@@ -44,7 +44,7 @@ const POST_TYPE_LABELS: Record<string, { label: string; color: string }> = {
     ARTICLE: { label: 'Article', color: 'bg-gray-100 text-gray-700' },
 };
 
-export default function CommunityPostCard({ post, communityId, canModerate }: Props) {
+export default function CommunityPostCard({ post, communityId: _communityId, canModerate }: Props) {
     const { isLoggedIn, userProfile } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [showComments, setShowComments] = useState(false);

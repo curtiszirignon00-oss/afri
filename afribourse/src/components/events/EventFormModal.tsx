@@ -7,7 +7,6 @@ import {
     Video,
     MapPin,
     Users,
-    Link as LinkIcon,
     Save,
     Loader2,
     Globe,

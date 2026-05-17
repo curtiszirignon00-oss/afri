@@ -1,6 +1,6 @@
 // src/components/community/CommunityPostComposer.tsx
 import { useState } from 'react';
-import { Send, Image, Loader2, X } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useCreateCommunityPost, type PostType } from '../../hooks/useCommunity';
 

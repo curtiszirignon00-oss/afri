@@ -1,6 +1,8 @@
 // src/controllers/moderation.controller.ts
 import { Request, Response } from 'express';
+import { ReportStatus, ContentType, ReportReason, ModerationAction } from '@prisma/client';
 import * as moderationService from '../services/moderation.service';
+import { parsePagination } from '../utils/pagination.util';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -58,9 +60,9 @@ export async function getReports(req: AuthRequest, res: Response) {
         }
 
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 20);
-        const status = req.query.status as string | undefined;
-        const contentType = req.query.contentType as string | undefined;
-        const reason = req.query.reason as string | undefined;
+        const status = req.query.status as ReportStatus | undefined;
+        const contentType = req.query.contentType as ContentType | undefined;
+        const reason = req.query.reason as ReportReason | undefined;
 
         const result = await moderationService.getReports(page, limit, {
             status,
@@ -343,8 +345,8 @@ export async function getModerationLogs(req: AuthRequest, res: Response) {
 
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 50);
         const moderatorId = req.query.moderatorId as string;
-        const action = req.query.action as string | undefined;
-        const targetType = req.query.targetType as string | undefined;
+        const action = req.query.action as ModerationAction | undefined;
+        const targetType = req.query.targetType as ContentType | undefined;
 
         const result = await moderationService.getModerationLogs(page, limit, {
             moderatorId,

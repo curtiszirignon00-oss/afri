@@ -311,13 +311,13 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => onClose()} />
 
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
         {/* Header */}
         <div className={`bg-gradient-to-r ${webinar.gradient} px-6 py-5`}>
           <button
-            onClick={onClose}
+            onClick={() => onClose()}
             className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />

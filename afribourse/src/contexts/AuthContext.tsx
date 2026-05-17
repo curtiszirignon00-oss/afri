@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { apiClient, getIsAxiosRefreshing } from '../lib/api-client';
 import { setAuthToken, getAuthToken } from '../config/api';
 import * as amplitude from '@amplitude/unified';
+import { trackLogout } from '../lib/amplitude';
 import { metaPixelIdentify } from '../utils/metaPixel';
 
 // --- Types ---
@@ -248,6 +249,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(false);
       setUserProfile(null);
       setSessionExpired(false);
+      trackLogout();
+      amplitude.setUserId(undefined);
       amplitude.reset();
       setAuthToken(null);
     }

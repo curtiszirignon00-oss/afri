@@ -332,7 +332,7 @@ export const getAIFeedbackStats = async (req: AuthRequest, res: Response) => {
     // Par endpoint
     const byEndpoint: Record<string, { positive: number; negative: number; total: number }> = {};
     for (const f of feedbacks) {
-      const ep = ((f.metadata ?? {}) as Record<string, unknown>)?.endpoint ?? 'unknown';
+      const ep = String(((f.metadata ?? {}) as Record<string, unknown>)?.endpoint ?? 'unknown');
       if (!byEndpoint[ep]) byEndpoint[ep] = { positive: 0, negative: 0, total: 0 };
       byEndpoint[ep].total++;
       if (((f.metadata ?? {}) as Record<string, unknown>)?.rating === 'positive') byEndpoint[ep].positive++;
@@ -411,7 +411,7 @@ export const sendWebinarLaunchCampaign = async (req: AuthRequest, res: Response)
       }
     }
 
-    log.info({ sent, failed, total: realUsers.length }, '[CAMPAIGN] Webinar launch emails sent');
+    log.info('[CAMPAIGN] Webinar launch emails sent', { sent, failed, total: realUsers.length });
 
     return res.json({
       success: true,

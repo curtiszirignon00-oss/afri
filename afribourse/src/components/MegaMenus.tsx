@@ -1,7 +1,7 @@
 import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Newspaper, Globe, DollarSign, Eye, MessageCircle, Trophy, Award, Calendar, Users, ChevronRight, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/api';
 import { BRVM_NEWS } from '../data/brvm2026News';
 
@@ -70,14 +70,14 @@ export function NewsMegaMenu() {
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 3);
 
-  const NAV_CATS = [
+  const NAV_CATS: { label: string; icon: React.ElementType; bg: string; fg: string; isNew?: boolean }[] = [
     { label: 'Tout',          icon: Newspaper,  bg: 'bg-slate-100', fg: 'text-slate-600' },
     { label: 'Marchés',       icon: TrendingUp, bg: 'bg-blue-100',  fg: 'text-blue-600'  },
     { label: 'Analyse',       icon: BarChart3,  bg: 'bg-green-100', fg: 'text-green-600' },
     { label: 'Économie',      icon: Globe,      bg: 'bg-orange-100',fg: 'text-orange-600'},
     { label: 'Dividendes',    icon: DollarSign, bg: 'bg-teal-100',  fg: 'text-teal-600', isNew: true },
     { label: 'Résultats 2025',icon: BarChart3,  bg: 'bg-purple-100',fg: 'text-purple-600'},
-  ] as const;
+  ];
 
   return (
     <div className="w-full bg-white shadow-xl border-t border-gray-200 z-40">
