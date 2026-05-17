@@ -54,9 +54,9 @@ export const BRVM_NEWS: BRVMArticle[] = [
       "Rapport d'activités T1 2026 — Alios Finance CI (données non certifiées)",
       "BCEAO — Normes prudentielles Bâle III / UEMOA",
     ],
-    tags: ['SAFCA', 'T1 2026', 'leasing', 'crédit-bail', 'solvabilité', 'résultats', 'analyse éducative'],
+    tags: ['SAFC', 'T1 2026', 'leasing', 'crédit-bail', 'solvabilité', 'résultats', 'analyse éducative'],
     tickers: [
-      { ticker: 'SAFCA', impact: 'Mixte', note: 'RN ×12 et PNB +29% — excellente performance opérationnelle, tempérée par une solvabilité globale à seulement 14 bps au-dessus du plancher réglementaire.' },
+      { ticker: 'SAFC', impact: 'Mixte', note: 'RN ×12 et PNB +29% — excellente performance opérationnelle, tempérée par une solvabilité globale à seulement 14 bps au-dessus du plancher réglementaire.' },
     ],
     richContent: [
       { type: 'disclaimer', text: "Les données du T1 2026 n'ont pas fait l'objet d'une certification par les commissaires aux comptes. Cet article est fourni à titre éducatif uniquement et ne constitue pas un conseil en investissement." },
