@@ -63,6 +63,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Apply patches
+        run: npx patch-package
+
       - name: Lint
         run: npm run lint
         continue-on-error: true # Lint warnings ne bloquent pas
