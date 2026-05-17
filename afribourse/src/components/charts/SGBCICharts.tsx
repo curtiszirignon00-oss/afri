@@ -401,6 +401,122 @@ export function ChartCFACPassif() {
 }
 
 // ── Dispatch par chartId ──────────────────────────────────────────────────────
+// ── Palette NSIA Banque CI ────────────────────────────────────────────────────
+const NSIA_NAVY_MID  = '#185FA5';
+const NSIA_BLUE_LIGHT = '#B5D4F4';
+const NSIA_GREEN     = '#1D9E75';
+const NSIA_AMBER     = '#BA7517';
+const NSIA_YEARS     = ['T1 20','T1 21','T1 22','T1 23','T1 24','T1 25','T1 26'];
+
+function nsiaCellFill(i: number, total: number) {
+  return i === total - 1 ? NSIA_NAVY_MID : NSIA_BLUE_LIGHT;
+}
+
+export function ChartNSBCPnb() {
+  const data = NSIA_YEARS.map((yr, i) => ({ yr, v: [15.8, 17.0, 17.0, 21.4, 21.8, 22.4, 28.6][i] }));
+  return (
+    <ChartShell
+      title="Produit Net Bancaire — T1 2020 à T1 2026 (Mds FCFA)"
+      legend={[
+        { color: NSIA_BLUE_LIGHT, label: 'T1 antérieurs' },
+        { color: NSIA_NAVY_MID,  label: 'T1 2026 — record' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis domain={[12, 32]} tickFormatter={v => `${v}`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" Mds" />} />
+          <Bar dataKey="v" name="PNB" radius={[3,3,0,0]} maxBarSize={44}>
+            {data.map((_, i) => <Cell key={i} fill={nsiaCellFill(i, data.length)} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCRn() {
+  const data = NSIA_YEARS.map((yr, i) => ({ yr, v: [2.5, 3.3, 3.7, 6.6, 7.1, 7.1, 10.9][i] }));
+  return (
+    <ChartShell
+      title="Résultat Net — T1 par année (Mds FCFA)"
+      legend={[
+        { color: NSIA_BLUE_LIGHT, label: 'T1 antérieurs' },
+        { color: NSIA_NAVY_MID,  label: 'T1 2026 — record' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis domain={[0, 12]} tickFormatter={v => `${v}`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" Mds" />} />
+          <Bar dataKey="v" name="Résultat Net" radius={[3,3,0,0]} maxBarSize={44}>
+            {data.map((_, i) => <Cell key={i} fill={nsiaCellFill(i, data.length)} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCMarge() {
+  const data = NSIA_YEARS.map((yr, i) => ({ yr, v: [15.9, 19.5, 21.6, 30.7, 32.5, 31.8, 38.1][i] }));
+  return (
+    <ChartShell
+      title="Marge Nette — T1 par année · Résultat net / PNB (%)"
+      legend={[{ color: NSIA_GREEN, label: 'Marge nette' }]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis domain={[10, 42]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="%" />} />
+          <Line
+            type="monotone" dataKey="v" name="Marge nette"
+            stroke={NSIA_GREEN} strokeWidth={2.5}
+            dot={(props: any) => {
+              const isLast = props.index === data.length - 1;
+              return <circle key={props.cx} cx={props.cx} cy={props.cy} r={isLast ? 6 : 3} fill={NSIA_GREEN} stroke="#fff" strokeWidth={2} />;
+            }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCBilan() {
+  const data = NSIA_YEARS.map((yr, i) => ({
+    yr,
+    credits: [829, 880, 960, 1183, 1270, 1574, 1744][i],
+    depots:  [813, 919, 1050, 1283, 1422, 1783, 2163][i],
+  }));
+  return (
+    <ChartShell
+      title="Crédits & Dépôts clientèle — T1 2020 à T1 2026 (Mds FCFA)"
+      legend={[
+        { color: NSIA_NAVY_MID, label: 'Crédits nets' },
+        { color: NSIA_AMBER,   label: 'Dépôts clientèle', dashed: true },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis domain={[700, 2400]} tickFormatter={v => `${v}`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" Mds" />} />
+          <Line type="monotone" dataKey="credits" name="Crédits nets"     stroke={NSIA_NAVY_MID} strokeWidth={2.5} dot={{ r: 4, fill: NSIA_NAVY_MID, stroke: '#fff', strokeWidth: 2 }} />
+          <Line type="monotone" dataKey="depots"  name="Dépôts clientèle" stroke={NSIA_AMBER}    strokeWidth={2.5} strokeDasharray="5 3" dot={{ r: 4, fill: NSIA_AMBER, stroke: '#fff', strokeWidth: 2 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
 const CHART_MAP: Record<string, React.ComponentType> = {
   'sgbci-annuel':      ChartAnnuel,
   'sgbci-rn-t1':       ChartRNT1,
@@ -412,6 +528,10 @@ const CHART_MAP: Record<string, React.ComponentType> = {
   'cfac-cout-risque':  ChartCFACCoutRisque,
   'cfac-actif':        ChartCFACActif,
   'cfac-passif':       ChartCFACPassif,
+  'nsbc-pnb':          ChartNSBCPnb,
+  'nsbc-rn':           ChartNSBCRn,
+  'nsbc-marge':        ChartNSBCMarge,
+  'nsbc-bilan':        ChartNSBCBilan,
 };
 
 export function ChartById({ chartId }: { chartId: string }) {

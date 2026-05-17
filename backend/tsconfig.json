@@ -12,8 +12,7 @@
     "noEmitOnError": false,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node10",
-    "ignoreDeprecations": "6.0",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "types": ["node"]

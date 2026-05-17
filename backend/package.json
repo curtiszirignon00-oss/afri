@@ -4,8 +4,9 @@
   "description": "node-express-typescript-boilerplate",
   "main": "dist/index.js",
   "scripts": {
-    "import-fundamentals-2025": "ts-node scripts/importFundamentals2025.ts",
-    "calc-missing-ratios": "ts-node scripts/calculateMissingRatios.ts",
+    "import-fundamentals-2025": "tsx scripts/importFundamentals2025.ts",
+    "import-fundamentals-nsbc": "tsx scripts/importFundamentalsNSBC.ts",
+    "calc-missing-ratios": "tsx scripts/calculateMissingRatios.ts",
     "init-challenge": "ts-node src/scripts/init-challenge-classement.ts",
     "update-streaks": "ts-node src/scripts/update-leaderboard-streaks.ts",
     "update-roi-ranks": "ts-node src/scripts/update-roi-ranks.ts",
@@ -139,7 +140,7 @@
     "@vitest/coverage-v8": "^4.0.18",
     "jsdom": "^27.2.0",
     "mammoth": "^1.12.0",
-    "tsx": "^4.20.6",
+    "tsx": "^4.22.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

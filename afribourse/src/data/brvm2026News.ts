@@ -1,5 +1,5 @@
 // src/data/brvm2026News.ts
-// Intelligence de marché BRVM 2026 — 12 articles
+// Intelligence de marché BRVM 2026 — 16 articles
 // Source : Publications officielles BRVM · Usage éducatif uniquement
 
 export type ImpactType = "Positif" | "Négatif" | "Neutre" | "Mixte";
@@ -41,6 +41,189 @@ export interface BRVMArticle {
 }
 
 export const BRVM_NEWS: BRVMArticle[] = [
+  // ── NSBC — NSIA Banque CI T1 2026 ──────────────────────────────────────────
+  {
+    id: "nsbc-analyse-t1-2026",
+    category: "Analyse",
+    isFeatured: true,
+    image_url: "/images/nsia-building.jpg",
+    title: "NSIA Banque CI affiche une performance record au premier trimestre 2026",
+    summary: "Résultat net +53%, marge nette à 38,1% — un niveau jamais atteint sur un T1. NSIA Banque CI franchit pour la première fois la barre des 10 milliards de bénéfice net sur un seul trimestre. Décryptage complet des chiffres et leçons de finance bancaire.",
+    publishedAt: "2026-05-16T08:00:00Z",
+    content: "",
+    sources: [
+      "Rapport d'activités T1 2026 — NSIA Banque CI (données provisoires, non certifiées par les CAC)",
+      "BCEAO — Normes prudentielles UEMOA",
+    ],
+    tags: ['NSBC', 'NSIA-Banque', 'T1 2026', 'banque', 'résultats', 'marge nette', 'PNB', 'analyse éducative'],
+    tickers: [
+      { ticker: 'NSBC', impact: 'Positif', note: 'RN +53%, PNB +28%, marge nette record de 38,1% — performance historiquement forte, avec une vigilance sur la dépendance aux revenus titres et la contraction séquentielle du bilan.' },
+    ],
+    richContent: [
+      { type: 'disclaimer', text: "Les données bilantaires au 31/12/2025 sont provisoires et en cours de certification par les Commissaires aux comptes. Cet article est fourni à titre éducatif uniquement et ne constitue pas un conseil en investissement." },
+
+      { type: 'key-stats', items: [
+        { label: 'Résultat net T1 2026', value: '10,9 Mds FCFA (+53%)' },
+        { label: 'Produit Net Bancaire', value: '28,6 Mds FCFA (+28%)' },
+        { label: 'Marge nette', value: '38,1% — record historique T1' },
+      ]},
+
+      { type: 'heading', level: 1, text: "01 · Qui est NSIA Banque CI et pourquoi ces résultats comptent" },
+
+      { type: 'callout', variant: 'info', title: "NSIA Banque CI — Présentation", paragraphs: [
+        "NSIA Banque CI est une banque commerciale ivoirienne cotée sur la BRVM (Bourse Régionale des Valeurs Mobilières de l'UEMOA), filiale du Groupe NSIA. Avec un capital social de 24,7 milliards FCFA, elle est l'une des banques de référence en Côte d'Ivoire, opérant sous l'agrément BCEAO n° A 0042 Q.",
+      ]},
+
+      { type: 'paragraph', text: "Chaque trimestre, les banques cotées sur la BRVM sont tenues de publier un rapport d'activités résumant leur performance. Ces rapports sont une fenêtre précieuse pour les investisseurs, les analystes et toute personne souhaitant comprendre la santé d'un établissement financier. Celui du T1 2026, publié le 30 avril 2026, révèle des chiffres exceptionnels — mais qui méritent d'être décortiqués." },
+
+      { type: 'callout', variant: 'note', title: "T1 2026 — Période couverte", paragraphs: [
+        "Le rapport couvre l'activité du 1er janvier au 31 mars 2026. Les données bilantaires comparatives au 31/12/2025 sont provisoires et en cours de certification par les Commissaires aux comptes.",
+      ]},
+
+      { type: 'heading', level: 1, text: "02 · Le compte de résultat : une progression sur tous les fronts" },
+
+      { type: 'paragraph', text: "Le tableau ci-dessous résume les trois indicateurs clés du compte de résultat, comparés au T1 2025 :" },
+
+      { type: 'table', caption: 'En millions FCFA · Source : Rapport d'activités T1 2026, NSIA Banque CI',
+        headers: ['Indicateur', 'T1 2026', 'T1 2025', 'Variation', 'En %'],
+        rows: [
+          ['Produit Net Bancaire (PNB)', '28 615', '22 402', '+6 213', '+28%'],
+          ['Résultat avant impôts',       '11 830',  '7 940', '+3 890', '+49%'],
+          ['Résultat net',                '10 912',  '7 138', '+3 774', '+53%'],
+        ],
+      },
+
+      { type: 'callout', variant: 'ok', title: "Ce que ça signifie concrètement", paragraphs: [
+        "En un seul trimestre (3 mois), NSIA Banque CI a généré 10,9 milliards FCFA de bénéfice net — soit l'équivalent de ce que la banque gagnait en une année entière en 2020. C'est la mesure du chemin parcouru en 6 ans.",
+      ]},
+
+      { type: 'heading', level: 2, text: "Le PNB : le chiffre d'affaires d'une banque" },
+
+      { type: 'callout', variant: 'note', title: "Produit Net Bancaire (PNB)", paragraphs: [
+        "Le PNB est l'équivalent bancaire du chiffre d'affaires. Il représente la richesse créée par l'activité de la banque, principalement via deux sources : la marge d'intérêt (différence entre ce que la banque gagne sur les crédits et ce qu'elle paie sur les dépôts) et les commissions (services, transferts, change). En T1 2026, on y ajoute les revenus sur titres.",
+      ]},
+
+      { type: 'paragraph', text: "Le PNB bondit à 28,6 milliards FCFA (+28%), un niveau jamais atteint sur un premier trimestre. La direction attribue cette croissance principalement à « la hausse des revenus générés par l'activité titres » — c'est-à-dire les gains réalisés sur le portefeuille de placements obligataires et autres titres détenus par la banque." },
+
+      { type: 'chart', chartId: 'nsbc-pnb' },
+      { type: 'chart', chartId: 'nsbc-rn' },
+      { type: 'chart', chartId: 'nsbc-marge' },
+
+      { type: 'heading', level: 1, text: "03 · Comprendre la marge nette bancaire : la clé de lecture" },
+
+      { type: 'paragraph', text: "La marge nette est l'un des ratios les plus révélateurs de la performance d'une banque. Elle mesure quelle part du PNB (chiffre d'affaires) se transforme réellement en bénéfice net après tous les coûts." },
+
+      { type: 'highlight', text: "Marge nette = Résultat net ÷ PNB × 100 · T1 2026 = 10 912 ÷ 28 615 × 100 = 38,1%" },
+
+      { type: 'paragraph', text: "Pour chaque tranche de 100 FCFA de PNB généré, NSIA Banque CI en conserve désormais 38,1 FCFA en bénéfice net. C'était 31,8 FCFA un an plus tôt. Cette progression traduit deux choses simultanées : une croissance du PNB plus rapide que celle des charges, et une amélioration du coût du risque." },
+
+      { type: 'heading', level: 2, text: "La progression historique de la marge nette" },
+
+      { type: 'table', caption: 'Marge nette T1 2020–2026 · Résultat net / PNB',
+        headers: ['Année', 'Marge nette'],
+        rows: [
+          ['T1 2020', '15,9%'],
+          ['T1 2021', '19,5%'],
+          ['T1 2022', '21,6%'],
+          ['T1 2023', '30,7%'],
+          ['T1 2024', '32,5%'],
+          ['T1 2025', '31,8%'],
+          ['T1 2026', '38,1% ↑ RECORD'],
+        ],
+      },
+
+      { type: 'callout', variant: 'info', title: "Repère sectoriel", paragraphs: [
+        "Dans le secteur bancaire africain, une marge nette supérieure à 20% est déjà considérée comme solide. À 38%, NSIA Banque CI se positionne parmi les établissements les plus profitables de la zone UEMOA sur ce trimestre.",
+      ]},
+
+      { type: 'heading', level: 1, text: "04 · Le bilan : une contraction séquentielle à replacer dans son contexte" },
+
+      { type: 'paragraph', text: "Si le compte de résultat est brillant, le bilan raconte une histoire plus nuancée. Les encours de crédits et de dépôts baissent de 4% par rapport à décembre 2025." },
+
+      { type: 'table', caption: '* Données 31/12/2025 provisoires, non certifiées par les CAC',
+        headers: ['Indicateur bilan', '31/03/2026', '31/12/2025*', '31/03/2025', 'Var. séq.'],
+        rows: [
+          ['Crédits nets clientèle', '1 744 Mds', '1 817 Mds', '1 574 Mds', '−4%'],
+          ['Dépôts clientèle',       '2 163 Mds', '2 242 Mds', '1 783 Mds', '−4%'],
+          ['Total bilan',            '3 013 Mds', '3 070 Mds', '2 562 Mds', '−2%'],
+        ],
+      },
+
+      { type: 'callout', variant: 'note', title: "Variation séquentielle vs glissement annuel", paragraphs: [
+        "La variation séquentielle compare la valeur à la fin du trimestre précédent (ici déc. 2025). Le glissement annuel compare au même trimestre de l'année précédente (ici mars 2025). En glissement annuel, les crédits progressent de +10,8% et les dépôts de +21,3% — la tendance de fond reste très positive.",
+      ]},
+
+      { type: 'paragraph', text: "La contraction séquentielle est un phénomène classique et structurel en début d'année pour les banques de la zone UEMOA : les entreprises remboursent leurs lignes de crédit de fin d'année en janvier-février, et les dépôts professionnels liés aux clôtures comptables reflux aussi. Ce n'est pas un signal d'alarme en soi — mais il faudra surveiller la dynamique au T2 2026." },
+
+      { type: 'chart', chartId: 'nsbc-bilan' },
+
+      { type: 'heading', level: 1, text: "05 · Ce qui explique la performance : moteurs et zones de vigilance" },
+
+      { type: 'callout', variant: 'ok', title: "Moteurs de la performance", paragraphs: [
+        "→ Revenus sur activité titres en forte hausse — driver principal du PNB selon la direction.",
+        "→ Commissions en progression — transferts, services, change.",
+        "→ Coût net du risque en baisse — moins de provisions pour créances douteuses.",
+        "→ Levier opérationnel positif — PNB +28% mais résultat net +53% : les charges croissent moins vite que le PNB.",
+        "→ Marge d'intérêt soutenue par les crédits — encours en hausse de +11% en glissement annuel.",
+      ]},
+
+      { type: 'callout', variant: 'warn', title: "Points de vigilance", paragraphs: [
+        "→ Dépendance aux revenus titres — moins récurrents que la marge d'intérêt sur crédits.",
+        "→ Contraction bilan séquentielle (−4%) — crédits et dépôts en recul vs déc. 2025.",
+        "→ Données 31/12/2025 provisoires — non certifiées par les CAC, à confirmer.",
+        "→ Total bilan sous 3 100 Mds — recul de 2% vs fin 2025, à surveiller au T2.",
+        "→ Décomposition PNB non détaillée — marge d'intérêt vs titres vs commissions non ventilés dans le rapport T1.",
+      ]},
+
+      { type: 'callout', variant: 'warn', title: "La question clé pour les trimestres suivants", paragraphs: [
+        "La croissance du PNB est principalement portée par les revenus titres, qui sont par nature plus volatils que la marge d'intérêt sur crédits. Si les conditions de marché obligataire se normalisent, la banque devra compenser par la croissance de ses encours de crédits. C'est l'indicateur à surveiller au T2 et T3 2026.",
+      ]},
+
+      { type: 'heading', level: 1, text: "06 · Lexique bancaire : les termes essentiels" },
+
+      { type: 'glossary', items: [
+        { term: 'PNB — Produit Net Bancaire', definition: "Équivalent du chiffre d'affaires pour une banque. Somme de la marge d'intérêt, des commissions et des revenus sur titres." },
+        { term: "Marge d'intérêt", definition: "Différence entre les intérêts perçus sur les crédits accordés et les intérêts versés sur les dépôts collectés. C'est le cœur du métier bancaire." },
+        { term: 'Coût du risque', definition: "Provisions constituées par la banque pour couvrir les créances susceptibles de ne pas être remboursées. Une baisse du coût du risque améliore le résultat." },
+        { term: 'Résultat avant impôts', definition: "PNB diminué des charges de gestion (personnel, loyers, amortissements) et du coût du risque, avant application de l'impôt sur les sociétés." },
+        { term: 'Encours de crédits', definition: "Total des prêts accordés à la clientèle et non encore remboursés à une date donnée. Indicateur clé de l'activité commerciale de la banque." },
+        { term: 'Levier opérationnel', definition: "Capacité à faire croître le résultat plus vite que le PNB, grâce à une base de coûts fixes bien maîtrisée. Positif quand Δrésultat > ΔPNB." },
+        { term: 'BCEAO', definition: "Banque Centrale des États de l'Afrique de l'Ouest, banque centrale de la zone UEMOA (8 pays). Elle fixe la politique monétaire et régule les banques commerciales." },
+        { term: 'BRVM', definition: "Bourse Régionale des Valeurs Mobilières, marché boursier commun aux 8 pays de l'UEMOA, basé à Abidjan. NSIA Banque CI y est cotée sous le ticker NSBC." },
+      ]},
+
+      { type: 'heading', level: 1, text: "07 · Ce qu'annonce la direction pour la suite de 2026" },
+
+      { type: 'paragraph', text: "Dans la section « Perspectives 2026 » de son rapport, NSIA Banque CI identifie cinq axes stratégiques pour maintenir cette dynamique :" },
+
+      { type: 'callout', variant: 'info', title: "Plan « Altitude 22-26 » — Axes 2026", paragraphs: [
+        "1. Expérience client — Amélioration continue des services bancaires et de la relation client.",
+        "2. Sécurité numérique — Renforcement de la cybersécurité dans un contexte de digitalisation accélérée.",
+        "3. Digitalisation des services — Extension des canaux digitaux et de la banque mobile.",
+        "4. Durabilité & inclusion financière — Engagement ESG et accès aux services bancaires pour les populations non bancarisées.",
+        "5. Gestion prudente des risques et des charges — Maintien du cost-to-income à un niveau compétitif.",
+      ]},
+
+      { type: 'paragraph', text: "Ces orientations s'inscrivent dans la continuité du plan stratégique « Altitude 22-26 » lancé en 2022. La banque a systématiquement dépassé ses objectifs depuis 2023, ce qui donne de la crédibilité à ces engagements." },
+
+      { type: 'heading', level: 1, text: "08 · Ce qu'il faut retenir de ce rapport T1 2026" },
+
+      { type: 'paragraph', text: "Les résultats du premier trimestre 2026 de NSIA Banque CI sont historiquement forts sur le plan du compte de résultat. La banque franchit pour la première fois la barre des 10 milliards de résultat net sur un seul trimestre, avec une marge nette record de 38,1%." },
+
+      { type: 'paragraph', text: "La lecture est cependant plus complexe côté bilan, où la contraction séquentielle des encours et le caractère provisoire des données comparatives invitent à la prudence. La durabilité de la performance dépendra en grande partie de la capacité à maintenir les revenus titres ou à compenser leur potentielle normalisation par une accélération de l'activité de crédit." },
+
+      { type: 'paragraph', text: "Pour les investisseurs BRVM suivant le titre NSBC, ce rapport constitue un signal fondamentalement positif, à confirmer dans les publications du T2 2026 et dans les comptes annuels certifiés." },
+
+      { type: 'verdict', title: "Verdict AfriBourse", items: [
+        { label: 'Rentabilité', text: "Excellente — marge nette 38,1%, résultat net ×1,5 en un an. Levier opérationnel clairement positif." },
+        { label: 'Revenus', text: "PNB record à 28,6 Mds mais portés en partie par des revenus titres moins récurrents. À confirmer au T2." },
+        { label: 'Bilan', text: "Contraction séquentielle de 4% classique en début d'année. En glissement annuel la dynamique reste forte (+11% crédits, +21% dépôts)." },
+        { label: 'Risque prudentiel', text: "Pas d'alerte détectée. Données au 31/12/2025 provisoires — certification CAC attendue." },
+        { label: 'Horizon', text: "Signal positif pour le titre NSBC, à confirmer T2 2026. Surveiller la décomposition du PNB et la reprise des encours de crédits." },
+      ]},
+    ],
+  },
+  // ── SAFCA — Alios Finance CI T1 2026 ────────────────────────────────────────
   {
     id: "cfac-analyse-t1-2026",
     category: "Analyse",
