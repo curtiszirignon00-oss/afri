@@ -318,7 +318,7 @@ export const BRVM_NEWS: BRVMArticle[] = [
     id: "nsbc-analyse-t1-2026",
     category: "Analyse",
     isFeatured: true,
-    image_url: "/images/nsia-cover.jpg",
+    image_url: "/images/nsia-building.jpg",
     title: "NSIA Banque CI affiche une performance record au premier trimestre 2026",
     summary: "Résultat net +53%, marge nette à 38,1% — un niveau jamais atteint sur un T1. NSIA Banque CI franchit pour la première fois la barre des 10 milliards de bénéfice net sur un seul trimestre. Décryptage complet des chiffres et leçons de finance bancaire.",
     publishedAt: "2026-05-16T08:00:00Z",
