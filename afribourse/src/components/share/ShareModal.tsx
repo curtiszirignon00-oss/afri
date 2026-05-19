@@ -15,17 +15,27 @@ interface ShareModalProps {
     isOpen: boolean;
     onClose: () => void;
     shareData: ShareData | null;
+    shareUrl?: string;
 }
 
 const SITE_URL = 'https://africbourse.com';
 
-export default function ShareModal({ isOpen, onClose, shareData }: ShareModalProps) {
+export default function ShareModal({ isOpen, onClose, shareData, shareUrl }: ShareModalProps) {
     const [customMessage, setCustomMessage] = useState('');
     const [isDownloading, setIsDownloading] = useState(false);
     const { mutate: createPost, isPending } = useCreatePost();
     const cardRef = useRef<HTMLDivElement>(null);
 
     if (!isOpen || !shareData) return null;
+
+    // Détermine l'URL précise selon le type de partage
+    const pageUrl = shareUrl ?? (() => {
+        if (shareData.type === 'POSITION') {
+            const ticker = (shareData.data as { ticker?: string }).ticker;
+            if (ticker) return `${SITE_URL}/stock/${ticker}`;
+        }
+        return `${SITE_URL}/dashboard`;
+    })();
 
     const { content: generatedContent } = formatShareData(shareData.type, shareData.data);
     const shareText = customMessage.trim()
@@ -81,7 +91,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
         if (!cardRef.current) return;
         setIsDownloading(true);
         try {
-            const shared = await shareCardNative(cardRef.current, shareText + `\n\n${SITE_URL}`);
+            const shared = await shareCardNative(cardRef.current, shareText + `\n\n${pageUrl}`);
             if (shared) trackShare(shareData.type.toLowerCase(), '', 'native');
             if (!shared) {
                 toast.error('Le partage natif n\'est pas supporté sur cet appareil');
@@ -95,7 +105,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
 
     const handleShareWhatsApp = async () => {
         // Open WhatsApp with text
-        const text = encodeURIComponent(shareText + `\n\n${SITE_URL}`);
+        const text = encodeURIComponent(shareText + `\n\n${pageUrl}`);
         window.open(`https://wa.me/?text=${text}`, '_blank');
         // Also download the card image so user can attach it
         if (cardRef.current) {
@@ -110,7 +120,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
 
     const handleShareX = async () => {
         const text = encodeURIComponent(shareText);
-        const url = encodeURIComponent(SITE_URL);
+        const url = encodeURIComponent(pageUrl);
         window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
         // Download image for manual attachment
         if (cardRef.current) {
@@ -119,12 +129,12 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
     };
 
     const handleShareFacebook = () => {
-        const url = encodeURIComponent(SITE_URL);
+        const url = encodeURIComponent(pageUrl);
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
     };
 
     const handleShareLinkedIn = () => {
-        const url = encodeURIComponent(SITE_URL);
+        const url = encodeURIComponent(pageUrl);
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
     };
 
@@ -140,7 +150,7 @@ export default function ShareModal({ isOpen, onClose, shareData }: ShareModalPro
             }
         } catch {
             // Fallback: copy text
-            await navigator.clipboard.writeText(shareText + `\n\n${SITE_URL}`);
+            await navigator.clipboard.writeText(shareText + `\n\n${pageUrl}`);
             toast.success('Texte copié dans le presse-papier !');
         }
     };

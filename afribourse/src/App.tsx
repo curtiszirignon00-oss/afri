@@ -1,4 +1,5 @@
 // src/App.tsx
+import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -437,6 +438,7 @@ function Layout() {
 // --- Composant racine avec tous les Providers ---
 function App() {
   return (
+    <HelmetProvider>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
@@ -456,6 +458,7 @@ function App() {
         <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />
       </QueryClientProvider>
     </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 

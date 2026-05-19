@@ -64,6 +64,7 @@ import aiRoutes from './routes/ai.routes'; // IA Proxy (Gemini)
 import trialRoutes from './routes/trial.routes'; // Essai gratuit 2 semaines
 import webinarRoutes from './routes/webinar.routes'; // Préinscriptions webinaires
 import timeMachineRoutes from './routes/time-machine.routes'; // Time Machine — Apprentissage guidé
+import ogRoutes from './routes/og.routes'; // Open Graph images pour le partage social
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -228,6 +229,8 @@ class App {
     this.app?.use('/api/', (req, res, next) => {
       // req.path est relatif au préfixe /api/ (ex: /login pour /api/login)
       if (CSRF_PUBLIC_PATHS.has(req.path)) return next();
+      // Routes OG publiques : crawlers sociaux n'ont pas de token CSRF
+      if (req.path.startsWith('/og/')) return next();
       return doubleCsrfProtection(req, res, next);
     });
 
@@ -291,6 +294,7 @@ class App {
     this.app?.use('/api/trial', trialRoutes);                              // Essai gratuit 2 semaines features IA
     this.app?.use('/api/webinars', webinarRoutes);                         // Préinscriptions webinaires
     this.app?.use('/api/time-machine', timeMachineRoutes);                 // Time Machine — Apprentissage guidé historique
+    this.app?.use('/api/og', ogRoutes);                                    // Open Graph images (PNG, public, crawlers sociaux)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

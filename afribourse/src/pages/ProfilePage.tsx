@@ -1,4 +1,5 @@
 // src/pages/ProfilePage.tsx
+import { Helmet } from 'react-helmet-async';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -238,7 +239,21 @@ export default function ProfilePage() {
             },
         };
 
+    const profileTitle = isOwnProfile
+        ? 'Mon Profil | AfriBourse'
+        : 'Profil Investisseur | AfriBourse';
+
     return (
+        <>
+        <Helmet>
+          <title>{profileTitle}</title>
+          <meta name="description"        content="Profil investisseur AfriBourse — portefeuille, badges et performances sur la BRVM."/>
+          <meta property="og:title"       content={profileTitle}/>
+          <meta property="og:description" content="Profil investisseur AfriBourse — portefeuille, badges et performances sur la BRVM."/>
+          <meta property="og:url"         content={`https://africbourse.com/profile${userId ? `/${userId}` : ''}`}/>
+          <meta property="og:image"       content="https://africbourse.com/images/logo_afribourse.png"/>
+          <meta name="twitter:card"       content="summary_large_image"/>
+        </Helmet>
         <div className="min-h-[calc(100vh-5rem)] bg-gray-50">
             {/* Bouton Retour */}
             <div className="bg-white border-b border-gray-200">
@@ -477,5 +492,6 @@ export default function ProfilePage() {
                 </div>
             )}
         </div>
+        </>
     );
 }

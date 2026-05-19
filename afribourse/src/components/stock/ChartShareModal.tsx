@@ -14,7 +14,7 @@ interface ChartShareModalProps {
   changeValue: number;
 }
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_BASE = 'https://africbourse.com';
 
 export default function ChartShareModal({
   isOpen,
@@ -34,6 +34,7 @@ export default function ChartShareModal({
 
   const isPositive = changeValue >= 0;
   const sign = isPositive ? '+' : '';
+  const stockUrl = `${SITE_BASE}/stock/${symbol}`;
   const generatedContent = `📊 ${symbol} sur AfriBourse\n\n${sign}${changeValue.toFixed(0)} FCFA (${sign}${changePercent.toFixed(2)}%) sur la période ${periodLabel}\n\nSuivez les marchés africains sur AfriBourse`;
 
   const shareText = customMessage.trim()
@@ -72,7 +73,7 @@ export default function ChartShareModal({
       const blob = await res.blob();
       const file = new File([blob], `afribourse-${symbol.toLowerCase()}.png`, { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ text: shareText + `\n\n${SITE_URL}`, files: [file] });
+        await navigator.share({ text: shareText + `\n\n${stockUrl}`, files: [file] });
       } else {
         toast.error('Le partage de fichiers n\'est pas supporté sur cet appareil');
       }
@@ -84,7 +85,7 @@ export default function ChartShareModal({
   };
 
   const handleShareWhatsApp = () => {
-    const text = encodeURIComponent(shareText + `\n\n${SITE_URL}`);
+    const text = encodeURIComponent(shareText + `\n\n${stockUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
     if (dataUrl) {
       downloadImage();
@@ -94,18 +95,18 @@ export default function ChartShareModal({
 
   const handleShareX = () => {
     const text = encodeURIComponent(shareText);
-    const url = encodeURIComponent(SITE_URL);
+    const url = encodeURIComponent(stockUrl);
     window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
     if (dataUrl) downloadImage();
   };
 
   const handleShareFacebook = () => {
-    const url = encodeURIComponent(SITE_URL);
+    const url = encodeURIComponent(stockUrl);
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
   };
 
   const handleShareLinkedIn = () => {
-    const url = encodeURIComponent(SITE_URL);
+    const url = encodeURIComponent(stockUrl);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
   };
 
@@ -117,7 +118,7 @@ export default function ChartShareModal({
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       toast.success('Image copiée dans le presse-papier !');
     } catch {
-      await navigator.clipboard.writeText(shareText + `\n\n${SITE_URL}`);
+      await navigator.clipboard.writeText(shareText + `\n\n${stockUrl}`);
       toast.success('Texte copié dans le presse-papier !');
     }
   };

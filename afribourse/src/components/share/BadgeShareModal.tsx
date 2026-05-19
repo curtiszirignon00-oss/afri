@@ -14,7 +14,7 @@ interface BadgeShareModalProps {
     unlockedDate?: string;
 }
 
-const REGISTER_URL = 'https://africbourse.com/register';
+const ACHIEVEMENTS_URL = 'https://africbourse.com/achievements';
 
 const RARITY_LABELS: Record<string, string> = {
     common: 'Commun', rare: 'Rare', epic: 'Épique', legendary: 'Légendaire'
@@ -77,7 +77,7 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
         if (!cardRef.current) return;
         setIsDownloading(true);
         try {
-            const shared = await shareCardNative(cardRef.current, shareText + `\n\n${REGISTER_URL}`);
+            const shared = await shareCardNative(cardRef.current, shareText + `\n\n${ACHIEVEMENTS_URL}`);
             if (!shared) {
                 toast.error('Le partage natif n\'est pas supporté sur cet appareil');
             }
@@ -89,7 +89,7 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
     };
 
     const handleShareWhatsApp = async () => {
-        const text = encodeURIComponent(shareText + `\n\n👉 ${REGISTER_URL}`);
+        const text = encodeURIComponent(shareText + `\n\n👉 ${ACHIEVEMENTS_URL}`);
         window.open(`https://wa.me/?text=${text}`, '_blank');
         if (cardRef.current) {
             try {
@@ -101,7 +101,7 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
 
     const handleShareX = async () => {
         const text = encodeURIComponent(shareText);
-        const url = encodeURIComponent(REGISTER_URL);
+        const url = encodeURIComponent(ACHIEVEMENTS_URL);
         window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
         if (cardRef.current) {
             try { await downloadCardAsImage(cardRef.current, 'afribourse-badge'); } catch { /* Silent */ }
@@ -109,12 +109,12 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
     };
 
     const handleShareFacebook = () => {
-        const url = encodeURIComponent(REGISTER_URL);
+        const url = encodeURIComponent(ACHIEVEMENTS_URL);
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
     };
 
     const handleShareLinkedIn = () => {
-        const url = encodeURIComponent(REGISTER_URL);
+        const url = encodeURIComponent(ACHIEVEMENTS_URL);
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank');
     };
 
@@ -129,7 +129,7 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
                 toast.success('Image copiée dans le presse-papier !');
             }
         } catch {
-            await navigator.clipboard.writeText(shareText + `\n\n${REGISTER_URL}`);
+            await navigator.clipboard.writeText(shareText + `\n\n${ACHIEVEMENTS_URL}`);
             toast.success('Texte copié dans le presse-papier !');
         }
     };

@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useState, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { lazyWithRetry as lazy } from '../lib/lazyWithRetry';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
@@ -494,7 +495,33 @@ export default function StockDetailPageEnhanced() {
   const sentiment = calculateMarketSentiment();
   const technicalSignal = calculateTechnicalSignal();
 
+  const ogImageUrl = `https://afribourse-api.onrender.com/api/og/image/stock/${symbol ?? ''}`;
+  const ogPageUrl  = `https://africbourse.com/stock/${symbol ?? ''}`;
+  const ogTitle = stock
+    ? `${stock.symbol} — ${new Intl.NumberFormat('fr-FR').format(stock.current_price)} FCFA (${stock.daily_change_percent >= 0 ? '+' : ''}${stock.daily_change_percent?.toFixed(2)}%) | AfriBourse`
+    : `${symbol} — AfriBourse`;
+  const ogDescription = stock
+    ? `${stock.company_name} sur la BRVM. Cours en temps réel, graphiques, fondamentaux et actualités.`
+    : `Retrouvez le cours de ${symbol} sur AfriBourse.`;
+
   return (
+    <>
+    <Helmet>
+      <title>{ogTitle}</title>
+      <meta name="description"            content={ogDescription}/>
+      <meta property="og:type"            content="website"/>
+      <meta property="og:site_name"       content="AfriBourse"/>
+      <meta property="og:title"           content={ogTitle}/>
+      <meta property="og:description"     content={ogDescription}/>
+      <meta property="og:image"           content={ogImageUrl}/>
+      <meta property="og:image:width"     content="1200"/>
+      <meta property="og:image:height"    content="630"/>
+      <meta property="og:url"             content={ogPageUrl}/>
+      <meta name="twitter:card"           content="summary_large_image"/>
+      <meta name="twitter:title"          content={ogTitle}/>
+      <meta name="twitter:description"    content={ogDescription}/>
+      <meta name="twitter:image"          content={ogImageUrl}/>
+    </Helmet>
     <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
       {/* En-tête */}
       <div className="bg-white border-b border-gray-200">
@@ -1127,6 +1154,7 @@ export default function StockDetailPageEnhanced() {
         <EmailVerificationModal onClose={() => setShowEmailVerifModal(false)} />
       )}
     </div>
+    </>
   );
 }
 
