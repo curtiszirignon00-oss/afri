@@ -517,6 +517,273 @@ export function ChartNSBCBilan() {
   );
 }
 
+// ── Palette NSIA Fondamentale 2020-2025 ───────────────────────────────────────
+const NF_BLUE   = '#1564A0';
+const NF_TEAL   = '#0A7E6A';
+const NF_RED    = '#B52828';
+const NF_AMBER  = '#C47D0A';
+const NF_GOLD   = '#8A6A00';
+const NF_PURPLE = '#5B3DA8';
+const NF_YEARS  = ['2020','2021','2022','2023','2024','2025'];
+
+export function ChartNSBCFondActes() {
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    rn:   [7201, 23713, 32382, 34813, 38112, 40712][i],
+    cout: [16058, 6048, 4152, 3376, -537, 8510][i],
+  }));
+  return (
+    <ChartShell
+      title="Résultat Net & Coût du risque — 2020 à 2025 (M FCFA)"
+      legend={[{ color: NF_TEAL, label: 'Résultat net' }, { color: NF_RED, label: 'Coût du risque' }]}
+    >
+      <ResponsiveContainer width="100%" height={220}>
+        <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}k`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <ReferenceLine y={0} stroke="#aaa" strokeDasharray="2 2" />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="rn"   name="Résultat net"   fill="rgba(10,126,106,.2)"  stroke={NF_TEAL} strokeWidth={1.5} radius={[3,3,0,0]} maxBarSize={36} />
+          <Bar dataKey="cout" name="Coût du risque" fill="rgba(181,40,40,.2)"   stroke={NF_RED}  strokeWidth={1.5} radius={[3,3,0,0]} maxBarSize={36} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondPnbStack() {
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    nim:    [45381, 54595, 54977, 59404, 53895, 81717][i],
+    comm:   [11826, 15060, 17822, 21310, 24128, 19885][i],
+    titres: [3551,  872,   713,   4738,  11997, 185  ][i],
+    autres: [10606, 6095,  6593,  5550,  7799,  11141][i],
+  }));
+  return (
+    <ChartShell
+      title="Décomposition du PNB par source de revenus — 2020 à 2025 (M FCFA)"
+      legend={[
+        { color: NF_BLUE,   label: "Marge nette d'intérêt (NIM)" },
+        { color: NF_TEAL,   label: 'Commissions nettes' },
+        { color: NF_AMBER,  label: 'Revenus titres variables' },
+        { color: NF_PURPLE, label: 'Autres' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}k`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="nim"    name="NIM"          stackId="s" fill={NF_BLUE}   />
+          <Bar dataKey="comm"   name="Commissions"  stackId="s" fill={NF_TEAL}   />
+          <Bar dataKey="titres" name="Titres var."  stackId="s" fill={NF_AMBER}  />
+          <Bar dataKey="autres" name="Autres"       stackId="s" fill={NF_PURPLE} radius={[3,3,0,0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondNpl() {
+  const ptColors = ['#B52828','#C47D0A','#0A7E6A','#0A7E6A','#0A7E6A','#C47D0A'];
+  const data = NF_YEARS.map((yr, i) => ({ yr, npl: [12.5, 7.6, 1.1, 0.69, 0.27, 0.36][i] }));
+  return (
+    <ChartShell
+      title="Taux NPL net — nettoyage spectaculaire 2020 à 2025 (%)"
+      legend={[{ color: NF_RED, label: 'Taux NPL net (créances non performantes)' }]}
+    >
+      <ResponsiveContainer width="100%" height={190}>
+        <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="%" />} />
+          <Line type="monotone" dataKey="npl" name="NPL %" stroke={NF_RED} strokeWidth={2.5}
+            dot={(props: any) => <circle key={props.cx} cx={props.cx} cy={props.cy} r={5} fill={ptColors[props.index]} stroke="#fff" strokeWidth={2} />}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondCoutRisque() {
+  const vals = [16058, 6048, 4152, 3376, -537, 8510];
+  const data = NF_YEARS.map((yr, i) => ({ yr, cout: vals[i] }));
+  return (
+    <ChartShell
+      title="Coût du risque annuel — impact direct sur le résultat (M FCFA)"
+      legend={[
+        { color: NF_RED,  label: 'Coût du risque (charge)' },
+        { color: NF_TEAL, label: 'Reprises nettes 2024 (gain)' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={190}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}k`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <ReferenceLine y={0} stroke="#aaa" strokeDasharray="2 2" />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="cout" name="Coût du risque" radius={[3,3,0,0]} maxBarSize={44}>
+            {data.map((d, i) => <Cell key={i} fill={d.cout <= 0 ? 'rgba(10,126,106,.3)' : 'rgba(181,40,40,.25)'} stroke={d.cout <= 0 ? NF_TEAL : NF_RED} strokeWidth={1.5} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondLevier() {
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    levier: [14.2, 12.4, 11.4, 10.7, 11.7, 13.2][i],
+    ltd:    [101.8, 91.5, 93.5, 92.3, 90.3, 81.1][i],
+  }));
+  return (
+    <ChartShell
+      title="Levier financier & ratio LTD (Crédits/Dépôts) — 2020 à 2025"
+      legend={[
+        { color: NF_RED,  label: 'Levier financier (×, axe gauche)' },
+        { color: NF_BLUE, label: 'LTD — Crédits/Dépôts (%, axe droit)', dashed: true },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <ComposedChart data={data} margin={{ top: 4, right: 40, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="l" domain={[9, 16]}  tickFormatter={v => `${v}×`}  tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="r" orientation="right" domain={[75, 110]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="" />} />
+          <Line yAxisId="l" type="monotone" dataKey="levier" name="Levier" stroke={NF_RED}  strokeWidth={2.5} dot={{ r: 4, fill: NF_RED,  stroke: '#fff', strokeWidth: 2 }} />
+          <Line yAxisId="r" type="monotone" dataKey="ltd"    name="LTD"    stroke={NF_BLUE} strokeWidth={2}   strokeDasharray="5 3" dot={{ r: 4, fill: NF_BLUE, stroke: '#fff', strokeWidth: 2 }} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondSpreads() {
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    actif:  [8.33, 8.47, 7.95, 8.17, 7.24, 7.97][i],
+    passif: [3.35, 2.88, 2.68, 3.09, 3.15, 2.64][i],
+    spread: [4.98, 5.59, 5.27, 5.08, 4.09, 5.33][i],
+  }));
+  return (
+    <ChartShell
+      title="Taux actif (crédits) vs taux passif (dépôts) — spread NIM (%)"
+      legend={[
+        { color: NF_BLUE,  label: 'Taux actif (crédits)' },
+        { color: NF_RED,   label: 'Taux passif (dépôts)', dashed: true },
+        { color: NF_TEAL,  label: 'Spread NIM' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis domain={[2, 10]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="%" />} />
+          <Line type="monotone" dataKey="actif"  name="Taux actif"  stroke={NF_BLUE} strokeWidth={2}   dot={{ r: 3, fill: NF_BLUE, stroke: '#fff', strokeWidth: 2 }} />
+          <Line type="monotone" dataKey="passif" name="Taux passif" stroke={NF_RED}  strokeWidth={2}   strokeDasharray="4 2" dot={{ r: 3, fill: NF_RED,  stroke: '#fff', strokeWidth: 2 }} />
+          <Line type="monotone" dataKey="spread" name="Spread NIM"  stroke={NF_TEAL} strokeWidth={2.5} dot={{ r: 4, fill: NF_TEAL, stroke: '#fff', strokeWidth: 2 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondTitres() {
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    btp: [378462, 386873, 428941, 410251, 477358, 465392][i],
+    vari: [11657,  9830,   18096,  23600,  23306,  60052 ][i],
+  }));
+  return (
+    <ChartShell
+      title="Portefeuille titres — réserve de liquidité et revenus (M FCFA)"
+      legend={[
+        { color: NF_BLUE,   label: 'Effets publics (BTP, obligations États UEMOA)' },
+        { color: NF_PURPLE, label: 'Actions var. + Obligations privées' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}k`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar dataKey="btp"  name="Effets publics"     stackId="s" fill="rgba(21,100,160,.25)"  stroke={NF_BLUE}   strokeWidth={1} />
+          <Bar dataKey="vari" name="Actions + Oblig."   stackId="s" fill="rgba(91,61,168,.2)"    stroke={NF_PURPLE} strokeWidth={1} radius={[3,3,0,0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondCapex() {
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    capex: [12093, 25027, 14178, 12336, 35358, 33539][i],
+    immo:  [49269, 68290, 75336, 80403, 107287, 132733][i],
+  }));
+  return (
+    <ChartShell
+      title="Immobilisations corporelles nettes & CAPEX estimé (M FCFA)"
+      legend={[
+        { color: NF_AMBER,  label: 'Immobilisations corp. nettes (ligne)' },
+        { color: NF_PURPLE, label: 'CAPEX estimé (barres)' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${(v/1000).toFixed(0)}k`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" M" />} />
+          <Bar  dataKey="capex" name="CAPEX estimé"          fill="rgba(91,61,168,.25)"  stroke={NF_PURPLE} strokeWidth={1.5} radius={[3,3,0,0]} maxBarSize={36} />
+          <Line dataKey="immo"  name="Immo. corp. nettes"    stroke={NF_AMBER} strokeWidth={2.5} dot={{ r: 4, fill: NF_AMBER, stroke: '#fff', strokeWidth: 2 }} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartNSBCFondDiv() {
+  const divColors = ['#D4DDE8','#D4DDE8','#8A6A00','#8A6A00','#8A6A00','rgba(138,106,0,0.5)'];
+  const data = NF_YEARS.map((yr, i) => ({
+    yr,
+    div:    [0, 0, 404, 455, 759, 370][i],
+    payout: [0, 0, 36.3, 38.0, 58.0, 26.4][i],
+  }));
+  return (
+    <ChartShell
+      title="Dividende par action & taux de distribution — 2020 à 2025"
+      legend={[
+        { color: NF_GOLD, label: 'Dividende net BRVM (FCFA/action, axe gauche)' },
+        { color: NF_TEAL, label: 'Payout brut (%, axe droit)', dashed: true },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={180}>
+        <ComposedChart data={data} margin={{ top: 4, right: 40, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="l" domain={[0, 850]} tickFormatter={v => `${v}F`}  tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="r" orientation="right" domain={[0, 70]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="" />} />
+          <Bar yAxisId="l" dataKey="div" name="Dividende net" radius={[3,3,0,0]} maxBarSize={40}>
+            {data.map((_, i) => <Cell key={i} fill={divColors[i]} stroke={i < 2 ? '#D4DDE8' : NF_GOLD} strokeWidth={1.5} />)}
+          </Bar>
+          <Line yAxisId="r" type="monotone" dataKey="payout" name="Payout %" stroke={NF_TEAL} strokeWidth={2} strokeDasharray="5 3" dot={{ r: 3, fill: NF_TEAL, stroke: '#fff', strokeWidth: 2 }} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
 const CHART_MAP: Record<string, React.ComponentType> = {
   'sgbci-annuel':      ChartAnnuel,
   'sgbci-rn-t1':       ChartRNT1,
@@ -531,7 +798,16 @@ const CHART_MAP: Record<string, React.ComponentType> = {
   'nsbc-pnb':          ChartNSBCPnb,
   'nsbc-rn':           ChartNSBCRn,
   'nsbc-marge':        ChartNSBCMarge,
-  'nsbc-bilan':        ChartNSBCBilan,
+  'nsbc-bilan':            ChartNSBCBilan,
+  'nsbc-fond-actes':       ChartNSBCFondActes,
+  'nsbc-fond-pnb-stack':   ChartNSBCFondPnbStack,
+  'nsbc-fond-npl':         ChartNSBCFondNpl,
+  'nsbc-fond-cout-risque': ChartNSBCFondCoutRisque,
+  'nsbc-fond-levier':      ChartNSBCFondLevier,
+  'nsbc-fond-spreads':     ChartNSBCFondSpreads,
+  'nsbc-fond-titres':      ChartNSBCFondTitres,
+  'nsbc-fond-capex':       ChartNSBCFondCapex,
+  'nsbc-fond-div':         ChartNSBCFondDiv,
 };
 
 export function ChartById({ chartId }: { chartId: string }) {

@@ -46,6 +46,273 @@ export interface BRVMArticle {
 }
 
 export const BRVM_NEWS: BRVMArticle[] = [
+  // ── NSBC — Analyse Fondamentale Profonde 2020-2025 ─────────────────────────
+  {
+    id: "nsbc-analyse-fondamentale-2020-2025",
+    category: "Analyse Fondamentale",
+    isFeatured: true,
+    image_url: "/images/nsia-building.jpg",
+    title: "NSIA Banque CI — Ce que les chiffres montrent, et ce qu'ils cachent",
+    summary: "Six exercices certifiés. Des dizaines d'indicateurs. Une histoire de transformation bancaire profonde : NPL de 12,5% à 0,36%, résultat net ×5,7 en 5 ans, première titrisation multidevises de l'UEMOA. Tout ce que les analyses habituelles ne voient pas.",
+    publishedAt: "2026-05-16T09:00:00Z",
+    content: "",
+    sources: [
+      "États financiers certifiés CAC NSIA Banque CI 2020–2025",
+      "BRVM — Rapports d'activités T1 2020–2026",
+      "BCEAO — Normes prudentielles Bâle III / UEMOA",
+    ],
+    tags: ['NSBC', 'NSIA-Banque', 'analyse fondamentale', 'NPL', 'dividende', 'levier', 'titrisation', '2020-2025'],
+    tickers: [
+      { ticker: 'NSBC', impact: 'Positif', note: 'Transformation fondamentale 2020–2025 : NPL 12,5%→0,36%, RN ×5,7, NIM record à 81,7 Mds. Risques identifiés : levier Tier1 ~7,6%, coût risque qui remonte en 2025, fiscalité favorable temporaire.' },
+    ],
+    richContent: [
+      { type: 'disclaimer', text: "Analyse basée sur les états financiers certifiés 2020–2025. Données éducatives uniquement, ne constitue pas un conseil en investissement." },
+
+      { type: 'key-stats', items: [
+        { label: 'Bilan 2025', value: '3 073 Mds FCFA (×2,6 vs 2019)' },
+        { label: 'Résultat net 2025', value: '40,7 Mds FCFA (×5,7 vs 2020)' },
+        { label: 'Taux NPL 2025', value: '0,36% — vs 12,5% en 2020' },
+        { label: 'Dividende record 2024', value: '759 FCFA net/action (DY 5,1%)' },
+        { label: 'Coefficient exploitation', value: '54,6% (−10,9 pts en 5 ans)' },
+      ]},
+
+      { type: 'heading', level: 1, text: "01 · L'histoire en trois actes — lire NSIA comme un roman" },
+
+      { type: 'paragraph', text: "La plupart des gens regardent le résultat net annuel de NSIA Banque CI et voient une ligne qui monte. C'est vrai, mais incomplet. Les états financiers racontent une histoire en trois actes bien distincts, chacun avec sa propre logique, ses propres risques, et ses propres enseignements." },
+
+      { type: 'callout', variant: 'warn', title: "2020 — Acte I : La cicatrice — Fusion, crise et mise à nu", paragraphs: [
+        "NSIA absorbe Diamond Bank CI et la succursale de NSIA Banque Bénin. Le bilan gonfle de 30% d'un coup. La Commission Bancaire débarque (oct–nov 2020) et force 5,7 Mds FCFA de provisions supplémentaires. Le coût du risque explose à 16 Mds. Le résultat net s'effondre à 7,2 Mds. La banque paie la facture de son expansion.",
+      ]},
+      { type: 'callout', variant: 'ok', title: "2021–2022 — Acte II : Le redressement — Assainissement et levier opérationnel", paragraphs: [
+        "Le portefeuille NPL passe de 12,5% à 1,1%. Le coût du risque chute de 16 Mds à 4 Mds en 2 ans. En 2022, un événement peu visible : la cession d'actifs immobiliers à l'État (SONAPIE) génère 9,2 Mds de gains — soit 28% du résultat net 2022. Sans cela, la croissance 2022 était en réalité une stagnation.",
+      ]},
+      { type: 'callout', variant: 'note', title: "2023–2025 — Acte III : La maturité — Croissance structurelle et expansion", paragraphs: [
+        "PNB dépasse 100 Mds. Immobilisations doublent. Titrisation multidevises (première en UEMOA). Emprunts subordonnés passent de 4 à 40 Mds. La banque investit massivement dans sa prochaine phase.",
+      ]},
+
+      { type: 'chart', chartId: 'nsbc-fond-actes' },
+
+      { type: 'heading', level: 1, text: "02 · La vérité sur le PNB — pas tous les FCFA ne se valent pas" },
+
+      { type: 'paragraph', text: "Le Produit Net Bancaire est le « chiffre d'affaires » d'une banque. Mais il est composé de sources de revenus très différentes en termes de récurrence, de risque et de qualité. Un FCFA de marge d'intérêt sur un crédit n'a pas la même valeur qu'un FCFA de gain sur la vente d'un immeuble." },
+
+      { type: 'callout', variant: 'info', title: "Les 4 composantes du PNB d'une banque", paragraphs: [
+        "Marge nette d'intérêt (NIM) : intérêts crédits MOINS intérêts dépôts. Cœur du métier. Stable, récurrent.",
+        "Commissions nettes : frais de services. Récurrents si clientèle fidèle.",
+        "Revenus titres variables : plus-values portefeuille. Très volatils.",
+        "Gains hors exploitation : cessions immobilières, trading. Non récurrents.",
+      ]},
+
+      { type: 'chart', chartId: 'nsbc-fond-pnb-stack' },
+
+      { type: 'table', caption: 'Qualité du PNB — récurrent vs exceptionnel (M FCFA)',
+        headers: ['An.', 'NIM', 'Comm. net', 'Titres var.', 'Gains immo', '% récurrent'],
+        rows: [
+          ['2020', '45 381', '11 826', '3 551', '999',   '80%'],
+          ['2021', '54 595', '15 060', '872',   '3 024', '91%'],
+          ['2022', '54 977', '17 822', '713',   '9 186', '68% ↓'],
+          ['2023', '59 404', '21 310', '4 738', '1 766', '89%'],
+          ['2024', '53 895', '24 128', '11 997','282',   '80%'],
+          ['2025', '81 717', '19 885', '185',   '375',   '90%'],
+        ],
+      },
+
+      { type: 'callout', variant: 'warn', title: "Ce que personne ne dit sur 2022 — l'année trompeuse", paragraphs: [
+        "Le résultat net 2022 bondit à 32,4 Mds FCFA (+37%). Mais regardez les « Gains nets sur actifs immobilisés » : 9 186 M FCFA — cession d'immeubles à l'État (SONAPIE). Ces gains représentent 28,4% du résultat net. Sans cette cession, le résultat 2022 aurait été ~23 Mds — soit une stagnation par rapport à 2021, pas une hausse de 37%.",
+      ]},
+      { type: 'callout', variant: 'ok', title: "2024 : revenus titres = nouveau moteur silencieux", paragraphs: [
+        "En 2024, les revenus des titres à revenu variable explosent à 11 997 M FCFA (vs 713 M en 2022). Sans cela, le PNB 2024 n'aurait été que ~86 Mds. En 2025, ce poste retombe à 185 M — mais la marge d'intérêt bondit à 81,7 Mds. La structure du PNB s'est totalement inversée en un an.",
+      ]},
+
+      { type: 'heading', level: 1, text: "03 · Le portefeuille crédit — la transformation la plus spectaculaire" },
+
+      { type: 'paragraph', text: "Dans une banque, le risque de crédit est le risque fondamental. La mesure clé est le taux de créances non performantes (NPL) — les prêts en souffrance. L'évolution de ce taux chez NSIA Banque CI sur 5 ans est tout simplement remarquable." },
+
+      { type: 'callout', variant: 'info', title: "NPL, provisions et coût du risque — le triangle du crédit bancaire", paragraphs: [
+        "NPL : prêts en retard >90 jours. Comme des créances clients irrécouvrables.",
+        "Provisions : argent mis de côté pour anticiper les pertes. Une épargne de précaution obligatoire.",
+        "Coût du risque : montant annuel passé en charge pour couvrir les nouvelles créances douteuses. Quand il monte, les bénéfices baissent.",
+      ]},
+
+      { type: 'chart', chartId: 'nsbc-fond-npl' },
+      { type: 'chart', chartId: 'nsbc-fond-cout-risque' },
+
+      { type: 'callout', variant: 'warn', title: "La vérité sur 2020", paragraphs: [
+        "Les 114 Mds de NPL n'ont pas tous apparu en 2020. Beaucoup existaient chez Diamond Bank CI — cachés. La fusion et le contrôle de la Commission Bancaire les ont rendus visibles. NSIA a mis ses problèmes sur la table en une fois. Douloureux, mais sain.",
+      ]},
+      { type: 'callout', variant: 'note', title: "Le mécanisme du redressement (2021)", paragraphs: [
+        "Direction du Recouvrement créée en 2021. Résultat : +15% de recouvrements sur créances provisionnées, 4,5 Mds de reprises de provisions. Politique de crédit durcie. Les NPL baissent par récupération ET par meilleure sélection de nouveaux clients.",
+      ]},
+      { type: 'callout', variant: 'ok', title: "2024 : coût du risque négatif — −537 M FCFA", paragraphs: [
+        "Chiffre négatif = reprises nettes de provisions. Les pertes réelles ont été inférieures aux provisions passées. Validation de la qualité des années précédentes. Mais aussi un signal qu'on ne peut pas compter sur ça indéfiniment — et 2025 le confirme (+8 510 M).",
+      ]},
+
+      { type: 'table', caption: 'Tableau de bord complet — qualité du portefeuille crédit 2020–2025 (M FCFA)',
+        headers: ['Exercice', 'Crédits totaux', 'NPL nets', 'Taux NPL', 'Provisions', 'Coût risque', 'Coût/Crédits'],
+        rows: [
+          ['2020', '962 176',  '114 000', '12,5%', '9 586',  '16 058',  '1,67%'],
+          ['2021', '1 032 456', '79 000',  '7,6%',  '9 082',  '6 048',   '0,59%'],
+          ['2022', '1 141 361', '12 800',  '1,1%',  '5 542',  '4 152',   '0,36%'],
+          ['2023', '1 307 350', '9 000',   '0,69%', '5 377',  '3 376',   '0,26%'],
+          ['2024', '1 536 122', '4 200',   '0,27%', '4 294',  '−537',    '0,03%'],
+          ['2025', '1 818 671', '6 500',   '0,36%', '6 074',  '8 510',   '0,47%'],
+        ],
+      },
+
+      { type: 'callout', variant: 'warn', title: "Signal 2026 à surveiller : rebond du coût du risque", paragraphs: [
+        "Après 4 ans de baisse continue, le coût du risque remonte à 8,5 Mds en 2025. Les NPL nets augmentent légèrement à 6 500 M (vs 4 200 M en 2024). Ce n'est pas encore alarmant — le taux NPL reste sous 0,5% — mais la question est : cette dégradation est-elle liée à la forte croissance des crédits (+18%) ou un début de problème qualité ? Réponse attendue au rapport annuel 2026.",
+      ]},
+
+      { type: 'heading', level: 1, text: "04 · Ce que le bilan dit vraiment — levier, taux et ce qu'on ne voit pas" },
+
+      { type: 'paragraph', text: "Le bilan d'une banque est une machine à levier : avec 1 FCFA de fonds propres, elle mobilise 10 à 14 FCFA d'actifs. C'est ce qui rend les banques si rentables — et si fragiles." },
+
+      { type: 'chart', chartId: 'nsbc-fond-levier' },
+
+      { type: 'callout', variant: 'info', title: "Le levier bancaire — l'arme à double tranchant", paragraphs: [
+        "À 13,2× de levier en 2025, si les actifs perdent 8% de leur valeur (défauts massifs, chute des titres), les fonds propres sont anéantis. C'est pour ça que Bâle III impose ~8% de ratio FP/Actifs minimum. Le proxy Tier 1 de NSIA en 2025 (~7,6%) est juste au-dessus du seuil minimal — après avoir été confortablement à 9,3% en 2023. La croissance rapide du bilan en 2025 (+22%) a consommé ce coussin.",
+      ]},
+      { type: 'callout', variant: 'ok', title: "Le ratio LTD à 81% — signal de confort liquidité", paragraphs: [
+        "En 2020, les dépôts couvraient tout juste les crédits (98%). En 2025, le ratio est à 81% — la banque a 2 163 Mds de dépôts pour 1 574 Mds de crédits. Elle dispose d'un excédent de liquidité structurel. Confort réglementaire élevé, moins de dépendance au refinancement interbancaire coûteux.",
+      ]},
+
+      { type: 'chart', chartId: 'nsbc-fond-spreads' },
+      { type: 'chart', chartId: 'nsbc-fond-titres' },
+
+      { type: 'heading', level: 1, text: "05 · Le hors bilan — le risque qui n'apparaît pas dans les actifs" },
+
+      { type: 'paragraph', text: "Voici ce que la quasi-totalité des lecteurs d'un rapport financier ignore. Le hors bilan regroupe les engagements pris par la banque qui ne figurent pas à l'actif — mais qui représentent un risque réel. C'est la partie invisible de la banque." },
+
+      { type: 'callout', variant: 'info', title: "Hors bilan bancaire — la partie immergée de l'iceberg", paragraphs: [
+        "Engagements de financement donnés : lignes de crédit accordées mais non encore tirées. La banque s'est engagée à prêter si le client demande.",
+        "Engagements de garantie donnés : cautions pour clients. Si le client ne paie pas, la banque paie à sa place.",
+        "Garanties reçues : protections que d'autres entités offrent à NSIA. Plus elles sont élevées, plus NSIA est protégée.",
+      ]},
+
+      { type: 'table', caption: 'Engagements hors bilan — évolution 2020–2025 (M FCFA)',
+        headers: ['Année', 'Eng. fin. donnés', 'Eng. gar. donnés', 'Total donnés', '% FP', 'Garanties reçues', 'Ratio couverture'],
+        rows: [
+          ['2020', '218 009', '91 231',  '309 240', '284%', '2 544 016', '8,2×'],
+          ['2021', '187 516', '137 740', '325 256', '245%', '2 730 664', '8,4×'],
+          ['2022', '245 892', '175 269', '421 161', '255%', '3 393 926', '8,1×'],
+          ['2023', '332 446', '209 856', '542 302', '286%', '3 891 771', '7,2×'],
+          ['2024', '156 480', '216 469', '372 949', '173%', '4 604 738', '12,3×'],
+          ['2025', '138 479', '176 355', '314 834', '135%', '5 227 295', '16,6×'],
+        ],
+      },
+
+      { type: 'callout', variant: 'ok', title: "Couverture à 16,6× — un blindage invisible", paragraphs: [
+        "En 2025, pour chaque FCFA d'engagement donné, NSIA dispose de 16,6 FCFA de garanties reçues. Ce filet de sécurité — 5 227 Mds ! — n'apparaît nulle part dans les ratios de rentabilité habituels. C'est un actif invisible qui protège la banque contre les défauts clients.",
+      ]},
+      { type: 'callout', variant: 'note', title: "La baisse des engagements de financement en 2024–2025", paragraphs: [
+        "Les lignes de crédit non tirées passent de 332 Mds (2023) à 138 Mds (2025). Explication probable : les clients ont effectivement tiré leurs lignes — d'où la forte croissance des crédits bilanciels (+18% en 2025). Les lignes non tirées deviennent des crédits effectifs.",
+      ]},
+
+      { type: 'heading', level: 1, text: "06 · Les investissements cachés — immobilisations, CAPEX et titrisation" },
+
+      { type: 'paragraph', text: "NSIA Banque CI a presque triplé ses immobilisations corporelles en 5 ans — de 43,7 Mds à 132,7 Mds FCFA. Et a lancé des opérations de financement pionnières. Ce que ça dit de la banque en 2030." },
+
+      { type: 'chart', chartId: 'nsbc-fond-capex' },
+
+      { type: 'callout', variant: 'warn', title: "2021 — CAPEX 25 Mds : intégration Diamond Bank CI", paragraphs: [
+        "Reprise des actifs physiques (agences, équipements). Modernisation du parc informatique. Premier investissement majeur post-fusion.",
+      ]},
+      { type: 'callout', variant: 'info', title: "2023 — Nouveau siège Cocody Mermoz", paragraphs: [
+        "NSIA quitte l'Avenue Joseph Anoma (Plateau) pour Cocody. Investissement structurant qui améliore conditions de travail et image de marque.",
+      ]},
+      { type: 'callout', variant: 'note', title: "2024–2025 — CAPEX 35 Mds/an : infrastructure pour 2027–2030", paragraphs: [
+        "Renouvellement parc DAB/GAB. Acquisition CREDITFLOW, QUALIPRO. Nouvelles cartes Crystal. Extension réseau (85 agences). Titrisation FCTC 50 Mds + RMBS Zaka 10 Mds.",
+      ]},
+      { type: 'callout', variant: 'note', title: "La titrisation 2025 — une innovation qui change l'échelle de croissance", paragraphs: [
+        "NSIA a lancé la première titrisation multidevises FCFA/Euro de l'UEMOA (FCTC NSIA 2025-2030, 50 Mds) et des RMBS « Zaka » pour le logement abordable (10 Mds). La banque vend des paquets de créances à des investisseurs, récupère du cash immédiatement, et peut accorder de nouveaux crédits sans avoir à lever des fonds propres. Si maîtrisé, c'est un accélérateur puissant. Mal géré, c'est l'origine de crises bancaires.",
+      ]},
+
+      { type: 'heading', level: 1, text: "07 · La fiscalité — l'anomalie que personne ne questionne" },
+
+      { type: 'paragraph', text: "Le taux d'imposition effectif de NSIA Banque CI est l'une des données les plus surprenantes. En Côte d'Ivoire, l'IS est à 25%. Pourtant, NSIA paie entre 4% et 18% selon les années." },
+
+      { type: 'table', caption: 'Taux d'imposition effectif (Impôts / RAI) vs taux légal CI (M FCFA)',
+        headers: ['Exercice', 'RAI', 'Impôts', 'Résultat net', 'Taux effectif', 'Taux légal', 'Économie fiscale'],
+        rows: [
+          ['2020', '8 829',  '1 628', '7 201',  '18,4%', '25%', '+571 M'],
+          ['2021', '26 175', '2 462', '23 713', '9,4%',  '25%', '+4 081 M'],
+          ['2022', '34 540', '2 158', '32 382', '6,2%',  '25%', '+6 477 M'],
+          ['2023', '36 312', '1 499', '34 813', '4,1%',  '25%', '+7 579 M'],
+          ['2024', '40 219', '2 107', '38 112', '5,2%',  '25%', '+7 947 M'],
+          ['2025', '43 146', '2 434', '40 712', '5,6%',  '25%', '+8 353 M'],
+        ],
+      },
+
+      { type: 'callout', variant: 'warn', title: "Pourquoi ce taux si bas ? Les trois raisons légitimes", paragraphs: [
+        "1. Reports déficitaires — les pertes de 2020 réduisent la base imposable des années suivantes. NSIA avait 26 Mds de report à nouveau fin 2020 — réserve fiscale activable.",
+        "2. Exonérations BTP UEMOA — les intérêts sur obligations d'État sont exonérés ou à taux réduit. Un portefeuille de 465 Mds de titres publics génère beaucoup de revenus peu taxés.",
+        "3. Crédits d'impôt investissements — les CAPEX éligibles (digitalisation, agences) peuvent générer des déductions fiscales accélérées.",
+      ]},
+      { type: 'callout', variant: 'warn', title: "Le risque fiscal graduel — ce que peu voient venir", paragraphs: [
+        "Ces avantages fiscaux s'épuiseront progressivement. Quand le taux effectif remontera vers 15–20%, le résultat net perdra 4 à 8 Mds FCFA par an sans que le business se soit dégradé. C'est un « impôt différé » invisible dans les chiffres actuels.",
+      ]},
+
+      { type: 'heading', level: 1, text: "08 · Dividendes — lire le message du Conseil d'Administration" },
+
+      { type: 'paragraph', text: "Un dividende n'est pas juste un revenu pour l'actionnaire. C'est un signal du management sur sa confiance dans l'avenir. La décision de distribuer ou retenir les bénéfices dit autant que les chiffres eux-mêmes." },
+
+      { type: 'chart', chartId: 'nsbc-fond-div' },
+
+      { type: 'callout', variant: 'warn', title: "2020–2021 : Zéro dividende", paragraphs: [
+        "Le CA consolide les fonds propres post-fusion, post-Commission Bancaire. Message : « On préfère la solidité à la générosité. » Dur pour les actionnaires, sage pour la banque.",
+      ]},
+      { type: 'callout', variant: 'ok', title: "2022 : Le premier dividende — 404 FCFA net/action", paragraphs: [
+        "Payout brut de 36,3% — la majorité reste dans la banque. Message : « On est assez solides pour partager, mais on garde l'essentiel pour grandir. »",
+      ]},
+      { type: 'callout', variant: 'note', title: "2022–2024 : +88% en 2 ans (404→759 FCFA) puis recul stratégique", paragraphs: [
+        "404 → 455 → 759 FCFA nets (BRVM officiel). Record absolu en 2024 à 759 FCFA — payout de 58%. En 2025 recul à ~370 FCFA (Madis) : la banque arbitre en faveur du réinvestissement face à une croissance bilan de +22%. À 15 000 FCFA : rendement net 2024 de 5,1%.",
+      ]},
+
+      { type: 'heading', level: 1, text: "09 · Synthèse — Les 8 choses que les gens ne voient pas" },
+
+      { type: 'verdict', title: "Ce que les analyses habituelles manquent sur NSIA Banque CI", items: [
+        { label: "1 — RN 2022 gonflé de 9,2 Mds hors exploitation", text: "Cession SONAPIE représente 28,4% du RN 2022. La vraie croissance 2022 sur 2021 est quasi-nulle, pas +37%." },
+        { label: "2 — Taux fiscal 5–6% : aubaine temporaire", text: "Reports déficitaires + exonérations BTP. Quand ils s'épuisent : −4 à 8 Mds sur le RN annuel sans dégradation du business." },
+        { label: "3 — Levier remonte à 13,2× / Tier 1 ~7,6%", text: "Juste au-dessus du minimum Bâle III. La croissance rapide du bilan 2025 (+22%) a consommé le coussin de sécurité." },
+        { label: "4 — CAPEX 35 Mds/an prépare 2028–2030", text: "Invisible sur le RN à court terme, mais les amortissements futurs pèseront sur le coefficient d'exploitation." },
+        { label: "5 — Revenus titres 2024 : 12 Mds non récurrents", text: "11 997 M en 2024 → 185 M en 2025. Structure du PNB radicalement différente d'une année à l'autre." },
+        { label: "6 — Hors bilan : couverture 16,6× — actif invisible", text: "5 227 Mds de garanties reçues pour 315 Mds d'engagements donnés. Protection massive jamais mentionnée." },
+        { label: "7 — Rebond coût du risque en 2025 : canari dans la mine", text: "8,5 Mds après −537 M en 2024. Si tendance confirmée en 2026, premier signal de détérioration liée à la croissance crédits (+18%)." },
+        { label: "8 — Spread NIM 2024 à 4,09% : signal d'alarme précoce", text: "Plus bas de la série. Récupéré en 2025 (5,33%). La BCEAO a comprimé puis bénéficié à NSIA selon le timing de repricing." },
+      ]},
+
+      { type: 'pull-quote', text: "NSIA Banque CI a accompli quelque chose de rare : passer d'une quasi-crise post-fusion en 2020 à une institution financièrement saine, en forte croissance et technologiquement modernisée en 5 ans. La transformation du portefeuille NPL (12,5% → 0,36%) est la performance la plus spectaculaire. La solidité de la NIM est le fondement le plus durable. Le vrai mystère reste le marché : pourquoi une banque créant 40 Mds de bénéfice par an, versant un dividende record de 759 FCFA net (DY 5,1%), ne voit-elle pas son cours progresser plus fortement ? La réponse est dans la liquidité limitée du titre et la faible profondeur institutionnelle de la BRVM — pas dans les fondamentaux." },
+
+      { type: 'heading', level: 1, text: "09-bis · RN en hausse, dividende en baisse — le paradoxe expliqué" },
+
+      { type: 'paragraph', text: "La séquence des dividendes NSBC — 0 / 0 / 404 / 455 / 759 / 370 FCFA — déroute au premier abord. Comment expliquer qu'en 2025 le résultat net progresse de +6,8% mais que le dividende chute de −51% ? Ce n'est pas une incohérence. C'est une décision de capital rationnelle que les chiffres justifient entièrement." },
+
+      { type: 'table', caption: 'Dividende, capital et croissance — 2022 à 2025',
+        headers: ['Exercice', 'Résultat net', 'Distribué', 'Payout', 'Réinvesti', 'Tier 1 proxy', 'Croissance bilan'],
+        rows: [
+          ['2022', '32 382 M', '11 749 M', '36,3%', '20 633 M', '8,75%', '+14,6%'],
+          ['2023', '34 813 M', '13 233 M', '38,0%', '21 580 M', '9,31% ↑', '+8,1%'],
+          ['2024', '38 112 M', '22 113 M', '58,0% ↑↑', '15 999 M', '8,56%', '+23,4% ↑↑'],
+          ['2025', '40 712 M', '10 760 M', '26,4% ↓', '29 952 M', '7,59% ↓', '+22,2% ↑↑'],
+        ],
+      },
+
+      { type: 'callout', variant: 'warn', title: "① Tier 1 en zone d'alerte — la contrainte réglementaire", paragraphs: [
+        "Le ratio Tier 1 proxy est tombé à 7,59% en 2025 — sous le seuil de confort de 8% imposé par Bâle III et surveillé par la BCEAO. Le bilan a crû de +559 Mds en un an sans augmentation de capital. Distribuer plus aurait dégradé encore ce ratio. En clair : la banque est trop grande pour ses fonds propres actuels — elle doit retenir du capital pour rester dans les clous réglementaires.",
+      ]},
+      { type: 'callout', variant: 'warn', title: "② CAPEX massif — construire la banque de 2028", paragraphs: [
+        "En 2025, la banque a investi ~33,5 Mds FCFA en immobilisations corporelles — soit 82% de son résultat net. Titrisation FCTC (50 Mds), RMBS Zaka (10 Mds), nouvelle infrastructure digitale, agences, équipements. On ne peut pas à la fois investir 33 Mds et distribuer 22 Mds — il faut choisir.",
+      ]},
+      { type: 'callout', variant: 'warn', title: "③ La titrisation exige un bilan solide", paragraphs: [
+        "Pour émettre des FCTC et des RMBS sur les marchés régionaux et internationaux, les agences de notation et les investisseurs exigent une base de capital robuste. Les emprunts subordonnés ont bondi de 18 740 à 40 117 M (+114%) — la banque lève de la dette externe. Distribuer les fonds propres fragiliserait sa crédibilité et renchérirait son coût de refinancement.",
+      ]},
+      { type: 'callout', variant: 'ok', title: "④ La logique McKinsey : réinvestir quand ROE > Ke", paragraphs: [
+        "ROE 2025 = 18,9% > Ke = 13,5% — chaque FCFA conservé dans la banque rapporte 18,9 centimes. Chaque FCFA distribué à l'actionnaire ne rapportera en moyenne que 13,5 centimes (coût du capital). Le CA a rationnellement choisi de faire travailler le capital là où il crée le plus de valeur — dans la banque elle-même, pas dans la poche des actionnaires. C'est la définition exacte d'une bonne allocation du capital.",
+      ]},
+
+      { type: 'pull-quote', text: "La séquence 0 / 0 / 404 / 455 / 759 / 370 FCFA n'est pas erratique. Elle raconte une stratégie cohérente : consolider d'abord (2020–2021), rémunérer progressivement (2022–2023), faire un geste fort (2024 : +67%), puis arbitrer en faveur de la croissance (2025). Un CA qui gère le capital de façon dynamique selon les besoins réels de la banque — pas pour « faire plaisir » au marché à court terme. Note : le dividende 2025 (~370 FCFA, source Madis Finance) est provisoire. Il sera officiellement voté et publié par la BRVM lors de l'AG 2026." },
+    ],
+  },
   // ── NSBC — NSIA Banque CI T1 2026 ──────────────────────────────────────────
   {
     id: "nsbc-analyse-t1-2026",
