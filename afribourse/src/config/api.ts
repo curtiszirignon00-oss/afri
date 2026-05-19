@@ -12,6 +12,17 @@ export function getAuthToken(): string | null {
   return authToken;
 }
 
+// Refresh token en mémoire — fallback pour mobile quand le cookie rtk est bloqué (ITP)
+let refreshTokenInMemory: string | null = null;
+
+export function setRefreshToken(token: string | null): void {
+  refreshTokenInMemory = token;
+}
+
+export function getRefreshToken(): string | null {
+  return refreshTokenInMemory;
+}
+
 // Token CSRF en mémoire (jamais exposé dans le DOM ni dans le localStorage)
 let csrfToken: string | null = null;
 

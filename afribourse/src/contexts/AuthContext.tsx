@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { apiClient, getIsAxiosRefreshing } from '../lib/api-client';
-import { setAuthToken, getAuthToken } from '../config/api';
+import { setAuthToken, getAuthToken, setRefreshToken, getRefreshToken } from '../config/api';
 import * as amplitude from '@amplitude/unified';
 import { trackLogout } from '../lib/amplitude';
 import { metaPixelIdentify } from '../utils/metaPixel';
@@ -51,7 +51,7 @@ interface AuthContextType {
   loading: boolean;
   sessionExpired: boolean;
   checkAuth: () => Promise<boolean>;
-  initAuthFromLogin: (user: UserProfile, token?: string) => void;
+  initAuthFromLogin: (user: UserProfile, token?: string, refreshToken?: string) => void;
   logout: () => Promise<void>;
   dismissSessionExpired: () => void;
 }
@@ -99,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoggedIn(false);
     setUserProfile(null);
     setAuthToken(null);
+    setRefreshToken(null);
     setSessionExpired(true);
     window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
   };
@@ -133,10 +134,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(REFRESH_LOCK_KEY, String(now));
 
     try {
-      const response = await apiClient.post('/refresh', {});
-      const { token } = response.data;
+      const storedRtk = getRefreshToken();
+      const response = await apiClient.post('/refresh', storedRtk ? { refreshToken: storedRtk } : {});
+      const { token, refreshToken: newRtk } = response.data;
       if (token) {
         setAuthToken(token);
+        if (newRtk) setRefreshToken(newRtk);
         tokenIssuedAtRef.current = Date.now();
         scheduleTokenRefresh();
         localStorage.setItem(REFRESH_DONE_KEY, String(Date.now()));
@@ -162,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsLoggedIn(false);
           setUserProfile(null);
           setAuthToken(null);
+          setRefreshToken(null);
         }
       }
       // Autres erreurs (5xx serveur) : on ignore — le timer proactif retentera au prochain cycle
@@ -215,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Alimenter l'état auth directement depuis la réponse du login — sans appel réseau supplémentaire.
   // Évite la race condition entre le checkAuth() initial et le login manuel.
-  const initAuthFromLogin = (user: UserProfile, token?: string) => {
+  const initAuthFromLogin = (user: UserProfile, token?: string, refreshToken?: string) => {
     initialCheckAborted.current = true;
     sessionExpiredFiredRef.current = false;
     if (user?.role === 'admin') {
@@ -232,6 +236,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthToken(token);
       tokenIssuedAtRef.current = Date.now();
       scheduleTokenRefresh();
+    }
+    if (refreshToken) {
+      setRefreshToken(refreshToken);
     }
   };
 
@@ -253,6 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       amplitude.setUserId(undefined);
       amplitude.reset();
       setAuthToken(null);
+      setRefreshToken(null);
     }
   };
 
@@ -268,10 +276,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const oauthStatus = urlParams.get('oauth');
+    const oauthToken = urlParams.get('t');
+    const oauthRtk = urlParams.get('rtk');
+
+    // Sur mobile Safari (ITP), les cookies cross-site sont bloqués après la redirection OAuth.
+    // Le backend injecte les tokens dans l'URL → on les stocke en mémoire avant checkAuth().
+    // L'URL est immédiatement nettoyée pour ne pas laisser les tokens dans l'historique du navigateur.
+    if (oauthToken) setAuthToken(oauthToken);
+    if (oauthRtk) setRefreshToken(oauthRtk);
 
     checkAuth();
 
-    // Nettoyer les paramètres OAuth de l'URL après le retour OAuth
+    // Nettoyer les paramètres OAuth de l'URL (tokens inclus) après le retour OAuth
     if (oauthStatus === 'success') {
       window.history.replaceState({}, '', window.location.pathname);
     }

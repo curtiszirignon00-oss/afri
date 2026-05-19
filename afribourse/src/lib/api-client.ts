@@ -1,6 +1,6 @@
 // src/lib/api-client.ts
 import axios from 'axios';
-import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken, setAuthToken } from '../config/api';
+import { fetchCsrfToken, getCsrfToken, invalidateCsrfToken, getAuthToken, setAuthToken, getRefreshToken, setRefreshToken } from '../config/api';
 import { RateLimitError } from './errors';
 
 function get429RetryDelay(headers: Record<string, string> | undefined): number {
@@ -101,10 +101,12 @@ apiClient.interceptors.response.use(
 
         isRefreshing = true;
         try {
-          const refreshResponse = await apiClient.post('/refresh', {});
-          const { token: newToken } = refreshResponse.data;
+          const storedRtk = getRefreshToken();
+          const refreshResponse = await apiClient.post('/refresh', storedRtk ? { refreshToken: storedRtk } : {});
+          const { token: newToken, refreshToken: newRtk } = refreshResponse.data;
           if (newToken) {
             setAuthToken(newToken);
+            if (newRtk) setRefreshToken(newRtk);
             processRefreshQueue(newToken);
             originalConfig.headers['Authorization'] = `Bearer ${newToken}`;
           }
@@ -112,6 +114,7 @@ apiClient.interceptors.response.use(
         } catch (refreshErr) {
           rejectRefreshQueue(refreshErr);
           setAuthToken(null);
+          setRefreshToken(null);
           const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
             '/glossary', '/about', '/contact', '/privacy', '/help', '/subscriptions',
             '/community', '/communities', '/classement', '/login', '/signup',

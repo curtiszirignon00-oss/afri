@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import passport from '../config/passport';
 import { signJWT } from '../utils';
 import config from '../config/environnement';
@@ -17,16 +18,36 @@ function handleOAuthCallback(provider: string) {
       );
     }
 
-    const token = signJWT({ id: user.id, email: user.email, role: user.role });
-
-    // Stocker le JWT dans un cookie httpOnly
-    res.cookie('token', token, {
+    const isProduction = config.nodeEnv === 'production';
+    const cookieOptions = {
       httpOnly: true,
-      secure: config.nodeEnv === 'production',
-      sameSite: config.nodeEnv === 'production' ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+      secure: isProduction,
+      sameSite: isProduction ? 'none' as const : 'lax' as const,
       path: '/',
-    });
+    };
+
+    // Access token court-vivant (15 min)
+    const accessToken = signJWT({ id: user.id, email: user.email, role: user.role });
+
+    // Refresh token rotatif — même mécanisme que le login classique
+    const newRefreshToken = crypto.randomBytes(32).toString('hex');
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          remember_token: newRefreshToken,
+          previous_remember_token: null,
+          previous_token_rotated_at: null,
+          last_login_at: new Date(),
+        } as any,
+      });
+    } catch (e) {
+      console.error(`[OAuth] Impossible de sauvegarder le refresh token pour ${user.id}:`, e);
+    }
+
+    // Cookies httpOnly (fonctionnent sur desktop / Android Chrome)
+    res.cookie('token', accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 });
+    res.cookie('rtk', newRefreshToken, { ...cookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 });
 
     // Vérifier si le nouvel utilisateur a complété le sondage de découverte
     let surveyCompleted = false;
@@ -43,7 +64,12 @@ function handleOAuthCallback(provider: string) {
 
     // Nouveaux utilisateurs OAuth → sondage de 3 questions avant le dashboard
     const destination = surveyCompleted ? '/dashboard' : '/survey';
-    res.redirect(`${config.app.frontendUrl}${destination}?oauth=success&provider=${provider}`);
+
+    // Tokens dans l'URL pour mobile Safari (ITP bloque les cookies cross-site lors de la redirection OAuth).
+    // Le frontend les extrait immédiatement et nettoie l'URL avec history.replaceState.
+    res.redirect(
+      `${config.app.frontendUrl}${destination}?oauth=success&provider=${provider}&t=${accessToken}&rtk=${newRefreshToken}`
+    );
   };
 }
 

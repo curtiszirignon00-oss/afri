@@ -38,7 +38,7 @@ export default function LoginPage() {
     try {
       const loginResponse = await apiClient.post('/login', { email, password, rememberMe });
 
-      const { user, token } = loginResponse.data;
+      const { user, token, refreshToken } = loginResponse.data;
 
       // Stocker le token en mémoire immédiatement (fallback Safari iOS ITP)
       if (token) {
@@ -50,7 +50,7 @@ export default function LoginPage() {
 
       // Alimenter l'état auth directement depuis la réponse — sans second appel réseau
       // Évite la race condition avec le checkAuth() initial du AuthContext
-      initAuthFromLogin(user, token);
+      initAuthFromLogin(user, token, refreshToken);
       trackLogin('email');
 
       toast.success('Connexion réussie !');
