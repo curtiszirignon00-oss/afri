@@ -23,7 +23,12 @@ export type ContentBlock =
   | { type: 'pull-quote'; text: string }
   | { type: 'verdict'; title: string; items: { label: string; text: string }[] }
   | { type: 'chart'; chartId: string }
-  | { type: 'glossary'; items: { term: string; definition: string }[] };
+  | { type: 'glossary'; items: { term: string; definition: string }[] }
+  // Formation-specific blocks
+  | { type: 'objectives'; title?: string; items: string[] }
+  | { type: 'analogy'; title: string; items: string[]; conclusion?: string }
+  | { type: 'ordered-list'; items: string[] }
+  | { type: 'section-title'; text: string; color?: 'blue' | 'green' | 'purple' | 'orange' };
 
 export interface BRVMArticle {
   id: string;

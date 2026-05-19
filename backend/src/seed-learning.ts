@@ -243,6 +243,80 @@ async function main() {
   <p><em>C'est ici que commence votre apprentissage concret du marché financier africain.</em></p>
 </div>
         `,
+    content_json: JSON.stringify([
+      { type: 'pull-quote', text: '"L\'investissement, c\'est le pont entre votre présent et votre futur."' },
+      { type: 'objectives', title: '🎯 Objectif pédagogique', items: [
+        'Adopterez le bon état d\'esprit d\'investisseur à long terme.',
+        'Comprendrez pourquoi la BRVM représente une opportunité unique pour les Africains.',
+        'Connaîtrez la structure complète du parcours de formation.',
+        'Serez capables de distinguer un investisseur d\'un spéculateur.'
+      ]},
+      { type: 'section-title', text: '🪶 0.1 – Bienvenue dans l\'Académie : Notre mission pour vous', color: 'blue' },
+      { type: 'paragraph', text: 'Bienvenue dans l\'<strong>Académie AfriBourse</strong>,' },
+      { type: 'paragraph', text: 'Un espace pensé pour vous — l\'épargnant, l\'entrepreneur, le jeune professionnel — qui souhaite faire travailler son argent plutôt que de le laisser dormir.' },
+      { type: 'callout', variant: 'warn', title: '⚠️ Constat de départ : L\'épargne seule ne suffit plus', paragraphs: ['L\'inflation grignote la valeur de votre argent au fil du temps.'] },
+      { type: 'paragraph', text: 'Notre mission est simple : <strong>transformer votre épargne en capital actif</strong>, grâce à une connaissance claire, à des outils accessibles, et à une pédagogie ancrée dans la réalité africaine.' },
+      { type: 'callout', variant: 'ok', title: '💎 Chez AfriBourse, nous croyons que :', paragraphs: [
+        'La connaissance est la clé de la confiance.',
+        'La discipline est la clé de la réussite financière.',
+        'Chaque Africain mérite une part du développement économique de son continent.'
+      ]},
+      { type: 'section-title', text: '🌍 0.2 – La Bourse, un moteur pour nos économies africaines', color: 'green' },
+      { type: 'paragraph', text: 'Investir à la BRVM, ce n\'est pas seulement chercher un rendement — c\'est <strong>participer activement à la construction économique de l\'Afrique de l\'Ouest</strong>.' },
+      { type: 'paragraph', text: 'Chaque action achetée, chaque entreprise soutenue, contribue à :' },
+      { type: 'list', items: [
+        'Financer la croissance de sociétés locales.',
+        'Créer des emplois et soutenir l\'innovation.',
+        'Répartir la richesse de manière plus équitable entre citoyens et investisseurs.'
+      ]},
+      { type: 'pull-quote', text: '💬 "Quand un Africain investit dans une entreprise africaine, il investit dans le futur de son peuple."' },
+      { type: 'analogy', title: '⚓ L\'analogie à retenir : le piroguier prudent', items: [
+        'Vérifier la météo (analyse du marché)',
+        'Préparer son équipage (formation)',
+        'Définir une destination (objectifs financiers)'
+      ], conclusion: 'Sur la mer de l\'investissement, les vagues représentent la volatilité. Mais celui qui a un cap, un plan et de la patience <strong>arrive toujours au rivage</strong>. 💡 La bourse, ce n\'est pas un sprint — c\'est une navigation.' },
+      { type: 'section-title', text: '🗺️ 0.3 – Présentation du parcours : votre feuille de route vers l\'autonomie', color: 'purple' },
+      { type: 'paragraph', text: 'Voici comment se déroule votre voyage au sein de l\'<strong>Académie AfriBourse</strong> 👇' },
+      { type: 'table', headers: ['Étape', 'Objectif', 'Modules'], rows: [
+        ['🧠 Mindset', 'Poser les bases mentales et émotionnelles de l\'investisseur', 'M0, M5'],
+        ['⚙️ Fondations', 'Comprendre les marchés, les acteurs et les instruments', 'M1 à M4'],
+        ['🔍 Analyse & Stratégie', 'Maîtriser l\'analyse fondamentale et technique', 'M6 à M10'],
+        ['💼 Action & Gestion', 'Construire, exécuter et suivre son portefeuille', 'M11 à M16']
+      ]},
+      { type: 'callout', variant: 'ok', title: '🎯 À la fin du parcours, vous serez capable de :', paragraphs: [
+        'Analyser une entreprise cotée à la BRVM',
+        'Identifier le bon moment pour investir',
+        'Construire un portefeuille cohérent et rentable',
+        'Investir avec confiance et méthode'
+      ]},
+      { type: 'section-title', text: '💥 0.4 – Brisons les mythes : Investisseur vs Spéculateur', color: 'orange' },
+      { type: 'callout', variant: 'info', title: '❌ Mythe 1 : "Il faut être riche pour investir"', paragraphs: [
+        'FAUX.',
+        'À la BRVM, vous pouvez commencer avec de petites sommes régulières.',
+        'Le plus important n\'est pas le capital de départ, mais le temps et la constance.',
+        '💬 "Le meilleur moment pour planter un arbre était il y a 20 ans. Le deuxième meilleur moment, c\'est aujourd\'hui." – Proverbe africain'
+      ]},
+      { type: 'callout', variant: 'info', title: '❌ Mythe 2 : "La Bourse, c\'est un casino"', paragraphs: [
+        'NON, ce n\'est pas un jeu de hasard.',
+        'La <strong>spéculation</strong> repose sur les émotions et les paris à court terme.',
+        'L\'<strong>investissement</strong> repose sur l\'analyse, la patience et la vision long terme.',
+        '💡 "The individual investor should act consistently as an investor and not as a speculator." — Benjamin Graham, mentor de Warren Buffett',
+        'L\'<strong>investisseur</strong> achète une part d\'entreprise pour en partager la réussite.',
+        'Le <strong>spéculateur</strong> parie sur une fluctuation de prix.',
+        '🎯 À la BRVM, nous formons des investisseurs — pas des parieurs.'
+      ]},
+      { type: 'glossary', items: [
+        { term: 'BRVM', definition: 'Bourse Régionale des Valeurs Mobilières : le marché commun de 8 pays de l\'UEMOA.' },
+        { term: 'Investisseur', definition: 'Personne qui place son argent dans des actifs pour générer un rendement à long terme.' },
+        { term: 'Spéculateur', definition: 'Personne qui achète et revend à court terme pour profiter de variations de prix.' },
+        { term: 'Volatilité', definition: 'Variation (montée et descente) du prix d\'un actif sur une période donnée.' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🚀 Prochaine étape', paragraphs: [
+        'Vous avez préparé votre esprit, compris la vision, et brisé les mythes.',
+        '👉 Passez maintenant au Module 1 : Les Fondations – Qu\'est-ce que la Bourse et la BRVM ?',
+        'C\'est ici que commence votre apprentissage concret du marché financier africain.'
+      ]}
+    ]),
   });
 
   // ==============================================
@@ -470,6 +544,107 @@ async function main() {
   </div>
 </div>
     `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique', items: [
+        'D\'expliquer ce qu\'est un marché financier et à quoi il sert',
+        'De comprendre le rôle unique de la BRVM dans l\'économie de la zone UEMOA',
+        'De distinguer clairement le marché primaire du marché secondaire',
+        'De comprendre pourquoi et comment une entreprise choisit d\'entrer en bourse'
+      ]},
+      { type: 'section-title', text: '🧩 1.1 Qu\'est-ce qu\'un marché financier ?', color: 'blue' },
+      { type: 'paragraph', text: 'Un marché financier est un espace — physique ou digital — où l\'argent rencontre les opportunités.' },
+      { type: 'paragraph', text: 'C\'est là que se rencontrent :' },
+      { type: 'list', items: [
+        'Ceux qui ont de l\'argent à placer (investisseurs)',
+        'Ceux qui ont besoin d\'argent pour financer leurs projets (entreprises ou États)'
+      ]},
+      { type: 'paragraph', text: 'Sur ces marchés, on ne vend pas des produits physiques, mais des titres financiers :' },
+      { type: 'list', items: [
+        'Les <strong>actions</strong> (parts de propriété dans une entreprise)',
+        'Les <strong>obligations</strong> (prêts faits à une entreprise ou à un État)'
+      ]},
+      { type: 'paragraph', text: 'Sur les marchés financiers on distingue :' },
+      { type: 'list', items: [
+        '<strong>Le marché primaire</strong> : le lieu où les nouveaux titres sont émis pour lever des capitaux frais',
+        '<strong>Le marché secondaire</strong> : le lieu où ces titres déjà existants s\'échangent ensuite entre investisseurs pour assurer leur liquidité'
+      ]},
+      { type: 'analogy', title: '🪶 L\'analogie à retenir : Le Grand Marché de la Ville', items: [
+        'Dans une zone, les producteurs viennent vendre leurs produits frais pour la première fois (🍍 marché primaire)',
+        'Dans une autre zone, les commerçants revendent les produits achetés aux producteurs (🍊 marché secondaire)'
+      ], conclusion: '👉 La BRVM joue le rôle de ce grand marché financier, mais avec des règles claires, un système sécurisé, et une surveillance stricte pour protéger tous les participants.' },
+      { type: 'heading', level: 2, text: '📊 Pourquoi les marchés financiers sont essentiels' },
+      { type: 'paragraph', text: 'Ils remplissent trois grandes fonctions :' },
+      { type: 'ordered-list', items: [
+        '<strong>Canaliser l\'épargne vers l\'investissement productif</strong> — Votre argent finance des projets réels : usines, routes, innovations.',
+        '<strong>Faciliter la liquidité</strong> — Vous pouvez revendre vos titres à tout moment.',
+        '<strong>Rendre l\'économie plus transparente</strong> — Les entreprises cotées publient leurs résultats, ce qui permet de suivre leur performance.'
+      ]},
+      { type: 'section-title', text: '🔁 1.2 Marché primaire vs marché secondaire', color: 'purple' },
+      { type: 'paragraph', text: 'Comprendre cette distinction est fondamental :' },
+      { type: 'table', headers: ['Type de marché', 'Description', 'À qui va l\'argent ?', 'Exemple concret'], rows: [
+        ['Marché primaire', 'Les titres sont émis et vendus pour la première fois.', 'Directement à l\'entreprise ou à l\'État.', 'Une société comme NSIA Banque émet de nouvelles actions pour financer son expansion.'],
+        ['Marché secondaire', 'Les titres déjà émis sont échangés entre investisseurs.', 'L\'argent circule entre investisseurs, pas vers l\'entreprise.', 'Vous achetez des actions Sonatel à un autre investisseur via votre SGI.']
+      ]},
+      { type: 'callout', variant: 'info', title: '🎯 À retenir', paragraphs: ['<strong>Votre terrain de jeu principal, en tant qu\'investisseur particulier, est le marché secondaire</strong>, car c\'est là que vous pourrez acheter ou revendre vos titres.'] },
+      { type: 'section-title', text: '🏛️ 1.3 Le rôle et le fonctionnement de la BRVM', color: 'green' },
+      { type: 'paragraph', text: '<strong>Une bourse est simplement un marché financier réglementé et centralisé</strong> où s\'échangent des titres tels que des actions et des obligations. Elle permet aux entreprises de lever des capitaux et aux investisseurs d\'acheter ou de vendre ces actifs en toute sécurité.' },
+      { type: 'heading', level: 2, text: '🌍 Une bourse régionale unique au monde' },
+      { type: 'paragraph', text: 'La <strong>Bourse Régionale des Valeurs Mobilières (BRVM)</strong> est commune à huit pays africains partageant la même monnaie, le franc CFA (UEMOA) :' },
+      { type: 'paragraph', text: '🇧🇯 Bénin | 🇧🇫 Burkina Faso | 🇨🇮 Côte d\'Ivoire | 🇬🇼 Guinée-Bissau | 🇲🇱 Mali | 🇳🇪 Niger | 🇸🇳 Sénégal | 🇹🇬 Togo' },
+      { type: 'paragraph', text: 'Elle a été créée en 1998, avec son siège à Abidjan (Côte d\'Ivoire), et son dépositaire central, le DC/BR, à Cotonou (Bénin).' },
+      { type: 'heading', level: 2, text: '⚙️ Son fonctionnement' },
+      { type: 'list', items: [
+        'Les entreprises qui souhaitent lever des fonds émettent des titres (actions ou obligations)',
+        'Les investisseurs achètent et vendent ces titres via des Sociétés de Gestion et d\'Intermédiation (SGI), qui sont les courtiers agréés',
+        'Le régulateur, le CREPMF, veille au respect des règles de transparence et de protection des investisseurs'
+      ]},
+      { type: 'heading', level: 2, text: '📈 Les indices phares' },
+      { type: 'list', items: [
+        '<strong>BRVM Composite</strong> : suit l\'ensemble des sociétés cotées',
+        '<strong>BRVM 10</strong> : regroupe les 10 entreprises les plus liquides et les plus importantes'
+      ]},
+      { type: 'paragraph', text: '<em>Quand on dit « la BRVM a progressé de 2 % aujourd\'hui », cela signifie que, globalement, les valeurs cotées ont pris de la valeur.</em>' },
+      { type: 'callout', variant: 'info', title: '💡 À retenir', paragraphs: [
+        'La BRVM permet :',
+        'Aux entreprises de se financer localement sans dépendre uniquement des banques',
+        'Aux investisseurs de faire fructifier leur capital',
+        'Et à nos économies africaines de croître de manière inclusive et transparente'
+      ]},
+      { type: 'section-title', text: '🚀 1.4 Comment et pourquoi une entreprise entre en bourse (IPO)', color: 'orange' },
+      { type: 'heading', level: 2, text: '💰 Pourquoi entrer en bourse ?' },
+      { type: 'paragraph', text: 'Une entreprise décide de s\'introduire en bourse (faire une IPO – Initial Public Offering) pour :' },
+      { type: 'ordered-list', items: [
+        'Lever des capitaux sans contracter de dettes bancaires',
+        'Améliorer sa visibilité et sa crédibilité auprès des investisseurs, partenaires et clients',
+        'Permettre à ses premiers actionnaires (fondateurs, fonds, salariés) de revendre une partie de leurs actions',
+        'Diversifier ses sources de financement et accéder à un marché de capitaux plus large'
+      ]},
+      { type: 'heading', level: 2, text: '⚙️ Comment cela se passe ?' },
+      { type: 'ordered-list', items: [
+        'L\'entreprise prépare ses états financiers et un prospectus approuvé par le CREPMF',
+        'Elle choisit une SGI pour la conseiller et placer ses titres',
+        'Les investisseurs souscrivent aux actions pendant la période d\'offre publique',
+        'Une fois les titres émis, l\'entreprise devient cotée et ses actions sont échangées sur le marché secondaire'
+      ]},
+      { type: 'callout', variant: 'info', title: '🎯 Exemple africain', paragraphs: [
+        'L\'introduction en bourse de Orange Côte d\'Ivoire (2022) a permis :',
+        'À l\'entreprise de lever plusieurs dizaines de milliards FCFA',
+        'Aux citoyens ivoiriens de devenir actionnaires d\'un acteur majeur du pays',
+        'Et à la BRVM d\'attirer de nouveaux investisseurs régionaux'
+      ]},
+      { type: 'glossary', items: [
+        { term: 'BRVM', definition: 'Bourse Régionale des Valeurs Mobilières, marché commun de l\'UEMOA.' },
+        { term: 'BRVM Composite', definition: 'Indice mesurant la performance de toutes les sociétés cotées.' },
+        { term: 'IPO (Initial Public Offering)', definition: 'Introduction en bourse — première vente d\'actions au public.' },
+        { term: 'Marché primaire', definition: 'Marché où sont émis les nouveaux titres financiers.' },
+        { term: 'Marché secondaire', definition: 'Marché où les titres déjà émis s\'échangent entre investisseurs.' },
+        { term: 'SGI', definition: 'Société de Gestion et d\'Intermédiation, intermédiaire agréé pour acheter/vendre des titres.' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine étape', paragraphs: [
+        'Vous avez maintenant compris le rôle des marchés financiers et de la BRVM dans notre économie.',
+        '👉 Prochaine leçon : Module 2 — Les Acteurs du Jeu : Qui fait quoi sur le marché ?'
+      ]}
+    ]),
   });
 
   // =====================================
@@ -542,7 +717,7 @@ async function main() {
  <ul class="list-disc ml-6 mb-4 space-y-2">
  <li><strong>Définir les règles du jeu</strong> — Fixe les normes que tous les acteurs doivent respecter</li>
  <li><strong>Approuver les introductions en bourse</strong> — Valide que les entreprises respectent les critères de transparence</li>
- <li><strong>Surveiller et sanctionner les abus</strong> — elle enquête sur les abus, manipulations ou délits d’initiés.</li>
+ <li><strong>Surveiller et sanctionner les abus</strong> — elle enquête sur les abus, manipulations ou délits d'initiés.</li>
  <li><strong>Agréer les acteurs financiers</strong> — SGI, fonds, conseillers doivent obtenir une licence</li>
  </ul>
 
@@ -572,7 +747,7 @@ async function main() {
  <li><strong>Conservation des titres :</strong> Vos actions et obligations ne sont pas stockées chez votre SGI, mais enregistrées au DC/BR à votre nom.
 → Si votre SGI disparaît, vos titres restent intacts et récupérables.
 </li>
- <li><strong>Règlement-livraison :</strong> Quand vous achetez, le DC/BR transfère les titres sur votre compte et l’argent vers le vendeur — tout cela simultanément pour éviter les fraudes.</li>
+ <li><strong>Règlement-livraison :</strong> Quand vous achetez, le DC/BR transfère les titres sur votre compte et l'argent vers le vendeur — tout cela simultanément pour éviter les fraudes.</li>
  <li><strong>Banque de règlement :</strong> Gère les flux financiers entre toutes les SGI pour assurer la fluidité du marché.</li>
  </ul>
 
@@ -757,13 +932,139 @@ async function main() {
  <p class="text-lg font-bold leading-relaxed">👉 Prochaine leçon : Module 3 — Les Outils de l'Investisseur : Actions, Obligations et OPCVM</p>
  </div>
  `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique', items: [
+        'd\'identifier les principaux acteurs du marché financier régional ;',
+        'de comprendre comment vos ordres d\'achat ou de vente circulent ;',
+        'de visualiser la chaîne de sécurité qui protège votre argent et vos titres.'
+      ]},
+      { type: 'heading', level: 1, text: '⚙️ 2.1 Les Trois Piliers Institutionnels du Marché' },
+      { type: 'paragraph', text: 'Le marché financier régional repose sur <strong>trois institutions clés</strong> qui travaillent ensemble pour assurer la sécurité, la transparence et la stabilité :' },
+      { type: 'list', items: [
+        '🏦 BCEAO — Assure la stabilité monétaire de la région',
+        '⚖️ AMF-UMOA — Régule le marché et protège les investisseurs',
+        '🔐 DC/BR — Conserve vos titres et sécurise les transactions'
+      ]},
+      { type: 'heading', level: 2, text: '🏦 2.1.1 BCEAO – Le Pilier Monétaire' },
+      { type: 'paragraph', text: 'La <strong>BCEAO (Banque Centrale des États de l\'Afrique de l\'Ouest)</strong> assure la stabilité monétaire de la région UEMOA.' },
+      { type: 'paragraph', text: 'Elle influence fortement les marchés financiers à travers :' },
+      { type: 'list', items: [
+        '<strong>La fixation des taux directeurs</strong> — Détermine le coût de l\'argent dans l\'économie',
+        '<strong>La gestion de l\'inflation</strong> — Protège le pouvoir d\'achat de la monnaie',
+        '<strong>La supervision du système bancaire</strong> — Garantit la solidité des banques'
+      ]},
+      { type: 'callout', variant: 'info', title: '💡 Impact sur vos investissements :', paragraphs: [
+        '<strong>Baisse des taux :</strong> Stimule les entreprises (crédit moins cher) et peut faire monter les actions.',
+        '<strong>Hausse des taux :</strong> Rend le crédit plus cher, ce qui peut peser sur les valorisations boursières.'
+      ]},
+      { type: 'callout', variant: 'note', title: '🧩 À retenir :', paragraphs: ['La BCEAO ne gère pas directement la BRVM, mais influence fortement son évolution.'] },
+      { type: 'heading', level: 2, text: '⚖️ 2.1.2 AMF-UMOA – Le Gendarme du Marché' },
+      { type: 'paragraph', text: 'L\'<strong>AMF-UMOA (Autorité des Marchés Financiers de l\'UMOA)</strong> protège les investisseurs et veille à la transparence du marché.' },
+      { type: 'paragraph', text: 'Ses missions principales :' },
+      { type: 'list', items: [
+        '<strong>Définir les règles du jeu</strong> — Fixe les normes que tous les acteurs doivent respecter',
+        '<strong>Approuver les introductions en bourse</strong> — Valide que les entreprises respectent les critères de transparence',
+        '<strong>Surveiller et sanctionner les abus</strong> — elle enquête sur les abus, manipulations ou délits d\'initiés.',
+        '<strong>Agréer les acteurs financiers</strong> — SGI, fonds, conseillers doivent obtenir une licence'
+      ]},
+      { type: 'callout', variant: 'info', title: '💬 Pourquoi c\'est important pour vous :', paragraphs: [
+        'L\'AMF-UMOA agit comme un gendarme financier. Elle s\'assure que :',
+        'les sociétés cotées publient des informations fiables ;',
+        'les SGI respectent les règles ;',
+        'vos transactions sont conformes aux lois LBC/FT (Lutte contre le Blanchiment et le Financement du Terrorisme).'
+      ]},
+      { type: 'paragraph', text: '👉 C\'est votre <strong>bouclier réglementaire</strong>. Sans l\'AMF-UMOA, la confiance dans le marché s\'effondrerait.' },
+      { type: 'heading', level: 2, text: '🔐 2.1.3 DC/BR – Le Notaire Digital du Marché' },
+      { type: 'paragraph', text: 'Le <strong>DC/BR (Dépositaire Central/Banque de Règlement)</strong> est l\'entité qui conserve vos titres et sécurise toutes les transactions financières.' },
+      { type: 'paragraph', text: 'Ses trois fonctions clés :' },
+      { type: 'list', items: [
+        '<strong>Conservation des titres :</strong> Vos actions et obligations ne sont pas stockées chez votre SGI, mais enregistrées au DC/BR à votre nom. → Si votre SGI disparaît, vos titres restent intacts et récupérables.',
+        '<strong>Règlement-livraison :</strong> Quand vous achetez, le DC/BR transfère les titres sur votre compte et l\'argent vers le vendeur — tout cela simultanément pour éviter les fraudes.',
+        '<strong>Banque de règlement :</strong> Gère les flux financiers entre toutes les SGI pour assurer la fluidité du marché.'
+      ]},
+      { type: 'heading', level: 1, text: '⚙️ 2.2 Les SGI – Votre Intermédiaire Officiel' },
+      { type: 'paragraph', text: 'Les <strong>SGI (Sociétés de Gestion et d\'Intermédiation)</strong> sont les courtiers agréés qui vous permettent d\'accéder au marché boursier. Vous ne pouvez PAS acheter ou vendre des titres directement à la BRVM — vous devez obligatoirement passer par une SGI.' },
+      { type: 'heading', level: 2, text: '🔑 Rôles clés d\'une SGI :' },
+      { type: 'list', items: [
+        '<strong>Ouvrir et gérer votre compte-titres</strong> — Votre "compte bancaire" pour les actions et obligations',
+        '<strong>Transmettre vos ordres à la BRVM</strong> — Achats et ventes que vous souhaitez effectuer',
+        '<strong>Conserver vos fonds en attente d\'investissement</strong> — Sécurisation de votre cash avant allocation',
+        '<strong>Vous conseiller selon votre profil</strong> — Recommandations personnalisées basées sur vos objectifs',
+        '<strong>Assurer le suivi administratif</strong> — Dividendes, relevés de compte, fiscalité'
+      ]},
+      { type: 'heading', level: 2, text: '📋 Comment choisir une SGI ?' },
+      { type: 'paragraph', text: 'Critères à considérer :' },
+      { type: 'ordered-list', items: [
+        '<strong>Frais et commissions</strong> — Comparez les tarifs (frais de courtage, frais de garde, etc.)',
+        '<strong>Qualité du service client</strong> — Réactivité, disponibilité, accompagnement',
+        '<strong>Outils et plateformes</strong> — Interface en ligne, application mobile, facilité d\'utilisation',
+        '<strong>Réputation et ancienneté</strong> — Solidité financière et expérience sur le marché',
+        '<strong>Accessibilité géographique</strong> — Présence dans votre ville ou pays'
+      ]},
+      { type: 'heading', level: 1, text: '💼 2.3 L\'Investisseur – C\'est Vous' },
+      { type: 'paragraph', text: 'Les investisseurs sont ceux qui apportent les fonds sur le marché. Il en existe deux grandes catégories :' },
+      { type: 'heading', level: 2, text: '👤 1. Investisseurs particuliers (personnes physiques)' },
+      { type: 'paragraph', text: 'Ce sont des individus comme vous et moi qui investissent leur propre épargne pour :' },
+      { type: 'list', items: [
+        'Faire croître leur capital sur le long terme',
+        'Préparer leur retraite',
+        'Financer des projets futurs (éducation des enfants, achat immobilier, etc.)',
+        'Générer des revenus passifs grâce aux dividendes'
+      ]},
+      { type: 'heading', level: 2, text: '🏢 2. Investisseurs institutionnels' },
+      { type: 'paragraph', text: 'Ce sont des organisations qui gèrent des milliards de FCFA pour le compte de leurs clients ou de leurs salariés :' },
+      { type: 'list', items: [
+        '<strong>Compagnies d\'assurance</strong> — Gèrent les primes collectées',
+        '<strong>Fonds de pension</strong> — Préparent les retraites des salariés',
+        '<strong>Banques</strong> — Investissent une partie de leurs fonds propres',
+        '<strong>OPCVM (fonds d\'investissement)</strong> — Regroupent l\'épargne de milliers d\'investisseurs'
+      ]},
+      { type: 'callout', variant: 'info', title: '💡 À retenir', paragraphs: ['Même si vous débutez avec un petit capital, vous jouez un rôle essentiel : vous contribuez au financement des entreprises africaines et participez au développement économique de votre continent.'] },
+      { type: 'heading', level: 1, text: '🏢 2.4 Les Sociétés Cotées – Les Champions Économiques' },
+      { type: 'paragraph', text: 'Les <strong>entreprises cotées</strong> sont les sociétés qui ont choisi d\'ouvrir leur capital au public en émettant des actions ou des obligations sur la BRVM.' },
+      { type: 'heading', level: 2, text: '🎯 Pourquoi les entreprises se cotent-elles ?' },
+      { type: 'list', items: [
+        '<strong>Lever des fonds</strong> pour financer leur croissance sans s\'endetter auprès des banques',
+        '<strong>Gagner en transparence</strong> et en crédibilité auprès de leurs partenaires et clients',
+        '<strong>Impliquer les citoyens</strong> dans leur croissance et partager les bénéfices via les dividendes',
+        '<strong>Améliorer leur gouvernance</strong> grâce aux exigences réglementaires strictes'
+      ]},
+      { type: 'heading', level: 2, text: '📊 Quelques exemples de champions de la BRVM :' },
+      { type: 'table', headers: ['Entreprise', 'Secteur', 'Pourquoi c\'est intéressant'], rows: [
+        ['Sonatel', 'Télécommunications', 'Leader des télécoms au Sénégal, dividendes réguliers'],
+        ['Ecobank CI', 'Banque', 'Réseau panafricain, forte présence régionale'],
+        ['Nestlé CI', 'Agroalimentaire', 'Marque mondiale, produits de consommation courante'],
+        ['Palmci', 'Agriculture', 'Production d\'huile de palme, secteur stratégique'],
+        ['TotalEnergies CI', 'Énergie', 'Distribution de carburant, valeur défensive']
+      ]},
+      { type: 'heading', level: 1, text: '🌐 2.5 Autres Acteurs Clés de l\'Écosystème' },
+      { type: 'heading', level: 2, text: '📊 SGO (Sociétés de Gestion d\'OPCVM)' },
+      { type: 'paragraph', text: 'Les SGO gèrent des fonds d\'investissement collectifs (FCP, SICAV) qui permettent aux petits investisseurs d\'accéder à des portefeuilles diversifiés gérés par des professionnels.' },
+      { type: 'heading', level: 2, text: '🧾 Experts-comptables et commissaires aux comptes' },
+      { type: 'paragraph', text: 'Ils certifient les états financiers des entreprises cotées, garantissant ainsi la fiabilité des informations publiées. Sans leur validation, impossible de publier des résultats.' },
+      { type: 'heading', level: 2, text: '📰 Médias financiers et analystes' },
+      { type: 'paragraph', text: 'Ils diffusent l\'information financière, analysent les entreprises et contribuent à la transparence du marché. Exemples : AfriBourse (😉), Financial Afrik, etc.' },
+      { type: 'glossary', items: [
+        { term: 'SGI', definition: 'Société de Gestion et d\'Intermédiation — Votre courtier pour accéder à la BRVM.' },
+        { term: 'AMF-UMOA', definition: 'Autorité des Marchés Financiers — Régulateur qui protège les investisseurs.' },
+        { term: 'DC/BR', definition: 'Dépositaire Central / Banque de Règlement — Conservation des titres et sécurisation des transactions.' },
+        { term: 'BCEAO', definition: 'Banque Centrale des États de l\'Afrique de l\'Ouest — Pilier de la stabilité monétaire.' },
+        { term: 'Investisseur institutionnel', definition: 'Organisation qui gère de gros volumes (assurance, fonds de pension, banques).' },
+        { term: 'Société cotée', definition: 'Entreprise dont les titres sont listés et échangés sur la BRVM.' },
+        { term: 'SGO', definition: 'Société de Gestion d\'OPCVM — Gestionnaire de fonds collectifs (FCP, SICAV).' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine étape', paragraphs: [
+        'Vous comprenez maintenant qui sont les acteurs du marché et comment ils travaillent ensemble pour assurer la sécurité et la transparence.',
+        '👉 Prochaine leçon : Module 3 — Les Outils de l\'Investisseur : Actions, Obligations et OPCVM'
+      ]}
+    ]),
   });
 
   // ==================================================
   // === M3 : LES OUTILS DE L'INVESTISSEUR ===
   // ==================================================
   await createOrUpdateModule({
-    title: "Les Outils de l’Investisseur — Les Instruments Financiers de la BRVM",
+    title: "Les Outils de l'Investisseur — Les Instruments Financiers de la BRVM",
     slug: 'outils-investisseur',
     description: "Découvrez les principaux instruments financiers de la BRVM : actions, obligations, OPCVM, ETF. Comprenez leur fonctionnement, leurs risques et comment les choisir en fonction de votre profil.",
     difficulty_level: "debutant",
@@ -803,20 +1104,20 @@ async function main() {
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">3.1 Les Actions — Devenir propriétaire d'une part d'entreprise</h2>
- <p class="text-gray-600 mb-6">Une action représente une fraction du capital d’une société. En l’achetant, vous devenez actionnaire, c’est-à-dire copropriétaire de l’entreprise.</p>
+ <p class="text-gray-600 mb-6">Une action représente une fraction du capital d'une société. En l'achetant, vous devenez actionnaire, c'est-à-dire copropriétaire de l'entreprise.</p>
 
  <div class="grid md:grid-cols-2 gap-6 mb-6">
  <div class="bg-green-50 p-4 rounded-lg">
  <h3 class="font-bold text-green-800 mb-2 flex items-center gap-2">💰 Sources de rendement</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-700">
- <li><strong>Plus-value</strong> : revendre plus cher que le prix d’achat.</li>
+ <li><strong>Plus-value</strong> : revendre plus cher que le prix d'achat.</li>
  <li><strong>Dividendes</strong> : part du bénéfice distribuée annuellement.</li>
  </ul>
  </div>
  <div class="bg-red-50 p-4 rounded-lg">
  <h3 class="font-bold text-red-800 mb-2 flex items-center gap-2">⚠️ Risques associés</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-700">
- <li>La valeur de l’action peut baisser fortement.</li>
+ <li>La valeur de l'action peut baisser fortement.</li>
  <li>En cas de faillite, les actionnaires sont rémunérés en dernier.</li>
  <li>Les dividendes ne sont jamais garantis.</li>
  </ul>
@@ -828,28 +1129,28 @@ async function main() {
  </div>
 
  <div class="bg-blue-50 p-4 rounded-lg text-blue-800 font-medium text-center">
- 🎓 <strong>À retenir :</strong> Acheter une action, c’est croire en la croissance d’une entreprise.
+ 🎓 <strong>À retenir :</strong> Acheter une action, c'est croire en la croissance d'une entreprise.
 Vous partagez ses succès (dividendes, hausse de valeur) mais aussi ses difficultés.
  </div>
  </div>
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
- <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">3.2 Les Obligations — Prêter à une entreprise ou à l’État</h2>
- <p class="text-gray-600 mb-6">Une obligation est un titre de créance : vous prêtez de l'argent à un émetteur (entreprise, État ou institution publique) en échange d’intérêts fixes sur une durée définie.</p>
+ <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">3.2 Les Obligations — Prêter à une entreprise ou à l'État</h2>
+ <p class="text-gray-600 mb-6">Une obligation est un titre de créance : vous prêtez de l'argent à un émetteur (entreprise, État ou institution publique) en échange d'intérêts fixes sur une durée définie.</p>
 
  <div class="grid md:grid-cols-2 gap-6 mb-6">
  <div>
  <h3 class="font-bold text-gray-800 mb-2">💰 Fonctionnement</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-600">
  <li>Vous prêtez, par exemple, 100 000 FCFA pour 5 ans.</li>
- <li>L’émetteur vous verse des coupons annuels (intérêts) et vous rembourse le capital à la fin (maturité).</li>
+ <li>L'émetteur vous verse des coupons annuels (intérêts) et vous rembourse le capital à la fin (maturité).</li>
  </ul>
  </div>
  <div>
  <h3 class="font-bold text-gray-800 mb-2">🧭 Types d'obligations à la BRVM</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-600">
- <li><strong>Obligations d’État</strong> : émises par les pays de l’UEMOA (très sécurisées).</li>
- <li><strong>Obligations d’entreprise</strong> : rendement plus élevé, risque modéré.</li>
+ <li><strong>Obligations d'État</strong> : émises par les pays de l'UEMOA (très sécurisées).</li>
+ <li><strong>Obligations d'entreprise</strong> : rendement plus élevé, risque modéré.</li>
  </ul>
  </div>
  </div>
@@ -858,27 +1159,27 @@ Vous partagez ses succès (dividendes, hausse de valeur) mais aussi ses difficul
  <h3 class="font-bold text-gray-800 mb-2">⚖️ Rendement / Risque</h3>
  <ul class="list-disc list-inside text-gray-700">
  <li>Rendement stable, risque faible.</li>
- <li>Mais la contrepartie est que vous ne profitez pas de la croissance de l’entreprise.</li>
+ <li>Mais la contrepartie est que vous ne profitez pas de la croissance de l'entreprise.</li>
  </ul>
  </div>
 
  <div class="bg-blue-50 p-4 rounded-lg text-blue-800 font-medium text-center">
- 🎓 <strong>À retenir :</strong> Une obligation, c’est un contrat de confiance : vous prêtez aujourd’hui, on vous rembourse demain avec intérêts.
+ 🎓 <strong>À retenir :</strong> Une obligation, c'est un contrat de confiance : vous prêtez aujourd'hui, on vous rembourse demain avec intérêts.
  </div>
  </div>
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">3.3 Les OPCVM et ETF — Investissement collectif intelligent</h2>
- <p class="text-gray-600 mb-6">Les OPCVM (Organismes de Placement Collectif en Valeurs Mobilières) regroupent l’argent de plusieurs investisseurs pour constituer un portefeuille diversifié, géré par des professionnels.</p>
+ <p class="text-gray-600 mb-6">Les OPCVM (Organismes de Placement Collectif en Valeurs Mobilières) regroupent l'argent de plusieurs investisseurs pour constituer un portefeuille diversifié, géré par des professionnels.</p>
  
  <div class="grid md:grid-cols-3 gap-4 mb-6">
  <div class="bg-gray-50 p-4 rounded-lg">
  <h3 class="font-bold text-gray-800 mb-2">📦 Deux familles</h3>
  <ul class="list-disc list-inside text-sm text-gray-600">
  <li><strong>FCP</strong> : fonds communs de placement. 
- → Vous détenez des parts d’un fonds géré par une société agréée.</li>
- <li><strong>SICAV</strong> : sociétés d’investissement à capital variable.
- Vous êtes actionnaire d’une société qui gère le portefeuille.</li>
+ → Vous détenez des parts d'un fonds géré par une société agréée.</li>
+ <li><strong>SICAV</strong> : sociétés d'investissement à capital variable.
+ Vous êtes actionnaire d'une société qui gère le portefeuille.</li>
  </ul>
  </div>
  <div class="bg-gray-50 p-4 rounded-lg">
@@ -892,14 +1193,14 @@ Vous partagez ses succès (dividendes, hausse de valeur) mais aussi ses difficul
  <div class="bg-gray-50 p-4 rounded-lg">
  <h3 class="font-bold text-gray-800 mb-2">📈 ETF (Exchange Traded Funds)</h3>
  <p class="text-sm text-gray-600">Les ETF sont des OPCVM cotés en Bourse.
-Ils répliquent la performance d’un indice comme le BRVM Composite ou le BRVM 10.
-n'existe pas encore a la brvm, ils représentent le futur de l’investissement passif.
+Ils répliquent la performance d'un indice comme le BRVM Composite ou le BRVM 10.
+n'existe pas encore a la brvm, ils représentent le futur de l'investissement passif.
 </p>
  </div>
  </div>
 
  <div class="bg-blue-50 p-4 rounded-lg text-blue-800 font-medium text-center">
- 🎓 <strong>À retenir :</strong> L’OPCVM est le panier diversifié, l’ETF est le panier automatisé.
+ 🎓 <strong>À retenir :</strong> L'OPCVM est le panier diversifié, l'ETF est le panier automatisé.
  </div>
  </div>
 
@@ -916,7 +1217,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </div>
  <div class="space-y-2">
  <h3 class="text-lg font-bold text-indigo-600">💹 Augmentation</h3>
- <p class="text-gray-600 text-sm leading-relaxed">Émission de nouvelles actions pour lever des fonds. Les anciens actionnaires bénéficient d’un droit préférentiel.</p>
+ <p class="text-gray-600 text-sm leading-relaxed">Émission de nouvelles actions pour lever des fonds. Les anciens actionnaires bénéficient d'un droit préférentiel.</p>
  </div>
  </div>
  </div>
@@ -943,7 +1244,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </tr>
  <tr class="hover:bg-gray-50">
  <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">Obligations</td>
- <td class="px-6 py-4 text-gray-500">Taux d’intérêt, défaut</td>
+ <td class="px-6 py-4 text-gray-500">Taux d'intérêt, défaut</td>
  <td class="px-6 py-4 text-yellow-600 font-semibold">Moyen</td>
  <td class="px-6 py-4 text-gray-500">2–5 ans</td>
  </tr>
@@ -964,7 +1265,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </div>
  
  <div class="mt-4 text-center text-sm text-gray-500 italic">
- 🎓 À retenir : Aucun investissement n’est sans risque. Le plus important est de choisir un risque adapté à votre profil.
+ 🎓 À retenir : Aucun investissement n'est sans risque. Le plus important est de choisir un risque adapté à votre profil.
  </div>
  </div>
 
@@ -980,13 +1281,13 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </ul>
  <ul class="space-y-2">
  <li class="flex items-center gap-2"><span class="text-green-400">✓</span> Dividendes/splits : leviers de performance.</li>
- <li class="flex items-center gap-2"><span class="text-yellow-400">★</span> Règle d’or : comprendre avant d’investir.</li>
+ <li class="flex items-center gap-2"><span class="text-yellow-400">★</span> Règle d'or : comprendre avant d'investir.</li>
  </ul>
  </div>
  <hr class="border-gray-700 my-8"/>
  
  <div class="flex items-center justify-between">
- <p class="text-white font-medium">🚀 Prochaine étape : Module 4 — “Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement”</p>
+ <p class="text-white font-medium">🚀 Prochaine étape : Module 4 — “Produits Avancés : Explorer les Nouvelles Frontières de l'Investissement”</p>
  <button class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors">
  Commencer
  </button>
@@ -995,16 +1296,96 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique', items: [
+        'Distinguer les actions, obligations, ETF et OPCVM.',
+        'Comprendre les mécanismes de rendement et de risque de chaque type d\'actif.',
+        'Identifier les produits adaptés à votre profil d\'investisseur.'
+      ]},
+      { type: 'heading', level: 1, text: '3.1 Les Actions — Devenir propriétaire d\'une part d\'entreprise' },
+      { type: 'paragraph', text: 'Une action représente une fraction du capital d\'une société. En l\'achetant, vous devenez actionnaire, c\'est-à-dire copropriétaire de l\'entreprise.' },
+      { type: 'heading', level: 2, text: '💰 Sources de rendement' },
+      { type: 'list', items: [
+        '<strong>Plus-value</strong> : revendre plus cher que le prix d\'achat.',
+        '<strong>Dividendes</strong> : part du bénéfice distribuée annuellement.'
+      ]},
+      { type: 'heading', level: 2, text: '⚠️ Risques associés' },
+      { type: 'list', items: [
+        'La valeur de l\'action peut baisser fortement.',
+        'En cas de faillite, les actionnaires sont rémunérés en dernier.',
+        'Les dividendes ne sont jamais garantis.'
+      ]},
+      { type: 'callout', variant: 'info', title: '🎓 À retenir :', paragraphs: ['Acheter une action, c\'est croire en la croissance d\'une entreprise. Vous partagez ses succès (dividendes, hausse de valeur) mais aussi ses difficultés.'] },
+      { type: 'callout', variant: 'note', title: 'Exemple BRVM :', paragraphs: ['SONATEL offre historiquement des dividendes élevés ; BOA Mali propose un rendement plus stable avec moins de volatilité.'] },
+      { type: 'heading', level: 1, text: '3.2 Les Obligations — Prêter à une entreprise ou à l\'État' },
+      { type: 'paragraph', text: 'Une obligation est un titre de créance : vous prêtez de l\'argent à un émetteur (entreprise, État ou institution publique) en échange d\'intérêts fixes sur une durée définie.' },
+      { type: 'heading', level: 2, text: '💰 Fonctionnement' },
+      { type: 'list', items: [
+        'Vous prêtez, par exemple, 100 000 FCFA pour 5 ans.',
+        'L\'émetteur vous verse des coupons annuels (intérêts) et vous rembourse le capital à la fin (maturité).'
+      ]},
+      { type: 'heading', level: 2, text: '🧭 Types d\'obligations à la BRVM' },
+      { type: 'list', items: [
+        '<strong>Obligations d\'État</strong> : émises par les pays de l\'UEMOA (très sécurisées).',
+        '<strong>Obligations d\'entreprise</strong> : rendement plus élevé, risque modéré.'
+      ]},
+      { type: 'heading', level: 2, text: '⚖️ Rendement / Risque' },
+      { type: 'list', items: [
+        'Rendement stable, risque faible.',
+        'Mais la contrepartie est que vous ne profitez pas de la croissance de l\'entreprise.'
+      ]},
+      { type: 'callout', variant: 'info', title: '🎓 À retenir :', paragraphs: ['Une obligation, c\'est un contrat de confiance : vous prêtez aujourd\'hui, on vous rembourse demain avec intérêts.'] },
+      { type: 'heading', level: 1, text: '3.3 Les OPCVM et ETF — Investissement collectif intelligent' },
+      { type: 'paragraph', text: 'Les OPCVM (Organismes de Placement Collectif en Valeurs Mobilières) regroupent l\'argent de plusieurs investisseurs pour constituer un portefeuille diversifié, géré par des professionnels.' },
+      { type: 'heading', level: 2, text: '📦 Deux familles' },
+      { type: 'list', items: [
+        '<strong>FCP</strong> : fonds communs de placement. → Vous détenez des parts d\'un fonds géré par une société agréée.',
+        '<strong>SICAV</strong> : sociétés d\'investissement à capital variable. Vous êtes actionnaire d\'une société qui gère le portefeuille.'
+      ]},
+      { type: 'heading', level: 2, text: '🪙 Avantages' },
+      { type: 'list', items: [
+        'Diversification immédiate (moins de risque).',
+        'Gestion professionnelle (vous déléguez les décisions).',
+        'Accessibilité (petit capital possible).'
+      ]},
+      { type: 'heading', level: 2, text: '📈 ETF (Exchange Traded Funds)' },
+      { type: 'paragraph', text: 'Les ETF sont des OPCVM cotés en Bourse. Ils répliquent la performance d\'un indice comme le BRVM Composite ou le BRVM 10. Il n\'existe pas encore à la BRVM, ils représentent le futur de l\'investissement passif.' },
+      { type: 'callout', variant: 'info', title: '🎓 À retenir :', paragraphs: ['L\'OPCVM est le panier diversifié, l\'ETF est le panier automatisé.'] },
+      { type: 'heading', level: 1, text: '3.4 Mécanismes Clés' },
+      { type: 'heading', level: 2, text: '💵 Dividendes' },
+      { type: 'paragraph', text: 'Part du bénéfice versée aux actionnaires. Exemple : SONATEL distribue souvent 1 500 à 2 000 FCFA par action.' },
+      { type: 'heading', level: 2, text: '📈 Splits' },
+      { type: 'paragraph', text: 'Une entreprise divise ses actions pour rendre leur prix plus accessible. Exemple : 1 action à 30 000 FCFA devient 10 à 3 000 FCFA. La valeur totale reste la même, mais la liquidité augmente.' },
+      { type: 'heading', level: 2, text: '💹 Augmentation de capital' },
+      { type: 'paragraph', text: 'Émission de nouvelles actions pour lever des fonds. Les anciens actionnaires bénéficient d\'un droit préférentiel.' },
+      { type: 'heading', level: 1, text: '3.5 Comparatif : Risque vs Rendement' },
+      { type: 'table', headers: ['Type d\'actif', 'Risque principal', 'Rendement', 'Horizon'], rows: [
+        ['Actions', 'Volatilité, faillite', 'Élevé', '5–10 ans'],
+        ['Obligations', 'Taux d\'intérêt, défaut', 'Moyen', '2–5 ans'],
+        ['OPCVM / ETF', 'Marché, gestion', 'Modéré', 'Moyen / long'],
+        ['Liquidités', 'Inflation', 'Faible', 'Court terme']
+      ]},
+      { type: 'callout', variant: 'note', title: '🎓 À retenir :', paragraphs: ['Aucun investissement n\'est sans risque. Le plus important est de choisir un risque adapté à votre profil.'] },
+      { type: 'heading', level: 1, text: '🧭 En Résumé' },
+      { type: 'list', items: [
+        'Actions : propriété, potentiel élevé, risque fort.',
+        'Obligations : prêt, rendement fixe, risque modéré.',
+        'OPCVM/ETF : diversification, gestion professionnelle.',
+        'Dividendes/splits : leviers de performance.',
+        'Règle d\'or : comprendre avant d\'investir.'
+      ]},
+      { type: 'callout', variant: 'note', title: '🚀 Prochaine étape :', paragraphs: ['Module 4 — "Produits Avancés : Explorer les Nouvelles Frontières de l\'Investissement"'] }
+    ]),
   });
 
   // ==================================================
-  // === M4 : LE TEMPS, Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement ===
+  // === M4 : LE TEMPS, Produits Avancés : Explorer les Nouvelles Frontières de l'Investissement ===
   // ==================================================
   await createOrUpdateModule({
-    title: "Produits Avancés : Explorer les Nouvelles Frontières de l’Investissement",
+    title: "Produits Avancés : Explorer les Nouvelles Frontières de l'Investissement",
     slug: 'le-temps-meilleur-allie',
     description:
-      "Découvrez les actifs financiers avancés, émergents ou innovants : immobilier coté, finance islamique, produits structurés et ETF. Comprenez leurs mécanismes, risques et potentiel dans l’UEMOA.",
+      "Découvrez les actifs financiers avancés, émergents ou innovants : immobilier coté, finance islamique, produits structurés et ETF. Comprenez leurs mécanismes, risques et potentiel dans l'UEMOA.",
     difficulty_level: "intermediaire",
     content_type: "article",
     duration_minutes: 25,
@@ -1029,16 +1410,16 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </h2>
  
  <div class="mb-6">
- <h3 class="text-lg font-bold text-orange-700 mb-2">Qu’est-ce qu’une SCPI ?</h3>
+ <h3 class="text-lg font-bold text-orange-700 mb-2">Qu'est-ce qu'une SCPI ?</h3>
  <p class="text-gray-600 leading-relaxed mb-4">
- Une SCPI (Société Civile de Placement Immobilier) collecte l’argent des investisseurs pour acheter et gérer un portefeuille d’immeubles (bureaux, commerces, logements). Chaque investisseur détient des parts et perçoit une partie des revenus locatifs.
+ Une SCPI (Société Civile de Placement Immobilier) collecte l'argent des investisseurs pour acheter et gérer un portefeuille d'immeubles (bureaux, commerces, logements). Chaque investisseur détient des parts et perçoit une partie des revenus locatifs.
  </p>
  
  </div>
 
  <div class="bg-gray-50 p-4 rounded-lg mb-6 border-l-4 border-orange-500">
  <h3 class="text-lg font-bold text-gray-800 mb-1">🌍 Équivalent international</h3>
- <p class="text-gray-700">Les <strong>REITs</strong> (Real Estate Investment Trusts) permettent d’investir dans l’immobilier coté en bourse.</p>
+ <p class="text-gray-700">Les <strong>REITs</strong> (Real Estate Investment Trusts) permettent d'investir dans l'immobilier coté en bourse.</p>
  </div>
 
  <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -1054,13 +1435,13 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  <h3 class="font-bold text-red-800 mb-2 flex items-center gap-2">⚠️ Risques</h3>
  <ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">
  <li>Dépendance au marché immobilier.</li>
- <li>Sensibilité aux taux d’intérêt.</li>
+ <li>Sensibilité aux taux d'intérêt.</li>
  </ul>
  </div>
  </div>
 
  <div class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded">
- 🔍 <strong>Cas régional :</strong> Dans l’UEMOA, la SCPI reste encore marginale, mais plusieurs acteurs réfléchissent à sa mise en place. Les premiers fonds immobiliers régionaux devraient voir le jour dans les prochaines années, notamment via des OPCI (Organismes de Placement Collectif Immobilier).
+ 🔍 <strong>Cas régional :</strong> Dans l'UEMOA, la SCPI reste encore marginale, mais plusieurs acteurs réfléchissent à sa mise en place. Les premiers fonds immobiliers régionaux devraient voir le jour dans les prochaines années, notamment via des OPCI (Organismes de Placement Collectif Immobilier).
  </div>
  </div>
 
@@ -1073,7 +1454,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  <div>
  <h3 class="text-lg font-bold text-orange-700 mb-3">Principes fondamentaux</h3>
  <ol class="list-decimal list-inside space-y-2 text-gray-600">
- <li>Interdiction du <strong>riba</strong> (intérêt) : les revenus doivent venir d’une activité réelle.</li>
+ <li>Interdiction du <strong>riba</strong> (intérêt) : les revenus doivent venir d'une activité réelle.</li>
  <li>Partage des profits et pertes.</li>
  <li>Investissements dans des activités licites uniquement.</li>
  </ol>
@@ -1099,8 +1480,8 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  <h3 class="font-bold mb-1">🌍 Enjeux et opportunités</h3>
  <ul class="list-disc list-inside text-sm">
  <li>Plus de 3 000 milliards USD gérés dans le monde.</li>
- <li>Forte demande en Afrique de l’Ouest.</li>
- <li>Permet d’attirer des investisseurs en quête d’éthique.</li>
+ <li>Forte demande en Afrique de l'Ouest.</li>
+ <li>Permet d'attirer des investisseurs en quête d'éthique.</li>
  </ul>
  </div>
  </div>
@@ -1119,7 +1500,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-lg mb-6 mt-4">
  <h3 class="font-bold text-indigo-900 mb-2">📘 Exemple simple</h3>
  <p class="text-indigo-800 font-medium">
- "100 % du capital garanti à l’échéance + 50 % de la performance de l’indice BRVM 10 sur 3 ans."
+ "100 % du capital garanti à l'échéance + 50 % de la performance de l'indice BRVM 10 sur 3 ans."
  </p>
  </div>
 
@@ -1134,7 +1515,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b border-orange-100 pb-2 flex items-center gap-2">
- 📊 4.4 Les ETF et Trackers : l’avenir de l’investissement passif
+ 📊 4.4 Les ETF et Trackers : l'avenir de l'investissement passif
  </h2>
 
  <div class="flex flex-col md:flex-row gap-6 mb-6">
@@ -1146,7 +1527,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </div>
  </div>
  <div class="flex-1 bg-green-50 p-5 rounded-xl">
- <h3 class="text-lg font-bold text-green-800 mb-3">💡 Pourquoi c’est révolutionnaire</h3>
+ <h3 class="text-lg font-bold text-green-800 mb-3">💡 Pourquoi c'est révolutionnaire</h3>
  <ul class="space-y-2 text-green-900">
  <li class="flex items-center gap-2">⚡ Frais très faibles.</li>
  <li class="flex items-center gap-2">⚡ Diversification automatique.</li>
@@ -1158,7 +1539,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  
 
  <div class="text-center mt-6">
- <p class="text-gray-800 font-medium">Comprendre les ETF aujourd’hui, c’est comprendre la bourse de demain : simple, efficace, accessible.</p>
+ <p class="text-gray-800 font-medium">Comprendre les ETF aujourd'hui, c'est comprendre la bourse de demain : simple, efficace, accessible.</p>
  </div>
  </div>
 
@@ -1223,6 +1604,73 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique', items: [
+        'Les grandes familles d\'actifs émergentes dans la région UEMOA',
+        'Comment elles diffèrent des actions et obligations classiques',
+        'Pourquoi elles représentent le futur de la finance africaine'
+      ]},
+      { type: 'heading', level: 1, text: '🏢 4.1 L\'Immobilier Coté : investir sans devenir propriétaire physique' },
+      { type: 'heading', level: 2, text: 'Qu\'est-ce qu\'une SCPI ?' },
+      { type: 'paragraph', text: 'Une SCPI (Société Civile de Placement Immobilier) collecte l\'argent des investisseurs pour acheter et gérer un portefeuille d\'immeubles (bureaux, commerces, logements). Chaque investisseur détient des parts et perçoit une partie des revenus locatifs.' },
+      { type: 'callout', variant: 'info', title: '🌍 Équivalent international', paragraphs: ['Les <strong>REITs</strong> (Real Estate Investment Trusts) permettent d\'investir dans l\'immobilier coté en bourse.'] },
+      { type: 'heading', level: 2, text: '✅ Avantages' },
+      { type: 'list', items: [
+        'Aucun besoin de gérer un bien soi-même.',
+        'Revenus réguliers sous forme de dividendes.',
+        'Diversification géographique et sectorielle.'
+      ]},
+      { type: 'heading', level: 2, text: '⚠️ Risques' },
+      { type: 'list', items: [
+        'Dépendance au marché immobilier.',
+        'Sensibilité aux taux d\'intérêt.'
+      ]},
+      { type: 'callout', variant: 'note', title: '🔍 Cas régional :', paragraphs: ['Dans l\'UEMOA, la SCPI reste encore marginale, mais plusieurs acteurs réfléchissent à sa mise en place. Les premiers fonds immobiliers régionaux devraient voir le jour dans les prochaines années, notamment via des OPCI (Organismes de Placement Collectif Immobilier).'] },
+      { type: 'heading', level: 1, text: '🕌 4.2 La Finance Islamique : une alternative éthique' },
+      { type: 'heading', level: 2, text: 'Principes fondamentaux' },
+      { type: 'ordered-list', items: [
+        'Interdiction du <strong>riba</strong> (intérêt) : les revenus doivent venir d\'une activité réelle.',
+        'Partage des profits et pertes.',
+        'Investissements dans des activités licites uniquement.'
+      ]},
+      { type: 'heading', level: 2, text: 'Produits phares' },
+      { type: 'list', items: [
+        '<strong>Sukuk</strong> : Obligations islamiques adossées à des actifs réels (pas de dette pure).',
+        '<strong>Fonds islamiques</strong> : OPCVM filtrés selon la charia.'
+      ]},
+      { type: 'callout', variant: 'info', title: '🌍 Enjeux et opportunités', paragraphs: [
+        'Plus de 3 000 milliards USD gérés dans le monde.',
+        'Forte demande en Afrique de l\'Ouest.',
+        'Permet d\'attirer des investisseurs en quête d\'éthique.'
+      ]},
+      { type: 'heading', level: 1, text: '⚙️ 4.3 Introduction aux Produits Structurés' },
+      { type: 'paragraph', text: 'Un produit structuré combine plusieurs éléments (souvent une obligation + une option) pour offrir un rendement ciblé avec une protection partielle du capital.' },
+      { type: 'callout', variant: 'info', title: '📘 Exemple simple', paragraphs: ['"100 % du capital garanti à l\'échéance + 50 % de la performance de l\'indice BRVM 10 sur 3 ans."'] },
+      { type: 'callout', variant: 'warn', title: '⚠️ Attention', paragraphs: [
+        'Produits complexes, destinés aux investisseurs avertis.',
+        'Les conditions doivent être lues avec précision.'
+      ]},
+      { type: 'heading', level: 1, text: '📊 4.4 Les ETF et Trackers : l\'avenir de l\'investissement passif' },
+      { type: 'heading', level: 2, text: 'Définition' },
+      { type: 'paragraph', text: 'Un ETF (Exchange Traded Fund) est un fonds coté qui réplique un indice boursier.' },
+      { type: 'callout', variant: 'note', title: 'Exemple :', paragraphs: ['un ETF BRVM Composite reproduirait les performances de toutes les grandes valeurs de la BRVM.'] },
+      { type: 'heading', level: 2, text: '💡 Pourquoi c\'est révolutionnaire' },
+      { type: 'list', items: [
+        '⚡ Frais très faibles.',
+        '⚡ Diversification automatique.',
+        '⚡ Transparence totale.'
+      ]},
+      { type: 'paragraph', text: 'Comprendre les ETF aujourd\'hui, c\'est comprendre la bourse de demain : simple, efficace, accessible.' },
+      { type: 'heading', level: 1, text: '🧭 En résumé : Comparatif des produits avancés' },
+      { type: 'table', headers: ['Produit', 'Objectif principal', 'Niveau de risque', 'Accessibilité (UEMOA)'], rows: [
+        ['SCPI / Immo', 'Revenus stables', 'Modéré', 'En développement'],
+        ['Finance islamique', 'Investissement éthique', 'Modéré', 'Déjà existant'],
+        ['Produits structurés', 'Protection + rendement', 'Variable', 'Rare'],
+        ['ETF / Trackers', 'Répliquer un indice', 'Faible à modéré', 'En émergence']
+      ]},
+      { type: 'callout', variant: 'note', title: '🧠 À retenir', paragraphs: ['Ce module ne vise pas à vous pousser à investir immédiatement dans ces produits, mais à vous préparer aux évolutions futures du marché financier africain et de la BRVM.'] },
+      { type: 'callout', variant: 'note', title: '🔜 Prochaine étape :', paragraphs: ['Module 5 — Le Temps, votre meilleur allié'] }
+    ]),
   });
 
   // ================================================
@@ -1458,13 +1906,67 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
   </div>
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '⏳ Module 5 : Le Temps, Votre Meilleur Allié', items: [
+        'Définir précisément votre horizon de placement (court, moyen, long terme) en fonction de vos objectifs',
+        'Comprendre le rôle du temps pour gérer le risque et la volatilité',
+        'Établir votre profil d\'investisseur et déterminer l\'allocation d\'actifs cohérente'
+      ]},
+      { type: 'section-title', text: '🎯 5.1 Définir ses objectifs de vie et d\'investissement', color: 'blue' },
+      { type: 'paragraph', text: 'La bourse n\'est pas un jeu, c\'est un outil pour réaliser vos projets de vie. Avant de choisir un titre, vous devez définir la durée pendant laquelle vous pouvez vous passer de cet argent.' },
+      { type: 'heading', level: 2, text: 'L\'Horizon de Placement : La Durée de l\'Engagement' },
+      { type: 'paragraph', text: 'C\'est la période pendant laquelle vous prévoyez de garder votre investissement. Cette durée dicte le niveau de risque que vous pouvez vous permettre.' },
+      { type: 'table', headers: ['Horizon', 'Durée', 'Objectif Typique', 'Allocation Recommandée'], rows: [
+        ['Court Terme', 'Moins de 2 ans', 'Fonds d\'urgence, scolarité', 'Minimal (Obligations, sécurisé)'],
+        ['Moyen Terme', '2 à 7 ans', 'Auto, apport immobilier', 'Modéré (Mixte Actions/Obligations)'],
+        ['Long Terme', 'Plus de 7 ans', 'Retraite, indépendance', 'Croissance (Majorité Actions)']
+      ]},
+      { type: 'callout', variant: 'info', title: '💡 Conseil d\'Expert :', paragraphs: ['Chaque grand objectif de vie (retraite, études, maison) doit être traité comme un compte d\'investissement séparé, avec son propre horizon.'] },
+      { type: 'heading', level: 1, text: '🚌 5.1.2 Le Pouvoir du Temps : L\'Analogie du Car de Nuit' },
+      { type: 'heading', level: 2, text: 'La Volatilité (Les secousses)' },
+      { type: 'paragraph', text: 'À court terme, les marchés peuvent être erratiques. Si vous regardez par la fenêtre, le paysage est flou et scintillant (volatilité quotidienne). Vous ne voyez que les secousses.' },
+      { type: 'heading', level: 2, text: 'La Destination (Long terme)' },
+      { type: 'paragraph', text: 'Historiquement, les marchés ont toujours eu une tendance haussière sur des décennies. Si vous fixez l\'horloge et la destination, vous savez que vous arriverez à bon port malgré les cahots.' },
+      { type: 'pull-quote', text: '"L\'investisseur à long terme se concentre sur la destination, pas sur les secousses."' },
+      { type: 'section-title', text: '⚖️ 5.2 Lien entre horizon et allocation', color: 'green' },
+      { type: 'paragraph', text: 'Votre profil d\'investisseur est défini par votre tolérance au risque, qui est votre capacité :' },
+      { type: 'ordered-list', items: [
+        '<strong>Émotionnelle :</strong> À accepter psychologiquement une perte temporaire sur votre capital.',
+        '<strong>Financière :</strong> À ne pas avoir besoin de cet argent en cas de baisse du marché.'
+      ]},
+      { type: 'pull-quote', text: '"If you aren\'t willing to own a stock for ten years, don\'t even think about owning it for ten minutes." — Warren Buffett' },
+      { type: 'heading', level: 2, text: 'Les Trois Profils d\'Investisseur' },
+      { type: 'paragraph', text: 'Votre profil vous aide à déterminer la répartition idéale entre les classes d\'actifs : les Actions (croissance, risque élevé) et les Obligations/Sécurité (sécurité, risque faible).' },
+      { type: 'table', headers: ['Profil', 'Objectif Principal', 'Tolérance au Risque', 'Allocation d\'Actifs Typique'], rows: [
+        ['Prudent', 'Sécurité du capital, revenu stable', 'Faible (Ne supporte pas une perte de 10%)', 'Majorité Obligations/OPCVM Prudent (ex: 80% Obligations)'],
+        ['Équilibré', 'Croissance modérée et revenu', 'Moyenne (Accepte une perte temporaire de 15%)', 'Mixte Actions/Obligations (ex: 50%/50%)'],
+        ['Dynamique', 'Maximisation de la croissance', 'Élevée (Se concentre sur le potentiel, tolère 30% de perte)', 'Majorité Actions (ex: 80% et plus d\'Actions)']
+      ]},
+      { type: 'callout', variant: 'info', title: 'Exemple :', paragraphs: ['Un Mamadou de 25 ans qui économise pour sa retraite est un investisseur dynamique, car il peut se permettre de prendre des risques sur 40 ans. Un Mamadou de 55 ans économisant pour l\'achat d\'une maison dans 3 ans sera prudent.'] },
+      { type: 'heading', level: 1, text: '📊 5.3.2 Synthèse de la Stratégie' },
+      { type: 'paragraph', text: 'Aligner votre horizon temporel avec votre allocation d\'actifs est la première étape vers une stratégie d\'investissement réussie.' },
+      { type: 'table', headers: ['Objectif de Vie (Poche)', 'Horizon', 'Profil d\'Investissement', 'Allocation d\'Actifs (Ex.)', 'Titres à Privilégier (BRVM)'], rows: [
+        ['Fonds d\'Urgence', '< 1 an', 'Sécurité', '100% Liquide / Épargne', 'Hors Bourse (Banque)'],
+        ['Études des enfants', '10-15 ans', 'Dynamique/Équilibré', '60% Actions BRVM / 40% Obligations', 'Actions régionales solides (Sonatel, Ecobank, etc.)'],
+        ['Retraite', '20 ans et +', 'Dynamique', '80% Actions BRVM / 20% Obligations', 'Actions à fort potentiel de croissance']
+      ]},
+      { type: 'glossary', items: [
+        { term: 'Horizon de Placement', definition: 'La durée de détention prévue de l\'actif.' },
+        { term: 'Volatilité', definition: 'L\'intensité des variations de prix.' },
+        { term: 'Allocation d\'Actifs', definition: 'Répartition du capital (Actions vs Obligations).' }
+      ]},
+      { type: 'callout', variant: 'ok', title: '🎉 Félicitations !', paragraphs: [
+        'Vous savez désormais que le temps est votre plus grand atout.',
+        '👉 Prochaine leçon : Module 6 — Le Mental du Gagnant'
+      ]}
+    ]),
   });
 
   // =======================================================
-  // === M6 : Le Mental du Gagnant – Psychologie d’Investissement ===
+  // === M6 : Le Mental du Gagnant – Psychologie d'Investissement ===
   // =======================================================
   await createOrUpdateModule({
-    title: "Le Mental du Gagnant – Psychologie d’Investissement",
+    title: "Le Mental du Gagnant – Psychologie d'Investissement",
     slug: 'analyse-fondamentale',
     description: "Maîtrisez vos émotions, comprenez les intérêts composés et différencier les grandes stratégies d'investissement.",
     difficulty_level: 'Debutant',
@@ -1515,8 +2017,8 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
         <tbody class="divide-y divide-gray-200">
           <tr>
             <td class="px-4 py-3 font-bold text-gray-700">Objectif</td>
-            <td class="px-4 py-3 text-gray-600">Acquérir une part d’entreprise solide pour son potentiel de croissance future (Valeur interne de l’actif).</td>
-            <td class="px-4 py-3 text-gray-600">Parier sur l’évolution à court terme du prix.</td>
+            <td class="px-4 py-3 text-gray-600">Acquérir une part d'entreprise solide pour son potentiel de croissance future (Valeur interne de l'actif).</td>
+            <td class="px-4 py-3 text-gray-600">Parier sur l'évolution à court terme du prix.</td>
           </tr>
           <tr>
             <td class="px-4 py-3 font-bold text-gray-700">Horizon de Temps</td>
@@ -1525,7 +2027,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
           </tr>
           <tr>
             <td class="px-4 py-3 font-bold text-gray-700">Moteur</td>
-            <td class="px-4 py-3 text-gray-600">La patience, l’analyse des fondamentaux.</td>
+            <td class="px-4 py-3 text-gray-600">La patience, l'analyse des fondamentaux.</td>
             <td class="px-4 py-3 text-gray-600">L'excitation (marché monte) ou panique (marché descend).</td>
           </tr>
         </tbody>
@@ -1706,6 +2208,71 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique :', items: [
+        'Comprendre les principes de la finance comportementale et la différence entre investir et spéculer.',
+        'Identifier les biais cognitifs et émotionnels les plus fréquents (peur, avidité) et leur impact sur vos décisions.',
+        'Mettre en place des stratégies (antidotes) pour une discipline d\'investissement rigoureuse.',
+        'Utiliser le pouvoir des intérêts composés comme preuve de la nécessité d\'une vision à long terme.'
+      ]},
+      { type: 'heading', level: 1, text: '🧠 6.1 Introduction à la finance comportementale' },
+      { type: 'pull-quote', text: 'Sur les marchés financiers, la plus grande menace pour votre portefeuille n\'est pas la crise économique, mais l\'homme qui se regarde dans le miroir : vous-même. La finance comportementale enseigne que les émotions (la peur et l\'avidité) mènent aux décisions irrationnelles, ce qui est la cause principale des erreurs chez les débutants.' },
+      { type: 'heading', level: 2, text: '6.1.1 Investir vs. Spéculer : Une Distinction Essentielle' },
+      { type: 'paragraph', text: 'Définir clairement votre rôle est la première étape pour maîtriser votre mental :' },
+      { type: 'table', headers: ['Caractéristique', 'L\'Investisseur (Le Propriétaire)', 'Le Spéculateur (Le Joueur)'], rows: [
+        ['Objectif', 'Acquérir une part d\'entreprise solide pour son potentiel de croissance future (Valeur interne de l\'actif).', 'Parier sur l\'évolution à court terme du prix.'],
+        ['Horizon de Temps', 'Long terme (années, décennies).', 'Court terme (jours, semaines).'],
+        ['Moteur', 'La patience, l\'analyse des fondamentaux.', 'L\'excitation (marché monte) ou panique (marché descend).']
+      ]},
+      { type: 'callout', variant: 'info', title: '💡 Rappel de l\'Expert :', paragraphs: ['L\'excitation et les dépenses sont vos ennemis. L\'excitation conduit aux achats impulsifs aux prix trop élevés. Concentrez-vous à agir comme un propriétaire d\'entreprise.'] },
+      { type: 'heading', level: 1, text: '🎭 6.2 Nos pires ennemis : La Peur, l\'Avidité et les Biais Cognitifs' },
+      { type: 'paragraph', text: 'Les bulles spéculatives et les krachs boursiers sont avant tout des phénomènes psychologiques, alimentés par deux émotions primaires.' },
+      { type: 'heading', level: 2, text: '6.2.1 La Peur et l\'Avidité (Fear & Greed)' },
+      { type: 'table', headers: ['Émotion', 'Description', 'Conséquence Destructrice'], rows: [
+        ['L\'Avidité (Greed)', 'Pousse à acheter quand les prix sont hauts par peur de manquer le gain (FOMO).', 'Achat de titres surévalués.'],
+        ['La Peur (Fear)', 'Pousse à vendre lorsque les prix baissent.', 'Transformation d\'une perte temporaire en perte réelle.']
+      ]},
+      { type: 'heading', level: 2, text: '6.2.2 Les Biais Cognitifs les Plus Fréquents' },
+      { type: 'list', items: [
+        '<strong>Le Biais de Confirmation :</strong> Chercher uniquement les nouvelles qui confortent votre choix initial, en ignorant les informations contradictoires.',
+        '<strong>L\'Ancrage :</strong> Rester figé(e) sur le prix initial d\'achat. Cela empêche de vendre un titre perdant car vous attendez qu\'il remonte à votre prix d\'achat.',
+        '<strong>L\'Excès de Confiance :</strong> Surestimer sa propre capacité à battre le marché ou à prédire les mouvements de prix futurs.'
+      ]},
+      { type: 'heading', level: 1, text: '🛡️ 6.3 Les Antidotes : Discipline, Méthode et Routine' },
+      { type: 'heading', level: 2, text: '📈 6.3.1 La 8ème Merveille du Monde : Les Intérêts Composés' },
+      { type: 'paragraph', text: 'C\'est l\'essence même de l\'investissement à long terme. Les gains générés sont réinvestis pour produire à leur tour de nouveaux gains : c\'est l\'argent qui travaille pour l\'argent.' },
+      { type: 'highlight', text: 'Formule : Valeur Finale = Capital × (1 + Taux d\'intérêt)^(Nombre d\'années)' },
+      { type: 'list', items: [
+        '🚀 <strong>Effet Exponentiel :</strong> Plus vous commencez tôt, plus la courbe de votre richesse s\'envole de manière spectaculaire.',
+        '🌳 <strong>Analogie : Le Jeune Baobab :</strong> Il met du temps à grandir au début, mais une fois ses racines établies, sa croissance accélère massivement.'
+      ]},
+      { type: 'heading', level: 2, text: '🚫 6.3.2 Les 3 Erreurs Classiques à Éviter' },
+      { type: 'list', items: [
+        '<strong>1. Tenter de "Timer" le Marché :</strong> Essayer de deviner les points hauts ou bas. C\'est de la spéculation.',
+        '<strong>2. Manquer de Diversification :</strong> Tout miser sur une seule action. La diversification réduit le risque.',
+        '<strong>3. Vendre en Panique :</strong> Réagir émotionnellement à une baisse, détruisant ainsi la puissance du long terme.'
+      ]},
+      { type: 'heading', level: 2, text: '6.3.3 Les Grandes Stratégies d\'Investissement' },
+      { type: 'list', items: [
+        '<strong>Value Investing</strong> : Acheter des "bonnes affaires" en dessous de leur valeur intrinsèque (Style Buffett).',
+        '<strong>Growth Investing</strong> : Acheter des entreprises à croissance rapide, même si elles semblent chères.',
+        '<strong>Dividendes</strong> : Viser des revenus réguliers via des entreprises matures (Banques, Télécoms).'
+      ]},
+      { type: 'heading', level: 1, text: '📈 6.4 Psychologie face à la Volatilité' },
+      { type: 'paragraph', text: 'La volatilité est la norme, pas l\'exception. La psychologie du gagnant consiste à transformer la volatilité en opportunité.' },
+      { type: 'pull-quote', text: '"Investors should remember that excitement and expenses are their enemies. And if they insist on trying to time their participation in equities, they should try to be fearful when others are greedy and greedy only when others are fearful." — Warren Buffett' },
+      { type: 'callout', variant: 'info', title: 'En d\'autres termes :', paragraphs: ['quand le marché panique, c\'est le moment d\'acheter. Quand tout le monde s\'emballe, c\'est le moment d\'être prudent.'] },
+      { type: 'glossary', items: [
+        { term: 'Intérêts Composés', definition: 'Processus par lequel les gains sont réinvestis pour produire leurs propres gains.' },
+        { term: 'Biais Cognitif', definition: 'Erreur de jugement systématique basée sur des raccourcis de pensée.' },
+        { term: 'Value Investing', definition: 'Stratégie consistant à acheter des titres sous-évalués par le marché.' },
+        { term: 'Ancrage', definition: 'Biais qui pousse à rester focalisé sur le prix initial d\'achat d\'un titre.' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Vous avez la discipline. Place à l\'outil le plus puissant : l\'analyse.',
+        '👉 Module 7 : Analyse Fondamentale'
+      ]}
+    ]),
   });
 
   // ====================================================
@@ -1961,7 +2528,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
   <div class="bg-white p-6 rounded-xl border border-gray-200">
     <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-purple-600 pb-2">
-      7.4 Valorisation d’une action : Déterminer la valeur intrinsèque
+      7.4 Valorisation d'une action : Déterminer la valeur intrinsèque
     </h2>
     <div class="space-y-6 text-gray-700">
       <div>
@@ -2058,13 +2625,110 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique du Module', items: [
+        'Lire et comprendre la logique des trois principaux états financiers d\'une société cotée (Compte de Résultat, Bilan, Tableau des Flux de Trésorerie).',
+        'Calculer et interpréter les ratios fondamentaux clés (PER, ROE, Marge Nette, Gearing) pour évaluer la santé financière et la rentabilité.',
+        'Appliquer des méthodes simples de valorisation pour déterminer si une action BRVM est chère ou bon marché.',
+        'Utiliser une approche structurée pour choisir les meilleures entreprises où investir.'
+      ]},
+      { type: 'heading', level: 1, text: '7.1 Lecture et compréhension des états financiers' },
+      { type: 'paragraph', text: 'L\'Analyse Fondamentale est l\'art de déterminer la vraie valeur (valeur intrinsèque) d\'une entreprise avant d\'acheter ses actions. Elle se base sur l\'étude des rapports annuels et des états financiers.' },
+      { type: 'heading', level: 2, text: '7.1.1 Les Trois Piliers de l\'Analyse' },
+      { type: 'paragraph', text: 'Pour évaluer la santé d\'une entreprise, vous avez besoin de ses trois états financiers :' },
+      { type: 'callout', variant: 'info', title: 'Le Compte de Résultat (P&L - Profit and Loss) :', paragraphs: [
+        '<strong>La question :</strong> Qu\'est-ce qu\'on gagne ?',
+        '<strong>Le rôle :</strong> Il mesure la performance de l\'entreprise sur une période donnée (une année, un trimestre).',
+        '<strong>Les éléments clés :</strong> Chiffre d\'Affaires (Ventes totales), Dépenses (Charges), et le résultat final (le Bénéfice Net).'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Le Bilan :', paragraphs: [
+        '<strong>La question :</strong> Qu\'est-ce qu\'on possède et qu\'est-ce qu\'on doit ?',
+        '<strong>Le rôle :</strong> C\'est une photographie à un instant T de ce que possède l\'entreprise (Actifs) et de ce qu\'elle doit (Passifs).',
+        '<strong>La logique :</strong> Le total des Actifs doit toujours être égal au total des Passifs (Dettes + Capitaux Propres). Les Capitaux Propres représentent l\'argent qui appartient aux actionnaires.'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Le Tableau des Flux de Trésorerie (TFT/Cash Flow) :', paragraphs: [
+        '<strong>La question :</strong> Où va l\'argent liquide ?',
+        '<strong>Le rôle :</strong> Il est le plus honnête ! Il montre les mouvements réels de cash (argent) entrant et sortant.',
+        '<strong>Pourquoi est-il crucial :</strong> Le Bénéfice Net du Compte de Résultat peut être manipulé par des écritures comptables (amortissements, provisions). Le Cash Flow montre si l\'entreprise génère réellement du liquide, ce qui est nécessaire pour payer les dividendes, les dettes et investir.'
+      ]},
+      { type: 'heading', level: 1, text: '7.2 Analyse détaillée : Les trois volets' },
+      { type: 'paragraph', text: 'L\'analyste éclairé étudie les tendances sur 5 ans. Une bonne entreprise présente une croissance stable et régulière de ses indicateurs.' },
+      { type: 'heading', level: 2, text: '7.2.1 Analyse du Compte de Résultat : Les Marges et la Croissance' },
+      { type: 'callout', variant: 'info', title: 'Croissance du Chiffre d\'Affaires :', paragraphs: ['L\'indicateur de base. L\'entreprise vend-elle de plus en plus ? Une croissance régulière est un signe de bonne santé.'] },
+      { type: 'callout', variant: 'info', title: 'Marge Nette :', paragraphs: [
+        'La Marge Nette est le ratio le plus important. Elle mesure quel pourcentage du chiffre d\'affaires est conservé comme Bénéfice Net.',
+        'Formule : Marge Nette = Bénéfice Net ÷ Chiffre d\'Affaires',
+        'Interprétation : Pour 100 xof de produits vendus, combien de franc finissent réellement dans la poche de l\'entreprise après avoir payé absolument tout le monde (fournisseurs, impôts, salaires).'
+      ]},
+      { type: 'heading', level: 2, text: '7.2.2 Analyse du Bilan : La Solvabilité' },
+      { type: 'callout', variant: 'info', title: 'Capitaux Propres :', paragraphs: ['L\'argent qui appartient aux actionnaires doit croître année après année, signe que l\'entreprise conserve et réinvestit une partie de ses bénéfices.'] },
+      { type: 'callout', variant: 'info', title: 'Le Ratio d\'Endettement (Gearing ou Ratio Dette Nette / Capitaux Propres) :', paragraphs: [
+        'Formule : Gearing = Dette Nette ÷ Capitaux Propres',
+        'Interprétation : Un ratio de 0,5 signifie que la dette représente 50 % des fonds propres. Au-delà de 1 (ou 100 %), on commence souvent à surveiller si l\'entreprise n\'est pas trop "sous pression".',
+        'Règle du débutant : Assurez-vous que les Capitaux Propres couvrent largement les dettes.'
+      ]},
+      { type: 'heading', level: 2, text: '7.2.3 Analyse du Tableau des Flux de Trésorerie : La Qualité des Profits' },
+      { type: 'list', items: [
+        '<strong>Flux de Trésorerie d\'Exploitation (FTE) :</strong> C\'est l\'argent généré par l\'activité normale de l\'entreprise. S\'il est positif et supérieur au Bénéfice Net, c\'est un excellent signe de profits de haute qualité.',
+        '<strong>Flux de Trésorerie d\'Investissement :</strong> Montre combien l\'entreprise dépense pour son avenir (usines, machines, etc.).',
+        '<strong>Flux de Trésorerie de Financement :</strong> Montre comment l\'entreprise gère sa dette et ses actionnaires (paiement de dividendes, émission de nouvelles dettes).'
+      ]},
+      { type: 'heading', level: 1, text: '7.3 Les ratios essentiels pour l\'investisseur BRVM' },
+      { type: 'paragraph', text: 'Les ratios permettent de comparer facilement des entreprises de tailles différentes et d\'évaluer leur efficacité.' },
+      { type: 'callout', variant: 'info', title: '7.3.1 PER (Price-to-Earnings Ratio) : Le Prix du Bénéfice', paragraphs: [
+        'Le PER est le ratio le plus célèbre. Il mesure combien les investisseurs sont prêts à payer pour chaque franc CFA de bénéfice net annuel d\'une action.',
+        'Formule : PER = Cours de l\'action ÷ Bénéfice Net par Action (BPA)',
+        '<strong>PER faible (ex: 5 à 10) :</strong> Souvent considéré comme une bonne affaire (Value Investing).',
+        '<strong>PER élevé (ex: 20+) :</strong> Le marché anticipe une très forte croissance future (Growth Investing).'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Le Ratio PEG : Le juge de paix de la croissance', paragraphs: [
+        'Formule : PEG = PER ÷ Taux de croissance annuel des bénéfices (%)',
+        'Interprétation : Un PEG proche de 1 est souvent considéré comme un prix juste pour une entreprise en pleine expansion.'
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Nuance BRVM (Essentiel) :', paragraphs: ['La BRVM est un marché de croissance (Frontier Market). Ne rejetez jamais une action uniquement à cause d\'un PER élevé. Comparez-le toujours à la moyenne sectorielle et aux perspectives de croissance.'] },
+      { type: 'callout', variant: 'info', title: '7.3.2 ROE (Return on Equity) : L\'Efficacité', paragraphs: [
+        'Formule : ROE = Bénéfice Net ÷ Capitaux Propres',
+        'Interprétation : Un ROE de 15 % et plus est considéré comme excellent. Il indique que l\'entreprise génère 15 FCFA de bénéfice pour chaque 100 FCFA que les actionnaires y ont investis.',
+        '🌳 Analogie : Le Gestionnaire du Maquis — Plus le ROE est élevé, plus l\'équipe dirigeante est efficace à transformer l\'argent que vous lui donnez en profit.'
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Le revers de la médaille : Attention à l\'endettement', paragraphs: [
+        'Un ROE très élevé peut parfois cacher une entreprise trop endettée. En finance, on dit que la dette fait "levier" sur la rentabilité.',
+        'Vérifiez toujours le <strong>Gearing</strong> (ratio d\'endettement) en parallèle : un ROE de 30 % avec une dette massive est beaucoup plus risqué qu\'un ROE de 15 % sans aucune dette.'
+      ]},
+      { type: 'heading', level: 1, text: '7.4 Valorisation d\'une action : Déterminer la valeur intrinsèque' },
+      { type: 'callout', variant: 'info', title: '7.4.1 La Méthode des Comparables (Multiples)', paragraphs: [
+        'C\'est la méthode la plus simple pour le débutant.',
+        'Mise en œuvre : Calculer les ratios (PER, P/B, Marge) de votre cible et les comparer à la moyenne du secteur à la BRVM.',
+        'Astuce : Si l\'entreprise cible a un PER de 6 alors que la moyenne de son secteur à la BRVM est de 10, elle est soit une opportunité en or, soit elle cache un problème grave que le marché a déjà anticipé.'
+      ]},
+      { type: 'callout', variant: 'info', title: '7.4.2 La Méthode des Dividendes Actualisés (DDM)', paragraphs: [
+        'Principe : La valeur d\'une action est égale à la somme des dividendes futurs qu\'elle versera, actualisée à aujourd\'hui.',
+        'Limitation : Ne fonctionne pas bien pour les entreprises qui ne versent pas ou peu de dividendes.'
+      ]},
+      { type: 'callout', variant: 'note', title: '7.4.3 Le Flux de Trésorerie Actualisés (DCF - Discounted Cash Flow)', paragraphs: [
+        'Principe (Avancé) : La valeur d\'une entreprise est déterminée par la somme de tous ses Flux de Trésorerie Futurs (Cash Flow), actualisée à aujourd\'hui.',
+        'Avantage : C\'est la méthode la plus précise car elle se base sur le vrai cash généré.',
+        'Recommandation pour le débutant : Comprenez la logique (la valeur vient du cash futur), mais laissez les calculs complexes aux professionnels.'
+      ]},
+      { type: 'glossary', items: [
+        { term: 'Bénéfice Net par Action (BPA)', definition: 'Le Bénéfice Net divisé par le nombre total d\'actions. Base de calcul du PER.' },
+        { term: 'Marge Nette', definition: 'Mesure le pourcentage du Chiffre d\'Affaires conservé en Bénéfice Net.' },
+        { term: 'Gearing', definition: 'Ratio Dette Nette / Capitaux Propres, mesure le niveau d\'endettement d\'une entreprise par rapport à ses propres fonds.' },
+        { term: 'Valeur Intrinsèque', definition: 'La vraie valeur estimée d\'une entreprise, indépendante de son prix en bourse.' },
+        { term: 'DCF', definition: 'Discounted Cash Flow (Flux de Trésorerie Actualisés), méthode de valorisation basée sur les flux de trésorerie futurs.' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Vous maîtrisez désormais les outils pour choisir une bonne entreprise. Mais le risque existe toujours. Comment le gérer ?',
+        '👉 Prochaine leçon : Module 8 — La Maîtrise du Risque : Diversification et Gestion de Portefeuille.'
+      ]}
+    ]),
   });
 
   // ====================================================
-  // === M8 : L’Évaluation d’Entreprise – Projeter l’Avenir (Valorisation Avancée) ===
+  // === M8 : L'Évaluation d'Entreprise – Projeter l'Avenir (Valorisation Avancée) ===
   // ====================================================
   await createOrUpdateModule({
-    title: "L’Évaluation d’Entreprise – Projeter l’Avenir (Valorisation Avancée)",
+    title: "L'Évaluation d'Entreprise – Projeter l'Avenir (Valorisation Avancée)",
     slug: 'construire-portefeuille',
     description: "Comprenez et appliquez la diversification (sectorielle, d'actifs) et saurez comment l'allocation d'actifs réduit le risque global de votre portefeuille.",
     difficulty_level: 'intermediaire',
@@ -2323,10 +2987,72 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
  `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique du Module', items: [
+        'Comprendre la logique fondamentale de la valorisation basée sur l\'actualisation (méthode DCF et DDM).',
+        'Identifier les paramètres clés (taux d\'actualisation, taux de croissance, Terminal Value) et leur impact sur la valeur finale d\'une action.',
+        'Appliquer la méthode DDM pour valoriser les entreprises matures à dividendes réguliers de la BRVM.'
+      ]},
+      { type: 'heading', level: 1, text: '8.1 Méthode DCF (Discounted Cash Flow) : Actualisation des Flux de Trésorerie' },
+      { type: 'paragraph', text: 'La méthode DCF est la plus respectée par les analystes professionnels. Elle repose sur le principe que la valeur d\'une entreprise est égale à la somme de tous ses flux de trésorerie futurs, ramenée à sa valeur aujourd\'hui (Actualisé).' },
+      { type: 'heading', level: 2, text: '8.1.1 Le Principe de l\'Actualisation : Pourquoi aujourd\'hui est mieux que demain' },
+      { type: 'list', items: [
+        '<strong>La Valeur Temps de l\'Argent :</strong> Un Franc CFA reçu aujourd\'hui vaut plus qu\'un Franc CFA reçu dans un an. Inflation : Le pouvoir d\'achat diminue avec le temps. Coût d\'Opportunité : L\'argent non investi aujourd\'hui ne peut pas générer d\'intérêts.',
+        '<strong>L\'Actualisation :</strong> C\'est l\'opération mathématique qui permet de ramener ces flux futurs (prévus) à leur Valeur Actuelle Nette (VAN).'
+      ]},
+      { type: 'heading', level: 2, text: '8.1.2 Les Deux Composantes du DCF' },
+      { type: 'paragraph', text: 'L\'évaluation DCF se fait en deux grandes étapes :' },
+      { type: 'list', items: [
+        '<strong>La Période de Prévision Explicite (5 à 10 ans) :</strong> L\'analyste projette les Flux de Trésorerie d\'Exploitation pour les 5 ou 10 prochaines années. Clé pour la BRVM : La projection doit être prudente, car le marché régional peut être volatil.',
+        '<strong>La Valeur Terminale (Terminal Value - VT) :</strong> C\'est la valeur de l\'entreprise après la période de prévision explicite. La VT représente souvent 70 à 80 % de la valeur totale de l\'entreprise !'
+      ]},
+      { type: 'heading', level: 2, text: '8.1.3 Le Taux d\'Actualisation (Le WACC)' },
+      { type: 'paragraph', text: 'Le Taux d\'Actualisation est le taux utilisé pour ramener les flux futurs à la valeur présente. Il est souvent appelé Coût Moyen Pondéré du Capital (CMPC ou WACC).' },
+      { type: 'list', items: [
+        '<strong>Rôle :</strong> Il représente le coût total pour l\'entreprise de financer ses actifs (par la dette et par les fonds propres des actionnaires).',
+        '<strong>Impact :</strong> Plus ce taux est élevé, plus la valeur actuelle des flux futurs est faible, et donc plus la valeur intrinsèque de l\'action est faible.'
+      ]},
+      { type: 'highlight', text: 'Formule DCF : Valeur Intrinsèque = Σ FCF_t / (1 + WACC)^t + VT_N / (1 + WACC)^N' },
+      { type: 'heading', level: 1, text: '8.2 Méthode DDM (Dividend Discount Model) : Actualisation des Dividendes' },
+      { type: 'paragraph', text: 'La méthode DDM est particulièrement utile pour les entreprises de la BRVM qui ont l\'habitude de verser des dividendes stables et croissants (banques, télécoms, agro-industrie mature).' },
+      { type: 'heading', level: 2, text: '8.2.1 Le Principe Fondamental' },
+      { type: 'list', items: [
+        '<strong>Postulat :</strong> Pour un investisseur en actions de ce type, la valeur d\'une action provient uniquement des dividendes futurs qu\'il recevra, actualisés à aujourd\'hui.',
+        '<strong>Avantage :</strong> C\'est une méthode simple, basée sur une donnée facilement observable à la BRVM (le rendement du dividende historique).'
+      ]},
+      { type: 'heading', level: 2, text: '8.2.2 Le Modèle de Gordon-Shapiro (DDM simplifié)' },
+      { type: 'paragraph', text: 'Le modèle de Gordon-Shapiro suppose que le dividende va croître à un taux constant (g) pour toujours.' },
+      { type: 'highlight', text: 'Formule Gordon-Shapiro : Prix de l\'action = D₁ / (k − g) | D₁ = dividende prévu, k = taux d\'actualisation, g = taux de croissance annuel constant.' },
+      { type: 'callout', variant: 'info', title: '8.2.3 Application à la BRVM : L\'Intérêt pour les "Dividend Kings"', paragraphs: [
+        'Les entreprises de la BRVM qui versent des dividendes réguliers sont très appréciées des investisseurs régionaux.',
+        '<strong>Quand l\'utiliser ?</strong> Lorsque l\'entreprise est mature, son marché est stable, et la croissance de ses dividendes est prévisible.',
+        '<strong>Attention :</strong> Si l\'entreprise est en difficulté ou si elle réinvestit la majorité de ses bénéfices (croissance), cette méthode est inadaptée.'
+      ]},
+      { type: 'heading', level: 1, text: '8.3 Étapes Clés pour la Projection (Synthèse du Module)' },
+      { type: 'paragraph', text: 'Réaliser une projection est l\'art de traduire l\'Analyse Fondamentale (Module 7) en une valeur monétaire.' },
+      { type: 'table', headers: ['Étape', 'Action de l\'Analyste', 'Risque Émotionnel à Éviter (Module 6)'], rows: [
+        ['1. Projection de la Croissance', 'Déterminer le taux de croissance futur du Chiffre d\'Affaires et des marges.', 'Biais d\'Excès de Confiance (surestimer la croissance).'],
+        ['2. Estimation du Risque', 'Déterminer le WACC (Coût du Capital) de l\'entreprise.', 'Ignorer le risque spécifique du marché régional.'],
+        ['3. Calcul de la Valeur Terminale', 'Déterminer la valeur de l\'entreprise au-delà de 10 ans.', 'Utiliser un taux de croissance g trop élevé, qui gonfle artificiellement la VT.'],
+        ['4. Comparaison', 'Comparer la Valeur Intrinsèque (obtenue par DCF/DDM) avec le Cours actuel de l\'action (Bourse).', 'Ancrage (Rester bloqué sur le prix d\'achat, au lieu de faire confiance au calcul).']
+      ]},
+      { type: 'callout', variant: 'ok', title: 'Conclusion de l\'Expert :', paragraphs: ['Si le prix en bourse est significativement inférieur à votre valeur intrinsèque calculée, vous avez trouvé une marge de sécurité pour votre investissement.'] },
+      { type: 'glossary', items: [
+        { term: 'Actualisation', definition: 'Opération financière qui ramène la valeur future d\'un montant à sa valeur présente.' },
+        { term: 'WACC (CMPC)', definition: 'Coût Moyen Pondéré du Capital, le taux utilisé pour actualiser les flux futurs (taux d\'actualisation).' },
+        { term: 'Valeur Intrinsèque', definition: 'La vraie valeur estimée d\'une entreprise selon l\'analyste.' },
+        { term: 'Valeur Terminale (VT)', definition: 'La valeur estimée de l\'entreprise au-delà de la période de prévision explicite.' },
+        { term: 'Marge de Sécurité', definition: 'La différence positive entre la valeur intrinsèque (élevée) et le prix du marché (faible).' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Vous avez le mental (M6) et les outils pour évaluer (M7 & M8). Il faut maintenant garantir la survie de votre capital face au risque.',
+        '👉 Module 9 : La Maîtrise du Risque'
+      ]}
+    ]),
   });
 
  // ====================================================
-  // === M9 : 🌱 Module 9 : L’Analyse Extra-Financière – Comprendre le Contexte ===
+  // === M9 : 🌱 Module 9 : L'Analyse Extra-Financière – Comprendre le Contexte ===
   // ====================================================
   await createOrUpdateModule({
     title: "L'Analyse Extra-Financière – Comprendre le Contexte",
@@ -2509,13 +3235,71 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique du Module', items: [
+        'Mener une analyse qualitative pour évaluer la qualité de la direction, la solidité du modèle économique et le positionnement concurrentiel d\'une entreprise.',
+        'Comprendre les enjeux du reporting ESG (Environnement, Social, Gouvernance) et l\'importance de la finance durable à la BRVM.',
+        'Intégrer l\'analyse quantitative (M7 & M8) et qualitative (M9) pour prendre une décision d\'investissement complète.'
+      ]},
+      { type: 'heading', level: 1, text: '9.1 Analyse Qualitative : Le Cerveau de l\'Entreprise' },
+      { type: 'paragraph', text: 'L\'analyse qualitative consiste à répondre à la question : L\'entreprise est-elle bien gérée, bien positionnée et son modèle est-il durable ? C\'est l\'étape où vous lisez le rapport annuel (non pas pour les chiffres, mais pour le texte !).' },
+      { type: 'heading', level: 2, text: '9.1.1 La Gouvernance : L\'Équipe et la Direction' },
+      { type: 'paragraph', text: 'La qualité de la gestion est souvent le facteur décisif.' },
+      { type: 'list', items: [
+        '<strong>Le Leadership :</strong> Qui dirige l\'entreprise ? Quelle est leur expérience ? Leur réputation est-elle solide ?',
+        '<strong>Transparence et Responsabilité :</strong> L\'entreprise communique-t-elle clairement ses stratégies ? La structure du Conseil d\'Administration est-elle indépendante des actionnaires majoritaires ?',
+        '<strong>Rémunération :</strong> La rémunération des dirigeants est-elle alignée avec la performance à long terme de l\'entreprise ?'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Pourquoi c\'est vital à la BRVM :', paragraphs: ['Sur un marché régional moins couvert par les analystes internationaux, la confiance accordée au management est un facteur de risque (ou d\'opportunité) plus important que sur des marchés développés.'] },
+      { type: 'heading', level: 2, text: '9.1.2 Le Modèle Économique (Business Model)' },
+      { type: 'paragraph', text: 'Vous devez comprendre comment l\'entreprise gagne de l\'argent et si cela est durable.' },
+      { type: 'list', items: [
+        '<strong>L\'Avantage Concurrentiel (Le Moat) :</strong> Qu\'est-ce qui rend l\'entreprise meilleure ou différente de ses concurrents ? Est-ce un brevet ? Des coûts plus bas ? Un réseau de distribution monopolistique ?',
+        '<strong>La Résilience :</strong> Le modèle économique peut-il survivre à un choc majeur (crise, pandémie, nouvelle réglementation) ?',
+        '<strong>Diversification des Revenus :</strong> L\'entreprise dépend-elle d\'un seul produit ou d\'un seul marché ? (La BRVM concerne 8 pays, l\'expansion régionale est un signe de solidité).'
+      ]},
+      { type: 'heading', level: 2, text: '9.1.3 L\'Analyse du Secteur et de la Concurrence' },
+      { type: 'list', items: [
+        '<strong>Positionnement :</strong> L\'entreprise est-elle leader, challenger ou suiveur ? Le leader (par exemple, Sonatel au Sénégal) a souvent un pouvoir de fixation des prix supérieur.',
+        '<strong>Barrières à l\'Entrée :</strong> Est-il facile pour un nouvel acteur (concurrent) d\'entrer sur le marché ? Les coûts d\'installation d\'une banque ou d\'une cimenterie sont de fortes barrières.'
+      ]},
+      { type: 'callout', variant: 'warn', title: '9.1.4 Les « Red Flags » : Les Signaux d\'Alerte', paragraphs: [
+        '🚩 <strong>L\'Instabilité de la Direction :</strong> Démission soudaine sans raison claire.',
+        '🚩 <strong>Les Réserves des Commissaires aux Comptes :</strong> Si les auditeurs refusent de certifier les comptes.',
+        '🚩 <strong>Les Transactions entre Parties Liées :</strong> Conflits d\'intérêts avec les sociétés du PDG.',
+        '🚩 <strong>La Complexité Inutile :</strong> Structures de holding opaques. Adage de Buffett : "N\'investissez jamais dans un business que vous ne comprenez pas."'
+      ]},
+      { type: 'callout', variant: 'info', title: '💡 Le Lien avec la Valorisation (Le Risk Premium)', paragraphs: [
+        'Gouvernance Solide = Risque Faible : Vous pouvez utiliser un taux d\'actualisation (k) plus bas. L\'entreprise vaut donc plus cher.',
+        'Gouvernance Douteuse = Risque Élevé : Vous devez exiger une "prime de risque" supplémentaire. Vous augmentez votre taux d\'actualisation, ce qui fait mécaniquement baisser la valeur intrinsèque de l\'action.',
+        'En résumé : Une mauvaise gouvernance est une taxe invisible qui détruit la valeur de l\'actionnaire.'
+      ]},
+      { type: 'heading', level: 1, text: '9.2 Focus UEMOA : Le Reporting ESG et la Finance Durable' },
+      { type: 'paragraph', text: 'L\'investissement ne se résume plus au seul profit. Les critères ESG sont désormais essentiels pour les investisseurs institutionnels et deviennent incontournables à la BRVM.' },
+      { type: 'heading', level: 2, text: '9.2.1 Comprendre les Critères ESG' },
+      { type: 'list', items: [
+        '<strong>E — Environnement :</strong> Gestion des déchets, émissions de carbone, consommation d\'eau. Exemple : Une cimenterie a-t-elle des plans pour réduire son empreinte carbone ?',
+        '<strong>S — Social :</strong> Santé et sécurité, respect des normes du travail, impact communautaire (RSE).',
+        '<strong>G — Gouvernance :</strong> Transparence, lutte contre la corruption, indépendance du conseil.'
+      ]},
+      { type: 'heading', level: 2, text: '9.2.2 Le Rôle du Reporting et de l\'AMF-UMOA' },
+      { type: 'list', items: [
+        '<strong>Reporting RSE :</strong> De plus en plus d\'entreprises cotées à la BRVM publient des rapports de Responsabilité Sociale et Environnementale.',
+        '<strong>La Finance Durable :</strong> Le marché de l\'UEMOA s\'oriente vers des obligations vertes (Green Bonds) et des fonds ESG. Investir dans des entreprises bien notées réduit le risque à long terme.'
+      ]},
+      { type: 'callout', variant: 'ok', title: 'Avantage Investisseur :', paragraphs: ['Une entreprise avec un score ESG élevé est souvent synonyme de meilleure gestion des risques.'] },
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Nous avons maintenant couvert l\'analyse complète (chiffres, projections, contexte). Il est temps d\'assurer le bon timing grâce à l\'analyse technique.',
+        '👉 Module 10 : Analyse Technique'
+      ]}
+    ]),
   });
 
   // ====================================================
-  // === M10 : L’Art du Timing – Analyse Technique et Lecture du Marché ===
+  // === M10 : L'Art du Timing – Analyse Technique et Lecture du Marché ===
   // ====================================================
   await createOrUpdateModule({
-    title: "L’Art du Timing – Analyse Technique et Lecture du Marché",
+    title: "L'Art du Timing – Analyse Technique et Lecture du Marché",
     slug: 'passage-a-l-action',
     description: "Maîtrisez l'art du timing boursier grâce à l'analyse technique : décryptez les graphiques et les tendances pour savoir exactement quand acheter ou vendre",
     difficulty_level: 'avance',
@@ -2798,6 +3582,100 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique du Module', items: [
+        'Comprendre la philosophie de l\'Analyse Technique (AT) et son rôle complémentaire à l\'Analyse Fondamentale.',
+        'Décoder les graphiques de prix (chandeliers, tendances, support/résistance).',
+        'Utiliser les indicateurs techniques clés (Moyennes Mobiles, RSI, MACD, Bandes de Bollinger) pour identifier les points d\'entrée et de sortie.',
+        'Élaborer une stratégie de timing prudente et adaptée au contexte de la BRVM.'
+      ]},
+      { type: 'heading', level: 1, text: '10.1 Philosophie et Théorie de Dow' },
+      { type: 'paragraph', text: 'L\'Analyse Technique (AT) est l\'étude des mouvements de prix historiques d\'un titre, généralement représentés par des graphiques. Elle repose sur des postulats clés formalisés par la Théorie de Dow, le père de l\'analyse technique.' },
+      { type: 'heading', level: 2, text: '10.1.1 Les Postulats Fondamentaux de l\'AT' },
+      { type: 'list', items: [
+        '<strong>Le marché actualise tout :</strong> Le prix actuel de l\'action reflète déjà toutes les informations fondamentales, économiques et psychologiques connues.',
+        '<strong>Les prix évoluent en tendances :</strong> Les mouvements de prix ne sont pas aléatoires ; ils suivent des directions identifiables.',
+        '<strong>L\'histoire se répète :</strong> Les schémas de comportement humain (peur, avidité) se répètent, menant à la récurrence de certaines configurations graphiques.'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Rôle pour l\'Investisseur Débutant :', paragraphs: ['Alors que l\'Analyse Fondamentale (M7/M9) vous dit quoi acheter (la valeur), l\'Analyse Technique vous aide à déterminer quand acheter ou vendre (le timing).'] },
+      { type: 'heading', level: 1, text: '10.2 Chartisme et Lecture de Graphiques' },
+      { type: 'heading', level: 2, text: '10.2.1 Un Graphique, une Histoire : Les Chandeliers Japonais' },
+      { type: 'paragraph', text: 'Le graphique en chandeliers est le plus utilisé. Chaque chandelier représente une période de temps (jour, semaine, etc.) et raconte l\'histoire de la confrontation entre acheteurs et vendeurs.' },
+      { type: 'list', items: [
+        '<strong>Le Corps Vert/Blanc :</strong> Prix a augmenté (Clôture > Ouverture) – Domination des Acheteurs.',
+        '<strong>Le Corps Rouge/Noir :</strong> Prix a diminué (Clôture < Ouverture) – Domination des Vendeurs.',
+        '<strong>Les Mèches (ou Ombres) :</strong> Indiquent les prix les plus hauts et les plus bas atteints pendant la période.'
+      ]},
+      { type: 'heading', level: 2, text: '10.2.2 Identifier les Tendances (Le Concept Clé)' },
+      { type: 'paragraph', text: 'Le concept le plus important est la tendance, la direction générale des prix.' },
+      { type: 'list', items: [
+        '<strong>Tendance Haussière (Bullish) :</strong> Succession de sommets et de creux de plus en plus hauts.',
+        '<strong>Tendance Baissière (Bearish) :</strong> Succession de sommets et de creux de plus en plus bas.',
+        '<strong>Tendance Neutre (Latérale) :</strong> Prix se déplaçant horizontalement dans une fourchette limitée.'
+      ]},
+      { type: 'heading', level: 2, text: '10.2.3 Support et Résistance (Niveaux Psychologiques)' },
+      { type: 'paragraph', text: 'Ce sont des niveaux de prix importants qui agissent comme des barrières.' },
+      { type: 'list', items: [
+        '<strong>Support (Le Plancher) :</strong> Niveau où l\'intérêt d\'achat est suffisamment fort pour empêcher le prix de baisser davantage.',
+        '<strong>Résistance (Le Plafond) :</strong> Niveau où la pression de vente est forte, empêchant le prix de monter.'
+      ]},
+      { type: 'analogy', title: '💡 L\'Analogie à Retenir : Le Prix du Sac de Riz au Marché', items: [
+        'Le prix du sac de riz peut fluctuer, mais il y a toujours un prix minimal (le Support) en dessous duquel les producteurs refusent de vendre.',
+        'Et un prix maximal (la Résistance) au-delà duquel les clients refusent d\'acheter.'
+      ]},
+      { type: 'heading', level: 1, text: '10.3 Indicateurs Clés : Lisser, Mesurer la Force et le Momentum' },
+      { type: 'paragraph', text: 'Les indicateurs sont des formules mathématiques appliquées aux prix pour donner des signaux plus clairs.' },
+      { type: 'heading', level: 2, text: '10.3.1 Moyennes Mobiles (MM) : Lisser la Tendance' },
+      { type: 'paragraph', text: 'Les Moyennes Mobiles (MM) sont des lignes qui représentent le prix moyen sur une période donnée (ex: MM 50 jours, MM 200 jours).' },
+      { type: 'list', items: [
+        '<strong>Rôle :</strong> Lisser les fluctuations quotidiennes et identifier la tendance sous-jacente.',
+        '<strong>Règles Simples :</strong> Si le prix de l\'action est au-dessus de sa MM 200 jours, c\'est un signal de force à long terme. Le croisement de deux MM (ex: MM 50 qui croise la MM 200 par le bas) donne des signaux d\'achat (Golden Cross).'
+      ]},
+      { type: 'heading', level: 2, text: '10.3.2 RSI (Relative Strength Index) : Mesurer la Force' },
+      { type: 'paragraph', text: 'Indicateur de momentum qui mesure la vitesse et le changement des mouvements de prix. Il indique si l\'actif est suracheté ou survendu.' },
+      { type: 'list', items: [
+        '<strong>RSI > 70 :</strong> Le titre est suracheté (trop d\'acheteurs) et une correction (baisse) pourrait être imminente.',
+        '<strong>RSI < 30 :</strong> Le titre est survendu (trop de vendeurs) et un rebond pourrait être proche.'
+      ]},
+      { type: 'heading', level: 2, text: '10.3.3 MACD : Mesurer l\'Impulsion' },
+      { type: 'paragraph', text: 'Indicateur de tendance qui montre la relation entre deux moyennes mobiles du prix d\'un titre. Signal : Les croisements entre la ligne MACD et sa ligne de signal sont des points d\'achat ou de vente potentiels.' },
+      { type: 'heading', level: 2, text: '10.3.4 Bandes de Bollinger : Mesurer la Volatilité' },
+      { type: 'paragraph', text: 'Lignes tracées au-dessus et en dessous d\'une moyenne mobile. Interprétation : Lorsque les bandes se resserrent, cela signale une faible volatilité et l\'anticipation d\'un mouvement important.' },
+      { type: 'callout', variant: 'info', title: '📊 10.3.5 Les Volumes : Le Détecteur de Mensonges', paragraphs: [
+        'Les barres verticales en bas du graphique qui montrent combien d\'actions ont été échangées.',
+        '👉 <strong>Règle d\'Or :</strong> Le volume doit confirmer la tendance.',
+        '👉 <strong>Interprétation :</strong> Si le prix casse une Résistance avec de gros volumes, c\'est un signal validé. Si le prix monte avec de faibles volumes, méfiance : c\'est peut-être un piège haussier sans conviction.'
+      ]},
+      { type: 'heading', level: 1, text: '10.4 Comprendre et Utiliser la Volatilité' },
+      { type: 'paragraph', text: 'La volatilité est l\'intensité et la fréquence des variations de prix. En Analyse Technique, la volatilité est une opportunité.' },
+      { type: 'list', items: [
+        '<strong>Forte Volatilité :</strong> Risque élevé, mais potentiel de gain rapide. Le timing est crucial.',
+        '<strong>Faible Volatilité :</strong> Risque faible, mais faible potentiel de gain rapide. Idéal pour l\'accumulation par l\'investisseur à long terme.'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Stratégie BRVM :', paragraphs: ['Sur un marché comme la BRVM, où la liquidité peut être intermittente, la volatilité des prix peut parfois être exagérée. L\'investisseur fondamentaliste utilise ces pics de volatilité (baisse) pour acheter à bas prix.'] },
+      { type: 'heading', level: 1, text: '10.5 Synthèse Technique et Confirmation Multi-Signaux' },
+      { type: 'paragraph', text: 'Ne jamais prendre une décision sur un seul indicateur. La puissance de l\'AT réside dans la confirmation de plusieurs signaux.' },
+      { type: 'table', headers: ['Signal 1 (Tendance)', 'Signal 2 (Momentum)', 'Signal 3 (Volatilité)', 'Décision (Confirmation)'], rows: [
+        ['Le prix touche un Support.', 'Le RSI sort de la zone de survendue (remonte au-dessus de 30).', 'Les Bandes de Bollinger se resserrent puis s\'écartent.', 'SIGNAL D\'ACHAT FORT'],
+        ['Le prix atteint une Résistance.', 'Le RSI entre en zone de surachat (dépasse 70).', 'Le prix est loin de sa MM 200 jours.', 'SIGNAL DE VENTE/PRISE DE PROFIT']
+      ]},
+      { type: 'heading', level: 1, text: '10.6 Lecture en Temps Réel des Graphiques BRVM' },
+      { type: 'list', items: [
+        '<strong>Privilégier les Grandes Périodes :</strong> Utilisez des graphiques hebdomadaires ou mensuels (vs quotidiens) pour identifier la tendance de fond. Le trading intra-journalier est risqué sur le marché UEMOA.',
+        '<strong>Liquidity Filter :</strong> Focalisez-vous sur les titres les plus liquides (Sonatel, Ecobank, SGB-CI) où l\'AT est plus fiable. Les titres peu liquides ont des graphiques erratiques.'
+      ]},
+      { type: 'glossary', items: [
+        { term: 'Chandelier Japonais', definition: 'Représentation graphique des mouvements de prix (ouverture, clôture, haut, bas) sur une période.' },
+        { term: 'Support / Résistance', definition: 'Niveaux de prix psychologiques qui agissent comme plancher et plafond.' },
+        { term: 'Moyenne Mobile (MM)', definition: 'Ligne traçant le prix moyen lissé sur une période (ex: 50 ou 200 jours).' },
+        { term: 'RSI', definition: 'Relative Strength Index, indicateur de momentum qui mesure si un titre est suracheté ou survendu.' },
+        { term: 'Tendance', definition: 'La direction générale des mouvements de prix sur une période.' }
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Vous avez le mental, l\'analyse fondamentale et l\'outil de timing. La dernière pièce du puzzle est la gestion du risque structurel.',
+        '👉 Passer au Module 11 : La Maîtrise du Risque'
+      ]}
+    ]),
   });
 
 
@@ -3023,11 +3901,86 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique du Module', items: [
+        'Comprendre et appliquer le principe de la diversification pour réduire le risque non systématique de votre portefeuille.',
+        'Structurer un portefeuille cohérent en fonction de votre profil d\'investisseur (M5) et des grandes stratégies (M6).',
+        'Mettre en place des techniques de gestion du risque pour protéger votre capital contre les chocs de marché.'
+      ]},
+      { type: 'heading', level: 1, text: '11.1 Les Grandes Stratégies : Allocation d\'Actifs et Cohérence' },
+      { type: 'paragraph', text: 'Cette section réaffirme le lien entre l\'analyse qualitative/quantitative et la construction de portefeuille.' },
+      { type: 'heading', level: 2, text: '11.1.1 Réviser les Grandes Approches (M6)' },
+      { type: 'list', items: [
+        '<strong>Value Investing (Valeur)</strong> : Acheter des titres sous-évalués (V > P). Ce portefeuille nécessite patience et une bonne analyse fondamentale (M7).',
+        '<strong>Growth Investing (Croissance)</strong> : Acheter des entreprises en forte croissance. Ce portefeuille est plus volatil et nécessite d\'accepter un PER plus élevé.',
+        '<strong>Dividendes (Revenus)</strong> : Choisir des entreprises matures (BRVM) qui offrent un flux de trésorerie régulier.'
+      ]},
+      { type: 'heading', level: 2, text: '11.1.2 L\'Allocation d\'Actifs (Rappel M5)' },
+      { type: 'paragraph', text: 'Votre portefeuille doit refléter votre profil d\'investisseur (M5). La première décision stratégique est l\'allocation entre les grandes classes d\'actifs :' },
+      { type: 'table', headers: ['Profil d\'Investisseur', 'Objectif', 'Allocation Actions / Obligations (Ex.)', 'Rôle du Portefeuille'], rows: [
+        ['Prudent', 'Sécurité', '20% Actions / 80% Obligations', 'Protection du capital'],
+        ['Équilibré', 'Croissance Modérée', '50% Actions / 50% Obligations', 'Équilibre entre sécurité et performance'],
+        ['Dynamique', 'Maximisation', '80% Actions / 20% Obligations', 'Recherche de la croissance maximale']
+      ]},
+      { type: 'callout', variant: 'info', title: 'Conseil BRVM :', paragraphs: ['Les obligations (publiques ou d\'entreprise) cotées à la BRVM sont un excellent outil de diversification pour la partie "sécurité" du portefeuille.'] },
+      { type: 'heading', level: 1, text: '11.2 Gestion du Risque : Le Rempart du Portefeuille' },
+      { type: 'paragraph', text: 'Le but de la gestion du risque n\'est pas d\'éviter toute perte, mais de s\'assurer qu\'aucune perte ne puisse mettre en péril l\'intégralité de votre capital.' },
+      { type: 'heading', level: 2, text: '11.2.1 La Diversification : La Seule Règle d\'Or' },
+      { type: 'paragraph', text: 'La diversification est l\'art de ne pas mettre tous ses œufs dans le même panier.' },
+      { type: 'callout', variant: 'info', title: 'A. Risque Systématique vs. Non Systématique', paragraphs: [
+        '<strong>Risque Systématique (Risque de Marché) :</strong> Le risque qui affecte toutes les actions (ex: une crise régionale, une hausse des taux BCEAO). Ce risque ne peut pas être éliminé par la diversification.',
+        '<strong>Risque Non Systématique (Risque Spécifique) :</strong> Le risque propre à une seule entreprise (ex: une mauvaise gestion chez une banque). Ce risque peut être éliminé par la diversification.',
+        'Conclusion : En investissant dans suffisamment d\'entreprises (souvent 10 à 15 titres), vous éliminez la quasi-totalité du risque non systématique.'
+      ]},
+      { type: 'heading', level: 2, text: 'B. Les Piliers de la Diversification' },
+      { type: 'list', items: [
+        '<strong>Par Actifs :</strong> Actions, Obligations, OPCVM.',
+        '<strong>Par Secteurs :</strong> Ne pas investir 80 % de votre capital dans les banques, même si vous les analysez bien.',
+        '<strong>Par Géographie :</strong> Le marché BRVM offre déjà une diversification intrinsèque puisqu\'il couvre 8 pays.'
+      ]},
+      { type: 'callout', variant: 'note', title: 'Note pour l\'investisseur :', paragraphs: [
+        'Pour diversifier géographiquement sans les complexités des marchés étrangers, vous pouvez vous tourner vers des OPCVM locaux (FCP ou SICAV).',
+        'Certains fonds de la place investissent une partie de leurs actifs sur les marchés internationaux, vous offrant ainsi une exposition globale tout en restant dans le cadre réglementaire régional.'
+      ]},
+      { type: 'heading', level: 2, text: '11.2.2 Les Techniques de Protection du Capital' },
+      { type: 'paragraph', text: 'Même avec un bon portefeuille, vous devez vous protéger contre l\'émotion et les événements imprévus.' },
+      { type: 'callout', variant: 'ok', title: '1. L\'Investissement Échelonné (Dollar-Cost Averaging - DCA)', paragraphs: [
+        '<strong>Principe :</strong> Au lieu d\'investir 100% de votre capital en une seule fois, vous investissez le même montant régulièrement (ex: 50 000 FCFA par mois).',
+        '<strong>Avantage :</strong> Vous achetez à la fois cher et bon marché, lissant votre prix d\'achat et éliminant le risque de timing. C\'est l\'approche la plus disciplinée pour le débutant.'
+      ]},
+      { type: 'callout', variant: 'info', title: '2. Le Cash est une Arme', paragraphs: [
+        'Le Cash est aussi une position ! N\'ayez pas peur de garder une partie de votre portefeuille (5 à 10 %) en liquidités.',
+        '<strong>Assurance :</strong> En cas de besoin urgent d\'argent, vous ne touchez pas à vos actions.',
+        '<strong>Munitions :</strong> Si le marché chute brutalement (soldes), vous avez de l\'argent disponible immédiatement pour renforcer vos meilleures actions à bas prix.'
+      ]},
+      { type: 'callout', variant: 'warn', title: '3. Les Ordres Stop-Loss', paragraphs: [
+        '<strong>Principe :</strong> Ordre donné à votre SGI de vendre automatiquement un titre si son prix atteint un seuil de perte prédéfini (ex: 10% de perte).',
+        '<strong>Rôle :</strong> Protéger votre portefeuille contre des chutes brutales. Il transforme la décision émotionnelle en une règle mécanique.',
+        '⚠️ Attention Spéciale BRVM : L\'ordre Stop-Loss est une excellente protection, mais sur des petites valeurs où il y a peu d\'échanges quotidiens, il est possible que votre ordre ne trouve pas d\'acheteur au prix souhaité. Utilisez les Stop-Loss en priorité sur les "Blue Chips".'
+      ]},
+      { type: 'callout', variant: 'info', title: '4. Le Take Profit (Prise de Profit) : Savoir Sortir Gagnant', paragraphs: [
+        '<strong>Le Principe :</strong> Vous fixez un prix cible supérieur à votre prix d\'achat. Si l\'action atteint ce prix, vous vendez pour encaisser vos plus-values.',
+        '<strong>Le Rôle Psychologique :</strong> Il est le meilleur antidote contre l\'avidité (Module 6).',
+        '<strong>Comment fixer son Take Profit ?</strong> Via l\'Analyse Fondamentale (Valeur Intrinsèque M8) ou l\'Analyse Technique (Résistance M10).',
+        'Exemple : Prix d\'achat : 10 000 FCFA. Stop-Loss : 9 500 FCFA (Risque : 500 FCFA). Take Profit : 11 500 FCFA (Espérance de gain : 1 500 FCFA). Ratio : 1 pour 3.'
+      ]},
+      { type: 'heading', level: 2, text: '11.2.3 Le Rééquilibrage du Portefeuille (Rebalancing)' },
+      { type: 'paragraph', text: 'Avec le temps, vos actions les plus performantes vont occuper une part de plus en plus grande de votre portefeuille, déséquilibrant l\'allocation initiale.' },
+      { type: 'list', items: [
+        '<strong>Exemple :</strong> Si vous étiez à 50% Actions / 50% Obligations, et que les actions prennent 30%, vous êtes maintenant à 65% Actions / 35% Obligations.',
+        '<strong>Action :</strong> Le rééquilibrage consiste à vendre une partie des actifs qui ont trop monté (les actions) pour racheter des actifs qui sont en retard (les obligations).',
+        '<strong>Avantage :</strong> Cela force l\'investisseur à vendre cher et acheter bon marché d\'une manière mécanique et disciplinée.'
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Félicitations, vous maîtrisez désormais les bases essentielles de la protection de votre capital. Passez maintenant au niveau supérieur avec le Module 12.',
+        '👉 Module 12 : Stratégies Avancées'
+      ]}
+    ]),
   });
 
 
   // ====================================================
-  // === M12 : L’Art de l’Architecte – Gestion Avancée du Risque===
+  // === M12 : L'Art de l'Architecte – Gestion Avancée du Risque===
   // ====================================================
   await createOrUpdateModule({
     title: "L'Art de l'Architecte – Gestion Avancée du Risque",
@@ -3043,7 +3996,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
   <div class="p-8 rounded-2xl shadow-lg" style="background-color: #334155; color: #ffffff;">
     <h2 class="text-3xl font-bold mb-6 flex items-center gap-3" style="color: #ffffff;">
-      👷 Module 12 : L’Art de l’Architecte – Gestion Avancée du Risque
+      👷 Module 12 : L'Art de l'Architecte – Gestion Avancée du Risque
     </h2>
     <div class="mb-6 border-b border-slate-500"></div>
     <p class="text-lg mb-6" style="color: #cbd5e1;">
@@ -3079,7 +4032,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
   <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
     <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b-2 border-teal-600 pb-2">
-      12.1 Allocation d’Actifs Stratégique et Tactique
+      12.1 Allocation d'Actifs Stratégique et Tactique
     </h2>
     <p class="text-gray-700 mb-6">
       L'allocation d'actifs est la répartition de votre capital entre les grandes classes d'actifs (Actions, Obligations, Liquidités). Il existe deux manières de l'aborder :
@@ -3226,7 +4179,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
   <div class="bg-gray-50 p-8 rounded-xl text-center border border-slate-200">
     <h3 class="text-xl font-bold text-slate-800 mb-4">🧭 Prochaine Étape</h3>
-    <p class="text-slate-600 mb-6">Félicitations, vous maîtrisez maintenant l’architecture de votre portefeuille. Dirigez-vous vers le Module 13 pour découvrir les outils concrets, les plateformes de trading et les règles fiscales indispensables pour passer à l'action et piloter vos investissements avec rigueur.</p>
+    <p class="text-slate-600 mb-6">Félicitations, vous maîtrisez maintenant l'architecture de votre portefeuille. Dirigez-vous vers le Module 13 pour découvrir les outils concrets, les plateformes de trading et les règles fiscales indispensables pour passer à l'action et piloter vos investissements avec rigueur.</p>
     <button class="bg-teal-700 hover:bg-teal-800 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-md transform hover:scale-105">
       👉 Module 13 : Outils et Fiscalité
     </button>
@@ -3234,6 +4187,71 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '👷 Module 12 : L\'Art de l\'Architecte – Gestion Avancée du Risque', items: [
+        'Différencier l\'allocation d\'actifs stratégique et tactique et comprendre comment ajuster votre portefeuille aux conditions du marché BRVM.',
+        'Mettre en œuvre des techniques de diversification avancées spécifiques au marché UEMOA (sectorielle et régionale).',
+        'Appliquer le position sizing pour gérer l\'exposition au risque de chaque ligne de votre portefeuille.',
+        'Comprendre les principes du hedging (couverture) comme outil de protection.'
+      ]},
+      { type: 'heading', level: 1, text: '12.1 Allocation d\'Actifs Stratégique et Tactique' },
+      { type: 'paragraph', text: 'L\'allocation d\'actifs est la répartition de votre capital entre les grandes classes d\'actifs (Actions, Obligations, Liquidités). Il existe deux manières de l\'aborder :' },
+      { type: 'callout', variant: 'info', title: '12.1.1 L\'Allocation Stratégique (Le Plan de Route)', paragraphs: [
+        '<strong>Principe :</strong> C\'est la répartition de base, définie par votre profil d\'investisseur (M5) et votre horizon. C\'est l\'objectif de long terme que vous maintenez par le rééquilibrage (rebalancing, M11).',
+        '<strong>Rôle :</strong> Elle est passive et a pour but d\'atteindre vos objectifs en minimisant la volatilité à long terme.'
+      ]},
+      { type: 'callout', variant: 'info', title: '12.1.2 L\'Allocation Tactique (L\'Ajustement Fin)', paragraphs: [
+        '<strong>Principe :</strong> C\'est un ajustement temporaire de l\'allocation stratégique pour tirer parti des conditions de marché à court/moyen terme.',
+        '<strong>Exemple BRVM :</strong> Si vous anticipez une hausse des taux d\'intérêt BCEAO, vous pouvez réduire temporairement votre exposition aux obligations et augmenter les liquidités.',
+        '<strong>Attention :</strong> L\'allocation tactique est une compétence avancée et ne doit jamais dévier radicalement de votre stratégie.'
+      ]},
+      { type: 'callout', variant: 'note', title: 'Analogie :', paragraphs: ['L\'Allocation Stratégique est le plan de vol initial (Dakar à Abidjan). L\'Allocation Tactique est le pilote qui ajuste l\'altitude pour éviter les turbulences.'] },
+      { type: 'heading', level: 1, text: '12.2 Diversification Sectorielle à la BRVM' },
+      { type: 'paragraph', text: 'Sur un marché régional comme la BRVM, la diversification sectorielle est essentielle.' },
+      { type: 'heading', level: 2, text: '12.2.1 Diversification des Moteurs de Croissance' },
+      { type: 'paragraph', text: 'Les moteurs de croissance de l\'UEMOA ne sont pas les mêmes dans tous les secteurs :' },
+      { type: 'list', items: [
+        '<strong>Secteur Bancaire (Ex: ECOBANK CI, SGB-CI) :</strong> Sensible au coût de l\'argent (BCEAO) et à la croissance du crédit. Offre des dividendes stables.',
+        '<strong>Secteur Agro-Industriel (Ex: PALM-CI, SUCRIVOIRE) :</strong> Sensible aux cours mondiaux des matières premières (cacao, huile de palme) et au climat.',
+        '<strong>Secteur des Télécoms (Ex: SONATEL) :</strong> Sensible à la pénétration d\'internet et à l\'innovation. Offre un fort potentiel de croissance.'
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Règle :', paragraphs: [
+        'Ne pas dépasser 15 à 20 % de votre portefeuille total sur un seul secteur pour minimiser l\'impact d\'une crise sectorielle.',
+        '💡 Note Spéciale BRVM : Le secteur financier étant ultra-dominant sur notre marché, il peut être difficile de respecter strictement ce plafond au début. Si vous devez le dépasser, redoublez d\'exigence sur la qualité financière des entreprises choisies.'
+      ]},
+      { type: 'heading', level: 2, text: '12.2.2 Le Risque de Corrélation et la BRVM' },
+      { type: 'list', items: [
+        '<strong>Corrélation :</strong> Deux actifs sont corrélés s\'ils montent et descendent en même temps.',
+        '<strong>Le Piège Régional :</strong> Sur la BRVM, les actions ont souvent une forte corrélation, car elles réagissent toutes aux mêmes chocs macroéconomiques régionaux.',
+        '<strong>L\'Antidote :</strong> Pour une diversification efficace, il faut trouver des actifs avec une faible corrélation (ex: comparer une action BRVM avec une obligation d\'État émise par un pays non UEMOA).'
+      ]},
+      { type: 'heading', level: 1, text: '12.3 Position Sizing – Ajuster la Taille de Position' },
+      { type: 'paragraph', text: 'Le Position Sizing est la technique qui permet de déterminer combien d\'argent vous allez placer sur un titre donné.' },
+      { type: 'highlight', text: 'Formule : Taille de Position = Capital risqué maximal / Perte unitaire acceptée' },
+      { type: 'callout', variant: 'info', title: 'Exemple Concret :', paragraphs: [
+        'Capital risqué maximal (1%) : 10 000 FCFA.',
+        'Vous achetez une action à 10 000 FCFA et vous placez votre Stop-Loss à 9 500 FCFA. La perte unitaire acceptée est de 500 FCFA.',
+        'Taille de Position = 10 000 FCFA / 500 FCFA = 20 actions.',
+        'Si le Stop-Loss est touché, vous perdez exactement 10 000 FCFA.'
+      ]},
+      { type: 'paragraph', text: 'Cette méthode vous permet d\'investir de manière disciplinée et mécanique, en vous assurant que vous pouvez survivre à une série de pertes sans dérailler.' },
+      { type: 'heading', level: 1, text: '12.4 Hedging et Gestion de la Couverture' },
+      { type: 'paragraph', text: 'Le Hedging (couverture) est une technique avancée qui vise à réduire ou compenser le risque d\'un portefeuille existant.' },
+      { type: 'heading', level: 2, text: '12.4.1 Les Principes du Hedging' },
+      { type: 'list', items: [
+        '<strong>Or / Devises fortes :</strong> En cas de forte crise régionale, ces actifs conservent souvent leur valeur ou augmentent.',
+        '<strong>Obligations d\'État BRVM :</strong> Elles sont moins volatiles que les actions et servent de refuge en période d\'incertitude boursière.'
+      ]},
+      { type: 'heading', level: 2, text: '12.4.2 La Couverture par l\'Équilibre (Le Véritable Hedging du Débutant)' },
+      { type: 'list', items: [
+        '<strong>Liquidités (Cash) :</strong> Garder 10 à 20 % du portefeuille en liquidités (hors bourse) pour pouvoir saisir les opportunités d\'achat en cas de krach boursier.',
+        '<strong>Allocation Stratégique :</strong> S\'assurer que les obligations ou les OPCVM Prudents couvrent une partie significative de votre portefeuille.'
+      ]},
+      { type: 'callout', variant: 'note', title: '🧭 Prochaine Étape', paragraphs: [
+        'Félicitations, vous maîtrisez maintenant l\'architecture de votre portefeuille. Dirigez-vous vers le Module 13 pour découvrir les outils concrets, les plateformes de trading et les règles fiscales indispensables.',
+        '👉 Module 13 : Outils et Fiscalité'
+      ]}
+    ]),
   });
 
 
@@ -3275,7 +4293,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
   <h2>13.1 Utilisation des Plateformes : Le Passage à l'Action</h2>
   
   <h3>13.1.1 Le Rôle de la SGI : L'Intermédiaire Indispensable</h3>
-  <p>Votre Société de Gestion et d’Intermédiation (SGI) est votre unique point d'entrée sur le marché.</p>
+  <p>Votre Société de Gestion et d'Intermédiation (SGI) est votre unique point d'entrée sur le marché.</p>
 
   
 
@@ -3321,7 +4339,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
     </table>
   </div>
 
-  <h2>13.2 Fiscalité des Revenus de Portefeuille dans l’UEMOA</h2>
+  <h2>13.2 Fiscalité des Revenus de Portefeuille dans l'UEMOA</h2>
   <p>L'optimisation fiscale est essentielle, mais il est crucial de respecter les lois en vigueur. La fiscalité dans l'UEMOA est régie par les lois nationales, mais avec certaines tendances communes.</p>
 
   <div class="grid md:grid-cols-2 gap-6">
@@ -3398,6 +4416,64 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🎯 Objectif Pédagogique du Module', items: [
+        'Maîtriser les plateformes numériques pour suivre l\'actualité de la BRVM et passer vos ordres.',
+        'Comprendre le régime fiscal des revenus de portefeuille (plus-values, dividendes) dans l\'espace UEMOA.',
+        'Mettre en place un système de suivi et de reporting régulier pour mesurer la performance réelle de vos investissements.'
+      ]},
+      { type: 'heading', level: 1, text: '13.1 Utilisation des Plateformes : Le Passage à l\'Action' },
+      { type: 'heading', level: 2, text: '13.1.1 Le Rôle de la SGI : L\'Intermédiaire Indispensable' },
+      { type: 'paragraph', text: 'Votre Société de Gestion et d\'Intermédiation (SGI) est votre unique point d\'entrée sur le marché.' },
+      { type: 'list', items: [
+        '✅ <strong>Ouverture du Compte :</strong> Un compte-titres et un compte espèces sont ouverts à votre nom.',
+        '✅ <strong>Le DC/BR (Dépositaire Central / Banque de Règlement) :</strong> Il conserve vos titres en toute sécurité, indépendamment de la SGI.',
+        '✅ <strong>Plateforme de Trading :</strong> La plupart des SGI modernes offrent désormais des plateformes en ligne pour passer vos ordres d\'achat et de vente directement.'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Point Clé :', paragraphs: ['Assurez-vous que la plateforme de votre SGI permet de passer des ordres au prix limite (Limit Order) et des ordres de type Stop-Loss pour exécuter votre stratégie de timing et de gestion du risque.'] },
+      { type: 'heading', level: 2, text: '13.1.2 Les Outils de Suivi : BRVM, SGI et Afribourse' },
+      { type: 'table', headers: ['Outil', 'Rôle Principal', 'Informations Clés à Consulter'], rows: [
+        ['Site Officiel BRVM', 'Information Légale et Marchande', 'Cours officiels du jour, indices (BRVM Composite), actualités réglementaires, calendrier des introductions en bourse.'],
+        ['Site ou App de votre SGI', 'Gestion du Portefeuille', 'Solde de votre compte espèces, valorisation de vos titres en temps réel, exécution des ordres.'],
+        ['Plateformes d\'Actualités (ex : Afribourse)', 'Analyse et Média', 'Rapports et outils d\'analyse sur les sociétés cotées (M7/M9), articles de presse économique UEMOA, avis d\'experts.']
+      ]},
+      { type: 'heading', level: 1, text: '13.2 Fiscalité des Revenus de Portefeuille dans l\'UEMOA' },
+      { type: 'paragraph', text: 'L\'optimisation fiscale est essentielle, mais il est crucial de respecter les lois en vigueur. La fiscalité dans l\'UEMOA est régie par les lois nationales, mais avec certaines tendances communes.' },
+      { type: 'callout', variant: 'info', title: '13.2.1 Imposition des Dividendes (Revenus)', paragraphs: [
+        '<strong>Principe :</strong> Les dividendes sont généralement soumis à une retenue à la source (RAS) au niveau national, souvent entre 7 % et 15 % selon le pays.',
+        '<strong>Rôle de la SGI :</strong> La SGI ou la banque est responsable d\'opérer cette retenue avant de vous verser le montant net.',
+        '<strong>Important :</strong> Dans de nombreux pays de l\'UEMOA, cette RAS est libératoire (pas de nouvelle déclaration nécessaire).'
+      ]},
+      { type: 'callout', variant: 'info', title: '13.2.2 Imposition des Plus-Values (Gains en Capital)', paragraphs: [
+        '<strong>Plus-Value :</strong> C\'est le profit réalisé lorsque vous vendez une action à un prix supérieur à son prix d\'achat.',
+        '<strong>Régime Général :</strong> Les plus-values sont souvent soumises à une imposition, dont le taux varie d\'un pays à l\'autre de l\'UEMOA.',
+        '<strong>Vérification :</strong> Il est impératif de vérifier la législation en vigueur dans votre pays de résidence.'
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Conseil d\'Expert :', paragraphs: ['Consultez toujours un expert-comptable ou le service fiscal de votre SGI pour connaître les taux et procédures spécifiques à votre pays de résidence.'] },
+      { type: 'heading', level: 1, text: '13.3 Suivi, Reporting, et Journal de Performance' },
+      { type: 'paragraph', text: 'Un investisseur discipliné (M6) est un investisseur qui mesure et analyse ses résultats.' },
+      { type: 'heading', level: 2, text: '13.3.1 Création d\'un Journal de Performance' },
+      { type: 'paragraph', text: 'Le journal de performance est un outil simple (un fichier Excel ou un carnet) qui assure la discipline et le reporting. Il doit contenir :' },
+      { type: 'list', items: [
+        '📊 <strong>Date et Prix d\'Achat :</strong> Pour chaque transaction.',
+        '🧠 <strong>Raison de l\'Achat :</strong> (Réf. Analyse Fondamentale M7/M9, ou Timing M10).',
+        '📉 <strong>Stratégie de Sortie :</strong> Emplacement de votre Stop-Loss (M12) et votre objectif de vente.',
+        '📈 <strong>Performance Réelle :</strong> Le taux de rendement annuel du portefeuille.'
+      ]},
+      { type: 'heading', level: 2, text: '13.3.2 Mesurer la Performance (Le Rendement Annuel)' },
+      { type: 'paragraph', text: 'Le rendement annuel (Return) est le critère clé pour évaluer votre succès.' },
+      { type: 'highlight', text: 'Rendement Annuel = ((Valeur Finale − Valeur Initiale) + Dividendes Reçus) / Valeur Initiale × 100' },
+      { type: 'callout', variant: 'info', title: 'Benchmark BRVM :', paragraphs: [
+        'Votre objectif doit être de surpasser l\'indice de référence de la BRVM (BRVM Composite ou BRVM 10).',
+        'Si votre portefeuille fait 8 % mais que l\'indice fait 15 %, vous avez sous-performé le marché.',
+        '<strong>Fréquence :</strong> Évaluez votre performance tous les trimestres ou tous les six mois.'
+      ]},
+      { type: 'heading', level: 2, text: '13.3.3 L\'Audit de Décision (Leçon d\'Humilité)' },
+      { type: 'list', items: [
+        '🔎 <strong>Analyser les Erreurs :</strong> Pour chaque vente perdante, demandez-vous : Était-ce une erreur d\'analyse fondamentale (M7), ou une erreur de discipline (M6) ?',
+        '🚀 <strong>Amélioration Continue :</strong> L\'investissement est un marathon. Chaque erreur est une leçon pour ajuster votre stratégie d\'architecte (M12).'
+      ]}
+    ]),
   });
 
 
@@ -3452,7 +4528,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  </h2>
  
  <p class="text-gray-600 mb-4">
- La **BCEAO (Banque Centrale des États de l’Afrique de l’Ouest)** est l'autorité monétaire. Ses décisions sur les **Taux Directeurs** ont un impact crucial sur le coût du capital dans l'UEMOA.
+ La **BCEAO (Banque Centrale des États de l'Afrique de l'Ouest)** est l'autorité monétaire. Ses décisions sur les **Taux Directeurs** ont un impact crucial sur le coût du capital dans l'UEMOA.
  </p>
 
  
@@ -3559,7 +4635,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
  <div class="bg-gray-50 text-gray-700 p-8 rounded-xl">
  <h2 class="text-2xl font-bold text-gray-800 mb-4">🧠 Les Termes à Maîtriser</h2>
  <div class="grid md:grid-cols-2 gap-4 text-sm mb-8">
- <p><strong class="text-cyan-600">BCEAO :</strong> Banque Centrale des États de l’Afrique de l’Ouest.</p>
+ <p><strong class="text-cyan-600">BCEAO :</strong> Banque Centrale des États de l'Afrique de l'Ouest.</p>
  <p><strong class="text-cyan-600">Taux Directeurs :</strong> Taux fixés par la BCEAO qui influencent le coût du crédit.</p>
  <p><strong class="text-cyan-600">Obligations Vertes :</strong> Titres de dette pour financer des projets environnementaux.</p>
  <p><strong class="text-cyan-600">PIB :</strong> Produit Intérieur Brut, mesure la richesse produite dans une zone.</p>
@@ -3578,12 +4654,56 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: '🌍 Module 14 : Contexte Économique — Sentir le Pouls du Marché UEMOA', items: [
+        'Comprendre l\'influence directe de la Banque Centrale (BCEAO) sur la BRVM.',
+        'Identifier les tendances et opportunités macroéconomiques majeures (Finance Durable).',
+        'Interpréter les indicateurs clés (PIB, Inflation) pour affiner votre stratégie.'
+      ]},
+      { type: 'heading', level: 1, text: '🏦 14.1 Le Mécanisme de Transmission BCEAO → BRVM' },
+      { type: 'paragraph', text: 'La BCEAO (Banque Centrale des États de l\'Afrique de l\'Ouest) est l\'autorité monétaire. Ses décisions sur les Taux Directeurs ont un impact crucial sur le coût du capital dans l\'UEMOA.' },
+      { type: 'heading', level: 2, text: 'Impact d\'une Hausse des Taux Directeurs' },
+      { type: 'callout', variant: 'warn', title: 'Sur les Actions :', paragraphs: ['L\'argent (prêt bancaire) devient plus cher pour les entreprises. Le coût du capital augmente, ce qui freine les bénéfices et peut faire baisser les prix des actions.'] },
+      { type: 'callout', variant: 'info', title: 'Sur les Obligations :', paragraphs: ['Les obligations plus anciennes (à faible rendement) deviennent moins attractives. Leur valeur de marché baisse pour s\'aligner sur les nouveaux taux plus élevés.'] },
+      { type: 'heading', level: 2, text: 'Stabilité Monétaire (Franc CFA)' },
+      { type: 'callout', variant: 'note', title: '🧩 À retenir :', paragraphs: ['La parité fixe du Franc CFA avec l\'Euro assure une stabilité monétaire essentielle pour la confiance des investisseurs étrangers, protégeant leurs profits contre une dévaluation imprévue.'] },
+      { type: 'heading', level: 1, text: '🌱 14.2 Opportunité Majeure : La Finance Durable' },
+      { type: 'heading', level: 2, text: 'Les Obligations Vertes (Green Bonds)' },
+      { type: 'callout', variant: 'ok', title: 'Définition :', paragraphs: ['Titres de dette émis pour financer des projets ayant un impact environnemental positif (énergies renouvelables, gestion de l\'eau). Ils attirent des fonds internationaux et augmentent la liquidité du marché obligataire BRVM.'] },
+      { type: 'heading', level: 2, text: 'Sociétés Positionnées sur l\'Avenir' },
+      { type: 'paragraph', text: 'L\'analyse macroéconomique identifie les secteurs qui bénéficieront des mégatendances régionales :' },
+      { type: 'list', items: [
+        '<strong>Transition Énergétique :</strong> Entreprises produisant de l\'énergie propre ou offrant des services d\'efficacité énergétique (opportunités ESG).',
+        '<strong>Démographie et Consommation :</strong> Entreprises axées sur les besoins de base d\'une population jeune et croissante (agro-industrie, télécoms).',
+        '<strong>Digitalisation :</strong> Banques et FinTech qui captent une clientèle non bancarisée.'
+      ]},
+      { type: 'heading', level: 1, text: '📈 14.3 Lecture des Rapports Macroéconomiques' },
+      { type: 'heading', level: 2, text: 'Les Indicateurs Clés de l\'UEMOA' },
+      { type: 'table', headers: ['Indicateur', 'Signification pour l\'Investisseur'], rows: [
+        ['PIB (Croissance)', 'Une croissance du PIB (> 5 %) est favorable à la croissance des bénéfices des entreprises.'],
+        ['Taux d\'Inflation', 'Une forte inflation est un risque. Favorisez les entreprises avec un fort Pricing Power (capacité à augmenter les prix).'],
+        ['Dette Publique / PIB', 'Un faible niveau de dette rassure sur la solvabilité des obligations d\'État.']
+      ]},
+      { type: 'heading', level: 2, text: 'L\'Analyse du "Sentiment" du Marché' },
+      { type: 'list', items: [
+        '<strong>Analyse "Bottom-Up" (Du Bas vers le Haut) :</strong> Vous analysez d\'abord une entreprise (M7) puis vous regardez le contexte (Ex: La banque est bonne, mais le PIB est faible, je reste prudent).',
+        '<strong>Analyse "Top-Down" (Du Haut vers le Bas) :</strong> Vous analysez la macroéconomie (Ex: La BCEAO va baisser les taux) puis vous choisissez le secteur à privilégier (crédit).'
+      ]},
+      { type: 'callout', variant: 'info', title: 'Synthèse', paragraphs: ['L\'investisseur BRVM doit utiliser l\'Analyse Fondamentale pour sélectionner les bonnes entreprises et l\'Analyse Macroéconomique pour choisir les bons secteurs et les bons moments pour investir (Allocation Tactique, M12).'] },
+      { type: 'glossary', items: [
+        { term: 'BCEAO', definition: 'Banque Centrale des États de l\'Afrique de l\'Ouest.' },
+        { term: 'Taux Directeurs', definition: 'Taux fixés par la BCEAO qui influencent le coût du crédit.' },
+        { term: 'Obligations Vertes', definition: 'Titres de dette pour financer des projets environnementaux.' },
+        { term: 'PIB', definition: 'Produit Intérieur Brut, mesure la richesse produite dans une zone.' }
+      ]},
+      { type: 'callout', variant: 'ok', title: 'Fin du Programme ! 🚀', paragraphs: ['Vous êtes désormais prêt à devenir un investisseur autonome et éclairé sur la BRVM.'] }
+    ]),
   });
 
 
 
   // ====================================================
-  // === M15 : La Stratégie d’Investissement Intégrée===
+  // === M15 : La Stratégie d'Investissement Intégrée===
   // ====================================================
   await createOrUpdateModule({
     title: "La Stratégie d'Investissement Intégrée",
@@ -3599,7 +4719,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  <div class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-xl">
  <h2 class="text-3xl font-bold mb-6 flex items-center gap-3 text-yellow-400">
- 🧠 Module 15 : La Stratégie d’Investissement Intégrée
+ 🧠 Module 15 : La Stratégie d'Investissement Intégrée
  </h2>
  <p class="text-lg mb-6 text-purple-100">
  L'Intégration de la Méthode. À la fin de ce module, vous serez capable de :
@@ -3707,7 +4827,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
  <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b border-purple-100 pb-2 flex items-center gap-2">
- ✅ 15.3 La Check-List de l’Investisseur Expert (8 Étapes)
+ ✅ 15.3 La Check-List de l'Investisseur Expert (8 Étapes)
  </h2>
  
  <p class="text-gray-600 mb-4">
@@ -3789,7 +4909,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  <div class="bg-gray-900 text-white p-8 rounded-xl shadow-md">
  <h2 class="text-2xl font-bold mb-4 text-yellow-400">
- 🚀 15.5 Conclusion : Votre Voyage Vers l’Autonomie
+ 🚀 15.5 Conclusion : Votre Voyage Vers l'Autonomie
  </h2>
  <p class="text-slate-200 leading-relaxed mb-6">
  Le succès en bourse n'est pas une question de chance, mais de **méthode et de discipline (M6)**. Vous avez maintenant le savoir, les outils et la stratégie intégrée pour vous affranchir des rumeurs et des conseils non vérifiés.
@@ -3820,6 +4940,75 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
 
  </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'objectives', title: "Module 15 : La Stratégie d'Investissement Intégrée", items: [
+        "Intégrer l'analyse fondamentale (FA) et technique (TA) pour optimiser le choix et le timing.",
+        "Appliquer une check-list rigoureuse pour valider chaque décision d'investissement.",
+        "Mener une étude de cas complète simulant un processus d'investissement réel de A à Z."
+      ]},
+      { type: 'heading', level: 1, text: "15.1 FA vs TA – Une Fausse Dichotomie" },
+      { type: 'paragraph', text: "L'investisseur expert ne s'oppose pas à l'Analyse Fondamentale (FA) ou Technique (TA) ; il utilise leur complémentarité." },
+      { type: 'table', headers: ["Type d'Analyse", "Question Répondue", "Objectif"], rows: [
+        ["Fondamentale (FA)", "**QUOI** acheter ? (La qualité)", "Déterminer la **valeur intrinsèque** (V)."],
+        ["Technique (TA)", "**QUAND** acheter ? (Le timing)", "Déterminer le meilleur **point d'entrée/sortie** (le prix)."]
+      ]},
+      { type: 'paragraph', text: "**Conclusion :** La stratégie gagnante est d'acheter une action **fantastique (FA)** au **meilleur moment (TA)**." },
+      { type: 'heading', level: 1, text: "15.2 La Stratégie Intégrée en Trois Étapes" },
+      { type: 'callout', variant: 'info', title: "1. L'Étape de Sélection (Le Filtre FA)", paragraphs: [
+        "Identifier un solide **Moat** (M9) et une bonne **Gouvernance**.",
+        "Vérifier les fondamentaux : **ROE > 15%** et croissance stable (M7).",
+        "**Valorisation (M8) :** L'action doit être **sous-évaluée** (Prix < Valeur Intrinsèque)."
+      ]},
+      { type: 'callout', variant: 'info', title: "2. L'Étape de Timing (Le Déclencheur TA)", paragraphs: [
+        "Le prix doit approcher ou toucher un niveau de **Support clé** (M10).",
+        "Le **RSI** (M10) doit être en zone de **survente** (< 40 ou < 30).",
+        "La baisse doit être due à la panique de marché (risque systémique) et non à une dégradation des fondamentaux."
+      ]},
+      { type: 'callout', variant: 'info', title: "3. L'Étape de Gestion (Le Garde-Fou Risque)", paragraphs: [
+        "Appliquer le **Position Sizing** (M12) : Respecter la **Règle des 1%** de risque maximal par transaction.",
+        "Définir et placer immédiatement l'ordre **Stop-Loss** (M12/M13) sur la plateforme SGI."
+      ]},
+      { type: 'heading', level: 2, text: "Psychologie (M6) dans l'Intégration" },
+      { type: 'paragraph', text: "Cette stratégie est l'antidote contre les émotions : elle vous force à être **prudent** quand l'avidité (FOMO) est forte et à être **avide** quand la peur (krach) domine, en respectant votre analyse (M6)." },
+      { type: 'heading', level: 1, text: "15.3 La Check-List de l'Investisseur Expert (8 Étapes)" },
+      { type: 'paragraph', text: "Avant de passer un ordre d'achat sur la BRVM, un investisseur complet doit valider tous ces points :" },
+      { type: 'table', headers: ["Catégorie", "Critère de Validation (OUI/NON)", "Réf."], rows: [
+        ["Macro/Contexte", "Le contexte UEMOA (M14) est-il favorable (ou choc temporaire) ?", "M14"],
+        ["Fondamentaux", "Le ROE est-il > 15% et stable sur 5 ans ? La Marge est-elle saine ?", "M7"],
+        ["Qualitatif", "Le Moat (M9) est-il clair et la Gouvernance solide ?", "M9"],
+        ["Valorisation", "Le prix de marché est-il inférieur à ma Valeur Intrinsèque (M8) ?", "M8"],
+        ["Timing", "Le prix est-il sur un Support ou le RSI (M10) est-il en survente (< 40) ?", "M10"],
+        ["Risque", "Ma taille de position (Position Sizing, M12) respecte-t-elle la Règle des 1% ?", "M12"],
+        ["Portefeuille", "L'achat améliore-t-il la Diversification (M11) sectorielle ?", "M11"],
+        ["Discipline", "Ai-je un ordre Stop-Loss et un objectif de vente clairement définis ?", "M6, M12"]
+      ]},
+      { type: 'heading', level: 1, text: "15.4 (Atelier Final) : Étude de Cas Complète de A à Z" },
+      { type: 'paragraph', text: "Cet atelier est l'exercice pratique qui valide l'intégration de toutes les compétences en simulant une décision d'investissement réelle sur une action de la BRVM." },
+      { type: 'heading', level: 2, text: "L'Apprenant doit Produire :" },
+      { type: 'list', items: [
+        "Une **Note d'Analyse Fondamentale** (Ratios M7/M9 et calcul d'une Valeur Intrinsèque M8).",
+        "Une **Analyse Technique** (Identification du Support/Résistance et du signal de timing M10).",
+        "Une **Proposition d'Ordre** (Taille de position M12, prix d'entrée, et Stop-Loss).",
+        "Une **Justification Intégrée** (Synthèse des 8 points de la Check-List M15.3)."
+      ]},
+      { type: 'heading', level: 1, text: "15.5 Conclusion : Votre Voyage Vers l'Autonomie" },
+      { type: 'paragraph', text: "Le succès en bourse n'est pas une question de chance, mais de **méthode et de discipline (M6)**. Vous avez maintenant le savoir, les outils et la stratégie intégrée pour vous affranchir des rumeurs et des conseils non vérifiés." },
+      { type: 'heading', level: 2, text: "Prochaines Étapes Pratiques :" },
+      { type: 'list', items: [
+        "Ouvrir votre compte SGI (M13).",
+        "Définir votre Allocation Stratégique (M11).",
+        "Commencer l'Analyse Fondamentale de 5 entreprises BRVM qui vous intéressent."
+      ]},
+      { type: 'callout', variant: 'ok', title: 'Félicitations !', paragraphs: [
+        "Vous êtes passé de débutant à Architecte Investisseur de la BRVM !"
+      ]},
+      { type: 'glossary', items: [
+        { term: 'Stratégie Intégrée', definition: "Utilisation de FA pour la sélection et de TA pour le timing." },
+        { term: 'Filtre FA', definition: "L'Analyse Fondamentale pour s'assurer que l'entreprise est de qualité (Moat, ROE)." },
+        { term: 'Déclencheur TA', definition: "L'Analyse Technique pour identifier le point d'entrée idéal (Support, Survente RSI)." },
+        { term: 'Check-List', definition: "Processus rigoureux en 8 étapes pour valider chaque transaction." }
+      ]}
+    ]),
   });
 
 
@@ -4116,6 +5305,113 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
   </div>
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'pull-quote', text: "Un portefeuille ne se construit pas en une nuit, mais chaque grande fortune a commencé par une première décision." },
+      { type: 'objectives', title: "Objectif Pédagogique", items: [
+        "Organiser votre épargne en appliquant la règle des trois enveloppes pour isoler votre \"Capital Actif\" de vos besoins vitaux.",
+        "Définir un budget d'investissement réaliste en calculant votre capital initial (C₀) et votre versement mensuel (DCA) sans créer de tension financière.",
+        "Choisir et ouvrir votre compte SGI en comparant les intermédiaires selon 5 critères stratégiques (frais, dépôt, plateforme, réactivité et conseil).",
+        "Maîtriser les outils de pilotage AfriBourse en utilisant le simulateur pour la pratique sans risque et le tableau de bord pour le suivi hebdomadaire rigoureux."
+      ]},
+      { type: 'callout', variant: 'info', title: 'Prérequis', paragraphs: [
+        "Ce module est la suite directe de M11 (Gestion du Risque), M12 (Position Sizing), M13 (Plateformes) et M15 (Stratégie Intégrée). Il est le <strong>pont entre votre formation et votre premier investissement réel</strong>."
+      ]},
+      { type: 'section-title', text: "16.1 — Avant de Toucher à la Bourse : Mettre sa Maison Financière en Ordre", color: 'blue' },
+      { type: 'paragraph', text: "Le marché ne vous attend pas. Mais votre stabilité financière, elle, ne peut pas attendre. Avant d'ouvrir un compte SGI et d'acheter votre première action, vous devez répondre honnêtement à trois questions fondamentales." },
+      { type: 'heading', level: 2, text: "16.1.1 — La Règle des Trois Enveloppes" },
+      { type: 'paragraph', text: "Votre argent doit être organisé en trois compartiments distincts, dans cet ordre strict :" },
+      { type: 'table', headers: ["Enveloppe", "Rôle", "Montant recommandé", "Où le mettre ?"], rows: [
+        ["1. Le Bouclier", "Fonds d'urgence intouchable (chômage, maladie, réparation urgente)", "3 à 6 mois de dépenses courantes", "Compte épargne liquide (pas la bourse)"],
+        ["2. Les Projets", "Épargne pour objectifs à court terme (< 2 ans) : voyage, frais de scolarité, mariage", "Selon vos projets personnels", "Bon du Trésor, dépôt à terme, OPCVM Monétaire"],
+        ["3. Le Capital Actif", "L'argent que vous pouvez RÉELLEMENT investir en bourse", "Ce qui reste après enveloppes 1 & 2", "BRVM — compte SGI"]
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Règle absolue', paragraphs: [
+        "N'investissez en bourse <strong>QUE</strong> l'argent de l'Enveloppe 3. Un investisseur qui retire ses actions en urgence parce qu'il a besoin d'argent vend presque toujours au pire moment — une perte garantie. <strong>La discipline commence avant le premier ordre.</strong>"
+      ]},
+      { type: 'heading', level: 2, text: "16.1.2 — Définir Son Enveloppe d'Investissement Réaliste" },
+      { type: 'paragraph', text: "Une fois vos enveloppes 1 et 2 constituées, il faut déterminer deux chiffres précis :" },
+      { type: 'table', headers: ["Paramètre", "Question à se poser", "Exemple concret"], rows: [
+        ["Capital initial (C₀)", "Quel montant puis-je placer dès maintenant sans pression ?", "500 000 FCFA disponibles → Capital initial = 300 000 FCFA (on garde 200 000 FCFA de marge)"],
+        ["Versement mensuel (DCA)", "Quel montant puis-je investir régulièrement chaque mois ?", "Revenus mensuels 400 000 FCFA, charges 280 000 FCFA → DCA = 50 000 FCFA/mois"]
+      ]},
+      { type: 'callout', variant: 'ok', title: 'Règle pratique', paragraphs: [
+        "Votre versement mensuel DCA ne doit jamais dépasser <strong>15 à 20 % de votre revenu net</strong>. Au-delà, vous risquez de créer une tension financière qui vous forcera à vendre au mauvais moment."
+      ]},
+      { type: 'section-title', text: "16.1.3 — Ouvrir son Compte SGI : Le Guide Pas à Pas", color: 'green' },
+      { type: 'paragraph', text: "La Société de Gestion et d'Intermédiation (SGI) est votre unique porte d'entrée légale sur la BRVM (M2). Voici comment procéder concrètement." },
+      { type: 'heading', level: 2, text: "Bien choisir sa SGI : un choix stratégique, pas anodin" },
+      { type: 'paragraph', text: "Toutes les SGI agréées par l'AMF-UMOA vous donnent accès au même marché et aux mêmes titres. Mais elles ne se valent pas toutes sur les critères qui impactent directement votre rendement net." },
+      { type: 'heading', level: 2, text: "1. Les frais de courtage (commissions sur ordres)" },
+      { type: 'paragraph', text: "C'est le critère le plus important. Chaque fois que vous achetez ou vendez, la SGI prélève une commission sur le montant de la transaction. Sur la BRVM, cette commission tourne généralement entre <strong>0,5 % et 1,5 %</strong> du montant de l'ordre." },
+      { type: 'callout', variant: 'warn', title: 'Impact des frais', paragraphs: [
+        "Sur un achat de 200 000 FCFA, la différence entre une SGI à 0,6 % et une autre à 1,2 % représente déjà <strong>1 200 FCFA de frais supplémentaires</strong> — rien que pour un seul ordre. Multipliez par tous vos achats et ventes sur 10 ans, et l'écart devient considérable."
+      ]},
+      { type: 'heading', level: 2, text: "2. Le dépôt minimum" },
+      { type: 'paragraph', text: "Certaines SGI exigent un dépôt initial de 50 000 FCFA, d'autres de 200 000 à 500 000 FCFA. Si vous démarrez avec un petit capital, ce critère peut limiter vos options. Renseignez-vous systématiquement avant toute démarche." },
+      { type: 'heading', level: 2, text: "3. La qualité de la plateforme numérique" },
+      { type: 'paragraph', text: "Est-ce qu'elle est accessible sur mobile ? Peut-on consulter ses positions en temps réel ? Y a-t-il un historique des ordres clair ? Une plateforme mal conçue vous fera perdre du temps et peut générer des erreurs d'exécution. Demandez une démonstration avant de vous décider." },
+      { type: 'heading', level: 2, text: "4. La réactivité du service client" },
+      { type: 'paragraph', text: "Sur la BRVM, vous ne pouvez pas gérer vos seuils d'alerte automatiquement — vous devez contacter votre SGI pour passer un ordre de vente si une valeur se dégrade. Si votre SGI met 48h à répondre, ce délai peut vous coûter cher. <strong>Testez leur réactivité avant d'ouvrir votre compte.</strong>" },
+      { type: 'heading', level: 2, text: "5. Le conseil et l'accompagnement" },
+      { type: 'paragraph', text: "Certaines SGI proposent un suivi personnalisé (conseiller dédié, newsletters de recherche, rapports sur les valeurs BRVM). Pour un débutant, cet accompagnement peut valoir de l'or." },
+      { type: 'table', headers: ["Critère", "Questions à poser à la SGI"], rows: [
+        ["Frais de courtage", "Quel est votre taux de commission à l'achat et à la vente ? Y a-t-il des frais fixes en plus ?"],
+        ["Dépôt minimum", "Quel est le montant minimum pour ouvrir un compte ?"],
+        ["Plateforme", "Avez-vous une application mobile ? Puis-je voir mes positions en temps réel ?"],
+        ["Réactivité", "Quel est votre délai moyen de traitement d'un ordre passé par téléphone ou email ?"],
+        ["Accompagnement", "Proposez-vous un conseiller dédié ou des rapports de recherche sur les valeurs BRVM ?"]
+      ]},
+      { type: 'callout', variant: 'info', title: 'Conseil pratique', paragraphs: [
+        "La liste complète des SGI agréées AMF-UMOA est disponible sur le site officiel <strong>amf-umoa.org</strong>. Contactez-en au moins 3 avant de faire votre choix."
+      ]},
+      { type: 'heading', level: 2, text: "Documents généralement requis" },
+      { type: 'list', items: [
+        "<strong>Pièce d'identité nationale</strong> : Carte nationale d'identité, passeport ou carte de résident en cours de validité.",
+        "<strong>Justificatif de domicile</strong> : Facture d'eau, d'électricité ou quittance de loyer de moins de 3 mois.",
+        "<strong>Formulaire KYC</strong> : (Know Your Customer) rempli et signé — questionnaire sur votre profil d'investisseur et l'origine de vos fonds.",
+        "<strong>Dépôt minimum</strong> : Variable selon la SGI (généralement entre 0 et 1 000 000 FCFA)."
+      ]},
+      { type: 'table', headers: ["Étape", "Action", "Durée estimée"], rows: [
+        ["1", "Choisir sa SGI agréée AMF-UMOA (liste disponible sur le site BRVM)", "1 jour"],
+        ["2", "Se présenter en agence ou faire la démarche en ligne si disponible", "1 jour"],
+        ["3", "Remettre les documents et signer les conventions de compte", "1 à 2 jours"],
+        ["4", "Effectuer le dépôt initial sur votre compte espèces", "1 jour"],
+        ["5", "Recevoir vos identifiants de connexion à la plateforme de trading", "2 à 5 jours"],
+        ["6", "Passer votre premier ordre !", "J+7 après l'ouverture"]
+      ]},
+      { type: 'callout', variant: 'ok', title: 'À retenir', paragraphs: [
+        "Vos titres (actions, obligations) ne sont pas conservés chez votre SGI. Ils sont enregistrés à votre nom au <strong>DC/BR</strong> (Dépositaire Central / Banque de Règlement). Même si votre SGI fait faillite, vos titres restent protégés. C'est une garantie fondamentale de l'architecture du marché BRVM."
+      ]},
+      { type: 'section-title', text: "16.1.4 — S'entraîner Avant d'Investir Réel : Le Simulateur AfriBourse", color: 'purple' },
+      { type: 'paragraph', text: "Avant de risquer votre argent réel sur la BRVM, l'Académie AfriBourse met à votre disposition un <strong>simulateur de trading avec portefeuille fictif en argent virtuel</strong>. C'est votre terrain d'entraînement — l'équivalent du simulateur de vol pour le pilote." },
+      { type: 'analogy', title: "L'analogie à retenir : le terrain de foot avant le match", items: [
+        "Aucun entraîneur sérieux n'envoie ses joueurs directement en finale sans entraînement.",
+        "Vous apprenez les gestes, vous commettez des erreurs, vous corrigez — <strong>sans conséquence réelle</strong>."
+      ], conclusion: "Quand vous passez en compétition (le marché réel), vous avez déjà les automatismes." },
+      { type: 'table', headers: ["Ce que vous pouvez faire sur le simulateur", "L'objectif pédagogique"], rows: [
+        ["Constituer un portefeuille fictif avec un capital virtuel", "Apprendre à allouer son capital entre plusieurs lignes sans risquer son argent réel"],
+        ["Passer des ordres d'achat et de vente avec les vrais cours BRVM", "Se familiariser avec la terminologie, les types d'ordres et le fonctionnement du fixing"],
+        ["Observer l'évolution de votre portefeuille virtuel dans le temps", "Comprendre concrètement ce que signifie une plus-value latente ou une perte non réalisée"],
+        ["Tester votre stratégie de sélection (les 4 filtres) sur des valeurs réelles", "Valider votre méthode avant de la déployer avec de l'argent réel"],
+        ["Commettre des erreurs sans conséquence financière", "Apprendre de ses erreurs de jugement ou d'émotion dans un environnement sécurisé"]
+      ]},
+      { type: 'callout', variant: 'info', title: 'Recommandation', paragraphs: [
+        "Utilisez le simulateur pendant au minimum <strong>8 à 16 semaines</strong> avant d'ouvrir un compte SGI réel. Construisez un portefeuille virtuel en appliquant les 4 filtres de sélection (Module 16B), suivez son évolution, et analysez vos décisions. Si votre portefeuille virtuel est cohérent et discipliné, vous êtes prêt pour le passage au réel."
+      ]},
+      { type: 'section-title', text: "16.1.5 — Suivre son Portefeuille : Le Tableau de Bord AfriBourse", color: 'blue' },
+      { type: 'paragraph', text: "Une fois votre portefeuille constitué — virtuel ou réel — votre travail ne s'arrête pas à l'achat. Vous devez suivre son évolution de manière régulière et structurée." },
+      { type: 'table', headers: ["Fonctionnalité du tableau de bord", "Ce que vous y lisez", "Fréquence recommandée"], rows: [
+        ["Valorisation en temps réel", "La valeur totale actuelle de votre portefeuille, mise à jour selon les derniers cours du fixing BRVM.", "Hebdomadaire (pas quotidienne — évitez l'obsession du cours)"],
+        ["Plus-values latentes et réalisées", "Plus-value latente = gain non encore encaissé sur une ligne encore en portefeuille. Plus-value réalisée = gain effectivement encaissé après vente.", "Mensuelle"],
+        ["Historique des ordres passés", "La liste complète de vos achats et ventes : date, titre, quantité, prix d'exécution, frais. C'est votre mémoire d'investisseur.", "Trimestrielle (revue complète)"]
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Attention', paragraphs: [
+        "Ne consultez pas votre portefeuille tous les jours. L'obsession du cours quotidien est l'un des principaux déclencheurs de décisions émotionnelles (vente panique, achat impulsif). <strong>Une consultation hebdomadaire est largement suffisante</strong> pour un investisseur à long terme. Votre horizon est de 7 ans, pas de 7 heures."
+      ]},
+      { type: 'callout', variant: 'ok', title: 'À retenir', paragraphs: [
+        "Le tableau de bord n'est pas un outil de trading — c'est un <strong>outil de pilotage</strong>. Il vous donne une vision claire de votre situation pour prendre de meilleures décisions, pas pour réagir à chaque mouvement du marché."
+      ]}
+    ]),
   });
 
 
@@ -4456,6 +5752,126 @@ n'existe pas encore a la brvm, ils représentent le futur de l’investissement 
   </div>
 </div>
 `,
+    content_json: JSON.stringify([
+      { type: 'pull-quote', text: "La bourse est un mécanisme de transfert de l'argent des impatients vers les patients. — Warren Buffett" },
+      { type: 'objectives', title: "Objectif Pédagogique", items: [
+        "Filtrer le marché BRVM pour extraire une shortlist de 5 à 10 valeurs saines grâce à la méthode des 4 filtres (Liquidité, Solidité, Dividende, Valorisation).",
+        "Déployer votre capital progressivement en suivant un plan rigoureux sur 4 mois pour lisser les risques de timing et de concentration.",
+        "Identifier et neutraliser les 7 erreurs classiques du débutant, telles que l'over-trading ou la panique lors des corrections de marché.",
+        "Sécuriser vos décisions réelles en appliquant systématiquement la check-list du premier investisseur avant chaque passage d'ordre."
+      ]},
+      { type: 'section-title', text: "16.2 — Construire sa Shortlist : La Méthode de Sélection en 4 Filtres", color: 'blue' },
+      { type: 'paragraph', text: "Avant d'acheter quoi que ce soit, vous devez identifier les entreprises qui méritent votre capital. La BRVM compte plus de 40 sociétés cotées. Votre travail est de n'en retenir que <strong>5 à 10 pour commencer</strong>. Voici la méthode en 4 filtres successifs." },
+      { type: 'heading', level: 2, text: "Filtre 1 — La Liquidité : \"Puis-je acheter ET vendre facilement ?\"" },
+      { type: 'paragraph', text: "Sur la BRVM, toutes les actions ne s'échangent pas avec la même facilité. Une action illiquide peut vous piéger : vous ne trouvez pas d'acheteur quand vous voulez vendre, ou vous ne trouvez pas de vendeur quand vous voulez acheter." },
+      { type: 'list', items: [
+        "<strong>Critère</strong> : Privilégier les valeurs avec un volume quotidien échangé régulier. Consultez le site BRVM.org pour les statistiques de volume.",
+        "<strong>Règle pratique</strong> : Pour un débutant avec moins de 5 000 000 FCFA, se limiter aux <strong>Blue Chips du BRVM 10</strong> (les 10 valeurs les plus capitalisées et les plus liquides du marché).",
+        "<strong>Exemples de Blue Chips BRVM</strong> : SONATEL, ECOBANK CI, ORANGE CI, PALM-CI, SOLIBRA, SGB-CI, SGBCI, BOA Côte d'Ivoire, UNILEVER CI, SAPH."
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Attention aux small caps', paragraphs: [
+        "Les petites valeurs (small caps) peuvent offrir des opportunités de rendement supérieur, mais leur faible liquidité les rend inadaptées à un portefeuille débutant. Réservez-les pour votre portefeuille avancé, une fois que vous maîtrisez les bases."
+      ]},
+      { type: 'heading', level: 2, text: "Filtre 2 — La Solidité Fondamentale : \"L'entreprise est-elle saine ?\"" },
+      { type: 'paragraph', text: "Appliquez une version simplifiée de l'analyse fondamentale (M7) pour éliminer les entreprises fragiles. Un contrôle rapide en 3 ratios suffit pour la shortlist." },
+      { type: 'table', headers: ["Ratio", "Ce qu'il mesure", "Seuil minimum recommandé (BRVM)", "Où le trouver ?"], rows: [
+        ["ROE (Rentabilité des Capitaux Propres)", "L'entreprise génère-t-elle de la valeur pour ses actionnaires ?", "≥ 10 % (idéalement > 15 %)", "Rapport annuel, site BRVM, Afribourse.com"],
+        ["Ratio d'Endettement (Dettes / CP)", "L'entreprise est-elle trop endettée ?", "< 1,5 (inférieur à 1 est excellent)", "Bilan de l'entreprise (M7)"],
+        ["Croissance du CA (sur 3 ans)", "Le chiffre d'affaires est-il en progression ?", "Positive ou stable", "Rapports annuels des 3 dernières années"]
+      ]},
+      { type: 'callout', variant: 'info', title: 'Conseil', paragraphs: [
+        "Si vous ne trouvez pas ces données facilement, c'est souvent un mauvais signe. Les bonnes entreprises communiquent clairement leurs résultats. La transparence est un critère qualitatif à part entière."
+      ]},
+      { type: 'heading', level: 2, text: "Filtre 3 — Le Dividende : \"L'entreprise me rémunère-t-elle ?\"" },
+      { type: 'paragraph', text: "La BRVM est réputée pour ses entreprises à dividendes généreux. Pour un investisseur débutant, le dividende est un signal fort : il prouve que l'entreprise génère du cash réel et qu'elle partage sa richesse avec ses actionnaires." },
+      { type: 'paragraph', text: "<strong>Dividend Yield</strong> = Dividende annuel par action ÷ Prix de l'action × 100" },
+      { type: 'list', items: [
+        "<strong>Seuil cible</strong> : Un Dividend Yield supérieur à <strong>4 %</strong> est attractif sur la BRVM.",
+        "<strong>Régularité</strong> : Privilégiez les entreprises qui versent des dividendes de manière continue depuis au moins 3 ans."
+      ]},
+      { type: 'table', headers: ["Société", "Dividende 2023 (FCFA/action)", "Prix de l'action (approx.)", "Dividend Yield estimé"], rows: [
+        ["SONATEL", "1 500 FCFA", "~19 000 FCFA", "~7,9 %"],
+        ["PALM-CI", "450 FCFA", "~7 000 FCFA", "~6,4 %"],
+        ["ECOBANK CI", "80 FCFA", "~5 500 FCFA", "~1,5 %"],
+        ["SOLIBRA", "12 000 FCFA", "~180 000 FCFA", "~6,7 %"]
+      ]},
+      { type: 'callout', variant: 'warn', title: 'Important', paragraphs: [
+        "Un yield très élevé (> 15 %) peut être un piège : le cours a peut-être chuté brutalement en raison de problèmes graves. <strong>Vérifiez toujours la raison du yield élevé avant d'investir.</strong>"
+      ]},
+      { type: 'heading', level: 2, text: "Filtre 4 — La Valorisation : \"Le prix est-il raisonnable ?\"" },
+      { type: 'paragraph', text: "Même une excellente entreprise peut être un mauvais investissement si vous la payez trop cher. Vérifiez que le prix est raisonnable avec ces deux indicateurs rapides." },
+      { type: 'table', headers: ["Indicateur", "Formule", "Interprétation", "Seuil BRVM"], rows: [
+        ["PER (Price Earnings Ratio)", "Prix de l'action ÷ Bénéfice par action", "Combien payez-vous pour 1 FCFA de bénéfice ? Un PER bas = action potentiellement bon marché.", "PER < 15 = attractif. PER > 25 = cher."],
+        ["Price-to-Book (P/B)", "Prix de l'action ÷ Valeur comptable par action", "Payez-vous moins que ce que vaut l'entreprise sur le papier ? Un P/B < 1 = très sous-évalué.", "P/B < 1,5 = raisonnable. P/B > 3 = prudence."]
+      ]},
+      { type: 'callout', variant: 'ok', title: "Les 4 Filtres en Résumé", paragraphs: [
+        "1 — Liquidité : Volume quotidien trop faible → éliminer.",
+        "2 — Solidité : ROE < 10 % ou endettement excessif → éliminer.",
+        "3 — Dividende : Pas de dividende régulier (sauf croissance avérée) → vigilance.",
+        "4 — Valorisation : PER > 25 ou P/B > 3 sans justification → attendre."
+      ]},
+      { type: 'section-title', text: "16.3 — La Construction Ligne par Ligne : Du Premier Achat à un Portefeuille Équilibré", color: 'green' },
+      { type: 'paragraph', text: "Vous avez votre enveloppe. Vous avez votre shortlist. Il est maintenant temps de construire votre portefeuille de manière méthodique — <strong>pas en une seule fois, mais progressivement</strong>." },
+      { type: 'heading', level: 2, text: "16.3.1 — La Règle d'Or : Ne Jamais Tout Investir d'un Coup" },
+      { type: 'paragraph', text: "L'erreur la plus fréquente du débutant est d'investir l'intégralité de son capital le premier jour, souvent dans un seul titre, poussé par l'enthousiasme. Cette approche expose à deux risques majeurs :" },
+      { type: 'list', items: [
+        "<strong>Le risque de timing</strong> : Vous avez peut-être acheté au plus haut. Si le marché corrige dans les semaines suivantes, vous êtes en perte latente dès le début, ce qui est psychologiquement dévastateur (M6).",
+        "<strong>Le risque de concentration</strong> : Un seul titre, aussi excellent soit-il, peut subir un choc spécifique. Sans diversification, votre portefeuille entier est en danger."
+      ]},
+      { type: 'heading', level: 2, text: "16.3.2 — Le Plan de Déploiement du Capital Initial" },
+      { type: 'paragraph', text: "Voici une méthode pratique pour déployer votre capital initial (C₀) de manière progressive et sécurisée sur 3 à 6 mois :" },
+      { type: 'table', headers: ["Phase", "Timing", "Action", "Capital déployé"], rows: [
+        ["Phase 1 — Première ligne", "Mois 1", "Investir 25 à 30 % du capital initial sur votre conviction la plus forte (Blue Chip liquidité + fondamentaux excellents)", "25–30 % de C₀"],
+        ["Phase 2 — Diversification", "Mois 2–3", "Ajouter 2 nouvelles lignes dans des secteurs différents du premier titre. Chaque ligne = 15–20 % du capital.", "30–40 % de C₀"],
+        ["Phase 3 — Consolidation", "Mois 4–5", "Analyser les performances initiales. Renforcer les lignes positives ou ajouter une 4ème ligne dans un secteur encore absent.", "20–25 % de C₀"],
+        ["Phase 4 — Réserve stratégique", "Permanent", "Conserver 10–15 % en liquidités (cash). Ce trésor de guerre sert à saisir les opportunités lors des corrections de marché.", "10–15 % de C₀"]
+      ]},
+      { type: 'callout', variant: 'info', title: 'Conseil DCA', paragraphs: [
+        "En parallèle du capital initial, votre versement mensuel DCA vient régulièrement renforcer les meilleures lignes ou ouvrir de nouvelles positions. Le DCA est le moteur de croissance de votre portefeuille dans le temps (M11)."
+      ]},
+      { type: 'section-title', text: "16.5 — Les 7 Erreurs du Débutant à Éviter Absolument", color: 'purple' },
+      { type: 'paragraph', text: "La connaissance des pièges est aussi précieuse que la connaissance des opportunités. Voici les 7 erreurs qui détruisent les portefeuilles débutants dans les 6 premiers mois — et comment les éviter." },
+      { type: 'table', headers: ["#", "L'Erreur", "La Conséquence", "L'Antidote"], rows: [
+        ["1", "Investir son fonds d'urgence", "Vente forcée au pire moment en cas de besoin urgent d'argent", "Respecter la Règle des 3 Enveloppes (16.1.1)"],
+        ["2", "Tout mettre sur un seul titre", "Un seul choc spécifique détruit l'ensemble du portefeuille", "5 à 10 lignes dans des secteurs différents (M11)"],
+        ["3", "Suivre les \"tuyaux\" sans analyser", "Achat de titres surévalués ou en déclin sur conseil d'amis ou réseaux sociaux", "Appliquer les 4 filtres systématiquement (16.2)"],
+        ["4", "Paniquer et vendre lors d'une baisse", "Transformation d'une perte latente en perte réelle — on vend souvent au plus bas", "Avoir un Plan défini avant d'acheter (Stop-Loss + horizon M6)"],
+        ["5", "Ignorer les frais de courtage", "Les frais érodent la performance, surtout sur les petites lignes et les ordres fréquents", "Calculer le seuil de rentabilité après frais avant chaque ordre"],
+        ["6", "Ne pas définir de seuils d'alerte personnels", "On \"tient\" une ligne perdante indéfiniment par espoir (biais d'ancrage M6) — sans règle définie, l'émotion prend le dessus", "Avant chaque achat, noter par écrit son seuil de perte acceptable et son objectif de valorisation"],
+        ["7", "Vouloir s'enrichir vite (over-trading)", "Accumulation de frais, d'erreurs émotionnelles et de pertes réalisées prématurément", "DCA mensuel + patience. La BRVM récompense la durée, pas la fréquence."]
+      ]},
+      { type: 'pull-quote', text: "La bourse est un mécanisme de transfert de l'argent des impatients vers les patients. — Warren Buffett" },
+      { type: 'section-title', text: "16.6 — La Check-List du Premier Investisseur BRVM", color: 'blue' },
+      { type: 'paragraph', text: "Avant de passer votre tout premier ordre d'achat, cochez chacun de ces points. Si l'un d'eux est rouge, <strong>ne passez pas encore à l'action</strong>." },
+      { type: 'table', headers: ["", "Vérification"], rows: [
+        ["☐", "Mon fonds d'urgence (3–6 mois de dépenses) est constitué et hors bourse."],
+        ["☐", "J'ai défini mon enveloppe d'investissement réelle (capital initial + DCA mensuel)."],
+        ["☐", "Mon compte SGI est ouvert et mon dépôt initial est disponible."],
+        ["☐", "J'ai appliqué les 4 filtres à ma shortlist et retenu 5 à 10 valeurs."],
+        ["☐", "Pour mon premier achat, j'ai choisi un Blue Chip liquide du BRVM 10."],
+        ["☐", "J'ai calculé ma taille de position avec la règle du 1% (M12)."],
+        ["☐", "J'ai défini mon seuil d'alerte personnel (perte max acceptable) et mon objectif de valorisation, notés dans mon journal."],
+        ["☐", "Mon premier achat ne dépasse pas 30 % de mon capital total."],
+        ["☐", "Je conserve au moins 10 % en liquidités (trésor de guerre)."],
+        ["☐", "Je m'engage à ne pas regarder mon portefeuille plus d'une fois par semaine."]
+      ]},
+      { type: 'callout', variant: 'ok', title: 'À retenir', paragraphs: [
+        "Cocher cette liste avant chaque nouvel achat — pas seulement le premier — est une discipline que les grands investisseurs maintiennent toute leur carrière. La rigueur ne disparaît pas avec l'expérience ; elle s'intègre à votre réflexe naturel."
+      ]},
+      { type: 'section-title', text: "16.7 — Conclusion : Votre Premier Pas est le Plus Important", color: 'green' },
+      { type: 'paragraph', text: "Vous venez de parcourir la méthode complète pour construire votre premier portefeuille BRVM. La théorie est derrière vous — maintenant vient l'action." },
+      { type: 'paragraph', text: "Retenez ceci : le premier portefeuille n'a pas besoin d'être parfait. Il doit être <strong>prudent, diversifié et structuré</strong>. La perfection viendra avec l'expérience, les erreurs surmontées et les marchés traversés." },
+      { type: 'pull-quote', text: "La seule façon d'apprendre à nager, c'est d'entrer dans l'eau. Mais on entre d'abord dans le petit bain. — Sagesse universelle de l'investisseur débutant" },
+      { type: 'heading', level: 2, text: "Prochaines Étapes" },
+      { type: 'list', items: [
+        "<strong>Dès maintenant</strong> : Ouvrez le simulateur AfriBourse et constituez votre portefeuille virtuel en appliquant les 4 filtres de sélection. Entraînez-vous pendant 4 à 8 semaines avant de passer au réel.",
+        "<strong>En parallèle</strong> : Commencez à tenir un journal de vos décisions d'investissement. Notez chaque achat simulé : pourquoi vous l'avez fait, votre seuil d'alerte personnel, votre objectif de valorisation, et ce qui s'est passé.",
+        "<strong>Quand vous êtes prêt</strong> : Ouvrez votre compte SGI réel, déployez votre capital initial selon le plan en 4 phases (section 16.3.2), et suivez votre portefeuille via le tableau de bord AfriBourse."
+      ]},
+      { type: 'callout', variant: 'ok', title: 'Félicitations !', paragraphs: [
+        "Vous êtes désormais prêt(e) à poser votre premier acte concret d'investisseur sur la BRVM. Le voyage vers votre indépendance financière commence ici."
+      ]}
+    ]),
   });
 
 

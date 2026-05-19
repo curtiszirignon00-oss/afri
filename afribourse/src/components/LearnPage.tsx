@@ -1,5 +1,5 @@
 // src/components/LearnPage.tsx - VERSION CORRIGÉE
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
     BookOpen,
     Clock,
@@ -33,6 +33,8 @@ import { useCreatePost } from '../hooks/useSocial';
 import confetti from 'canvas-confetti';
 import PremiumPaywall from './PremiumPaywall';
 import { AITutor } from './AITutor';
+import { BlockRenderer } from './BlockRenderer';
+import { ContentBlock } from '../data/brvm2026News';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import CertificateModal from './CertificateModal';
 
@@ -60,6 +62,43 @@ interface QuizState {
     passed: boolean | null;
     showResults: boolean;
     detailedResults?: any[];
+}
+
+function ModuleContent({ module }: { module: { content?: string | null; content_json?: string | null } }) {
+    const richBlocks = useMemo<ContentBlock[] | null>(() => {
+        if (!module.content_json) return null;
+        try {
+            const parsed = JSON.parse(module.content_json);
+            if (Array.isArray(parsed)) return parsed as ContentBlock[];
+        } catch {
+            // not a block array — fall through to HTML
+        }
+        return null;
+    }, [module.content_json]);
+
+    if (richBlocks) {
+        return (
+            <div className="px-4 sm:px-8 py-6">
+                <BlockRenderer blocks={richBlocks} variant="module" />
+            </div>
+        );
+    }
+
+    if (module.content) {
+        return (
+            <div
+                className="module-content"
+                dangerouslySetInnerHTML={{ __html: module.content }}
+            />
+        );
+    }
+
+    return (
+        <div className="text-center py-12 px-6">
+            <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+            <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
+        </div>
+    );
 }
 
 export default function LearnPage() {
@@ -809,17 +848,7 @@ export default function LearnPage() {
                         {/* Contenu du module - Caché pendant le quiz */}
                         {!quizState.isActive && !quizState.showResults && (
                             <div ref={contentRef}>
-                                {selectedModule.content ? (
-                                    <div
-                                        className="module-content"
-                                        dangerouslySetInnerHTML={{ __html: selectedModule.content }}
-                                    />
-                                ) : (
-                                    <div className="text-center py-12 px-6">
-                                        <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-                                        <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
-                                    </div>
-                                )}
+                                <ModuleContent module={selectedModule} />
 
                                 {/* Ressources du module : étude de cas PDF + dashboard */}
                                 {(selectedModule.attachment_url || selectedModule.dashboard_url) && (() => {
