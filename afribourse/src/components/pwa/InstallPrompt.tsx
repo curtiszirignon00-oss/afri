@@ -127,7 +127,7 @@ export function InstallPrompt() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom animate-slide-up">
+      <div className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)] animate-slide-up">
         <div className="mx-2 mb-2 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-2xl shadow-2xl p-4">
           <button
             onClick={handleDismiss}

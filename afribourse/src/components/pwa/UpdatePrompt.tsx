@@ -8,7 +8,7 @@ export function UpdatePrompt() {
   if (!offlineReady && !needRefresh) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-slate-800 text-white p-4 rounded-lg shadow-lg max-w-sm">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-50 bg-slate-800 text-white p-4 rounded-lg shadow-lg">
       {offlineReady ? (
         <div className="flex items-center gap-3">
           <span>Application prete pour utilisation hors ligne</span>

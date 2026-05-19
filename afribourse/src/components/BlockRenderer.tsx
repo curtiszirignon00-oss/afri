@@ -34,14 +34,12 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
     case 'heading':
       return block.level === 1
         ? (
-          <h2 key={i} className={`font-bold text-slate-900 border-b border-slate-100 pb-1 ${isModule ? 'text-base mt-7 mb-2' : 'text-sm mt-5 mb-1'}`}>
-            {block.text}
-          </h2>
+          <h2 key={i} className={`font-bold text-slate-900 border-b border-slate-100 pb-1 ${isModule ? 'text-base mt-7 mb-2' : 'text-sm mt-5 mb-1'}`}
+              dangerouslySetInnerHTML={{ __html: block.text }} />
         )
         : (
-          <h3 key={i} className={`font-bold text-slate-700 ${isModule ? 'text-sm mt-5 mb-1.5' : 'text-xs mt-3 mb-1'}`}>
-            {block.text}
-          </h3>
+          <h3 key={i} className={`font-bold text-slate-700 ${isModule ? 'text-sm mt-5 mb-1.5' : 'text-xs mt-3 mb-1'}`}
+              dangerouslySetInnerHTML={{ __html: block.text }} />
         );
 
     case 'section-title': {
@@ -54,16 +52,15 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
       const cls = colorMap[block.color ?? 'blue'];
       return (
         <div key={i} className={`border-l-4 px-4 py-2 rounded-r-lg ${cls} ${isModule ? 'mt-7 mb-2' : 'mt-5 mb-1'}`}>
-          <p className={`font-bold ${isModule ? 'text-sm' : 'text-xs'}`}>{block.text}</p>
+          <p className={`font-bold ${isModule ? 'text-sm' : 'text-xs'}`} dangerouslySetInnerHTML={{ __html: block.text }} />
         </div>
       );
     }
 
     case 'paragraph':
       return (
-        <p key={i} className={`text-slate-600 leading-relaxed ${isModule ? 'text-sm' : 'text-sm'}`}>
-          {block.text}
-        </p>
+        <p key={i} className={`text-slate-600 leading-relaxed ${isModule ? 'text-sm' : 'text-sm'}`}
+           dangerouslySetInnerHTML={{ __html: block.text }} />
       );
 
     case 'image':
@@ -100,9 +97,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
               {block.rows.map((row, j) => (
                 <tr key={j} className={j % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                   {row.map((cell, k) => (
-                    <td key={k} className={`px-4 py-2.5 text-slate-700 ${k === 0 ? 'font-medium' : ''} ${isModule ? 'text-xs' : 'text-xs'}`}>
-                      {cell}
-                    </td>
+                    <td key={k} className={`px-4 py-2.5 text-slate-700 ${k === 0 ? 'font-medium' : ''} ${isModule ? 'text-xs' : 'text-xs'}`}
+                        dangerouslySetInnerHTML={{ __html: cell }} />
                   ))}
                 </tr>
               ))}
@@ -125,9 +121,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
 
     case 'highlight':
       return (
-        <div key={i} className={`bg-[#00D4A8]/10 border-l-4 border-[#00D4A8] rounded-r-lg px-4 py-3 text-slate-700 leading-relaxed ${isModule ? 'text-sm' : 'text-xs'}`}>
-          {block.text}
-        </div>
+        <div key={i} className={`bg-[#00D4A8]/10 border-l-4 border-[#00D4A8] rounded-r-lg px-4 py-3 text-slate-700 leading-relaxed ${isModule ? 'text-sm' : 'text-xs'}`}
+             dangerouslySetInnerHTML={{ __html: block.text }} />
       );
 
     case 'list':
@@ -168,9 +163,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
       };
       return (
         <div key={i} className={`border-l-4 rounded-r-lg px-4 py-3 space-y-1.5 ${calloutStyles[block.variant]}`}>
-          <p className={`font-bold uppercase tracking-wide ${titleStyles[block.variant]} ${isModule ? 'text-xs' : 'text-xs'}`}>
-            {block.title}
-          </p>
+          <p className={`font-bold uppercase tracking-wide ${titleStyles[block.variant]} ${isModule ? 'text-xs' : 'text-xs'}`}
+             dangerouslySetInnerHTML={{ __html: block.title }} />
           {block.paragraphs.map((p, j) => (
             <p key={j} className={`leading-relaxed ${isModule ? 'text-sm' : 'text-sm'}`}
                dangerouslySetInnerHTML={{ __html: p }} />
@@ -181,21 +175,21 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
 
     case 'pull-quote':
       return (
-        <blockquote key={i} className={`border-l-4 border-[#00D4A8] pl-4 py-2 italic text-slate-700 leading-relaxed bg-[#00D4A8]/5 rounded-r-lg ${isModule ? 'text-sm' : 'text-sm'}`}>
-          {block.text}
-        </blockquote>
+        <blockquote key={i} className={`border-l-4 border-[#00D4A8] pl-4 py-2 italic text-slate-700 leading-relaxed bg-[#00D4A8]/5 rounded-r-lg ${isModule ? 'text-sm' : 'text-sm'}`}
+                   dangerouslySetInnerHTML={{ __html: block.text }} />
       );
 
     case 'verdict':
       return (
         <div key={i} className="bg-slate-900 rounded-xl px-5 py-4 space-y-3">
-          <p className={`font-bold text-[#00D4A8] uppercase tracking-widest ${isModule ? 'text-xs' : 'text-xs'}`}>
-            {block.title}
-          </p>
+          <p className={`font-bold text-[#00D4A8] uppercase tracking-widest ${isModule ? 'text-xs' : 'text-xs'}`}
+             dangerouslySetInnerHTML={{ __html: block.title }} />
           {block.items.map((item, j) => (
             <div key={j} className="flex flex-col gap-0.5">
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">{item.label}</p>
-              <p className={`text-white leading-snug ${isModule ? 'text-sm' : 'text-sm'}`}>{item.text}</p>
+              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide"
+                 dangerouslySetInnerHTML={{ __html: item.label }} />
+              <p className={`text-white leading-snug ${isModule ? 'text-sm' : 'text-sm'}`}
+                 dangerouslySetInnerHTML={{ __html: item.text }} />
             </div>
           ))}
         </div>
@@ -215,8 +209,10 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
           <div className="divide-y divide-slate-100">
             {block.items.map((item, j) => (
               <div key={j} className="py-2.5">
-                <p className="text-[11px] font-mono font-semibold text-slate-800 mb-0.5">{item.term}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{item.definition}</p>
+                <p className="text-[11px] font-mono font-semibold text-slate-800 mb-0.5"
+                   dangerouslySetInnerHTML={{ __html: item.term }} />
+                <p className="text-xs text-slate-500 leading-relaxed"
+                   dangerouslySetInnerHTML={{ __html: item.definition }} />
               </div>
             ))}
           </div>
@@ -226,9 +222,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
     case 'objectives':
       return (
         <div key={i} className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl px-5 py-4 text-white shadow-md">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-3">
-            {block.title ?? '🎯 Objectifs pédagogiques'}
-          </p>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-3"
+             dangerouslySetInnerHTML={{ __html: block.title ?? '🎯 Objectifs pédagogiques' }} />
           <ul className="space-y-2">
             {block.items.map((item, j) => (
               <li key={j} className={`flex items-start gap-2 ${isModule ? 'text-sm' : 'text-xs'}`}>
@@ -243,7 +238,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
     case 'analogy':
       return (
         <div key={i} className="bg-slate-800 rounded-xl px-5 py-4 space-y-2 shadow-md">
-          <p className="text-xs font-bold text-[#00D4A8] uppercase tracking-widest">{block.title}</p>
+          <p className="text-xs font-bold text-[#00D4A8] uppercase tracking-widest"
+             dangerouslySetInnerHTML={{ __html: block.title }} />
           <ul className="space-y-2">
             {block.items.map((item, j) => (
               <li key={j} className={`text-slate-300 flex items-start gap-2 ${isModule ? 'text-sm' : 'text-xs'}`}>
@@ -253,9 +249,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
             ))}
           </ul>
           {block.conclusion && (
-            <p className={`text-slate-400 italic pt-1 border-t border-slate-700 ${isModule ? 'text-sm' : 'text-xs'}`}>
-              {block.conclusion}
-            </p>
+            <p className={`text-slate-400 italic pt-1 border-t border-slate-700 ${isModule ? 'text-sm' : 'text-xs'}`}
+               dangerouslySetInnerHTML={{ __html: block.conclusion }} />
           )}
         </div>
       );

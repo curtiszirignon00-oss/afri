@@ -171,7 +171,7 @@ export default function AdminSubscriptionStats() {
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-sm text-gray-700">{item.feature || 'Non spécifié'}</span>
                   <div className="flex items-center">
-                    <div className="w-32 h-2 bg-gray-200 rounded-full mr-3">
+                    <div className="w-20 sm:w-32 h-2 bg-gray-200 rounded-full mr-3">
                       <div
                         className="h-2 bg-blue-600 rounded-full"
                         style={{
@@ -197,7 +197,7 @@ export default function AdminSubscriptionStats() {
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-sm text-gray-700 capitalize">{item.source || 'Inconnue'}</span>
                   <div className="flex items-center">
-                    <div className="w-32 h-2 bg-gray-200 rounded-full mr-3">
+                    <div className="w-20 sm:w-32 h-2 bg-gray-200 rounded-full mr-3">
                       <div
                         className="h-2 bg-green-600 rounded-full"
                         style={{

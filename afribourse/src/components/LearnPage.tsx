@@ -1339,7 +1339,7 @@ export default function LearnPage() {
                     {!showAITutor && !quizState.isActive && !quizState.showResults && (
                         <button
                             onClick={() => setShowAITutor(true)}
-                            className="fixed bottom-8 right-8 bg-white p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
+                            className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-white p-3 sm:p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
                         >
                             <MessageSquarePlus className="w-6 h-6" />
                             <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
