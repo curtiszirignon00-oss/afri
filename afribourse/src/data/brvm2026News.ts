@@ -231,7 +231,7 @@ export const BRVM_NEWS: BRVMArticle[] = [
 
       { type: 'paragraph', text: "Le taux d'imposition effectif de NSIA Banque CI est l'une des données les plus surprenantes. En Côte d'Ivoire, l'IS est à 25%. Pourtant, NSIA paie entre 4% et 18% selon les années." },
 
-      { type: 'table', caption: 'Taux d'imposition effectif (Impôts / RAI) vs taux légal CI (M FCFA)',
+      { type: 'table', caption: "Taux d'imposition effectif (Impôts / RAI) vs taux légal CI (M FCFA)",
         headers: ['Exercice', 'RAI', 'Impôts', 'Résultat net', 'Taux effectif', 'Taux légal', 'Économie fiscale'],
         rows: [
           ['2020', '8 829',  '1 628', '7 201',  '18,4%', '25%', '+571 M'],
