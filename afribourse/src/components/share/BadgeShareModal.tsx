@@ -89,12 +89,31 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
     };
 
     const handleShareWhatsApp = async () => {
+        // Sur mobile : partager l'image de badge directement via Web Share API
+        if (cardRef.current && typeof navigator.share === 'function') {
+            setIsDownloading(true);
+            try {
+                const dataUrl = await cardToDataUrl(cardRef.current);
+                const blob = await dataUrlToBlob(dataUrl);
+                const file = new File([blob], `afribourse-badge-${achievement.code}.png`, { type: 'image/png' });
+                if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], text: shareText + `\n\n👉 ${ACHIEVEMENTS_URL}` });
+                    return;
+                }
+            } catch {
+                // Annulation ou erreur → fallback
+            } finally {
+                setIsDownloading(false);
+            }
+        }
+
+        // Fallback desktop
         const text = encodeURIComponent(shareText + `\n\n👉 ${ACHIEVEMENTS_URL}`);
         window.open(`https://wa.me/?text=${text}`, '_blank');
         if (cardRef.current) {
             try {
                 await downloadCardAsImage(cardRef.current, 'afribourse-badge');
-                toast.success('Image téléchargée - vous pouvez la joindre sur WhatsApp');
+                toast.success('Image téléchargée — joignez-la sur WhatsApp');
             } catch { /* Silent */ }
         }
     };

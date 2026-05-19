@@ -84,7 +84,26 @@ export default function ChartShareModal({
     }
   };
 
-  const handleShareWhatsApp = () => {
+  const handleShareWhatsApp = async () => {
+    // Sur mobile : partager l'image directement via Web Share API
+    if (dataUrl && typeof navigator.share === 'function') {
+      setIsDownloading(true);
+      try {
+        const res = await fetch(dataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], `afribourse-${symbol.toLowerCase()}.png`, { type: 'image/png' });
+        if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: shareText + `\n\n${stockUrl}` });
+          return;
+        }
+      } catch {
+        // Si l'utilisateur annule ou erreur → fallback
+      } finally {
+        setIsDownloading(false);
+      }
+    }
+
+    // Fallback desktop : WhatsApp web + téléchargement
     const text = encodeURIComponent(shareText + `\n\n${stockUrl}`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
     if (dataUrl) {

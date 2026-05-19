@@ -104,18 +104,35 @@ export default function ShareModal({ isOpen, onClose, shareData, shareUrl }: Sha
     };
 
     const handleShareWhatsApp = async () => {
-        // Open WhatsApp with text
+        // Sur mobile : partager image + texte directement via Web Share API (WhatsApp reçoit l'image)
+        if (cardRef.current && typeof navigator.share === 'function') {
+            setIsDownloading(true);
+            try {
+                const dataUrl = await cardToDataUrl(cardRef.current);
+                const blob = await dataUrlToBlob(dataUrl);
+                const file = new File([blob], 'afribourse-card.png', { type: 'image/png' });
+                if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], text: shareText + `\n\n${pageUrl}` });
+                    trackShare(shareData.type.toLowerCase(), 'whatsapp', 'native-file');
+                    return;
+                }
+            } catch {
+                // Si l'utilisateur annule ou erreur → fallback
+            } finally {
+                setIsDownloading(false);
+            }
+        }
+
+        // Fallback desktop : ouvrir WhatsApp web + télécharger l'image
         const text = encodeURIComponent(shareText + `\n\n${pageUrl}`);
         window.open(`https://wa.me/?text=${text}`, '_blank');
-        // Also download the card image so user can attach it
         if (cardRef.current) {
             try {
                 await downloadCardAsImage(cardRef.current, 'afribourse-card');
-                toast.success('Image téléchargée - vous pouvez la joindre sur WhatsApp');
-            } catch {
-                // Silent fail
-            }
+                toast.success('Image téléchargée — joignez-la sur WhatsApp');
+            } catch { /* Silent */ }
         }
+        trackShare(shareData.type.toLowerCase(), 'whatsapp', 'link');
     };
 
     const handleShareX = async () => {
