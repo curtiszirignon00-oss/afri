@@ -113,25 +113,33 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
 
 export const PAWAPAY_CORRESPONDENTS: Record<string, Record<string, string>> = {
   'orange-money': {
-    '+225': 'ORANGE_MONEY_CI',
-    '+221': 'ORANGE_MONEY_SN',
-    '+226': 'ORANGE_MONEY_BF',
-    '+223': 'ORANGE_MONEY_ML',
-    '+224': 'ORANGE_MONEY_GN',
-    '+237': 'ORANGE_MONEY_CM',
+    '+225': 'ORANGE_CIV',
+    '+221': 'ORANGE_SEN',
+    '+226': 'ORANGE_BFA',
+    '+223': 'ORANGE_MLI',
+    '+237': 'ORANGE_CMR',
+    '+233': 'ORANGE_SLE', // Sierra Leone (code partagé)
   },
   'mtn-momo': {
-    '+225': 'MTN_MOMO_CI',
-    '+229': 'MTN_MOMO_BJ',
-    '+233': 'MTN_MOMO_GH',
+    '+225': 'MTN_MOMO_CIV',
+    '+229': 'MTN_MOMO_BEN',
+    '+233': 'MTN_MOMO_GHA',
+    '+237': 'MTN_MOMO_CMR',
+    '+256': 'MTN_MOMO_UGA',
+    '+250': 'MTN_MOMO_RWA',
   },
   'moov-money': {
-    '+226': 'MOOV_MONEY_BF',
-    '+228': 'MOOV_MONEY_TG',
-    '+229': 'MOOV_MONEY_BJ',
+    '+225': 'MOOV_CIV',
+    '+226': 'MOOV_BFA',
+    '+228': 'MOOV_TGO',
+    '+229': 'MOOV_BEN',
   },
   'free-money': {
-    '+221': 'FREE_MONEY_SN',
+    '+221': 'AFITECH_FREE_SEN',
+  },
+  'wave': {
+    '+225': 'WAVE_CIV',
+    '+221': 'WAVE_SEN',
   },
 };
 

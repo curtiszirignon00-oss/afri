@@ -14,7 +14,7 @@ interface PaymentMethod {
   type: 'mobile' | 'card' | 'bank';
 }
 
-const MOBILE_METHODS = new Set(['orange-money', 'mtn-momo', 'moov-money', 'free-money']);
+const MOBILE_METHODS = new Set(['wave', 'orange-money', 'mtn-momo', 'moov-money', 'free-money']);
 
 export default function CheckoutPage() {
   const location = useLocation();
@@ -35,11 +35,11 @@ export default function CheckoutPage() {
   const displayAmount = price.split(' / ')[0]; // "9 900 XOF"
 
   const paymentMethods: PaymentMethod[] = [
+    { id: 'wave',         name: 'Wave',               icon: Smartphone,  description: 'Paiement Wave',                type: 'mobile' },
     { id: 'orange-money', name: 'Orange Money',       icon: Smartphone,  description: 'Paiement Orange Money',        type: 'mobile' },
     { id: 'mtn-momo',     name: 'MTN Mobile Money',   icon: Smartphone,  description: 'Paiement MTN MoMo',            type: 'mobile' },
     { id: 'moov-money',   name: 'Moov Money',         icon: Smartphone,  description: 'Paiement Moov Money',          type: 'mobile' },
     { id: 'free-money',   name: 'Free Money',         icon: Smartphone,  description: 'Paiement Free Money',          type: 'mobile' },
-    { id: 'wave',         name: 'Wave',               icon: Smartphone,  description: 'Bientôt disponible',           type: 'mobile' },
     { id: 'visa',         name: 'Visa / Mastercard',  icon: CreditCard,  description: 'Bientôt disponible',           type: 'card'   },
     { id: 'bank-transfer',name: 'Virement Bancaire',  icon: Building2,   description: 'Bientôt disponible',           type: 'bank'   },
   ];

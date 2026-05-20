@@ -36,6 +36,7 @@ const OPERATOR_LABELS: Record<string, string> = {
   'orange-money': 'Orange Money',
   'mtn-momo': 'MTN Mobile Money',
   'moov-money': 'Moov Money',
+  'free-money': 'Free Money',
 };
 
 // ─── Composant principal ──────────────────────────────────────────────────────
