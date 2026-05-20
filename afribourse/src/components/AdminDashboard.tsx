@@ -190,6 +190,10 @@ export default function AdminDashboard() {
   const [webinarFilter, setWebinarFilter] = useState<string>('all');
   const [campaignStatus, setCampaignStatus] = useState<'idle' | 'confirming' | 'sending' | 'done' | 'error'>('idle');
   const [campaignResult, setCampaignResult] = useState<{ total: number; sent: number; failed: number; filtered: number; errors: string[] } | null>(null);
+  const [zoomWebinarId, setZoomWebinarId] = useState<string>('');
+  const [zoomUrl, setZoomUrl] = useState('');
+  const [zoomStatus, setZoomStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  const [zoomResult, setZoomResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verifyEmail, setVerifyEmail] = useState('');
@@ -311,6 +315,30 @@ export default function AdminDashboard() {
     } catch (err) {
       console.error('Erreur webinar registrations:', err);
     }
+  };
+
+  const ZOOM_WEBINARS_LIST = [
+    { id: 'w1-fondamentaux',            label: 'Fondamentaux',    date: '23 mai',    zoomDate: 'samedi 23 mai à 9h00' },
+    { id: 'w2-fondamentale',            label: 'Fondamentale',    date: '30-31 mai', zoomDate: 'vendredi 30 mai à 9h00' },
+    { id: 'w3-technique',               label: 'Technique',       date: '6-7 juin',  zoomDate: 'samedi 6 juin à 9h00' },
+    { id: 'pack-parcours-investisseur', label: 'Pack Parcours',   date: 'Parcours',  zoomDate: 'samedi 23 mai à 9h00' },
+  ];
+
+  const sendZoomLinks = async () => {
+    if (!zoomWebinarId || !zoomUrl.trim()) return;
+    const w = ZOOM_WEBINARS_LIST.find(x => x.id === zoomWebinarId);
+    setZoomStatus('sending');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/webinars/send-zoom-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ webinarId: zoomWebinarId, zoomUrl: zoomUrl.trim(), sessionDate: w?.zoomDate ?? '' }),
+      });
+      const data = await res.json();
+      setZoomResult(data);
+      setZoomStatus(res.ok ? 'done' : 'error');
+    } catch { setZoomStatus('error'); }
   };
 
   const exportWebinarCSV = () => {
@@ -1192,10 +1220,10 @@ export default function AdminDashboard() {
         {/* ═══════════════════════════════════════════ */}
         {(() => {
           const WEBINARS_LIST = [
-            { id: 'w1-fondamentaux',            label: 'Fondamentaux',      date: '23 mai',    color: 'blue',    zoomDate: 'samedi 23 mai à 9h00' },
-            { id: 'w2-fondamentale',            label: 'Fondamentale',      date: '30-31 mai', color: 'emerald', zoomDate: 'vendredi 30 mai à 9h00' },
-            { id: 'w3-technique',               label: 'Technique',         date: '6-7 juin',  color: 'orange',  zoomDate: 'samedi 6 juin à 9h00' },
-            { id: 'pack-parcours-investisseur', label: 'Pack Parcours',     date: 'Parcours',  color: 'indigo',  zoomDate: 'samedi 23 mai à 9h00' },
+            { id: 'w1-fondamentaux',            label: 'Fondamentaux',      date: '23 mai',    color: 'blue' },
+            { id: 'w2-fondamentale',            label: 'Fondamentale',      date: '30-31 mai', color: 'emerald' },
+            { id: 'w3-technique',               label: 'Technique',         date: '6-7 juin',  color: 'orange' },
+            { id: 'pack-parcours-investisseur', label: 'Pack Parcours',     date: 'Parcours',  color: 'indigo' },
           ];
           const BADGE: Record<string, string> = {
             blue: 'bg-blue-100 text-blue-700', emerald: 'bg-emerald-100 text-emerald-700',
@@ -1208,28 +1236,6 @@ export default function AdminDashboard() {
 
           const paidCount = webinarRegistrations.filter(r => r.paymentStatus === 'paid').length;
           const pendingCount = webinarRegistrations.length - paidCount;
-
-          const [zoomWebinarId, setZoomWebinarId] = useState<string>('');
-          const [zoomUrl, setZoomUrl] = useState('');
-          const [zoomStatus, setZoomStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
-          const [zoomResult, setZoomResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
-
-          const sendZoomLinks = async () => {
-            if (!zoomWebinarId || !zoomUrl.trim()) return;
-            const w = WEBINARS_LIST.find(x => x.id === zoomWebinarId);
-            setZoomStatus('sending');
-            try {
-              const res = await fetch(`${import.meta.env.VITE_API_URL}/webinars/send-zoom-link`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ webinarId: zoomWebinarId, zoomUrl: zoomUrl.trim(), sessionDate: w?.zoomDate ?? '' }),
-              });
-              const data = await res.json();
-              setZoomResult(data);
-              setZoomStatus(res.ok ? 'done' : 'error');
-            } catch { setZoomStatus('error'); }
-          };
 
           return (
             <div className="mt-10">
@@ -1337,7 +1343,7 @@ export default function AdminDashboard() {
                   <select value={zoomWebinarId} onChange={e => setZoomWebinarId(e.target.value)}
                     className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                     <option value="">— Choisir le webinaire —</option>
-                    {WEBINARS_LIST.map(w => <option key={w.id} value={w.id}>{w.label} ({w.date})</option>)}
+                    {ZOOM_WEBINARS_LIST.map(w => <option key={w.id} value={w.id}>{w.label} ({w.date})</option>)}
                   </select>
                   <input type="url" value={zoomUrl} onChange={e => setZoomUrl(e.target.value)}
                     placeholder="https://zoom.us/j/..."
