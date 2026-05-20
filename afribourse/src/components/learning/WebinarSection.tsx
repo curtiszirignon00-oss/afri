@@ -278,9 +278,10 @@ const PAYMENT_DIAL_CODES = [
   { code: '+223', flag: '🇲🇱', name: 'Mali' },
   { code: '+228', flag: '🇹🇬', name: 'Togo' },
   { code: '+229', flag: '🇧🇯', name: 'Bénin' },
-  { code: '+224', flag: '🇬🇳', name: 'Guinée' },
   { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
   { code: '+233', flag: '🇬🇭', name: 'Ghana' },
+  { code: '+256', flag: '🇺🇬', name: 'Ouganda' },
+  { code: '+250', flag: '🇷🇼', name: 'Rwanda' },
 ];
 
 const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void }> = ({ webinar, count, onClose }) => {
