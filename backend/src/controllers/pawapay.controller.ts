@@ -47,23 +47,29 @@ export async function handleDepositCallback(req: Request, res: Response) {
     }
 
     if (status === 'COMPLETED') {
-      const tier = PLAN_TIER_MAP[payment.planId] ?? 'premium';
+      const tier = PLAN_TIER_MAP[payment.planId];
 
-      await prisma.$transaction([
-        prisma.payment.update({
+      if (tier) {
+        // Plan d'abonnement → mettre à jour le tier en transaction atomique
+        await prisma.$transaction([
+          prisma.payment.update({
+            where: { depositId },
+            data: { status: 'COMPLETED', metadata: payload as any },
+          }),
+          prisma.user.update({
+            where: { id: payment.userId },
+            data: { subscriptionTier: tier },
+          }),
+        ]);
+        log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier });
+      } else {
+        // Webinaire ou pack → juste marquer le paiement COMPLETED
+        await prisma.payment.update({
           where: { depositId },
-          data: {
-            status: 'COMPLETED',
-            metadata: payload as any,
-          },
-        }),
-        prisma.user.update({
-          where: { id: payment.userId },
-          data: { subscriptionTier: tier },
-        }),
-      ]);
-
-      log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier });
+          data: { status: 'COMPLETED', metadata: payload as any },
+        });
+        log.info('[PawaPay] Paiement webinaire confirmé', { depositId, planId: payment.planId });
+      }
     } else if (status === 'FAILED') {
       await prisma.payment.update({
         where: { depositId },
@@ -143,14 +149,13 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     return res.status(400).json({ error: 'Champs manquants' });
   }
 
-  if (!PLAN_TIER_MAP[planId]) {
-    return res.status(400).json({ error: 'Plan invalide' });
-  }
-
   // Vérifier que le numéro est numérique et > 8 chiffres
   if (!/^\d{8,15}$/.test(phone)) {
     return res.status(400).json({ error: 'Numéro de téléphone invalide' });
   }
+
+  // Description max 22 caractères (limite PawaPay)
+  const description = `AfriBourse ${planName}`.slice(0, 22);
 
   const depositId = crypto.randomUUID();
 
@@ -176,7 +181,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
       currency,
       correspondent,
       phone,
-      description: `AfriBourse ${planName}`,
+      description,
     });
 
     if (result.status === 'REJECTED') {
@@ -184,6 +189,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         where: { depositId },
         data: { status: 'FAILED', failureReason: result.rejectionReason?.rejectionCode },
       });
+      log.warn('[PawaPay] Dépôt rejeté', { depositId, rejectionReason: result.rejectionReason });
       return res.status(422).json({
         success: false,
         error: 'Dépôt refusé par PawaPay',
