@@ -132,6 +132,9 @@ interface WebinarRegistrationRecord {
   email: string;
   phone: string | null;
   userId: string | null;
+  paymentStatus: string | null;
+  paidAt: string | null;
+  earlyBird: boolean | null;
   created_at: string;
 }
 
@@ -1185,128 +1188,174 @@ export default function AdminDashboard() {
         </div>
 
         {/* ═══════════════════════════════════════════ */}
-        {/* WEBINAIRES — PRÉINSCRIPTIONS               */}
+        {/* WEBINAIRES — INSCRIPTIONS & PAIEMENTS      */}
         {/* ═══════════════════════════════════════════ */}
-        <div className="mt-10">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 mb-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                  <Video className="w-6 h-6" />
-                  Webinaires — Préinscriptions
-                </h2>
-                <p className="text-blue-100 text-sm">
-                  {webinarRegistrations.length} inscription{webinarRegistrations.length !== 1 ? 's' : ''} au total
-                </p>
-              </div>
-              <button
-                onClick={exportWebinarCSV}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Exporter CSV
-              </button>
-            </div>
-          </div>
+        {(() => {
+          const WEBINARS_LIST = [
+            { id: 'w1-fondamentaux',            label: 'Fondamentaux',      date: '23 mai',    color: 'blue',    zoomDate: 'samedi 23 mai à 9h00' },
+            { id: 'w2-fondamentale',            label: 'Fondamentale',      date: '30-31 mai', color: 'emerald', zoomDate: 'vendredi 30 mai à 9h00' },
+            { id: 'w3-technique',               label: 'Technique',         date: '6-7 juin',  color: 'orange',  zoomDate: 'samedi 6 juin à 9h00' },
+            { id: 'pack-parcours-investisseur', label: 'Pack Parcours',     date: 'Parcours',  color: 'indigo',  zoomDate: 'samedi 23 mai à 9h00' },
+          ];
+          const BADGE: Record<string, string> = {
+            blue: 'bg-blue-100 text-blue-700', emerald: 'bg-emerald-100 text-emerald-700',
+            orange: 'bg-orange-100 text-orange-700', indigo: 'bg-indigo-100 text-indigo-700',
+          };
+          const CARD: Record<string, string> = {
+            blue: 'bg-blue-50 border-blue-100 text-blue-700', emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700',
+            orange: 'bg-orange-50 border-orange-100 text-orange-700', indigo: 'bg-indigo-50 border-indigo-100 text-indigo-700',
+          };
 
-          {/* KPIs par webinaire */}
-          {(() => {
-            const WEBINARS = [
-              { id: 'w1-fondamentaux', label: 'Fondamentaux', date: '23 mai', color: 'blue' },
-              { id: 'w2-fondamentale', label: 'Analyse fondamentale', date: '30-31 mai', color: 'emerald' },
-              { id: 'w3-technique', label: 'Analyse technique', date: '6-7 juin', color: 'orange' },
-            ];
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                {WEBINARS.map((w) => {
-                  const count = webinarRegistrations.filter((r) => r.webinarId === w.id).length;
-                  const colorMap: Record<string, string> = {
-                    blue: 'bg-blue-50 border-blue-100 text-blue-700',
-                    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700',
-                    orange: 'bg-orange-50 border-orange-100 text-orange-700',
-                  };
+          const paidCount = webinarRegistrations.filter(r => r.paymentStatus === 'paid').length;
+          const pendingCount = webinarRegistrations.length - paidCount;
+
+          const [zoomWebinarId, setZoomWebinarId] = useState<string>('');
+          const [zoomUrl, setZoomUrl] = useState('');
+          const [zoomStatus, setZoomStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+          const [zoomResult, setZoomResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
+
+          const sendZoomLinks = async () => {
+            if (!zoomWebinarId || !zoomUrl.trim()) return;
+            const w = WEBINARS_LIST.find(x => x.id === zoomWebinarId);
+            setZoomStatus('sending');
+            try {
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/webinars/send-zoom-link`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ webinarId: zoomWebinarId, zoomUrl: zoomUrl.trim(), sessionDate: w?.zoomDate ?? '' }),
+              });
+              const data = await res.json();
+              setZoomResult(data);
+              setZoomStatus(res.ok ? 'done' : 'error');
+            } catch { setZoomStatus('error'); }
+          };
+
+          return (
+            <div className="mt-10">
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6 mb-6">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                      <Video className="w-6 h-6" />
+                      Webinaires — Inscriptions & Paiements
+                    </h2>
+                    <p className="text-blue-100 text-sm">
+                      {webinarRegistrations.length} total · <span className="text-green-300 font-bold">{paidCount} payés</span> · {pendingCount} en attente
+                    </p>
+                  </div>
+                  <button onClick={exportWebinarCSV} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors">
+                    <Download className="w-4 h-4" /> Exporter CSV
+                  </button>
+                </div>
+              </div>
+
+              {/* KPIs par webinaire */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                {WEBINARS_LIST.map((w) => {
+                  const all = webinarRegistrations.filter(r => r.webinarId === w.id);
+                  const paid = all.filter(r => r.paymentStatus === 'paid').length;
                   return (
-                    <button
-                      key={w.id}
-                      onClick={() => setWebinarFilter(webinarFilter === w.id ? 'all' : w.id)}
-                      className={`rounded-xl border p-4 text-left transition-all ${colorMap[w.color]} ${webinarFilter === w.id ? 'ring-2 ring-offset-1 ring-blue-400' : ''}`}
-                    >
+                    <button key={w.id} onClick={() => setWebinarFilter(webinarFilter === w.id ? 'all' : w.id)}
+                      className={`rounded-xl border p-4 text-left transition-all ${CARD[w.color]} ${webinarFilter === w.id ? 'ring-2 ring-offset-1 ring-blue-400' : ''}`}>
                       <p className="text-xs font-semibold opacity-70 mb-1">{w.date}</p>
-                      <p className="font-bold text-base">{w.label}</p>
-                      <p className="text-3xl font-extrabold mt-1">{count}</p>
-                      <p className="text-xs opacity-60 mt-0.5">préinscrit{count !== 1 ? 's' : ''}</p>
+                      <p className="font-bold text-sm">{w.label}</p>
+                      <p className="text-2xl font-extrabold mt-1">{all.length}</p>
+                      <p className="text-xs mt-0.5 font-semibold text-green-700">{paid} payé{paid !== 1 ? 's' : ''}</p>
                     </button>
                   );
                 })}
               </div>
-            );
-          })()}
 
-          {/* Filtre actif */}
-          {webinarFilter !== 'all' && (
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm text-gray-500">Filtre :</span>
-              <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{webinarFilter}</span>
-              <button onClick={() => setWebinarFilter('all')} className="text-xs text-gray-400 hover:text-gray-600 underline">Réinitialiser</button>
-            </div>
-          )}
+              {/* Filtre actif */}
+              {webinarFilter !== 'all' && (
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-sm text-gray-500">Filtre :</span>
+                  <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{webinarFilter}</span>
+                  <button onClick={() => setWebinarFilter('all')} className="text-xs text-gray-400 hover:text-gray-600 underline">Réinitialiser</button>
+                </div>
+              )}
 
-          {/* Tableau */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-100">
-                <thead>
-                  <tr className="bg-gray-50 text-left text-xs font-bold text-gray-500 uppercase tracking-wide">
-                    <th className="px-5 py-3">Webinaire</th>
-                    <th className="px-5 py-3">Nom</th>
-                    <th className="px-5 py-3">Email</th>
-                    <th className="px-5 py-3"><Phone className="w-3.5 h-3.5 inline mr-1" />Téléphone</th>
-                    <th className="px-5 py-3">Inscrit le</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {(() => {
-                    const WEBINAR_LABELS: Record<string, { label: string; color: string }> = {
-                      'w1-fondamentaux': { label: 'Fondamentaux', color: 'bg-blue-100 text-blue-700' },
-                      'w2-fondamentale': { label: 'Fondamentale', color: 'bg-emerald-100 text-emerald-700' },
-                      'w3-technique':   { label: 'Technique', color: 'bg-orange-100 text-orange-700' },
-                    };
-                    const filtered = webinarRegistrations.filter(
-                      (r) => webinarFilter === 'all' || r.webinarId === webinarFilter,
-                    );
-                    if (filtered.length === 0) {
-                      return (
-                        <tr>
-                          <td colSpan={5} className="px-5 py-12 text-center text-gray-400 text-sm">
-                            Aucune préinscription pour l'instant
-                          </td>
-                        </tr>
-                      );
-                    }
-                    return filtered.map((r) => {
-                      const meta = WEBINAR_LABELS[r.webinarId] ?? { label: r.webinarId, color: 'bg-gray-100 text-gray-700' };
-                      return (
-                        <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-3">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${meta.color}`}>{meta.label}</span>
-                          </td>
-                          <td className="px-5 py-3 text-sm text-gray-800 font-medium">
-                            {[r.firstName, r.lastName].filter(Boolean).join(' ') || <span className="text-gray-400">—</span>}
-                          </td>
-                          <td className="px-5 py-3 text-sm text-gray-600">{r.email}</td>
-                          <td className="px-5 py-3 text-sm text-gray-500">{r.phone ?? '—'}</td>
-                          <td className="px-5 py-3 text-xs text-gray-400">
-                            {new Date(r.created_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </td>
-                        </tr>
-                      );
-                    });
-                  })()}
-                </tbody>
-              </table>
+              {/* Tableau */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead>
+                      <tr className="bg-gray-50 text-left text-xs font-bold text-gray-500 uppercase tracking-wide">
+                        <th className="px-5 py-3">Webinaire</th>
+                        <th className="px-5 py-3">Nom</th>
+                        <th className="px-5 py-3">Email</th>
+                        <th className="px-5 py-3"><Phone className="w-3.5 h-3.5 inline mr-1" />Téléphone</th>
+                        <th className="px-5 py-3">Paiement</th>
+                        <th className="px-5 py-3">Inscrit le</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {(() => {
+                        const filtered = webinarRegistrations.filter(r => webinarFilter === 'all' || r.webinarId === webinarFilter);
+                        if (filtered.length === 0) return (
+                          <tr><td colSpan={6} className="px-5 py-12 text-center text-gray-400 text-sm">Aucune inscription pour l'instant</td></tr>
+                        );
+                        return filtered.map((r) => {
+                          const w = WEBINARS_LIST.find(x => x.id === r.webinarId);
+                          const badge = w ? BADGE[w.color] : 'bg-gray-100 text-gray-700';
+                          const paid = r.paymentStatus === 'paid';
+                          return (
+                            <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="px-5 py-3">
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${badge}`}>{w?.label ?? r.webinarId}</span>
+                                {r.earlyBird && <span className="ml-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">EB</span>}
+                              </td>
+                              <td className="px-5 py-3 text-sm text-gray-800 font-medium">
+                                {[r.firstName, r.lastName].filter(Boolean).join(' ') || <span className="text-gray-400">—</span>}
+                              </td>
+                              <td className="px-5 py-3 text-sm text-gray-600">{r.email}</td>
+                              <td className="px-5 py-3 text-sm text-gray-500">{r.phone ?? '—'}</td>
+                              <td className="px-5 py-3">
+                                {paid
+                                  ? <span className="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle2 className="w-3 h-3" /> Payé</span>
+                                  : <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"><Clock className="w-3 h-3" /> En attente</span>
+                                }
+                              </td>
+                              <td className="px-5 py-3 text-xs text-gray-400">
+                                {new Date(r.created_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Envoi lien Zoom */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2"><Video className="w-4 h-4 text-blue-600" /> Envoyer le lien Zoom aux inscrits payés</h3>
+                <p className="text-sm text-gray-500 mb-4">Seuls les inscrits avec statut <strong>Payé</strong> recevront le lien.</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <select value={zoomWebinarId} onChange={e => setZoomWebinarId(e.target.value)}
+                    className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <option value="">— Choisir le webinaire —</option>
+                    {WEBINARS_LIST.map(w => <option key={w.id} value={w.id}>{w.label} ({w.date})</option>)}
+                  </select>
+                  <input type="url" value={zoomUrl} onChange={e => setZoomUrl(e.target.value)}
+                    placeholder="https://zoom.us/j/..."
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <button onClick={sendZoomLinks} disabled={!zoomWebinarId || !zoomUrl.trim() || zoomStatus === 'sending'}
+                    className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg disabled:opacity-50 transition-colors">
+                    {zoomStatus === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    Envoyer
+                  </button>
+                </div>
+                {zoomStatus === 'done' && zoomResult && (
+                  <p className="mt-3 text-sm text-green-700 font-semibold">✅ {zoomResult.sent} email{zoomResult.sent !== 1 ? 's' : ''} envoyé{zoomResult.sent !== 1 ? 's' : ''} · {zoomResult.failed} échec{zoomResult.failed !== 1 ? 's' : ''}</p>
+                )}
+                {zoomStatus === 'error' && <p className="mt-3 text-sm text-red-600">❌ Erreur lors de l'envoi. Réessayez.</p>}
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Campagne Email — Lancement Webinaires */}
         <div className="mt-8 mb-8">

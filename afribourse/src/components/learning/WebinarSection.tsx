@@ -354,6 +354,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
       currency: 'XOF',
       correspondent,
       phone: msisdn,
+      registrationEmail: form.email.trim(),
     });
   };
 
@@ -778,7 +779,7 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
-    initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: 'XOF', correspondent, phone: msisdn });
+    initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: 'XOF', correspondent, phone: msisdn, registrationEmail: form.email.trim() });
   };
 
   const handleSubmit = async () => {

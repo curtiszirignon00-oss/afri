@@ -1,16 +1,19 @@
 import { Router } from 'express';
-import { preregisterWebinar, getWebinarRegistrations, getWebinarCounts } from '../controllers/webinar.controller';
+import {
+  preregisterWebinar,
+  getWebinarRegistrations,
+  getWebinarCounts,
+  sendZoomLinkToRegistrants,
+  getWebinarPaymentStats,
+} from '../controllers/webinar.controller';
 import { auth } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-// GET /api/webinars/counts — public, retourne le nombre d'inscrits par webinaire
 router.get('/counts', getWebinarCounts);
-
-// POST /api/webinars/preregister — public (no auth required, email is enough)
 router.post('/preregister', preregisterWebinar);
-
-// GET /api/webinars/registrations — admin only
 router.get('/registrations', auth, getWebinarRegistrations);
+router.get('/stats', auth, getWebinarPaymentStats);
+router.post('/send-zoom-link', auth, sendZoomLinkToRegistrants);
 
 export default router;

@@ -8,8 +8,9 @@ export interface PaymentParams {
   planName: string;
   amount: string;       // ex: "9900"
   currency: string;     // "XOF"
-  correspondent: string; // "WAVE_CI", "ORANGE_MONEY_CI", etc.
+  correspondent: string; // "WAVE_CIV", "ORANGE_CIV", etc.
   phone: string;        // MSISDN sans "+" ex: "2250700000000"
+  registrationEmail?: string; // email pour lier paiement ↔ inscription webinaire
 }
 
 interface UsePawaPaymentReturn {
@@ -71,7 +72,15 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
       const res = await authFetch(`${API_BASE_URL}/pawapay/deposit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          planId: params.planId,
+          planName: params.planName,
+          amount: params.amount,
+          currency: params.currency,
+          correspondent: params.correspondent,
+          phone: params.phone,
+          ...(params.registrationEmail ? { registrationEmail: params.registrationEmail } : {}),
+        }),
       });
 
       const data = await res.json();

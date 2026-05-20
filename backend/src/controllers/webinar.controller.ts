@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import logger from '../config/logger';
-import { sendWebinarConfirmationEmail } from '../services/email.service';
+import {
+  sendWebinarConfirmationEmail,
+  sendWebinarZoomLinkEmail,
+} from '../services/email.service';
 
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
@@ -90,6 +93,69 @@ export async function getWebinarRegistrations(req: Request, res: Response, next:
     });
 
     return res.status(200).json({ data: registrations, total: registrations.length });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// POST /api/webinars/send-zoom-link — admin : envoyer le lien Zoom aux inscrits payés
+export async function sendZoomLinkToRegistrants(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { webinarId, zoomUrl, sessionDate } = req.body;
+    if (!webinarId || !zoomUrl || !sessionDate) {
+      return res.status(400).json({ message: 'webinarId, zoomUrl et sessionDate sont requis.' });
+    }
+
+    const registrations = await prisma.webinarRegistration.findMany({
+      where: { webinarId, paymentStatus: 'paid' } as any,
+    });
+
+    if (registrations.length === 0) {
+      return res.status(200).json({ message: 'Aucun inscrit payé pour ce webinaire.', sent: 0 });
+    }
+
+    let sent = 0;
+    let failed = 0;
+    for (const reg of registrations) {
+      try {
+        await sendWebinarZoomLinkEmail({
+          email: reg.email,
+          firstName: reg.firstName ?? '',
+          webinarId,
+          zoomUrl,
+          sessionDate,
+        });
+        sent++;
+      } catch {
+        failed++;
+        logger.error({ email: reg.email, webinarId }, '[WEBINAR] Échec envoi lien Zoom');
+      }
+    }
+
+    logger.info({ webinarId, sent, failed }, '[WEBINAR] Campagne lien Zoom terminée');
+    return res.status(200).json({ sent, failed, total: registrations.length });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// GET /api/webinars/stats — admin : stats de conversion paiement
+export async function getWebinarPaymentStats(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const rows = await prisma.webinarRegistration.groupBy({
+      by: ['webinarId', 'paymentStatus'] as any,
+      _count: { id: true },
+    });
+
+    const stats: Record<string, { total: number; paid: number; pending: number }> = {};
+    for (const r of rows) {
+      if (!stats[r.webinarId]) stats[r.webinarId] = { total: 0, paid: 0, pending: 0 };
+      stats[r.webinarId].total += r._count.id;
+      if (r.paymentStatus === 'paid') stats[r.webinarId].paid += r._count.id;
+      else stats[r.webinarId].pending += r._count.id;
+    }
+
+    return res.status(200).json({ data: stats });
   } catch (error) {
     return next(error);
   }

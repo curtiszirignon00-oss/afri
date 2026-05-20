@@ -4400,6 +4400,224 @@ export async function sendWebinarConfirmationEmail({
   await sendEmail({ to: email, subject: cfg.subject, html, text });
 }
 
+// ─── Webinar payment confirmation email ──────────────────────────────────────
+
+interface WebinarPaymentConfirmParams {
+  email: string;
+  firstName: string;
+  webinarId: string;
+  amount: string;
+  currency: string;
+}
+
+const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor: string }> = {
+  'w1-fondamentaux':             { title: 'Fondamentaux de la bourse',        date: '23 mai 2026',       accentColor: '#1D4ED8' },
+  'w2-fondamentale':             { title: 'Analyse fondamentale',              date: '30–31 mai 2026',    accentColor: '#059669' },
+  'w3-technique':                { title: 'Analyse technique',                 date: '6–7 juin 2026',     accentColor: '#EA580C' },
+  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',  date: '23 mai → 7 juin',   accentColor: '#1D4ED8' },
+};
+
+export async function sendWebinarPaymentConfirmEmail({
+  email, firstName, webinarId, amount, currency,
+}: WebinarPaymentConfirmParams): Promise<void> {
+  const name = firstName || 'Investisseur';
+  const info = WEBINAR_LABELS[webinarId] ?? { title: webinarId, date: '—', accentColor: '#1D4ED8' };
+  const amountFmt = `${parseInt(amount).toLocaleString('fr-FR')} ${currency}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>✅ Paiement confirmé — ${info.title}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <span style="display:none;max-height:0;overflow:hidden;">Votre place est sécurisée — le lien Zoom arrivera 48h avant &#847;&zwnj;&nbsp;</span>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <!-- Logo -->
+        <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+          <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Formations & Webinaires</p>
+        </td></tr>
+
+        <!-- Hero vert -->
+        <tr><td style="background:linear-gradient(135deg,#065F46 0%,#059669 100%);padding:40px;text-align:center;">
+          <div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:32px;">✅</span>
+          </div>
+          <h1 style="margin:0 0 8px;font-size:26px;font-weight:900;color:#fff;">Paiement confirmé !</h1>
+          <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);">Votre place pour <strong>${info.title}</strong> est sécurisée.</p>
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="background:#fff;padding:36px 40px;">
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;">
+            Votre paiement de <strong>${amountFmt}</strong> a bien été reçu. Votre inscription à <strong>${info.title}</strong> est maintenant confirmée.
+          </p>
+
+          <!-- Récap paiement -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:28px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;">Récapitulatif</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:45%;">Session</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${info.title}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Date</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${info.date}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;font-size:14px;color:#64748B;">Montant payé</td>
+                  <td style="padding:8px 0;font-size:14px;color:#059669;font-weight:700;">${amountFmt}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <!-- Prochaines étapes -->
+          <h2 style="margin:0 0 16px;font-size:16px;font-weight:800;color:#0F172A;border-left:4px solid ${info.accentColor};padding-left:12px;">📅 Prochaines étapes</h2>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+            <tr>
+              <td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#374151;">
+                <strong style="color:${info.accentColor};">48h avant la session</strong><br>
+                Vous recevrez votre lien Zoom par email et WhatsApp
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#374151;">
+                <strong style="color:${info.accentColor};">Jour J</strong><br>
+                Connectez-vous 5 minutes avant le début pour tester votre audio
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;font-size:14px;color:#374151;">
+                <strong style="color:${info.accentColor};">Après la session</strong><br>
+                Votre plan d'action personnalisé vous sera envoyé dans les 24h
+              </td>
+            </tr>
+          </table>
+
+          <!-- Note lien Zoom -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;margin-bottom:8px;">
+            <tr><td style="padding:16px 20px;">
+              <p style="margin:0 0 4px;font-size:14px;color:#92400E;font-weight:700;">🔗 Votre lien de connexion Zoom</p>
+              <p style="margin:0;font-size:13px;color:#92400E;line-height:1.6;">
+                Il vous sera envoyé <strong>48h avant la session</strong> sur cet email et sur votre WhatsApp. Vérifiez vos spams si vous ne le recevez pas.
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="background:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+          <p style="margin:0 0 4px;font-size:12px;color:#94A3B8;">Questions ? Répondez à cet email ou contactez-nous sur WhatsApp.</p>
+          <p style="margin:0;font-size:12px;color:#CBD5E1;">© 2026 AfriBourse · africbourse.com</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `✅ Paiement confirmé — ${info.title} (${info.date})`,
+    html,
+    text: `Bonjour ${name}, votre paiement de ${amountFmt} pour ${info.title} est confirmé. Votre lien Zoom arrivera 48h avant la session.`,
+  });
+}
+
+// ─── Webinar zoom link email ──────────────────────────────────────────────────
+
+interface WebinarZoomLinkParams {
+  email: string;
+  firstName: string;
+  webinarId: string;
+  zoomUrl: string;
+  sessionDate: string; // ex: "samedi 23 mai à 9h00"
+}
+
+export async function sendWebinarZoomLinkEmail({
+  email, firstName, webinarId, zoomUrl, sessionDate,
+}: WebinarZoomLinkParams): Promise<void> {
+  const name = firstName || 'Investisseur';
+  const info = WEBINAR_LABELS[webinarId] ?? { title: webinarId, date: sessionDate, accentColor: '#1D4ED8' };
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>🔗 Votre lien Zoom — ${info.title}</title>
+</head>
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <span style="display:none;max-height:0;overflow:hidden;">Dans 48h — votre lien de connexion est prêt &#847;&zwnj;&nbsp;</span>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+          <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+        </td></tr>
+
+        <tr><td style="background:linear-gradient(135deg,${info.accentColor} 0%,#4338CA 100%);padding:40px;text-align:center;">
+          <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:2px;text-transform:uppercase;">Webinaire dans 48h</p>
+          <h1 style="margin:0 0 8px;font-size:26px;font-weight:900;color:#fff;">${info.title}</h1>
+          <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);">${sessionDate}</p>
+        </td></tr>
+
+        <tr><td style="background:#fff;padding:36px 40px;">
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;">
+            La session <strong>${info.title}</strong> commence <strong>${sessionDate}</strong>. Voici votre lien de connexion Zoom :
+          </p>
+
+          <!-- CTA Zoom -->
+          <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 28px;">
+            <tr><td style="background:${info.accentColor};border-radius:12px;padding:16px 32px;text-align:center;">
+              <a href="${zoomUrl}" style="font-size:16px;font-weight:800;color:#fff;text-decoration:none;">🎥 Rejoindre le webinaire Zoom</a>
+            </td></tr>
+          </table>
+
+          <p style="margin:0 0 8px;font-size:13px;color:#64748B;text-align:center;">Ou copiez ce lien : <a href="${zoomUrl}" style="color:${info.accentColor};word-break:break-all;">${zoomUrl}</a></p>
+
+          <!-- Checklist préparation -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;margin-top:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 12px;font-size:14px;font-weight:700;color:#0F172A;">✅ Checklist avant la session</p>
+              <p style="margin:0 0 8px;font-size:14px;color:#374151;">📱 Testez votre micro et votre caméra</p>
+              <p style="margin:0 0 8px;font-size:14px;color:#374151;">🌐 Connexion internet stable recommandée</p>
+              <p style="margin:0 0 8px;font-size:14px;color:#374151;">📓 Ayez un carnet ou doc prêt pour noter</p>
+              <p style="margin:0;font-size:14px;color:#374151;">⏰ Connectez-vous 5 min avant pour les tests</p>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="background:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+          <p style="margin:0;font-size:12px;color:#94A3B8;">Problème de connexion ? Répondez à cet email — on vous aide.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `🔗 Votre lien Zoom — ${info.title} · ${sessionDate}`,
+    html,
+    text: `Bonjour ${name}, votre lien Zoom pour ${info.title} (${sessionDate}) : ${zoomUrl}`,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -4415,6 +4633,8 @@ export default {
   sendSAFCArticleEmail,
   sendWebinarLaunchEmail,
   sendWebinarConfirmationEmail,
+  sendWebinarPaymentConfirmEmail,
+  sendWebinarZoomLinkEmail,
   sendReengagementEmail0,
   sendReengagementEmail1,
   sendReengagementEmail2,

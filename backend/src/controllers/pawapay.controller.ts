@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import crypto from 'crypto'; // pour randomUUID
+import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import {
@@ -8,6 +8,7 @@ import {
   type PawaPayDepositCallback,
   type PawaPayRefundCallback,
 } from '../services/pawapay.service';
+import { sendWebinarPaymentConfirmEmail } from '../services/email.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // Plans supportés et leur abonnement correspondant
@@ -63,11 +64,42 @@ export async function handleDepositCallback(req: Request, res: Response) {
         ]);
         log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier });
       } else {
-        // Webinaire ou pack → juste marquer le paiement COMPLETED
+        // Webinaire ou pack → marquer le paiement COMPLETED + lier l'inscription
         await prisma.payment.update({
           where: { depositId },
           data: { status: 'COMPLETED', metadata: payload as any },
         });
+
+        // Trouver l'inscription et la marquer comme payée
+        const meta = payment.metadata as Record<string, string> | null;
+        const registrationEmail = meta?.registrationEmail;
+        const where = registrationEmail
+          ? { webinarId: payment.planId, email: registrationEmail }
+          : payment.userId
+            ? { webinarId: payment.planId, userId: payment.userId }
+            : null;
+
+        if (where) {
+          const reg = await prisma.webinarRegistration.findFirst({ where });
+          if (reg) {
+            await prisma.webinarRegistration.update({
+              where: { id: reg.id },
+              data: { paymentStatus: 'paid', depositId, paidAt: new Date() } as any,
+            });
+
+            // Email de confirmation de paiement
+            sendWebinarPaymentConfirmEmail({
+              email: reg.email,
+              firstName: reg.firstName ?? '',
+              webinarId: reg.webinarId,
+              amount: payment.amount,
+              currency: payment.currency,
+            }).catch((err) =>
+              log.error('[PawaPay] Échec email confirmation paiement', { err, depositId })
+            );
+          }
+        }
+
         log.info('[PawaPay] Paiement webinaire confirmé', { depositId, planId: payment.planId });
       }
     } else if (status === 'FAILED') {
@@ -143,7 +175,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Non authentifié' });
 
-  const { planId, planName, amount, currency, correspondent, phone } = req.body;
+  const { planId, planName, amount, currency, correspondent, phone, registrationEmail } = req.body;
 
   if (!planId || !planName || !amount || !currency || !correspondent || !phone) {
     return res.status(400).json({ error: 'Champs manquants' });
@@ -172,6 +204,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         correspondent,
         phone,
         status: 'PENDING',
+        metadata: registrationEmail ? { registrationEmail } : undefined,
       },
     });
 
