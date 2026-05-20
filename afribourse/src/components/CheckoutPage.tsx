@@ -3,121 +3,85 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { authFetch, API_BASE_URL } from '../config/api';
+import PaymentModal from './payment/PaymentModal';
+import { PAWAPAY_CORRESPONDENTS } from '../hooks/usePawaPayment';
 
 interface PaymentMethod {
   id: string;
   name: string;
   icon: typeof CreditCard;
   description: string;
-  enabled: boolean;
+  type: 'mobile' | 'card' | 'bank';
 }
+
+const MOBILE_METHODS = new Set(['orange-money', 'mtn-momo', 'moov-money', 'free-money']);
 
 export default function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { userProfile } = useAuth();
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Récupérer les informations du plan depuis la navigation
   const { planId, planName, price, source } = location.state || {};
 
-  // Rediriger si pas de données
   if (!planId || !planName || !price) {
     navigate('/subscriptions');
     return null;
   }
 
+  // Extraire le montant brut depuis "9 900 XOF / mois" → "9900"
+  const rawAmount = price.replace(/\s/g, '').split('XOF')[0];
+  const displayAmount = price.split(' / ')[0]; // "9 900 XOF"
+
   const paymentMethods: PaymentMethod[] = [
-    {
-      id: 'wave',
-      name: 'Wave',
-      icon: Smartphone,
-      description: 'Paiement mobile via Wave',
-      enabled: true,
-    },
-    {
-      id: 'orange-money',
-      name: 'Orange Money',
-      icon: Smartphone,
-      description: 'Paiement mobile via Orange Money',
-      enabled: true,
-    },
-    {
-      id: 'mtn-momo',
-      name: 'MTN Mobile Money',
-      icon: Smartphone,
-      description: 'Paiement mobile via MTN MoMo',
-      enabled: true,
-    },
-    {
-      id: 'moov-money',
-      name: 'Moov Money',
-      icon: Smartphone,
-      description: 'Paiement mobile via Moov Money',
-      enabled: true,
-    },
-    {
-      id: 'visa',
-      name: 'Visa / Mastercard',
-      icon: CreditCard,
-      description: 'Carte bancaire Visa ou Mastercard',
-      enabled: true,
-    },
-    {
-      id: 'stripe',
-      name: 'Stripe',
-      icon: CreditCard,
-      description: 'Paiement sécurisé par Stripe',
-      enabled: true,
-    },
-    {
-      id: 'bank-transfer',
-      name: 'Virement Bancaire',
-      icon: Building2,
-      description: 'Virement bancaire classique',
-      enabled: true,
-    },
+    { id: 'orange-money', name: 'Orange Money',       icon: Smartphone,  description: 'Paiement Orange Money',        type: 'mobile' },
+    { id: 'mtn-momo',     name: 'MTN Mobile Money',   icon: Smartphone,  description: 'Paiement MTN MoMo',            type: 'mobile' },
+    { id: 'moov-money',   name: 'Moov Money',         icon: Smartphone,  description: 'Paiement Moov Money',          type: 'mobile' },
+    { id: 'free-money',   name: 'Free Money',         icon: Smartphone,  description: 'Paiement Free Money',          type: 'mobile' },
+    { id: 'wave',         name: 'Wave',               icon: Smartphone,  description: 'Bientôt disponible',           type: 'mobile' },
+    { id: 'visa',         name: 'Visa / Mastercard',  icon: CreditCard,  description: 'Bientôt disponible',           type: 'card'   },
+    { id: 'bank-transfer',name: 'Virement Bancaire',  icon: Building2,   description: 'Bientôt disponible',           type: 'bank'   },
   ];
 
-  const handlePayment = async () => {
+  const isMobileMethod = (id: string) => MOBILE_METHODS.has(id);
+  const isMethodAvailable = (id: string) => isMobileMethod(id);
+
+  const handlePay = async () => {
     if (!selectedMethod || !userProfile) return;
 
-    setIsProcessing(true);
-
-    // Logger l'intention d'abonnement avec la méthode de paiement sélectionnée
+    // Tracker l'intention d'abonnement (analytics)
     try {
-      const response = await authFetch(`${API_BASE_URL}/subscriptions/intent`, {
+      await authFetch(`${API_BASE_URL}/subscriptions/intent`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          planId,
-          planName,
-          price,
+          planId, planName, price,
           userId: userProfile.id,
           feature: `Checkout - ${selectedMethod}`,
           source: source || 'checkout',
           paymentMethod: selectedMethod,
         }),
       });
+    } catch { /* non bloquant */ }
 
-      if (!response.ok) {
-        console.error('Erreur lors du tracking d\'intention');
-      }
-
-      // Le chargement infini simule un "bug" - on ne désactive jamais setIsProcessing
-      // L'utilisateur va attendre indéfiniment
-    } catch (error) {
-      console.error('Erreur:', error);
+    if (isMobileMethod(selectedMethod)) {
+      setShowPaymentModal(true);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
+    navigate('/dashboard', {
+      state: { paymentSuccess: true, planName },
+      replace: true,
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
+        {/* Retour */}
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors"
@@ -133,9 +97,8 @@ export default function CheckoutPage() {
             <p className="text-blue-100">Choisissez votre méthode de paiement</p>
           </div>
 
-          {/* Content */}
           <div className="p-8">
-            {/* Plan Summary */}
+            {/* Récapitulatif */}
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 mb-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Récapitulatif</h2>
               <div className="flex items-center justify-between">
@@ -150,45 +113,39 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Methods */}
+            {/* Méthodes de paiement */}
             <div className="mb-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Méthode de paiement</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Méthode de paiement</h2>
+              <p className="text-sm text-gray-500 mb-4">Mobile Money disponible · Carte et virement bientôt</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {paymentMethods.map((method) => {
                   const Icon = method.icon;
                   const isSelected = selectedMethod === method.id;
+                  const available = isMethodAvailable(method.id);
 
                   return (
                     <button
                       key={method.id}
-                      onClick={() => setSelectedMethod(method.id)}
-                      disabled={!method.enabled || isProcessing}
-                      className={`relative p-4 rounded-lg border-2 transition-all duration-200 text-left ${
-                        isSelected
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'
-                      } ${!method.enabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                      ${isProcessing ? 'cursor-wait opacity-70' : ''}`}
+                      onClick={() => available && setSelectedMethod(method.id)}
+                      disabled={!available}
+                      className={`relative p-4 rounded-lg border-2 transition-all duration-200 text-left
+                        ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'}
+                        ${!available ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                     >
                       <div className="flex items-start gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            isSelected ? 'bg-blue-100' : 'bg-gray-100'
-                          }`}
-                        >
-                          <Icon
-                            className={`w-6 h-6 ${
-                              isSelected ? 'text-blue-600' : 'text-gray-600'
-                            }`}
-                          />
+                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                          <Icon className={`w-6 h-6 ${isSelected ? 'text-blue-600' : 'text-gray-600'}`} />
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-900 mb-1">{method.name}</h3>
-                          <p className="text-sm text-gray-600">{method.description}</p>
+                          <p className="text-sm text-gray-500">{method.description}</p>
+                          {available && (
+                            <span className="inline-block mt-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                              Disponible
+                            </span>
+                          )}
                         </div>
-                        {isSelected && (
-                          <CheckCircle className="w-6 h-6 text-blue-600" />
-                        )}
+                        {isSelected && <CheckCircle className="w-6 h-6 text-blue-600 flex-shrink-0" />}
                       </div>
                     </button>
                   );
@@ -196,50 +153,21 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Button */}
+            {/* Bouton payer */}
             <button
-              onClick={handlePayment}
-              disabled={!selectedMethod || isProcessing}
-              className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-300 ${
-                !selectedMethod || isProcessing
+              onClick={handlePay}
+              disabled={!selectedMethod || !isMethodAvailable(selectedMethod)}
+              className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-300
+                ${!selectedMethod || !isMethodAvailable(selectedMethod)
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
-              }`}
+                }`}
             >
-              {isProcessing ? (
-                <div className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin h-6 w-6 mr-3 text-current"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Traitement en cours...
-                </div>
-              ) : (
-                `Payer ${price}`
-              )}
+              Payer {displayAmount}
             </button>
 
-            {/* Security Note */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
-                🔒 Paiement 100% sécurisé. Vos données sont protégées.
-              </p>
+              <p className="text-sm text-gray-500">🔒 Paiement 100% sécurisé via PawaPay</p>
             </div>
           </div>
         </div>
@@ -249,26 +177,41 @@ export default function CheckoutPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Questions fréquentes</h3>
           <div className="space-y-4 text-sm">
             <div>
-              <p className="font-medium text-gray-900">Puis-je annuler à tout moment ?</p>
+              <p className="font-medium text-gray-900">Comment fonctionne le paiement Mobile Money ?</p>
               <p className="text-gray-600 mt-1">
-                Oui, vous pouvez annuler votre abonnement à tout moment depuis votre compte.
-              </p>
-            </div>
-            <div>
-              <p className="font-medium text-gray-900">Le paiement est-il sécurisé ?</p>
-              <p className="text-gray-600 mt-1">
-                Tous les paiements sont cryptés et sécurisés. Nous ne stockons jamais vos informations bancaires.
+                Vous entrez votre numéro et vous recevez une demande de paiement sur votre téléphone.
+                Il suffit d'entrer votre PIN pour confirmer — c'est tout.
               </p>
             </div>
             <div>
               <p className="font-medium text-gray-900">Quand commence mon abonnement ?</p>
               <p className="text-gray-600 mt-1">
-                Votre abonnement commence immédiatement après le paiement. Vous aurez accès à toutes les fonctionnalités premium instantanément.
+                Votre abonnement est activé immédiatement après confirmation du paiement.
+              </p>
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Puis-je annuler à tout moment ?</p>
+              <p className="text-gray-600 mt-1">
+                Oui, vous pouvez annuler depuis votre compte. L'abonnement reste actif jusqu'à la fin de la période payée.
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modal de paiement PawaPay */}
+      {selectedMethod && showPaymentModal && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={handlePaymentSuccess}
+          planId={planId}
+          planName={planName}
+          amount={rawAmount}
+          currency="XOF"
+          paymentMethod={selectedMethod}
+        />
+      )}
     </div>
   );
 }

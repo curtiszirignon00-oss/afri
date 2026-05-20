@@ -7,6 +7,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePawaPayment, getCorrespondent, getAvailableCountries } from '../../hooks/usePawaPayment';
 
 // ─── Indicatifs pays ──────────────────────────────────────────────────────────
 
@@ -262,6 +263,25 @@ const EarlyBirdSeatsIndicator: React.FC<{ count: number; fullPrice: number }> = 
 
 // ─── Modal de pré-inscription ─────────────────────────────────────────────────
 
+const MOBILE_OPERATORS = [
+  { id: 'orange-money', label: 'Orange Money',    emoji: '🟠' },
+  { id: 'mtn-momo',     label: 'MTN MoMo',        emoji: '🟡' },
+  { id: 'moov-money',   label: 'Moov Money',       emoji: '🔵' },
+  { id: 'free-money',   label: 'Free Money',       emoji: '🟢' },
+];
+
+const PAYMENT_DIAL_CODES = [
+  { code: '+225', flag: '🇨🇮', name: "Côte d'Ivoire" },
+  { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
+  { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
+  { code: '+223', flag: '🇲🇱', name: 'Mali' },
+  { code: '+228', flag: '🇹🇬', name: 'Togo' },
+  { code: '+229', flag: '🇧🇯', name: 'Bénin' },
+  { code: '+224', flag: '🇬🇳', name: 'Guinée' },
+  { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
+  { code: '+233', flag: '🇬🇭', name: 'Ghana' },
+];
+
 const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void }> = ({ webinar, count, onClose }) => {
   const { userProfile } = useAuth();
   const earlyBird = count < EARLY_BIRD_SEATS;
@@ -269,12 +289,20 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
   const effectivePrice = earlyBird ? webinar.price * (1 - webinar.discountPercent / 100) : webinar.price;
 
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
+  const [payOperator, setPayOperator] = useState<string | null>(null);
+  const [payDialCode, setPayDialCode] = useState('+225');
+  const [payPhone, setPayPhone] = useState('');
+
   const [form, setForm] = useState({
     name: (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
     email: (userProfile as any)?.email || '',
     dialCode: '+225',
     phoneNumber: '',
+  });
+
+  const { status: payStatus, errorMessage: payError, initiate: initiatePayment, reset: resetPayment } = usePawaPayment(() => {
+    setStep('success');
   });
 
   const handleSubmit = async () => {
@@ -295,18 +323,36 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
           webinarId: webinar.id,
           name: form.name.trim(),
           email: form.email.trim(),
-          phone: form.phoneNumber.trim() ? `${form.dialCode} ${form.phoneNumber.trim()}` : undefined,
+          phone: `${form.dialCode} ${form.phoneNumber.trim()}`,
           earlyBird,
           effectivePrice,
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
-      setDone(true);
+      // Pré-remplir le téléphone de paiement depuis le formulaire
+      setPayDialCode(form.dialCode);
+      setPayPhone(form.phoneNumber);
+      setStep('payment');
     } catch {
       toast.error('Erreur lors de l\'inscription. Réessayez dans un instant.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePay = () => {
+    if (!payOperator) return;
+    const correspondent = getCorrespondent(payOperator, payDialCode);
+    if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
+    const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    initiatePayment({
+      planId: webinar.id,
+      planName: webinar.title,
+      amount: String(effectivePrice),
+      currency: 'XOF',
+      correspondent,
+      phone: msisdn,
+    });
   };
 
   return (
@@ -331,7 +377,8 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
           </p>
         </div>
 
-        {!done ? (
+        {/* ── Étape 1 : Formulaire ── */}
+        {step === 'form' && (
           <div className="p-6 space-y-4">
             {earlyBird ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-3">
@@ -342,83 +389,128 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
                     <span className="ml-2 text-xs font-normal line-through text-amber-400">{formatPrice(webinar.price)}</span>
                   </p>
                   <p className="text-xs text-amber-600">
-                    Il ne reste que <strong>{earlyBirdRemaining}</strong> place{earlyBirdRemaining > 1 ? 's' : ''} à ce tarif — ensuite tarif plein
+                    Il ne reste que <strong>{earlyBirdRemaining}</strong> place{earlyBirdRemaining > 1 ? 's' : ''} à ce tarif
                   </p>
                 </div>
               </div>
             ) : (
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                <p className="text-sm text-gray-600">Tarif plein : {formatPrice(webinar.price)}<br /><span className="text-xs text-gray-400">Les 20 places à tarif réduit ont été réservées</span></p>
+                <p className="text-sm text-gray-600">Tarif plein : {formatPrice(webinar.price)}</p>
               </div>
             )}
 
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Nom complet *</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ex : Kofi Mensah"
-                />
+                <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex : Kofi Mensah" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Adresse email *</label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="votre@email.com"
-                />
+                <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="votre@email.com" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Numéro WhatsApp <span className="text-red-500">*</span>
-                </label>
-                <PhoneInput
-                  dialCode={form.dialCode}
-                  number={form.phoneNumber}
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro WhatsApp <span className="text-red-500">*</span></label>
+                <PhoneInput dialCode={form.dialCode} number={form.phoneNumber}
                   onDialChange={(code) => setForm(f => ({ ...f, dialCode: code }))}
-                  onNumberChange={(n) => setForm(f => ({ ...f, phoneNumber: n }))}
-                />
-                <p className="text-xs text-gray-400 mt-1">Le lien de connexion au webinaire vous sera envoyé sur WhatsApp</p>
+                  onNumberChange={(n) => setForm(f => ({ ...f, phoneNumber: n }))} />
+                <p className="text-xs text-gray-400 mt-1">Le lien de connexion vous sera envoyé sur WhatsApp</p>
               </div>
             </div>
 
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm transition-all bg-gradient-to-r ${webinar.gradient} hover:opacity-90 active:scale-95 disabled:opacity-60`}
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                <><CheckCircle className="w-4 h-4" /> Confirmer ma pré-inscription</>
-              )}
+            <button onClick={handleSubmit} disabled={loading}
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm transition-all bg-gradient-to-r ${webinar.gradient} hover:opacity-90 active:scale-95 disabled:opacity-60`}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> Continuer vers le paiement</>}
             </button>
-
-            <p className="text-xs text-center text-gray-400">
-              Aucun paiement maintenant — vous recevrez les instructions par email.
-            </p>
           </div>
-        ) : (
-          <div className="p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-9 h-9 text-green-500" />
+        )}
+
+        {/* ── Étape 2 : Paiement Mobile Money ── */}
+        {step === 'payment' && (
+          <div className="p-6 space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
+              ✅ Inscription enregistrée · Payez maintenant pour confirmer votre place
+              <span className="block font-bold mt-0.5">{formatPrice(effectivePrice)}</span>
             </div>
-            <h4 className="text-xl font-bold text-gray-900 mb-2">Pré-inscription confirmée 🎉</h4>
-            <p className="text-sm text-gray-600 mb-1">Vous êtes sur la liste pour :</p>
-            <p className="text-sm font-semibold text-gray-800 mb-4">{webinar.title}</p>
-            {earlyBird && (
-              <div className="bg-amber-50 rounded-xl px-4 py-2 mb-4 inline-block">
-                <p className="text-sm font-bold text-amber-700">Tarif réservé : {formatPrice(effectivePrice)}</p>
+
+            {/* Sélection opérateur */}
+            {(payStatus === 'idle' || payStatus === 'initiating') && (
+              <>
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-2">Choisissez votre opérateur Mobile Money</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MOBILE_OPERATORS.map(op => {
+                      const available = getAvailableCountries(op.id).includes(payDialCode);
+                      return (
+                        <button key={op.id} onClick={() => available && setPayOperator(op.id)} disabled={!available}
+                          className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all text-left
+                            ${payOperator === op.id ? 'border-blue-600 bg-blue-50 text-blue-800' : 'border-gray-200 text-gray-700 hover:border-blue-300'}
+                            ${!available ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                          {op.emoji} {op.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Pays</label>
+                  <select value={payDialCode} onChange={e => { setPayDialCode(e.target.value); setPayOperator(null); }}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    {PAYMENT_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name} ({c.code})</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro Mobile Money</label>
+                  <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                    <span className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 flex items-center">{payDialCode}</span>
+                    <input type="tel" value={payPhone} onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                      placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
+                  </div>
+                </div>
+
+                {payError && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{payError}</p>}
+
+                <button onClick={handlePay} disabled={!payOperator || !payPhone.trim() || payStatus === 'initiating'}
+                  className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  {payStatus === 'initiating' ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : `Payer ${formatPrice(effectivePrice)}`}
+                </button>
+              </>
+            )}
+
+            {/* En attente du PIN */}
+            {payStatus === 'pending' && (
+              <div className="text-center py-4 space-y-3">
+                <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
+                <p className="font-bold text-gray-900">Vérifiez votre téléphone</p>
+                <p className="text-sm text-gray-600">Entrez votre PIN Mobile Money pour confirmer le paiement de {formatPrice(effectivePrice)}</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">⏱ Vous avez environ 1 à 2 minutes</div>
               </div>
             )}
-            <p className="text-xs text-gray-500 mb-6">
-              Un email de confirmation vous a été envoyé avec les étapes de paiement et le lien de connexion.
-            </p>
-            <button onClick={() => onClose(true)} className="text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors">
+
+            {/* Échec */}
+            {payStatus === 'failed' && (
+              <div className="text-center py-2 space-y-3">
+                <p className="text-red-600 font-semibold">{payError}</p>
+                <button onClick={resetPayment} className="text-sm font-semibold text-blue-600 hover:underline">Réessayer</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Étape 3 : Succès ── */}
+        {step === 'success' && (
+          <div className="p-8 text-center space-y-4">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle className="w-9 h-9 text-green-500" />
+            </div>
+            <h4 className="text-xl font-bold text-gray-900">Place confirmée 🎉</h4>
+            <p className="text-sm text-gray-600">Votre paiement pour <strong>{webinar.title}</strong> est confirmé.</p>
+            <p className="text-xs text-gray-500">Vous recevrez le lien de connexion par email et WhatsApp avant le début du webinaire.</p>
+            <button onClick={() => onClose(true)} className="w-full py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition-colors">
               Fermer
             </button>
           </div>
@@ -646,7 +738,7 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
               Rejoindre le parcours complet →
             </button>
             <p className="text-blue-300 text-[10px] text-center leading-relaxed">
-              Satisfait ou remboursé · Aucun paiement maintenant
+              Satisfait ou remboursé · Paiement Mobile Money sécurisé
             </p>
           </div>
         </div>
@@ -664,14 +756,28 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
   const savings = PACK.price - PACK.earlyBirdPrice;
 
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
+  const [payOperator, setPayOperator] = useState<string | null>(null);
+  const [payDialCode, setPayDialCode] = useState('+225');
+  const [payPhone, setPayPhone] = useState('');
   const [form, setForm] = useState({
     name: (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
     email: (userProfile as any)?.email || '',
     dialCode: '+225',
     phoneNumber: '',
   });
+
+  const { status: payStatus, errorMessage: payError, initiate: initiatePayment, reset: resetPayment } = usePawaPayment(() => {
+    setStep('success');
+  });
+
+  const handlePay = () => {
+    if (!payOperator) return;
+    const correspondent = getCorrespondent(payOperator, payDialCode);
+    if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
+    const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: 'XOF', correspondent, phone: msisdn });
+  };
 
   const handleSubmit = async () => {
     if (!form.name.trim() || !form.email.trim()) {
@@ -698,18 +804,15 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
-      setRegisteredEmail(form.email.trim());
-      setDone(true);
+      setPayDialCode(form.dialCode);
+      setPayPhone(form.phoneNumber);
+      setStep('payment');
     } catch {
       toast.error("Erreur lors de l'inscription. Réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
   };
-
-  const waText = encodeURIComponent(
-    `Je viens de rejoindre le Parcours Investisseur Afribourse ! 3 webinaires d'experts sur la BRVM. Rejoins-moi → https://africbourse.com/webinaires`
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -732,9 +835,9 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
         </div>
 
         <div className="overflow-y-auto flex-1">
-          {!done ? (
+          {/* ── Étape 1 : Formulaire ── */}
+          {step === 'form' && (
             <div className="p-6 space-y-5">
-              {/* Zone 2 — Résumé de l'offre */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 sm:col-span-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Inclus dans le pack</p>
@@ -761,108 +864,124 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
                 </div>
               </div>
 
-              {/* Zone 3 — Formulaire */}
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Nom complet *</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Ex : Kofi Mensah"
-                  />
+                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex : Kofi Mensah" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Adresse email *</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="votre@email.com"
-                  />
+                  <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="votre@email.com" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Numéro WhatsApp <span className="text-red-500">*</span>
-                  </label>
-                  <PhoneInput
-                    dialCode={form.dialCode}
-                    number={form.phoneNumber}
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro WhatsApp <span className="text-red-500">*</span></label>
+                  <PhoneInput dialCode={form.dialCode} number={form.phoneNumber}
                     onDialChange={(code) => setForm(f => ({ ...f, dialCode: code }))}
-                    onNumberChange={(n) => setForm(f => ({ ...f, phoneNumber: n }))}
-                  />
+                    onNumberChange={(n) => setForm(f => ({ ...f, phoneNumber: n }))} />
                   <p className="text-xs text-gray-400 mt-1">Le lien de connexion vous sera envoyé sur WhatsApp</p>
                 </div>
               </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-700 to-indigo-700 hover:opacity-90 active:scale-95 disabled:opacity-60 transition-all"
-              >
-                {loading
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><CheckCircle className="w-4 h-4" /> Confirmer ma pré-inscription au Pack</>
-                }
+              <button onClick={handleSubmit} disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-700 to-indigo-700 hover:opacity-90 active:scale-95 disabled:opacity-60 transition-all">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> Continuer vers le paiement</>}
               </button>
-              <p className="text-xs text-center text-gray-400">Aucun paiement maintenant — instructions envoyées par email.</p>
             </div>
-          ) : (
-            /* Confirmation */
-            <div className="p-6">
-              {/* Bloc 1 — Succès */}
-              <div className="text-center mb-5">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle className="w-9 h-9 text-green-500" />
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-1">Vous êtes inscrit au Parcours Investisseur ! 🎓</h4>
-                <p className="text-sm text-gray-500">
-                  Un email de confirmation a été envoyé à <strong className="text-gray-700">{registeredEmail}</strong>
-                </p>
+          )}
+
+          {/* ── Étape 2 : Paiement ── */}
+          {step === 'payment' && (
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
+                ✅ Inscription enregistrée · Payez pour confirmer votre place
+                <span className="block font-bold mt-0.5">{formatPrice(currentPrice)}</span>
               </div>
 
-              {/* Bloc 2 — Récapitulatif tarifaire */}
-              {earlyBirdActive && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-                  <p className="text-sm font-bold text-amber-800 mb-1">Tarif réservé : {formatPrice(currentPrice)}</p>
-                  <p className="text-xs text-amber-700 leading-relaxed">
-                    Confirmez votre paiement sous 48h pour garantir ce tarif.<br />
-                    Modes acceptés : <strong>Wave · Orange Money · MTN MoMo</strong> — numéro communiqué par email.
-                  </p>
+              {(payStatus === 'idle' || payStatus === 'initiating') && (
+                <>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Opérateur Mobile Money</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {MOBILE_OPERATORS.map(op => {
+                        const available = getAvailableCountries(op.id).includes(payDialCode);
+                        return (
+                          <button key={op.id} onClick={() => available && setPayOperator(op.id)} disabled={!available}
+                            className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all
+                              ${payOperator === op.id ? 'border-blue-600 bg-blue-50 text-blue-800' : 'border-gray-200 text-gray-700 hover:border-blue-300'}
+                              ${!available ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                            {op.emoji} {op.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Pays</label>
+                    <select value={payDialCode} onChange={e => { setPayDialCode(e.target.value); setPayOperator(null); }}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                      {PAYMENT_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name} ({c.code})</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro Mobile Money</label>
+                    <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                      <span className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 flex items-center">{payDialCode}</span>
+                      <input type="tel" value={payPhone} onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                        placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
+                    </div>
+                  </div>
+
+                  {payError && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{payError}</p>}
+
+                  <button onClick={handlePay} disabled={!payOperator || !payPhone.trim() || payStatus === 'initiating'}
+                    className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-700 to-indigo-700 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                    {payStatus === 'initiating' ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : `Payer ${formatPrice(currentPrice)}`}
+                  </button>
+                </>
+              )}
+
+              {payStatus === 'pending' && (
+                <div className="text-center py-4 space-y-3">
+                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
+                  <p className="font-bold text-gray-900">Vérifiez votre téléphone</p>
+                  <p className="text-sm text-gray-600">Entrez votre PIN Mobile Money pour confirmer {formatPrice(currentPrice)}</p>
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">⏱ Vous avez environ 1 à 2 minutes</div>
                 </div>
               )}
 
-              {/* Bloc 3 — Calendrier de livraison */}
-              <div className="mb-5">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-3">Ce que vous allez recevoir et quand</p>
+              {payStatus === 'failed' && (
+                <div className="text-center space-y-3">
+                  <p className="text-red-600 font-semibold text-sm">{payError}</p>
+                  <button onClick={resetPayment} className="text-sm font-semibold text-blue-600 hover:underline">Réessayer</button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Étape 3 : Succès ── */}
+          {step === 'success' && (
+            <div className="p-6 text-center space-y-4">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle className="w-9 h-9 text-green-500" />
+              </div>
+              <h4 className="text-xl font-bold text-gray-900">Vous êtes inscrit au Parcours Investisseur ! 🎓</h4>
+              <p className="text-sm text-gray-500">Paiement confirmé · Vous recevrez tous les détails par email et WhatsApp.</p>
+              <div className="mb-5 text-left">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-3">Ce que vous allez recevoir</p>
                 <div className="space-y-2 border-l-2 border-blue-100 pl-4">
                   {PACK.deliveryCalendar.map((item, i) => (
                     <div key={i} className="flex gap-2 text-xs">
-                      <span className="text-blue-600 font-semibold flex-shrink-0 w-32 leading-relaxed">{item.when}</span>
-                      <span className="text-gray-600 leading-relaxed">{item.what}</span>
+                      <span className="text-blue-600 font-semibold flex-shrink-0 w-32">{item.when}</span>
+                      <span className="text-gray-600">{item.what}</span>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Bloc 4 — Partage WhatsApp */}
-              <a
-                href={`https://wa.me/?text=${waText}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm rounded-xl transition-colors mb-3"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                Partager avec un ami
-              </a>
-              <button
-                onClick={() => onClose(true)}
-                className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors"
-              >
+              <button onClick={() => onClose(true)} className="w-full py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 transition-colors">
                 Fermer
               </button>
             </div>

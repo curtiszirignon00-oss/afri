@@ -91,7 +91,7 @@ export async function initiateDeposit(
 
   if (!response.ok) {
     const errorText = await response.text();
-    log.error({ status: response.status, body: errorText }, '[PawaPay] Erreur initiation dépôt');
+    log.error('[PawaPay] Erreur initiation dépôt', { status: response.status, body: errorText });
     throw new Error(`PawaPay deposit error: ${response.status} — ${errorText}`);
   }
 
@@ -122,7 +122,7 @@ export async function initiateRefund(
 
   if (!response.ok) {
     const errorText = await response.text();
-    log.error({ status: response.status, body: errorText }, '[PawaPay] Erreur initiation remboursement');
+    log.error('[PawaPay] Erreur initiation remboursement', { status: response.status, body: errorText });
     throw new Error(`PawaPay refund error: ${response.status} — ${errorText}`);
   }
 

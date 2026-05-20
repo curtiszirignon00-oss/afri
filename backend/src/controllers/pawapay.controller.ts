@@ -30,14 +30,14 @@ export async function handleDepositCallback(req: Request, res: Response) {
     return res.status(400).json({ error: 'Payload invalide' });
   }
 
-  log.info({ depositId, status }, '[PawaPay] Callback dépôt reçu');
+  log.info('[PawaPay] Callback dépôt reçu', { depositId, status });
 
   try {
     const payment = await prisma.payment.findUnique({ where: { depositId } });
 
     if (!payment) {
       // PawaPay renverra peut-être si on répond 404 — on log mais on répond 200
-      log.warn({ depositId }, '[PawaPay] Paiement introuvable pour ce depositId');
+      log.warn('[PawaPay] Paiement introuvable pour ce depositId', { depositId });
       return res.status(200).json({ received: true });
     }
 
@@ -63,7 +63,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
         }),
       ]);
 
-      log.info({ depositId, userId: payment.userId, tier }, '[PawaPay] Abonnement activé');
+      log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier });
     } else if (status === 'FAILED') {
       await prisma.payment.update({
         where: { depositId },
@@ -74,12 +74,12 @@ export async function handleDepositCallback(req: Request, res: Response) {
         },
       });
 
-      log.info({ depositId }, '[PawaPay] Dépôt échoué');
+      log.info('[PawaPay] Dépôt échoué', { depositId });
     }
 
     return res.status(200).json({ received: true });
   } catch (error) {
-    log.error({ error, depositId }, '[PawaPay] Erreur traitement callback dépôt');
+    log.error('[PawaPay] Erreur traitement callback dépôt', { error, depositId });
     // Répondre 500 pour que PawaPay réessaie
     return res.status(500).json({ error: 'Erreur interne' });
   }
@@ -97,13 +97,13 @@ export async function handleRefundCallback(req: Request, res: Response) {
     return res.status(400).json({ error: 'Payload invalide' });
   }
 
-  log.info({ refundId, status }, '[PawaPay] Callback remboursement reçu');
+  log.info('[PawaPay] Callback remboursement reçu', { refundId, status });
 
   try {
     const refund = await prisma.refund.findUnique({ where: { refundId } });
 
     if (!refund) {
-      log.warn({ refundId }, '[PawaPay] Remboursement introuvable');
+      log.warn('[PawaPay] Remboursement introuvable', { refundId });
       return res.status(200).json({ received: true });
     }
 
@@ -121,10 +121,10 @@ export async function handleRefundCallback(req: Request, res: Response) {
       },
     });
 
-    log.info({ refundId, status: newStatus }, '[PawaPay] Remboursement mis à jour');
+    log.info('[PawaPay] Remboursement mis à jour', { refundId, status: newStatus });
     return res.status(200).json({ received: true });
   } catch (error) {
-    log.error({ error, refundId }, '[PawaPay] Erreur traitement callback remboursement');
+    log.error('[PawaPay] Erreur traitement callback remboursement', { error, refundId });
     return res.status(500).json({ error: 'Erreur interne' });
   }
 }
@@ -198,7 +198,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
       message: 'Veuillez confirmer le paiement sur votre téléphone.',
     });
   } catch (error) {
-    log.error({ error, userId, planId }, '[PawaPay] Erreur création dépôt');
+    log.error('[PawaPay] Erreur création dépôt', { error, userId, planId });
     return res.status(500).json({ error: 'Erreur serveur' });
   }
 }
@@ -250,7 +250,7 @@ export async function createRefund(req: AuthenticatedRequest, res: Response) {
 
     return res.status(201).json({ success: true, refundId, status: result.status });
   } catch (error) {
-    log.error({ error, depositId }, '[PawaPay] Erreur création remboursement');
+    log.error('[PawaPay] Erreur création remboursement', { error, depositId });
     return res.status(500).json({ error: 'Erreur serveur' });
   }
 }
