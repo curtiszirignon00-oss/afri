@@ -65,6 +65,7 @@ import trialRoutes from './routes/trial.routes'; // Essai gratuit 2 semaines
 import webinarRoutes from './routes/webinar.routes'; // Préinscriptions webinaires
 import timeMachineRoutes from './routes/time-machine.routes'; // Time Machine — Apprentissage guidé
 import ogRoutes from './routes/og.routes'; // Open Graph images pour le partage social
+import pawaPayRoutes from './routes/pawapay.routes'; // PawaPay Mobile Money
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -143,7 +144,12 @@ class App {
     // --- END CORS Configuration ---
 
     // Body Parsers
-    this.app?.use(json({ limit: '10mb' }));
+    // verify capture le body brut avant parsing JSON — nécessaire pour vérifier
+    // les signatures HMAC des webhooks PawaPay (x-pawapay-signature)
+    this.app?.use(json({
+      limit: '10mb',
+      verify: (req: any, _res, buf) => { req.rawBody = buf; },
+    }));
     this.app?.use(urlencoded({ extended: true, limit: '10mb' }));
 
     // Other Middlewares
@@ -231,6 +237,8 @@ class App {
       if (CSRF_PUBLIC_PATHS.has(req.path)) return next();
       // Routes OG publiques : crawlers sociaux n'ont pas de token CSRF
       if (req.path.startsWith('/og/')) return next();
+      // Webhooks PawaPay : POST depuis les serveurs PawaPay, pas de CSRF token navigateur
+      if (req.path.startsWith('/pawapay/webhook')) return next();
       return doubleCsrfProtection(req, res, next);
     });
 
@@ -295,6 +303,7 @@ class App {
     this.app?.use('/api/webinars', webinarRoutes);                         // Préinscriptions webinaires
     this.app?.use('/api/time-machine', timeMachineRoutes);                 // Time Machine — Apprentissage guidé historique
     this.app?.use('/api/og', ogRoutes);                                    // Open Graph images (PNG, public, crawlers sociaux)
+    this.app?.use('/api/pawapay', pawaPayRoutes);                          // PawaPay Mobile Money (dépôts, remboursements, webhooks)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

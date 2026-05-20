@@ -62,6 +62,11 @@ interface IConfig {
     log: {
       level: string,
     },
+
+    pawapay: {
+      apiToken: string,
+      apiUrl: string,
+    },
 }
 
 const getEnvVar = (name: string, defaultValue?: string): string => {
@@ -138,6 +143,11 @@ const config : IConfig = {
   
   log: {
     level: getEnvVar('LOG_LEVEL', 'info'),
+  },
+
+  pawapay: {
+    apiToken: getEnvVar('PAWAPAY_API_TOKEN', ''),
+    apiUrl: getEnvVar('PAWAPAY_API_URL', 'https://api.pawapay.io'),
   },
 }
 

@@ -150,6 +150,7 @@ model User {
   challengeProgress   UserChallengeProgress[]
   subscriptionIntents SubscriptionIntent[]
   priceAlerts         PriceAlert[]
+  payments            Payment[]
 
   // --- Relations sociales (posts & interactions) ---
   posts           Post[]
@@ -1041,6 +1042,52 @@ model SubscriptionIntent {
   @@index([planId])
   @@index([created_at])
   @@map("subscription_intents")
+}
+
+// ================================= //
+// === PAWAPAY PAYMENTS === //
+// ================================= //
+
+model Payment {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  depositId     String   @unique // UUID généré côté AfriBourse, envoyé à PawaPay
+  userId        String   @db.ObjectId
+  planId        String   // "investisseur-plus" | "pro"
+  planName      String
+  amount        String   // Ex: "9900"
+  currency      String   @default("XOF")
+  correspondent String   // "ORANGE_MONEY_BF", "MTN_MOMO_BJ", etc.
+  phone         String   // Numéro MSISDN du payeur
+  status        String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  failureReason String?
+  metadata      Json?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refunds Refund[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("payments")
+}
+
+model Refund {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  refundId   String   @unique // UUID généré côté AfriBourse, envoyé à PawaPay
+  paymentId  String   @db.ObjectId
+  amount     String
+  currency   String   @default("XOF")
+  status     String   @default("PENDING") // PENDING, COMPLETED, FAILED
+  reason     String?
+  metadata   Json?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@map("refunds")
 }
 
 // ================================= //
