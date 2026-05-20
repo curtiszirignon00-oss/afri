@@ -78,7 +78,9 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
 
       if (!res.ok) {
         setStatus('failed');
-        setErrorMessage(data.error ?? 'Erreur lors de l\'initiation du paiement.');
+        const rejCode = data.reason?.rejectionCode ?? data.reason?.failureCode ?? '';
+        const detail = rejCode ? ` [${rejCode}]` : '';
+        setErrorMessage((data.error ?? 'Erreur lors de l\'initiation du paiement.') + detail);
         return;
       }
 
