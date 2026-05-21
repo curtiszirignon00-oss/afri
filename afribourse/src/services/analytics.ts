@@ -92,28 +92,34 @@ class AnalyticsService {
   }
 
   /**
-   * Met à jour la durée de la page actuelle
+   * Met à jour la durée de la page actuelle.
+   * Utilise sendBeacon (fiable à la fermeture d'onglet) avec fallback fetch.
    */
-  async updatePageDuration() {
+  updatePageDuration() {
     if (!this.currentPageViewId || !this.pageStartTime) return;
 
-    try {
-      const duration = Math.floor((Date.now() - this.pageStartTime) / 1000); // en secondes
+    const duration = Math.floor((Date.now() - this.pageStartTime) / 1000);
+    const url = `${this.baseUrl}/analytics/page-duration`;
+    const payload = JSON.stringify({ pageViewId: this.currentPageViewId, duration });
 
-      await authFetch(`${this.baseUrl}/analytics/page-duration`, {
+    // sendBeacon est envoyé de manière fiable même lors d'un beforeunload
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon(url, blob);
+    } else {
+      // Fallback pour les navigateurs sans sendBeacon
+      authFetch(url, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          pageViewId: this.currentPageViewId,
-          duration,
-        }),
-      });
-    } catch (error) {
-      console.error('[Analytics] Erreur updatePageDuration:', error);
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
     }
+
+    // Reset pour éviter un double envoi
+    this.currentPageViewId = null;
+    this.pageStartTime = null;
   }
 
   /**
@@ -211,6 +217,9 @@ export const ACTION_TYPES = {
   COMPLETE_MODULE: 'complete_learning_module',
   WATCH_VIDEO: 'watch_video',
   TAKE_QUIZ: 'take_quiz',
+
+  // News / Articles
+  VIEW_ARTICLE: 'view_article',
 
   // IA
   USE_AI_COACH: 'use_ai_coach',

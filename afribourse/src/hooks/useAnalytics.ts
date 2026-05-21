@@ -6,20 +6,27 @@ import { analytics, ACTION_TYPES } from '../services/analytics';
 export { ACTION_TYPES };
 
 /**
- * Hook pour tracker automatiquement les pages visitées
+ * Hook pour tracker automatiquement les pages visitées.
+ * Enregistre la durée via sendBeacon à la navigation ET à la fermeture d'onglet.
  */
 export const usePageTracking = () => {
   const location = useLocation();
   const previousPath = useRef<string>('');
 
+  // Fermeture / rechargement d'onglet → sendBeacon
   useEffect(() => {
-    // Track la page seulement si le path a changé
+    const handleUnload = () => analytics.updatePageDuration();
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []);
+
+  useEffect(() => {
     if (location.pathname !== previousPath.current) {
       analytics.trackPageView(location.pathname);
       previousPath.current = location.pathname;
     }
 
-    // Cleanup: update duration quand on quitte la page
+    // Navigation interne → envoie la durée avant de tracker la nouvelle page
     return () => {
       analytics.updatePageDuration();
     };

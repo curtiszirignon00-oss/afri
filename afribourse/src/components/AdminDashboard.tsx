@@ -22,6 +22,10 @@ import {
   Ban,
   FileText,
   Download,
+  Pencil,
+  Trash,
+  Plus,
+  Newspaper,
   Bot,
   ThumbsUp,
   ThumbsDown,
@@ -38,6 +42,7 @@ import {
 } from 'lucide-react';
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
+import AdminArticleEditor from './AdminArticleEditor';
 
 interface UserStats {
   total: number;
@@ -200,6 +205,19 @@ export default function AdminDashboard() {
   const [verifyStatus, setVerifyStatus] = useState<{ ok: boolean; msg: string } | null>(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
 
+  // ── Gestion des articles ──────────────────────────────────────────────────
+  type AdminArticle = {
+    id: string; title: string; slug?: string | null; summary?: string | null;
+    category?: string | null; author?: string | null; tickers: string[];
+    is_featured: boolean; published_at?: string | null;
+  };
+  const [articles, setArticles] = useState<AdminArticle[]>([]);
+  const [articlesLoading, setArticlesLoading] = useState(false);
+  const [articlesTotal, setArticlesTotal] = useState(0);
+  const [editorMode, setEditorMode] = useState<'none' | 'create' | 'edit'>('none');
+  const [editingArticle, setEditingArticle] = useState<any | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
   useEffect(() => {
     fetchStats();
     fetchAnalytics();
@@ -207,7 +225,47 @@ export default function AdminDashboard() {
     fetchTrialStats();
     fetchAIFeedbackStats();
     fetchWebinarRegistrations();
+    fetchArticles();
   }, []);
+
+  const fetchArticles = async () => {
+    setArticlesLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/articles?limit=50`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setArticles(data.articles ?? []);
+        setArticlesTotal(data.total ?? 0);
+      }
+    } catch {}
+    finally { setArticlesLoading(false); }
+  };
+
+  const loadArticleForEdit = async (id: string) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/articles/${id}`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const article = await res.json();
+        setEditingArticle(article);
+        setEditorMode('edit');
+      }
+    } catch {}
+  };
+
+  const deleteArticle = async (id: string) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/admin/articles/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      setDeleteConfirm(null);
+      fetchArticles();
+    } catch {}
+  };
 
   const fetchStats = async () => {
     try {
@@ -1497,6 +1555,116 @@ export default function AdminDashboard() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* ── Contenu — Articles & Analyses ──────────────────────────────────── */}
+        <div className="mt-8 mb-8">
+          <div className="bg-gradient-to-r from-teal-600 to-emerald-600 rounded-xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                  <Newspaper className="w-6 h-6" />
+                  Analyses &amp; Articles
+                </h2>
+                <p className="text-teal-100 text-sm">
+                  Créer et gérer les analyses publiées sur la plateforme
+                </p>
+              </div>
+              <button
+                onClick={() => { setEditingArticle(null); setEditorMode('create'); }}
+                className="flex items-center gap-2 bg-white text-teal-700 font-semibold px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4" /> Nouvel article
+              </button>
+            </div>
+          </div>
+
+          {/* Editor modal */}
+          {editorMode !== 'none' && (
+            <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center overflow-y-auto py-4 px-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl min-h-[80vh] flex flex-col">
+                <AdminArticleEditor
+                  articleId={editorMode === 'edit' ? editingArticle?.id : undefined}
+                  initialData={editorMode === 'edit' ? editingArticle : undefined}
+                  onSaved={() => { setEditorMode('none'); fetchArticles(); }}
+                  onCancel={() => setEditorMode('none')}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Articles list */}
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-700">
+                {articlesTotal} article{articlesTotal !== 1 ? 's' : ''}
+              </span>
+              <button onClick={fetchArticles} className="text-xs text-slate-400 hover:text-slate-700">
+                Actualiser
+              </button>
+            </div>
+
+            {articlesLoading ? (
+              <div className="p-8 text-center text-slate-400 text-sm animate-pulse">Chargement...</div>
+            ) : articles.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">
+                Aucun article. Cliquez sur "Nouvel article" pour commencer.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {articles.map(a => (
+                  <div key={a.id} className="flex items-start gap-3 px-5 py-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span className="text-sm font-semibold text-slate-900 truncate">{a.title}</span>
+                        {a.is_featured && (
+                          <span className="text-[10px] bg-amber-100 text-amber-700 border border-amber-300 rounded-full px-1.5 py-0.5 font-semibold">À la une</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {a.category && (
+                          <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-1.5 py-0.5">{a.category}</span>
+                        )}
+                        {a.tickers.map(t => (
+                          <span key={t} className="text-[10px] font-mono bg-slate-100 text-slate-600 border border-slate-200 rounded px-1.5 py-0.5">{t}</span>
+                        ))}
+                        {a.published_at && (
+                          <span className="text-[10px] text-slate-400">{new Date(a.published_at).toLocaleDateString('fr-FR')}</span>
+                        )}
+                      </div>
+                      {a.summary && (
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">{a.summary}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => loadArticleForEdit(a.id)}
+                        className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors">
+                        <Pencil size={14} />
+                      </button>
+                      {deleteConfirm === a.id ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-red-600 font-medium">Confirmer ?</span>
+                          <button onClick={() => deleteArticle(a.id)}
+                            className="text-xs text-white bg-red-500 hover:bg-red-600 px-2 py-1 rounded font-semibold">
+                            Oui
+                          </button>
+                          <button onClick={() => setDeleteConfirm(null)}
+                            className="text-xs text-slate-600 hover:text-slate-900 px-2 py-1 rounded border border-slate-200">
+                            Non
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setDeleteConfirm(a.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                          <Trash size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Moderation Section */}

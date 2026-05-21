@@ -14,9 +14,10 @@ export async function getLatestArticle(req: Request, res: Response, next: NextFu
 
 export async function getRecentArticles(req: Request, res: Response, next: NextFunction) {
   try {
-    const limit    = Math.min(parseInt(String(req.query.limit ?? '8'), 10) || 8, 20);
+    const limit    = Math.min(parseInt(String(req.query.limit ?? '8'), 10) || 8, 50);
     const category = typeof req.query.category === 'string' ? req.query.category : undefined;
-    const articles = await newsService.getRecentNews(limit, category);
+    const ticker   = typeof req.query.ticker === 'string' ? req.query.ticker : undefined;
+    const articles = await newsService.getRecentNews(limit, category, ticker);
     return res.status(200).json(articles);
   } catch (error) {
     return next(error);

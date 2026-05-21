@@ -1371,6 +1371,208 @@ L'augmentation de capital cristallise une transition profonde. Les chiffres de 2
       ]},
     ],
   },
+
+  // ── ORGT — Oragroup SA Résultats 2025 ───────────────────────────────────────
+  {
+    id: 'orgt-analyse-2025',
+    category: 'Analyse',
+    isFeatured: true,
+    image_url: '/images/oragroup-building.jpg',
+    title: "Oragroup SA : une guérison, pas une renaissance",
+    summary: "Après deux exercices de pertes massives, Oragroup renoue avec les bénéfices en 2025. Mais derrière le retournement spectaculaire se cache une réalité plus nuancée : le redressement tient au risque, pas à la croissance.",
+    publishedAt: "2026-05-21T08:00:00Z",
+    content: "",
+    sources: [
+      "Rapport Annuel d'Activité 2025 — Oragroup SA",
+      "États Financiers Consolidés Provisoires au 31 décembre 2025",
+    ],
+    tags: ['ORGT', 'Oragroup', 'Orabank', '2025', 'résultats annuels', 'bancaire', 'UEMOA', 'analyse fondamentale'],
+    tickers: [
+      { ticker: 'ORGT', impact: 'Mixte', note: 'Retour au bénéfice (+21,6 Md) grâce à la normalisation du coût du risque. PNB en baisse pour la 3e année. Levier bilan élevé (35,5x) et aucun dividende depuis 2020 — le redressement commercial reste à prouver en 2026.' },
+    ],
+    richContent: [
+      { type: 'disclaimer', text: "Les données financières proviennent des états financiers consolidés provisoires publiés par Oragroup SA au 31.12.2025. Cet article est fourni à titre éducatif uniquement et ne constitue pas un conseil en investissement." },
+
+      { type: 'key-stats', items: [
+        { label: 'Produit Net Bancaire', value: '186,6 Mds FCFA (−5%)' },
+        { label: 'Résultat Brut d\'Exploitation', value: '36,1 Mds (+49%)' },
+        { label: 'Résultat Net Consolidé', value: '21,6 Mds · Retour positif' },
+        { label: 'Total Bilan', value: '4 014 Mds (+1%)' },
+      ]},
+
+      { type: 'heading', level: 1, text: "01 · Contexte & positionnement" },
+      { type: 'heading', level: 2, text: "Un groupe bancaire panafricain au milieu du gué" },
+
+      { type: 'pull-quote', text: "Oragroup SA est la holding du groupe bancaire Orabank, présent dans 12 pays d'Afrique subsaharienne. Coté à la BRVM depuis Lomé, le groupe comptait jusqu'en 2022 parmi les success stories de la bancassurance régionale. Les exercices 2023 et 2024 ont tout remis en question." },
+
+      { type: 'paragraph', text: "Avec <strong>69,4 millions de titres</strong> en circulation, un capital social de 70 Mds FCFA et un actionnariat dominé à 50,01% par ECP Financial Holdings (EFH), Oragroup s'adresse à une base d'actionnaires largement institutionnelle. Le flottant public BRVM représente 20% des titres, aux côtés de PROPARCO (7,43%) et BIO (4,06%)." },
+      { type: 'paragraph', text: "L'exercice 2025 s'ouvre dans un contexte macro difficile : repli progressif de l'inflation dans la zone UEMOA, croissance des économies africaines toujours en deçà des niveaux pré-COVID selon la Banque Mondiale, et pression persistante sur les revenus des ménages. C'est dans cet environnement qu'Oragroup publie des résultats en apparence triomphants." },
+
+      { type: 'verdict', title: 'Historique en 3 phases', items: [
+        { label: '2020–2022 · Croissance & apogée', text: 'PNB +43%, résultat net doublé, ROE stable à 12%. Le groupe capitalise sur 12 marchés.' },
+        { label: '2023–2024 · Crise de crédit', text: 'Provisions explosives (69 Mds en 2024). Fonds propres divisés par 1,7. Pertes cumulées de 62,5 Mds.' },
+        { label: '2025 · Reconstruction fragile', text: 'Retour au vert par reprises de provisions. PNB encore en baisse. Aucun dividende. Capital tendu.' },
+      ]},
+
+      { type: 'heading', level: 1, text: "02 · Produit Net Bancaire" },
+      { type: 'heading', level: 2, text: "Le PNB recule pour la troisième année consécutive" },
+
+      { type: 'pull-quote', text: "À 186,6 Mds FCFA, le PNB 2025 est inférieur à celui de 2021 (187,3 Mds). Quatre années de croissance ont été effacées sur l'indicateur de revenus le plus fondamental d'une banque." },
+
+      { type: 'chart', chartId: 'orgt-pnb' },
+
+      { type: 'heading', level: 2, text: "La décomposition révèle deux dynamiques opposées" },
+      { type: 'paragraph', text: "Les <strong>intérêts nets</strong> se maintiennent relativement bien à 104,5 Mds (vs 98,2 Mds en 2024), portés par une compression remarquable des charges d'intérêt : de 128,4 Mds à 118 Mds, soit <strong>−10,4 Mds</strong> d'économies sur le coût de la ressource. Le groupe gère mieux son passif." },
+      { type: 'paragraph', text: "À l'inverse, les <strong>commissions nettes s'effondrent de 17,5 Mds</strong> (92,2 → 75,2 Mds). C'est le signal le plus préoccupant du compte de résultat. Les commissions reflètent l'activité transactionnelle, les services aux entreprises, la banque digitale. Leur recul suggère soit un ralentissement commercial délibéré, soit une érosion de la base clients active." },
+
+      { type: 'callout', variant: 'info', title: "Note d'analyse", paragraphs: [
+        "Un PNB en baisse avec des marges d'intérêt préservées indique qu'Oragroup a prioritairement géré ses risques bilan plutôt que développé ses revenus de service. C'est la bonne stratégie après une crise de provisionnement — mais elle a un coût de croissance.",
+      ]},
+
+      { type: 'table', caption: "Décomposition du PNB — en millions FCFA · Source : États financiers consolidés 2025",
+        headers: ['Composante du PNB', '2025', '2024', 'Variation'],
+        rows: [
+          ['Intérêts et produits assimilés',  '222 533', '226 597', '−4 064'],
+          ['Intérêts et charges assimilées', '−118 034', '−128 425', '+10 391'],
+          ['Commissions (produits)',           '90 417',  '107 879', '−17 462'],
+          ['Commissions (charges)',           '−15 264',  '−15 693',   '+429'],
+          ['Autres produits nets',              '6 957',    '5 079',  '+1 878'],
+          ['Produit Net Bancaire',           '186 609',  '195 436',  '−8 827'],
+        ],
+      },
+
+      { type: 'heading', level: 1, text: "03 · Le retournement du résultat" },
+      { type: 'heading', level: 2, text: "Le coût du risque : la clé de voûte du redressement" },
+
+      { type: 'pull-quote', text: "Si Oragroup est passé de −44,4 Mds à +21,6 Mds de résultat net, c'est à 94% grâce à la normalisation du coût du risque." },
+
+      { type: 'callout', variant: 'note', title: "Qu'est-ce que le coût du risque ?", paragraphs: [
+        "Dans une banque, le coût du risque correspond aux provisions constituées pour faire face aux crédits qui risquent de ne pas être remboursés. En 2024, Oragroup avait provisionné <strong>69,1 Mds FCFA</strong> — soit 35% de son PNB — anticipant des pertes massives sur son portefeuille de prêts. En 2025, ce même coût tombe à <strong>6,97 Mds</strong>, soit une baisse de 90%.",
+      ]},
+
+      { type: 'chart', chartId: 'orgt-risk' },
+
+      { type: 'paragraph', text: "Deux mécanismes expliquent ce retournement. D'abord, les <strong>reprises de provisions</strong> : le groupe a repris 32,7 Mds de dotations antérieures, ce qui crédite directement le compte de résultat — certains crédits jugés irrécouvrables en 2023–2024 ont été partiellement récupérés ou les garanties sous-jacentes réévaluées. Ensuite, une <strong>politique de crédit plus sélective</strong> : les crédits nets à la clientèle reculent de 135,9 Mds (−8%), réduisant mécaniquement l'exposition future au risque." },
+
+      { type: 'callout', variant: 'warn', title: "Point de vigilance", paragraphs: [
+        "Ce retour au bénéfice n'est pas porté par la croissance du business — le PNB baisse. Il est porté par la disparition d'une anomalie de provisionnement. Si le coût du risque 2026 se normalisait à un niveau historique de 20–25 Mds (cohérent avec un portefeuille de 1 500 Mds), le résultat net serait mécaniquement réduit de 15 à 18 Mds par rapport à 2025.",
+      ]},
+
+      { type: 'heading', level: 2, text: "Le pont du résultat net : lire le vrai récit" },
+
+      { type: 'table', caption: "Décomposition du passage de −44,4 Mds (2024) à +21,6 Mds (2025)",
+        headers: ['Facteur', 'Impact (Mds FCFA)', 'Lecture'],
+        rows: [
+          ['Résultat net 2024',              '−44 363', 'Point de départ'],
+          ['Variation du PNB',                '−8 827', 'Pression commerciale'],
+          ['Économies sur frais généraux',   '+20 672', 'Restructuration opérationnelle'],
+          ['Normalisation coût du risque',   '+62 085', 'Moteur principal du retournement'],
+          ['Impôts & autres',                 '−8 124', 'Effet fiscal 2025'],
+          ['Résultat net 2025',              '+21 643', 'Point d\'arrivée'],
+        ],
+      },
+
+      { type: 'heading', level: 1, text: "04 · Efficacité opérationnelle" },
+      { type: 'heading', level: 2, text: "Le coefficient d'exploitation : un effort réel, un chemin encore long" },
+
+      { type: 'paragraph', text: "Les frais généraux reculent de <strong>20,7 Mds</strong>, passant de 171,1 Mds à 150,5 Mds (−12%). Cette compression améliore le coefficient d'exploitation de 87,6% à 80,6%, soit un gain de 700 points de base." },
+
+      { type: 'chart', chartId: 'orgt-coex' },
+
+      { type: 'paragraph', text: "L'essentiel de l'économie provient des <strong>\"autres charges générales d'exploitation\"</strong> : 81,9 → 61,9 Mds, soit −20 Mds. Les frais de personnel, eux, restent quasi stables à 70,5 Mds (vs 71,2 Mds). Cette stabilité des charges salariales est un signal rassurant — le groupe n'a pas réalisé de restructurations massives qui déstabiliseraient ses équipes." },
+
+      { type: 'callout', variant: 'info', title: "Note d'analyse", paragraphs: [
+        "80,6% reste élevé par rapport aux standards régionaux. Les banques UEMOA les plus performantes opèrent sous 65%. Oragroup était lui-même à ce niveau en 2021–2022 avant le dérapage. Retrouver ce seuil en 2026–2027 est l'enjeu opérationnel clé.",
+      ]},
+
+      { type: 'heading', level: 1, text: "05 · Structure du bilan" },
+      { type: 'heading', level: 2, text: "Un bilan en contraction volontaire, une liquidité abondante" },
+
+      { type: 'pull-quote', text: "À 4 014 Mds FCFA, le total bilan progresse d'à peine 1% après trois années de reflux. La structure interne révèle des choix stratégiques forts — et des tensions structurelles persistantes." },
+
+      { type: 'chart', chartId: 'orgt-bilan' },
+
+      { type: 'heading', level: 2, text: "Le paradoxe dépôts / crédits" },
+      { type: 'paragraph', text: "Les dépôts clientèle progressent de <strong>+155 Mds (+5%)</strong> à 3 089 Mds. Dans le même temps, les crédits nets reculent de <strong>−136 Mds (−8%)</strong> à 1 524 Mds. Le ratio crédits/dépôts tombe à <strong>49,3%</strong> contre 56,6% en 2024." },
+      { type: 'paragraph', text: "Concrètement : Oragroup collecte de l'argent qu'il ne prête pas. L'excédent est placé en titres de dette souverains UEMOA (973,8 Mds non gagés + 488,7 Mds gagés, soit 1 462 Mds au total). C'est une stratégie défensive cohérente avec la phase de guérison — les souverains sont moins risqués que le crédit aux PME — mais elle plafonne mécaniquement le PNB futur." },
+
+      { type: 'heading', level: 2, text: "Les fonds propres : le talon d'Achille" },
+      { type: 'paragraph', text: "Les capitaux propres totaux remontent à 113,2 Mds (+16,4 Mds), dont <strong>69,5 Mds</strong> revenant aux actionnaires de la holding (après déduction des intérêts minoritaires de 43,7 Mds). Mais face à 4 014 Mds de total bilan, les fonds propres ne représentent que <strong>2,8% du bilan</strong> — un levier de 35,5x." },
+
+      { type: 'callout', variant: 'warn', title: "Point de vigilance", paragraphs: [
+        "Avec un levier de 35,5x, une dépréciation de seulement 3% des actifs effacerait l'intégralité des capitaux propres part du groupe. Dans un contexte où les titres souverains UEMOA font face à des pressions (déficits budgétaires, notation), ce risque n'est pas théorique. Une recapitalisation n'est pas à exclure à moyen terme si le redressement commercial tarde.",
+      ]},
+
+      { type: 'heading', level: 1, text: "06 · Rentabilité & création de valeur" },
+      { type: 'heading', level: 2, text: "ROE, ROA et BNPA : lire les chiffres sans se faire piéger" },
+
+      { type: 'chart', chartId: 'orgt-rentabilite' },
+
+      { type: 'heading', level: 2, text: "Le ROE de 20,7% est une illusion optique" },
+      { type: 'paragraph', text: "Un retour sur fonds propres de 20,7% ferait briller n'importe quelle banque en Afrique de l'Ouest. Mais ce chiffre est mécaniquement gonflé par une base de fonds propres artificiellement basse. Les capitaux propres part du groupe ne sont que 69,5 Mds — résultat de deux années de pertes massives non compensées. Un résultat net de 18,4 Mds sur une base aussi étroite donne forcément un ROE élevé, sans que cela traduise une quelconque création de valeur supérieure." },
+
+      { type: 'heading', level: 2, text: "Le ROA de 0,54% est le vrai baromètre" },
+      { type: 'paragraph', text: "Le <strong>return on assets</strong> mesure l'efficacité avec laquelle le groupe transforme ses actifs en profit, indépendamment de la structure du capital. À 0,54%, Oragroup génère 54 centimes de bénéfice pour 100 FCFA d'actifs gérés. Le seuil de référence pour une banque régionale africaine saine est <strong>supérieur à 1%</strong>. Le groupe n'y est pas encore. En 2022, au pic de sa performance, il atteignait 0,41% — déjà insuffisant selon ce standard." },
+
+      { type: 'heading', level: 2, text: "Le BNPA repasse dans le vert" },
+      { type: 'paragraph', text: "Le bénéfice net par action de base s'établit à <strong>264 FCFA</strong> (contre −545 FCFA en 2024), et le BNPA dilué à 241 FCFA. Ces chiffres permettent enfin de donner un sens au cours de bourse. Avec un cours implicite autour de 2 580 FCFA (capitalisation 179 Mds / 69,4M titres), le PER ressort à 9,8x — cohérent avec l'historique 2021–2022 (9–10x) et avec les multiples pratiqués sur les bancaires BRVM." },
+
+      { type: 'heading', level: 1, text: "07 · Ce que les chiffres disent entre les lignes" },
+      { type: 'heading', level: 2, text: "Quatre vérités que le rapport n'énonce pas explicitement" },
+
+      { type: 'callout', variant: 'warn', title: "1 · La holding perd encore de l'argent", paragraphs: [
+        "Le document d'affectation de résultat révèle qu'<strong>Oragroup SA en propre (la holding)</strong> affiche un résultat de <strong>−8,04 Mds FCFA</strong> en 2025. Le bénéfice consolidé de +21,6 Mds est celui du groupe filiales comprises. La tête du groupe brûle encore du capital. C'est pourquoi, malgré un bénéfice distribuable de 4,6 Mds au niveau de la holding (grâce au report à nouveau antérieur), aucun dividende n'est distribué.",
+      ]},
+
+      { type: 'callout', variant: 'warn', title: "2 · Cinq ans sans dividende : l'actionnaire est oublié", paragraphs: [
+        "Aucun dividende n'a été versé depuis 2020. Cinq exercices complets. Pour un actionnaire entré en 2020 à un cours supposé de 2 580 FCFA (niveau capitalisation actuelle), le rendement total repose entièrement sur la plus-value latente. C'est une équation risquée pour un titre BRVM dont la liquidité reste limitée.",
+      ]},
+
+      { type: 'callout', variant: 'info', title: "3 · Les intérêts minoritaires diluent le retour aux actionnaires", paragraphs: [
+        "Sur les 21,6 Mds de résultat net, <strong>3,3 Mds</strong> reviennent aux actionnaires minoritaires des filiales. La part revenant aux actionnaires Oragroup est de 18,4 Mds. Par ailleurs, sur les 113,2 Mds de capitaux propres, 43,7 Mds (38,6%) appartiennent à ces mêmes minoritaires — ce qui dilue structurellement la valeur revenant à l'actionnaire de la holding cotée.",
+      ]},
+
+      { type: 'callout', variant: 'ok', title: "4 · Le flux de trésorerie opérationnel, lui, est solide", paragraphs: [
+        "Le flux net de trésorerie opérationnel s'est établi à <strong>+288 Mds</strong> en 2025 (vs +57 Mds en 2024). Cette explosion reflète la collecte de dépôts (+155 Mds), la réduction des créances clientèle (+84 Mds libérés) et la baisse des dotations aux provisions. La trésorerie nette progresse de +91 Mds, passant de 390 Mds à 481 Mds à la clôture.",
+        "Un flux opérationnel de 288 Mds sur un bilan de 4 014 Mds représente un taux de génération de trésorerie de 7,2% — nettement meilleur que les années précédentes. Si ce niveau se maintient, la reconstitution des fonds propres par résultats mis en réserve est plausible à horizon 2–3 ans.",
+      ]},
+
+      { type: 'heading', level: 1, text: "08 · Perspectives & scénarios 2026" },
+      { type: 'heading', level: 2, text: "Ce que 2026 doit confirmer pour que le redressement soit structurel" },
+
+      { type: 'paragraph', text: "La direction annonce la poursuite du plan d'action lancé en 2023 : contrôle strict des coûts, surveillance rapprochée des portefeuilles de crédit, renforcement des actions de recouvrement. Ces leviers ont produit leurs effets en 2025. La question est : sont-ils épuisés ou peuvent-ils encore progresser ?" },
+
+      { type: 'table', caption: "Scénarios de résultat net 2026",
+        headers: ['Scénario', 'Hypothèse clé', 'Résultat net estimé', 'Valorisation implicite'],
+        rows: [
+          ['🟢 Bull (optimiste)',  'Coût risque <10 Mds, commissions rebondissent, CoEx <75%', '30–35 Mds', 'Revalorisation justifiée'],
+          ['🟡 Base (central)',    'Coût risque 15–20 Mds, PNB stable ~190 Mds',               '15–18 Mds', '1 950–2 340 FCFA (PER 9x)'],
+          ['🔴 Bear (prudent)',    'Coût risque >25 Mds (crédits restructurés, souverains)',     '<10 Mds',   'Pression sur fonds propres'],
+        ],
+      },
+
+      { type: 'callout', variant: 'info', title: "Note d'analyse — valorisation", paragraphs: [
+        "Le marché valorise Oragroup à un P/Book de ~1,8x (capitalisation 179 Mds / CP groupe 69,5 Mds à part proportionnelle). Cette prime traduit l'espoir du scénario optimiste. Elle ne laisse pas de marge de sécurité pour l'investisseur entrant aujourd'hui.",
+      ]},
+
+      { type: 'verdict', title: "Verdict : une stabilisation bienvenue, pas une renaissance", items: [
+        { label: 'Retour au bénéfice', text: 'Réel mais fragile — porté par la disparition du risque, pas par une nouvelle dynamique commerciale.' },
+        { label: 'PNB & commissions', text: 'Troisième année de recul consécutif. Le moteur de croissance reste en panne.' },
+        { label: 'Levier bilan', text: '35,5x — vulnérabilité structurelle si les actifs souverains se dégradent.' },
+        { label: 'Année de vérité', text: '2026 devra confirmer : coût du risque normalisé ET rebond commercial simultanément.' },
+      ]},
+
+      { type: 'glossary', items: [
+        { term: 'Produit Net Bancaire (PNB)', definition: "Équivalent bancaire du chiffre d'affaires. Somme des marges d'intérêt et des commissions nettes. Indicateur de base de l'activité commerciale d'une banque." },
+        { term: 'Coût du risque', definition: "Provisions constituées pour couvrir les pertes probables sur les crédits accordés. Un coût du risque élevé signale une dégradation de la qualité du portefeuille de prêts." },
+        { term: "Coefficient d'exploitation", definition: "Ratio frais généraux / PNB. Mesure l'efficacité opérationnelle : plus il est bas, mieux la banque maîtrise ses coûts. Standard UEMOA des meilleures banques : <65%." },
+        { term: 'ROA (Return on Assets)', definition: "Résultat net / Total actif. Mesure l'efficacité de transformation des actifs en profit, indépendamment du levier financier. Référence saine : >1% pour une banque africaine." },
+        { term: 'ROE (Return on Equity)', definition: "Résultat net / Capitaux propres. Sensible à la taille des fonds propres — un ROE élevé après des pertes massives peut être trompeur car la base de CP est artificiellement basse." },
+        { term: 'Levier bilan', definition: "Total actif / Capitaux propres. Un levier de 35,5x signifie qu'une dépréciation de 2,8% des actifs suffit à anéantir les fonds propres. Indicateur de fragilité structurelle." },
+        { term: 'Intérêts minoritaires', definition: "Part des capitaux propres et du résultat appartenant à des actionnaires tiers dans les filiales du groupe. Déduits pour obtenir la part revenant aux actionnaires de la holding cotée." },
+      ]},
+    ],
+  },
 ];
 
 export const BRVM_CATEGORIES = [

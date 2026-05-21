@@ -195,6 +195,9 @@ model User {
   // --- Free Trial ---
   freeTrials FreeTrial[]
 
+  // --- Promos utilisateur ---
+  userPromos UserPromo[]
+
   // --- Avis utilisateurs ---
   reviews Review[]
 
@@ -923,6 +926,8 @@ model NewsArticle {
   slug         String?
   summary      String?
   content      String?
+  rich_content String?   // JSON stringified ContentBlock[]
+  tickers      String[]  @default([]) // Ticker symbols for fast filtering
   category     String?
   author       String?
   source       String?
@@ -932,9 +937,11 @@ model NewsArticle {
   is_featured  Boolean   @default(false)
   published_at DateTime? @default(now())
   created_at   DateTime? @default(now())
+  updated_at   DateTime? @updatedAt
 
   @@index([slug])
   @@index([published_at])
+  @@index([tickers])
   @@map("news_articles")
 }
 
@@ -1061,11 +1068,13 @@ model Payment {
   status        String   @default("PENDING") // PENDING, COMPLETED, FAILED
   failureReason String?
   metadata      Json?
+  userPromoId   String?  @db.ObjectId
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refunds Refund[]
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userPromo UserPromo? @relation(fields: [userPromoId], references: [id])
+  refunds   Refund[]
 
   @@index([userId])
   @@index([status])
@@ -1088,6 +1097,28 @@ model Refund {
 
   @@index([paymentId])
   @@map("refunds")
+}
+
+// ================================= //
+// === PROMOS UTILISATEUR === //
+// ================================= //
+
+model UserPromo {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  planId          String   // "investisseur-plus"
+  discountPercent Int      // Ex: 50 (= 50%)
+  maxUses         Int      // Nb max de paiements au tarif réduit (ex: 3 = 3 mois)
+  usedCount       Int      @default(0)
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@index([userId])
+  @@index([planId])
+  @@map("user_promos")
 }
 
 // ================================= //

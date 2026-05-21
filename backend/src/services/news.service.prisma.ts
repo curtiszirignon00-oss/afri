@@ -36,10 +36,14 @@ export async function getFeaturedNews(limit: number = 3): Promise<NewsArticle[]>
   }
 }
 
-export async function getRecentNews(limit: number = 8, category?: string): Promise<NewsArticle[]> {
+export async function getRecentNews(limit: number = 8, category?: string, ticker?: string): Promise<NewsArticle[]> {
   try {
+    const where: any = {};
+    if (category) where.category = category;
+    if (ticker) where.tickers = { has: ticker };
+
     const articles = await prisma.newsArticle.findMany({
-      where: category ? { category } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       orderBy: { published_at: 'desc' },
       take: limit,
     });

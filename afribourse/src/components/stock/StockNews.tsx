@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExternalLink, Newspaper, BarChart2, ChevronRight, X, TrendingUp, TrendingDown, Minus, Clock, ArrowUpRight, ArrowDownRight, Landmark, Leaf, Fuel, Radio, Star } from 'lucide-react';
 import { findNewsByTicker, StockNews as FundamentalsNews, Sector } from '../../data/newsData';
-import { BRVM_NEWS, BRVMArticle } from '../../data/brvm2026News';
+import { BRVM_NEWS, BRVMArticle, ContentBlock } from '../../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from '../BRVMNewsGrid';
+import { BlockRenderer } from '../BlockRenderer';
 
 type NewsItem = {
   id: string;
@@ -307,13 +308,125 @@ function FundCard({ news, onOpen }: { news: FundamentalsNews; onOpen: () => void
   );
 }
 
+// DB article type (from API)
+type DBArticle = {
+  id: string;
+  title: string;
+  summary?: string | null;
+  category?: string | null;
+  author?: string | null;
+  tickers: string[];
+  is_featured: boolean;
+  published_at?: string | null;
+  rich_content?: string | null;
+};
+
+function DBArticleCard({ article, onOpen }: { article: DBArticle; onOpen: () => void }) {
+  return (
+    <article
+      onClick={onOpen}
+      className="group bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+    >
+      <div className="h-0.5 bg-[#00D4A8]" />
+      <div className="p-4">
+        <div className="flex items-center gap-2 flex-wrap mb-2">
+          {article.category && (
+            <span className="inline-flex items-center text-[10px] font-medium text-[#00D4A8] bg-[#00D4A8]/10 border border-[#00D4A8]/20 rounded-full px-2 py-0.5">
+              {article.category}
+            </span>
+          )}
+          {article.is_featured && (
+            <Star size={11} className="text-amber-400 fill-amber-400" />
+          )}
+          {article.tickers.map(t => (
+            <span key={t} className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">{t}</span>
+          ))}
+        </div>
+        <h3 className="text-sm font-semibold text-slate-900 leading-snug mb-1 group-hover:text-[#00D4A8] transition-colors">
+          {article.title}
+        </h3>
+        {article.summary && (
+          <p className="text-xs text-slate-500 line-clamp-2">{article.summary}</p>
+        )}
+        <div className="flex items-center justify-between mt-3">
+          {article.published_at && (
+            <span className="text-[10px] text-slate-400">
+              {new Date(article.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
+          )}
+          <span className="text-[11px] text-[#00D4A8] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+            Lire <ChevronRight size={12} />
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function DBArticlePanel({ article, onClose }: { article: DBArticle; onClose: () => void }) {
+  const blocks: ContentBlock[] | null = (() => {
+    if (!article.rich_content) return null;
+    try { return JSON.parse(article.rich_content); } catch { return null; }
+  })();
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-white shadow-2xl overflow-y-auto flex flex-col" style={{ animation: 'slideIn 0.25s cubic-bezier(0.16,1,0.3,1)' }}>
+        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-5 z-10">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 pr-4">
+              <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-wide">{article.category}</span>
+              <h2 className="font-bold text-slate-900 text-base leading-snug mt-0.5">{article.title}</h2>
+              {article.published_at && (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {new Date(article.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              )}
+            </div>
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 px-6 py-6">
+          {article.summary && (
+            <p className="text-sm text-slate-600 leading-relaxed mb-5 pb-5 border-b border-slate-100">{article.summary}</p>
+          )}
+          {blocks ? (
+            <BlockRenderer blocks={blocks} variant="news" />
+          ) : (
+            <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
+          )}
+          <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4 mt-6">
+            {article.author ?? 'AfriBourse Research'} — Informations éducatives uniquement.
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+    </div>
+  );
+}
+
 export default function StockNews({ news, isLoading = false, ticker }: StockNewsProps) {
   const [fundDetail, setFundDetail] = useState<FundamentalsNews | null>(null);
   const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
+  const [selectedDB, setSelectedDB] = useState<DBArticle | null>(null);
+  const [dbArticles, setDbArticles] = useState<DBArticle[]>([]);
   const fundamentalsNews = ticker ? findNewsByTicker(ticker) : undefined;
   const brvmArticles = ticker
     ? BRVM_NEWS.filter(a => a.tickers.some(t => t.ticker === ticker || t.ticker === ticker.split(' ')[0]))
     : [];
+
+  useEffect(() => {
+    if (!ticker) return;
+    const base = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    const t = ticker.split(' ')[0];
+    fetch(`${base}/news?ticker=${encodeURIComponent(t)}&limit=10`)
+      .then(r => r.ok ? r.json() : [])
+      .then((data: DBArticle[]) => setDbArticles(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [ticker]);
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date) : date;
     return d.toLocaleDateString('fr-FR', {
@@ -377,7 +490,21 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
           </div>
         )}
         {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
-        {!fundamentalsNews && brvmArticles.length === 0 && (
+        {selectedDB && <DBArticlePanel article={selectedDB} onClose={() => setSelectedDB(null)} />}
+        {dbArticles.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Star size={13} className="text-teal-500 fill-teal-500" />
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses publiées</span>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {dbArticles.map(a => (
+                <DBArticleCard key={a.id} article={a} onOpen={() => setSelectedDB(a)} />
+              ))}
+            </div>
+          </div>
+        )}
+        {!fundamentalsNews && brvmArticles.length === 0 && dbArticles.length === 0 && (
           <div className="py-8 text-center">
             <div className="flex flex-col items-center justify-center text-gray-400">
               <Newspaper className="w-16 h-16 mb-4" />
@@ -415,6 +542,22 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
         </div>
       )}
       {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
+      {selectedDB && <DBArticlePanel article={selectedDB} onClose={() => setSelectedDB(null)} />}
+
+      {/* Articles DB pour ce ticker */}
+      {dbArticles.length > 0 && (
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Star size={13} className="text-teal-500 fill-teal-500" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses publiées</span>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {dbArticles.map(a => (
+              <DBArticleCard key={a.id} article={a} onOpen={() => setSelectedDB(a)} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <h3 className="text-xl font-bold text-gray-900 mb-6">
         Dernières Actualités ({news.length})

@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle, Tag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { authFetch, API_BASE_URL } from '../config/api';
 import PaymentModal from './payment/PaymentModal';
 import { PAWAPAY_CORRESPONDENTS } from '../hooks/usePawaPayment';
+
+interface PromoInfo {
+  hasDiscount: boolean;
+  discountPercent?: number;
+  originalAmount?: number;
+  discountedAmount?: number;
+  remainingUses?: number;
+  maxUses?: number;
+}
 
 interface PaymentMethod {
   id: string;
@@ -22,6 +31,7 @@ export default function CheckoutPage() {
   const { userProfile } = useAuth();
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [promo, setPromo] = useState<PromoInfo | null>(null);
 
   const { planId, planName, price, source } = location.state || {};
 
@@ -33,6 +43,19 @@ export default function CheckoutPage() {
   // Extraire le montant brut depuis "9 900 XOF / mois" → "9900"
   const rawAmount = price.replace(/\s/g, '').split('XOF')[0];
   const displayAmount = price.split(' / ')[0]; // "9 900 XOF"
+
+  // Montant effectif (remplacé par le prix promo si applicable — le backend le valide aussi côté serveur)
+  const effectiveAmount = promo?.hasDiscount && promo.discountedAmount
+    ? String(promo.discountedAmount)
+    : rawAmount;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    authFetch(`${API_BASE_URL}/promo/check?planId=${planId}`)
+      .then(r => r.json())
+      .then((data: PromoInfo) => setPromo(data))
+      .catch(() => {/* non bloquant */});
+  }, [planId]);
 
   const paymentMethods: PaymentMethod[] = [
     { id: 'orange-money', name: 'Orange Money',       icon: Smartphone,  description: 'Paiement Orange Money',        type: 'mobile' },
@@ -107,10 +130,31 @@ export default function CheckoutPage() {
                   <p className="text-gray-600">Abonnement mensuel</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-blue-600">{price.split(' ')[0]}</p>
-                  <p className="text-gray-600">{price.split(' ')[1]} / mois</p>
+                  {promo?.hasDiscount ? (
+                    <>
+                      <p className="text-lg line-through text-gray-400">{promo.originalAmount?.toLocaleString('fr-FR')} XOF</p>
+                      <p className="text-3xl font-bold text-orange-500">{promo.discountedAmount?.toLocaleString('fr-FR')} XOF</p>
+                      <p className="text-gray-600">/ mois</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-3xl font-bold text-blue-600">{price.split(' ')[0]}</p>
+                      <p className="text-gray-600">{price.split(' ')[1]} / mois</p>
+                    </>
+                  )}
                 </div>
               </div>
+              {promo?.hasDiscount && (
+                <div className="mt-4 flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-4 py-2">
+                  <Tag className="w-4 h-4 text-orange-500 shrink-0" />
+                  <p className="text-sm text-orange-700 font-medium">
+                    Offre spéciale — {promo.discountPercent}% de réduction pendant {promo.maxUses} mois
+                    {promo.remainingUses !== undefined && promo.remainingUses < promo.maxUses! && (
+                      <span className="ml-1 text-orange-500">({promo.remainingUses} mois restant{promo.remainingUses > 1 ? 's' : ''})</span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Méthodes de paiement */}
@@ -160,10 +204,14 @@ export default function CheckoutPage() {
               className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-300
                 ${!selectedMethod || !isMethodAvailable(selectedMethod)
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
+                  : promo?.hasDiscount
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
                 }`}
             >
-              Payer {displayAmount}
+              Payer {promo?.hasDiscount && promo.discountedAmount
+                ? `${promo.discountedAmount.toLocaleString('fr-FR')} XOF`
+                : displayAmount}
             </button>
 
             <div className="mt-6 text-center">
@@ -207,7 +255,7 @@ export default function CheckoutPage() {
           onSuccess={handlePaymentSuccess}
           planId={planId}
           planName={planName}
-          amount={rawAmount}
+          amount={effectiveAmount}
           currency="XOF"
           paymentMethod={selectedMethod}
         />

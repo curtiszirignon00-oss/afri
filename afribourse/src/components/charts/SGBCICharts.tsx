@@ -784,6 +784,169 @@ export function ChartNSBCFondDiv() {
   );
 }
 
+// ── Palette Oragroup ─────────────────────────────────────────────────────────
+const OG_NAVY    = '#042C53';
+const OG_BLUE    = '#378ADD';
+const OG_BLUE_LT = '#B5D4F4';
+const OG_GREEN   = '#1D9E75';
+const OG_GREEN_LT= '#9FE1CB';
+const OG_RED     = '#E24B4A';
+const OG_AMBER   = '#BA7517';
+const OG_VIOLET  = '#7F77DD';
+const OG_YEARS6  = ['2020','2021','2022','2023','2024','2025'];
+const OG_YEARS5  = ['2021','2022','2023','2024','2025'];
+
+export function ChartORGTPnb() {
+  const data = OG_YEARS6.map((yr, i) => ({
+    yr,
+    pnb:  [155.4, 187.3, 222.4, 215.3, 195.4, 186.6][i],
+    grow: [null,  20.5,  18.8, -3.2,  -9.2,  -4.5][i],
+  }));
+  return (
+    <ChartShell
+      title="PNB 2020–2025 (Mds FCFA) & croissance annuelle"
+      legend={[
+        { color: OG_BLUE,  label: 'PNB (Mds FCFA)' },
+        { color: OG_GREEN, label: 'Croissance annuelle %' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <ComposedChart data={data} margin={{ top: 4, right: 32, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="l" domain={[100, 250]} tickFormatter={v => `${v}`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="r" orientation="right" domain={[-15, 25]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="" />} />
+          <Bar yAxisId="l" dataKey="pnb" name="PNB" fill={OG_BLUE} radius={[3,3,0,0]} maxBarSize={40} />
+          <Line yAxisId="r" type="monotone" dataKey="grow" name="Croissance" stroke={OG_GREEN} strokeWidth={2} dot={{ r: 4, fill: OG_GREEN, stroke: '#fff', strokeWidth: 2 }} connectNulls={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartORGTRisk() {
+  const rawData = [
+    { yr: '2020', v: -8.2,  fill: OG_AMBER },
+    { yr: '2021', v: -9.1,  fill: OG_AMBER },
+    { yr: '2022', v: -11.8, fill: OG_AMBER },
+    { yr: '2023', v: -32.4, fill: OG_RED   },
+    { yr: '2024', v: -69.1, fill: OG_RED   },
+    { yr: '2025', v: -7.0,  fill: OG_GREEN },
+  ];
+  return (
+    <ChartShell
+      title="Coût du risque 2020–2025 (Mds FCFA) — négatif = dotations"
+      legend={[
+        { color: OG_AMBER, label: 'Niveau ordinaire' },
+        { color: OG_RED,   label: 'Crise de provisionnement' },
+        { color: OG_GREEN, label: '2025 — normalisation' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={rawData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => `${v} Md`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" Md" />} />
+          <ReferenceLine y={0} stroke={GRID} strokeWidth={1} />
+          <Bar dataKey="v" name="Coût du risque" radius={[3,3,0,0]} maxBarSize={44}>
+            {rawData.map((d, i) => <Cell key={i} fill={d.fill} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartORGTCoex() {
+  const data = OG_YEARS5.map((yr, i) => ({
+    yr,
+    coex:   [62.8, 61.9, 71.0, 87.6, 80.6][i],
+    cible:  65,
+  }));
+  return (
+    <ChartShell
+      title="Coefficient d'exploitation 2021–2025 vs cible sectorielle <65%"
+      legend={[
+        { color: OG_VIOLET, label: "Coeff. d'exploitation" },
+        { color: OG_RED, label: 'Cible <65%', dashed: true },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={190}>
+        <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis domain={[55, 95]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="%" />} />
+          <Area type="monotone" dataKey="coex" name="Coeff." stroke={OG_VIOLET} fill={`${OG_VIOLET}18`} strokeWidth={2} dot={{ r: 5, fill: OG_VIOLET, stroke: '#fff', strokeWidth: 2 }} />
+          <Line type="monotone" dataKey="cible" name="Cible" stroke={OG_RED} strokeWidth={1.5} strokeDasharray="6 4" dot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartORGTBilan() {
+  const data = OG_YEARS5.map((yr, i) => ({
+    yr,
+    bilan: [4058, 4733, 4236, 3961, 4014][i],
+    cp:    [164.8, 166.0, 143.8, 96.7, 113.2][i],
+  }));
+  return (
+    <ChartShell
+      title="Total bilan & capitaux propres 2021–2025 (Mds FCFA)"
+      legend={[
+        { color: OG_BLUE_LT, label: 'Total actif (Mds)' },
+        { color: OG_RED,     label: 'Capitaux propres (Mds)' },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={210}>
+        <ComposedChart data={data} margin={{ top: 4, right: 32, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="l" domain={[3500, 5000]} tickFormatter={v => `${v}`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="r" orientation="right" domain={[60, 200]} tickFormatter={v => `${v}`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix=" Md" />} />
+          <Bar yAxisId="l" dataKey="bilan" name="Total actif" fill={OG_BLUE_LT} radius={[3,3,0,0]} maxBarSize={44} />
+          <Line yAxisId="r" type="monotone" dataKey="cp" name="Cap. propres" stroke={OG_RED} strokeWidth={2} dot={{ r: 5, fill: OG_RED, stroke: '#fff', strokeWidth: 2 }} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
+export function ChartORGTRentabilite() {
+  const data = OG_YEARS5.map((yr, i) => ({
+    yr,
+    roe: [12.0,  11.6, -12.6, -45.9, 20.7][i],
+    roa: [0.49,  0.41, -0.43, -1.12, 0.54][i],
+  }));
+  return (
+    <ChartShell
+      title="ROE (axe gauche) & ROA (axe droit, trait) 2021–2025"
+      legend={[
+        { color: OG_BLUE,  label: 'ROE %' },
+        { color: OG_AMBER, label: 'ROA %', dashed: true },
+      ]}
+    >
+      <ResponsiveContainer width="100%" height={210}>
+        <ComposedChart data={data} margin={{ top: 4, right: 32, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 0" stroke={GRID} vertical={false} />
+          <XAxis dataKey="yr" tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="l" tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="r" orientation="right" domain={[-1.5, 1.0]} tickFormatter={v => `${v}%`} tick={tickStyle} axisLine={false} tickLine={false} />
+          <Tooltip content={<ChartTooltip suffix="%" />} />
+          <ReferenceLine yAxisId="l" y={0} stroke={GRID} strokeWidth={1} />
+          <ReferenceLine yAxisId="r" y={0} stroke="transparent" />
+          <Area yAxisId="l" type="monotone" dataKey="roe" name="ROE" stroke={OG_BLUE} fill={`${OG_BLUE}12`} strokeWidth={2} dot={{ r: 5, fill: OG_BLUE, stroke: '#fff', strokeWidth: 2 }} />
+          <Line yAxisId="r" type="monotone" dataKey="roa" name="ROA" stroke={OG_AMBER} strokeWidth={2} strokeDasharray="5 4" dot={{ r: 4, fill: OG_AMBER, stroke: '#fff', strokeWidth: 2 }} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartShell>
+  );
+}
+
 const CHART_MAP: Record<string, React.ComponentType> = {
   'sgbci-annuel':      ChartAnnuel,
   'sgbci-rn-t1':       ChartRNT1,
@@ -808,6 +971,12 @@ const CHART_MAP: Record<string, React.ComponentType> = {
   'nsbc-fond-titres':      ChartNSBCFondTitres,
   'nsbc-fond-capex':       ChartNSBCFondCapex,
   'nsbc-fond-div':         ChartNSBCFondDiv,
+  // Oragroup
+  'orgt-pnb':              ChartORGTPnb,
+  'orgt-risk':             ChartORGTRisk,
+  'orgt-coex':             ChartORGTCoex,
+  'orgt-bilan':            ChartORGTBilan,
+  'orgt-rentabilite':      ChartORGTRentabilite,
 };
 
 export function ChartById({ chartId }: { chartId: string }) {

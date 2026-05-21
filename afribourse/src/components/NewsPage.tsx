@@ -3,9 +3,11 @@ import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X } from 'lucide-r
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import FundamentalsGrid from './FundamentalsGrid';
-import { BRVM_NEWS, BRVMArticle } from '../data/brvm2026News';
+import { BRVM_NEWS, BRVMArticle, ContentBlock } from '../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from './BRVMNewsGrid';
+import { BlockRenderer } from './BlockRenderer';
 import { markNewsVisited, getUnseenBrvmCount } from '../hooks/useContentUnseen';
+import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 const BRVM_CATEGORY_MAP: Record<string, string> = {
   'Marché':                 'marches',
@@ -27,6 +29,8 @@ type NewsArticle = {
   slug: string | null;
   summary: string | null;
   content: string | null;
+  rich_content: string | null;
+  tickers: string[];
   category: string | null;
   author: string | null;
   source: string | null;
@@ -38,11 +42,83 @@ type NewsArticle = {
   created_at: string | null;
 };
 
+function DBArticlePanel({ article, onClose }: { article: NewsArticle; onClose: () => void }) {
+  const blocks: ContentBlock[] | null = (() => {
+    if (!article.rich_content) return null;
+    try { return JSON.parse(article.rich_content); } catch { return null; }
+  })();
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-white shadow-2xl overflow-y-auto flex flex-col" style={{ animation: 'slideIn 0.25s cubic-bezier(0.16,1,0.3,1)' }}>
+        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-5 z-10">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 pr-4">
+              {article.category && (
+                <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-wide">{article.category}</span>
+              )}
+              <h2 className="font-bold text-slate-900 text-base leading-snug mt-0.5">{article.title}</h2>
+              <div className="flex items-center gap-3 mt-1 flex-wrap">
+                {article.tickers?.map(t => (
+                  <span key={t} className="font-mono text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">{t}</span>
+                ))}
+                {article.published_at && (
+                  <span className="text-xs text-slate-400">
+                    {new Date(article.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 px-6 py-6">
+          {article.summary && (
+            <p className="text-sm text-slate-600 leading-relaxed mb-5 pb-5 border-b border-slate-100">{article.summary}</p>
+          )}
+          {blocks ? (
+            <BlockRenderer blocks={blocks} variant="news" />
+          ) : article.content ? (
+            <div className="prose prose-sm max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: article.content }} />
+          ) : (
+            <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
+          )}
+          <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4 mt-6">
+            {article.author ?? 'AfriBourse'} · {article.source ?? 'AfriBourse Research'} · Informations éducatives uniquement.
+          </p>
+        </div>
+      </div>
+      <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+    </div>
+  );
+}
+
 export default function NewsPage() {
   const [articles, setArticles]       = useState<NewsArticle[]>([]);
   const [loading, setLoading]         = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
+  const [selectedDBArticle, setSelectedDBArticle] = useState<NewsArticle | null>(null);
+  const { trackAction } = useAnalytics();
+
+  function openDBArticle(article: NewsArticle) {
+    setSelectedDBArticle(article);
+    trackAction(ACTION_TYPES.VIEW_ARTICLE, article.title, {
+      article_id: article.id, category: article.category, is_featured: article.is_featured,
+    });
+  }
+
+  function openArticle(article: BRVMArticle) {
+    setSelectedBRVM(article);
+    trackAction(ACTION_TYPES.VIEW_ARTICLE, article.title, {
+      article_id:  article.id,
+      category:    article.category,
+      is_featured: article.isFeatured,
+    });
+  }
   // Notification banner : calculé avant de marquer comme lu
   const [newBrvmCount]    = useState(() => getUnseenBrvmCount());
   const [bannerVisible, setBannerVisible] = useState(() => getUnseenBrvmCount() > 0);
@@ -203,7 +279,7 @@ export default function NewsPage() {
       {selectedCategory === 'dividendes' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {brvmFiltered.map(a => (
-            <BRVMArticleCard key={a.id} article={a} onOpen={() => setSelectedBRVM(a)} />
+            <BRVMArticleCard key={a.id} article={a} onOpen={() => openArticle(a)} />
           ))}
           {brvmFiltered.length === 0 && (
             <div className="col-span-full py-16 text-center text-slate-400">
@@ -226,7 +302,7 @@ export default function NewsPage() {
 
           {/* Featured (2/3) */}
           {selectedCategory === 'all' && featuredArticle && (
-            <div className="lg:col-span-2 group cursor-pointer">
+            <div className="lg:col-span-2 group cursor-pointer" onClick={() => openDBArticle(featuredArticle)}>
               <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-md">
                 <OptimizedImage
                   src={featuredArticle.image_url || '/images/default-news.jpg'}
@@ -262,6 +338,7 @@ export default function NewsPage() {
               {listArticles.map(article => (
                 <div
                   key={article.id}
+                  onClick={() => openDBArticle(article)}
                   className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden ${
                     selectedCategory === 'all' && featuredArticle ? 'p-4' : ''
                   }`}
@@ -349,7 +426,7 @@ export default function NewsPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {brvmFiltered.map(a => (
-              <BRVMArticleCard key={a.id} article={a} onOpen={() => setSelectedBRVM(a)} />
+              <BRVMArticleCard key={a.id} article={a} onOpen={() => openArticle(a)} />
             ))}
           </div>
         </div>
@@ -367,6 +444,9 @@ export default function NewsPage() {
 
       {/* BRVM article detail panel */}
       {selectedBRVM && <BRVMDetailPanel article={selectedBRVM} onClose={() => setSelectedBRVM(null)} />}
+
+      {/* DB article detail panel */}
+      {selectedDBArticle && <DBArticlePanel article={selectedDBArticle} onClose={() => setSelectedDBArticle(null)} />}
     </div>
   );
 }

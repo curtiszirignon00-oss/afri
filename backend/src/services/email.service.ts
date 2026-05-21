@@ -4618,6 +4618,284 @@ export async function sendWebinarZoomLinkEmail({
   });
 }
 
+export async function sendFailedPaymentReengagementEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name || 'Investisseur').split(' ')[0];
+  const subscriptionUrl = 'https://www.africbourse.com/subscriptions';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Tu avais commencé quelque chose sur Afribourse</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+
+      <span style="display:none;max-height:0;overflow:hidden;">Moitié prix · 4 950 XOF/mois · Sans engagement &#847;&zwnj;&nbsp;&#847;</span>
+
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F1F5F9;">
+        <tr>
+          <td align="center" style="padding:32px 16px;">
+
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+              <!-- Logo -->
+              <tr>
+                <td style="background-color:#FFFFFF;border-radius:16px 16px 0 0;padding:28px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+                  <span style="font-size:26px;font-weight:900;color:#1D4ED8;letter-spacing:-0.5px;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+                </td>
+              </tr>
+
+              <!-- Hero -->
+              <tr>
+                <td style="background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 60%,#1D4ED8 100%);padding:36px 40px;text-align:center;">
+                  <h1 style="margin:0 0 10px;font-size:24px;font-weight:900;color:#FFFFFF;line-height:1.3;">Tu avais commencé<br>quelque chose.</h1>
+                  <p style="margin:0;font-size:15px;color:#93C5FD;line-height:1.6;">On te réserve la place — à moitié prix.</p>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="background-color:#FFFFFF;padding:36px 40px;">
+
+                  <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.7;">Bonjour ${firstName},</p>
+
+                  <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">Il y a quelques semaines, tu as cliqué pour passer à Investisseur+.</p>
+
+                  <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">Le paiement n'est pas passé. Je ne sais pas si c'est un problème technique, un moment d'hésitation, ou simplement le mauvais moment — et je ne suis pas là pour te juger.</p>
+
+                  <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;">Mais je pense que <strong>l'intérêt était réel</strong>. Sinon tu n'aurais pas cliqué.</p>
+
+                  <!-- Offer box -->
+                  <div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:24px 28px;margin-bottom:28px;text-align:center;">
+                    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#C2410C;letter-spacing:1px;text-transform:uppercase;">Proposition simple</p>
+                    <p style="margin:0 0 4px;font-size:28px;font-weight:900;color:#EA580C;">4 950 XOF<span style="font-size:16px;font-weight:600;">/mois</span></p>
+                    <p style="margin:0;font-size:14px;color:#9A3412;">pendant 3 mois — <span style="text-decoration:line-through;">9 900 XOF</span> · sans engagement · tu annules quand tu veux</p>
+                  </div>
+
+                  <!-- Features -->
+                  <p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#0F172A;">Ce que tu débloques :</p>
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— Le <strong>Score de confiance hybride</strong> sur chaque action BRVM</td></tr>
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— <strong>SIMBA sans limite</strong> — ton coach IA disponible à tout moment</td></tr>
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— <strong>Time Machine</strong> : revivez la crise 2008 avec de l'argent virtuel</td></tr>
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— Les <strong>analyses SIMBA approfondies</strong> sur n'importe quel titre</td></tr>
+                  </table>
+
+                  <!-- CTA -->
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+                    <tr>
+                      <td align="center">
+                        <a href="${subscriptionUrl}" style="display:inline-block;padding:16px 40px;background-color:#F97316;color:#FFFFFF;text-decoration:none;border-radius:10px;font-size:16px;font-weight:800;">
+                          Activer maintenant →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p style="margin:0 0 28px;font-size:14px;color:#6B7280;text-align:center;">Si quelque chose a bloqué techniquement ou si tu as une question,<br>réponds directement à cet email. Je lis tous les messages.</p>
+
+                  <p style="margin:0;font-size:15px;color:#374151;">Curtis Zirignon<br><span style="color:#6B7280;font-size:13px;">Fondateur, Afribourse</span></p>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+                  <p style="margin:0;font-size:12px;color:#9CA3AF;">Afribourse · Marchés financiers africains<br>
+                  <a href="https://www.africbourse.com/unsubscribe" style="color:#9CA3AF;">Se désabonner</a></p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+
+    </body>
+    </html>
+  `;
+
+  const text = `Bonjour ${firstName},
+
+Il y a quelques semaines, tu as cliqué pour passer à Investisseur+.
+
+Le paiement n'est pas passé. Je ne sais pas si c'est un problème technique, un moment d'hésitation, ou simplement le mauvais moment — et je ne suis pas là pour te juger.
+
+Mais je pense que l'intérêt était réel. Sinon tu n'aurais pas cliqué.
+
+Alors voici une proposition simple : Investisseur+ à 4 950 XOF/mois pendant 3 mois, moitié prix. Pas d'engagement, tu annules quand tu veux.
+
+Ce que tu débloques :
+— Le Score de confiance hybride sur chaque action BRVM
+— SIMBA sans limite — ton coach IA disponible à tout moment
+— Time Machine : revivez la crise 2008 avec de l'argent virtuel
+— Les analyses SIMBA approfondies sur n'importe quel titre
+
+→ ${subscriptionUrl}
+
+Si quelque chose a bloqué techniquement ou si tu as une question, réponds directement à cet email. Je lis tous les messages.
+
+Curtis Zirignon
+Fondateur, Afribourse`;
+
+  await sendEmail({
+    to: email,
+    subject: 'Tu avais commencé quelque chose sur Afribourse',
+    html,
+    text,
+  });
+}
+
+export async function sendInvestisseurPlusPromoEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name || 'Investisseur').split(' ')[0];
+  const subscriptionUrl = 'https://www.africbourse.com/subscriptions';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${firstName}, tu mérites Investisseur+ — voici 50% de réduction</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+
+      <span style="display:none;max-height:0;overflow:hidden;">4 950 XOF/mois pendant 3 mois — offre réservée, sans engagement &#847;&zwnj;&nbsp;&#847;</span>
+
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F1F5F9;">
+        <tr>
+          <td align="center" style="padding:32px 16px;">
+
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+              <!-- Logo -->
+              <tr>
+                <td style="background-color:#FFFFFF;border-radius:16px 16px 0 0;padding:28px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+                  <span style="font-size:26px;font-weight:900;color:#1D4ED8;letter-spacing:-0.5px;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+                </td>
+              </tr>
+
+              <!-- Hero -->
+              <tr>
+                <td style="background:linear-gradient(135deg,#0F172A 0%,#1E3A8A 60%,#1D4ED8 100%);padding:40px 40px 36px;text-align:center;">
+                  <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:#BFDBFE;letter-spacing:2px;text-transform:uppercase;">Offre personnelle · Durée limitée</p>
+                  <h1 style="margin:0 0 12px;font-size:27px;font-weight:900;color:#FFFFFF;line-height:1.3;">${firstName}, tu mérites<br>Investisseur+</h1>
+                  <p style="margin:0 0 20px;font-size:15px;color:#93C5FD;line-height:1.6;">50% de réduction pendant 3 mois.<br>Sans engagement. Tu annules quand tu veux.</p>
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                    <tr>
+                      <td style="background-color:#F97316;border-radius:100px;padding:10px 28px;">
+                        <span style="font-size:18px;font-weight:900;color:#FFFFFF;">4 950 XOF<span style="font-size:13px;font-weight:600;">/mois</span></span>
+                      </td>
+                      <td style="padding:0 12px;">
+                        <span style="font-size:14px;color:#BFDBFE;text-decoration:line-through;">9 900 XOF/mois</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="background-color:#FFFFFF;padding:36px 40px;">
+
+                  <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.7;">Bonjour ${firstName},</p>
+
+                  <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">Il y a un groupe d'investisseurs BRVM qui prend des décisions différemment — avec des données, pas des intuitions. Qui comprend pourquoi une action monte avant que tout le monde en parle. Qui sait lire un bilan, analyser un secteur, et garder la tête froide quand le marché bouge.</p>
+
+                  <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;"><strong>Tu en fais déjà partie dans ta tête.</strong> Tu l'as prouvé en utilisant Afribourse.</p>
+
+                  <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;">Il te manque juste les outils que ce groupe utilise.</p>
+
+                  <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">C'est pour ça que je t'écris personnellement aujourd'hui.</p>
+
+                  <!-- Features -->
+                  <div style="background:#F8FAFC;border-radius:12px;padding:24px 28px;margin-bottom:28px;">
+                    <p style="margin:0 0 16px;font-size:15px;font-weight:800;color:#0F172A;">Investisseur+ t'ouvre accès à ce que les investisseurs sérieux utilisent sur la BRVM :</p>
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">— Le <strong>Score de confiance hybride</strong> sur chaque action</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">— <strong>SIMBA</strong>, ton coach IA disponible à tout moment pour analyser, expliquer, décider</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">— <strong>Time Machine</strong> : revivez les grandes crises et hausses historiques de la BRVM avec de l'argent virtuel — et voyez si vous auriez pris les bonnes décisions</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">— Les <strong>analyses SIMBA approfondies</strong> sur n'importe quel titre coté</td></tr>
+                    </table>
+                  </div>
+
+                  <!-- CTA -->
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+                    <tr>
+                      <td align="center">
+                        <a href="${subscriptionUrl}" style="display:inline-block;padding:16px 40px;background-color:#F97316;color:#FFFFFF;text-decoration:none;border-radius:10px;font-size:16px;font-weight:800;">
+                          Activer Investisseur+ →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p style="margin:0 0 28px;font-size:14px;color:#6B7280;text-align:center;">Si le paiement ne passe pas ou si tu as la moindre question,<br>réponds directement à cet email. Je lis tous les messages.</p>
+
+                  <p style="margin:0;font-size:15px;color:#374151;">Curtis Zirignon<br><span style="color:#6B7280;font-size:13px;">Fondateur, Afribourse</span></p>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+                  <p style="margin:0;font-size:12px;color:#9CA3AF;">Afribourse · Marchés financiers africains<br>
+                  <a href="https://www.africbourse.com/unsubscribe" style="color:#9CA3AF;">Se désabonner</a></p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+
+    </body>
+    </html>
+  `;
+
+  const text = `Bonjour ${firstName},
+
+Il y a un groupe d'investisseurs BRVM qui prend des décisions différemment — avec des données, pas des intuitions. Qui comprend pourquoi une action monte avant que tout le monde en parle. Qui sait lire un bilan, analyser un secteur, et garder la tête froide quand le marché bouge.
+
+Tu en fais déjà partie dans ta tête. Tu l'as prouvé en utilisant Afribourse.
+Il te manque juste les outils que ce groupe utilise.
+
+C'est pour ça que je t'écris personnellement aujourd'hui.
+
+Investisseur+ t'ouvre accès à ce que les investisseurs sérieux utilisent sur la BRVM :
+— Le Score de confiance hybride sur chaque action
+— SIMBA, ton coach IA disponible à tout moment pour analyser, expliquer, décider
+— Time Machine : revivez les grandes crises et hausses historiques de la BRVM avec de l'argent virtuel — et voyez si vous auriez pris les bonnes décisions
+— Les analyses SIMBA approfondies sur n'importe quel titre coté
+
+Normalement : 9 900 XOF/mois.
+Pour toi, aujourd'hui : 4 950 XOF/mois pendant 3 mois. Sans engagement. Tu annules quand tu veux.
+
+→ ${subscriptionUrl}
+
+Si le paiement ne passe pas ou si tu as la moindre question, réponds directement à cet email. Je lis tous les messages.
+
+Curtis Zirignon
+Fondateur, Afribourse`;
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, tu mérites Investisseur+ — voici 50% de réduction`,
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -4639,5 +4917,7 @@ export default {
   sendReengagementEmail1,
   sendReengagementEmail2,
   sendReengagementEmail3,
+  sendInvestisseurPlusPromoEmail,
+  sendFailedPaymentReengagementEmail,
   sendEmail,
 };

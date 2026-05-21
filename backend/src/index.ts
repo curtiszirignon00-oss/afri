@@ -66,6 +66,7 @@ import webinarRoutes from './routes/webinar.routes'; // Préinscriptions webinai
 import timeMachineRoutes from './routes/time-machine.routes'; // Time Machine — Apprentissage guidé
 import ogRoutes from './routes/og.routes'; // Open Graph images pour le partage social
 import pawaPayRoutes from './routes/pawapay.routes'; // PawaPay Mobile Money
+import promoRoutes from './routes/promo.routes';       // Promos utilisateur (réductions ciblées)
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -304,6 +305,7 @@ class App {
     this.app?.use('/api/time-machine', timeMachineRoutes);                 // Time Machine — Apprentissage guidé historique
     this.app?.use('/api/og', ogRoutes);                                    // Open Graph images (PNG, public, crawlers sociaux)
     this.app?.use('/api/pawapay', pawaPayRoutes);                          // PawaPay Mobile Money (dépôts, remboursements, webhooks)
+    this.app?.use('/api/promo', promoRoutes);                              // Promos utilisateur ciblées (réductions automatiques)
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

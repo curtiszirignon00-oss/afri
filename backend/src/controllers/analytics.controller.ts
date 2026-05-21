@@ -36,7 +36,7 @@ export const trackPageView = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id || null;
     const { sessionId, pagePath, pageTitle, referrer, userAgent, deviceType, browser, os } = req.body;
 
-    await prisma.pageView.create({
+    const pageView = await prisma.pageView.create({
       data: {
         userId,
         sessionId,
@@ -50,7 +50,7 @@ export const trackPageView = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    return res.status(201).json({ success: true });
+    return res.status(201).json({ success: true, pageViewId: pageView.id });
   } catch (error) {
     log.error('Erreur trackPageView:', error);
     return res.status(500).json({ success: false, error: 'Erreur serveur' });

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getPlatformStats, getPremiumIntents, forceVerifyUser, getTrialStats, getAIFeedbackStats, sendWebinarLaunchCampaign } from '../controllers/admin.controller';
+import { listAdminArticles, getAdminArticle, createAdminArticle, updateAdminArticle, deleteAdminArticle } from '../controllers/articles.controller';
 import { admin } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -21,5 +22,12 @@ router.get('/ai-feedback-stats', admin, getAIFeedbackStats);
 
 // Campagne email — lancement webinaires (admin uniquement, irréversible)
 router.post('/send-webinar-launch-email', admin, sendWebinarLaunchCampaign);
+
+// ── Gestion des articles (admin) ─────────────────────────────────────────────
+router.get('/articles', admin, listAdminArticles);
+router.get('/articles/:id', admin, getAdminArticle);
+router.post('/articles', admin, createAdminArticle);
+router.put('/articles/:id', admin, updateAdminArticle);
+router.delete('/articles/:id', admin, deleteAdminArticle);
 
 export default router;

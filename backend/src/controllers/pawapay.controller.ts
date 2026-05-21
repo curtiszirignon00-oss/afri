@@ -17,6 +17,12 @@ const PLAN_TIER_MAP: Record<string, string> = {
   'pro': 'max',
 };
 
+// Prix officiels par plan (source de vérité côté serveur)
+const PLAN_PRICES: Record<string, number> = {
+  'investisseur-plus': 9900,
+  'pro': 300000,
+};
+
 // ============================================================
 // WEBHOOK — Deposit callback
 // POST /api/pawapay/webhook/deposit
@@ -52,7 +58,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
 
       if (tier) {
         // Plan d'abonnement → mettre à jour le tier en transaction atomique
-        await prisma.$transaction([
+        const ops: Parameters<typeof prisma.$transaction>[0] = [
           prisma.payment.update({
             where: { depositId },
             data: { status: 'COMPLETED', metadata: payload as any },
@@ -61,8 +67,20 @@ export async function handleDepositCallback(req: Request, res: Response) {
             where: { id: payment.userId },
             data: { subscriptionTier: tier },
           }),
-        ]);
-        log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier });
+        ];
+
+        // Incrémenter l'usage de la promo si ce paiement en bénéficiait
+        if (payment.userPromoId) {
+          ops.push(
+            prisma.userPromo.update({
+              where: { id: payment.userPromoId },
+              data: { usedCount: { increment: 1 } },
+            })
+          );
+        }
+
+        await prisma.$transaction(ops);
+        log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier, promoUsed: !!payment.userPromoId });
       } else {
         // Webinaire ou pack → marquer le paiement COMPLETED + lier l'inscription
         await prisma.payment.update({
@@ -175,15 +193,41 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Non authentifié' });
 
-  const { planId, planName, amount, currency, correspondent, phone, registrationEmail } = req.body;
+  const { planId, planName, currency, correspondent, phone, registrationEmail } = req.body;
 
-  if (!planId || !planName || !amount || !currency || !correspondent || !phone) {
+  if (!planId || !planName || !currency || !correspondent || !phone) {
     return res.status(400).json({ error: 'Champs manquants' });
   }
 
   // Vérifier que le numéro est numérique et > 8 chiffres
   if (!/^\d{8,15}$/.test(phone)) {
     return res.status(400).json({ error: 'Numéro de téléphone invalide' });
+  }
+
+  // Déterminer le montant : appliquer la promo si l'utilisateur en a une valide
+  let finalAmount: number | null = null;
+  let activePromoId: string | null = null;
+
+  const officialPrice = PLAN_PRICES[planId];
+  if (officialPrice) {
+    // Plan d'abonnement connu : on ignore le montant frontend et on applique le prix officiel (+ promo éventuelle)
+    const promo = await prisma.userPromo.findFirst({
+      where: { userId, planId, expiresAt: { gt: new Date() } },
+    });
+
+    if (promo && promo.usedCount < promo.maxUses) {
+      finalAmount = Math.round(officialPrice * (1 - promo.discountPercent / 100));
+      activePromoId = promo.id;
+      log.info('[Promo] Réduction appliquée', { userId, planId, discountPercent: promo.discountPercent, finalAmount });
+    } else {
+      finalAmount = officialPrice;
+    }
+  } else {
+    // Plan non référencé (webinaire, etc.) : on accepte le montant du frontend
+    const raw = req.body.amount;
+    if (!raw) return res.status(400).json({ error: 'amount requis' });
+    finalAmount = Number(raw);
+    if (isNaN(finalAmount) || finalAmount <= 0) return res.status(400).json({ error: 'amount invalide' });
   }
 
   // Description max 22 caractères (limite PawaPay)
@@ -199,18 +243,19 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         userId,
         planId,
         planName,
-        amount: String(amount),
+        amount: String(finalAmount),
         currency,
         correspondent,
         phone,
         status: 'PENDING',
+        userPromoId: activePromoId ?? undefined,
         metadata: registrationEmail ? { registrationEmail } : undefined,
       },
     });
 
     const result = await initiateDeposit({
       depositId,
-      amount: String(amount),
+      amount: String(finalAmount),
       currency,
       correspondent,
       phone,
