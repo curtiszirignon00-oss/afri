@@ -109,7 +109,7 @@ const WEBINARS: Webinar[] = [
     theme: 'Initiation • Stratégie • BRVM',
     date: '2026-05-23T09:00:00Z',
     endDate: '2026-05-23T12:00:00Z',
-    earlyBirdDeadline: '2026-05-14T23:59:59Z',
+    earlyBirdDeadline: '2026-05-23T20:00:00Z',
     price: 5000,
     discountPercent: 50,
     duration: '3H',
@@ -167,7 +167,7 @@ const PACK = {
   id: 'pack-parcours-investisseur',
   title: 'Pack Parcours Investisseur BRVM',
   tagline: '3 sessions intensives · Experts BRVM · Certification officielle',
-  earlyBirdDeadline: '2026-05-14T23:59:59Z',
+  earlyBirdDeadline: '2026-05-23T20:00:00Z',
   price: 35000,
   earlyBirdPrice: 20000,
   gradient: 'from-blue-700 to-indigo-800',
@@ -530,6 +530,12 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
   const earlyBird = count < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
   const isMultiDay = new Date(webinar.date).toDateString() !== new Date(webinar.endDate).toDateString();
+  const [countdown, setCountdown] = useState(getPackCountdown(webinar.earlyBirdDeadline));
+
+  useEffect(() => {
+    const t = setInterval(() => setCountdown(getPackCountdown(webinar.earlyBirdDeadline)), 1000);
+    return () => clearInterval(t);
+  }, [webinar.earlyBirdDeadline]);
 
   return (
     <div className={`relative bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
@@ -578,6 +584,35 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
           <div className="mb-3 flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
             <Zap className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
             <span className="text-xs font-bold text-yellow-800">🎁 Bonus : 1 semaine Investisseur+ offerte</span>
+          </div>
+        )}
+
+        {/* Décompte early bird si pas encore expiré */}
+        {earlyBird && !countdown.expired && (
+          <div className="mb-3 bg-amber-500/10 border border-amber-400/30 rounded-xl px-3 py-2.5">
+            <p className="text-[10px] font-bold text-amber-700 mb-2 flex items-center gap-1">
+              <Flame className="w-3 h-3 animate-pulse" /> Tarif réduit expire dans
+            </p>
+            <div className="flex gap-1.5">
+              {countdown.days > 0 && (
+                <div className="flex-1 bg-amber-400/20 rounded-lg py-1.5 text-center">
+                  <p className="text-sm font-extrabold text-amber-800 leading-none">{pad2(countdown.days)}</p>
+                  <p className="text-[9px] text-amber-600 mt-0.5">j</p>
+                </div>
+              )}
+              <div className="flex-1 bg-amber-400/20 rounded-lg py-1.5 text-center">
+                <p className="text-sm font-extrabold text-amber-800 leading-none">{pad2(countdown.hours)}</p>
+                <p className="text-[9px] text-amber-600 mt-0.5">h</p>
+              </div>
+              <div className="flex-1 bg-amber-400/20 rounded-lg py-1.5 text-center">
+                <p className="text-sm font-extrabold text-amber-800 leading-none">{pad2(countdown.minutes)}</p>
+                <p className="text-[9px] text-amber-600 mt-0.5">min</p>
+              </div>
+              <div className="flex-1 bg-amber-400/20 rounded-lg py-1.5 text-center">
+                <p className="text-sm font-extrabold text-amber-800 leading-none">{pad2(countdown.seconds)}</p>
+                <p className="text-[9px] text-amber-600 mt-0.5">sec</p>
+              </div>
+            </div>
           </div>
         )}
 

@@ -107,7 +107,7 @@ export async function sendZoomLinkToRegistrants(req: Request, res: Response, nex
     }
 
     const registrations = await prisma.webinarRegistration.findMany({
-      where: { webinarId, paymentStatus: 'paid' } as any,
+      where: { webinarId, paymentStatus: 'paid' },
     });
 
     if (registrations.length === 0) {
@@ -143,7 +143,7 @@ export async function sendZoomLinkToRegistrants(req: Request, res: Response, nex
 export async function getWebinarPaymentStats(_req: Request, res: Response, next: NextFunction) {
   try {
     const rows = await prisma.webinarRegistration.groupBy({
-      by: ['webinarId', 'paymentStatus'] as any,
+      by: ['webinarId', 'paymentStatus'],
       _count: { id: true },
     });
 

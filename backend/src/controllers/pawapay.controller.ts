@@ -58,7 +58,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
 
       if (tier) {
         // Plan d'abonnement → mettre à jour le tier en transaction atomique
-        const ops: Parameters<typeof prisma.$transaction>[0] = [
+        const ops: any[] = [
           prisma.payment.update({
             where: { depositId },
             data: { status: 'COMPLETED', metadata: payload as any },
@@ -102,7 +102,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
           if (reg) {
             await prisma.webinarRegistration.update({
               where: { id: reg.id },
-              data: { paymentStatus: 'paid', depositId, paidAt: new Date() } as any,
+              data: { paymentStatus: 'paid', depositId, paidAt: new Date() },
             });
 
             // Email de confirmation de paiement
