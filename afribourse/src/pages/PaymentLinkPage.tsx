@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Smartphone, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
-import { PAWAPAY_CORRESPONDENTS, getAvailableCountries } from '../hooks/usePawaPayment';
+import { PAWAPAY_CORRESPONDENTS, getCurrency } from '../hooks/usePawaPayment';
 
 interface LinkData {
   planId: string;
@@ -79,7 +79,7 @@ export default function PaymentLinkPage() {
     const res = await fetch(`${API_BASE_URL}/payment-links/${token}/pay`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correspondent, phone: msisdn }),
+      body: JSON.stringify({ correspondent, phone: msisdn, currency: getCurrency(dialCode) }),
     });
     const data = await res.json();
 

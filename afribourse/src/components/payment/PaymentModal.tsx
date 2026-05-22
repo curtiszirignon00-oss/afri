@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Smartphone, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { usePawaPayment, getCorrespondent, getAvailableCountries, PAWAPAY_CORRESPONDENTS } from '../../hooks/usePawaPayment';
+import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency, PAWAPAY_CORRESPONDENTS } from '../../hooks/usePawaPayment';
 
 // ─── Indicatifs pays supportés par PawaPay ────────────────────────────────────
 
@@ -75,7 +75,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     if (!phoneNumber.trim() || !correspondent) return;
     // Construire le MSISDN : indicatif sans "+" + numéro sans espaces
     const msisdn = dialCode.replace('+', '') + phoneNumber.replace(/\D/g, '');
-    initiate({ planId, planName, amount, currency, correspondent, phone: msisdn });
+    initiate({ planId, planName, amount, currency: getCurrency(dialCode), correspondent, phone: msisdn });
   };
 
   const formatAmount = () =>

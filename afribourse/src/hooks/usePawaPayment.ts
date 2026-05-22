@@ -151,6 +151,23 @@ export const PAWAPAY_CORRESPONDENTS: Record<string, Record<string, string>> = {
   },
 };
 
+export const COUNTRY_CURRENCY: Record<string, string> = {
+  '+225': 'XOF', // Côte d'Ivoire
+  '+221': 'XOF', // Sénégal
+  '+226': 'XOF', // Burkina Faso
+  '+223': 'XOF', // Mali
+  '+228': 'XOF', // Togo
+  '+229': 'XOF', // Bénin
+  '+237': 'XAF', // Cameroun
+  '+233': 'GHS', // Ghana
+  '+256': 'UGX', // Ouganda
+  '+250': 'RWF', // Rwanda
+};
+
+export function getCurrency(dialCode: string): string {
+  return COUNTRY_CURRENCY[dialCode] ?? 'XOF';
+}
+
 export function getCorrespondent(operator: string, dialCode: string): string | null {
   return PAWAPAY_CORRESPONDENTS[operator]?.[dialCode] ?? null;
 }

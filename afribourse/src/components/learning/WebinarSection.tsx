@@ -7,7 +7,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { usePawaPayment, getCorrespondent, getAvailableCountries } from '../../hooks/usePawaPayment';
+import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../../hooks/usePawaPayment';
 
 // ─── Indicatifs pays ──────────────────────────────────────────────────────────
 
@@ -366,7 +366,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
       planId: webinar.id,
       planName: webinar.title,
       amount: String(effectivePrice),
-      currency: 'XOF',
+      currency: getCurrency(form.dialCode),
       correspondent,
       phone: msisdn,
       registrationEmail: form.email.trim(),
@@ -789,7 +789,7 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
-    initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: 'XOF', correspondent, phone: msisdn, registrationEmail: form.email.trim() });
+    initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: getCurrency(payDialCode), correspondent, phone: msisdn, registrationEmail: form.email.trim() });
   };
 
   const handleSubmit = async () => {

@@ -51,7 +51,7 @@ export async function getPaymentLink(req: Request, res: Response) {
 // POST /api/payment-links/:token/pay — public (pas d'auth requise)
 export async function payViaLink(req: Request, res: Response) {
   const { token } = req.params;
-  const { correspondent, phone } = req.body;
+  const { correspondent, phone, currency } = req.body;
 
   if (!correspondent || !phone) {
     return res.status(400).json({ message: 'correspondent et phone sont requis.' });
@@ -69,7 +69,7 @@ export async function payViaLink(req: Request, res: Response) {
   const result = await initiateDeposit({
     depositId,
     amount: String(link.amount),
-    currency: link.currency,
+    currency: currency ?? link.currency,
     correspondent,
     phone,
     description,
