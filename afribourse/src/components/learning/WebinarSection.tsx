@@ -88,6 +88,7 @@ interface Webinar {
   date: string;
   endDate: string;
   earlyBirdDeadline: string;
+  registrationClose?: boolean;
   price: number;
   discountPercent: number;
   duration: string;
@@ -110,6 +111,7 @@ const WEBINARS: Webinar[] = [
     date: '2026-05-23T09:00:00Z',
     endDate: '2026-05-23T12:00:00Z',
     earlyBirdDeadline: '2026-05-22T20:00:00Z',
+    registrationClose: true,
     price: 5000,
     discountPercent: 50,
     duration: '3H',
@@ -224,12 +226,22 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
+function isDeadlinePassed(deadline: string): boolean {
+  return new Date() >= new Date(deadline);
+}
+
+// Compte effectif : si le deadline est passé, on considère toutes les places prises
+function effectiveCount(count: number, deadline: string): number {
+  return isDeadlinePassed(deadline) ? EARLY_BIRD_SEATS : count;
+}
+
 // ─── EarlyBirdSeatsIndicator ──────────────────────────────────────────────────
 
-const EarlyBirdSeatsIndicator: React.FC<{ count: number; fullPrice: number }> = ({ count, fullPrice }) => {
-  const taken = Math.min(count, EARLY_BIRD_SEATS);
-  const remaining = Math.max(0, EARLY_BIRD_SEATS - count);
-  const earlyBirdActive = count < EARLY_BIRD_SEATS;
+const EarlyBirdSeatsIndicator: React.FC<{ count: number; fullPrice: number; deadline: string }> = ({ count, fullPrice, deadline }) => {
+  const resolved = effectiveCount(count, deadline);
+  const taken = Math.min(resolved, EARLY_BIRD_SEATS);
+  const remaining = Math.max(0, EARLY_BIRD_SEATS - resolved);
+  const earlyBirdActive = resolved < EARLY_BIRD_SEATS;
   const pct = Math.min(100, Math.round((taken / EARLY_BIRD_SEATS) * 100));
   const critical = remaining <= 5 && earlyBirdActive;
 
@@ -285,8 +297,9 @@ const PAYMENT_DIAL_CODES = [
 
 const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void }> = ({ webinar, count, onClose }) => {
   const { userProfile } = useAuth();
-  const earlyBird = count < EARLY_BIRD_SEATS;
-  const earlyBirdRemaining = Math.max(0, EARLY_BIRD_SEATS - count);
+  const resolved = effectiveCount(count, webinar.earlyBirdDeadline);
+  const earlyBird = resolved < EARLY_BIRD_SEATS;
+  const earlyBirdRemaining = Math.max(0, EARLY_BIRD_SEATS - resolved);
   const effectivePrice = earlyBird ? webinar.price * (1 - webinar.discountPercent / 100) : webinar.price;
 
   const [loading, setLoading] = useState(false);
@@ -527,7 +540,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
 const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number }> = ({
   webinar, onRegister, isFirst, count,
 }) => {
-  const earlyBird = count < EARLY_BIRD_SEATS;
+  const earlyBird = effectiveCount(count, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
   const isMultiDay = new Date(webinar.date).toDateString() !== new Date(webinar.endDate).toDateString();
   const [countdown, setCountdown] = useState(getPackCountdown(webinar.earlyBirdDeadline));
@@ -591,7 +604,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         {earlyBird && !countdown.expired && (
           <div className="mb-3 bg-amber-500/10 border border-amber-400/30 rounded-xl px-3 py-2.5">
             <p className="text-[10px] font-bold text-amber-700 mb-2 flex items-center gap-1">
-              <Flame className="w-3 h-3 animate-pulse" /> Tarif réduit expire dans
+              <Flame className="w-3 h-3 animate-pulse" /> {webinar.registrationClose ? 'Inscriptions ferment dans' : 'Tarif réduit expire dans'}
             </p>
             <div className="flex gap-1.5">
               {countdown.days > 0 && (
@@ -617,7 +630,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         )}
 
         <div className="mb-4">
-          <EarlyBirdSeatsIndicator count={count} fullPrice={webinar.price} />
+          <EarlyBirdSeatsIndicator count={count} fullPrice={webinar.price} deadline={webinar.earlyBirdDeadline} />
         </div>
 
         {(() => {
