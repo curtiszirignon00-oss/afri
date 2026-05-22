@@ -66,9 +66,14 @@ const REFRESH_BEFORE_MS = 3 * 60 * 1000;
 
 // --- Provider Component ---
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Initialisation optimiste : si un refresh token est stocké (localStorage), on présume que
+  // l'utilisateur est connecté et on skip le spinner. checkAuth() vérifie en arrière-plan.
+  // Cela évite le flash "Vérification de l'authentification..." à chaque rechargement sur mobile.
+  const initialHasSession = Boolean(getRefreshToken());
+
+  const [isLoggedIn, setIsLoggedIn] = useState(initialHasSession);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialHasSession);
   const [sessionExpired, setSessionExpired] = useState(false);
   // Ref pour annuler le checkAuth() initial si un login manuel se produit avant sa complétion
   const initialCheckAborted = useRef(false);
@@ -79,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Évite de déclencher l'événement "session expirée" en boucle
   const sessionExpiredFiredRef = useRef(false);
   // Ref miroir de isLoggedIn pour les closures d'event listeners (évite les dépendances cycliques)
-  const isLoggedInRef = useRef(false);
+  const isLoggedInRef = useRef(initialHasSession);
 
   // Planifie un refresh proactif du token avant son expiration
   const scheduleTokenRefresh = (issuedAt: number = Date.now()) => {
@@ -177,8 +182,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Vérifier l'authentification via le cookie httpOnly (envoyé automatiquement)
   // Retourne true si l'utilisateur est authentifié, false sinon
   const checkAuth = async (): Promise<boolean> => {
-    // Si un login manuel a déjà alimenté l'état, ne pas écraser le loading
-    if (!initialCheckAborted.current) setLoading(true);
+    // Affiche le spinner uniquement si : pas de login manuel en cours ET pas de session optimiste.
+    // Avec une session optimiste (refresh token stocké), la vérif tourne en arrière-plan sans bloquer l'UI.
+    if (!initialCheckAborted.current && !isLoggedInRef.current) setLoading(true);
     try {
       const response = await apiClient.get('/me');
       const profile = response.data?.user;
@@ -210,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoggedIn(false);
         setUserProfile(null);
         setAuthToken(null);
+        setRefreshToken(null); // Évite que le prochain rechargement parte en mode optimiste avec un token révoqué
       }
       return false;
     } finally {

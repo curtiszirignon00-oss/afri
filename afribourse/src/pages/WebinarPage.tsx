@@ -55,37 +55,6 @@ export default function WebinarPage() {
         <WebinarSection />
       </div>
 
-      {/* Garantie satisfaction */}
-      <div className="max-w-3xl mx-auto px-4 pt-10 sm:px-6">
-        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white">
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full" />
-          <div className="absolute -bottom-8 -left-4 w-24 h-24 bg-white/5 rounded-full" />
-          <div className="relative flex items-start gap-5">
-            <div className="flex-shrink-0 bg-white/20 rounded-2xl p-3">
-              <ShieldCheck className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-200 mb-1">Garantie satisfaction</p>
-              <h3 className="text-xl font-extrabold leading-snug mb-2">
-                Pas satisfait ? On vous rembourse. Sans condition.
-              </h3>
-              <p className="text-emerald-100 text-sm leading-relaxed">
-                Si à la fin du webinaire vous estimez que le contenu ne correspond pas à vos attentes,
-                envoyez-nous un email dans les 48h — nous vous remboursons intégralement.
-                Aucun justificatif, aucune question.
-              </p>
-              <div className="flex flex-wrap gap-3 mt-4">
-                {['Remboursement en 48h', 'Sans justificatif', 'Zéro condition'].map((item) => (
-                  <span key={item} className="flex items-center gap-1.5 bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                    <span className="text-emerald-300">✓</span> {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* FAQ */}
       <div className="max-w-3xl mx-auto px-4 pb-20 sm:px-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6 mt-10">Questions fréquentes</h2>

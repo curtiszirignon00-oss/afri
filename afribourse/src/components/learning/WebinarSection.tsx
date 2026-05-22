@@ -90,6 +90,7 @@ interface Webinar {
   earlyBirdDeadline: string;
   registrationClose?: boolean;
   earlyBirdTaken?: number;
+  hideEarlyBirdIndicator?: boolean;
   price: number;
   discountPercent: number;
   duration: string;
@@ -124,6 +125,7 @@ const WEBINARS: Webinar[] = [
   },
   {
     id: 'w2-fondamentale',
+    hideEarlyBirdIndicator: true,
     title: 'Analyse fondamentale : lire les données comme un pro',
     tagline: 'Décryptez bilans, ratios et rapports annuels BRVM',
     theme: 'Analyse • Valorisation • Données financières',
@@ -141,6 +143,7 @@ const WEBINARS: Webinar[] = [
   },
   {
     id: 'w3-technique',
+    hideEarlyBirdIndicator: true,
     title: 'Analyse technique : repérez les signaux avant la foule',
     tagline: 'Maîtrisez les graphiques, patterns et timing d\'entrée sur la BRVM',
     theme: 'Graphiques • Patterns • Timing',
@@ -634,7 +637,9 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         )}
 
         <div className="mb-4">
-          <EarlyBirdSeatsIndicator count={displayCount} fullPrice={webinar.price} deadline={webinar.earlyBirdDeadline} />
+          {!webinar.hideEarlyBirdIndicator && (
+            <EarlyBirdSeatsIndicator count={displayCount} fullPrice={webinar.price} deadline={webinar.earlyBirdDeadline} />
+          )}
         </div>
 
         {(() => {
@@ -1129,14 +1134,6 @@ const WebinarSection: React.FC = () => {
           ))}
         </div>
 
-        {/* Note bas de section */}
-        <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
-          <Tag className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>
-            Tarif réduit de 50% réservé aux <strong className="text-gray-600">20 premiers inscrits</strong> par webinaire · Early bird Pack : 72h après l'annonce.
-            Aucun paiement immédiat requis à la pré-inscription.
-          </span>
-        </div>
       </section>
 
       {selectedWebinar && (
