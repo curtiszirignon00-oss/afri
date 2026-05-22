@@ -8,6 +8,7 @@ import {
   Pie,
   Bar,
   Line,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
