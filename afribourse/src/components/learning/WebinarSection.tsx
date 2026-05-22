@@ -144,6 +144,7 @@ const WEBINARS: Webinar[] = [
   {
     id: 'w3-technique',
     hideEarlyBirdIndicator: true,
+    investisseurPlusBonus: false,
     title: 'Analyse technique : repérez les signaux avant la foule',
     tagline: 'Maîtrisez les graphiques, patterns et timing d\'entrée sur la BRVM',
     theme: 'Graphiques • Patterns • Timing',
@@ -159,7 +160,6 @@ const WEBINARS: Webinar[] = [
     gradient: 'from-orange-500 to-rose-600',
     accentColor: '#F97316',
     icon: <Flame className="w-5 h-5" />,
-    investisseurPlusBonus: true,
   },
 ];
 
@@ -176,7 +176,6 @@ const PACK = {
   tagline: '3 sessions intensives · Experts BRVM · Certification officielle',
   earlyBirdDeadline: '2026-05-22T20:00:00Z',
   price: 35000,
-  earlyBirdPrice: 20000,
   gradient: 'from-blue-700 to-indigo-800',
   inclusions: [
     '3 webinaires live (Fondamentaux · Fondamentale · Technique)',
@@ -608,7 +607,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         )}
 
         {/* Décompte early bird si pas encore expiré */}
-        {earlyBird && !countdown.expired && (
+        {earlyBird && !countdown.expired && !webinar.hideEarlyBirdIndicator && (
           <div className="mb-3 bg-amber-500/10 border border-amber-400/30 rounded-xl px-3 py-2.5">
             <p className="text-[10px] font-bold text-amber-700 mb-2 flex items-center gap-1">
               <Flame className="w-3 h-3 animate-pulse" /> {webinar.registrationClose ? 'Inscriptions ferment dans' : 'Tarif réduit expire dans'}
@@ -698,16 +697,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
 // ─── PackCard ─────────────────────────────────────────────────────────────────
 
 const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
-  const [countdown, setCountdown] = useState(getPackCountdown(PACK.earlyBirdDeadline));
-
-  useEffect(() => {
-    const t = setInterval(() => setCountdown(getPackCountdown(PACK.earlyBirdDeadline)), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const earlyBirdActive = !countdown.expired;
-  const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
-  const savings = PACK.price - PACK.earlyBirdPrice;
+  const currentPrice = PACK.price;
 
   return (
     <div className="relative bg-gradient-to-br from-blue-700 to-indigo-900 rounded-2xl overflow-hidden shadow-xl mb-6 border border-blue-600/30">
@@ -730,6 +720,11 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
             <h3 className="text-xl font-extrabold text-white leading-snug mb-1">{PACK.title}</h3>
             <p className="text-blue-200 text-sm mb-5">{PACK.tagline}</p>
 
+            <div className="mb-4 flex items-center gap-2 bg-yellow-400/15 border border-yellow-300/30 rounded-xl px-3 py-2">
+              <Zap className="w-3.5 h-3.5 text-yellow-300 flex-shrink-0" />
+              <span className="text-xs font-bold text-yellow-200">🎁 Bonus : 1 semaine Investisseur+ offerte</span>
+            </div>
+
             <ul className="space-y-2.5">
               {PACK.inclusions.map((item, i) => {
                 const icons = [Video, Users, Calendar, TrendingUp, Award];
@@ -748,47 +743,10 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
 
           {/* Colonne droite — prix + CTA */}
           <div className="md:w-60 flex-shrink-0 bg-white/10 backdrop-blur-sm rounded-2xl p-5 flex flex-col gap-3 border border-white/10">
-            {earlyBirdActive ? (
-              <>
-                <div>
-                  <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif early bird</p>
-                  <p className="text-3xl font-extrabold text-white leading-none">{formatPrice(currentPrice)}</p>
-                  <p className="text-blue-300 text-xs line-through mt-1">{formatPrice(PACK.price)}</p>
-                  <p className="text-emerald-400 text-xs font-bold mt-1">Vous économisez {formatPrice(savings)}</p>
-                </div>
-
-                <div className="bg-amber-500/20 border border-amber-400/30 rounded-xl px-3 py-2.5">
-                  <p className="text-amber-200 text-[10px] font-semibold mb-2 flex items-center gap-1">
-                    <Flame className="w-3 h-3 animate-pulse" /> Offre expire dans
-                  </p>
-                  <div className="flex gap-1.5">
-                    {countdown.days > 0 && (
-                      <div className="flex-1 bg-amber-400/25 rounded-lg py-1.5 text-center">
-                        <p className="text-sm font-extrabold text-amber-100 leading-none">{pad2(countdown.days)}</p>
-                        <p className="text-[9px] text-amber-300 mt-0.5">j</p>
-                      </div>
-                    )}
-                    <div className="flex-1 bg-amber-400/25 rounded-lg py-1.5 text-center">
-                      <p className="text-sm font-extrabold text-amber-100 leading-none">{pad2(countdown.hours)}</p>
-                      <p className="text-[9px] text-amber-300 mt-0.5">h</p>
-                    </div>
-                    <div className="flex-1 bg-amber-400/25 rounded-lg py-1.5 text-center">
-                      <p className="text-sm font-extrabold text-amber-100 leading-none">{pad2(countdown.minutes)}</p>
-                      <p className="text-[9px] text-amber-300 mt-0.5">min</p>
-                    </div>
-                    <div className="flex-1 bg-amber-400/25 rounded-lg py-1.5 text-center">
-                      <p className="text-sm font-extrabold text-amber-100 leading-none">{pad2(countdown.seconds)}</p>
-                      <p className="text-[9px] text-amber-300 mt-0.5">sec</p>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div>
-                <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif standard</p>
-                <p className="text-3xl font-extrabold text-white">{formatPrice(PACK.price)}</p>
-              </div>
-            )}
+            <div>
+              <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif</p>
+              <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
+            </div>
 
             <button
               onClick={onRegister}
@@ -810,9 +768,7 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
 
 const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void }> = ({ onClose }) => {
   const { userProfile } = useAuth();
-  const earlyBirdActive = new Date(PACK.earlyBirdDeadline).getTime() > Date.now();
-  const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
-  const savings = PACK.price - PACK.earlyBirdPrice;
+  const currentPrice = PACK.price;
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
@@ -858,7 +814,7 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
           email: form.email.trim(),
           phone: `${form.dialCode} ${form.phoneNumber.trim()}`,
           type: 'pack',
-          earlyBird: earlyBirdActive,
+          earlyBird: false,
           effectivePrice: currentPrice,
         }),
       });
