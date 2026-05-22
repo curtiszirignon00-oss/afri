@@ -22,7 +22,7 @@ import { writeAuditLog, getClientIp, getUserAgent } from "../services/audit.serv
 export async function register(req: Request, res: Response, next: NextFunction) {
     try {
         // Le frontend doit envoyer : name, lastname, email, password
-        const { name, lastname, email, password } = req.body;
+        const { name, lastname, email, password, telephone } = req.body;
 
         // 1. Bloquer les domaines d'emails jetables connus
         const BLOCKED_DOMAINS = ['dollicons.com', 'virgilian.com', '---.com', 'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwam.com', 'yopmail.com', 'trashmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la', 'guerrillamail.info', 'spam4.me', 'maildrop.cc'];
@@ -52,6 +52,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             email,
             password: hashedPassword, // ENVOI DU HASH
             role: 'user',
+            telephone: telephone || null,
             email_confirmation_token: confirmationToken,
             email_confirmation_expires: tokenExpiration,
         });
@@ -139,14 +140,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
             return next(createError.unauthorized("Email ou mot de passe invalide"));
         }
 
-        // 2. Vérification différée : bloquer uniquement à J+30
+        // 2. Confirmation email obligatoire avant toute connexion
         if (!user.email_verified_at) {
-            const daysSinceSignup = user.created_at
-                ? Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))
-                : 0;
-            if (daysSinceSignup >= 30) {
-                return next(createError.forbidden("Votre compte a été suspendu faute de confirmation d'email. Vérifiez votre boîte mail ou demandez un nouveau lien."));
-            }
+            return next(createError.forbidden("Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte mail ou demandez un nouveau lien de confirmation."));
         }
 
         // 3. Comparaison CRITIQUE du mot de passe

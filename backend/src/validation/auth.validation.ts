@@ -37,6 +37,11 @@ export const registerSchema = zod.object({
         .refine(p => /[^A-Za-z0-9]/.test(p), 'Doit contenir au moins un caractère spécial (!@#$%...)'),
     name: zod.string().min(2).max(100),
     lastname: zod.string().min(2).max(100),
+    telephone: zod.string()
+        .regex(/^\+[1-9]\d{6,14}$/, 'Numéro de téléphone invalide (format international requis)')
+        .optional()
+        .or(zod.literal(''))
+        .nullable(),
 });
 
 export const resendConfirmationSchema = zod.object({

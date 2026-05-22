@@ -12,15 +12,38 @@ export function getAuthToken(): string | null {
   return authToken;
 }
 
-// Refresh token en mémoire — fallback pour mobile quand le cookie rtk est bloqué (ITP)
+// Refresh token — mémoire + localStorage pour survivre aux rechargements de page sur iPhone Safari.
+// Safari ITP bloque les cookies cross-site, donc le cookie rtk est inutilisable.
+// Le refresh token est un random hex (pas de données utilisateur), même pratique que Firebase/Supabase.
+const RTK_STORAGE_KEY = 'ab_rtk';
 let refreshTokenInMemory: string | null = null;
 
 export function setRefreshToken(token: string | null): void {
   refreshTokenInMemory = token;
+  try {
+    if (token) {
+      localStorage.setItem(RTK_STORAGE_KEY, token);
+    } else {
+      localStorage.removeItem(RTK_STORAGE_KEY);
+    }
+  } catch {
+    // localStorage peut être bloqué en mode navigation privée — mode mémoire seul comme fallback
+  }
 }
 
 export function getRefreshToken(): string | null {
-  return refreshTokenInMemory;
+  if (refreshTokenInMemory) return refreshTokenInMemory;
+  // Après rechargement de page, récupérer depuis localStorage
+  try {
+    const stored = localStorage.getItem(RTK_STORAGE_KEY);
+    if (stored) {
+      refreshTokenInMemory = stored; // réchauffer le cache mémoire
+      return stored;
+    }
+  } catch {
+    // localStorage indisponible
+  }
+  return null;
 }
 
 // Token CSRF en mémoire (jamais exposé dans le DOM ni dans le localStorage)
