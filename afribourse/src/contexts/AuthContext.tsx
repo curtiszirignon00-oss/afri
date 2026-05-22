@@ -85,6 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const sessionExpiredFiredRef = useRef(false);
   // Ref miroir de isLoggedIn pour les closures d'event listeners (évite les dépendances cycliques)
   const isLoggedInRef = useRef(initialHasSession);
+  // Vrai uniquement après qu'un checkAuth() ait réussi — empêche "session expirée" pendant la phase optimiste
+  const authConfirmedRef = useRef(false);
 
   // Planifie un refresh proactif du token avant son expiration
   const scheduleTokenRefresh = (issuedAt: number = Date.now()) => {
@@ -161,9 +163,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshTimerRef.current = setTimeout(() => {
           if (isLoggedInRef.current) silentRefresh();
         }, 30_000);
-      } else if (isAuthError) {
-        // Token vraiment révoqué ou expiré côté serveur
-        if (isLoggedInRef.current) {
+      } else if (err?.response?.status === 401) {
+        // Refresh token vraiment révoqué ou expiré côté serveur (401 = token invalide)
+        // On n'affiche "session expirée" que si l'auth avait été confirmée (évite les faux positifs au rechargement)
+        if (isLoggedInRef.current && authConfirmedRef.current) {
           triggerSessionExpired();
         } else {
           isLoggedInRef.current = false;
@@ -172,6 +175,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAuthToken(null);
           setRefreshToken(null);
         }
+      } else if (isAuthError) {
+        // 403 ou autre erreur auth (ex: CSRF) — ne pas traiter comme session expirée
+        isLoggedInRef.current = false;
+        setIsLoggedIn(false);
+        setUserProfile(null);
+        setAuthToken(null);
+        setRefreshToken(null);
       }
       // Autres erreurs (5xx serveur) : on ignore — le timer proactif retentera au prochain cycle
     } finally {
@@ -195,6 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setUserProfile(profile);
       isLoggedInRef.current = true;
+      authConfirmedRef.current = true;
       setIsLoggedIn(true);
       setSessionExpired(false);
       sessionExpiredFiredRef.current = false;
@@ -213,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Ne pas écraser l'état si un login manuel vient d'aboutir
       if (!initialCheckAborted.current) {
         isLoggedInRef.current = false;
+        authConfirmedRef.current = false;
         setIsLoggedIn(false);
         setUserProfile(null);
         setAuthToken(null);
@@ -234,6 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUserProfile(user);
     isLoggedInRef.current = true;
+    authConfirmedRef.current = true;
     setIsLoggedIn(true);
     setLoading(false);
     setSessionExpired(false);
@@ -260,6 +273,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       initialCheckAborted.current = false;
       sessionExpiredFiredRef.current = false;
       isLoggedInRef.current = false;
+      authConfirmedRef.current = false;
       setIsLoggedIn(false);
       setUserProfile(null);
       setSessionExpired(false);
@@ -311,9 +325,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Écouter les 401 émis par n'importe quel appel API (voir apiFetch)
+    // Écouter les 401 émis par n'importe quel appel API
+    // authConfirmedRef garantit qu'on n'affiche pas le modal pendant la phase optimiste de rechargement
     const handleGlobalSessionExpired = () => {
-      if (isLoggedInRef.current) {
+      if (isLoggedInRef.current && authConfirmedRef.current) {
         triggerSessionExpired();
       }
     };
