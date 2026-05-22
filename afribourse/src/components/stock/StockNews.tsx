@@ -4,6 +4,7 @@ import { findNewsByTicker, StockNews as FundamentalsNews, Sector } from '../../d
 import { BRVM_NEWS, BRVMArticle, ContentBlock } from '../../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from '../BRVMNewsGrid';
 import { BlockRenderer } from '../BlockRenderer';
+import ArticleInteractions from '../ArticleInteractions';
 
 type NewsItem = {
   id: string;
@@ -313,6 +314,7 @@ type DBArticle = {
   id: string;
   title: string;
   summary?: string | null;
+  content?: string | null;
   category?: string | null;
   author?: string | null;
   tickers: string[];
@@ -395,9 +397,13 @@ function DBArticlePanel({ article, onClose }: { article: DBArticle; onClose: () 
           )}
           {blocks ? (
             <BlockRenderer blocks={blocks} variant="news" />
+          ) : article.content ? (
+            <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
+                 dangerouslySetInnerHTML={{ __html: article.content }} />
           ) : (
             <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
           )}
+          <ArticleInteractions articleId={article.id} />
           <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4 mt-6">
             {article.author ?? 'AfriBourse Research'} — Informations éducatives uniquement.
           </p>

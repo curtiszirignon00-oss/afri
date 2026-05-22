@@ -7,6 +7,7 @@ import { BRVM_NEWS, BRVMArticle, ContentBlock } from '../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from './BRVMNewsGrid';
 import { BlockRenderer } from './BlockRenderer';
 import { markNewsVisited, getUnseenBrvmCount } from '../hooks/useContentUnseen';
+import ArticleInteractions from './ArticleInteractions';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 const BRVM_CATEGORY_MAP: Record<string, string> = {
@@ -86,6 +87,7 @@ function DBArticlePanel({ article, onClose }: { article: NewsArticle; onClose: (
           ) : (
             <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
           )}
+          <ArticleInteractions articleId={article.id} />
           <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4 mt-6">
             {article.author ?? 'AfriBourse'} · {article.source ?? 'AfriBourse Research'} · Informations éducatives uniquement.
           </p>

@@ -146,6 +146,10 @@ model User {
   actionTracking UserActionTracking[]
   featureUsage   FeatureUsage[]
 
+  // --- Article interactions ---
+  articleLikes    ArticleLike[]
+  articleComments ArticleComment[]
+
   // --- Nouvelles relations (profil social) ---
   challengeProgress   UserChallengeProgress[]
   subscriptionIntents SubscriptionIntent[]
@@ -1174,6 +1178,38 @@ model PriceAlertNotification {
   @@index([priceAlertId])
   @@index([created_at])
   @@map("price_alert_notifications")
+}
+
+// ================================= //
+// === ARTICLE INTERACTIONS ======== //
+// ================================= //
+
+model ArticleLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String   // ID de l'article (DB ObjectId ou BRVM string id)
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+
+  @@unique([articleId, userId])
+  @@index([articleId])
+  @@index([userId])
+  @@map("article_likes")
+}
+
+model ArticleComment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  articleId String   // ID de l'article (DB ObjectId ou BRVM string id)
+  userId    String   @db.ObjectId
+  text      String   @db.String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([articleId])
+  @@index([userId])
+  @@index([created_at])
+  @@map("article_comments")
 }
 
 // ================================= //
