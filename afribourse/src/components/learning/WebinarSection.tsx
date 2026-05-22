@@ -89,6 +89,7 @@ interface Webinar {
   endDate: string;
   earlyBirdDeadline: string;
   registrationClose?: boolean;
+  earlyBirdTaken?: number;
   price: number;
   discountPercent: number;
   duration: string;
@@ -145,7 +146,8 @@ const WEBINARS: Webinar[] = [
     theme: 'Graphiques • Patterns • Timing',
     date: '2026-06-06T09:00:00Z',
     endDate: '2026-06-07T13:00:00Z',
-    earlyBirdDeadline: '2026-05-14T23:59:59Z',
+    earlyBirdDeadline: '2026-06-05T20:00:00Z',
+    earlyBirdTaken: 15,
     price: 10000,
     discountPercent: 50,
     duration: '4H',
@@ -297,7 +299,8 @@ const PAYMENT_DIAL_CODES = [
 
 const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void }> = ({ webinar, count, onClose }) => {
   const { userProfile } = useAuth();
-  const resolved = effectiveCount(count, webinar.earlyBirdDeadline);
+  const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
+  const resolved = effectiveCount(displayCount, webinar.earlyBirdDeadline);
   const earlyBird = resolved < EARLY_BIRD_SEATS;
   const earlyBirdRemaining = Math.max(0, EARLY_BIRD_SEATS - resolved);
   const effectivePrice = earlyBird ? webinar.price * (1 - webinar.discountPercent / 100) : webinar.price;
@@ -540,7 +543,8 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
 const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number }> = ({
   webinar, onRegister, isFirst, count,
 }) => {
-  const earlyBird = effectiveCount(count, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
+  const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
+  const earlyBird = effectiveCount(displayCount, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
   const isMultiDay = new Date(webinar.date).toDateString() !== new Date(webinar.endDate).toDateString();
   const [countdown, setCountdown] = useState(getPackCountdown(webinar.earlyBirdDeadline));
@@ -630,7 +634,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         )}
 
         <div className="mb-4">
-          <EarlyBirdSeatsIndicator count={count} fullPrice={webinar.price} deadline={webinar.earlyBirdDeadline} />
+          <EarlyBirdSeatsIndicator count={displayCount} fullPrice={webinar.price} deadline={webinar.earlyBirdDeadline} />
         </div>
 
         {(() => {
