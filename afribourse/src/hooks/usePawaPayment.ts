@@ -126,7 +126,6 @@ export const PAWAPAY_CORRESPONDENTS: Record<string, Record<string, string>> = {
     '+221': 'ORANGE_SEN',
     '+226': 'ORANGE_BFA',
     '+223': 'ORANGE_MLI',
-    '+237': 'ORANGE_CMR',
     '+233': 'ORANGE_SLE', // Sierra Leone (code partagé)
   },
   'mtn-momo': {

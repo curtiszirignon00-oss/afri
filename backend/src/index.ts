@@ -67,6 +67,7 @@ import timeMachineRoutes from './routes/time-machine.routes'; // Time Machine �
 import ogRoutes from './routes/og.routes'; // Open Graph images pour le partage social
 import pawaPayRoutes from './routes/pawapay.routes'; // PawaPay Mobile Money
 import promoRoutes from './routes/promo.routes';       // Promos utilisateur (réductions ciblées)
+import paymentLinkRoutes from './routes/paymentLink.routes'; // Liens de paiement uniques (admin)
 import articleInteractionRoutes from './routes/article-interactions.routes'; // Likes & commentaires articles
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
@@ -241,6 +242,7 @@ class App {
       if (req.path.startsWith('/og/')) return next();
       // Webhooks PawaPay : POST depuis les serveurs PawaPay, pas de CSRF token navigateur
       if (req.path.startsWith('/pawapay/webhook')) return next();
+      if (req.path.match(/^\/payment-links\/[^/]+\/pay$/)) return next();
       return doubleCsrfProtection(req, res, next);
     });
 
@@ -307,6 +309,7 @@ class App {
     this.app?.use('/api/og', ogRoutes);                                    // Open Graph images (PNG, public, crawlers sociaux)
     this.app?.use('/api/pawapay', pawaPayRoutes);                          // PawaPay Mobile Money (dépôts, remboursements, webhooks)
     this.app?.use('/api/promo', promoRoutes);                              // Promos utilisateur ciblées (réductions automatiques)
+    this.app?.use('/api/payment-links', paymentLinkRoutes);               // Liens de paiement uniques (admin → client)
     this.app?.use('/api/articles', articleInteractionRoutes);              // Likes & commentaires articles
 
     // Static Uploads Route

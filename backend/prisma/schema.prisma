@@ -1104,6 +1104,30 @@ model Refund {
 }
 
 // ================================= //
+// === LIEN DE PAIEMENT UNIQUE === //
+// ================================= //
+
+model PaymentLink {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  token     String    @unique
+  planId    String
+  planName  String
+  amount    Int
+  currency  String    @default("XOF")
+  email     String?
+  firstName String?
+  note      String?
+  used      Boolean   @default(false)
+  usedAt    DateTime?
+  depositId String?
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  @@index([used])
+  @@map("payment_links")
+}
+
+// ================================= //
 // === PROMOS UTILISATEUR === //
 // ================================= //
 

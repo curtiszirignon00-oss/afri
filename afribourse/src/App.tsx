@@ -69,6 +69,7 @@ const SurveyPage = lazy(() => import('./pages/SurveyPage'));
 const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow'));
 const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
 const WebinarPage = lazy(() => import('./pages/WebinarPage'));
+const PaymentLinkPage = lazy(() => import('./pages/PaymentLinkPage'));
 
 // Pages auth lazy — l'utilisateur accepte un délai au moment du clic
 const SignupPage = lazy(() => import('./components/SignupPage'));
@@ -185,6 +186,7 @@ function Layout() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />
+          <Route path="/pay/:token" element={<PaymentLinkPage />} />
 
           {/* Time Machine — Apprentissage guidé historique */}
           <Route path="/time-machine" element={<ProtectedRoute requireOnboarding={false}><TimeMachinePage /></ProtectedRoute>} />
