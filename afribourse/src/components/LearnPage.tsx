@@ -37,6 +37,7 @@ import { BlockRenderer } from './BlockRenderer';
 import { ContentBlock } from '../data/brvm2026News';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import CertificateModal from './CertificateModal';
+import ArticleInteractions from './ArticleInteractions';
 
 // Gamification imports
 import { useGamificationSummary } from '../hooks/useGamification';
@@ -1277,6 +1278,13 @@ export default function LearnPage() {
                                 <HelpCircle className="w-5 h-5" />
                                 Je ne comprends pas quelque chose - Demander au tuteur IA
                             </button>
+                        </div>
+                        )}
+
+                        {/* Commentaires du module - Cachés pendant le quiz et les résultats */}
+                        {!quizState.isActive && !quizState.showResults && (
+                        <div className="px-4 sm:px-8 py-4">
+                            <ArticleInteractions articleId={selectedModule.id} />
                         </div>
                         )}
 
