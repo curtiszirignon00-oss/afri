@@ -91,6 +91,7 @@ interface Webinar {
   registrationClose?: boolean;
   earlyBirdTaken?: number;
   hideEarlyBirdIndicator?: boolean;
+  closed?: boolean;
   price: number;
   discountPercent: number;
   duration: string;
@@ -107,6 +108,7 @@ interface Webinar {
 const WEBINARS: Webinar[] = [
   {
     id: 'w1-fondamentaux',
+    closed: true,
     title: 'Maîtriser les fondamentaux de la bourse',
     tagline: 'Passez de zéro à investisseur en une session',
     theme: 'Initiation • Stratégie • BRVM',
@@ -170,6 +172,7 @@ const MAX_SEATS = 50;
 
 const PACK = {
   id: 'pack-parcours-investisseur',
+  closed: true,
   title: 'Pack Parcours Investisseur BRVM',
   tagline: '3 sessions intensives · Experts BRVM · Certification officielle',
   earlyBirdDeadline: '2026-05-22T20:00:00Z',
@@ -679,13 +682,19 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
             )}
           </div>
 
-          <button
-            onClick={() => onRegister(webinar)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r ${webinar.gradient} hover:opacity-90 active:scale-95 transition-all flex-shrink-0`}
-          >
-            Je m'inscris
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          {webinar.closed ? (
+            <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-400 bg-gray-100 flex-shrink-0 cursor-not-allowed">
+              Inscriptions fermées
+            </span>
+          ) : (
+            <button
+              onClick={() => onRegister(webinar)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r ${webinar.gradient} hover:opacity-90 active:scale-95 transition-all flex-shrink-0`}
+            >
+              Je m'inscris
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -746,12 +755,15 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
               <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
             </div>
 
-            <button
-              onClick={onRegister}
-              className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg"
-            >
-              Rejoindre le parcours complet →
-            </button>
+            {PACK.closed ? (
+              <div className="w-full py-3 bg-white/20 text-white/50 font-extrabold text-sm rounded-xl text-center cursor-not-allowed">
+                Inscriptions fermées
+              </div>
+            ) : (
+              <button onClick={onRegister} className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
+                Rejoindre le parcours complet →
+              </button>
+            )}
             <p className="text-blue-300 text-[10px] text-center leading-relaxed">
               Satisfait ou remboursé · Paiement Mobile Money sécurisé
             </p>
@@ -840,11 +852,6 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
           <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">Pré-inscription · Pack complet</p>
           <h3 className="text-white font-bold text-lg leading-snug pr-6">{PACK.title}</h3>
           <p className="text-blue-200 text-sm mt-0.5">3 webinaires + communauté + certificat</p>
-          {earlyBirdActive && (
-            <span className="inline-block mt-2 bg-amber-400 text-amber-900 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-              ⭐ Offre early bird active
-            </span>
-          )}
         </div>
 
         <div className="overflow-y-auto flex-1">
@@ -863,17 +870,9 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
                     ))}
                   </ul>
                 </div>
-                <div className={`col-span-2 sm:col-span-1 rounded-xl p-3 border ${earlyBirdActive ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="col-span-2 sm:col-span-1 rounded-xl p-3 border bg-gray-50 border-gray-200">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Votre tarif</p>
                   <p className="text-2xl font-extrabold text-gray-900">{formatPrice(currentPrice)}</p>
-                  {earlyBirdActive && (
-                    <>
-                      <p className="text-xs text-gray-400 line-through mt-0.5">{formatPrice(PACK.price)}</p>
-                      <p className="text-xs font-bold text-emerald-600 mt-1.5 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> Vous économisez {formatPrice(savings)}
-                      </p>
-                    </>
-                  )}
                 </div>
               </div>
 
