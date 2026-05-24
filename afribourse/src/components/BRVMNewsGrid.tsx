@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { BRVM_NEWS, BRVMArticle, ImpactType, BRVM_CATEGORIES } from '../data/brvm2026News';
 import { BlockRenderer } from './BlockRenderer';
+import ArticleInteractions from './ArticleInteractions';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -182,6 +183,7 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
             ))}
           </div>
 
+          <ArticleInteractions articleId={article.id} />
           <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4">
             Ces informations sont fournies à titre éducatif exclusivement et ne constituent pas un conseil en investissement.
             Données issues des publications officielles BRVM.
