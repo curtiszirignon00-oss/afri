@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Bell, TrendingUp, TrendingDown, Mail, Smartphone } from 'lucide-react';
-import { useCreatePriceAlert, useUpdatePriceAlert } from '../../hooks/usePriceAlerts';
+import { useCreatePriceAlert, useUpdatePriceAlert, usePriceAlerts } from '../../hooks/usePriceAlerts';
+import { useQuotaLimitNudge } from '../../hooks/useNudgeTriggers';
 import { PriceAlert } from '../../types';
 
 interface PriceAlertModalProps {
@@ -27,6 +28,10 @@ export default function PriceAlertModal({
 
   const createMutation = useCreatePriceAlert();
   const updateMutation = useUpdatePriceAlert();
+  const { data: existingAlerts = [] } = usePriceAlerts();
+
+  // Nudge si l'utilisateur atteint la limite d'alertes du plan gratuit (3 max)
+  useQuotaLimitNudge(existingAlerts.length, 3);
 
   // Pré-remplir le formulaire si on édite une alerte existante
   useEffect(() => {

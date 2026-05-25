@@ -17,6 +17,7 @@ import { TimeMachineProvider } from './contexts/TimeMachineContext';
 import { ChallengeProvider } from './contexts/ChallengeContext';
 import { CelebrationProvider } from './contexts/CelebrationContext';
 import { OnboardingGuideProvider } from './context/OnboardingGuideContext';
+import { NudgeProvider } from './contexts/NudgeContext';
 
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
@@ -89,10 +90,12 @@ const AdminSubscriptionStats = lazy(() => import('./components/AdminSubscription
 const SurveyPopup = lazy(() => import('./components/survey/SurveyPopup'));
 const OnboardingChecklist = lazy(() => import('./components/onboarding/OnboardingChecklist'));
 const CelebrationModal = lazy(() => import('./components/onboarding/CelebrationModal'));
+const NudgeRenderer = lazy(() => import('./components/nudges/NudgeRenderer'));
 
 // Hooks
 import { useGoogleAnalytics } from './hooks/useGoogleAnalytics';
 import { usePageTracking } from './hooks/useAnalytics';
+import { useSessionCounter } from './hooks/useNudgeTriggers';
 
 // Debug utilities (only in development)
 if (import.meta.env.DEV) {
@@ -124,6 +127,9 @@ function Layout() {
   const location = useLocation();
   const { isLoggedIn } = useAuth();
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
+
+  // Incrémenter le compteur de sessions (une seule fois par mount)
+  useSessionCounter();
 
   // Initialiser Google Analytics pour tracker toutes les pages
   useGoogleAnalytics();
@@ -161,6 +167,11 @@ function Layout() {
       <SilentErrorBoundary name="CelebrationModal">
         <Suspense fallback={null}>
           <CelebrationModal />
+        </Suspense>
+      </SilentErrorBoundary>
+      <SilentErrorBoundary name="NudgeRenderer">
+        <Suspense fallback={null}>
+          <NudgeRenderer />
         </Suspense>
       </SilentErrorBoundary>
 
@@ -449,7 +460,9 @@ function App() {
               <TimeMachineProvider>
                 <BrowserRouter>
                   <OnboardingGuideProvider>
+                  <NudgeProvider>
                     <Layout />
+                  </NudgeProvider>
                   </OnboardingGuideProvider>
                 </BrowserRouter>
               </TimeMachineProvider>

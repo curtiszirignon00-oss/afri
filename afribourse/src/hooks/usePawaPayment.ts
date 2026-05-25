@@ -147,7 +147,6 @@ export const PAWAPAY_CORRESPONDENTS: Record<string, Record<string, string>> = {
   },
   'wave': {
     '+225': 'WAVE_CIV',
-    '+221': 'WAVE_SEN',
   },
 };
 

@@ -16,6 +16,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
+import { useMarketsPageNudge, markScreenerUsed } from '../hooks/useNudgeTriggers';
 
 // Limites de comparaison selon l'abonnement
 const COMPARISON_LIMITS: Record<string, number> = {
@@ -51,6 +52,9 @@ export default function MarketsPageRefactored() {
 
   // Vue : liste ou carte de marché
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  // Nudges contextuels
+  useMarketsPageNudge();
 
   // Onboarding guidé nouveaux utilisateurs
   const { isActive: isOnboardingActive, steps: onboardingSteps } = useOnboardingGuideContext();
@@ -393,7 +397,8 @@ export default function MarketsPageRefactored() {
           {/* Advanced Filters Toggle */}
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              id="screener-section"
+              onClick={() => { setShowAdvancedFilters(!showAdvancedFilters); markScreenerUsed(); }}
               variant="outline"
               className="relative"
             >
@@ -549,7 +554,9 @@ export default function MarketsPageRefactored() {
 
         {/* Vue Carte de marché */}
         {viewMode === 'map' && (
-          <BRVMMarketMap stocks={stocks} loading={isLoading} />
+          <div id="heatmap-section">
+            <BRVMMarketMap stocks={stocks} loading={isLoading} />
+          </div>
         )}
 
         {/* Tableau des actions (vue liste) */}

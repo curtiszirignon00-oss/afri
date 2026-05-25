@@ -7,6 +7,8 @@ import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../
 import { useAuth } from '../contexts/AuthContext';
 import { usePortfolio } from '../hooks/usePortfolio';
 import { useBuyStock, useSellStock, apiFetch } from '../hooks/useApi';
+import { useDashboardNudge } from '../hooks/useNudgeTriggers';
+import { usePriceAlerts } from '../hooks/usePriceAlerts';
 import toast from 'react-hot-toast';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
 import OptimizedImage from './ui/OptimizedImage';
@@ -55,7 +57,7 @@ type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { checkAuth } = useAuth();
+  const { checkAuth, isLoggedIn } = useAuth();
 
   useEffect(() => { trackPortfolioViewed(); }, []);
 
@@ -155,6 +157,10 @@ export default function DashboardPage() {
   // et mettre à jour la watchlist quand stocksData devient disponible
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [watchlistTickers, setWatchlistTickers] = useState<string[]>([]);
+
+  const { data: priceAlertsData } = usePriceAlerts();
+  // Nudges contextuels — déclenchés après chargement des données watchlist
+  useDashboardNudge(watchlistTickers, isLoggedIn && userDataLoaded, priceAlertsData?.length);
 
   useEffect(() => {
     loadUserData();

@@ -42,6 +42,7 @@ import {
   useStockNews,
   useAnnualFinancials,
 } from '../hooks/useStockDetails';
+import { useStockPageNudge, markComparatorUsed } from '../hooks/useNudgeTriggers';
 import { Period } from '../services/stockApi';
 
 type StockDetailPageEnhancedProps = {};
@@ -70,6 +71,16 @@ export default function StockDetailPageEnhanced() {
   const onboardingGuide = useOnboardingGuideContext();
   const onboardingRef = React.useRef(onboardingGuide);
   React.useEffect(() => { onboardingRef.current = onboardingGuide; });
+
+  // Nudges contextuels — déclenchés au mount une fois le stock chargé
+  useStockPageNudge(symbol ?? '', stock, isInWatchlist, {
+    OPEN_WATCHLIST: () => void handleToggleWatchlist(),
+    OPEN_ALERT_MODAL: () => setIsAlertModalOpen(true),
+    OPEN_COMPARATOR: () => {
+      openComparison();
+      markComparatorUsed();
+    },
+  });
 
   // État pour les onglets et période
   const [activeTab, setActiveTab] = useState<TabId>('overview');
