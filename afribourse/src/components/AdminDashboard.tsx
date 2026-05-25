@@ -43,6 +43,7 @@ import {
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
 import AdminArticleEditor from './AdminArticleEditor';
+import AdminCertificates from './admin/AdminCertificates';
 
 interface UserStats {
   total: number;
@@ -1665,6 +1666,11 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Certificats Académie */}
+        <div className="mt-8 mb-8">
+          <AdminCertificates />
         </div>
 
         {/* Moderation Section */}

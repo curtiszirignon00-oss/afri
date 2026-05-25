@@ -6,6 +6,7 @@ import {
   buildStockSVG, buildBadgeSVG, buildPortfolioSVG, svgToPng,
   type StockOGData, type BadgeOGData, type PortfolioOGData,
 } from '../services/og-image.service';
+import { generateCertificateOGPng } from '../services/certificate-image.service';
 
 // Simple in-memory cache (Buffer + expiry). Avoids Redis for binary blobs.
 interface CacheEntry { buf: Buffer; expiresAt: number }
@@ -133,6 +134,39 @@ export async function getPortfolioOGImage(req: Request, res: Response, next: Nex
     cacheSet(cacheKey, png, 300);
 
     return sendPng(res, png, 300);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+// ─── GET /api/og/image/certificate/:uuid ─────────────────────────────────────
+
+export async function getCertificateOGImage(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { uuid } = req.params;
+    if (!uuid) return res.status(400).json({ error: 'UUID requis' });
+
+    const cacheKey = `og:certificate:${uuid}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return sendPng(res, cached, 86400);
+
+    const cert = await prisma.certificate.findUnique({
+      where: { id: uuid },
+      include: { module: true },
+    });
+
+    if (!cert || cert.status === 'revoked') return res.status(404).json({ error: 'Certificat introuvable' });
+
+    const png = await generateCertificateOGPng({
+      participantName: cert.participantName,
+      moduleName: cert.module.name,
+      moduleSubtitle: cert.module.subtitle,
+      webinarDate: cert.webinarDate,
+      issuedAt: cert.issuedAt,
+    });
+
+    cacheSet(cacheKey, png, 86400); // 24h
+    return sendPng(res, png, 86400);
   } catch (err) {
     return next(err);
   }

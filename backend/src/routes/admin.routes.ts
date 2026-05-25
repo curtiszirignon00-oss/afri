@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getPlatformStats, getPremiumIntents, forceVerifyUser, getTrialStats, getAIFeedbackStats, sendWebinarLaunchCampaign } from '../controllers/admin.controller';
 import { listAdminArticles, getAdminArticle, createAdminArticle, updateAdminArticle, deleteAdminArticle } from '../controllers/articles.controller';
+import { listModules, createModule, updateModule, issueCertificate, listCertificatesAdmin, revokeCertificate, resendCertificateEmail } from '../controllers/certificate.controller';
 import { admin } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -22,6 +23,17 @@ router.get('/ai-feedback-stats', admin, getAIFeedbackStats);
 
 // Campagne email — lancement webinaires (admin uniquement, irréversible)
 router.post('/send-webinar-launch-email', admin, sendWebinarLaunchCampaign);
+
+// ── Gestion des modules webinaires ────────────────────────────────────────────
+router.get('/webinar-modules', admin, listModules);
+router.post('/webinar-modules', admin, createModule);
+router.put('/webinar-modules/:id', admin, updateModule);
+
+// ── Gestion des certificats ───────────────────────────────────────────────────
+router.post('/certificates', admin, issueCertificate);
+router.get('/certificates', admin, listCertificatesAdmin);
+router.post('/certificates/:id/revoke', admin, revokeCertificate);
+router.post('/certificates/:id/resend-email', admin, resendCertificateEmail);
 
 // ── Gestion des articles (admin) ─────────────────────────────────────────────
 router.get('/articles', admin, listAdminArticles);

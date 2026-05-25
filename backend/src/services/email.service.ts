@@ -4896,6 +4896,86 @@ Fondateur, Afribourse`;
   });
 }
 
+export async function sendCertificateEmail({
+  email,
+  name,
+  moduleName,
+  webinarDate,
+  certificateUrl,
+}: {
+  email: string;
+  name: string;
+  moduleName: string;
+  webinarDate: Date;
+  certificateUrl: string;
+}): Promise<void> {
+  const firstName = (name || 'Apprenant').split(' ')[0];
+  const dateStr = new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(webinarDate);
+
+  const html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votre certificat Afribourse est prêt</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+    .container { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 12px; padding: 40px; color: #f1f5f9; }
+    .medal { text-align: center; font-size: 56px; margin-bottom: 8px; }
+    .brand { text-align: center; font-size: 12px; letter-spacing: 3px; color: #94a3b8; margin-bottom: 24px; }
+    h1 { text-align: center; font-size: 24px; color: #F59E0B; margin: 0 0 8px; }
+    .subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 32px; }
+    .card { background: rgba(255,255,255,0.05); border: 1px solid #334155; border-radius: 8px; padding: 24px; margin: 24px 0; }
+    .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #64748b; margin-bottom: 4px; }
+    .card-value { font-size: 18px; color: #f1f5f9; font-weight: 600; }
+    .cta { display: block; background: linear-gradient(135deg, #D97706, #F59E0B); color: #0F172A !important; text-decoration: none; text-align: center; padding: 16px 32px; border-radius: 8px; font-weight: 700; font-size: 16px; margin: 32px 0; }
+    .footer { text-align: center; font-size: 12px; color: #475569; margin-top: 32px; }
+    .divider { border: none; border-top: 1px solid #334155; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="medal">🏅</div>
+    <div class="brand">ACADÉMIE AFRIBOURSE</div>
+    <h1>Félicitations, ${firstName} !</h1>
+    <div class="subtitle">Votre certificat de participation est prêt</div>
+    <hr class="divider">
+    <div class="card">
+      <div class="card-label">Webinaire complété</div>
+      <div class="card-value">${moduleName}</div>
+      <div style="margin-top: 12px;">
+        <div class="card-label">Date</div>
+        <div style="color: #94a3b8; font-size: 14px;">${dateStr}</div>
+      </div>
+    </div>
+    <p style="color: #94a3b8; font-size: 14px; text-align: center;">
+      Vous pouvez désormais télécharger votre certificat et le partager sur LinkedIn, WhatsApp et vos autres réseaux.
+    </p>
+    <a href="${certificateUrl}" class="cta">🎓 Voir et télécharger mon certificat</a>
+    <hr class="divider">
+    <div class="footer">
+      <p>Continuez votre apprentissage sur <a href="https://afribourse.com" style="color: #F59E0B;">afribourse.com</a></p>
+      <p style="color: #334155; font-size: 11px; margin-top: 16px;">© Afribourse Académie · BRVM</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const text = `Félicitations ${firstName} ! Votre certificat "${moduleName}" est prêt. Téléchargez-le ici : ${certificateUrl}`;
+
+  await sendEmail({
+    to: email,
+    subject: `🏅 Votre certificat Afribourse est prêt, ${firstName} !`,
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,

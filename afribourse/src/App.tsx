@@ -31,6 +31,7 @@ import AdminRoute from './components/AdminRoute';
 import EmailVerificationBanner from './components/EmailVerificationBanner';
 import WelcomePopup from './components/WelcomePopup';
 import WebinarAnnouncementPopup from './components/WebinarAnnouncementPopup';
+import CertificatePopup from './components/certificate/CertificatePopup';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
 import { SessionExpiredModal } from './components/ui/SessionExpiredModal';
 
@@ -71,6 +72,7 @@ const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow
 const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
 const WebinarPage = lazy(() => import('./pages/WebinarPage'));
 const PaymentLinkPage = lazy(() => import('./pages/PaymentLinkPage'));
+const CertificatePage = lazy(() => import('./pages/CertificatePage'));
 
 // Pages auth lazy — l'utilisateur accepte un délai au moment du clic
 const SignupPage = lazy(() => import('./components/SignupPage'));
@@ -155,6 +157,9 @@ function Layout() {
       {/* Annonce webinaires — affiché une fois par utilisateur connecté */}
       <WebinarAnnouncementPopup />
 
+      {/* Popup certificat — affiché à la connexion si certificat en attente */}
+      <CertificatePopup />
+
       {/* Modal session expirée — affiché globalement, hors flux de pages */}
       <SessionExpiredModal />
 
@@ -198,6 +203,7 @@ function Layout() {
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />
           <Route path="/pay/:token" element={<PaymentLinkPage />} />
+          <Route path="/certificat/:uuid" element={<CertificatePage />} />
 
           {/* Time Machine — Apprentissage guidé historique */}
           <Route path="/time-machine" element={<ProtectedRoute requireOnboarding={false}><TimeMachinePage /></ProtectedRoute>} />

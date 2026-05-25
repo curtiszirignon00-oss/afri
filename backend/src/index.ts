@@ -69,6 +69,7 @@ import pawaPayRoutes from './routes/pawapay.routes'; // PawaPay Mobile Money
 import promoRoutes from './routes/promo.routes';       // Promos utilisateur (réductions ciblées)
 import paymentLinkRoutes from './routes/paymentLink.routes'; // Liens de paiement uniques (admin)
 import articleInteractionRoutes from './routes/article-interactions.routes'; // Likes & commentaires articles
+import certificateRoutes from './routes/certificate.routes';                 // Certificats de participation webinaires
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -311,6 +312,7 @@ class App {
     this.app?.use('/api/promo', promoRoutes);                              // Promos utilisateur ciblées (réductions automatiques)
     this.app?.use('/api/payment-links', paymentLinkRoutes);               // Liens de paiement uniques (admin → client)
     this.app?.use('/api/articles', articleInteractionRoutes);              // Likes & commentaires articles
+    this.app?.use('/api/certificates', certificateRoutes);                 // Certificats de participation webinaires
 
     // Static Uploads Route
     this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));

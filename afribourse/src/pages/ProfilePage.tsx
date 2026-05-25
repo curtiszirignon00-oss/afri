@@ -19,6 +19,7 @@ import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake, X } from 'lucide-re
 import { useMyAchievements, useStreak } from '../hooks/useGamification';
 import { AchievementCard, StreakFreezeIndicator, NextAchievements } from '../components/gamification';
 import BadgeShareModal from '../components/share/BadgeShareModal';
+import MyCertificates from '../components/certificate/MyCertificates';
 import type { Achievement } from '../types';
 
 export default function ProfilePage() {
@@ -409,6 +410,13 @@ export default function ProfilePage() {
                                 {/* Prochains Badges - objectifs les plus proches */}
                                 <NextAchievements />
                             </>
+                        )}
+
+                        {/* Mes Certificats — uniquement sur son propre profil */}
+                        {isOwnProfile && isLoggedIn && (
+                            <div className="bg-white rounded-2xl shadow-sm p-6">
+                                <MyCertificates />
+                            </div>
                         )}
 
                         {/* Create Community Button - Only for own profile */}

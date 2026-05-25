@@ -199,6 +199,9 @@ model User {
   // --- Free Trial ---
   freeTrials FreeTrial[]
 
+  // --- Certificats ---
+  certificates Certificate[]
+
   // --- Promos utilisateur ---
   userPromos UserPromo[]
 
@@ -1752,6 +1755,7 @@ enum NotificationType {
   JOIN_APPROVED       // Votre demande a été approuvée
   JOIN_REJECTED       // Votre demande a été rejetée
   SYSTEM              // Notification système / administrative
+  CERTIFICATE         // Nouveau certificat de participation décerné
 }
 
 model Notification {
@@ -2129,6 +2133,54 @@ model WebinarRegistration {
   @@index([email])
   @@index([paymentStatus])
   @@map("webinar_registrations")
+}
+
+// ================================= //
+// === CERTIFICATS ACADÉMIE ======== //
+// ================================= //
+
+model WebinarModule {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  moduleId  String   @unique  // ex: "fondamentaux-bourse"
+  name      String            // ex: "Fondamentaux de la Bourse"
+  subtitle  String            // ex: "Académie BRVM · 3 heures · Niveau débutant"
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  certificates Certificate[]
+
+  @@index([isActive])
+  @@map("webinar_modules")
+}
+
+model Certificate {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String        @db.ObjectId
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  participantName String
+  email           String
+  moduleId        String        @db.ObjectId
+  module          WebinarModule @relation(fields: [moduleId], references: [id])
+  webinarDate     DateTime
+  issuedAt        DateTime      @default(now())
+  issuedBy        String        // admin userId
+
+  status          String        @default("pending") // pending | viewed | downloaded | shared | revoked
+  viewedAt        DateTime?
+  downloadedAt    DateTime?
+  sharedAt        DateTime?
+  sharedOn        String[]      @default([])
+  revokedAt       DateTime?
+  revokedBy       String?
+  revokeReason    String?
+  internalNote    String?
+
+  @@index([userId])
+  @@index([status])
+  @@index([issuedAt])
+  @@map("certificates")
 }
 
 // ─── Time Machine ──────────────────────────────────────────────────────────────
