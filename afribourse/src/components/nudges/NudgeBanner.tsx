@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useNudgeContext } from '../../contexts/NudgeContext';
 import type { NudgeConfig } from '../../data/nudges';
+import { pulseElement } from '../../utils/nudgeUtils';
 
 const AUTH_PATHS = [
   '/login', '/signup', '/survey', '/confirmer-inscription',
@@ -54,10 +55,13 @@ export default function NudgeBanner({ nudge, onAction }: Props) {
 
   function executeAction(cta_action: string) {
     dismissNudge(nudge.id);
+    // Actions déléguées à la page parente (watchlist, alerte, comparateur, heatmap, screener)
     if (
       cta_action === 'OPEN_WATCHLIST' ||
       cta_action === 'OPEN_ALERT_MODAL' ||
-      cta_action === 'OPEN_COMPARATOR'
+      cta_action === 'OPEN_COMPARATOR' ||
+      cta_action === 'OPEN_HEATMAP' ||
+      cta_action === 'OPEN_SCREENER'
     ) {
       onAction?.(cta_action);
       return;
@@ -68,7 +72,8 @@ export default function NudgeBanner({ nudge, onAction }: Props) {
     }
     if (cta_action.startsWith('SCROLL_TO:')) {
       const id = cta_action.replace('SCROLL_TO:', '');
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      // Scroll + pulse avec un léger délai pour laisser le composant se démonter
+      setTimeout(() => pulseElement(id, true), 100);
       return;
     }
   }

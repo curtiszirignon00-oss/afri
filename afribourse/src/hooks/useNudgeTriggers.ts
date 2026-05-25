@@ -133,7 +133,12 @@ export function useStockPageNudge(
 
 // ─── Hook 3 : Page marchés ────────────────────────────────────────────────────
 
-export function useMarketsPageNudge() {
+interface MarketsPageCallbacks {
+  OPEN_HEATMAP?: () => void;
+  OPEN_SCREENER?: () => void;
+}
+
+export function useMarketsPageNudge(callbacks?: MarketsPageCallbacks) {
   const { showNudge } = useNudgeContext();
   const fired = useRef(false);
 
@@ -143,10 +148,17 @@ export function useMarketsPageNudge() {
 
     const visits = incrementMarketsVisits();
 
+    const onAction = callbacks
+      ? (action: string) => {
+          if (action === 'OPEN_HEATMAP') callbacks.OPEN_HEATMAP?.();
+          if (action === 'OPEN_SCREENER') callbacks.OPEN_SCREENER?.();
+        }
+      : undefined;
+
     if (visits === 1) {
-      showNudge('heatmap_first_time');
+      showNudge('heatmap_first_time', onAction);
     } else if (visits >= 2 && !localStorage.getItem(LS_SCREENER_USED)) {
-      showNudge('filter_screener_hint');
+      showNudge('filter_screener_hint', onAction);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import { useMarketsPageNudge, markScreenerUsed } from '../hooks/useNudgeTriggers';
+import { pulseElement } from '../utils/nudgeUtils';
 
 // Limites de comparaison selon l'abonnement
 const COMPARISON_LIMITS: Record<string, number> = {
@@ -53,8 +54,20 @@ export default function MarketsPageRefactored() {
   // Vue : liste ou carte de marché
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
-  // Nudges contextuels
-  useMarketsPageNudge();
+  // Nudges contextuels — avec callbacks qui activent directement les features
+  useMarketsPageNudge({
+    OPEN_HEATMAP: () => {
+      setViewMode('map');
+      markScreenerUsed();
+      // Scroll + pulse après le rendu de la heatmap
+      setTimeout(() => pulseElement('heatmap-section', true), 350);
+    },
+    OPEN_SCREENER: () => {
+      setShowAdvancedFilters(true);
+      markScreenerUsed();
+      setTimeout(() => pulseElement('screener-section', true), 150);
+    },
+  });
 
   // Onboarding guidé nouveaux utilisateurs
   const { isActive: isOnboardingActive, steps: onboardingSteps } = useOnboardingGuideContext();

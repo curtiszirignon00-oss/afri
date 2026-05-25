@@ -43,6 +43,7 @@ import {
   useAnnualFinancials,
 } from '../hooks/useStockDetails';
 import { useStockPageNudge, markComparatorUsed } from '../hooks/useNudgeTriggers';
+import { pulseElement } from '../utils/nudgeUtils';
 import { Period } from '../services/stockApi';
 
 type StockDetailPageEnhancedProps = {};
@@ -74,11 +75,20 @@ export default function StockDetailPageEnhanced() {
 
   // Nudges contextuels — déclenchés au mount une fois le stock chargé
   useStockPageNudge(symbol ?? '', stock, isInWatchlist, {
-    OPEN_WATCHLIST: () => void handleToggleWatchlist(),
-    OPEN_ALERT_MODAL: () => setIsAlertModalOpen(true),
+    OPEN_WATCHLIST: () => {
+      pulseElement('nudge-watchlist-btn');
+      void handleToggleWatchlist();
+    },
+    OPEN_ALERT_MODAL: () => {
+      pulseElement('nudge-alert-btn');
+      setIsAlertModalOpen(true);
+    },
     OPEN_COMPARATOR: () => {
       openComparison();
       markComparatorUsed();
+      // Pulse le bouton puis scroll vers le panel de comparaison
+      pulseElement('nudge-compare-btn');
+      setTimeout(() => pulseElement('nudge-comparison-panel', true), 350);
     },
   });
 
@@ -576,6 +586,7 @@ export default function StockDetailPageEnhanced() {
               <div className="flex items-center space-x-1 sm:space-x-2">
                 {/* Watchlist Button */}
                 <button
+                  id="nudge-watchlist-btn"
                   onClick={handleToggleWatchlist}
                   disabled={isTogglingWatchlist}
                   className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
@@ -593,6 +604,7 @@ export default function StockDetailPageEnhanced() {
                 </button>
                 {/* Price Alert Button */}
                 <button
+                  id="nudge-alert-btn"
                   onClick={() => setIsAlertModalOpen(true)}
                   className="p-2 rounded-full hover:bg-orange-100 transition-colors"
                   title="Créer une alerte de prix"
@@ -601,6 +613,7 @@ export default function StockDetailPageEnhanced() {
                 </button>
                 {/* Compare Button */}
                 <button
+                  id="nudge-compare-btn"
                   onClick={showComparison ? closeComparison : openComparison}
                   className={`p-2 rounded-full transition-colors ${
                     showComparison
@@ -649,7 +662,7 @@ export default function StockDetailPageEnhanced() {
 
       {/* Panel de comparaison */}
       {showComparison && (
-        <div className="bg-gray-50 border-b border-gray-200">
+        <div id="nudge-comparison-panel" className="bg-gray-50 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             {/* Barre de recherche pour ajouter un titre */}
             {comparisonStocks.length < comparisonLimit && (
