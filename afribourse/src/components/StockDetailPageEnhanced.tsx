@@ -43,7 +43,7 @@ import {
   useAnnualFinancials,
 } from '../hooks/useStockDetails';
 import { useStockPageNudge, markComparatorUsed } from '../hooks/useNudgeTriggers';
-import { pulseElement } from '../utils/nudgeUtils';
+import { flashButton, highlightSection, focusInput } from '../utils/nudgeUtils';
 import { Period } from '../services/stockApi';
 
 type StockDetailPageEnhancedProps = {};
@@ -84,19 +84,33 @@ export default function StockDetailPageEnhanced() {
   // Nudges contextuels — déclenchés au mount une fois le stock chargé
   useStockPageNudge(symbol ?? '', stock, isInWatchlist, {
     OPEN_WATCHLIST: () => {
-      pulseElement('nudge-watchlist-btn');
+      flashButton('nudge-watchlist-btn');
       void handleToggleWatchlist();
+      toast('⭐ Action ajoutée à ta Watchlist !', {
+        duration: 4000,
+        style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+      });
     },
     OPEN_ALERT_MODAL: () => {
-      pulseElement('nudge-alert-btn');
+      flashButton('nudge-alert-btn');
       setIsAlertModalOpen(true);
+      toast('🔔 Crée ton alerte de prix dans le formulaire ci-dessous', {
+        duration: 4000,
+        style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+      });
     },
     OPEN_COMPARATOR: () => {
       openComparison();
       markComparatorUsed();
-      // Pulse le bouton puis scroll vers le panel de comparaison
-      pulseElement('nudge-compare-btn');
-      setTimeout(() => pulseElement('nudge-comparison-panel', true), 350);
+      flashButton('nudge-compare-btn');
+      setTimeout(() => {
+        highlightSection('nudge-comparison-panel', true);
+        focusInput('nudge-compare-search');
+        toast('🔍 Comparateur ouvert — tape une action à comparer ↓', {
+          duration: 5000,
+          style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+        });
+      }, 350);
     },
   });
 
@@ -679,6 +693,7 @@ export default function StockDetailPageEnhanced() {
                   <div className="relative flex-1 max-w-xs">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
+                      id="nudge-compare-search"
                       type="text"
                       value={compareQuery}
                       onChange={e => { setCompareQuery(e.target.value); setShowCompareDropdown(true); }}

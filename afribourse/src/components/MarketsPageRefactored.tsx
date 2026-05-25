@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import { useMarketsPageNudge, markScreenerUsed } from '../hooks/useNudgeTriggers';
-import { pulseElement } from '../utils/nudgeUtils';
+import { flashButton, highlightSection } from '../utils/nudgeUtils';
 
 // Limites de comparaison selon l'abonnement
 const COMPARISON_LIMITS: Record<string, number> = {
@@ -58,14 +58,25 @@ export default function MarketsPageRefactored() {
   useMarketsPageNudge({
     OPEN_HEATMAP: () => {
       setViewMode('map');
-      markScreenerUsed();
-      // Scroll + pulse après le rendu de la heatmap
-      setTimeout(() => pulseElement('heatmap-section', true), 350);
+      flashButton('heatmap-tab-btn');
+      setTimeout(() => {
+        highlightSection('heatmap-section', true);
+        toast('🗺️ Carte de marché activée — visualisez les performances BRVM', {
+          duration: 4000,
+          style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+        });
+      }, 350);
     },
     OPEN_SCREENER: () => {
       setShowAdvancedFilters(true);
-      markScreenerUsed();
-      setTimeout(() => pulseElement('screener-section', true), 150);
+      flashButton('screener-section');
+      setTimeout(() => {
+        highlightSection('nudge-screener-panel', true);
+        toast('🔎 Filtres avancés ouverts — affinez votre recherche ↓', {
+          duration: 4000,
+          style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+        });
+      }, 150);
     },
   });
 
@@ -437,7 +448,7 @@ export default function MarketsPageRefactored() {
 
         {/* Advanced Filters Panel */}
         {showAdvancedFilters && (
-          <Card className="mb-6">
+          <Card id="nudge-screener-panel" className="mb-6">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtres avancés</h3>
 
@@ -542,6 +553,7 @@ export default function MarketsPageRefactored() {
               <span className="hidden sm:inline">Liste</span>
             </button>
             <button
+              id="heatmap-tab-btn"
               onClick={() => setViewMode('map')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'map'
