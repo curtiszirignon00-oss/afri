@@ -118,6 +118,7 @@ apiClient.interceptors.response.use(
           const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
             '/glossary', '/about', '/contact', '/privacy', '/help', '/subscriptions',
             '/community', '/communities', '/classement', '/login', '/signup',
+            '/webinaires', '/pay',
             '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email',
             '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'];
           const currentPath = window.location.pathname;

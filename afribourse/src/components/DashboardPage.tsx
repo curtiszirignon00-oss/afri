@@ -113,6 +113,15 @@ export default function DashboardPage() {
   const onboardingRef = useRef(onboardingGuide);
   useEffect(() => { onboardingRef.current = onboardingGuide; });
 
+  // Détection rétroactive : si un achat existe déjà quand l'onboarding démarre
+  useEffect(() => {
+    if (!isActive || steps.achat) return;
+    const hasBought =
+      (portfolio?.positions?.length ?? 0) > 0 ||
+      recentTransactions.some(t => t.type === 'BUY');
+    if (hasBought) onboardingGuide.completeStep('achat');
+  }, [portfolio, recentTransactions, isActive, steps.achat]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ✅ Analytics: Hook pour tracker les actions
   const { trackAction } = useAnalytics();
 

@@ -73,6 +73,14 @@ export default function StockDetailPageEnhanced() {
   const onboardingRef = React.useRef(onboardingGuide);
   React.useEffect(() => { onboardingRef.current = onboardingGuide; });
 
+  // Détection rétroactive : si un achat existe déjà quand l'onboarding démarre
+  React.useEffect(() => {
+    if (!onboardingGuide.isActive || onboardingGuide.steps.achat) return;
+    if ((portfolio?.positions?.length ?? 0) > 0) {
+      onboardingGuide.completeStep('achat');
+    }
+  }, [portfolio, onboardingGuide.isActive, onboardingGuide.steps.achat]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Nudges contextuels — déclenchés au mount une fois le stock chargé
   useStockPageNudge(symbol ?? '', stock, isInWatchlist, {
     OPEN_WATCHLIST: () => {

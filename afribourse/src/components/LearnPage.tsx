@@ -336,6 +336,14 @@ export default function LearnPage() {
         loadData();
     }, [loadData]);
 
+    // Détection rétroactive : si un module est déjà complété quand l'onboarding démarre
+    useEffect(() => {
+        if (!onboardingGuide.isActive || onboardingGuide.steps.cours) return;
+        if (progress.some(p => p.is_completed)) {
+            onboardingGuide.completeStep('cours');
+        }
+    }, [progress, onboardingGuide.isActive, onboardingGuide.steps.cours]); // eslint-disable-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         if (!selectedModule) return;
 
@@ -720,7 +728,7 @@ export default function LearnPage() {
     }, [isLoggedIn, loadData, selectedModule, trackAction, triggerSimbaMotivation]);
 
     useEffect(() => {
-        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13) {
+        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13) {
             // Réinitialiser l'état du quiz quand on ouvre un nouveau module
             setQuizState({
                 isActive: false,
@@ -738,7 +746,7 @@ export default function LearnPage() {
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 4 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13;
+        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13;
 
         return (
             <div className="min-h-screen bg-slate-50 overflow-x-hidden">
@@ -1759,7 +1767,7 @@ export default function LearnPage() {
                             const isCompleted = isModuleCompleted(module.slug);
                             const isUnlocked = isModuleUnlocked(module);
                             const previousModule = getPreviousIncompleteModule(module);
-                            const hasQuiz = (module.order_index ?? 0) >= 1 && (module.order_index ?? 0) !== 4 && (module.order_index ?? 0) !== 5;
+                            const hasQuiz = (module.order_index ?? 0) >= 1 && (module.order_index ?? 0) !== 5;
 
                             return (
                                 <button
