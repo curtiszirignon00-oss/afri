@@ -15,12 +15,14 @@ import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 const PLAN_TIER_MAP: Record<string, string> = {
   'investisseur-plus': 'premium',
   'pro': 'max',
+  'premium-modules': 'formation',
 };
 
 // Prix officiels par plan (source de vérité côté serveur)
 const PLAN_PRICES: Record<string, number> = {
   'investisseur-plus': 9900,
   'pro': 300000,
+  'premium-modules': 15000,
 };
 
 // ============================================================

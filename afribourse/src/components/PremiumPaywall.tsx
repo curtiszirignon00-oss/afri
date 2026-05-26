@@ -66,6 +66,12 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
   const Icon = planDetails.icon;
 
   const handleUpgrade = async () => {
+    if (plan === 'premium-modules') {
+      navigate('/formation');
+      onClose();
+      return;
+    }
+
     if (!userProfile) {
       navigate('/login', { state: { from: '/subscriptions' } });
       return;
