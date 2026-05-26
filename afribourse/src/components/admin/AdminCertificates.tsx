@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../lib/api-client';
-import { Award, Send, RotateCcw, XCircle, Search, ChevronDown, Loader2, CheckCircle2, Clock, Eye, Download, Share2 } from 'lucide-react';
+import { Award, Send, XCircle, Search, ChevronDown, Loader2, Clock, Eye, Download, Share2, Plus, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-interface Module { id: string; moduleId: string; name: string; subtitle: string }
+interface Module { id: string; moduleId: string; name: string; subtitle: string; order: number; isActive: boolean }
 interface Certificate {
   id: string;
   participantName: string;
@@ -27,7 +27,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; icon: JSX.El
 
 export default function AdminCertificates() {
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<'issue' | 'list'>('list');
+  const [activeTab, setActiveTab] = useState<'issue' | 'list' | 'modules'>('issue');
 
   // Formulaire
   const [form, setForm] = useState({
@@ -45,6 +45,9 @@ export default function AdminCertificates() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterModule, setFilterModule] = useState('');
+
+  // Nouveau module
+  const [newMod, setNewMod] = useState({ moduleId: '', name: '', subtitle: '', order: '' });
 
   // Modules
   const { data: modules = [] } = useQuery<Module[]>({
@@ -93,6 +96,19 @@ export default function AdminCertificates() {
     },
   });
 
+  // Créer un module
+  const createModMut = useMutation({
+    mutationFn: async (payload: { moduleId: string; name: string; subtitle: string; order: number }) => {
+      await apiClient.post('/admin/webinar-modules', payload);
+    },
+    onSuccess: () => {
+      toast.success('Module créé !');
+      setNewMod({ moduleId: '', name: '', subtitle: '', order: '' });
+      qc.invalidateQueries({ queryKey: ['admin-webinar-modules'] });
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || 'Erreur lors de la création'),
+  });
+
   // Révoquer
   const revokeMut = useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
@@ -139,18 +155,25 @@ export default function AdminCertificates() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setActiveTab('list')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'list' ? 'bg-amber-500 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
-        >
-          Certificats décernés {certs.length > 0 && `(${certData?.total ?? certs.length})`}
-        </button>
+      <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setActiveTab('issue')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'issue' ? 'bg-amber-500 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
         >
           🏅 Décerner un certificat
+        </button>
+        <button
+          onClick={() => setActiveTab('list')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'list' ? 'bg-amber-500 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+        >
+          Certificats décernés {certData?.total ? `(${certData.total})` : ''}
+        </button>
+        <button
+          onClick={() => setActiveTab('modules')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'modules' ? 'bg-amber-500 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+        >
+          <BookOpen size={14} className="inline mr-1" />
+          Gérer les modules ({modules.length})
         </button>
       </div>
 
@@ -389,6 +412,117 @@ export default function AdminCertificates() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─── MODULES ─── */}
+      {activeTab === 'modules' && (
+        <div className="space-y-6">
+          {/* Formulaire nouveau module */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Plus size={16} className="text-amber-500" />
+              Ajouter un nouveau module
+            </h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                createModMut.mutate({
+                  moduleId: newMod.moduleId,
+                  name: newMod.name,
+                  subtitle: newMod.subtitle,
+                  order: parseInt(newMod.order) || 99,
+                });
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Identifiant unique *</label>
+                <input
+                  required
+                  placeholder="ex: analyse-technique"
+                  value={newMod.moduleId}
+                  onChange={(e) => setNewMod({ ...newMod, moduleId: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Nom affiché *</label>
+                <input
+                  required
+                  placeholder="ex: Analyse Technique"
+                  value={newMod.name}
+                  onChange={(e) => setNewMod({ ...newMod, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-medium text-gray-500 mb-1">Sous-titre du certificat *</label>
+                <input
+                  required
+                  placeholder="ex: Académie BRVM · 3 heures · Niveau avancé"
+                  value={newMod.subtitle}
+                  onChange={(e) => setNewMod({ ...newMod, subtitle: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Ordre d'affichage</label>
+                <input
+                  type="number"
+                  placeholder="6"
+                  value={newMod.order}
+                  onChange={(e) => setNewMod({ ...newMod, order: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  disabled={createModMut.isPending}
+                  className="flex items-center gap-2 bg-amber-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
+                >
+                  {createModMut.isPending ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  Ajouter le module
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Liste des modules existants */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 bg-gray-50">
+              <h4 className="text-sm font-semibold text-gray-700">Modules existants ({modules.length})</h4>
+            </div>
+            {modules.length === 0 ? (
+              <p className="text-center text-sm text-gray-400 py-8">Aucun module. Ajoutez-en un ci-dessus.</p>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {['#', 'Identifiant', 'Nom', 'Sous-titre', 'Statut'].map((h) => (
+                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {modules.map((m) => (
+                    <tr key={m.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-400">{m.order}</td>
+                      <td className="px-4 py-3 text-xs font-mono text-gray-500">{m.moduleId}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{m.name}</td>
+                      <td className="px-4 py-3 text-xs text-gray-500">{m.subtitle}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${m.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {m.isActive ? 'Actif' : 'Inactif'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       )}
     </div>

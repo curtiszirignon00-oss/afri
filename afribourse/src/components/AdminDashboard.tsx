@@ -510,6 +510,11 @@ export default function AdminDashboard() {
           </p>
         </div>
 
+        {/* Certificats Académie */}
+        <div className="mb-8">
+          <AdminCertificates />
+        </div>
+
         {/* Analytics Section - Quick Overview */}
         {analytics && (
           <div className="mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-6">
@@ -1666,11 +1671,6 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Certificats Académie */}
-        <div className="mt-8 mb-8">
-          <AdminCertificates />
         </div>
 
         {/* Moderation Section */}

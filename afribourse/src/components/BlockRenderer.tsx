@@ -224,6 +224,8 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
         <div key={i} className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl px-5 py-4 text-white shadow-md">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-3"
              dangerouslySetInnerHTML={{ __html: block.title ?? '🎯 Objectifs pédagogiques' }} />
+          <p className="text-sm text-white/80 mb-2 italic"
+             dangerouslySetInnerHTML={{ __html: block.subtitle ?? 'À la fin de ce module, vous :' }} />
           <ul className="space-y-2">
             {block.items.map((item, j) => (
               <li key={j} className={`flex items-start gap-2 ${isModule ? 'text-sm' : 'text-xs'}`}>

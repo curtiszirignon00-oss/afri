@@ -25,7 +25,7 @@ export type ContentBlock =
   | { type: 'chart'; chartId: string }
   | { type: 'glossary'; items: { term: string; definition: string }[] }
   // Formation-specific blocks
-  | { type: 'objectives'; title?: string; items: string[] }
+  | { type: 'objectives'; title?: string; subtitle?: string; items: string[] }
   | { type: 'analogy'; title: string; items: string[]; conclusion?: string }
   | { type: 'ordered-list'; items: string[] }
   | { type: 'section-title'; text: string; color?: 'blue' | 'green' | 'purple' | 'orange' };
