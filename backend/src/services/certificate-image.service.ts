@@ -2,6 +2,7 @@
 // Génère les images PNG du certificat Afribourse Académie via SVG → sharp
 
 import { svgToPng } from './og-image.service';
+import { LOGO_DATA_URI } from '../assets/logo-base64';
 
 export interface CertificateImageData {
   participantName: string;
@@ -71,10 +72,8 @@ export function buildCertificateSVG(data: CertificateImageData): string {
   <polygon points="40,${H - 40} 80,${H - 40} 40,${H - 80}" fill="#D97706" opacity="0.6" />
   <polygon points="${W - 40},${H - 40} ${W - 80},${H - 40} ${W - 40},${H - 80}" fill="#D97706" opacity="0.6" />
 
-  <!-- Médaillon central haut -->
-  <circle cx="${W / 2}" cy="108" r="44" fill="#D97706" opacity="0.15" />
-  <circle cx="${W / 2}" cy="108" r="36" fill="none" stroke="#D97706" stroke-width="2" opacity="0.5" />
-  <text x="${W / 2}" y="120" font-family="Georgia, serif" font-size="40" fill="#F59E0B" text-anchor="middle">🏅</text>
+  <!-- Logo Afribourse -->
+  <image href="${LOGO_DATA_URI}" x="${W / 2 - 64}" y="58" width="128" height="86" preserveAspectRatio="xMidYMid meet" />
 
   <!-- En-tête — Académie Afribourse -->
   <text x="${W / 2}" y="182" font-family="Georgia, serif" font-size="13" fill="#94A3B8" text-anchor="middle" letter-spacing="4">ACADÉMIE AFRIBOURSE</text>
@@ -121,7 +120,7 @@ export function buildCertificateSVG(data: CertificateImageData): string {
   <text x="${W / 2}" y="740" font-family="Arial, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Curtis Zirignon — Fondateur, Afribourse Académie</text>
 
   <!-- Logo / branding bas -->
-  <text x="${W / 2}" y="800" font-family="Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" letter-spacing="2">AFRIBOURSE.COM · BOURSE RÉGIONALE DES VALEURS MOBILIÈRES</text>
+  <text x="${W / 2}" y="800" font-family="Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" letter-spacing="2">africbourse.com - INVESTIR MIEUX</text>
 </svg>`;
 }
 
@@ -155,7 +154,7 @@ export function buildCertificateOGSVG(data: CertificateImageData): string {
   <polygon points="28,${H - 28} 60,${H - 28} 28,${H - 60}" fill="#D97706" opacity="0.6" />
   <polygon points="${W - 28},${H - 28} ${W - 60},${H - 28} ${W - 28},${H - 60}" fill="#D97706" opacity="0.6" />
 
-  <text x="${W / 2}" y="90" font-family="Georgia, serif" font-size="32" fill="#F59E0B" text-anchor="middle">🏅</text>
+  <image href="${LOGO_DATA_URI}" x="${W / 2 - 52}" y="44" width="104" height="70" preserveAspectRatio="xMidYMid meet" />
   <text x="${W / 2}" y="135" font-family="Arial, sans-serif" font-size="12" fill="#94A3B8" text-anchor="middle" letter-spacing="4">ACADÉMIE AFRIBOURSE</text>
   <text x="${W / 2}" y="180" font-family="Georgia, serif" font-size="28" fill="#F1F5F9" text-anchor="middle" letter-spacing="1">CERTIFICAT DE PARTICIPATION</text>
 
@@ -172,7 +171,7 @@ export function buildCertificateOGSVG(data: CertificateImageData): string {
 
   <text x="${W / 2}" y="510" font-family="Arial, sans-serif" font-size="13" fill="#64748B" text-anchor="middle">${dateWeb}</text>
 
-  <text x="${W / 2}" y="590" font-family="Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" letter-spacing="2">AFRIBOURSE.COM</text>
+  <text x="${W / 2}" y="590" font-family="Arial, sans-serif" font-size="11" fill="#334155" text-anchor="middle" letter-spacing="2">africbourse.com - INVESTIR MIEUX</text>
 </svg>`;
 }
 

@@ -19,7 +19,7 @@ interface CertData {
 }
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const SITE_URL = import.meta.env.VITE_FRONTEND_URL || 'https://afribourse.com';
+const SITE_URL = import.meta.env.VITE_FRONTEND_URL || 'https://africbourse.com';
 
 export default function CertificatePage() {
   const { uuid } = useParams<{ uuid: string }>();
@@ -203,7 +203,7 @@ export default function CertificatePage() {
 
           {/* Footer */}
           <p className="text-center text-slate-600 text-xs mt-8 tracking-widest uppercase">
-            afribourse.com · BRVM
+            africbourse.com · BRVM
           </p>
         </div>
       </div>

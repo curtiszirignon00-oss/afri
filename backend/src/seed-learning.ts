@@ -643,7 +643,7 @@ async function main() {
       ]},
       { type: 'callout', variant: 'note', title: '🧭 Prochaine étape', paragraphs: [
         'Vous avez maintenant compris le rôle des marchés financiers et de la BRVM dans notre économie.',
-        '👉 Prochaine leçon : Module 2 — Les Acteurs du Jeu : Qui fait quoi sur le marché ?'
+        '👉 Prochaine leçon : Module 2 — Objectifs & Profil – Définir ses Objectifs et son Horizon'
       ]}
     ]),
   });
@@ -1056,7 +1056,7 @@ async function main() {
       ]},
       { type: 'callout', variant: 'note', title: '🧭 Prochaine étape', paragraphs: [
         'Vous comprenez maintenant qui sont les acteurs du marché et comment ils travaillent ensemble pour assurer la sécurité et la transparence.',
-        '👉 Prochaine leçon : Module 3 — Les Outils de l\'Investisseur : Actions, Obligations et OPCVM'
+        '👉 Prochaine leçon : Module 4 — Les Instruments : Actions, Obligations & OPCVM'
       ]}
     ]),
   });
@@ -1375,7 +1375,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l'investissement pa
         'Dividendes/splits : leviers de performance.',
         'Règle d\'or : comprendre avant d\'investir.'
       ]},
-      { type: 'callout', variant: 'note', title: '🚀 Prochaine étape :', paragraphs: ['Module 4 — "Produits Avancés : Explorer les Nouvelles Frontières de l\'Investissement"'] }
+      { type: 'callout', variant: 'note', title: '🚀 Prochaine étape :', paragraphs: ['Module 5 — Passer un Ordre & Délais – Entrer sur le Marché'] }
     ]),
   });
 
@@ -1908,7 +1908,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l'investissement pa
 </div>
 `,
     content_json: JSON.stringify([
-      { type: 'objectives', title: '⏳ Module 5 : Le Temps, Votre Meilleur Allié', items: [
+      { type: 'objectives', title: '⏳ Module 2 : Objectifs & Profil', items: [
         'Définir précisément votre horizon de placement (court, moyen, long terme) en fonction de vos objectifs',
         'Comprendre le rôle du temps pour gérer le risque et la volatilité',
         'Établir votre profil d\'investisseur et déterminer l\'allocation d\'actifs cohérente'
@@ -1958,7 +1958,7 @@ n'existe pas encore a la brvm, ils représentent le futur de l'investissement pa
       ]},
       { type: 'callout', variant: 'ok', title: '🎉 Félicitations !', paragraphs: [
         'Vous savez désormais que le temps est votre plus grand atout.',
-        '👉 Prochaine leçon : Module 6 — Le Mental du Gagnant'
+        '👉 Prochaine leçon : Module 3 — Les Acteurs du Jeu – Qui fait quoi sur le marché ?'
       ]}
     ]),
   });
