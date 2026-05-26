@@ -151,7 +151,7 @@ async function main() {
       <tr>
         <td><strong>🧠 Mindset</strong></td>
         <td>Poser les bases mentales et émotionnelles de l'investisseur</td>
-        <td>M0, M5</td>
+        <td>M0, M2</td>
       </tr>
       <tr>
         <td><strong>⚙️ Fondations</strong></td>
@@ -552,6 +552,7 @@ async function main() {
         'De comprendre pourquoi et comment une entreprise choisit d\'entrer en bourse'
       ]},
       { type: 'section-title', text: '🧩 1.1 Qu\'est-ce qu\'un marché financier ?', color: 'blue' },
+      { type: 'image', src: '/images/module1-marche-financier.png', caption: 'Le marché financier : là où l\'épargne rencontre l\'investissement' },
       { type: 'paragraph', text: 'Un marché financier est un espace — physique ou digital — où l\'argent rencontre les opportunités.' },
       { type: 'paragraph', text: 'C\'est là que se rencontrent :' },
       { type: 'list', items: [
