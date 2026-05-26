@@ -5,38 +5,38 @@ import { useAuth } from '../contexts/AuthContext';
 import { API_BASE_URL } from '../config/api';
 
 // Versionné — incrémenter pour forcer le re-affichage sur tous les comptes
-const POPUP_KEY = 'afb_webinar_announcement_v1';
+const POPUP_KEY = 'afb_webinar_announcement_v2';
 
 const EARLY_BIRD_SEATS = 20;
 const MAX_SEATS = 50;
 
 const WEBINARS = [
   {
-    id: 'w1-fondamentaux',
+    id: 'w1-fondamentaux-juin',
     title: 'Maîtriser les fondamentaux',
-    date: '2026-05-23T09:00:00Z',
-    price: 5000,
-    discountPercent: 50,
+    date: '2026-06-13T09:00:00Z',
+    price: 10000,
+    discountPercent: 0,
     gradient: 'from-blue-600 to-indigo-600',
     icon: Star,
     badge: 'Débutant',
   },
   {
-    id: 'w2-fondamentale',
+    id: 'w2-fondamentale-juin',
     title: 'Analyse fondamentale',
-    date: '2026-05-30T09:00:00Z',
-    price: 10000,
-    discountPercent: 50,
+    date: '2026-06-20T09:00:00Z',
+    price: 20000,
+    discountPercent: 0,
     gradient: 'from-emerald-600 to-teal-600',
     icon: TrendingUp,
     badge: 'Intermédiaire',
   },
   {
-    id: 'w3-technique',
+    id: 'w3-technique-juin',
     title: 'Analyse technique',
-    date: '2026-06-06T09:00:00Z',
-    price: 10000,
-    discountPercent: 50,
+    date: '2026-06-27T09:00:00Z',
+    price: 20000,
+    discountPercent: 0,
     gradient: 'from-orange-500 to-rose-600',
     icon: Flame,
     badge: 'Avancé',

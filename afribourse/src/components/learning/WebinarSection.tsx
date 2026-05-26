@@ -107,35 +107,34 @@ interface Webinar {
 
 const WEBINARS: Webinar[] = [
   {
-    id: 'w1-fondamentaux',
-    closed: true,
+    id: 'w1-fondamentaux-juin',
     title: 'Maîtriser les fondamentaux de la bourse',
     tagline: 'Passez de zéro à investisseur en une session',
     theme: 'Initiation • Stratégie • BRVM',
-    date: '2026-05-23T09:00:00Z',
-    endDate: '2026-05-23T12:00:00Z',
-    earlyBirdDeadline: '2026-05-22T20:00:00Z',
-    registrationClose: true,
-    price: 5000,
-    discountPercent: 50,
+    date: '2026-06-13T09:00:00Z',
+    endDate: '2026-06-13T12:00:00Z',
+    earlyBirdDeadline: '2026-05-01T00:00:00Z',
+    hideEarlyBirdIndicator: true,
+    price: 10000,
+    discountPercent: 0,
     duration: '3H',
     speakers: 'Experts marchés & Analystes Afribourse',
-    badge: 'NOUVEAU',
+    badge: 'JUIN',
     gradient: 'from-blue-600 to-indigo-700',
     accentColor: '#3B82F6',
     icon: <Star className="w-5 h-5" />,
   },
   {
-    id: 'w2-fondamentale',
+    id: 'w2-fondamentale-juin',
     hideEarlyBirdIndicator: true,
     title: 'Analyse fondamentale : lire les données comme un pro',
     tagline: 'Décryptez bilans, ratios et rapports annuels BRVM',
     theme: 'Analyse • Valorisation • Données financières',
-    date: '2026-05-30T09:00:00Z',
-    endDate: '2026-05-31T13:00:00Z',
-    earlyBirdDeadline: '2026-05-14T23:59:59Z',
-    price: 10000,
-    discountPercent: 50,
+    date: '2026-06-20T09:00:00Z',
+    endDate: '2026-06-21T13:00:00Z',
+    earlyBirdDeadline: '2026-05-01T00:00:00Z',
+    price: 20000,
+    discountPercent: 0,
     duration: '4H',
     speakers: 'Analystes financiers Afribourse',
     badge: undefined,
@@ -144,16 +143,16 @@ const WEBINARS: Webinar[] = [
     icon: <TrendingUp className="w-5 h-5" />,
   },
   {
-    id: 'w3-technique',
+    id: 'w3-technique-juin',
+    hideEarlyBirdIndicator: true,
     title: 'Analyse technique : repérez les signaux avant la foule',
-    tagline: 'Maîtrisez les graphiques, patterns et timing d\'entrée sur la BRVM',
+    tagline: "Maîtrisez les graphiques, patterns et timing d'entrée sur la BRVM",
     theme: 'Graphiques • Patterns • Timing',
-    date: '2026-06-06T09:00:00Z',
-    endDate: '2026-06-07T13:00:00Z',
-    earlyBirdDeadline: '2026-05-22T14:32:00Z',
-    earlyBirdTaken: 15,
-    price: 10000,
-    discountPercent: 50,
+    date: '2026-06-27T09:00:00Z',
+    endDate: '2026-06-28T13:00:00Z',
+    earlyBirdDeadline: '2026-05-01T00:00:00Z',
+    price: 20000,
+    discountPercent: 0,
     duration: '4H',
     speakers: 'Analystes techniques Afribourse',
     badge: 'BIENTÔT',
@@ -172,28 +171,28 @@ const MAX_SEATS = 50;
 
 const PACK = {
   id: 'pack-parcours-investisseur',
-  closed: true,
   title: 'Pack Parcours Investisseur BRVM',
   tagline: '3 sessions intensives · Experts BRVM · Certification officielle',
-  earlyBirdDeadline: '2026-05-22T20:00:00Z',
+  earlyBirdDeadline: '2026-06-02T23:59:59Z',
   price: 35000,
+  earlyBirdPrice: 25000,
   gradient: 'from-blue-700 to-indigo-800',
   inclusions: [
     '3 webinaires live (Fondamentaux · Fondamentale · Technique)',
     "Communauté Afribourse — 3 mois d'accès",
-    '3 Plans d\'action personnalisés (1 par session)',
+    "3 Plans d'action personnalisés (1 par session)",
     'Deal Flow hebdomadaire — 12 éditions exclusives',
     'Certificat "Investisseur BRVM — Niveau 1"',
   ],
   deliveryCalendar: [
-    { when: 'Avant le 23 mai', what: 'Email de confirmation + lien Zoom' },
-    { when: '26 mai (J+1 S1)', what: "Plan d'action Fondamentaux — livré par email" },
-    { when: '30-31 mai', what: 'Session 2 — Analyse fondamentale' },
-    { when: '1 juin', what: "Plan d'action Analyse fondamentale" },
-    { when: '6-7 juin', what: 'Session 3 — Analyse technique' },
-    { when: '8 juin', what: "Plan d'action Analyse technique" },
-    { when: '9 juin', what: 'Accès Communauté activé + 1ère édition Deal Flow' },
-    { when: '20 juin*', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
+    { when: 'Avant le 13 juin', what: 'Email de confirmation + lien Zoom' },
+    { when: '14 juin (J+1 S1)', what: "Plan d'action Fondamentaux — livré par email" },
+    { when: '20-21 juin', what: 'Session 2 — Analyse fondamentale' },
+    { when: '22 juin', what: "Plan d'action Analyse fondamentale" },
+    { when: '27-28 juin', what: 'Session 3 — Analyse technique' },
+    { when: '29 juin', what: "Plan d'action Analyse technique" },
+    { when: '30 juin', what: 'Accès Communauté activé + 1ère édition Deal Flow' },
+    { when: '14 juillet*', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
   ],
 };
 
@@ -705,7 +704,15 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
 // ─── PackCard ─────────────────────────────────────────────────────────────────
 
 const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
-  const currentPrice = PACK.price;
+  const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
+  const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
+  const [countdown, setCountdown] = useState(getPackCountdown(PACK.earlyBirdDeadline));
+
+  useEffect(() => {
+    if (!earlyBirdActive) return;
+    const t = setInterval(() => setCountdown(getPackCountdown(PACK.earlyBirdDeadline)), 1000);
+    return () => clearInterval(t);
+  }, [earlyBirdActive]);
 
   return (
     <div className="relative bg-gradient-to-br from-blue-700 to-indigo-900 rounded-2xl overflow-hidden shadow-xl mb-6 border border-blue-600/30">
@@ -752,19 +759,47 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
           {/* Colonne droite — prix + CTA */}
           <div className="md:w-60 flex-shrink-0 bg-white/10 backdrop-blur-sm rounded-2xl p-5 flex flex-col gap-3 border border-white/10">
             <div>
-              <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif</p>
-              <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
+              {earlyBirdActive ? (
+                <>
+                  <p className="text-amber-300 text-[10px] font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1">
+                    <Flame className="w-3 h-3 animate-pulse" /> Tarif préférentiel · 7 jours
+                  </p>
+                  <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
+                  <p className="text-blue-300 text-xs line-through mt-0.5">{formatPrice(PACK.price)}</p>
+                  {!countdown.expired && (
+                    <div className="mt-2 flex gap-1">
+                      {countdown.days > 0 && (
+                        <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
+                          <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.days)}</p>
+                          <p className="text-[9px] text-amber-300 mt-0.5">j</p>
+                        </div>
+                      )}
+                      <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
+                        <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.hours)}</p>
+                        <p className="text-[9px] text-amber-300 mt-0.5">h</p>
+                      </div>
+                      <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
+                        <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.minutes)}</p>
+                        <p className="text-[9px] text-amber-300 mt-0.5">min</p>
+                      </div>
+                      <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
+                        <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.seconds)}</p>
+                        <p className="text-[9px] text-amber-300 mt-0.5">sec</p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif</p>
+                  <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
+                </>
+              )}
             </div>
 
-            {PACK.closed ? (
-              <div className="w-full py-3 bg-white/20 text-white/50 font-extrabold text-sm rounded-xl text-center cursor-not-allowed">
-                Inscriptions fermées
-              </div>
-            ) : (
-              <button onClick={onRegister} className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
-                Rejoindre le parcours complet →
-              </button>
-            )}
+            <button onClick={onRegister} className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
+              Rejoindre le parcours complet →
+            </button>
             <p className="text-blue-300 text-[10px] text-center leading-relaxed">
               Satisfait ou remboursé · Paiement Mobile Money sécurisé
             </p>
@@ -779,7 +814,9 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
 
 const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void }> = ({ onClose }) => {
   const { userProfile } = useAuth();
-  const currentPrice = PACK.price;
+  const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
+  const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
+  const savings = PACK.price - currentPrice;
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
@@ -871,9 +908,17 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
                     ))}
                   </ul>
                 </div>
-                <div className="col-span-2 sm:col-span-1 rounded-xl p-3 border bg-gray-50 border-gray-200">
+                <div className={`col-span-2 sm:col-span-1 rounded-xl p-3 border ${earlyBirdActive ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Votre tarif</p>
                   <p className="text-2xl font-extrabold text-gray-900">{formatPrice(currentPrice)}</p>
+                  {earlyBirdActive && savings > 0 && (
+                    <>
+                      <p className="text-xs text-gray-400 line-through mt-0.5">{formatPrice(PACK.price)}</p>
+                      <p className="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" /> Vous économisez {formatPrice(savings)}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 
