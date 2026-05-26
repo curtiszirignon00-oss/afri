@@ -215,25 +215,6 @@ export function aiRateLimit(endpoint: string) {
     const user = (req as AuthenticatedRequest).user;
     const userId = user?.id ?? req.ip ?? 'anon';
 
-    // ── Quota freemium (avant le rate limit standard) ──────────────────────
-    if (user?.subscriptionTier === 'free') {
-      const quota = await checkFreeQuota(userId);
-      res.setHeader('X-AI-Questions-Used', quota.used);
-      res.setHeader('X-AI-Questions-Limit', FREE_DAILY_LIMIT);
-
-      if (!quota.allowed) {
-        res.status(402).json({
-          success: false,
-          paywallHit: true,
-          message: `Vous avez utilisé vos ${FREE_DAILY_LIMIT} questions IA gratuites aujourd'hui.`,
-          questionsUsed: FREE_DAILY_LIMIT,
-          questionsLimit: FREE_DAILY_LIMIT,
-          resetAt: quota.resetAt.toISOString(),
-        });
-        return;
-      }
-    }
-
     // ── Rate limit standard (anti-abus, tous comptes) ──────────────────────
     const { allowed, remaining, resetIn, label } = await checkLimit(userId, endpoint, config);
 

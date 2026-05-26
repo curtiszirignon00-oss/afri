@@ -85,7 +85,7 @@ export const issueCertificate = async (req: AuthRequest, res: Response) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Aucun compte trouvé avec cet email sur afribourse.com',
+        message: 'Aucun compte trouvé avec cet email sur africbourse.com',
       });
     }
 

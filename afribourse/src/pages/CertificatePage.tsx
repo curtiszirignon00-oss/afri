@@ -27,6 +27,8 @@ export default function CertificatePage() {
   const [cert, setCert] = useState<CertData | null>(null);
   const [revoked, setRevoked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   useEffect(() => {
     if (!uuid) return;
@@ -127,12 +129,35 @@ export default function CertificatePage() {
           </div>
 
           {/* Image du certificat */}
-          <div className="rounded-2xl overflow-hidden shadow-2xl border border-amber-500/20 mb-6">
-            <img
-              src={ogImageUrl}
-              alt={`Certificat ${cert.module.name}`}
-              className="w-full bg-slate-800"
-            />
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-amber-500/20 mb-6 bg-slate-800 min-h-[200px] flex items-center justify-center">
+            {!imgError ? (
+              <>
+                {!imgLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 size={28} className="animate-spin text-amber-400" />
+                  </div>
+                )}
+                <img
+                  src={ogImageUrl}
+                  alt={`Certificat ${cert.module.name}`}
+                  className={`w-full transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                  onLoad={() => setImgLoaded(true)}
+                  onError={() => setImgError(true)}
+                />
+              </>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-12 px-6 text-center">
+                <AlertTriangle size={32} className="text-amber-500" />
+                <p className="text-slate-400 text-sm">L'image du certificat n'est pas disponible pour le moment.</p>
+                <a
+                  href={`${API_BASE}/certificates/${uuid}/download`}
+                  download
+                  className="text-amber-400 text-sm underline hover:text-amber-300"
+                >
+                  Télécharger le certificat PNG
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Infos */}

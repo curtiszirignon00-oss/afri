@@ -217,6 +217,9 @@ export const ACTION_TYPES = {
   COMPLETE_MODULE: 'complete_learning_module',
   WATCH_VIDEO: 'watch_video',
   TAKE_QUIZ: 'take_quiz',
+  QUIZ_PASSED: 'quiz_passed',
+  QUIZ_FAILED: 'quiz_failed',
+  QUIZ_RETRY: 'quiz_retry',
 
   // News / Articles
   VIEW_ARTICLE: 'view_article',

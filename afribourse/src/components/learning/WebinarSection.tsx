@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../../hooks/usePawaPayment';
+import { analytics } from '../../services/analytics';
 
 // ─── Indicatifs pays ──────────────────────────────────────────────────────────
 
@@ -322,8 +323,15 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
   });
 
   const { status: payStatus, errorMessage: payError, initiate: initiatePayment, reset: resetPayment } = usePawaPayment(() => {
+    analytics.trackAction('webinar_payment_success', webinar.title, { webinarId: webinar.id, amount: effectivePrice });
     setStep('success');
   });
+
+  useEffect(() => {
+    if (payStatus === 'failed') {
+      analytics.trackAction('webinar_payment_failed', webinar.title, { webinarId: webinar.id, amount: effectivePrice });
+    }
+  }, [payStatus]);
 
   const handleSubmit = async () => {
     if (!form.name.trim() || !form.email.trim()) {
@@ -365,6 +373,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    analytics.trackAction('webinar_payment_initiated', webinar.title, { webinarId: webinar.id, operator: payOperator, amount: effectivePrice });
     initiatePayment({
       planId: webinar.id,
       planName: webinar.title,
@@ -831,14 +840,22 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
   });
 
   const { status: payStatus, errorMessage: payError, initiate: initiatePayment, reset: resetPayment } = usePawaPayment(() => {
+    analytics.trackAction('webinar_pack_payment_success', PACK.title, { packId: PACK.id, amount: currentPrice });
     setStep('success');
   });
+
+  useEffect(() => {
+    if (payStatus === 'failed') {
+      analytics.trackAction('webinar_pack_payment_failed', PACK.title, { packId: PACK.id });
+    }
+  }, [payStatus]);
 
   const handlePay = () => {
     if (!payOperator) return;
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    analytics.trackAction('webinar_pack_payment_initiated', PACK.title, { packId: PACK.id, operator: payOperator, amount: currentPrice });
     initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: getCurrency(payDialCode), correspondent, phone: msisdn, registrationEmail: form.email.trim() });
   };
 
@@ -1064,7 +1081,10 @@ const WebinarSection: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  const handleRegister = useCallback((w: Webinar) => setSelectedWebinar(w), []);
+  const handleRegister = useCallback((w: Webinar) => {
+    analytics.trackAction('webinar_register_click', w.title, { webinarId: w.id, price: w.price });
+    setSelectedWebinar(w);
+  }, []);
   const handleClose = useCallback((registered?: boolean) => {
     if (registered && selectedWebinar) {
       setCounts((prev) => ({ ...prev, [selectedWebinar.id]: (prev[selectedWebinar.id] ?? 0) + 1 }));
@@ -1100,7 +1120,7 @@ const WebinarSection: React.FC = () => {
         </div>
 
         {/* Pack Parcours Investisseur — carte dominante full-width */}
-        <PackCard onRegister={() => setShowPackModal(true)} />
+        <PackCard onRegister={() => { analytics.trackAction('webinar_pack_click', PACK.title, { packId: PACK.id }); setShowPackModal(true); }} />
 
         {/* Webinaires individuels */}
         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">

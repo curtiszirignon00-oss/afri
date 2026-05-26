@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Smartphone, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import { PAWAPAY_CORRESPONDENTS, getCurrency } from '../hooks/usePawaPayment';
+import { analytics } from '../services/analytics';
 
 interface LinkData {
   planId: string;
@@ -62,7 +63,10 @@ export default function PaymentLinkPage() {
       .then(r => r.json())
       .then(data => {
         if (data.message) setLoadError(data.message);
-        else setLink(data);
+        else {
+          setLink(data);
+          analytics.trackAction('payment_link_opened', data.planName ?? '', { planId: data.planId, amount: data.amount });
+        }
       })
       .catch(() => setLoadError('Impossible de charger ce lien.'))
       .finally(() => setLoading(false));
@@ -76,6 +80,7 @@ export default function PaymentLinkPage() {
     const msisdn = dialCode.replace('+', '') + phone.replace(/\D/g, '');
     setStep('paying');
     setErrorMsg('');
+    analytics.trackAction('payment_link_initiated', link?.planName ?? '', { planId: link?.planId, amount: link?.amount, operator });
 
     const res = await fetch(`${API_BASE_URL}/payment-links/${token}/pay`, {
       method: 'POST',
@@ -85,8 +90,10 @@ export default function PaymentLinkPage() {
     const data = await res.json();
 
     if (res.ok && data.status === 'ACCEPTED') {
+      analytics.trackAction('payment_link_success', link?.planName ?? '', { planId: link?.planId, amount: link?.amount });
       setStep('success');
     } else {
+      analytics.trackAction('payment_link_failed', link?.planName ?? '', { planId: link?.planId, amount: link?.amount, error: data.error });
       setErrorMsg(data.error ?? 'Paiement refusé. Réessayez.');
       setStep('error');
     }

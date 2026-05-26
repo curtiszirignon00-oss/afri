@@ -28,6 +28,7 @@ const notificationIcons: Record<string, { icon: typeof Bell; color: string; bgCo
     JOIN_APPROVED: { icon: UserCheck, color: 'text-green-600', bgColor: 'bg-green-100' },
     JOIN_REJECTED: { icon: UserX, color: 'text-red-600', bgColor: 'bg-red-100' },
     SYSTEM: { icon: Info, color: 'text-gray-600', bgColor: 'bg-gray-100' },
+    CERTIFICATE: { icon: Award, color: 'text-amber-600', bgColor: 'bg-amber-100' },
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -105,9 +106,13 @@ export default function NotificationDropdown() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleNotificationClick = () => {
+    const handleNotificationClick = (notification: Notification) => {
         setIsOpen(false);
-        navigate('/notifications');
+        if (notification.type === 'CERTIFICATE' && notification.metadata?.certificateId) {
+            navigate(`/certificat/${notification.metadata.certificateId}`);
+        } else {
+            navigate('/notifications');
+        }
     };
 
     const handleMarkAllAsRead = () => {
@@ -177,7 +182,7 @@ export default function NotificationDropdown() {
                                         key={notification.id}
                                         notification={notification}
                                         onMarkAsRead={(id) => markAsRead.mutate(id)}
-                                        onClick={() => handleNotificationClick()}
+                                        onClick={() => handleNotificationClick(notification)}
                                     />
                                 ))}
                             </div>

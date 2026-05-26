@@ -1,14 +1,6 @@
-import { useState } from 'react';
-import { Clock, Zap, Star, Filter, Lock } from 'lucide-react';
 import { useTimeMachineScenarios } from '../hooks/useTimeMachine';
 import ScenarioCard, { type StaticScenario } from '../components/time-machine/ScenarioCard';
-
-const TIER_FILTERS = [
-  { id: 'all',  label: 'Tous' },
-  { id: 'FREE', label: 'Gratuit',       icon: Clock },
-  { id: 'PLUS', label: 'Investisseur+', icon: Zap },
-  { id: 'MAX',  label: 'Max',           icon: Star },
-] as const;
+import { Clock, Timer } from 'lucide-react';
 
 // Scénario "bientôt disponible" — card statique, pas de contenu en DB
 const COMING_SOON: StaticScenario[] = [
@@ -24,107 +16,104 @@ const COMING_SOON: StaticScenario[] = [
   },
 ];
 
-// Scénarios premium à venir — cards statiques, accès bloqué
-const LOCKED_SCENARIOS: StaticScenario[] = [
+// Scénarios à venir — cards statiques, bientôt disponibles
+const COMING_SOON_EXTRA: StaticScenario[] = [
   {
     slug: 'crise-politique-ci-2011',
     title: 'La Crise Politique Ivoirienne',
     description: "Crise post-électorale en Côte d'Ivoire. La BRVM suspend ses séances plusieurs semaines. Comment survivre et se positionner pour la reprise ?",
     category: 'BRVM_EVENT',
-    tier: 'PLUS',
+    tier: 'FREE',
     years: [2010, 2011, 2012],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'bull-run-brvm-2013',
     title: 'Le Grand Bull Run 2012–2014',
     description: 'La BRVM double en 3 ans. Savoir quand acheter, quand prendre ses bénéfices. L\'euphorie comme principal piège de l\'investisseur.',
     category: 'BULL_RUN',
-    tier: 'PLUS',
+    tier: 'FREE',
     years: [2012, 2013, 2014],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'ipo-orange-ci-2018',
     title: "L'IPO Orange CI 2018",
     description: "La plus grande introduction en bourse de la BRVM. Souscrire ou attendre ? À quel prix entrer ? Gérer l'euphorie médiatique autour d'une IPO historique.",
     category: 'BRVM_EVENT',
-    tier: 'PLUS',
+    tier: 'FREE',
     years: [2017, 2018, 2019],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'covid-brvm-2020',
     title: 'COVID-19 & BRVM 2020',
     description: 'Pandémie mondiale. La BRVM recule de -8%. Confinements, incertitudes, mais aussi opportunités. Qui sait garder la tête froide ?',
     category: 'WORLD_CRISIS',
-    tier: 'PLUS',
+    tier: 'FREE',
     years: [2019, 2020, 2021],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'choc-cacao-2016',
     title: 'Le Choc du Cacao 2016–2019',
     description: "Les cours mondiaux du cacao s'effondrent. PALM CI, SOGB, SAPH en chute libre. Peut-on anticiper un retournement sectoriel et saisir le rebond ?",
     category: 'SECTOR_SHOCK',
-    tier: 'MAX',
+    tier: 'FREE',
     years: [2016, 2017, 2018, 2019],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'strategie-dividendes-brvm',
     title: 'La Stratégie Dividendes BRVM',
     description: "Construire un portefeuille de revenus passifs sur la BRVM. Sélection des meilleurs payeurs de dividendes, réinvestissement, et effet boule de neige sur 7 ans.",
     category: 'STRATEGY',
-    tier: 'MAX',
+    tier: 'FREE',
     years: [2015, 2017, 2019, 2022],
     startBudget: 1000000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'boom-telecom-uemoa',
     title: 'Le Boom Télécom & Data UEMOA',
     description: "Révolution data mobile en Afrique de l'Ouest. Sonatel, Orange CI, Ecobank décollent. Timing d'entrée, sélection de titres, gestion de la valorisation élevée.",
     category: 'SECTOR_SHOCK',
-    tier: 'MAX',
+    tier: 'FREE',
     years: [2014, 2016, 2018, 2020],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
   {
     slug: 'inflation-taux-bceao-2022',
     title: "L'Inflation & la Hausse des Taux",
     description: "Inflation record à +7.4%, BCEAO relève ses taux à 3.5%. Comment repositionner son portefeuille BRVM face à un environnement de taux qui change tout ?",
     category: 'WORLD_CRISIS',
-    tier: 'MAX',
+    tier: 'FREE',
     years: [2021, 2022, 2023],
     startBudget: 500000,
-    locked: true,
+    comingSoon: true,
   },
 ];
 
 export default function TimeMachinePage() {
   const { data: apiScenarios = [], isLoading, error } = useTimeMachineScenarios();
-  const [tier, setTier] = useState<'all' | 'FREE' | 'PLUS' | 'MAX'>('all');
 
   // Filter out crise-subprimes from the dynamic API results (shown as "coming soon" card below)
   const liveScenarios = (apiScenarios as StaticScenario[]).filter(
     (s: StaticScenario) => s.slug !== 'crise-subprimes-2008'
   );
 
-  // All scenarios to display: live + coming soon + locked
+  // Only the first live scenario is accessible — all others are "bientôt disponible"
   const allScenarios: StaticScenario[] = [
-    ...liveScenarios,
+    ...liveScenarios.map((s, i) => i === 0 ? s : { ...s, comingSoon: true }),
     ...COMING_SOON,
-    ...LOCKED_SCENARIOS,
+    ...COMING_SOON_EXTRA,
   ];
-
-  const filtered = tier === 'all' ? allScenarios : allScenarios.filter(s => s.tier === tier);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -158,33 +147,14 @@ export default function TimeMachinePage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
-        {/* Filters */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <Filter className="w-4 h-4 text-gray-400 shrink-0" />
-          <div className="flex gap-2 flex-wrap">
-            {TIER_FILTERS.map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setTier(id as any)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all cursor-pointer ${
-                  tier === id
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          {/* Legend */}
-          <div className="ml-auto flex items-center gap-3 text-[11px] text-gray-500">
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Gratuit
-            </span>
-            <span className="flex items-center gap-1">
-              <Lock className="w-3 h-3 text-gray-400" />Premium
-            </span>
-          </div>
+        {/* Legend */}
+        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Disponible
+          </span>
+          <span className="flex items-center gap-1">
+            <Timer className="w-3 h-3 text-amber-500" />Bientôt disponible
+          </span>
         </div>
 
         {/* Loading */}
@@ -200,17 +170,12 @@ export default function TimeMachinePage() {
           </div>
         )}
 
-        {/* Grid — live + coming soon + locked */}
+        {/* Grid — premier scénario disponible + tous les autres bientôt disponibles */}
         {!isLoading && !error && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((scenario) => (
+            {allScenarios.map((scenario) => (
               <ScenarioCard key={scenario.slug} scenario={scenario} />
             ))}
-            {filtered.length === 0 && (
-              <div className="col-span-3 text-center py-16 text-gray-400">
-                <p>Aucun scénario pour ce filtre.</p>
-              </div>
-            )}
           </div>
         )}
 

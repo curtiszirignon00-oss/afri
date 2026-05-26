@@ -73,10 +73,10 @@ export default function PaywallGate({ requiredTier, scenarioTitle }: Props) {
         {/* CTA */}
         <div className="space-y-2">
           <button
-            onClick={() => navigate('/subscriptions')}
+            onClick={() => navigate('/time-machine')}
             className={`w-full py-3 ${cfg.bg} text-white font-bold rounded-xl hover:opacity-90 transition-opacity`}
           >
-            Passer à {cfg.label}
+            Retour aux scénarios
           </button>
           <button
             onClick={() => navigate('/time-machine')}

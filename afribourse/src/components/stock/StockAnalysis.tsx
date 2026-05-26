@@ -1,8 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Lock, Zap, AlertTriangle, TrendingUp, MessageCircle, Sparkles } from 'lucide-react';
-import PremiumPaywall from '../PremiumPaywall';
+import { Zap, AlertTriangle, TrendingUp, MessageCircle, Sparkles } from 'lucide-react';
 import { StockAnalystChat } from './StockAnalystChat';
-import { useAuth } from '../../contexts/AuthContext';
 import type { Stock } from '../../types';
 import {
   calculateSignalScore,
@@ -177,9 +175,6 @@ ${growthLines || '  · Données insuffisantes'}
 const MODES: AnalysisMode[] = ['balanced', 'trader', 'investor', 'dividend'];
 
 const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annualFinancials, stock }) => {
-  const { userProfile } = useAuth();
-  const isPremium = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
-  const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [initialQuestion, setInitialQuestion] = useState<string | undefined>();
   const [mode, setMode] = useState<AnalysisMode>('balanced');
@@ -275,10 +270,6 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
           </h3>
           <p className="text-xs text-gray-500 mt-0.5">Technique · Fondamental · Croissance</p>
         </div>
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-semibold rounded-full">
-          <Zap size={12} />
-          Premium
-        </span>
       </div>
 
       {/* Mode selector */}
@@ -305,27 +296,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
 
       {/* Main card */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl overflow-hidden relative">
-        {/* Paywall overlay */}
-        {!isPremium && (
-          <div className="absolute inset-0 z-10 backdrop-blur-sm bg-slate-900/60 flex items-center justify-center rounded-2xl">
-            <div className="text-center p-6">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full mb-3 border border-yellow-500/30">
-                <Lock className="w-6 h-6 text-yellow-400" />
-              </div>
-              <h4 className="text-white font-bold mb-1">Accès Premium Requis</h4>
-              <p className="text-gray-400 text-xs mb-4 max-w-xs">Débloquez le score hybride Technique + Fondamental + Croissance</p>
-              <button
-                onClick={() => setShowPremiumPaywall(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg text-sm hover:from-yellow-600 hover:to-orange-600 transition-all"
-              >
-                <Zap size={14} />
-                Débloquer
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className={`p-5 ${!isPremium ? 'select-none' : ''}`}>
+        <div className="p-5">
 
           {/* Pillar weight badges row */}
           <div className="flex gap-2 mb-4 flex-wrap">
@@ -542,13 +513,6 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
         />
       )}
 
-      {/* Paywall modal */}
-      <PremiumPaywall
-        isOpen={showPremiumPaywall}
-        onClose={() => setShowPremiumPaywall(false)}
-        feature="Accéder au Score de confiance hybride Technique + Fondamental + Croissance"
-        plan="investisseur-plus"
-      />
     </div>
   );
 };

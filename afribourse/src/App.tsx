@@ -1,6 +1,6 @@
 // src/App.tsx
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -217,7 +217,7 @@ function Layout() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
-          <Route path="/subscriptions" element={<SubscriptionPage />} />
+          <Route path="/subscriptions" element={<Navigate to="/" replace />} />
           <Route path="/essai-gratuit" element={<TrialClaimPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />

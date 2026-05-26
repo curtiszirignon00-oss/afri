@@ -5,7 +5,7 @@ import { usePollingQuery } from './usePollingQuery';
 
 export interface Notification {
     id: string;
-    type: 'NEW_POST' | 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'MENTION' | 'ACHIEVEMENT' | 'LEVEL_UP' | 'PRICE_ALERT' | 'COMMUNITY_INVITE' | 'COMMUNITY_JOIN' | 'COMMUNITY_POST' | 'JOIN_REQUEST' | 'JOIN_APPROVED' | 'JOIN_REJECTED' | 'SYSTEM';
+    type: 'NEW_POST' | 'NEW_FOLLOWER' | 'POST_LIKE' | 'POST_COMMENT' | 'COMMENT_REPLY' | 'MENTION' | 'ACHIEVEMENT' | 'LEVEL_UP' | 'PRICE_ALERT' | 'COMMUNITY_INVITE' | 'COMMUNITY_JOIN' | 'COMMUNITY_POST' | 'JOIN_REQUEST' | 'JOIN_APPROVED' | 'JOIN_REJECTED' | 'SYSTEM' | 'CERTIFICATE';
     title: string;
     message: string;
     is_read: boolean;

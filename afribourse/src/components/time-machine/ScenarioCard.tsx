@@ -1,4 +1,4 @@
-import { Lock, Clock, TrendingUp, ChevronRight, Timer } from 'lucide-react';
+import { Clock, TrendingUp, ChevronRight, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const TIER_BADGE: Record<string, { label: string; cls: string }> = {
@@ -35,7 +35,7 @@ export default function ScenarioCard({ scenario }: Props) {
   const navigate = useNavigate();
   const tier = TIER_BADGE[scenario.tier] ?? TIER_BADGE.FREE;
   const gradient = CAT_COLOR[scenario.category] ?? CAT_COLOR.BRVM_EVENT;
-  const isLocked = scenario.locked || scenario.comingSoon;
+  const isLocked = !!scenario.comingSoon;
 
   function handleClick() {
     if (isLocked) return;
@@ -59,15 +59,6 @@ export default function ScenarioCard({ scenario }: Props) {
             <span className="text-sm font-bold text-gray-700">Bientôt disponible</span>
           </div>
           <p className="text-[10px] text-gray-500 font-medium">En cours de développement</p>
-        </div>
-      )}
-
-      {/* Lock overlay */}
-      {scenario.locked && !scenario.comingSoon && (
-        <div className="absolute inset-0 rounded-2xl bg-white/50 flex items-center justify-center z-10">
-          <div className="bg-white rounded-full p-3 shadow-md">
-            <Lock className="w-6 h-6 text-gray-500" />
-          </div>
         </div>
       )}
 
@@ -102,13 +93,6 @@ export default function ScenarioCard({ scenario }: Props) {
         </div>
       </div>
 
-      {scenario.locked && !scenario.comingSoon && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
-          <span className={`text-xs font-bold px-3 py-1 rounded-full ${tier.cls} shadow-sm`}>
-            Passer à {tier.label}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

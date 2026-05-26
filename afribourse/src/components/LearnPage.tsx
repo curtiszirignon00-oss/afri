@@ -483,6 +483,21 @@ export default function LearnPage() {
                 detailedResults: result.detailedResults || []
             }));
 
+            // Tracker le résultat du quiz
+            const currentAttempts = progress.find(p => p.module.slug === selectedModule.slug)?.quiz_attempts ?? 0;
+            trackAction(
+                result.passed ? ACTION_TYPES.QUIZ_PASSED : ACTION_TYPES.QUIZ_FAILED,
+                result.passed ? 'Quiz réussi' : 'Quiz échoué',
+                {
+                    moduleSlug: selectedModule.slug,
+                    moduleTitle: selectedModule.title,
+                    score: result.score,
+                    passingScore: result.passingScore,
+                    attempt: currentAttempts + 1,
+                    perfect: result.score === 100,
+                }
+            );
+
             if (result.passed) {
                 toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
                 confetti({
@@ -570,10 +585,15 @@ export default function LearnPage() {
             console.error('Erreur lors de la soumission du quiz:', error);
             toast.error(error.message || 'Erreur lors de la soumission du quiz', { id: toastId });
         }
-    }, [selectedModule, quizState.answers, loadData, progress, triggerSimbaMotivation]);
+    }, [selectedModule, quizState.answers, loadData, progress, triggerSimbaMotivation, trackAction]);
 
     const retryQuiz = useCallback(() => {
         if (selectedModule) {
+            trackAction(ACTION_TYPES.QUIZ_RETRY, 'Relance du quiz', {
+                moduleSlug: selectedModule.slug,
+                moduleTitle: selectedModule.title,
+                previousScore: quizState.score,
+            });
             loadModuleQuiz(selectedModule.slug);
         }
 
@@ -589,7 +609,7 @@ export default function LearnPage() {
         setTimeout(() => {
             document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-    }, [selectedModule, loadModuleQuiz]);
+    }, [selectedModule, loadModuleQuiz, trackAction, quizState.score]);
 
     const toggleAudio = useCallback(() => {
         if (!audioElement) {
@@ -689,10 +709,14 @@ export default function LearnPage() {
             }
 
             if (selectedModule) {
+                const modProgress = progress.find(p => p.module.slug === selectedModule.slug);
                 trackAction(ACTION_TYPES.COMPLETE_MODULE, 'Module complété', {
                     moduleSlug: selectedModule.slug,
                     moduleTitle: selectedModule.title,
-                    moduleLevel: selectedModule.difficulty_level
+                    moduleLevel: selectedModule.difficulty_level,
+                    timeSpentMinutes: modProgress?.time_spent_minutes ?? null,
+                    quizScore: modProgress?.quiz_score ?? null,
+                    quizAttempts: modProgress?.quiz_attempts ?? 0,
                 });
             }
 

@@ -27,6 +27,7 @@ const notificationIcons: Record<string, { icon: typeof Bell; color: string; bgCo
     JOIN_APPROVED: { icon: UserCheck, color: 'text-green-600', bgColor: 'bg-green-100' },
     JOIN_REJECTED: { icon: UserX, color: 'text-red-600', bgColor: 'bg-red-100' },
     SYSTEM: { icon: Info, color: 'text-gray-600', bgColor: 'bg-gray-100' },
+    CERTIFICATE: { icon: Award, color: 'text-amber-600', bgColor: 'bg-amber-100' },
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -46,12 +47,14 @@ const NAVIGABLE_TYPES = new Set([
     'POST_LIKE', 'POST_COMMENT', 'COMMENT_REPLY', 'MENTION', 'NEW_POST',
     'COMMUNITY_INVITE', 'COMMUNITY_JOIN', 'COMMUNITY_POST',
     'JOIN_REQUEST', 'JOIN_APPROVED', 'JOIN_REJECTED',
+    'CERTIFICATE',
 ]);
 
 function isNavigable(notification: Notification): boolean {
     if (!NAVIGABLE_TYPES.has(notification.type)) return false;
     if (notification.type === 'NEW_FOLLOWER') return !!notification.actor_id;
     if (notification.type === 'PRICE_ALERT') return !!(notification.metadata?.stockSymbol || notification.metadata?.symbol);
+    if (notification.type === 'CERTIFICATE') return !!notification.metadata?.certificateId;
     return true;
 }
 
@@ -175,6 +178,13 @@ export default function NotificationsPage() {
                     navigate(`/community/${meta.communitySlug}`);
                 } else if (meta?.communityId) {
                     navigate(`/community/${meta.communityId}`);
+                }
+                break;
+
+            // Certificat → page de téléchargement du certificat
+            case 'CERTIFICATE':
+                if (meta?.certificateId) {
+                    navigate(`/certificat/${meta.certificateId}`);
                 }
                 break;
 

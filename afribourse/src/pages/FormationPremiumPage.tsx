@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import PaymentModal from '../components/payment/PaymentModal';
+import { analytics } from '../services/analytics';
 
 const PLAN_ID = 'premium-modules';
 const PLAN_NAME = 'Formation Complète';
@@ -167,7 +168,10 @@ export default function FormationPremiumPage() {
     return () => obs.disconnect();
   }, []);
 
-  const handleSuccess = () => { setTimeout(() => navigate('/learn'), 2500); };
+  const handleSuccess = () => {
+    analytics.trackAction('formation_payment_success', PLAN_NAME, { planId: PLAN_ID, amount: AMOUNT });
+    setTimeout(() => navigate('/learn'), 2500);
+  };
   const scrollToPricing = () => { pricingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
   return (
@@ -493,7 +497,7 @@ export default function FormationPremiumPage() {
                 <p style={{ fontSize: 12, color: C.textSub, marginBottom: 12, textAlign: 'center', fontWeight: 600 }}>Choisissez votre opérateur</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {OPERATORS.map((op) => (
-                    <button key={op.id} className="op-btn" onClick={() => setSelectedOperator(op.id)} style={{ background: op.bg, border: 'none', borderRadius: 10, padding: '12px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                    <button key={op.id} className="op-btn" onClick={() => { setSelectedOperator(op.id); analytics.trackAction('formation_operator_selected', op.label, { planId: PLAN_ID }); }} style={{ background: op.bg, border: 'none', borderRadius: 10, padding: '12px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                       <span style={{ fontSize: 18 }}>{op.emoji}</span> {op.label}
                     </button>
                   ))}
