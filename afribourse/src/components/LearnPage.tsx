@@ -246,6 +246,11 @@ export default function LearnPage() {
             return true;
         }
 
+        // Module 6 (Psychologie & Biais) toujours accessible — M5 est un placeholder
+        if (module.order_index === 6) {
+            return true;
+        }
+
         // Utiliser allModules au lieu de modules pour trouver le module précédent
         const previousModule = allModules.find(m => m.order_index === (module.order_index! - 1));
         if (!previousModule) return true;
