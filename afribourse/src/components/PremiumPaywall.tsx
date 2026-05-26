@@ -8,7 +8,7 @@ interface PremiumPaywallProps {
   isOpen: boolean;
   onClose: () => void;
   feature: string;
-  plan?: 'investisseur-plus' | 'pro';
+  plan?: 'investisseur-plus' | 'pro' | 'premium-modules';
 }
 
 export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'investisseur-plus' }: PremiumPaywallProps) {
@@ -18,7 +18,21 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
 
   if (!isOpen) return null;
 
-  const planDetails = plan === 'pro' ? {
+  const planDetails = plan === 'premium-modules' ? {
+    name: 'Formation Complète',
+    price: '15 000 FCFA',
+    period: '— accès à vie',
+    icon: Crown,
+    iconColor: 'text-amber-500',
+    buttonColor: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600',
+    features: [
+      'Modules M7 à M19 débloqués à vie',
+      'Tous les quiz inclus',
+      'Psychologie & Biais, Analyse Fondamentale...',
+      'Gestion de portefeuille avancée',
+      'Paiement unique — aucun abonnement',
+    ],
+  } : plan === 'pro' ? {
     name: 'Pro',
     price: '300 000 XOF',
     period: '/ mois',
@@ -126,10 +140,9 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
               <Icon className={`w-8 h-8 ${planDetails.iconColor}`} />
               <div className="ml-3">
                 <h3 className="text-xl font-bold text-gray-900">{planDetails.name}</h3>
-                <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-gray-900">{planDetails.price.split(' ')[0]}</span>
-                  <span className="ml-1 text-gray-600 text-sm">{planDetails.price.split(' ')[1]}</span>
-                  <span className="ml-1 text-gray-500 text-sm">{planDetails.period}</span>
+                <div className="flex items-baseline flex-wrap gap-1">
+                  <span className="text-2xl font-bold text-gray-900">{planDetails.price}</span>
+                  <span className="text-gray-500 text-sm">{planDetails.period}</span>
                 </div>
               </div>
             </div>

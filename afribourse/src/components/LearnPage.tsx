@@ -153,8 +153,8 @@ export default function LearnPage() {
     const [showCertificate, setShowCertificate] = useState(false);
     const [showCertPaywall, setShowCertPaywall] = useState(false);
 
-    const isPremiumModule = (orderIndex: number) => orderIndex === 14 || orderIndex === 15;
-    const userHasPremium = ['premium', 'max', 'pro'].includes(userProfile?.subscriptionTier ?? '');
+    const isPremiumModule = (orderIndex: number) => orderIndex >= 7;
+    const userHasPremium = ['premium', 'max', 'pro', 'formation'].includes(userProfile?.subscriptionTier ?? '');
     const userHasInvestisseurPlus = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
 
     // Ouvre SIMBA en mode motivation après le premier module complété (une seule fois par compte)
@@ -1235,8 +1235,9 @@ export default function LearnPage() {
                                                     return nextModule ? (
                                                         <button
                                                             onClick={() => {
-                                                                if (isPremiumModule(nextModule.order_index ?? 0) && !userHasPremium) {
-                                                                    setShowPremiumPaywall(true);
+                                                                const nextCompleted = isModuleCompleted(nextModule.slug);
+                                                                if (isPremiumModule(nextModule.order_index ?? 0) && !userHasPremium && !nextCompleted) {
+                                                                    setShowModulePaywall(true);
                                                                     return;
                                                                 }
                                                                 setSelectedModule(nextModule);
@@ -1329,8 +1330,9 @@ export default function LearnPage() {
                                         const nextModule = allModules.find(m => (m.order_index ?? 0) === currentOrder + 1);
 
                                         if (nextModule && isModuleUnlocked(nextModule)) {
-                                            if (isPremiumModule(nextModule.order_index ?? 0) && !userHasPremium) {
-                                                setShowPremiumPaywall(true);
+                                            const nextCompleted = isModuleCompleted(nextModule.slug);
+                                            if (isPremiumModule(nextModule.order_index ?? 0) && !userHasPremium && !nextCompleted) {
+                                                setShowModulePaywall(true);
                                             } else {
                                                 setSelectedModule(nextModule);
                                                 setQuizState({
@@ -1394,8 +1396,8 @@ export default function LearnPage() {
                     <PremiumPaywall
                         isOpen={showModulePaywall}
                         onClose={() => setShowModulePaywall(false)}
-                        feature="Accéder aux modules avancés (Fiscalité, Portefeuille Réel). Passez à Investisseur+ pour débloquer l'intégralité de la formation."
-                        plan="investisseur-plus"
+                        feature="Ce module fait partie du bloc Formation Complète (M7–M19)"
+                        plan="premium-modules"
                     />
                 </div>
             </div>
@@ -1783,7 +1785,7 @@ export default function LearnPage() {
                                             return;
                                         }
 
-                                        if (isPremiumModule(module.order_index ?? 0) && !userHasPremium) {
+                                        if (isPremiumModule(module.order_index ?? 0) && !userHasPremium && !isCompleted) {
                                             setShowModulePaywall(true);
                                             return;
                                         }
@@ -1813,7 +1815,7 @@ export default function LearnPage() {
                                         </div>
                                     )}
 
-                                    {isPremiumModule(module.order_index ?? 0) && !userHasPremium && isUnlocked && (
+                                    {isPremiumModule(module.order_index ?? 0) && !userHasPremium && !isCompleted && isUnlocked && (
                                         <div className="absolute inset-0 bg-amber-900/10 backdrop-blur-[1px] flex items-center justify-center z-10">
                                             <div className="bg-white rounded-full p-4 shadow-xl">
                                                 <Crown className="w-8 h-8 text-amber-500" />
@@ -1845,7 +1847,7 @@ export default function LearnPage() {
                                                 </div>
                                             )}
 
-                                            {isPremiumModule(module.order_index ?? 0) && (
+                                            {isPremiumModule(module.order_index ?? 0) && !isCompleted && !userHasPremium && (
                                                 <div className="flex items-center space-x-1 bg-amber-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
                                                     <Crown className="w-3.5 h-3.5" />
                                                     <span>Premium</span>
