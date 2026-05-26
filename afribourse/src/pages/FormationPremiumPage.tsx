@@ -49,12 +49,12 @@ const PREMIUM_MODULES = [
 ];
 
 const BENEFITS = [
-  { icon: <Brain className="w-6 h-6" />, title: '13 modules avancés', desc: 'Du fondamental au technique, en passant par la psychologie' },
-  { icon: <CheckCircle className="w-6 h-6" />, title: 'Quiz inclus', desc: 'Validez vos connaissances après chaque module' },
-  { icon: <Clock className="w-6 h-6" />, title: 'Accès à vie', desc: 'Paiement unique, sans abonnement, sans expiration' },
-  { icon: <BarChart3 className="w-6 h-6" />, title: 'Études de cas BRVM', desc: "Exemples réels tirés des marchés d'Afrique de l'Ouest" },
-  { icon: <Shield className="w-6 h-6" />, title: 'Mises à jour incluses', desc: 'Contenu mis à jour quand les marchés évoluent' },
-  { icon: <BookOpen className="w-6 h-6" />, title: '20 modules au total', desc: 'M0–M6 gratuits + M7–M19 débloqués en un seul paiement' },
+  { icon: () => <Brain className="w-6 h-6" />, title: '13 modules avancés', desc: 'Du fondamental au technique, en passant par la psychologie' },
+  { icon: () => <CheckCircle className="w-6 h-6" />, title: 'Quiz inclus', desc: 'Validez vos connaissances après chaque module' },
+  { icon: () => <Clock className="w-6 h-6" />, title: 'Accès à vie', desc: 'Paiement unique, sans abonnement, sans expiration' },
+  { icon: () => <BarChart3 className="w-6 h-6" />, title: 'Études de cas BRVM', desc: "Exemples réels tirés des marchés d'Afrique de l'Ouest" },
+  { icon: () => <Shield className="w-6 h-6" />, title: 'Mises à jour incluses', desc: 'Contenu mis à jour quand les marchés évoluent' },
+  { icon: () => <BookOpen className="w-6 h-6" />, title: '20 modules au total', desc: 'M0–M6 gratuits + M7–M19 débloqués en un seul paiement' },
 ];
 
 const TESTIMONIALS = [
@@ -360,7 +360,7 @@ export default function FormationPremiumPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 14 }}>
           {BENEFITS.map((b) => (
             <div key={b.title} style={{ background: C.bgSub, border: `1px solid ${C.border}`, borderRadius: 14, padding: '20px 18px' }}>
-              <div style={{ color: C.goldLight, marginBottom: 10 }}>{b.icon}</div>
+              <div style={{ color: C.goldLight, marginBottom: 10 }}>{b.icon()}</div>
               <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 5, color: C.text }}>{b.title}</p>
               <p style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55 }}>{b.desc}</p>
             </div>

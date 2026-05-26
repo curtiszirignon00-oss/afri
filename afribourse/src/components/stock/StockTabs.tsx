@@ -6,7 +6,7 @@ export type TabId = 'overview' | 'analysis' | 'fundamentals' | 'news';
 type Tab = {
   id: TabId;
   label: string;
-  icon: ReactNode;
+  icon: () => ReactNode;
 };
 
 type StockTabsProps = {
@@ -19,22 +19,22 @@ const TABS: Tab[] = [
   {
     id: 'overview',
     label: "Vue d'ensemble",
-    icon: <Info className="w-4 h-4" />
+    icon: () => <Info className="w-4 h-4" />
   },
   {
     id: 'analysis',
     label: 'Analyse',
-    icon: <TrendingUp className="w-4 h-4" />
+    icon: () => <TrendingUp className="w-4 h-4" />
   },
   {
     id: 'fundamentals',
     label: 'Fondamentaux',
-    icon: <BarChart3 className="w-4 h-4" />
+    icon: () => <BarChart3 className="w-4 h-4" />
   },
   {
     id: 'news',
     label: 'Actualités',
-    icon: <Newspaper className="w-4 h-4" />
+    icon: () => <Newspaper className="w-4 h-4" />
   }
 ];
 
@@ -53,7 +53,7 @@ export default function StockTabs({ activeTab, onTabChange, newsCount = 0 }: Sto
                   : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
               }`}
             >
-              {tab.icon}
+              {tab.icon()}
               <span>{tab.label}</span>
               {tab.id === 'news' && newsCount > 0 && (
                 <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold ${

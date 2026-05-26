@@ -3,10 +3,10 @@ import { Trophy, TrendingUp, Crown, Medal, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWeeklyLeaderboard } from '../../hooks/useWeeklyLeaderboard';
 
-const RANK_STYLES: Record<number, { icon: React.ReactNode; bg: string; text: string }> = {
-    1: { icon: <Crown className="w-4 h-4 text-amber-500" />, bg: 'bg-amber-50', text: 'text-amber-700' },
-    2: { icon: <Medal className="w-4 h-4 text-gray-400" />, bg: 'bg-gray-50', text: 'text-gray-600' },
-    3: { icon: <Medal className="w-4 h-4 text-orange-400" />, bg: 'bg-orange-50', text: 'text-orange-600' },
+const RANK_STYLES: Record<number, { icon: () => React.ReactNode; bg: string; text: string }> = {
+    1: { icon: () => <Crown className="w-4 h-4 text-amber-500" />, bg: 'bg-amber-50', text: 'text-amber-700' },
+    2: { icon: () => <Medal className="w-4 h-4 text-gray-400" />, bg: 'bg-gray-50', text: 'text-gray-600' },
+    3: { icon: () => <Medal className="w-4 h-4 text-orange-400" />, bg: 'bg-orange-50', text: 'text-orange-600' },
 };
 
 export default function WeeklyLeaderboard() {
@@ -60,7 +60,7 @@ export default function WeeklyLeaderboard() {
                         >
                             {/* Rank */}
                             <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${rankStyle?.bg || 'bg-gray-50'}`}>
-                                {rankStyle?.icon || (
+                                {rankStyle?.icon?.() || (
                                     <span className="text-xs font-bold text-gray-400">{entry.rank}</span>
                                 )}
                             </div>

@@ -128,13 +128,13 @@ function getUnlockTip(criteria: any, category: string): string {
 }
 
 // --- Catégories ---
-const CATEGORIES: { key: AchievementCategory | 'all'; label: string; icon: React.ReactNode; description: string }[] = [
-  { key: 'all', label: 'Tous', icon: <Trophy className="w-4 h-4" />, description: 'Tous les badges' },
-  { key: 'formation', label: 'Formation', icon: <BookOpen className="w-4 h-4" />, description: 'Progressez dans les modules de formation' },
-  { key: 'trading', label: 'Trading', icon: <TrendingUp className="w-4 h-4" />, description: 'Excellez dans le simulateur de trading' },
-  { key: 'social', label: 'Social', icon: <Users className="w-4 h-4" />, description: 'Développez votre réseau sur la plateforme' },
-  { key: 'engagement', label: 'Engagement', icon: <Flame className="w-4 h-4" />, description: 'Montrez votre régularité et votre engagement' },
-  { key: 'special', label: 'Spéciaux', icon: <Star className="w-4 h-4" />, description: 'Badges rares et accomplissements exceptionnels' }
+const CATEGORIES: { key: AchievementCategory | 'all'; label: string; icon: () => React.ReactNode; description: string }[] = [
+  { key: 'all', label: 'Tous', icon: () => <Trophy className="w-4 h-4" />, description: 'Tous les badges' },
+  { key: 'formation', label: 'Formation', icon: () => <BookOpen className="w-4 h-4" />, description: 'Progressez dans les modules de formation' },
+  { key: 'trading', label: 'Trading', icon: () => <TrendingUp className="w-4 h-4" />, description: 'Excellez dans le simulateur de trading' },
+  { key: 'social', label: 'Social', icon: () => <Users className="w-4 h-4" />, description: 'Développez votre réseau sur la plateforme' },
+  { key: 'engagement', label: 'Engagement', icon: () => <Flame className="w-4 h-4" />, description: 'Montrez votre régularité et votre engagement' },
+  { key: 'special', label: 'Spéciaux', icon: () => <Star className="w-4 h-4" />, description: 'Badges rares et accomplissements exceptionnels' }
 ];
 
 const RARITY_ORDER: Record<string, number> = { legendary: 0, epic: 1, rare: 2, common: 3 };
@@ -522,7 +522,7 @@ export default function AchievementsPage() {
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className={selectedCategory === cat.key ? 'text-amber-600' : 'text-gray-400'}>
-                    {catInfo.icon}
+                    {catInfo.icon()}
                   </span>
                   <span className="text-sm font-semibold text-gray-800">{cat.label}</span>
                 </div>
@@ -555,7 +555,7 @@ export default function AchievementsPage() {
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}
               `}
             >
-              {cat.icon}
+              {cat.icon()}
               <span>{cat.label}</span>
               {cat.key !== 'all' && (
                 <span className={`ml-1 text-xs ${selectedCategory === cat.key ? 'text-amber-200' : 'text-gray-400'}`}>
@@ -571,7 +571,7 @@ export default function AchievementsPage() {
         {selectedCategory !== 'all' && (
           <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200 flex items-center gap-3">
             <div className="p-2 bg-amber-50 rounded-lg text-amber-500">
-              {CATEGORIES.find(c => c.key === selectedCategory)?.icon}
+              {CATEGORIES.find(c => c.key === selectedCategory)?.icon?.()}
             </div>
             <p className="text-sm text-gray-600">
               {CATEGORIES.find(c => c.key === selectedCategory)?.description}

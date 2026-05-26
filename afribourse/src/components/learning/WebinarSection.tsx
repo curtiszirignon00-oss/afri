@@ -100,7 +100,7 @@ interface Webinar {
   badge?: string;
   gradient: string;
   accentColor: string;
-  icon: React.ReactNode;
+  icon: () => React.ReactNode;
   investisseurPlusBonus?: boolean;
 }
 
@@ -123,7 +123,7 @@ const WEBINARS: Webinar[] = [
     badge: 'JUIN',
     gradient: 'from-blue-600 to-indigo-700',
     accentColor: '#3B82F6',
-    icon: <Star className="w-5 h-5" />,
+    icon: () => <Star className="w-5 h-5" />,
   },
   {
     id: 'w2-fondamentale-juin',
@@ -141,7 +141,7 @@ const WEBINARS: Webinar[] = [
     badge: undefined,
     gradient: 'from-emerald-600 to-teal-700',
     accentColor: '#10B981',
-    icon: <TrendingUp className="w-5 h-5" />,
+    icon: () => <TrendingUp className="w-5 h-5" />,
   },
   {
     id: 'w3-technique-juin',
@@ -159,7 +159,7 @@ const WEBINARS: Webinar[] = [
     badge: 'BIENTÔT',
     gradient: 'from-orange-500 to-rose-600',
     accentColor: '#F97316',
-    icon: <Flame className="w-5 h-5" />,
+    icon: () => <Flame className="w-5 h-5" />,
   },
 ];
 

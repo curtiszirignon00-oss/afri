@@ -26,10 +26,10 @@ interface LeaderboardResponse {
     updated_at: string;
 }
 
-const RANK_DECORATIONS: Record<number, { icon: React.ReactNode; bg: string; ring: string }> = {
-    1: { icon: <Crown className="w-5 h-5 text-amber-500" />, bg: 'bg-gradient-to-br from-amber-50 to-yellow-50', ring: 'ring-2 ring-amber-300' },
-    2: { icon: <Medal className="w-5 h-5 text-gray-400" />, bg: 'bg-gradient-to-br from-gray-50 to-slate-50', ring: 'ring-2 ring-gray-300' },
-    3: { icon: <Medal className="w-5 h-5 text-orange-400" />, bg: 'bg-gradient-to-br from-orange-50 to-amber-50', ring: 'ring-2 ring-orange-300' },
+const RANK_DECORATIONS: Record<number, { icon: () => React.ReactNode; bg: string; ring: string }> = {
+    1: { icon: () => <Crown className="w-5 h-5 text-amber-500" />, bg: 'bg-gradient-to-br from-amber-50 to-yellow-50', ring: 'ring-2 ring-amber-300' },
+    2: { icon: () => <Medal className="w-5 h-5 text-gray-400" />, bg: 'bg-gradient-to-br from-gray-50 to-slate-50', ring: 'ring-2 ring-gray-300' },
+    3: { icon: () => <Medal className="w-5 h-5 text-orange-400" />, bg: 'bg-gradient-to-br from-orange-50 to-amber-50', ring: 'ring-2 ring-orange-300' },
 };
 
 export default function LeaderboardPage() {
@@ -105,7 +105,7 @@ export default function LeaderboardPage() {
                                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                         !decoration ? 'bg-gray-100' : ''
                                     }`}>
-                                        {decoration?.icon || (
+                                        {decoration?.icon?.() || (
                                             <span className="text-sm font-bold text-gray-400">{entry.rank}</span>
                                         )}
                                     </div>
