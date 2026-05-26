@@ -11,6 +11,9 @@ const learningController = new LearningController();
 // Route pour obtenir tous les modules
 router.get('/', learningController.getModules.bind(learningController));
 
+// ADMIN — Vider le cache (POST /api/learning-modules/cache/clear?secret=XXX)
+router.post('/cache/clear', learningController.clearCache.bind(learningController));
+
 // --- ROUTE : OBTENIR LA PROGRESSION DE L'UTILISATEUR ---
 router.get('/progress', auth, learningController.getUserProgress.bind(learningController));
 

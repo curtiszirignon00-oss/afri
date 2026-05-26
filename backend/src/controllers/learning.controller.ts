@@ -10,6 +10,7 @@ import * as streakService from '../services/streak.service';
 import * as achievementService from '../services/achievement.service';
 import * as weeklyChallengeService from '../services/weekly-challenge.service';
 import { prisma } from '../config/database';
+import { cacheInvalidatePattern } from '../services/cache.service';
 
 // Instancie le service une seule fois
 const learningService = new LearningServicePrisma();
@@ -285,5 +286,16 @@ export class LearningController {
         } catch (error) {
             return next(error);
         }
+    }
+
+    // ADMIN — Vider le cache des modules (POST /api/learning-modules/cache/clear?secret=...)
+    async clearCache(req: Request, res: Response) {
+        const secret = req.query.secret as string;
+        if (!secret || secret !== process.env.ADMIN_CACHE_SECRET) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+        await cacheInvalidatePattern('learning:*');
+        log.info('[Admin] Cache learning vidé manuellement');
+        return res.json({ ok: true, message: 'Cache learning vidé.' });
     }
 }
