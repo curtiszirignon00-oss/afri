@@ -30,8 +30,7 @@ export default function PriceAlertModal({
   const updateMutation = useUpdatePriceAlert();
   const { data: existingAlerts = [] } = usePriceAlerts();
 
-  // Nudge si l'utilisateur atteint la limite d'alertes du plan gratuit (3 max)
-  useQuotaLimitNudge(existingAlerts.length, 3);
+  useQuotaLimitNudge(existingAlerts.length, Infinity);
 
   // Pré-remplir le formulaire si on édite une alerte existante
   useEffect(() => {

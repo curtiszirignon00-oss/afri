@@ -113,6 +113,8 @@ export default function DashboardPage() {
   const onboardingRef = useRef(onboardingGuide);
   useEffect(() => { onboardingRef.current = onboardingGuide; });
 
+  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
+
   // Détection rétroactive : si un achat existe déjà quand l'onboarding démarre
   useEffect(() => {
     if (!isActive || steps.achat) return;
@@ -142,7 +144,6 @@ export default function DashboardPage() {
   // États locaux
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [watchlistStocks, setWatchlistStocks] = useState<Stock[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]); // <-- AJOUT: Transactions récentes
   const [marketIndices, setMarketIndices] = useState<MarketIndex[]>([]); // <-- AJOUT: Indices du marché
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

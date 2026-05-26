@@ -4,12 +4,11 @@ import { log } from '../config/logger';
 import prisma from '../config/prisma';
 import { WatchlistItem } from '@prisma/client';
 
-// Limites de watchlist selon l'abonnement
 const WATCHLIST_LIMITS: Record<string, number> = {
-  free: 3,
-  premium: 15,
+  free: Infinity,
+  premium: Infinity,
   pro: Infinity,
-  max: Infinity, // Alias pour le plan max
+  max: Infinity,
 };
 
 // Get all watchlist items for a specific user

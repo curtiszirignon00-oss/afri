@@ -29,11 +29,11 @@ function relativeTime(iso: string): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-const SECTOR_ICONS: Record<Sector, React.ReactNode> = {
-  Banque: <Landmark size={13} />,
-  "Agro-industrie": <Leaf size={13} />,
-  "Distribution pétrolière": <Fuel size={13} />,
-  Télécommunications: <Radio size={13} />,
+const SECTOR_ICONS: Record<Sector, () => React.ReactNode> = {
+  Banque: () => <Landmark size={13} />,
+  "Agro-industrie": () => <Leaf size={13} />,
+  "Distribution pétrolière": () => <Fuel size={13} />,
+  Télécommunications: () => <Radio size={13} />,
 };
 
 const COUNTRY_FLAG: Record<string, string> = {
@@ -134,7 +134,7 @@ function NewsCard({ news, onOpen }: { news: StockNews; onOpen: (n: StockNews) =>
             </span>
             <span className="text-base" title={news.country}>{COUNTRY_FLAG[news.country]}</span>
             <span className="inline-flex items-center gap-1 text-xs text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">
-              {SECTOR_ICONS[news.sector]}{news.sector}
+              {SECTOR_ICONS[news.sector]?.()}{news.sector}
             </span>
           </div>
           <div className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
@@ -229,7 +229,7 @@ function DetailPanel({ news, onClose }: { news: StockNews; onClose: () => void }
                 <span className="font-mono text-lg font-bold text-slate-900">{news.ticker}</span>
                 <span className="text-xl">{COUNTRY_FLAG[news.country]}</span>
                 <span className="inline-flex items-center gap-1 text-xs text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">
-                  {SECTOR_ICONS[news.sector]}{news.sector}
+                  {SECTOR_ICONS[news.sector]?.()}{news.sector}
                 </span>
               </div>
               <p className="text-sm text-slate-600">{news.name}</p>

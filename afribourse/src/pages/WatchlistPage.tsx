@@ -471,8 +471,7 @@ export default function WatchlistPage() {
   const { data: items = [], isLoading, refetch } = useWatchlistEnriched();
   const { data: scoresData = [] } = useWatchlistScores();
 
-  // Nudge si l'utilisateur atteint la limite du plan gratuit (3 actions max)
-  useQuotaLimitNudge(items.length, 3);
+  useQuotaLimitNudge(items.length, Infinity);
   const scoreMap = Object.fromEntries(scoresData.map(s => [s.ticker, s]));
 
   const tickers = useMemo(() => items.map(i => i.stock_ticker), [items]);

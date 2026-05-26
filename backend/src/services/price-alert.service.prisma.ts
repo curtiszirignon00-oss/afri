@@ -14,12 +14,11 @@ export type PriceAlertWithUser = PriceAlert & {
   };
 };
 
-// Limites d'alertes selon l'abonnement
 const ALERT_LIMITS: Record<string, number> = {
-  free: 3,
-  premium: 15,
+  free: Infinity,
+  premium: Infinity,
   pro: Infinity,
-  max: Infinity, // Alias pour le plan max
+  max: Infinity,
 };
 
 // Récupérer toutes les alertes d'un utilisateur

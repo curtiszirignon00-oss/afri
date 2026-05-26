@@ -44,11 +44,11 @@ function relTime(iso: string): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-const SECTOR_ICONS: Record<Sector, React.ReactNode> = {
-  Banque: <Landmark size={12} />,
-  "Agro-industrie": <Leaf size={12} />,
-  "Distribution pétrolière": <Fuel size={12} />,
-  Télécommunications: <Radio size={12} />,
+const SECTOR_ICONS: Record<Sector, () => React.ReactNode> = {
+  Banque: () => <Landmark size={12} />,
+  "Agro-industrie": () => <Leaf size={12} />,
+  "Distribution pétrolière": () => <Fuel size={12} />,
+  Télécommunications: () => <Radio size={12} />,
 };
 
 const COUNTRY_FLAG: Record<string, string> = { CI: "🇨🇮", BF: "🇧🇫", SN: "🇸🇳" };
@@ -266,7 +266,7 @@ function FundCard({ news, onOpen }: { news: FundamentalsNews; onOpen: () => void
             <span className="font-mono text-sm font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">{news.ticker}</span>
             <span>{COUNTRY_FLAG[news.country]}</span>
             <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">
-              {SECTOR_ICONS[news.sector]}{news.sector}
+              {SECTOR_ICONS[news.sector]?.()}{news.sector}
             </span>
           </div>
           <div className="flex items-center gap-1 text-[10px] text-slate-400 shrink-0">
