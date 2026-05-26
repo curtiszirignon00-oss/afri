@@ -17,12 +17,12 @@ interface Certificate {
   module: { name: string };
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string; icon: JSX.Element }> = {
-  pending: { label: 'En attente', color: 'bg-amber-100 text-amber-700', icon: <Clock size={12} /> },
-  viewed: { label: 'Consulté', color: 'bg-blue-100 text-blue-700', icon: <Eye size={12} /> },
-  downloaded: { label: 'Téléchargé', color: 'bg-green-100 text-green-700', icon: <Download size={12} /> },
-  shared: { label: 'Partagé', color: 'bg-purple-100 text-purple-700', icon: <Share2 size={12} /> },
-  revoked: { label: 'Révoqué', color: 'bg-red-100 text-red-700', icon: <XCircle size={12} /> },
+const STATUS_LABELS: Record<string, { label: string; color: string; icon: () => JSX.Element }> = {
+  pending: { label: 'En attente', color: 'bg-amber-100 text-amber-700', icon: () => <Clock size={12} /> },
+  viewed: { label: 'Consulté', color: 'bg-blue-100 text-blue-700', icon: () => <Eye size={12} /> },
+  downloaded: { label: 'Téléchargé', color: 'bg-green-100 text-green-700', icon: () => <Download size={12} /> },
+  shared: { label: 'Partagé', color: 'bg-purple-100 text-purple-700', icon: () => <Share2 size={12} /> },
+  revoked: { label: 'Révoqué', color: 'bg-red-100 text-red-700', icon: () => <XCircle size={12} /> },
 };
 
 export default function AdminCertificates() {
@@ -366,7 +366,7 @@ export default function AdminCertificates() {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${s.color}`}>
-                            {s.icon}{s.label}
+                            {s.icon()}{s.label}
                           </span>
                         </td>
                         <td className="px-4 py-3">
