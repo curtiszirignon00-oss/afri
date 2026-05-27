@@ -242,6 +242,10 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
         <div key={i} className="bg-slate-800 rounded-xl px-5 py-4 space-y-2 shadow-md">
           <p className="text-xs font-bold text-[#00D4A8] uppercase tracking-widest"
              dangerouslySetInnerHTML={{ __html: block.title }} />
+          {block.intro && (
+            <p className={`text-slate-200 font-semibold ${isModule ? 'text-sm' : 'text-xs'}`}
+               dangerouslySetInnerHTML={{ __html: block.intro }} />
+          )}
           <ul className="space-y-2">
             {block.items.map((item, j) => (
               <li key={j} className={`text-slate-300 flex items-start gap-2 ${isModule ? 'text-sm' : 'text-xs'}`}>
