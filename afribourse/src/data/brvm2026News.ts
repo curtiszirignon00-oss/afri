@@ -28,7 +28,8 @@ export type ContentBlock =
   | { type: 'objectives'; title?: string; subtitle?: string; items: string[] }
   | { type: 'analogy'; title: string; items: string[]; conclusion?: string }
   | { type: 'ordered-list'; items: string[] }
-  | { type: 'section-title'; text: string; color?: 'blue' | 'green' | 'purple' | 'orange' };
+  | { type: 'section-title'; text: string; color?: 'blue' | 'green' | 'purple' | 'orange' }
+  | { type: 'profile-quiz' };
 
 export interface BRVMArticle {
   id: string;

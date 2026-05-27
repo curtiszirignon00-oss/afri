@@ -1,6 +1,7 @@
 import React from 'react';
 import { ContentBlock } from '../data/brvm2026News';
 import { ChartById } from './charts/SGBCICharts';
+import InvestorProfileQuiz from './InvestorProfileQuiz';
 
 // variant 'news' = panneau latéral compact (texte xs/sm)
 // variant 'module' = lecture pleine page (texte sm/base, espacement généreux)
@@ -9,17 +10,18 @@ type Variant = 'news' | 'module';
 interface Props {
   blocks: ContentBlock[];
   variant?: Variant;
+  onModuleComplete?: () => void;
 }
 
-export function BlockRenderer({ blocks, variant = 'news' }: Props) {
+export function BlockRenderer({ blocks, variant = 'news', onModuleComplete }: Props) {
   return (
     <div className={`space-y-${variant === 'module' ? '5' : '3'}`}>
-      {blocks.map((block, i) => renderBlock(block, i, variant))}
+      {blocks.map((block, i) => renderBlock(block, i, variant, onModuleComplete))}
     </div>
   );
 }
 
-function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNode {
+function renderBlock(block: ContentBlock, i: number, v: Variant, onModuleComplete?: () => void): React.ReactNode {
   const isModule = v === 'module';
 
   switch (block.type) {
@@ -258,6 +260,20 @@ function renderBlock(block: ContentBlock, i: number, v: Variant): React.ReactNod
             <p className={`text-slate-400 italic pt-1 border-t border-slate-700 ${isModule ? 'text-sm' : 'text-xs'}`}
                dangerouslySetInnerHTML={{ __html: block.conclusion }} />
           )}
+        </div>
+      );
+
+    case 'profile-quiz':
+      return (
+        <div key={i} className="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <span className="text-lg">🧭</span>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Exercice pratique</p>
+              <p className="text-sm font-bold text-slate-900">Découvrez votre profil investisseur</p>
+            </div>
+          </div>
+          <InvestorProfileQuiz onComplete={onModuleComplete} />
         </div>
       );
 

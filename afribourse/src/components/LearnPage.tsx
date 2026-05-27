@@ -65,7 +65,10 @@ interface QuizState {
     detailedResults?: any[];
 }
 
-function ModuleContent({ module }: { module: { content?: string | null; content_json?: string | null } }) {
+function ModuleContent({ module, onComplete }: {
+    module: { content?: string | null; content_json?: string | null };
+    onComplete?: () => void;
+}) {
     const richBlocks = useMemo<ContentBlock[] | null>(() => {
         if (!module.content_json) return null;
         try {
@@ -80,7 +83,7 @@ function ModuleContent({ module }: { module: { content?: string | null; content_
     if (richBlocks) {
         return (
             <div className="px-4 sm:px-8 py-6">
-                <BlockRenderer blocks={richBlocks} variant="module" />
+                <BlockRenderer blocks={richBlocks} variant="module" onModuleComplete={onComplete} />
             </div>
         );
     }
@@ -771,6 +774,12 @@ export default function LearnPage() {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
         const hasQuiz = selectedModule.has_quiz;
+        const hasProfileQuiz = (() => {
+            try {
+                const blocks = JSON.parse(selectedModule.content_json ?? '[]');
+                return Array.isArray(blocks) && blocks.some((b: any) => b.type === 'profile-quiz');
+            } catch { return false; }
+        })();
 
         return (
             <div className="min-h-screen bg-slate-50 overflow-x-hidden">
@@ -881,7 +890,12 @@ export default function LearnPage() {
                         {/* Contenu du module - Caché pendant le quiz */}
                         {!quizState.isActive && !quizState.showResults && (
                             <div ref={contentRef}>
-                                <ModuleContent module={selectedModule} />
+                                <ModuleContent
+                                    module={selectedModule}
+                                    onComplete={hasProfileQuiz && !isCompleted
+                                        ? () => handleMarkAsCompleted(selectedModule.slug)
+                                        : undefined}
+                                />
 
                                 {/* Ressources du module : étude de cas PDF + dashboard */}
                                 {(selectedModule.attachment_url || selectedModule.dashboard_url) && (() => {
@@ -1325,7 +1339,7 @@ export default function LearnPage() {
                         {!quizState.isActive && !quizState.showResults && (
                         <div className="px-4 sm:px-8 py-4 sm:py-6 bg-gray-50 border-t border-gray-200">
                             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                {!hasQuiz && !isCompleted && (
+                                {!hasQuiz && !hasProfileQuiz && !isCompleted && (
                                     <button
                                         onClick={() => handleMarkAsCompleted(selectedModule.slug)}
                                         className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium w-full sm:w-auto flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
