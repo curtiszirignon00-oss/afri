@@ -199,6 +199,7 @@ export interface LearningModule {
   slug: string;
   description: string | null;
   content: string | null;
+  content_json: string | null;
   difficulty_level: string;
   content_type: string;
   duration_minutes: number | null;
