@@ -265,7 +265,7 @@ function renderBlock(block: ContentBlock, i: number, v: Variant, onModuleComplet
 
     case 'profile-quiz':
       return (
-        <div key={i} className="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm">
+        <div key={i} data-profile-quiz className="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm">
           <div className="flex items-center gap-2 mb-5">
             <span className="text-lg">🧭</span>
             <div>

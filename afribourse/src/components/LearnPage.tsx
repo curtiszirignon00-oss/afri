@@ -1349,6 +1349,19 @@ export default function LearnPage() {
                                     </button>
                                 )}
 
+                                {hasProfileQuiz && !isCompleted && (
+                                    <button
+                                        onClick={() => {
+                                            const el = document.querySelector('[data-profile-quiz]');
+                                            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }}
+                                        className="px-6 py-3 bg-[#00D4A8] text-white rounded-xl hover:bg-[#00bfa0] transition-colors font-medium w-full sm:w-auto flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+                                    >
+                                        <Target className="w-5 h-5" />
+                                        <span>Définir mon profil</span>
+                                    </button>
+                                )}
+
                                 {isCompleted && (
                                     <div className="flex items-center space-x-2 text-green-600">
                                         <CheckCircle className="w-5 h-5" />
