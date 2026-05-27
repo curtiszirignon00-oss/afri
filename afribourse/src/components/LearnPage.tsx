@@ -770,7 +770,7 @@ export default function LearnPage() {
     if (selectedModule) {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
-        const hasQuiz = (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13;
+        const hasQuiz = selectedModule.has_quiz;
 
         return (
             <div className="min-h-screen bg-slate-50 overflow-x-hidden">
@@ -1793,7 +1793,7 @@ export default function LearnPage() {
                             const isCompleted = isModuleCompleted(module.slug);
                             const isUnlocked = isModuleUnlocked(module);
                             const previousModule = getPreviousIncompleteModule(module);
-                            const hasQuiz = (module.order_index ?? 0) >= 1 && (module.order_index ?? 0) !== 5;
+                            const hasQuiz = module.has_quiz;
 
                             return (
                                 <button
