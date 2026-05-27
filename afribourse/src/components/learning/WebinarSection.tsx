@@ -301,7 +301,7 @@ const PAYMENT_DIAL_CODES = [
   { code: '+250', flag: '🇷🇼', name: 'Rwanda' },
 ];
 
-const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void }> = ({ webinar, count, onClose }) => {
+const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (registered?: boolean) => void; onPreregistered?: () => void }> = ({ webinar, count, onClose, onPreregistered }) => {
   const { userProfile } = useAuth();
   const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
   const resolved = effectiveCount(displayCount, webinar.earlyBirdDeadline);
@@ -357,6 +357,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
+      onPreregistered?.();
       // Pré-remplir le téléphone de paiement depuis le formulaire
       setPayDialCode(form.dialCode);
       setPayPhone(form.phoneNumber);
@@ -1085,12 +1086,9 @@ const WebinarSection: React.FC = () => {
     analytics.trackAction('webinar_register_click', w.title, { webinarId: w.id, price: w.price });
     setSelectedWebinar(w);
   }, []);
-  const handleClose = useCallback((registered?: boolean) => {
-    if (registered && selectedWebinar) {
-      setCounts((prev) => ({ ...prev, [selectedWebinar.id]: (prev[selectedWebinar.id] ?? 0) + 1 }));
-    }
+  const handleClose = useCallback(() => {
     setSelectedWebinar(null);
-  }, [selectedWebinar]);
+  }, []);
 
   return (
     <>
@@ -1135,7 +1133,12 @@ const WebinarSection: React.FC = () => {
       </section>
 
       {selectedWebinar && (
-        <RegistrationModal webinar={selectedWebinar} count={counts[selectedWebinar.id] ?? 0} onClose={handleClose} />
+        <RegistrationModal
+          webinar={selectedWebinar}
+          count={counts[selectedWebinar.id] ?? 0}
+          onClose={handleClose}
+          onPreregistered={() => setCounts((prev) => ({ ...prev, [selectedWebinar.id]: (prev[selectedWebinar.id] ?? 0) + 1 }))}
+        />
       )}
 
       {showPackModal && (

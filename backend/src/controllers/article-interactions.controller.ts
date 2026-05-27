@@ -2,6 +2,21 @@ import { Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Retourne un offset stable entre 90 et 100 si l'articleId correspond à un
+// module d'apprentissage, sinon 0. Les 4 derniers caractères hex de l'ObjectId
+// garantissent une valeur fixe mais variée par module.
+async function getModuleBaseLikes(articleId: string): Promise<number> {
+  const mod = await prisma.learningModule.findUnique({
+    where: { id: articleId },
+    select: { id: true },
+  });
+  if (!mod) return 0;
+  const seed = parseInt(articleId.slice(-4), 16);
+  return 90 + (seed % 11); // 90–100
+}
+
 // ── Likes ─────────────────────────────────────────────────────────────────────
 
 export async function getLikes(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -9,14 +24,15 @@ export async function getLikes(req: AuthenticatedRequest, res: Response, next: N
     const { id: articleId } = req.params;
     const userId = req.user?.id;
 
-    const [count, liked] = await Promise.all([
+    const [count, liked, baseLikes] = await Promise.all([
       prisma.articleLike.count({ where: { articleId } }),
       userId
         ? prisma.articleLike.findUnique({ where: { articleId_userId: { articleId, userId } } })
         : Promise.resolve(null),
+      getModuleBaseLikes(articleId),
     ]);
 
-    return res.json({ count, liked: !!liked });
+    return res.json({ count: count + baseLikes, liked: !!liked });
   } catch (err) { return next(err); }
 }
 
@@ -25,9 +41,10 @@ export async function toggleLike(req: AuthenticatedRequest, res: Response, next:
     const { id: articleId } = req.params;
     const userId = req.user!.id;
 
-    const existing = await prisma.articleLike.findUnique({
-      where: { articleId_userId: { articleId, userId } },
-    });
+    const [existing, baseLikes] = await Promise.all([
+      prisma.articleLike.findUnique({ where: { articleId_userId: { articleId, userId } } }),
+      getModuleBaseLikes(articleId),
+    ]);
 
     if (existing) {
       await prisma.articleLike.delete({ where: { id: existing.id } });
@@ -36,7 +53,7 @@ export async function toggleLike(req: AuthenticatedRequest, res: Response, next:
     }
 
     const count = await prisma.articleLike.count({ where: { articleId } });
-    return res.json({ liked: !existing, count });
+    return res.json({ liked: !existing, count: count + baseLikes });
   } catch (err) { return next(err); }
 }
 
