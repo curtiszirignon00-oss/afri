@@ -774,12 +774,9 @@ export default function LearnPage() {
         const isCompleted = isModuleCompleted(selectedModule.slug);
         const moduleProgress = progress.find(p => p.module.slug === selectedModule.slug);
         const hasQuiz = selectedModule.has_quiz;
-        const hasProfileQuiz = (() => {
-            try {
-                const blocks = JSON.parse(selectedModule.content_json ?? '[]');
-                return Array.isArray(blocks) && blocks.some((b: any) => b.type === 'profile-quiz');
-            } catch { return false; }
-        })();
+        // Slugs des modules dont la validation passe par le quiz de profil investisseur
+        const PROFILE_QUIZ_SLUGS = ['mental-du-gagnant'];
+        const hasProfileQuiz = PROFILE_QUIZ_SLUGS.includes(selectedModule.slug);
 
         return (
             <div className="min-h-screen bg-slate-50 overflow-x-hidden">
