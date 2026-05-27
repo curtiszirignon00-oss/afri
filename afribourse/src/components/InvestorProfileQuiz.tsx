@@ -21,9 +21,9 @@ const QUESTIONS = [
     text: 'Vous investissez 500 000 FCFA. Trois mois plus tard, votre portefeuille affiche −15 % (−75 000 FCFA). Quelle est votre réaction spontanée ?',
     options: [
       { icon: '😰', title: 'Je vends immédiatement', sub: "Je ne supporte pas de voir mon argent fondre. Je préfère sortir et limiter les dégâts." },
-      { icon: '😟', title: 'Je suis inquiet mais j'attends', sub: "C'est stressant, mais je résiste à la tentation de vendre. J'espère que ça remonte." },
-      { icon: '😊', title: 'Je reste calme et j'analyse', sub: "Je vérifie si les fondamentaux ont changé. Si non, je tiens ma position sans panique." },
-      { icon: '😎', title: 'Je vois une opportunité d'acheter plus', sub: "Les bonnes actions à prix réduit, c'est exactement ce que je cherche. Je renforce ma position." },
+      { icon: '😟', title: "Je suis inquiet mais j'attends", sub: "C'est stressant, mais je résiste à la tentation de vendre. J'espère que ça remonte." },
+      { icon: '😊', title: "Je reste calme et j'analyse", sub: "Je vérifie si les fondamentaux ont changé. Si non, je tiens ma position sans panique." },
+      { icon: '😎', title: "Je vois une opportunité d'acheter plus", sub: "Les bonnes actions à prix réduit, c'est exactement ce que je cherche. Je renforce ma position." },
     ],
   },
   {
