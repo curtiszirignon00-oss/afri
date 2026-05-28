@@ -105,6 +105,23 @@ function ModuleContent({ module, onComplete }: {
     );
 }
 
+const CATEGORIES = [
+    { id: 'all',          label: '📚 Tous' },
+    { id: 'psychologie',  label: '🧠 Psychologie' },
+    { id: 'fondamentale', label: '📊 Analyse Fondamentale' },
+    { id: 'technique',    label: '📈 Analyse Technique' },
+    { id: 'portefeuille', label: '🏗️ Portefeuille' },
+    { id: 'brvm',         label: '🎯 Connaissance BRVM' },
+] as const;
+
+const CATEGORY_FILTERS: Record<string, number[]> = {
+    psychologie:  [0, 3, 8, 13],
+    fondamentale: [9, 10, 11, 14, 15, 16],
+    technique:    [12, 17, 19],
+    portefeuille: [7, 13, 18, 19],
+    brvm:         [1, 2, 4, 5],
+};
+
 export default function LearnPage() {
     const { isLoggedIn, userProfile } = useAuth();
     const navigate = useNavigate();
@@ -126,7 +143,7 @@ export default function LearnPage() {
     const [modules, setModules] = useState<LearningModule[]>([]);
     const [allModules, setAllModules] = useState<LearningModule[]>([]); // Tous les modules pour vérification
     const [progress, setProgress] = useState<LearningProgress[]>([]);
-    const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedModule, setSelectedModule] = useState<LearningModule | null>(null);
@@ -316,10 +333,11 @@ export default function LearnPage() {
             // Stocker tous les modules pour la vérification de déverrouillage
             setAllModules(allModulesData || []);
 
-            // Filtrer les modules pour l'affichage selon la difficulté sélectionnée
-            const filteredModules = selectedDifficulty === 'all'
+            // Filtrer les modules selon la catégorie thématique sélectionnée
+            const catIndices = CATEGORY_FILTERS[selectedCategory];
+            const filteredModules = !catIndices
                 ? allModulesData
-                : (allModulesData || []).filter((m: LearningModule) => m.difficulty_level === selectedDifficulty);
+                : (allModulesData || []).filter((m: LearningModule) => catIndices.includes(m.order_index ?? -1));
 
             setModules(filteredModules || []);
             setProgress(progressData || []);
@@ -333,7 +351,7 @@ export default function LearnPage() {
         } finally {
             setLoading(false);
         }
-    }, [selectedDifficulty]);
+    }, [selectedCategory]);
 
     useEffect(() => {
         loadData();
@@ -1720,19 +1738,19 @@ export default function LearnPage() {
                 </div>
             )}
 
-            {/* Filtres */}
+            {/* Filtres thématiques */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-10 sticky top-20 z-10">
                 <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
-                    {['all', 'debutant', 'intermediaire', 'avance'].map((difficulty) => (
+                    {CATEGORIES.map((cat) => (
                         <button
-                            key={difficulty}
-                            onClick={() => setSelectedDifficulty(difficulty)}
-                            className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start ${selectedDifficulty === difficulty
+                            key={cat.id}
+                            onClick={() => setSelectedCategory(cat.id)}
+                            className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start ${selectedCategory === cat.id
                                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
-                            {difficulty === 'all' ? '📚 Tous' : `${getDifficultyLabel(difficulty)}`}
+                            {cat.label}
                         </button>
                     ))}
 
@@ -1983,9 +2001,9 @@ export default function LearnPage() {
                         Aucun module trouvé
                     </h3>
                     <p className="text-gray-500">
-                        {selectedDifficulty === 'all'
+                        {selectedCategory === 'all'
                             ? "Aucun module disponible pour le moment."
-                            : `Aucun module trouvé pour le niveau "${getDifficultyLabel(selectedDifficulty)}".`
+                            : `Aucun module trouvé dans cette catégorie.`
                         }
                     </p>
                 </div>

@@ -1,246 +1,129 @@
 // src/components/profile/InvestorDNA.tsx
-import { Shield, TrendingUp, Target, Clock, Briefcase, PieChart } from 'lucide-react';
+import { BookOpen, Briefcase, TrendingUp, Globe, PieChart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-// ─── Helpers v2 ──────────────────────────────────────────────────────────────
+type ProfileType = 'apprenti' | 'decideur' | 'investisseur' | 'explorateur';
 
-function getProfileLabel(score: number): string {
-    if (score < 30) return 'Investisseur Prudent';
-    if (score < 50) return 'Investisseur Modéré';
-    if (score < 70) return 'Investisseur Équilibré';
-    if (score < 85) return 'Investisseur Dynamique';
-    return 'Investisseur Avisé';
-}
-
-const GOAL_LABELS: Record<string, string> = {
-    education: 'Objectif : Éducation',
-    immo:      'Objectif : Immobilier',
-    retraite:  'Objectif : Retraite',
-    business:  'Objectif : Entrepreneuriat',
-    epargne:   'Objectif : Épargne',
+const PROFILE_CONFIG: Record<ProfileType, {
+    label: string;
+    description: string;
+    goal: string;
+    gradient: string;
+    headerGradient: string;
+    icon: React.ElementType;
+}> = {
+    apprenti: {
+        label: "L'Apprenti",
+        description: 'Apprendre les bases de la BRVM',
+        goal: 'Comprendre les marchés africains pas à pas',
+        gradient: 'from-teal-500 to-emerald-600',
+        headerGradient: 'from-teal-600 to-emerald-700',
+        icon: BookOpen,
+    },
+    decideur: {
+        label: 'Le Décideur',
+        description: 'Prendre des décisions éclairées',
+        goal: 'Analyser et choisir ses investissements avec méthode',
+        gradient: 'from-amber-500 to-orange-600',
+        headerGradient: 'from-amber-600 to-orange-700',
+        icon: Briefcase,
+    },
+    investisseur: {
+        label: "L'Investisseur",
+        description: 'Faire fructifier son capital',
+        goal: 'Construire un portefeuille performant sur la BRVM',
+        gradient: 'from-violet-500 to-purple-600',
+        headerGradient: 'from-violet-600 to-purple-700',
+        icon: TrendingUp,
+    },
+    explorateur: {
+        label: "L'Explorateur",
+        description: 'Explorer les marchés africains',
+        goal: 'Découvrir les opportunités de la BRVM et au-delà',
+        gradient: 'from-blue-500 to-cyan-600',
+        headerGradient: 'from-blue-600 to-cyan-700',
+        icon: Globe,
+    },
 };
-function getGoalLabel(goal: string): string {
-    return GOAL_LABELS[goal] ?? 'Objectif personnel';
-}
-
-const ALLOC_COLORS = ['#1D9E75', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#10B981'];
-
-interface AllocationItem {
-    sector: string;
-    pct: number;
-    tickers: string[];
-    rationale?: string;
-}
-
-// ─── ScoreRing SVG ────────────────────────────────────────────────────────────
-
-function ScoreRing({ score }: { score: number }) {
-    const r = 26;
-    const circ = 2 * Math.PI * r;
-    const filled = (score / 100) * circ;
-    return (
-        <div className="relative w-16 h-16 flex-shrink-0">
-            <svg viewBox="0 0 64 64" className="w-16 h-16 -rotate-90">
-                <circle cx="32" cy="32" r={r} fill="none" stroke="#E5E7EB" strokeWidth="6" />
-                <circle
-                    cx="32" cy="32" r={r}
-                    fill="none" stroke="#1D9E75" strokeWidth="6"
-                    strokeDasharray={`${filled} ${circ}`}
-                    strokeLinecap="round"
-                />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold text-emerald-600">{score}</span>
-            </div>
-        </div>
-    );
-}
-
-// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface InvestorDNAProps {
-    profile: any;
+    profileType: string | null;
     isOwnProfile?: boolean;
 }
 
-const riskProfileConfig: Record<string, { label: string; color: string; bgColor: string; textColor: string; icon: any }> = {
-    CONSERVATIVE: { label: 'Conservateur', color: 'blue', bgColor: 'bg-blue-50', textColor: 'text-blue-700', icon: Shield },
-    MODERATE: { label: 'Modéré', color: 'emerald', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', icon: TrendingUp },
-    BALANCED: { label: 'Équilibré', color: 'purple', bgColor: 'bg-purple-50', textColor: 'text-purple-700', icon: Target },
-    GROWTH: { label: 'Croissance', color: 'amber', bgColor: 'bg-amber-50', textColor: 'text-amber-700', icon: TrendingUp },
-    AGGRESSIVE: { label: 'Agressif', color: 'rose', bgColor: 'bg-rose-50', textColor: 'text-rose-700', icon: TrendingUp },
-};
+export default function InvestorDNA({ profileType, isOwnProfile = false }: InvestorDNAProps) {
+    const config = profileType ? PROFILE_CONFIG[profileType as ProfileType] ?? null : null;
 
-const horizonConfig: Record<string, { label: string; description: string }> = {
-    SHORT_TERM: { label: 'Court terme', description: '< 1 an' },
-    MEDIUM_TERM: { label: 'Moyen terme', description: '1-5 ans' },
-    LONG_TERM: { label: 'Long terme', description: '5-10 ans' },
-    VERY_LONG_TERM: { label: 'Très long terme', description: '> 10 ans' },
-};
+    if (!config) {
+        if (!isOwnProfile) return null;
 
-// Secteurs officiels BRVM
-const sectorColors: Record<string, string> = {
-    'Consommation Discrétionnaire': 'bg-purple-100 text-purple-700 border-purple-200',
-    'Consommation de Base':         'bg-green-100 text-green-700 border-green-200',
-    'Énergie':                      'bg-amber-100 text-amber-700 border-amber-200',
-    'Industriels':                  'bg-gray-100 text-gray-700 border-gray-200',
-    'Services Financiers':          'bg-blue-100 text-blue-700 border-blue-200',
-    'Services Publics':             'bg-cyan-100 text-cyan-700 border-cyan-200',
-    'Télécommunications':           'bg-indigo-100 text-indigo-700 border-indigo-200',
-};
-
-export default function InvestorDNA({ profile, isOwnProfile = false }: InvestorDNAProps) {
-    const investorProfile = profile.investorProfile;
-
-    if (!investorProfile || !investorProfile.onboarding_completed) {
-        // Si c'est le profil d'un autre utilisateur, ne pas afficher la section
-        if (!isOwnProfile) {
-            return null;
-        }
         return (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
                         <PieChart className="w-5 h-5 text-white" />
                     </div>
                     <h3 className="font-semibold text-gray-900">ADN Investisseur</h3>
                 </div>
                 <div className="text-center py-6 text-gray-500">
-                    <p className="text-sm">Profil non complété</p>
-                    <a href="/onboarding" className="text-blue-600 text-sm font-medium hover:underline mt-2 inline-block">
-                        Compléter mon profil →
-                    </a>
+                    <p className="text-sm">Profil non encore déterminé</p>
+                    <p className="text-xs text-gray-400 mt-1">Complète le Module 3 pour découvrir ton profil</p>
+                    <Link
+                        to="/learn"
+                        className="text-indigo-600 text-sm font-medium hover:underline mt-3 inline-block"
+                    >
+                        Aller au Module 3 →
+                    </Link>
                 </div>
             </div>
         );
     }
 
-    const riskConfig = riskProfileConfig[investorProfile.risk_profile] || riskProfileConfig.MODERATE;
-    const RiskIcon = riskConfig.icon;
-    const horizonData = horizonConfig[investorProfile.investment_horizon];
+    const Icon = config.icon;
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            {/* Header with gradient */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+            {/* Header gradient */}
+            <div className={`bg-gradient-to-r ${config.headerGradient} px-6 py-4`}>
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                         <PieChart className="w-5 h-5 text-white" />
                     </div>
                     <div>
                         <h3 className="font-semibold text-white">ADN Investisseur</h3>
-                        <p className="text-white/70 text-sm">Votre profil d'investissement</p>
+                        <p className="text-white/70 text-sm">Profil déterminé par le Module 3</p>
                     </div>
                 </div>
             </div>
 
-            <div className="p-6 space-y-5">
-                {/* Score investisseur (v2) */}
-                {investorProfile.investor_score != null && (
-                    <div className="flex items-center gap-4 p-4 border-b border-gray-100">
-                        <ScoreRing score={investorProfile.investor_score} />
+            <div className="p-6">
+                {/* Profile type card */}
+                <div className={`bg-gradient-to-br ${config.gradient} rounded-2xl p-5 text-white`}>
+                    <div className="flex items-center gap-4 mb-3">
+                        <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-7 h-7 text-white" />
+                        </div>
                         <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Score investisseur</p>
-                            <p className="font-semibold text-gray-900">{getProfileLabel(investorProfile.investor_score)}</p>
-                            {investorProfile.life_goal && (
-                                <span className="inline-block mt-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
-                                    {getGoalLabel(investorProfile.life_goal)}
-                                </span>
-                            )}
+                            <p className="text-white/70 text-xs uppercase tracking-wide font-medium">Profil investisseur</p>
+                            <p className="text-xl font-bold text-white">{config.label}</p>
                         </div>
                     </div>
-                )}
-
-                {/* Risk Profile - Featured Card */}
-                <div className={`${riskConfig.bgColor} rounded-xl p-4 border border-${riskConfig.color}-100`}>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 ${riskConfig.bgColor} rounded-xl flex items-center justify-center border border-${riskConfig.color}-200`}>
-                                <RiskIcon className={`w-6 h-6 ${riskConfig.textColor}`} />
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Profil de risque</p>
-                                <p className={`text-lg font-bold ${riskConfig.textColor}`}>{riskConfig.label}</p>
-                            </div>
-                        </div>
-                    </div>
+                    <p className="text-white/80 text-sm leading-relaxed">{config.goal}</p>
                 </div>
 
-                {/* Investment Horizon */}
-                {horizonData && (
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                            <Clock className="w-6 h-6 text-orange-600" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Horizon d'investissement</p>
-                            <p className="font-semibold text-gray-900">{horizonData.label}</p>
-                            <p className="text-sm text-gray-500">{horizonData.description}</p>
-                        </div>
-                    </div>
-                )}
+                {/* Objective */}
+                <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Objectif</p>
+                    <p className="text-sm font-medium text-gray-800">{config.description}</p>
+                </div>
 
-                {/* Investment Style */}
-                {investorProfile.investment_style && (
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                        <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
-                            <Briefcase className="w-6 h-6 text-teal-600" />
-                        </div>
-                        <div className="flex-1">
-                            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Style d'investissement</p>
-                            <p className="font-semibold text-gray-900">{investorProfile.investment_style}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Favorite Sectors */}
-                {investorProfile.favorite_sectors && investorProfile.favorite_sectors.length > 0 && (
-                    <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-3">Secteurs favoris</p>
-                        <div className="flex flex-wrap gap-2">
-                            {investorProfile.favorite_sectors.map((sector: string) => (
-                                <span
-                                    key={sector}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${sectorColors[sector] || 'bg-gray-100 text-gray-700 border-gray-200'}`}
-                                >
-                                    {sector}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Répartition sectorielle Simba (v2) */}
-                {investorProfile.allocation_json && Array.isArray(investorProfile.allocation_json) && (
-                    <div>
-                        <div className="flex items-center gap-2 mb-3">
-                            <PieChart className="w-4 h-4 text-gray-400" />
-                            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Répartition sectorielle</p>
-                        </div>
-                        <div className="space-y-3">
-                            {(investorProfile.allocation_json as AllocationItem[]).map((item, idx) => (
-                                <div key={item.sector}>
-                                    <div className="flex justify-between text-sm mb-1">
-                                        <span className="text-gray-700">{item.sector}</span>
-                                        <span className="font-medium text-gray-900">{item.pct}%</span>
-                                    </div>
-                                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full rounded-full"
-                                            style={{
-                                                width: `${item.pct}%`,
-                                                backgroundColor: ALLOC_COLORS[idx % ALLOC_COLORS.length],
-                                            }}
-                                        />
-                                    </div>
-                                    <p className="text-xs text-gray-400 mt-1">{item.tickers.join(' · ')}</p>
-                                </div>
-                            ))}
-                        </div>
-                        <p className="text-xs text-gray-400 mt-3 italic">
-                            * Répartition éducative générée par Simba. Données historiques BRVM.
-                            Ne constitue pas un conseil en investissement.
-                        </p>
-                    </div>
+                {isOwnProfile && (
+                    <Link
+                        to="/learn"
+                        className="mt-4 block text-center text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        Revoir le Module 3 →
+                    </Link>
                 )}
             </div>
         </div>

@@ -12,8 +12,8 @@ import SocialStats from '../components/profile/SocialStats';
 import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
-import OnboardingFlow from '../components/onboarding/OnboardingFlow';
-import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake, X } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake } from 'lucide-react';
+import { useUserProfile } from '../hooks/useApi';
 
 // Gamification imports
 import { useMyAchievements, useStreak } from '../hooks/useGamification';
@@ -30,8 +30,6 @@ export default function ProfilePage() {
     const { mutate: syncStats } = useSyncSocialStats();
     const [showCreateCommunityModal, setShowCreateCommunityModal] = useState(false);
     const [sharingBadge, setSharingBadge] = useState<Achievement | null>(null);
-    const [showKYCModal, setShowKYCModal] = useState(false);
-    const [kycStartStep, setKycStartStep] = useState(1);
 
     // Partager un badge (ouvre le modal de partage social)
     const handleShareBadge = (achievement: Achievement) => {
@@ -46,8 +44,11 @@ export default function ProfilePage() {
     const { data: myAchievements } = useMyAchievements();
     const { data: streakData } = useStreak();
 
+    // Full user profile pour profile_type (déterminé par Module 3)
+    const { data: fullUserProfile } = useUserProfile();
+
     // Recuperer son propre profil investisseur (SEULEMENT si c'est son profil ET connecte)
-    const { data: investorProfile, isLoading: isLoadingOwn, error: errorOwn } = useQuery({
+    const { data: investorProfile, isLoading: isLoadingOwn } = useQuery({
         queryKey: ['investor-profile'],
         queryFn: async () => {
             const response = await apiClient.get('/investor-profile');
@@ -147,10 +148,6 @@ export default function ProfilePage() {
             </div>
         );
     }
-
-    // Profil non configuré → afficher le CTA KYC au lieu d'un écran bloquant
-    const kycNotDone = isOwnProfile && isLoggedIn && (errorOwn || !investorProfile || !investorProfile?.onboarding_completed);
-    const kycPhase2Missing = isOwnProfile && investorProfile?.onboarding_completed && !investorProfile?.investor_score;
 
     // Gestion des erreurs : profil d'un autre utilisateur introuvable
     if (!isOwnProfile && (errorOther || !otherUserProfile)) {
@@ -272,30 +269,6 @@ export default function ProfilePage() {
             {/* Profile Header */}
             <ProfileHeader profile={profileData} isOwnProfile={isOwnProfile} />
 
-            {/* ── Bloc KYC — profil non configuré ────────────────────────────── */}
-            {kycNotDone && (
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-                    <div className="bg-gradient-to-r from-emerald-500 to-blue-600 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row items-center gap-6">
-                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 text-3xl">
-                            🧬
-                        </div>
-                        <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-xl font-bold">Configurez votre profil investisseur</h2>
-                            <p className="text-white/80 text-sm mt-1">
-                                Déterminez votre profil de risque BRVM, obtenez votre score Simba et votre
-                                allocation sectorielle personnalisée. 7 étapes rapides.
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => { setKycStartStep(1); setShowKYCModal(true); }}
-                            className="flex-shrink-0 px-6 py-3 bg-white text-emerald-700 rounded-xl font-semibold hover:bg-emerald-50 transition-colors whitespace-nowrap"
-                        >
-                            Configurer mon profil
-                        </button>
-                    </div>
-                </div>
-            )}
-
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column - Investor DNA & Stats */}
@@ -334,7 +307,14 @@ export default function ProfilePage() {
                             } : null}
                         />
 
-                        <InvestorDNA profile={profileData} isOwnProfile={isOwnProfile} />
+                        <InvestorDNA
+                            profileType={
+                                isOwnProfile
+                                    ? (fullUserProfile?.profile_type ?? null)
+                                    : (otherUserProfile?.profile_type ?? null)
+                            }
+                            isOwnProfile={isOwnProfile}
+                        />
                         <SocialStats profile={profileData} />
 
                         {/* Gamification Section - Only for own profile */}
@@ -453,8 +433,6 @@ export default function ProfilePage() {
                         <ActivityFeed
                             userId={profileData.id}
                             isOwnProfile={isOwnProfile}
-                            investorScore={investorProfile?.investor_score ?? null}
-                            onOpenScoreModal={() => { setKycStartStep(5); setShowKYCModal(true); }}
                         />
                     </div>
                 </div>
@@ -473,32 +451,6 @@ export default function ProfilePage() {
                 unlockedDate={sharingBadge ? myAchievements?.find(ua => ua.achievement.id === sharingBadge.id)?.unlocked_at : undefined}
             />
 
-            {/* ── Modal KYC — OnboardingFlow intégré ─────────────────────────── */}
-            {showKYCModal && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center overflow-y-auto py-6 px-4">
-                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-xl my-auto">
-                        {/* Bouton fermer */}
-                        <button
-                            onClick={() => setShowKYCModal(false)}
-                            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                        >
-                            <X className="w-4 h-4 text-gray-600" />
-                        </button>
-
-                        <div className="p-6 md:p-8">
-                            <OnboardingFlow
-                                isModal
-                                startStep={kycStartStep}
-                                onDone={() => {
-                                    setShowKYCModal(false);
-                                    queryClient.invalidateQueries({ queryKey: ['investor-profile'] });
-                                    queryClient.invalidateQueries({ queryKey: ['onboarding', 'status'] });
-                                }}
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
         </>
     );

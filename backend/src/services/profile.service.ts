@@ -117,8 +117,9 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
       // Le nom est toujours public
       name: profile.user.name,
       lastname: profile.user.lastname,
-      // Liens sociaux et vérification toujours publics
+      // Liens sociaux, vérification et type de profil toujours publics
       social_links: profile.social_links || null,
+      profile_type: profile.profile_type || null,
       verified_investor: profile.verified_investor || false,
     };
 
