@@ -156,7 +156,7 @@ export default function LearnPage() {
     const [showCertificate, setShowCertificate] = useState(false);
     const [showCertPaywall, setShowCertPaywall] = useState(false);
 
-    const isPremiumModule = (orderIndex: number) => orderIndex >= 7;
+    const isPremiumModule = (orderIndex: number) => orderIndex >= 9;
     const userHasPremium = ['premium', 'max', 'pro', 'formation'].includes(userProfile?.subscriptionTier ?? '');
     const userHasInvestisseurPlus = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
 
