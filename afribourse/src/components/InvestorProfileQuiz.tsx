@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, BarChart2, RefreshCw, CheckCircle } from 'lucide-react';
+import { apiFetch } from '../hooks/useApi';
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -231,7 +232,16 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
     setValidated(false);
   }
 
-  function handleValidate() {
+  async function handleValidate() {
+    const profileKey = calcProfile(answers);
+    try {
+      await apiFetch('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ profileType: profileKey }),
+      });
+    } catch (e) {
+      console.warn('[InvestorProfileQuiz] Could not save profile_type:', e);
+    }
     setValidated(true);
     onComplete?.();
   }
