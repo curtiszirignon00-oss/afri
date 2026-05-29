@@ -92,13 +92,13 @@ function getLevelColor(level: number): string {
 
 // Get level title
 function getLevelTitle(level: number): string {
-    if (level >= 50) return 'Legendaire';
-    if (level >= 40) return 'Maitre';
+    if (level >= 50) return 'Légendaire';
+    if (level >= 40) return 'Maître';
     if (level >= 30) return 'Expert';
-    if (level >= 20) return 'Avance';
-    if (level >= 10) return 'Intermediaire';
+    if (level >= 20) return 'Avancé';
+    if (level >= 10) return 'Intermédiaire';
     if (level >= 5) return 'Apprenti';
-    return 'Debutant';
+    return 'Débutant';
 }
 
 export default function ProfileStats({
@@ -155,7 +155,7 @@ export default function ProfileStats({
                         className="text-xs text-gray-500 hover:text-indigo-600 flex items-center gap-1"
                     >
                         <Eye className="w-3 h-3" />
-                        Visibilite
+                        Visibilité
                     </button>
                 )}
             </div>
@@ -166,7 +166,7 @@ export default function ProfileStats({
                     {!showLevel && !isOwnProfile ? (
                         <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
                             <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-500">Information privee</span>
+                            <span className="text-sm text-gray-500">Information privée</span>
                         </div>
                     ) : (
                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4">
@@ -194,7 +194,7 @@ export default function ProfileStats({
                             {/* Progress bar to next level */}
                             <div className="mt-2">
                                 <div className="flex justify-between text-xs text-gray-600 mb-1">
-                                    <span>Niveau {level + 1}</span>
+                                    <span>Prochain : Niv. {level + 1}</span>
                                     <span>{Math.round(progressPercent)}%</span>
                                 </div>
                                 <div className="h-2 bg-white/50 rounded-full overflow-hidden">
@@ -217,7 +217,7 @@ export default function ProfileStats({
                     {!showStreak && !isOwnProfile ? (
                         <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
                             <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-500">Information privee</span>
+                            <span className="text-sm text-gray-500">Information privée</span>
                         </div>
                     ) : (
                         <div className="flex items-center justify-between p-4 bg-orange-50 rounded-xl">
@@ -264,7 +264,7 @@ export default function ProfileStats({
                                 <div className="text-2xl font-bold text-blue-600">
                                     {learningProgress.completedModules}/{learningProgress.totalModules}
                                 </div>
-                                <div className="text-xs text-gray-600">Modules completes</div>
+                                <div className="text-xs text-gray-600">Modules complétés</div>
                             </div>
                             <div className="bg-white/60 rounded-lg p-3">
                                 <div className="text-2xl font-bold text-green-600">
@@ -291,7 +291,7 @@ export default function ProfileStats({
                         {!showPortfolio && !isOwnProfile ? (
                             <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
                                 <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-500">Portefeuille prive</span>
+                                <span className="text-sm text-gray-500">Portefeuille privé</span>
                             </div>
                         ) : (
                             <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
@@ -342,7 +342,10 @@ export default function ProfileStats({
                                         ? 'bg-green-100 text-green-700'
                                         : 'bg-red-100 text-red-700'
                                         }`}>
-                                        <TrendingUp className={`w-4 h-4 ${portfolioData.gainLoss < 0 ? 'rotate-180' : ''}`} />
+                                        {portfolioData.gainLoss >= 0
+                                            ? <TrendingUp className="w-4 h-4" />
+                                            : <TrendingDown className="w-4 h-4" />
+                                        }
                                         <span className="font-medium text-sm">
                                             {portfolioData.gainLoss >= 0 ? '+' : ''}{portfolioData.gainLossPercent.toFixed(2)}%
                                         </span>
@@ -353,20 +356,20 @@ export default function ProfileStats({
                     </div>
                 )}
 
-                {/* Positions (Actions achetees) */}
+                {/* Positions (Actions achetées) */}
                 {(positions.length > 0 || (!isOwnProfile && !showPositions)) && (
                     <div className="relative">
                         {!showPositions && !isOwnProfile ? (
                             <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
                                 <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-500">Positions privees</span>
+                                <span className="text-sm text-gray-500">Positions privées</span>
                             </div>
                         ) : positions.length > 0 ? (
                             <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <BarChart3 className="w-5 h-5 text-blue-600" />
-                                        <span className="font-medium text-gray-900">Actions achetees</span>
+                                        <span className="font-medium text-gray-900">Actions achetées</span>
                                     </div>
                                     {isOwnProfile && (
                                         <Link
@@ -424,7 +427,7 @@ export default function ProfileStats({
                         {!showWatchlist && !isOwnProfile ? (
                             <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
                                 <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-500">Watchlist privee</span>
+                                <span className="text-sm text-gray-500">Watchlist privée</span>
                             </div>
                         ) : watchlist.length > 0 ? (
                             <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl">
@@ -438,19 +441,20 @@ export default function ProfileStats({
                                             to="/markets"
                                             className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1"
                                         >
-                                            Marche
+                                            Marché
                                             <ChevronRight className="w-3 h-3" />
                                         </Link>
                                     )}
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {watchlist.slice(0, 8).map((item) => (
-                                        <span
+                                        <Link
                                             key={item.ticker}
-                                            className="inline-flex items-center px-3 py-1.5 bg-white/70 rounded-lg text-sm font-medium text-gray-700 border border-amber-200"
+                                            to={`/markets?ticker=${item.ticker}`}
+                                            className="inline-flex items-center px-3 py-1.5 bg-white/70 hover:bg-white rounded-lg text-sm font-medium text-gray-700 border border-amber-200 hover:border-amber-400 transition-colors cursor-pointer"
                                         >
                                             {item.ticker}
-                                        </span>
+                                        </Link>
                                     ))}
                                     {watchlist.length > 8 && (
                                         <span className="inline-flex items-center px-3 py-1.5 text-xs text-amber-600 font-medium">
@@ -528,7 +532,7 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
             title: 'Portefeuille',
             toggles: [
                 { key: 'show_portfolio_value', label: 'Valeur du portefeuille', description: 'Montant total et performance' },
-                { key: 'show_positions', label: 'Actions achetees', description: 'Positions ouvertes dans le portefeuille' },
+                { key: 'show_positions', label: 'Actions achetées', description: 'Positions ouvertes dans le portefeuille' },
                 { key: 'show_watchlist', label: 'Actions suivies', description: 'Votre liste de surveillance' },
             ],
         },
@@ -537,7 +541,7 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
     const handleSave = () => {
         updatePrivacy(settings, {
             onSuccess: () => {
-                toast.success('Parametres de visibilite mis a jour');
+                toast.success('Paramètres de visibilité mis à jour');
                 onClose();
             },
             onError: () => {
@@ -556,7 +560,7 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
                 <div className="flex items-center justify-between p-5 border-b">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                         <Eye className="w-5 h-5 text-indigo-600" />
-                        Visibilite du profil
+                        Visibilité du profil
                     </h3>
                     <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
                         <X className="w-5 h-5 text-gray-500" />

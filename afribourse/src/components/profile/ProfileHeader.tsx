@@ -1,6 +1,6 @@
 // src/components/profile/ProfileHeader.tsx
 import { useState } from 'react';
-import { MapPin, Link as LinkIcon, Calendar, CheckCircle, Edit2, Linkedin, Twitter, Instagram, Facebook, MessageCircle, MoreHorizontal, Share2, ShieldCheck } from 'lucide-react';
+import { MapPin, Link as LinkIcon, Calendar, CheckCircle, Edit2, Linkedin, Twitter, Instagram, Facebook, MessageCircle, MoreHorizontal, Share2, ShieldCheck, ArrowLeft } from 'lucide-react';
 import FollowButton from './FollowButton';
 import EditProfileModal from './EditProfileModal';
 import toast from 'react-hot-toast';
@@ -9,15 +9,16 @@ import RareBadgeIcon, { getRareBadge } from '../common/RareBadgeIcon';
 interface ProfileHeaderProps {
     profile: any;
     isOwnProfile?: boolean;
+    onBack?: () => void;
 }
 
-export default function ProfileHeader({ profile, isOwnProfile = false }: ProfileHeaderProps) {
+export default function ProfileHeader({ profile, isOwnProfile = false, onBack }: ProfileHeaderProps) {
     const [showEditModal, setShowEditModal] = useState(false);
 
-    // Couleur de l'avatar (par défaut gradient bleu-violet)
     const avatarColor = profile.profile?.avatar_color || 'from-blue-500 to-purple-600';
-    // Couleur de la bannière (par défaut gradient bleu-violet)
     const bannerColor = profile.profile?.banner_color || 'from-blue-600 via-indigo-600 to-purple-700';
+    const bannerUrl = profile.profile?.banner_url;
+    const avatarUrl = profile.profile?.avatar_url;
 
     const showFollowers = profile.investorProfile?.show_followers_count !== false;
     const showFollowing = profile.investorProfile?.show_following_count !== false;
@@ -26,14 +27,27 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
     const hasSocialLinks = socialLinks && (socialLinks.linkedin || socialLinks.twitter || socialLinks.instagram || socialLinks.facebook || socialLinks.website);
 
     const rareBadge = getRareBadge(profile.achievements);
+    const initials = `${profile.name?.[0] || ''}${profile.lastname?.[0] || ''}`;
 
     return (
         <div className="bg-white shadow-sm">
             {/* Banner */}
             <div className="relative">
-                <div className={`h-32 sm:h-48 md:h-56 lg:h-64 relative bg-gradient-to-br ${bannerColor}`}>
-                    {/* Overlay gradient for text readability */}
+                <div
+                    className={`h-32 sm:h-48 md:h-56 lg:h-64 relative ${bannerUrl ? '' : `bg-gradient-to-br ${bannerColor}`}`}
+                    style={bannerUrl ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    {onBack && (
+                        <button
+                            onClick={onBack}
+                            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-black/30 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/50 transition-colors cursor-pointer"
+                            aria-label="Retour"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            <span>Retour</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -44,11 +58,17 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
-                            <div className={`w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-xl ring-4 ring-white`}>
-                                {`${profile.name?.[0] || ''}${profile.lastname?.[0] || ''}`}
-                            </div>
-                            {/* Online indicator */}
-                            <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full" />
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt={`${profile.name} ${profile.lastname}`}
+                                    className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white object-cover shadow-xl ring-4 ring-white"
+                                />
+                            ) : (
+                                <div className={`w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-xl ring-4 ring-white`}>
+                                    {initials}
+                                </div>
+                            )}
                         </div>
 
                         {/* Stats Cards - Desktop */}
@@ -74,23 +94,32 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                             {isOwnProfile ? (
                                 <button
                                     onClick={() => setShowEditModal(true)}
-                                    className="flex-1 sm:flex-none px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"
+                                    className="flex-1 sm:flex-none px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer"
                                 >
                                     <Edit2 className="w-4 h-4" />
                                     <span>Modifier le profil</span>
                                 </button>
                             ) : (
                                 <>
-                                    <button className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors">
+                                    <button
+                                        onClick={() => toast('Bientôt disponible', { icon: '🔜' })}
+                                        aria-label="Plus d'options"
+                                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
+                                    >
                                         <MoreHorizontal className="w-5 h-5" />
                                     </button>
-                                    <button className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors">
+                                    <button
+                                        onClick={() => toast('Messagerie bientôt disponible', { icon: '💬' })}
+                                        aria-label="Envoyer un message"
+                                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
+                                    >
                                         <MessageCircle className="w-5 h-5" />
                                     </button>
                                     <FollowButton userId={profile.id} initialFollowing={profile.isFollowing} />
                                 </>
                             )}
                             <button
+                                aria-label="Partager le profil"
                                 onClick={() => {
                                     const shareData = {
                                         title: `Profil de ${profile.name} ${profile.lastname}`,
@@ -99,7 +128,6 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     };
                                     if (navigator.share) {
                                         navigator.share(shareData).catch(() => {
-                                            // Fallback si l'utilisateur annule
                                             navigator.clipboard.writeText(window.location.href);
                                             toast.success('Lien copié !');
                                         });
@@ -108,7 +136,7 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                         toast.success('Lien copié !');
                                     }
                                 }}
-                                className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
+                                className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
                             >
                                 <Share2 className="w-5 h-5" />
                             </button>
@@ -118,15 +146,15 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                     {/* Stats Cards - Mobile */}
                     <div className="sm:hidden mt-4">
                         <div className="grid grid-cols-3 gap-2">
-                            <div className="bg-gray-50 rounded-xl p-3 text-center">
+                            <div className="bg-gray-50 hover:bg-gray-100 rounded-xl p-3 text-center cursor-pointer transition-colors">
                                 <p className="text-lg font-bold text-gray-900">{showFollowing ? (profile.stats?.following_count || 0) : '-'}</p>
                                 <p className="text-xs text-gray-500">Abonnements</p>
                             </div>
-                            <div className="bg-gray-50 rounded-xl p-3 text-center">
+                            <div className="bg-gray-50 hover:bg-gray-100 rounded-xl p-3 text-center cursor-pointer transition-colors">
                                 <p className="text-lg font-bold text-gray-900">{showFollowers ? (profile.stats?.followers_count || 0) : '-'}</p>
                                 <p className="text-xs text-gray-500">Abonnés</p>
                             </div>
-                            <div className="bg-gray-50 rounded-xl p-3 text-center">
+                            <div className="bg-gray-50 hover:bg-gray-100 rounded-xl p-3 text-center cursor-pointer transition-colors">
                                 <p className="text-lg font-bold text-gray-900">{profile.stats?.posts_count || 0}</p>
                                 <p className="text-xs text-gray-500">Publications</p>
                             </div>
@@ -198,8 +226,8 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     href={socialLinks.linkedin}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label="LinkedIn"
                                     className="p-2.5 bg-[#0077B5]/10 text-[#0077B5] rounded-xl hover:bg-[#0077B5]/20 transition-colors"
-                                    title="LinkedIn"
                                 >
                                     <Linkedin className="w-5 h-5" />
                                 </a>
@@ -209,8 +237,8 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     href={socialLinks.twitter}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label="Twitter/X"
                                     className="p-2.5 bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 transition-colors"
-                                    title="Twitter/X"
                                 >
                                     <Twitter className="w-5 h-5" />
                                 </a>
@@ -220,8 +248,8 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     href={socialLinks.instagram}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label="Instagram"
                                     className="p-2.5 bg-gradient-to-br from-purple-500/10 to-pink-500/10 text-pink-600 rounded-xl hover:from-purple-500/20 hover:to-pink-500/20 transition-colors"
-                                    title="Instagram"
                                 >
                                     <Instagram className="w-5 h-5" />
                                 </a>
@@ -231,8 +259,8 @@ export default function ProfileHeader({ profile, isOwnProfile = false }: Profile
                                     href={socialLinks.facebook}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label="Facebook"
                                     className="p-2.5 bg-[#1877F2]/10 text-[#1877F2] rounded-xl hover:bg-[#1877F2]/20 transition-colors"
-                                    title="Facebook"
                                 >
                                     <Facebook className="w-5 h-5" />
                                 </a>

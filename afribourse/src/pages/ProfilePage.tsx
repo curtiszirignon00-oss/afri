@@ -12,7 +12,7 @@ import SocialStats from '../components/profile/SocialStats';
 import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
-import { Loader2, ArrowLeft, Users, Plus, Trophy, Snowflake } from 'lucide-react';
+import { Loader2, Users, Plus, Trophy, Snowflake } from 'lucide-react';
 import { useUserProfile } from '../hooks/useApi';
 
 // Gamification imports
@@ -253,21 +253,8 @@ export default function ProfilePage() {
           <meta name="twitter:card"       content="summary_large_image"/>
         </Helmet>
         <div className="min-h-[calc(100vh-5rem)] bg-gray-50">
-            {/* Bouton Retour */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="font-medium">Retour</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* Profile Header */}
-            <ProfileHeader profile={profileData} isOwnProfile={isOwnProfile} />
+            {/* Profile Header (bouton Retour intégré dans la bannière) */}
+            <ProfileHeader profile={profileData} isOwnProfile={isOwnProfile} onBack={() => navigate(-1)} />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -352,7 +339,7 @@ export default function ProfilePage() {
                                                 <div>
                                                     <h3 className="font-semibold text-gray-900">Mes Badges</h3>
                                                     <p className="text-sm text-gray-500">
-                                                        {myAchievements.length} badge{myAchievements.length > 1 ? 's' : ''} debloques
+                                                        {myAchievements.length} badge{myAchievements.length > 1 ? 's' : ''} débloqués
                                                     </p>
                                                 </div>
                                             </div>
@@ -407,8 +394,8 @@ export default function ProfilePage() {
                                         <Users className="w-5 h-5 text-indigo-600" />
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900">Communautes</h3>
-                                        <p className="text-sm text-gray-500">Creez votre propre communaute</p>
+                                        <h3 className="font-semibold text-gray-900">Communautés</h3>
+                                        <p className="text-sm text-gray-500">Créez votre propre communauté</p>
                                     </div>
                                 </div>
                                 <button
@@ -416,13 +403,13 @@ export default function ProfilePage() {
                                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
                                 >
                                     <Plus className="w-5 h-5" />
-                                    Creer une communaute
+                                    Créer une communauté
                                 </button>
                                 <button
                                     onClick={() => navigate('/communities')}
                                     className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-3 text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors text-sm font-medium"
                                 >
-                                    Voir toutes les communautes
+                                    Voir toutes les communautés
                                 </button>
                             </div>
                         )}
