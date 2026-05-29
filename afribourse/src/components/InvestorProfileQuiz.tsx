@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, BarChart2, RefreshCw, CheckCircle } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
+import { useQueryClient } from '@tanstack/react-query';
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -208,6 +209,7 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [done, setDone]       = useState(false);
   const [validated, setValidated] = useState(false);
+  const queryClient = useQueryClient();
 
   const total    = QUESTIONS.length;
   const question = QUESTIONS[step];
@@ -239,6 +241,7 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
         method: 'PUT',
         body: JSON.stringify({ profileType: profileKey }),
       });
+      queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
     } catch (e) {
       console.warn('[InvestorProfileQuiz] Could not save profile_type:', e);
     }

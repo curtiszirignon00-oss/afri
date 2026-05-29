@@ -1,4 +1,5 @@
 // src/components/certificate/CertificateCard.tsx
+import { useState } from 'react';
 import { Download, Calendar, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../lib/api-client';
@@ -31,14 +32,16 @@ function isNew(cert: Certificate): boolean {
 
 export default function CertificateCard({ cert }: Props) {
   const navigate = useNavigate();
+  const [imgError, setImgError] = useState(false);
   const certUrl = `${SITE_URL}/certificat/${cert.id}`;
   const ogImageUrl = `${API_BASE}/og/image/certificate/${cert.id}`;
 
   const handleDownload = async () => {
     try {
-      const res = await fetch(`${API_BASE}/certificates/${cert.id}/download`);
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
+      const res = await apiClient.get(`/certificates/${cert.id}/download`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'image/png' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `certificat-afribourse-${cert.id}.png`;
@@ -54,18 +57,34 @@ export default function CertificateCard({ cert }: Props) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       {/* Miniature */}
-      <div className="relative cursor-pointer" onClick={() => navigate(`/certificat/${cert.id}`)}>
-        <img
-          src={ogImageUrl}
-          alt={`Certificat ${cert.module.name}`}
-          className="w-full aspect-[16/9] object-cover bg-gray-100"
-          loading="lazy"
-        />
+      <div
+        className="relative cursor-pointer"
+        onClick={() => navigate(`/certificat/${cert.id}`)}
+      >
+        {!imgError ? (
+          <img
+            src={ogImageUrl}
+            alt={`Certificat ${cert.module.name}`}
+            className="w-full aspect-video object-cover bg-gray-100"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="w-full aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center gap-2">
+            <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+              <Award size={20} className="text-amber-400" />
+            </div>
+            <p className="text-xs text-slate-400 text-center px-4">{cert.module.name}</p>
+          </div>
+        )}
         {isNew(cert) && (
           <span className="absolute top-2 left-2 bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
             Nouveau
           </span>
         )}
+        {/* Overlay hint */}
+        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+          <span className="bg-black/60 text-white text-xs px-3 py-1 rounded-full">Voir le certificat</span>
+        </div>
       </div>
 
       {/* Infos */}
@@ -88,7 +107,7 @@ export default function CertificateCard({ cert }: Props) {
         {/* Actions */}
         <button
           onClick={handleDownload}
-          className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors mb-3"
+          className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors mb-3 cursor-pointer"
         >
           <Download size={15} />
           Télécharger PNG

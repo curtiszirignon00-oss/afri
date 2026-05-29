@@ -1,8 +1,8 @@
 // src/components/profile/InvestorDNA.tsx
-import { BookOpen, Briefcase, TrendingUp, Globe, PieChart } from 'lucide-react';
+import { Shield, Target, TrendingUp, Zap, PieChart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type ProfileType = 'apprenti' | 'decideur' | 'investisseur' | 'explorateur';
+type ProfileType = 'prudent' | 'equilibre' | 'dynamique' | 'offensif';
 
 const PROFILE_CONFIG: Record<ProfileType, {
     label: string;
@@ -12,37 +12,37 @@ const PROFILE_CONFIG: Record<ProfileType, {
     headerGradient: string;
     icon: React.ElementType;
 }> = {
-    apprenti: {
-        label: "L'Apprenti",
-        description: 'Apprendre les bases de la BRVM',
-        goal: 'Comprendre les marchés africains pas à pas',
-        gradient: 'from-teal-500 to-emerald-600',
-        headerGradient: 'from-teal-600 to-emerald-700',
-        icon: BookOpen,
-    },
-    decideur: {
-        label: 'Le Décideur',
-        description: 'Prendre des décisions éclairées',
-        goal: 'Analyser et choisir ses investissements avec méthode',
-        gradient: 'from-amber-500 to-orange-600',
-        headerGradient: 'from-amber-600 to-orange-700',
-        icon: Briefcase,
-    },
-    investisseur: {
-        label: "L'Investisseur",
-        description: 'Faire fructifier son capital',
-        goal: 'Construire un portefeuille performant sur la BRVM',
-        gradient: 'from-violet-500 to-purple-600',
-        headerGradient: 'from-violet-600 to-purple-700',
-        icon: TrendingUp,
-    },
-    explorateur: {
-        label: "L'Explorateur",
-        description: 'Explorer les marchés africains',
-        goal: 'Découvrir les opportunités de la BRVM et au-delà',
+    prudent: {
+        label: "L'Investisseur Prudent",
+        description: 'Préserver et faire croître son capital en sécurité',
+        goal: 'Privilégier la stabilité et les placements sûrs sur la BRVM',
         gradient: 'from-blue-500 to-cyan-600',
         headerGradient: 'from-blue-600 to-cyan-700',
-        icon: Globe,
+        icon: Shield,
+    },
+    equilibre: {
+        label: "L'Investisseur Équilibré",
+        description: 'Allier performance et maîtrise du risque',
+        goal: 'Construire un portefeuille diversifié avec un risque modéré',
+        gradient: 'from-teal-500 to-emerald-600',
+        headerGradient: 'from-teal-600 to-emerald-700',
+        icon: Target,
+    },
+    dynamique: {
+        label: "L'Investisseur Dynamique",
+        description: 'Viser une croissance forte avec une prise de risque maîtrisée',
+        goal: 'Saisir les opportunités de croissance sur les marchés africains',
+        gradient: 'from-amber-500 to-orange-600',
+        headerGradient: 'from-amber-600 to-orange-700',
+        icon: TrendingUp,
+    },
+    offensif: {
+        label: "L'Investisseur Offensif",
+        description: 'Maximiser les gains avec une forte tolérance au risque',
+        goal: 'Capitaliser sur la volatilité pour des rendements élevés',
+        gradient: 'from-violet-500 to-purple-600',
+        headerGradient: 'from-violet-600 to-purple-700',
+        icon: Zap,
     },
 };
 
@@ -113,7 +113,7 @@ export default function InvestorDNA({ profileType, isOwnProfile = false }: Inves
 
                 {/* Objective */}
                 <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Objectif</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">Approche</p>
                     <p className="text-sm font-medium text-gray-800">{config.description}</p>
                 </div>
 
