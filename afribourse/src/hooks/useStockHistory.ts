@@ -1,13 +1,14 @@
 // src/hooks/useStockHistory.ts
 import { useQuery } from '@tanstack/react-query';
 import { API_BASE_URL } from '../config/api';
+import type { ComparisonPeriod } from '../components/markets/PeriodSelector';
 
 interface StockHistoryData {
     date: string;
     [symbol: string]: number | string;
 }
 
-export function useStockHistory(symbols: string[], period: 7 | 30 | 90) {
+export function useStockHistory(symbols: string[], period: ComparisonPeriod) {
     return useQuery<StockHistoryData[]>({
         queryKey: ['stockHistory', symbols, period],
         queryFn: async () => {

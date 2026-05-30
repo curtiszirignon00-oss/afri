@@ -4976,6 +4976,176 @@ export async function sendCertificateEmail({
   });
 }
 
+export async function sendPackParcoursBRVMEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name || 'Investisseur').split(' ')[0];
+  const webinarUrl = 'https://www.africbourse.com/webinaires';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>🎓 Votre dernière chance d'entrer dans le Parcours Investisseur BRVM</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+
+      <span style="display:none;max-height:0;overflow:hidden;">25 000 XOF · 5 livrables · 1 semaine Investisseur+ offerte — jusqu'à ce soir &#847;&zwnj;&nbsp;&#847;</span>
+
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F1F5F9;">
+        <tr>
+          <td align="center" style="padding:32px 16px;">
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+              <!-- Logo -->
+              <tr>
+                <td style="background-color:#FFFFFF;border-radius:16px 16px 0 0;padding:28px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+                  <span style="font-size:26px;font-weight:900;color:#1D4ED8;letter-spacing:-0.5px;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+                </td>
+              </tr>
+
+              <!-- Hero -->
+              <tr>
+                <td style="background:linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 50%,#4338CA 100%);padding:40px 40px 36px;text-align:center;">
+                  <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:#BFDBFE;letter-spacing:2px;text-transform:uppercase;">Formation Live · BRVM · Certification</p>
+                  <h1 style="margin:0 0 12px;font-size:26px;font-weight:900;color:#FFFFFF;line-height:1.3;">🎓 Parcours Investisseur BRVM</h1>
+                  <p style="margin:0 0 20px;font-size:15px;color:#BFDBFE;line-height:1.6;">3 sessions intensives · Experts BRVM · Certification officielle</p>
+                  <!-- Price badge -->
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+                    <tr>
+                      <td style="background-color:#F97316;border-radius:100px;padding:10px 24px;text-align:center;">
+                        <span style="font-size:22px;font-weight:900;color:#FFFFFF;">25 000 XOF</span>
+                      </td>
+                      <td style="padding:0 12px;">
+                        <span style="font-size:14px;color:#BFDBFE;text-decoration:line-through;">35 000 XOF</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Body -->
+              <tr>
+                <td style="background-color:#FFFFFF;padding:36px 40px;">
+
+                  <p style="margin:0 0 18px;font-size:15px;color:#374151;line-height:1.7;">Bonjour ${firstName},</p>
+
+                  <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">Vous êtes sur Afribourse depuis un moment.</p>
+                  <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">Vous avez appris. Vous avez simulé. Vous avez regardé les marchés.</p>
+                  <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.7;"><strong>Il manque une chose :</strong> passer à l'étape suivante avec des experts à vos côtés.</p>
+
+                  <!-- Pack details -->
+                  <div style="background:#F8FAFC;border-radius:12px;padding:24px 28px;margin-bottom:28px;">
+                    <p style="margin:0 0 16px;font-size:15px;font-weight:800;color:#0F172A;">Ce que contient le Pack :</p>
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">✓&nbsp;&nbsp;<strong>3 webinaires live</strong> — Fondamentaux · Analyse fondamentale · Analyse technique</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">✓&nbsp;&nbsp;<strong>Communauté Afribourse</strong> — 3 mois d'accès</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">✓&nbsp;&nbsp;<strong>3 Plans d'Action personnalisés</strong> — un après chaque session</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">✓&nbsp;&nbsp;<strong>Deal Flow hebdomadaire</strong> — 12 analyses exclusives BRVM</td></tr>
+                      <tr><td style="padding:6px 0;font-size:14px;color:#374151;line-height:1.6;">✓&nbsp;&nbsp;<strong>Certificat « Investisseur BRVM — Niveau 1 »</strong></td></tr>
+                      <tr>
+                        <td style="padding:10px 0 6px;">
+                          <span style="display:inline-block;background:#FEF3C7;border:1px solid #FDE68A;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:700;color:#92400E;">🎁 BONUS : 1 semaine d'accès Investisseur+ offerte</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- What you'll do -->
+                  <p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#0F172A;">Ce que vous allez faire d'ici le 20 juin :</p>
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— Assister à 3 sessions live animées par des analystes qui connaissent la BRVM par cœur.</td></tr>
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— Repartir avec 3 plans d'action concrets — pas de la théorie, des actions réelles à poser.</td></tr>
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— Accéder à une communauté d'investisseurs qui apprennent au même rythme que vous.</td></tr>
+                    <tr><td style="padding:5px 0;font-size:14px;color:#374151;line-height:1.6;">— Décrocher un certificat que vous pourrez partager — la preuve que vous avez fait le travail.</td></tr>
+                  </table>
+
+                  <!-- Urgency notice -->
+                  <div style="background:#FEF2F2;border-left:4px solid #EF4444;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:28px;">
+                    <p style="margin:0;font-size:14px;color:#991B1B;font-weight:600;">Ce tarif n'est pas permanent. Il disparaît dans quelques jours.</p>
+                  </div>
+
+                  <!-- CTA -->
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">
+                    <tr>
+                      <td align="center">
+                        <a href="${webinarUrl}" style="display:inline-block;padding:16px 40px;background-color:#1D4ED8;color:#FFFFFF;text-decoration:none;border-radius:10px;font-size:16px;font-weight:800;">
+                          S'inscrire maintenant →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  <p style="margin:0 0 28px;font-size:13px;color:#6B7280;text-align:center;">Préinscription gratuite · Paiement Wave / Orange Money / MTN MoMo</p>
+
+                  <p style="margin:0 0 28px;font-size:14px;color:#6B7280;text-align:center;">Si vous avez des questions sur le contenu exact du Pack,<br>répondez à cet email. Je vous réponds personnellement.</p>
+
+                  <p style="margin:0;font-size:15px;color:#374151;">SIMBA<br>
+                  <span style="color:#6B7280;font-size:13px;">Formateur — Afribourse</span></p>
+
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background-color:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+                  <p style="margin:0;font-size:12px;color:#9CA3AF;">Afribourse · Marchés financiers africains<br>
+                  <a href="https://www.africbourse.com/unsubscribe" style="color:#9CA3AF;">Se désabonner</a></p>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  const text = `Bonjour ${firstName},
+
+Vous êtes sur Afribourse depuis un moment.
+Vous avez appris. Vous avez simulé. Vous avez regardé les marchés.
+Il manque une chose : passer à l'étape suivante avec des experts à vos côtés.
+
+Pack Parcours Investisseur BRVM
+3 sessions intensives · Experts BRVM · Certification officielle
+
+✓ 3 webinaires live (Fondamentaux · Analyse fondamentale · Analyse technique)
+✓ Communauté Afribourse — 3 mois d'accès
+✓ 3 Plans d'Action personnalisés — un après chaque session
+✓ Deal Flow hebdomadaire — 12 analyses exclusives BRVM
+✓ Certificat « Investisseur BRVM — Niveau 1 »
+🎁 BONUS : 1 semaine d'accès Investisseur+ offerte
+
+25 000 XOF (au lieu de 35 000 XOF — offre limitée)
+
+Ce tarif n'est pas permanent. Il disparaît dans quelques jours.
+
+Ce que vous allez faire d'ici le 20 juin :
+— Assister à 3 sessions live animées par des analystes qui connaissent la BRVM par cœur.
+— Repartir avec 3 plans d'action concrets — pas de la théorie, des actions réelles à poser.
+— Accéder à une communauté d'investisseurs qui apprennent au même rythme que vous.
+— Décrocher un certificat que vous pourrez partager — la preuve que vous avez fait le travail.
+
+→ S'inscrire maintenant : ${webinarUrl}
+Préinscription gratuite · Paiement Wave / Orange Money / MTN MoMo
+
+Si vous avez des questions sur le contenu exact du Pack, répondez à cet email. Je vous réponds personnellement.
+
+SIMBA
+Formateur — Afribourse`;
+
+  await sendEmail({
+    to: email,
+    subject: '🎓 Votre dernière chance d\'entrer dans le Parcours Investisseur BRVM',
+    html,
+    text,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -4999,5 +5169,6 @@ export default {
   sendReengagementEmail3,
   sendInvestisseurPlusPromoEmail,
   sendFailedPaymentReengagementEmail,
+  sendPackParcoursBRVMEmail,
   sendEmail,
 };

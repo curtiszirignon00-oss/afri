@@ -557,7 +557,17 @@ export async function getHistoryForComparison(symbols: string[], period: number)
       if (!groupedByDate[dateKey]) groupedByDate[dateKey] = { date: dateKey };
       groupedByDate[dateKey][record.stock_ticker] = record.close;
     });
-    return Object.values(groupedByDate).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sorted = Object.values(groupedByDate).sort(
+      (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    // Thin data for large periods to cap at ~150 points
+    const MAX_POINTS = 150;
+    if (sorted.length > MAX_POINTS) {
+      const step = Math.ceil(sorted.length / MAX_POINTS);
+      return sorted.filter((_: any, i: number) => i % step === 0 || i === sorted.length - 1);
+    }
+    return sorted;
   } catch (error) {
     log.error('Erreur historique:', error);
     throw error;

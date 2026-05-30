@@ -171,7 +171,7 @@ export async function getComparisonHistory(req: Request, res: Response, next: Ne
     const symbols = (req.query.symbols as string)?.split(',');
     const period = parseInt(req.query.period as string) || 30;
     if (!symbols || symbols.length === 0) return res.status(400).json({ success: false, message: 'Symbols required' });
-    if (![7, 30, 90].includes(period)) return res.status(400).json({ success: false, message: 'Period must be 7, 30, or 90' });
+    if (![7, 30, 90, 180, 365, 1095, 1825].includes(period)) return res.status(400).json({ success: false, message: 'Invalid period' });
     const history = await stockService.getHistoryForComparison(symbols, period);
     return res.status(200).json({ success: true, data: history });
   } catch (error) {
