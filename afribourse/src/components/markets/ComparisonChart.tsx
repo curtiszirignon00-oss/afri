@@ -1,18 +1,24 @@
 // src/components/markets/ComparisonChart.tsx
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useStockHistory } from '../../hooks/useStockHistory';
-import PeriodSelector from './PeriodSelector';
+import PeriodSelector, { type ComparisonPeriod } from './PeriodSelector';
 import type { Stock } from '../../hooks/useApi';
 
 interface ComparisonChartProps {
     stocks: Stock[];
-    period: 7 | 30 | 90;
-    onPeriodChange: (period: 7 | 30 | 90) => void;
+    period: ComparisonPeriod;
+    onPeriodChange: (period: ComparisonPeriod) => void;
 }
 
 export default function ComparisonChart({ stocks, period, onPeriodChange }: ComparisonChartProps) {
     const symbols = stocks.map(s => s.symbol);
     const { data, isLoading, error } = useStockHistory(symbols, period);
+
+    const formatXAxis = (value: string) => {
+        const date = new Date(value);
+        if (period >= 365) return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(2)}`;
+        return `${date.getDate()}/${date.getMonth() + 1}`;
+    };
 
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
 
@@ -65,10 +71,8 @@ export default function ComparisonChart({ stocks, period, onPeriodChange }: Comp
                         dataKey="date"
                         stroke="#6B7280"
                         tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => {
-                            const date = new Date(value);
-                            return `${date.getDate()}/${date.getMonth() + 1}`;
-                        }}
+                        tickFormatter={formatXAxis}
+                        interval={period >= 1095 ? 'preserveStartEnd' : period >= 365 ? Math.floor((data?.length ?? 0) / 12) : 'preserveStartEnd'}
                     />
                     <YAxis
                         stroke="#6B7280"

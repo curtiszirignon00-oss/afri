@@ -7,6 +7,7 @@ import ComparisonChart from './ComparisonChart';
 import ComparisonCard from './ComparisonCard';
 import ComparisonEmptyState from './ComparisonEmptyState';
 import type { Stock } from '../../hooks/useApi';
+import type { ComparisonPeriod } from './PeriodSelector';
 
 interface StockComparisonProps {
     stocks: Stock[];
@@ -16,7 +17,7 @@ interface StockComparisonProps {
 
 export default function StockComparison({ stocks, onRemove, onClose }: StockComparisonProps) {
     const [activeTab, setActiveTab] = useState<'table' | 'chart'>('table');
-    const [period, setPeriod] = useState<7 | 30 | 90>(30);
+    const [period, setPeriod] = useState<ComparisonPeriod>(30);
 
     if (stocks.length === 0) {
         return <ComparisonEmptyState />;
