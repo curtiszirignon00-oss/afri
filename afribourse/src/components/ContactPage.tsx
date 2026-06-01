@@ -4,6 +4,10 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { useLocation } from 'react-router-dom';
 import { metaPixel } from '../utils/metaPixel';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 const ContactPage: React.FC = () => {
   const location = useLocation();
@@ -61,6 +65,25 @@ const ContactPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Helmet>
+        <title>Contactez AfriBourse — Support et Questions | AfriBourse</title>
+        <meta name="description" content="Contactez l'équipe AfriBourse pour toute question sur la plateforme, votre compte, les marchés BRVM ou un partenariat. Réponse sous 24h." />
+        <meta name="keywords" content="contact AfriBourse, support AfriBourse, aide BRVM, question investissement bourse Afrique" />
+        <link rel="canonical" href={`${SITE_URL}/contact`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Contactez AfriBourse — Support et Questions" />
+        <meta property="og:description" content="Une question sur AfriBourse ou la BRVM ? Contactez notre équipe, réponse sous 24h." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/contact`} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="Contactez AfriBourse" />
+        <meta name="twitter:description" content="Une question sur AfriBourse ou la BRVM ? Notre équipe vous répond sous 24h." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+      </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

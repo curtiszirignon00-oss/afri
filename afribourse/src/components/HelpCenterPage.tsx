@@ -13,6 +13,10 @@ import {
   BookMarked,
   Send
 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 import { useNavigate } from 'react-router-dom';
 
 interface FAQItem {
@@ -143,6 +147,74 @@ const HelpCenterPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Helmet>
+        <title>Centre d'Aide AfriBourse — FAQ Simulateur et Investissement BRVM | AfriBourse</title>
+        <meta name="description" content="Trouvez des réponses à vos questions sur AfriBourse : simulateur de portefeuille BRVM, cours en temps réel, formations, compte et sécurité. FAQ complète et support." />
+        <meta name="keywords" content="aide AfriBourse, FAQ BRVM, simulateur portefeuille aide, question investissement bourse Afrique, centre aide bourse UEMOA" />
+        <link rel="canonical" href={`${SITE_URL}/help`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Centre d'Aide — FAQ AfriBourse et BRVM" />
+        <meta property="og:description" content="Réponses à vos questions sur le simulateur, les cours BRVM et les formations AfriBourse." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/help`} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="FAQ AfriBourse — Centre d'Aide" />
+        <meta name="twitter:description" content="Simulateur, cours BRVM, formations : toutes vos questions répondues." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Centre d'Aide", "item": "https://africbourse.com/help" }
+          ]
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Comment créer un compte sur AfriBourse ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Cliquez sur le bouton \"S'inscrire\" en haut à droite. Remplissez votre nom, email et choisissez un mot de passe. Vous recevrez un lien de confirmation par email pour activer votre accès." }
+            },
+            {
+              "@type": "Question",
+              "name": "Est-ce que l'inscription est vraiment gratuite ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Oui, l'accès à nos modules d'apprentissage et à notre simulateur de portefeuille est 100% gratuit. Notre mission est de démocratiser l'éducation financière." }
+            },
+            {
+              "@type": "Question",
+              "name": "D'où viennent les 10 000 000 FCFA sur mon compte simulateur ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Il s'agit d'un capital virtuel offert à chaque nouvel inscrit. Cet argent n'a pas de valeur réelle, il sert uniquement à vous entraîner dans des conditions de marché réelles sans aucun risque financier." }
+            },
+            {
+              "@type": "Question",
+              "name": "Les cours des actions BRVM sont-ils réels ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Oui. Nous utilisons les données officielles de la BRVM. Il peut y avoir un léger différé selon les flux, mais les prix reflètent la réalité du marché pour une immersion totale." }
+            },
+            {
+              "@type": "Question",
+              "name": "Quels sont les horaires de cotation de la BRVM ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Le marché est ouvert du lundi au vendredi, de 9h00 à 15h00 (GMT)." }
+            },
+            {
+              "@type": "Question",
+              "name": "AfriBourse est-il une SGI (Société de Gestion et d'Intermédiation) ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Non. AfriBourse est une plateforme purement éducative. Nous ne sommes pas des courtiers et nous ne manipulons pas d'argent réel. Pour investir réellement, vous devez ouvrir un compte titres auprès d'une SGI agréée." }
+            },
+            {
+              "@type": "Question",
+              "name": "Puis-je retirer l'argent gagné sur le simulateur ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Non. Les gains (et les pertes) sont virtuels. Le but est de tester vos stratégies avant de faire le saut vers l'investissement réel avec une SGI." }
+            }
+          ]
+        })}</script>
+      </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

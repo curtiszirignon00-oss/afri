@@ -1,9 +1,17 @@
 import React from 'react';
 import { Shield, Lock, Eye, Database, UserCheck, FileText, AlertCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
 
 const PrivacyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Helmet>
+        <title>Politique de Confidentialité | AfriBourse</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href={`${SITE_URL}/privacy`} />
+      </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -57,6 +57,47 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD : Organization + WebSite (sitelinks searchbox) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://africbourse.com/#organization",
+          "name": "AfriBourse",
+          "url": "https://africbourse.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://africbourse.com/images/logo_afribourse.png",
+            "width": 512,
+            "height": 512
+          },
+          "description": "Plateforme éducative d'investissement sur la BRVM (Bourse Régionale des Valeurs Mobilières) pour les investisseurs francophones d'Afrique de l'Ouest.",
+          "sameAs": ["https://twitter.com/AfriBourse"],
+          "knowsAbout": ["BRVM", "investissement boursier", "marchés financiers UEMOA", "éducation financière Afrique"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://africbourse.com/#website",
+          "url": "https://africbourse.com",
+          "name": "AfriBourse",
+          "description": "Plateforme d'investissement et de formation sur la BRVM",
+          "publisher": { "@id": "https://africbourse.com/#organization" },
+          "inLanguage": "fr",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://africbourse.com/markets?search={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->

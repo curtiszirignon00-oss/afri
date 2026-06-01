@@ -1,6 +1,7 @@
 // src/pages/CommunitiesPage.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
     Users,
     Plus,
@@ -17,6 +18,9 @@ import {
 import { useCommunities, useUserCommunities, COMMUNITY_CATEGORIES, type Community } from '../hooks/useCommunity';
 import { useAuth } from '../contexts/AuthContext';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 export default function CommunitiesPage() {
     const { isLoggedIn } = useAuth();
@@ -68,6 +72,25 @@ export default function CommunitiesPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <Helmet>
+                <title>Communautés d'Investisseurs BRVM — Groupes Thématiques | AfriBourse</title>
+                <meta name="description" content="Explorez les communautés d'investisseurs par thème sur AfriBourse : secteur bancaire, télécoms, dividendes, débutants BRVM et plus. Rejoignez ou créez votre groupe." />
+                <meta name="keywords" content="communautés investisseurs BRVM, groupes bourse Afrique, club investissement BRVM, secteurs BRVM communauté" />
+                <link rel="canonical" href={`${SITE_URL}/communities`} />
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="AfriBourse" />
+                <meta property="og:title" content="Communautés d'Investisseurs BRVM | AfriBourse" />
+                <meta property="og:description" content="Groupes thématiques : banques, télécoms, dividendes, débutants. Rejoignez votre communauté." />
+                <meta property="og:image" content={OG_IMAGE} />
+                <meta property="og:image:width" content="512" />
+                <meta property="og:image:height" content="512" />
+                <meta property="og:url" content={`${SITE_URL}/communities`} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@AfriBourse" />
+                <meta name="twitter:title" content="Communautés BRVM | AfriBourse" />
+                <meta name="twitter:description" content="Rejoignez des groupes d'investisseurs par thème sur la BRVM." />
+                <meta name="twitter:image" content={OG_IMAGE} />
+            </Helmet>
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

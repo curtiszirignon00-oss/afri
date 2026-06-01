@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+
+# Routes privées / authentifiées
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /transactions
+Disallow: /login
+Disallow: /signup
+Disallow: /onboarding
+Disallow: /watchlist
+Disallow: /notifications
+Disallow: /profile
+Disallow: /time-machine
+Disallow: /challenge
+Disallow: /achievements
+Disallow: /checkout
+Disallow: /pay/
+Disallow: /survey
+
+# Flux d'authentification
+Disallow: /confirmer-inscription
+Disallow: /renvoyer-confirmation
+Disallow: /verifier-email
+Disallow: /mot-de-passe-oublie
+Disallow: /reinitialiser-mot-de-passe
+
+Sitemap: https://africbourse.com/sitemap.xml

@@ -1,8 +1,12 @@
 // src/components/MarketsPageRefactored.tsx
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 import { trackStockSearch } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
-import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List } from 'lucide-react';
+import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List, Scale } from 'lucide-react';
 import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
@@ -86,7 +90,7 @@ export default function MarketsPageRefactored() {
 
   // Stock comparison
   const [comparisonStocks, setComparisonStocks] = useState<Stock[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
+  const [showComparison, setShowComparison] = useState(true);
 
   // Debounce du terme de recherche
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -224,6 +228,10 @@ export default function MarketsPageRefactored() {
     setShowComparison(false);
   };
 
+  const toggleComparison = () => {
+    setShowComparison(prev => !prev);
+  };
+
   const isInComparison = (stock: Stock) => {
     return comparisonStocks.some(s => s.id === stock.id);
   };
@@ -297,6 +305,37 @@ export default function MarketsPageRefactored() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <Helmet>
+        <title>Marchés BRVM — Cours des Actions en Temps Réel | AfriBourse</title>
+        <meta name="description" content="Consultez les cours en temps réel de toutes les actions cotées sur la BRVM. Filtres sectoriels, comparaison de valeurs, heatmap du marché et indicateurs techniques." />
+        <meta name="keywords" content="cours BRVM, actions BRVM, cours actions temps réel, bourse Afrique de l'Ouest, BRVM Composite, SGI bourse Afrique, cours bourse Côte d'Ivoire" />
+        <link rel="canonical" href={`${SITE_URL}/markets`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Marchés BRVM — Cours des Actions en Temps Réel | AfriBourse" />
+        <meta property="og:description" content="Tous les cours de la BRVM en temps réel. Filtres, comparaisons, heatmap et indicateurs pour investir sur la bourse d'Afrique de l'Ouest." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/markets`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="Marchés BRVM — Cours en Temps Réel | AfriBourse" />
+        <meta name="twitter:description" content="Tous les cours de la BRVM en temps réel. Filtres, comparaisons et heatmap." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FinancialService",
+          "@id": "https://africbourse.com/markets#financialservice",
+          "name": "AfriBourse — Marchés BRVM",
+          "description": "Suivi des cours de la BRVM (Bourse Régionale des Valeurs Mobilières) en temps réel pour les investisseurs d'Afrique de l'Ouest.",
+          "url": "https://africbourse.com/markets",
+          "provider": { "@id": "https://africbourse.com/#organization" },
+          "areaServed": { "@type": "Place", "name": "UEMOA — Union Économique et Monétaire Ouest-Africaine" },
+          "serviceType": "Suivi des marchés boursiers BRVM",
+          "inLanguage": "fr"
+        })}</script>
+      </Helmet>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
         {/* Bannière onboarding — simulateur sans risque */}
@@ -418,8 +457,8 @@ export default function MarketsPageRefactored() {
             </select>
           </div>
 
-          {/* Advanced Filters Toggle */}
-          <div className="flex items-center gap-2">
+          {/* Advanced Filters Toggle + Compare button */}
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               id="screener-section"
               onClick={() => { setShowAdvancedFilters(!showAdvancedFilters); markScreenerUsed(); }}
@@ -443,6 +482,19 @@ export default function MarketsPageRefactored() {
                 Réinitialiser
               </Button>
             )}
+            <Button
+              onClick={toggleComparison}
+              variant={showComparison ? 'primary' : 'outline'}
+              className="relative"
+            >
+              <Scale className="w-4 h-4 mr-2" />
+              Comparer
+              {comparisonStocks.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs bg-white text-blue-600 rounded-full font-bold">
+                  {comparisonStocks.length}
+                </span>
+              )}
+            </Button>
           </div>
         </Card>
 
@@ -533,8 +585,11 @@ export default function MarketsPageRefactored() {
         {showComparison && (
           <StockComparison
             stocks={comparisonStocks}
+            allStocks={stocks}
             onRemove={removeFromComparison}
+            onAdd={addToComparison}
             onClose={closeComparison}
+            comparisonLimit={comparisonLimit}
           />
         )}
 

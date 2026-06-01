@@ -6,6 +6,10 @@ import {
     Loader2, ArrowLeft, Users, Flame
 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 interface LeaderboardEntry {
     rank: number;
@@ -47,6 +51,25 @@ export default function LeaderboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <Helmet>
+                <title>Classement des Investisseurs BRVM — Top Traders | AfriBourse</title>
+                <meta name="description" content="Découvrez le classement des meilleurs investisseurs AfriBourse. Compétition hebdomadaire basée sur la performance du portefeuille virtuel BRVM." />
+                <meta name="keywords" content="classement investisseurs BRVM, leaderboard bourse Afrique, compétition investissement, meilleur portefeuille BRVM" />
+                <link rel="canonical" href={`${SITE_URL}/classement`} />
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="AfriBourse" />
+                <meta property="og:title" content="Classement des Investisseurs AfriBourse" />
+                <meta property="og:description" content="Le classement hebdomadaire des meilleurs investisseurs sur la BRVM simulée." />
+                <meta property="og:image" content={OG_IMAGE} />
+                <meta property="og:image:width" content="512" />
+                <meta property="og:image:height" content="512" />
+                <meta property="og:url" content={`${SITE_URL}/classement`} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@AfriBourse" />
+                <meta name="twitter:title" content="Classement AfriBourse" />
+                <meta name="twitter:description" content="Les meilleurs investisseurs BRVM de la semaine." />
+                <meta name="twitter:image" content={OG_IMAGE} />
+            </Helmet>
             <div className="max-w-2xl mx-auto px-4 py-6">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-6">

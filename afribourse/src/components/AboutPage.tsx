@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Users, Target, Award, TrendingUp, User, Linkedin, Globe, BookOpen, Wallet } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 const AboutPage: React.FC = () => {
   const [userCount, setUserCount] = useState(1074);
@@ -27,6 +31,33 @@ const AboutPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Helmet>
+        <title>À propos d'AfriBourse — Notre Mission pour l'Investissement en Afrique | AfriBourse</title>
+        <meta name="description" content="AfriBourse démocratise l'investissement sur la BRVM pour les Africains francophones. Découvrez notre mission, notre équipe et notre impact sur l'éducation financière en Afrique de l'Ouest." />
+        <meta name="keywords" content="AfriBourse mission, plateforme investissement BRVM, éducation financière Afrique, bourse Afrique de l'Ouest, UEMOA investissement" />
+        <link rel="canonical" href={`${SITE_URL}/about`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="À propos d'AfriBourse — Notre Mission pour l'Investissement en Afrique" />
+        <meta property="og:description" content="Démocratiser l'investissement sur la BRVM pour tous les Africains. Découvrez notre mission et notre impact." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/about`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="À propos d'AfriBourse" />
+        <meta name="twitter:description" content="Notre mission : démocratiser l'investissement BRVM pour tous les Africains francophones." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "À propos", "item": "https://africbourse.com/about" }
+          ]
+        })}</script>
+      </Helmet>
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

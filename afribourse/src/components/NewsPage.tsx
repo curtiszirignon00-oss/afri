@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import FundamentalsGrid from './FundamentalsGrid';
@@ -218,6 +222,33 @@ export default function NewsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 animate-in fade-in duration-500">
+      <Helmet>
+        <title>Actualités Financières BRVM et UEMOA | AfriBourse</title>
+        <meta name="description" content="Toute l'actualité boursière de la BRVM et de l'UEMOA : résultats d'entreprises, dividendes, analyses sectorielles et nouvelles macroéconomiques d'Afrique de l'Ouest." />
+        <meta name="keywords" content="actualités BRVM, news bourse Afrique, actualités UEMOA, dividendes BRVM, résultats entreprises BRVM, analyse marché Afrique de l'Ouest" />
+        <link rel="canonical" href={`${SITE_URL}/news`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Actualités Financières BRVM et UEMOA | AfriBourse" />
+        <meta property="og:description" content="L'essentiel de l'information boursière de l'UEMOA : résultats, dividendes, analyses et actualités macroéconomiques." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/news`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="Actualités BRVM & UEMOA | AfriBourse" />
+        <meta name="twitter:description" content="Résultats, dividendes et analyses sectorielles de la bourse d'Afrique de l'Ouest." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Actualités Financières", "item": "https://africbourse.com/news" }
+          ]
+        })}</script>
+      </Helmet>
 
       {/* Banner nouvelles analyses */}
       {bannerVisible && newBrvmCount > 0 && (

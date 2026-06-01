@@ -8,6 +8,10 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import PaymentModal from '../components/payment/PaymentModal';
 import { analytics } from '../services/analytics';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 const PLAN_ID = 'premium-modules';
 const PLAN_NAME = 'Formation Complète';
@@ -176,6 +180,25 @@ export default function FormationPremiumPage() {
 
   return (
     <div style={{ background: C.bg, color: C.text, fontFamily: "'Inter', system-ui, sans-serif", minHeight: '100vh' }}>
+      <Helmet>
+        <title>Formation Premium BRVM — Modules Avancés d'Investissement | AfriBourse</title>
+        <meta name="description" content="Accédez aux modules avancés de la formation AfriBourse : analyse technique, analyse fondamentale, stratégies de portefeuille sur la BRVM. Formation complète pour investir sur les marchés africains." />
+        <meta name="keywords" content="formation premium BRVM, modules avancés investissement, analyse technique BRVM, formation complète bourse Afrique, investissement UEMOA" />
+        <link rel="canonical" href={`${SITE_URL}/formation`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Formation Premium BRVM — Modules Avancés | AfriBourse" />
+        <meta property="og:description" content="Analyse technique, fondamentale et stratégies de portefeuille BRVM. Formation complète." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/formation`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="Formation Premium BRVM | AfriBourse" />
+        <meta name="twitter:description" content="Modules avancés : analyse technique, fondamentale et stratégies BRVM." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+      </Helmet>
       <style>{`
         @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
         .ticker-track { display:flex; animation:ticker 28s linear infinite; width:max-content; }

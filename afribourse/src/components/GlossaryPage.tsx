@@ -1,5 +1,10 @@
 import { Search, Book } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 const glossaryTerms = [
   {
@@ -91,6 +96,33 @@ export default function GlossaryPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Helmet>
+        <title>Glossaire de l'Investisseur BRVM — Termes Boursiers Expliqués | AfriBourse</title>
+        <meta name="description" content="Le dictionnaire complet des termes financiers de la BRVM expliqués en français : action, dividende, SGI, indice, P/E ratio, volatilité et 15 autres concepts essentiels pour investir." />
+        <meta name="keywords" content="glossaire bourse, termes financiers BRVM, dictionnaire investissement, définition action bourse, SGI définition, BRVM Composite définition, dividende définition" />
+        <link rel="canonical" href={`${SITE_URL}/glossary`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Glossaire de l'Investisseur BRVM — Termes Boursiers Expliqués | AfriBourse" />
+        <meta property="og:description" content="15 termes financiers de la BRVM expliqués simplement en français : action, dividende, SGI, volatilité, P/E ratio et plus." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/glossary`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="Glossaire Boursier BRVM | AfriBourse" />
+        <meta name="twitter:description" content="Les termes financiers de la BRVM expliqués simplement en français." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Glossaire de l'Investisseur", "item": "https://africbourse.com/glossary" }
+          ]
+        })}</script>
+      </Helmet>
       <div className="text-center mb-12">
         <div className="flex items-center justify-center space-x-3 mb-4">
           <Book className="w-12 h-12 text-orange-600" />
@@ -142,9 +174,17 @@ export default function GlossaryPage() {
           <p className="text-gray-700 mb-6">
             Nous enrichissons constamment notre glossaire. Si un terme vous échappe, n'hésitez pas à nous le signaler !
           </p>
-          <button className="px-8 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold">
-            Suggérer un terme
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button className="px-8 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold">
+              Suggérer un terme
+            </button>
+            <Link to="/learn" className="px-8 py-3 bg-white text-orange-600 border border-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-semibold">
+              Voir les modules de formation
+            </Link>
+            <Link to="/markets" className="px-8 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold">
+              Explorer les marchés BRVM
+            </Link>
+          </div>
         </div>
       </div>
     </div>

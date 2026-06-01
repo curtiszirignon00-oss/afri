@@ -4,6 +4,10 @@ import { ArrowLeft, TrendingUp, TrendingDown, Activity, BarChart3, Loader2 } fro
 import { apiFetch } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
 import { lazyWithRetry } from '../lib/lazyWithRetry';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 
 // IndexChart importe lightweight-charts (~150 KB) — chargé seulement au clic sur une carte
 const IndexChart = lazyWithRetry(() => import('./IndexChart'));
@@ -37,6 +41,33 @@ export default function IndicesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <Helmet>
+        <title>Indices BRVM — BRVM Composite et BRVM 10 en Temps Réel | AfriBourse</title>
+        <meta name="description" content="Suivez les indices BRVM Composite et BRVM 10 en temps réel avec leurs graphiques d'évolution historique. Le thermomètre de la bourse d'Afrique de l'Ouest (UEMOA)." />
+        <meta name="keywords" content="BRVM Composite, BRVM 10, indices BRVM, indice bourse Afrique, performance bourse UEMOA, suivi indice boursier Afrique de l'Ouest" />
+        <link rel="canonical" href={`${SITE_URL}/indices`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="Indices BRVM Composite et BRVM 10 en Temps Réel | AfriBourse" />
+        <meta property="og:description" content="BRVM Composite et BRVM 10 en temps réel avec graphiques d'évolution historique." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/indices`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="Indices BRVM en Temps Réel | AfriBourse" />
+        <meta name="twitter:description" content="BRVM Composite et BRVM 10 avec graphiques historiques." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Indices BRVM", "item": "https://africbourse.com/indices" }
+          ]
+        })}</script>
+      </Helmet>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">

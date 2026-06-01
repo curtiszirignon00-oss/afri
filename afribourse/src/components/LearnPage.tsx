@@ -1,5 +1,9 @@
 // src/components/LearnPage.tsx - VERSION CORRIGÉE
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 import {
     BookOpen,
     Clock,
@@ -1502,6 +1506,56 @@ export default function LearnPage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+            <Helmet>
+                <title>Formation Investissement BRVM — 20 Modules Gratuits | AfriBourse</title>
+                <meta name="description" content="Apprenez à investir sur la BRVM avec 20 modules structurés, des quiz, un tuteur IA et des certificats. Formation gratuite en investissement boursier pour l'Afrique de l'Ouest." />
+                <meta name="keywords" content="formation investissement BRVM, formation gratuite bourse Afrique, apprendre investir BRVM, cours bourse UEMOA, éducation financière Afrique de l'Ouest" />
+                <link rel="canonical" href={`${SITE_URL}/learn`} />
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="AfriBourse" />
+                <meta property="og:title" content="Formation Investissement BRVM — 20 Modules Gratuits | AfriBourse" />
+                <meta property="og:description" content="20 modules de formation gratuits sur l'investissement BRVM, avec quiz, tuteur IA et certificats." />
+                <meta property="og:image" content={OG_IMAGE} />
+                <meta property="og:image:width" content="512" />
+                <meta property="og:image:height" content="512" />
+                <meta property="og:url" content={`${SITE_URL}/learn`} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@AfriBourse" />
+                <meta name="twitter:title" content="Formation BRVM Gratuite — 20 Modules | AfriBourse" />
+                <meta name="twitter:description" content="20 modules sur l'investissement BRVM. Quiz, tuteur IA, certificats. 100% gratuit." />
+                <meta name="twitter:image" content={OG_IMAGE} />
+                <script type="application/ld+json">{JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "BreadcrumbList",
+                  "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
+                    { "@type": "ListItem", "position": 2, "name": "Formation", "item": "https://africbourse.com/learn" }
+                  ]
+                })}</script>
+                <script type="application/ld+json">{JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "Course",
+                  "@id": "https://africbourse.com/learn#course",
+                  "name": "Formation Investissement BRVM",
+                  "description": "Formation complète en investissement boursier sur la BRVM. 20 modules couvrant les bases, l'analyse technique, fondamentale et les stratégies avancées.",
+                  "url": "https://africbourse.com/learn",
+                  "provider": {
+                    "@type": "EducationalOrganization",
+                    "@id": "https://africbourse.com/#organization",
+                    "name": "AfriBourse",
+                    "url": "https://africbourse.com"
+                  },
+                  "inLanguage": "fr",
+                  "isAccessibleForFree": true,
+                  "educationalLevel": "Débutant à Avancé",
+                  "teaches": ["Investissement boursier", "Analyse technique", "Analyse fondamentale", "BRVM", "Marchés financiers africains"],
+                  "hasCourseInstance": {
+                    "@type": "CourseInstance",
+                    "courseMode": "online",
+                    "inLanguage": "fr"
+                  }
+                })}</script>
+            </Helmet>
             {showCertificate && (
                 <CertificateModal
                     onClose={() => setShowCertificate(false)}

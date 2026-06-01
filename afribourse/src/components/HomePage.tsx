@@ -1,5 +1,9 @@
 // src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
 import { useRef, useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+
+const SITE_URL = 'https://africbourse.com';
+const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import OptimizedImage from './ui/OptimizedImage';
@@ -304,6 +308,46 @@ export default function HomePage() {
 
   return (
     <>
+      <Helmet>
+        <title>AfriBourse — Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest</title>
+        <meta name="description" content="Apprenez à investir sur la BRVM avec notre simulateur gratuit, nos formations et l'analyse des marchés boursiers d'Afrique de l'Ouest. Rejoignez +2 000 investisseurs." />
+        <meta name="keywords" content="BRVM, investir BRVM, cours BRVM, simulateur bourse Afrique, bourse Afrique de l'Ouest, bourse Côte d'Ivoire, bourse UEMOA, formation investissement BRVM" />
+        <link rel="canonical" href={`${SITE_URL}/`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="AfriBourse" />
+        <meta property="og:title" content="AfriBourse — Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest" />
+        <meta property="og:description" content="Apprenez à investir sur la BRVM avec notre simulateur gratuit, nos formations et l'analyse des marchés boursiers d'Afrique de l'Ouest." />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:url" content={`${SITE_URL}/`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:title" content="AfriBourse — Investissez sur la BRVM" />
+        <meta name="twitter:description" content="Simulateur, formations et analyse des marchés BRVM pour les investisseurs d'Afrique de l'Ouest." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Qu'est-ce que la BRVM ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "La BRVM (Bourse Régionale des Valeurs Mobilières) est la bourse commune des 8 pays de l'UEMOA : Côte d'Ivoire, Sénégal, Burkina Faso, Mali, Niger, Togo, Bénin et Guinée-Bissau. Son siège est à Abidjan." }
+            },
+            {
+              "@type": "Question",
+              "name": "Comment investir sur la BRVM depuis l'Afrique de l'Ouest ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Pour investir sur la BRVM, vous devez ouvrir un compte titres auprès d'une SGI (Société de Gestion et d'Intermédiation) agréée. AfriBourse vous propose un simulateur gratuit pour vous entraîner avant de franchir le pas avec de l'argent réel." }
+            },
+            {
+              "@type": "Question",
+              "name": "AfriBourse est-il gratuit ?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Oui. L'accès au simulateur de portefeuille virtuel, aux modules de formation de base et aux cours de la BRVM est entièrement gratuit. Des fonctionnalités avancées sont disponibles en version premium." }
+            }
+          ]
+        })}</script>
+      </Helmet>
       {/* Keyframe animations */}
       <style>{`
         @keyframes floatOrb {
