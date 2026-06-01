@@ -307,8 +307,8 @@ export default function MarketsPageRefactored() {
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <Helmet>
         <title>Marchés BRVM — Cours des Actions en Temps Réel | AfriBourse</title>
-        <meta name="description" content="Consultez les cours en temps réel de toutes les actions cotées sur la BRVM. Filtres sectoriels, comparaison de valeurs, heatmap du marché et indicateurs techniques." />
-        <meta name="keywords" content="cours BRVM, actions BRVM, cours actions temps réel, bourse Afrique de l'Ouest, BRVM Composite, SGI bourse Afrique, cours bourse Côte d'Ivoire" />
+        <meta name="description" content="Cours en temps réel de toutes les actions BRVM. Consultez le cours de chaque action brvm, filtres par secteur, heatmap du marché BRVM et comparaison de valeurs cotées sur la Bourse Régionale des Valeurs Mobilières." />
+        <meta name="keywords" content="brvm, brvm action, cours brvm, action brvm, brvm bourse, brvm cours, brvm aujourd'hui, brvm composite, cours actions brvm, bourse brvm, toutes les actions brvm, cours actions temps réel, bourse Afrique de l'Ouest, SGI bourse Afrique, cours bourse Côte d'Ivoire, UEMOA bourse" />
         <link rel="canonical" href={`${SITE_URL}/markets`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />

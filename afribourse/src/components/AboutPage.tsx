@@ -34,7 +34,7 @@ const AboutPage: React.FC = () => {
       <Helmet>
         <title>À propos d'AfriBourse — Notre Mission pour l'Investissement en Afrique | AfriBourse</title>
         <meta name="description" content="AfriBourse démocratise l'investissement sur la BRVM pour les Africains francophones. Découvrez notre mission, notre équipe et notre impact sur l'éducation financière en Afrique de l'Ouest." />
-        <meta name="keywords" content="AfriBourse mission, plateforme investissement BRVM, éducation financière Afrique, bourse Afrique de l'Ouest, UEMOA investissement" />
+        <meta name="keywords" content="brvm, afribourse brvm, brvm plateforme, brvm investissement, brvm afrique, afribourse, plateforme brvm, bourse afrique de l'ouest, UEMOA bourse, éducation financière Afrique, investir brvm" />
         <link rel="canonical" href={`${SITE_URL}/about`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />

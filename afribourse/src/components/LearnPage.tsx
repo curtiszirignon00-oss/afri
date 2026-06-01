@@ -1509,7 +1509,7 @@ export default function LearnPage() {
             <Helmet>
                 <title>Formation Investissement BRVM — 20 Modules Gratuits | AfriBourse</title>
                 <meta name="description" content="Apprenez à investir sur la BRVM avec 20 modules structurés, des quiz, un tuteur IA et des certificats. Formation gratuite en investissement boursier pour l'Afrique de l'Ouest." />
-                <meta name="keywords" content="formation investissement BRVM, formation gratuite bourse Afrique, apprendre investir BRVM, cours bourse UEMOA, éducation financière Afrique de l'Ouest" />
+                <meta name="keywords" content="brvm, formation brvm, apprendre brvm, investir brvm, brvm formation gratuite, cours brvm gratuit, brvm bourse débutant, comment investir brvm, brvm action formation, bourse afrique formation, UEMOA investissement formation, éducation financière Afrique" />
                 <link rel="canonical" href={`${SITE_URL}/learn`} />
                 <meta property="og:type" content="website" />
                 <meta property="og:site_name" content="AfriBourse" />

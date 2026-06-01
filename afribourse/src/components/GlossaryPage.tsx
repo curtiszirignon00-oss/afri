@@ -99,7 +99,7 @@ export default function GlossaryPage() {
       <Helmet>
         <title>Glossaire de l'Investisseur BRVM — Termes Boursiers Expliqués | AfriBourse</title>
         <meta name="description" content="Le dictionnaire complet des termes financiers de la BRVM expliqués en français : action, dividende, SGI, indice, P/E ratio, volatilité et 15 autres concepts essentiels pour investir." />
-        <meta name="keywords" content="glossaire bourse, termes financiers BRVM, dictionnaire investissement, définition action bourse, SGI définition, BRVM Composite définition, dividende définition" />
+        <meta name="keywords" content="brvm, brvm action définition, brvm glossaire, brvm termes, action brvm explication, brvm SGI, brvm dividende, brvm composite définition, glossaire bourse, termes financiers BRVM, dictionnaire investissement bourse, bourse afrique vocabulaire" />
         <link rel="canonical" href={`${SITE_URL}/glossary`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />

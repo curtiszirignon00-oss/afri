@@ -43,8 +43,8 @@ export default function IndicesPage() {
     <div className="min-h-screen bg-gray-50 py-8">
       <Helmet>
         <title>Indices BRVM — BRVM Composite et BRVM 10 en Temps Réel | AfriBourse</title>
-        <meta name="description" content="Suivez les indices BRVM Composite et BRVM 10 en temps réel avec leurs graphiques d'évolution historique. Le thermomètre de la bourse d'Afrique de l'Ouest (UEMOA)." />
-        <meta name="keywords" content="BRVM Composite, BRVM 10, indices BRVM, indice bourse Afrique, performance bourse UEMOA, suivi indice boursier Afrique de l'Ouest" />
+        <meta name="description" content="BRVM Composite et BRVM 10 en temps réel. Suivez les indices brvm aujourd'hui avec leurs graphiques historiques. La bourse BRVM d'Afrique de l'Ouest (UEMOA) à portée de main." />
+        <meta name="keywords" content="brvm, brvm composite, brvm 10, indice brvm, brvm composite aujourd'hui, brvm 10 aujourd'hui, cours brvm, brvm bourse, indices brvm, performance brvm, bourse afrique ouest, UEMOA indice bourse" />
         <link rel="canonical" href={`${SITE_URL}/indices`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />

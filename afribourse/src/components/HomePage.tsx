@@ -310,8 +310,8 @@ export default function HomePage() {
     <>
       <Helmet>
         <title>AfriBourse — Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest</title>
-        <meta name="description" content="Apprenez à investir sur la BRVM avec notre simulateur gratuit, nos formations et l'analyse des marchés boursiers d'Afrique de l'Ouest. Rejoignez +2 000 investisseurs." />
-        <meta name="keywords" content="BRVM, investir BRVM, cours BRVM, simulateur bourse Afrique, bourse Afrique de l'Ouest, bourse Côte d'Ivoire, bourse UEMOA, formation investissement BRVM" />
+        <meta name="description" content="AfriBourse — la plateforme BRVM pour apprendre à investir sur les actions brvm. Simulateur gratuit, cours brvm en temps réel, formations et analyses pour la Bourse Régionale des Valeurs Mobilières (UEMOA)." />
+        <meta name="keywords" content="brvm, brvm action, brvm bourse, cours brvm, brvm aujourd'hui, brvm composite, investir brvm, bourse brvm, action brvm, brvm abidjan, simulateur bourse Afrique, bourse Afrique de l'Ouest, bourse Côte d'Ivoire, bourse UEMOA, formation investissement BRVM, AfriBourse" />
         <link rel="canonical" href={`${SITE_URL}/`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />

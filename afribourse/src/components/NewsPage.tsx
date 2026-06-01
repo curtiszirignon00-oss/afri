@@ -225,7 +225,7 @@ export default function NewsPage() {
       <Helmet>
         <title>Actualités Financières BRVM et UEMOA | AfriBourse</title>
         <meta name="description" content="Toute l'actualité boursière de la BRVM et de l'UEMOA : résultats d'entreprises, dividendes, analyses sectorielles et nouvelles macroéconomiques d'Afrique de l'Ouest." />
-        <meta name="keywords" content="actualités BRVM, news bourse Afrique, actualités UEMOA, dividendes BRVM, résultats entreprises BRVM, analyse marché Afrique de l'Ouest" />
+        <meta name="keywords" content="brvm, brvm actualités, brvm news, brvm aujourd'hui, brvm action news, actualités brvm, brvm dividende, résultats brvm, brvm marché, brvm analyse, news bourse afrique, UEMOA actualités, dividendes BRVM, résultats entreprises BRVM" />
         <link rel="canonical" href={`${SITE_URL}/news`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />
