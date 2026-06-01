@@ -7,7 +7,7 @@ import { metaPixel } from '../utils/metaPixel';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/contact';
 
 const ContactPage: React.FC = () => {
   const location = useLocation();
@@ -75,8 +75,8 @@ const ContactPage: React.FC = () => {
         <meta property="og:title" content="Contactez AfriBourse — Support et Questions" />
         <meta property="og:description" content="Une question sur AfriBourse ou la BRVM ? Contactez notre équipe, réponse sous 24h." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/contact`} />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:site" content="@AfriBourse" />

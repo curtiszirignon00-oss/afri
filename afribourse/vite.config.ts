@@ -4,8 +4,7 @@ import { imagetools } from 'vite-imagetools';
 import { VitePWA } from 'vite-plugin-pwa';
 import type { Plugin, ResolvedConfig } from 'vite';
 import { readFileSync, writeFileSync, readdirSync } from 'fs';
-import { join, resolve } from 'path';
-import vitePrerender from 'vite-plugin-prerender';
+import { join } from 'path';
 
 // Plugin qui supprime tous les commentaires sourceMappingURL des bundles finaux.
 // Nécessaire car certains packages tiers (ex: rrweb via Amplitude) embarquent leurs
@@ -159,31 +158,6 @@ export default defineConfig({
       devOptions: {
         enabled: false, // SW désactivé en dev pour éviter les conflits de cache
       },
-    }),
-    vitePrerender({
-      staticDir: resolve(__dirname, 'dist'),
-      routes: [
-        '/',
-        '/markets',
-        '/indices',
-        '/news',
-        '/learn',
-        '/glossary',
-        '/formation',
-        '/about',
-        '/contact',
-        '/help',
-        '/essai-gratuit',
-        '/community',
-        '/communities',
-        '/classement',
-        '/privacy',
-      ],
-      renderer: new vitePrerender.PuppeteerRenderer({
-        // Attendre 3 secondes après le chargement de la page pour laisser React se hydrater
-        renderAfterTime: 3000,
-        headless: true,
-      }),
     }),
   ],
   optimizeDeps: {

@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/home';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import OptimizedImage from './ui/OptimizedImage';
@@ -318,8 +318,8 @@ export default function HomePage() {
         <meta property="og:title" content="AfriBourse — Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest" />
         <meta property="og:description" content="Apprenez à investir sur la BRVM avec notre simulateur gratuit, nos formations et l'analyse des marchés boursiers d'Afrique de l'Ouest." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />

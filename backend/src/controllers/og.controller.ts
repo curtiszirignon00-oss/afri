@@ -3,7 +3,8 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/prisma';
 import {
-  buildStockSVG, buildBadgeSVG, buildPortfolioSVG, svgToPng,
+  buildStockSVG, buildBadgeSVG, buildPortfolioSVG, buildPageSVG, svgToPng,
+  PAGE_CONFIGS,
   type StockOGData, type BadgeOGData, type PortfolioOGData,
 } from '../services/og-image.service';
 import { generateCertificateOGPng } from '../services/certificate-image.service';
@@ -134,6 +135,30 @@ export async function getPortfolioOGImage(req: Request, res: Response, next: Nex
     cacheSet(cacheKey, png, 300);
 
     return sendPng(res, png, 300);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+// ─── GET /api/og/image/page/:slug ────────────────────────────────────────────
+
+export async function getPageOGImage(req: Request, res: Response, next: NextFunction) {
+  try {
+    const slug = req.params.slug?.toLowerCase();
+    if (!slug) return res.status(400).json({ error: 'Slug requis' });
+
+    const config = PAGE_CONFIGS[slug];
+    if (!config) return res.status(404).json({ error: 'Page non trouvée' });
+
+    const cacheKey = `og:page:${slug}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return sendPng(res, cached, 86400);
+
+    const svg = buildPageSVG(config);
+    const png = await svgToPng(svg);
+    cacheSet(cacheKey, png, 86400); // 24h — contenu statique
+
+    return sendPng(res, png, 86400);
   } catch (err) {
     return next(err);
   }

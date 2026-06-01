@@ -256,6 +256,212 @@ export function buildPortfolioSVG(data: PortfolioOGData): string {
 </svg>`;
 }
 
+// ─── Page statique card ───────────────────────────────────────────────────────
+
+export interface PageOGData {
+  title:       string;
+  subtitle:    string;
+  category:    string;
+  icon:        string;
+  accentColor: string;
+  features:    string[];
+}
+
+export const PAGE_CONFIGS: Record<string, PageOGData> = {
+  home: {
+    title: 'AfriBourse',
+    subtitle: "Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest",
+    category: 'Plateforme #1 BRVM',
+    icon: '🌍',
+    accentColor: '#10B981',
+    features: ['Simulateur de portefeuille 100% gratuit', 'Cours BRVM en temps réel', 'Formations & certifications'],
+  },
+  markets: {
+    title: 'Marchés BRVM',
+    subtitle: 'Cours des actions en temps réel',
+    category: 'Marchés',
+    icon: '📈',
+    accentColor: '#10B981',
+    features: ['Toutes les actions cotées sur la BRVM', 'Filtres sectoriels & heatmap', 'Comparaison de valeurs côte à côte'],
+  },
+  indices: {
+    title: 'Indices BRVM',
+    subtitle: 'BRVM Composite & BRVM 10 en temps réel',
+    category: 'Indices',
+    icon: '📊',
+    accentColor: '#10B981',
+    features: ['BRVM Composite & BRVM 10', 'Graphiques historiques interactifs', 'Performance du marché UEMOA'],
+  },
+  news: {
+    title: 'Actualités Financières',
+    subtitle: "L'essentiel de l'information boursière UEMOA",
+    category: 'Actualités',
+    icon: '📰',
+    accentColor: '#3B82F6',
+    features: ['Analyses de marché BRVM', 'Résultats & dividendes des entreprises', 'Macroéconomie Afrique de l\'Ouest'],
+  },
+  learn: {
+    title: 'Formation BRVM',
+    subtitle: '20 modules gratuits · Quiz · Certifications',
+    category: 'Formation',
+    icon: '🎓',
+    accentColor: '#8B5CF6',
+    features: ['20 modules de Débutant à Avancé', 'Quiz interactifs & tuteur IA', 'Certificat à la clé'],
+  },
+  glossary: {
+    title: "Glossaire de l'Investisseur",
+    subtitle: 'Termes financiers BRVM expliqués simplement',
+    category: 'Glossaire',
+    icon: '📖',
+    accentColor: '#F59E0B',
+    features: ['15 termes essentiels de la BRVM', 'Définitions claires avec exemples', 'Action, dividende, SGI et plus'],
+  },
+  about: {
+    title: "À propos d'AfriBourse",
+    subtitle: "Démocratiser l'investissement en Afrique",
+    category: 'À propos',
+    icon: '🤝',
+    accentColor: '#10B981',
+    features: ['Plateforme éducative 100% africaine', 'Mission : éducation financière UEMOA', 'Communauté de +2 000 investisseurs'],
+  },
+  contact: {
+    title: 'Contactez-nous',
+    subtitle: 'Notre équipe vous répond sous 24h',
+    category: 'Support',
+    icon: '💬',
+    accentColor: '#3B82F6',
+    features: ['Support par email & formulaire', 'Questions sur la BRVM bienvenues', 'Partenariats & presse'],
+  },
+  help: {
+    title: "Centre d'Aide",
+    subtitle: 'FAQ & Support AfriBourse',
+    category: 'Aide',
+    icon: '🛟',
+    accentColor: '#3B82F6',
+    features: ['FAQ simulateur de portefeuille', 'Guide débutant BRVM', 'Horaires de cotation & règles'],
+  },
+  formation: {
+    title: 'Formation Premium',
+    subtitle: 'Modules avancés · Analyse technique & fondamentale',
+    category: 'Premium',
+    icon: '👑',
+    accentColor: '#F59E0B',
+    features: ['Analyse technique avancée BRVM', 'Stratégies de portefeuille', 'Accès illimité aux ressources'],
+  },
+  community: {
+    title: 'Communauté AfriBourse',
+    subtitle: 'Investisseurs BRVM passionnés',
+    category: 'Communauté',
+    icon: '👥',
+    accentColor: '#10B981',
+    features: ['Partagez vos analyses BRVM', 'Échangez avec des experts', 'Discussions en temps réel'],
+  },
+  communities: {
+    title: 'Communautés',
+    subtitle: 'Groupes thématiques par secteur BRVM',
+    category: 'Groupes',
+    icon: '🏘️',
+    accentColor: '#10B981',
+    features: ['Banques, télécoms, dividendes…', 'Rejoignez ou créez un groupe', 'Filtres par secteur BRVM'],
+  },
+  classement: {
+    title: 'Classement',
+    subtitle: 'Top investisseurs de la semaine',
+    category: 'Classement',
+    icon: '🏆',
+    accentColor: '#F59E0B',
+    features: ['Performance hebdomadaire du portefeuille', 'Compétition entre investisseurs', 'Basé sur la BRVM réelle'],
+  },
+  'essai-gratuit': {
+    title: 'Essai Gratuit Premium',
+    subtitle: 'Accès à toutes les fonctionnalités',
+    category: 'Offre',
+    icon: '🎁',
+    accentColor: '#10B981',
+    features: ['Modules avancés débloqués', 'Données et analyses complètes', 'Sans carte bancaire requise'],
+  },
+};
+
+export function buildPageSVG(data: PageOGData): string {
+  const titleEsc    = xmlEscape(data.title);
+  const subtitleEsc = xmlEscape(data.subtitle);
+  const categoryEsc = xmlEscape(data.category);
+  const iconEsc     = xmlEscape(data.icon);
+  const ac          = data.accentColor;
+
+  // Truncate subtitle at 60 chars for clean rendering
+  const subtitleShort = subtitleEsc.length > 62
+    ? subtitleEsc.slice(0, 59) + '...'
+    : subtitleEsc;
+
+  const featuresXml = data.features.slice(0, 3).map((f, i) => {
+    const esc = xmlEscape(f);
+    const y = 390 + i * 52;
+    return `
+  <circle cx="54" cy="${y - 8}" r="7" fill="${ac}"/>
+  <text x="76" y="${y}" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#CBD5E1">${esc}</text>`;
+  }).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="${BRAND_DARK}"/>
+      <stop offset="100%" stop-color="#1A2236"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="${ac}"/>
+      <stop offset="100%" stop-color="${ac}88"/>
+    </linearGradient>
+    <radialGradient id="iconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="${ac}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="${ac}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="${W}" height="${H}" fill="url(#bg)"/>
+
+  <!-- Right decorative circle -->
+  <circle cx="970" cy="315" r="220" fill="url(#iconGlow)"/>
+  <circle cx="970" cy="315" r="165" fill="${BRAND_CARD}" opacity="0.5"/>
+  <circle cx="970" cy="315" r="165" fill="none" stroke="${ac}" stroke-width="1.5" opacity="0.4"/>
+  <text x="970" y="365" font-family="Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, Arial, sans-serif" font-size="130" text-anchor="middle">${iconEsc}</text>
+
+  <!-- Left accent bar -->
+  <rect x="0" y="0" width="6" height="${H}" fill="url(#accentGrad)"/>
+
+  <!-- Top brand bar -->
+  <rect x="0" y="0" width="${W}" height="72" fill="${BRAND_CARD}" opacity="0.7"/>
+  <text x="44" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="${BRAND_GREEN}">Afri</text>
+  <text x="98" y="46" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" fill="white">Bourse</text>
+  <rect x="${W - 200}" y="16" width="160" height="38" rx="8" fill="${ac}" opacity="0.2"/>
+  <text x="${W - 120}" y="41" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="600" fill="${ac}" text-anchor="middle">${categoryEsc}</text>
+
+  <!-- Category pill -->
+  <rect x="44" y="98" width="${categoryEsc.length * 11 + 40}" height="34" rx="17" fill="${ac}" opacity="0.15"/>
+  <rect x="44" y="98" width="${categoryEsc.length * 11 + 40}" height="34" rx="17" fill="none" stroke="${ac}" stroke-width="1" opacity="0.5"/>
+  <text x="${categoryEsc.length * 5.5 + 64}" y="122" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" fill="${ac}" text-anchor="middle">${categoryEsc}</text>
+
+  <!-- Title -->
+  <text x="44" y="225" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="white" letter-spacing="-1">${titleEsc}</text>
+
+  <!-- Subtitle -->
+  <text x="44" y="278" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#94A3B8">${subtitleShort}</text>
+
+  <!-- Separator -->
+  <rect x="44" y="316" width="640" height="1.5" fill="${BRAND_BORDER}"/>
+
+  <!-- Features list -->
+  ${featuresXml}
+
+  <!-- Footer -->
+  <rect x="0" y="${H - 58}" width="${W}" height="58" fill="${BRAND_CARD}" opacity="0.8"/>
+  <text x="44" y="${H - 20}" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#64748B">africbourse.com — Investissez sur la BRVM</text>
+  <text x="${W - 44}" y="${H - 20}" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#334155" text-anchor="end">Bourse Régionale des Valeurs Mobilières</text>
+</svg>`;
+}
+
 // ─── SVG → PNG via sharp ──────────────────────────────────────────────────────
 
 export async function svgToPng(svgString: string): Promise<Buffer> {

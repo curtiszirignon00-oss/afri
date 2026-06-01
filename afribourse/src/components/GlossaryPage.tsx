@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/glossary';
 
 const glossaryTerms = [
   {
@@ -106,8 +106,8 @@ export default function GlossaryPage() {
         <meta property="og:title" content="Glossaire de l'Investisseur BRVM — Termes Boursiers Expliqués | AfriBourse" />
         <meta property="og:description" content="15 termes financiers de la BRVM expliqués simplement en français : action, dividende, SGI, volatilité, P/E ratio et plus." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/glossary`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />

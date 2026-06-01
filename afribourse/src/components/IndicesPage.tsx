@@ -7,7 +7,7 @@ import { lazyWithRetry } from '../lib/lazyWithRetry';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/indices';
 
 // IndexChart importe lightweight-charts (~150 KB) — chargé seulement au clic sur une carte
 const IndexChart = lazyWithRetry(() => import('./IndexChart'));
@@ -51,8 +51,8 @@ export default function IndicesPage() {
         <meta property="og:title" content="Indices BRVM Composite et BRVM 10 en Temps Réel | AfriBourse" />
         <meta property="og:description" content="BRVM Composite et BRVM 10 en temps réel avec graphiques d'évolution historique." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/indices`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />

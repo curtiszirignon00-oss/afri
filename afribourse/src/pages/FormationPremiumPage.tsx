@@ -11,7 +11,7 @@ import { analytics } from '../services/analytics';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/formation';
 
 const PLAN_ID = 'premium-modules';
 const PLAN_NAME = 'Formation Complète';
@@ -190,8 +190,8 @@ export default function FormationPremiumPage() {
         <meta property="og:title" content="Formation Premium BRVM — Modules Avancés | AfriBourse" />
         <meta property="og:description" content="Analyse technique, fondamentale et stratégies de portefeuille BRVM. Formation complète." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/formation`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />

@@ -3,7 +3,7 @@
 // Accessibles sans authentification — utilisés par les crawlers sociaux.
 
 import { Router } from 'express';
-import { getStockOGImage, getBadgeOGImage, getPortfolioOGImage, getCertificateOGImage } from '../controllers/og.controller';
+import { getStockOGImage, getBadgeOGImage, getPortfolioOGImage, getCertificateOGImage, getPageOGImage } from '../controllers/og.controller';
 
 const router = Router();
 
@@ -18,5 +18,8 @@ router.get('/image/portfolio/:userId', getPortfolioOGImage);
 
 // GET /api/og/image/certificate/:uuid
 router.get('/image/certificate/:uuid', getCertificateOGImage);
+
+// GET /api/og/image/page/:slug  (home, markets, learn, news, glossary, indices, about, contact, help, formation, community, communities, classement, essai-gratuit)
+router.get('/image/page/:slug', getPageOGImage);
 
 export default router;

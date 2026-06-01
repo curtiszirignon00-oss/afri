@@ -3,7 +3,7 @@ import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X } from 'lucide-r
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/news';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import FundamentalsGrid from './FundamentalsGrid';
@@ -232,8 +232,8 @@ export default function NewsPage() {
         <meta property="og:title" content="Actualités Financières BRVM et UEMOA | AfriBourse" />
         <meta property="og:description" content="L'essentiel de l'information boursière de l'UEMOA : résultats, dividendes, analyses et actualités macroéconomiques." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/news`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />

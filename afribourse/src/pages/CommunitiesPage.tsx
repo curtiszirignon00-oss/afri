@@ -20,7 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/communities';
 
 export default function CommunitiesPage() {
     const { isLoggedIn } = useAuth();
@@ -82,8 +82,8 @@ export default function CommunitiesPage() {
                 <meta property="og:title" content="Communautés d'Investisseurs BRVM | AfriBourse" />
                 <meta property="og:description" content="Groupes thématiques : banques, télécoms, dividendes, débutants. Rejoignez votre communauté." />
                 <meta property="og:image" content={OG_IMAGE} />
-                <meta property="og:image:width" content="512" />
-                <meta property="og:image:height" content="512" />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
                 <meta property="og:url" content={`${SITE_URL}/communities`} />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:site" content="@AfriBourse" />

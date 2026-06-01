@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../config/api';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/about';
 
 const AboutPage: React.FC = () => {
   const [userCount, setUserCount] = useState(1074);
@@ -41,8 +41,8 @@ const AboutPage: React.FC = () => {
         <meta property="og:title" content="À propos d'AfriBourse — Notre Mission pour l'Investissement en Afrique" />
         <meta property="og:description" content="Démocratiser l'investissement sur la BRVM pour tous les Africains. Découvrez notre mission et notre impact." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/about`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />

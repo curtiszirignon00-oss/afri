@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
-const OG_IMAGE = `${SITE_URL}/images/logo_afribourse.png`;
+const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/markets';
 import { trackStockSearch } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
 import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List, Scale } from 'lucide-react';
@@ -315,8 +315,8 @@ export default function MarketsPageRefactored() {
         <meta property="og:title" content="Marchés BRVM — Cours des Actions en Temps Réel | AfriBourse" />
         <meta property="og:description" content="Tous les cours de la BRVM en temps réel. Filtres, comparaisons, heatmap et indicateurs pour investir sur la bourse d'Afrique de l'Ouest." />
         <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/markets`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />
@@ -820,7 +820,7 @@ export default function MarketsPageRefactored() {
                         className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
-                        {stock.pe_ratio ? formatNumber(stock.pe_ratio, 2) : '-'}
+                        {stock.fundamentals?.[0]?.pe_ratio ? formatNumber(stock.fundamentals[0].pe_ratio!, 2) : '-'}
                       </td>
 
                       {/* Dividend Yield */}
@@ -828,7 +828,7 @@ export default function MarketsPageRefactored() {
                         className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
                         onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
-                        {stock.dividend_yield ? `${formatNumber(stock.dividend_yield, 2)}%` : '-'}
+                        {stock.fundamentals?.[0]?.dividend_yield ? `${formatNumber(stock.fundamentals[0].dividend_yield!, 2)}%` : '-'}
                       </td>
                     </tr>
                   ))}
