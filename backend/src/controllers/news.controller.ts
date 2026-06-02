@@ -23,3 +23,14 @@ export async function getRecentArticles(req: Request, res: Response, next: NextF
     return next(error);
   }
 }
+
+export async function getArticleBySlug(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { slug } = req.params;
+    const article = await newsService.getNewsBySlug(slug);
+    if (!article) return res.status(404).json({ message: 'Article introuvable.' });
+    return res.status(200).json(article);
+  } catch (error) {
+    return next(error);
+  }
+}

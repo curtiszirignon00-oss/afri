@@ -236,11 +236,11 @@ export async function cronSendWeeklyReports(req: Request, res: Response) {
 export async function cronSendReengagementEmails(req: Request, res: Response) {
     const startTime = Date.now();
     try {
-        log.debug('[CRON API] Envoi des emails de réengagement...');
+        log.info('[CRON API] Envoi des emails de réengagement...');
         const result = await sendReengagementEmails();
 
         const duration = Date.now() - startTime;
-        log.debug(`[CRON API] Réengagement: ${result.total_sent} email(s) envoyé(s)`);
+        log.info(`[CRON API] Réengagement terminé: ${result.total_sent} email(s) envoyé(s), ${result.total_errors} erreur(s)`);
         return res.status(200).json({
             success: true,
             message: 'Emails de réengagement envoyés',

@@ -1,4 +1,5 @@
 import { Response, NextFunction, CookieOptions } from "express";
+import { log } from "../config/logger";
 import type { AuthenticatedRequest as Request } from "../middlewares/auth.middleware";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -66,8 +67,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         try {
             await sendConfirmationEmail({ email, name, confirmationToken });
             emailSent = true;
-        } catch {
+        } catch (err: any) {
             emailSent = false;
+            log.warn(`[AUTH] Email de confirmation non envoyé pour ${email}: ${err?.message}`);
         }
 
         // 6. Créer automatiquement un portfolio pour le nouvel utilisateur

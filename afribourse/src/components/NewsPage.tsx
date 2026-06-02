@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
@@ -103,6 +104,7 @@ function DBArticlePanel({ article, onClose }: { article: NewsArticle; onClose: (
 }
 
 export default function NewsPage() {
+  const navigate = useNavigate();
   const [articles, setArticles]       = useState<NewsArticle[]>([]);
   const [loading, setLoading]         = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -111,10 +113,14 @@ export default function NewsPage() {
   const { trackAction } = useAnalytics();
 
   function openDBArticle(article: NewsArticle) {
-    setSelectedDBArticle(article);
     trackAction(ACTION_TYPES.VIEW_ARTICLE, article.title, {
       article_id: article.id, category: article.category, is_featured: article.is_featured,
     });
+    if (article.slug) {
+      navigate(`/news/${article.slug}`);
+    } else {
+      setSelectedDBArticle(article);
+    }
   }
 
   function openArticle(article: BRVMArticle) {

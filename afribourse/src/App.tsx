@@ -47,6 +47,7 @@ const IndicesPage = lazy(() => import('./components/IndicesPage'));
 const StockDetailPageEnhanced = lazy(() => import('./components/StockDetailPageEnhanced'));
 const UniWaxDashboardPage = lazy(() => import('./pages/UniWaxDashboardPage'));
 const NewsPage = lazy(() => import('./components/NewsPage'));
+const NewsDetailPage = lazy(() => import('./components/NewsDetailPage'));
 const LearnPage = lazy(() => import('./components/LearnPage'));
 const GlossaryPage = lazy(() => import('./components/GlossaryPage'));
 const AboutPage = lazy(() => import('./components/AboutPage'));
@@ -200,6 +201,7 @@ function Layout() {
           <Route path="/indices" element={<IndicesPage />} />
           <Route path="/stock/UNXC/UNIWAX_Dashboard_Analytique" element={<UniWaxDashboardPage />} />
           <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
+          <Route path="/news/:slug" element={<NewsDetailPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />

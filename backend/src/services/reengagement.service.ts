@@ -153,18 +153,19 @@ async function processEmail0(): Promise<{ sent: number; errors: number }> {
     },
   });
 
-  log.debug(`[REENGAGEMENT] Email 0 — ${candidates.length} candidat(s)`);
+  log.info(`[REENGAGEMENT] Email 0 — ${candidates.length} candidat(s)`);
 
   for (const user of candidates) {
     try {
       // Si le token manque complètement, on ne peut rien faire
       if (!user.email_confirmation_token && !user.email_confirmation_expires) {
+        log.warn(`[REENGAGEMENT] Email 0 — token absent pour ${user.email}, skip`);
         continue;
       }
 
-      // Si le token a expiré, on en génère un nouveau avant d'envoyer
-      let activeToken = user.email_confirmation_token!;
-      if (!user.email_confirmation_expires || user.email_confirmation_expires < new Date()) {
+      // Régénère le token s'il est absent ou expiré
+      let activeToken = user.email_confirmation_token ?? '';
+      if (!activeToken || !user.email_confirmation_expires || user.email_confirmation_expires < new Date()) {
         activeToken = generateConfirmationToken();
         const newExpiry = getTokenExpirationDate(72); // 72h de validité
         await updateConfirmationToken(user.id, activeToken, newExpiry);
@@ -182,7 +183,7 @@ async function processEmail0(): Promise<{ sent: number; errors: number }> {
       });
 
       sent++;
-      log.debug(`[REENGAGEMENT] Email 0 envoyé → ${user.email}`);
+      log.info(`[REENGAGEMENT] Email 0 envoyé → ${user.email}`);
     } catch (err: any) {
       errors++;
       log.error(`[REENGAGEMENT] Email 0 erreur → ${user.email}: ${err.message}`);
@@ -373,7 +374,7 @@ export async function sendReengagementEmails(): Promise<{
   total_sent: number;
   total_errors: number;
 }> {
-  log.debug('[REENGAGEMENT] Démarrage de la séquence de réengagement...');
+  log.info('[REENGAGEMENT] Démarrage de la séquence de réengagement...');
 
   const [email0, email1, email2, email3] = await Promise.all([
     processEmail0(),
@@ -385,7 +386,7 @@ export async function sendReengagementEmails(): Promise<{
   const total_sent = email0.sent + email1.sent + email2.sent + email3.sent;
   const total_errors = email0.errors + email1.errors + email2.errors + email3.errors;
 
-  log.debug(
+  log.info(
     `[REENGAGEMENT] Terminé — ${total_sent} email(s) envoyé(s), ${total_errors} erreur(s)`
   );
 

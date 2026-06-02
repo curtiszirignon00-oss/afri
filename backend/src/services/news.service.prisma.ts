@@ -53,3 +53,12 @@ export async function getRecentNews(limit: number = 8, category?: string, ticker
     throw error;
   }
 }
+
+export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {
+  try {
+    return await prisma.newsArticle.findFirst({ where: { slug } });
+  } catch (error) {
+    log.error('❌ Erreur récupération article by slug:', error);
+    throw error;
+  }
+}

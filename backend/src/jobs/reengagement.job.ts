@@ -17,11 +17,11 @@ import { log } from '../config/logger';
 
 // Tous les jours à 09h00 (GMT+0)
 cron.schedule('0 9 * * *', async () => {
-  log.debug('[REENGAGEMENT JOB] Déclenchement de la séquence de réengagement...');
+  log.info('[REENGAGEMENT JOB] Déclenchement de la séquence de réengagement...');
 
   try {
     const result = await sendReengagementEmails();
-    log.debug(
+    log.info(
       `[REENGAGEMENT JOB] Terminé — ${result.total_sent} email(s) envoyé(s), ${result.total_errors} erreur(s)` +
       ` | email0: ${result.email0.sent} | email1: ${result.email1.sent}` +
       ` | email2: ${result.email2.sent} | email3: ${result.email3.sent}`
@@ -33,4 +33,4 @@ cron.schedule('0 9 * * *', async () => {
   timezone: 'Africa/Abidjan', // GMT+0
 });
 
-log.debug('[REENGAGEMENT JOB] Planifié — tous les jours à 09h00 (GMT+0)');
+log.info('[REENGAGEMENT JOB] Planifié — tous les jours à 09h00 (GMT+0)');
