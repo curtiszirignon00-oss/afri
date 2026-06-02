@@ -90,7 +90,7 @@ export default function MarketsPageRefactored() {
 
   // Stock comparison
   const [comparisonStocks, setComparisonStocks] = useState<Stock[]>([]);
-  const [showComparison, setShowComparison] = useState(true);
+  const [showComparison, setShowComparison] = useState(false);
 
   // Debounce du terme de recherche
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
