@@ -62,7 +62,10 @@ export default function OptimizedImage({
   };
 
   return (
-    <div className="relative overflow-hidden" style={{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }}>
+    <div
+      className={`relative overflow-hidden${!width && !height ? ' w-full h-full' : ''}`}
+      style={{ width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }}
+    >
       {/* Placeholder blur pendant le chargement */}
       {!loaded && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse rounded" />
