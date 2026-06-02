@@ -777,7 +777,7 @@ export default function LearnPage() {
     }, [isLoggedIn, loadData, selectedModule, trackAction, triggerSimbaMotivation]);
 
     useEffect(() => {
-        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 5 && (selectedModule.order_index ?? 0) !== 13) {
+        if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 13) {
             // Réinitialiser l'état du quiz quand on ouvre un nouveau module
             setQuizState({
                 isActive: false,

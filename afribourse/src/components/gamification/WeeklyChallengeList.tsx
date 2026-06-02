@@ -30,7 +30,9 @@ export function WeeklyChallengeList({
   const getTimeRemaining = (): string => {
     if (challenges.length === 0) return '';
 
-    const endDate = new Date(challenges[0].challenge.end_date);
+    const challengeWithDate = challenges.find(c => c.challenge?.end_date);
+    if (!challengeWithDate) return '';
+    const endDate = new Date(challengeWithDate.challenge.end_date);
     const now = new Date();
     const diffMs = endDate.getTime() - now.getTime();
 

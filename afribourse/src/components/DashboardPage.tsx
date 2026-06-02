@@ -1186,10 +1186,10 @@ export default function DashboardPage() {
             )}
 
             {/* Défis de la semaine */}
-            {challengesProgress && challengesProgress.length > 0 && (
+            {challengesProgress && challengesProgress.filter(c => c.challenge != null).length > 0 && (
               <Card>
                 <WeeklyChallengeList
-                  challenges={challengesProgress}
+                  challenges={challengesProgress.filter(c => c.challenge != null)}
                   onClaimReward={(challengeId) => claimChallengeMutation.mutate(challengeId)}
                   onClaimAll={() => claimAllMutation.mutate()}
                   claimingId={claimChallengeMutation.isPending ? (claimChallengeMutation.variables ?? null) : null}

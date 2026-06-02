@@ -7,7 +7,12 @@ import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 // Retourne un offset stable entre 90 et 100 si l'articleId correspond à un
 // module d'apprentissage, sinon 0. Les 4 derniers caractères hex de l'ObjectId
 // garantissent une valeur fixe mais variée par module.
+function isObjectId(id: string): boolean {
+  return /^[a-f\d]{24}$/i.test(id);
+}
+
 async function getModuleBaseLikes(articleId: string): Promise<number> {
+  if (!isObjectId(articleId)) return 0;
   const mod = await prisma.learningModule.findUnique({
     where: { id: articleId },
     select: { id: true },
