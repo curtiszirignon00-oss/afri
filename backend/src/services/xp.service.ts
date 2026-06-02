@@ -285,19 +285,39 @@ async function checkRewardUnlocks(userId: string, currentXP: number) {
       return [];
     }
 
+    const AUTO_DELIVER_TYPES = ['virtual_cash', 'freeze', 'cosmetic', 'feature'];
+
     // Débloquer les rewards
     const unlocked = [];
     for (const reward of eligibleRewards) {
+      const isAuto = AUTO_DELIVER_TYPES.includes(reward.reward_type);
+      const now = new Date();
+
       const userReward = await prisma.userReward.create({
         data: {
           userId,
           rewardId: reward.id,
-          claimed: false,
+          claimed: isAuto,
+          claimed_at: isAuto ? now : null,
           delivery_status: 'pending'
         }
       });
 
       log.debug(`🎁 ${userId} a débloqué la récompense "${reward.title}"`);
+
+      if (isAuto) {
+        try {
+          await applyReward(userId, reward);
+          await prisma.userReward.update({
+            where: { id: userReward.id },
+            data: { delivery_status: 'delivered' }
+          });
+          log.debug(`✅ Récompense auto-livrée : "${reward.title}"`);
+        } catch (e) {
+          log.error(`❌ Échec livraison auto "${reward.title}":`, e);
+          // delivery_status reste 'pending' — sera rattrapé par le script de backfill
+        }
+      }
 
       // Créer une activité
       await activityService.createActivity(
@@ -360,7 +380,7 @@ export async function claimReward(userId: string, rewardId: string) {
       throw new Error('Récompense déjà réclamée');
     }
 
-    // Marquer comme réclamée
+    // Marquer comme réclamée (processing le temps d'appliquer)
     await prisma.userReward.update({
       where: {
         userId_rewardId: { userId, rewardId }
@@ -374,6 +394,14 @@ export async function claimReward(userId: string, rewardId: string) {
 
     // Appliquer la récompense selon son type
     await applyReward(userId, userReward.reward);
+
+    // Finaliser la livraison
+    await prisma.userReward.update({
+      where: {
+        userId_rewardId: { userId, rewardId }
+      },
+      data: { delivery_status: 'delivered' }
+    });
 
     log.debug(`✅ ${userId} a réclamé la récompense "${userReward.reward.title}"`);
 
@@ -429,6 +457,11 @@ async function applyReward(userId: string, reward: any) {
       // Débloquer une feature (à implémenter selon vos besoins)
       log.debug(`⚡ Feature "${rewardData.featureCode}" débloquée`);
       // TODO: Stocker les features débloquées
+      break;
+
+    case 'cosmetic':
+      // Actif dès que le UserReward est 'delivered' — le frontend lit UserReward pour afficher bannière/badge
+      log.debug(`🎨 Cosmétique "${rewardData.type || rewardData.asset}" activé pour ${userId}`);
       break;
 
     case 'real_stock':
