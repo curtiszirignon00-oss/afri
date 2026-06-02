@@ -287,12 +287,14 @@ export async function getUserChallengesProgress(userId: string) {
     const challengesWithProgress = challenges.map(challenge => {
       const progress = progressMap.get(challenge.id);
       return {
-        ...challenge,
-        current: progress?.current || 0,
-        completed: progress?.completed || false,
-        completed_at: progress?.completed_at || null,
-        claimed: progress?.claimed || false,
-        progress_percent: Math.min(100, ((progress?.current || 0) / challenge.target) * 100)
+        id: progress?.id ?? challenge.id,
+        challengeId: challenge.id,
+        challenge,
+        current: progress?.current ?? 0,
+        completed: progress?.completed ?? false,
+        completed_at: progress?.completed_at ?? null,
+        claimed: progress?.claimed ?? false,
+        progress_percent: Math.min(100, ((progress?.current ?? 0) / challenge.target) * 100)
       };
     });
 
