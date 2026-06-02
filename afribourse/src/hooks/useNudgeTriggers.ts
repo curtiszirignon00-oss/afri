@@ -101,18 +101,19 @@ export function useStockPageNudge(
 ) {
   const { showNudge } = useNudgeContext();
   const fired = useRef(false);
+  // Ref mis à jour à chaque render — toujours les callbacks les plus récents au moment du clic
+  const callbacksRef = useRef(callbacks);
+  callbacksRef.current = callbacks;
 
   useEffect(() => {
     if (!stock || !stockId || fired.current) return;
     fired.current = true;
 
-    const onAction = callbacks
-      ? (action: string) => {
-          if (action === 'OPEN_WATCHLIST') callbacks.OPEN_WATCHLIST?.();
-          if (action === 'OPEN_ALERT_MODAL') callbacks.OPEN_ALERT_MODAL?.();
-          if (action === 'OPEN_COMPARATOR') callbacks.OPEN_COMPARATOR?.();
-        }
-      : undefined;
+    const onAction = (action: string) => {
+      if (action === 'OPEN_WATCHLIST') callbacksRef.current?.OPEN_WATCHLIST?.();
+      if (action === 'OPEN_ALERT_MODAL') callbacksRef.current?.OPEN_ALERT_MODAL?.();
+      if (action === 'OPEN_COMPARATOR') callbacksRef.current?.OPEN_COMPARATOR?.();
+    };
 
     const visits = incrementStockVisit(stockId);
 
@@ -141,6 +142,8 @@ interface MarketsPageCallbacks {
 export function useMarketsPageNudge(callbacks?: MarketsPageCallbacks) {
   const { showNudge } = useNudgeContext();
   const fired = useRef(false);
+  const callbacksRef = useRef(callbacks);
+  callbacksRef.current = callbacks;
 
   useEffect(() => {
     if (fired.current) return;
@@ -148,12 +151,10 @@ export function useMarketsPageNudge(callbacks?: MarketsPageCallbacks) {
 
     const visits = incrementMarketsVisits();
 
-    const onAction = callbacks
-      ? (action: string) => {
-          if (action === 'OPEN_HEATMAP') callbacks.OPEN_HEATMAP?.();
-          if (action === 'OPEN_SCREENER') callbacks.OPEN_SCREENER?.();
-        }
-      : undefined;
+    const onAction = (action: string) => {
+      if (action === 'OPEN_HEATMAP') callbacksRef.current?.OPEN_HEATMAP?.();
+      if (action === 'OPEN_SCREENER') callbacksRef.current?.OPEN_SCREENER?.();
+    };
 
     if (visits === 1) {
       showNudge('heatmap_first_time', onAction);

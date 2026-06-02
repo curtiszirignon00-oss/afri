@@ -5,14 +5,9 @@ import { useNudgeContext } from '../../contexts/NudgeContext';
 import NudgeBanner from './NudgeBanner';
 
 export default function NudgeRenderer() {
-  const { activeNudge, actionCallback } = useNudgeContext();
+  const { activeNudge } = useNudgeContext();
 
   if (!activeNudge) return null;
 
-  return (
-    <NudgeBanner
-      nudge={activeNudge}
-      onAction={actionCallback ?? undefined}
-    />
-  );
+  return <NudgeBanner nudge={activeNudge} />;
 }

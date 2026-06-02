@@ -124,12 +124,12 @@ export default function NewsPage() {
   }
 
   function openArticle(article: BRVMArticle) {
-    setSelectedBRVM(article);
     trackAction(ACTION_TYPES.VIEW_ARTICLE, article.title, {
       article_id:  article.id,
       category:    article.category,
       is_featured: article.isFeatured,
     });
+    navigate(`/news/${article.id}`);
   }
   // Notification banner : calculé avant de marquer comme lu
   const [newBrvmCount]    = useState(() => getUnseenBrvmCount());

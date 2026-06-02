@@ -32,8 +32,8 @@ import WelcomeModal from './onboarding/WelcomeModal';
 import PulseDot from './onboarding/PulseDot';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 // Gamification imports
-import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward, useMyRewards } from '../hooks/useGamification';
-import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard } from './gamification';
+import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward, useClaimAllChallengeRewards, useMyRewards } from '../hooks/useGamification';
+import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard, WeeklyChallengeList } from './gamification';
 import { Target, Flame, Zap, Trophy } from 'lucide-react';
 import { useFeed } from '../hooks/useSocial';
 
@@ -134,6 +134,7 @@ export default function DashboardPage() {
   const { data: gamificationSummary, isLoading: gamificationLoading } = useGamificationSummary();
   const { data: challengesProgress } = useMyChallengesProgress();
   const claimChallengeMutation = useClaimChallengeReward();
+  const claimAllMutation = useClaimAllChallengeRewards();
   const { data: myRewards } = useMyRewards();
 
   // ✅ Feed: Posts récents des personnes suivies
@@ -1181,6 +1182,18 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )}
+              </Card>
+            )}
+
+            {/* Défis de la semaine */}
+            {challengesProgress && challengesProgress.length > 0 && (
+              <Card>
+                <WeeklyChallengeList
+                  challenges={challengesProgress}
+                  onClaimReward={(challengeId) => claimChallengeMutation.mutate(challengeId)}
+                  onClaimAll={() => claimAllMutation.mutate()}
+                  claimingId={claimChallengeMutation.isPending ? (claimChallengeMutation.variables ?? null) : null}
+                />
               </Card>
             )}
 

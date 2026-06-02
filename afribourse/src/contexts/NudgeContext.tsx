@@ -9,16 +9,17 @@ const QUEUE_DELAY_MS = 30_000;
 
 interface NudgeContextValue {
   activeNudge: NudgeConfig | null;
-  actionCallback: ((action: string) => void) | null;
   showNudge: (id: string, onAction?: (action: string) => void) => void;
   dismissNudge: (id: string) => void;
+  // Exécute le callback de l'action courante depuis le ref — jamais null au moment du clic
+  fireCurrentAction: (action: string) => void;
 }
 
 const NudgeContext = createContext<NudgeContextValue>({
   activeNudge: null,
-  actionCallback: null,
   showNudge: () => {},
   dismissNudge: () => {},
+  fireCurrentAction: () => {},
 });
 
 export function useNudgeContext() {
@@ -43,21 +44,24 @@ function persistSeenIds(ids: Set<string>) {
 
 export function NudgeProvider({ children }: { children: ReactNode }) {
   const [activeNudge, setActiveNudge] = useState<NudgeConfig | null>(null);
-  const [actionCallback, setActionCallback] = useState<((action: string) => void) | null>(null);
 
   const seenIdsRef = useRef<Set<string>>(loadSeenIds());
   const queueRef = useRef<Array<{ id: string; onAction?: (action: string) => void }>>([]);
   const queueTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Tracks whether a nudge is already scheduled/active to prevent timer collisions
   const isOccupiedRef = useRef(false);
+
+  // Stocké en ref (pas state) pour éviter la fenêtre de rendu où activeNudge est défini
+  // mais actionCallback est encore null. La ref est toujours lue au moment du clic.
+  const actionCallbackRef = useRef<((action: string) => void) | null>(null);
 
   const activateNudge = useCallback((nudge: NudgeConfig, onAction?: (action: string) => void) => {
     isOccupiedRef.current = true;
     if (pendingTimerRef.current) clearTimeout(pendingTimerRef.current);
+    // Stocker le callback synchronement AVANT le timer — jamais de fenêtre nulle
+    actionCallbackRef.current = onAction ?? null;
     pendingTimerRef.current = setTimeout(() => {
       setActiveNudge(nudge);
-      setActionCallback(onAction ?? null);
     }, nudge.delay_ms);
   }, []);
 
@@ -67,7 +71,6 @@ export function NudgeProvider({ children }: { children: ReactNode }) {
 
     if (!nudge.no_dedupe && seenIdsRef.current.has(id)) return;
 
-    // Use isOccupiedRef (not just activeNudge state) to handle rapid synchronous calls
     if (isOccupiedRef.current) {
       queueRef.current.push({ id, onAction });
       return;
@@ -85,14 +88,13 @@ export function NudgeProvider({ children }: { children: ReactNode }) {
     }
 
     if (pendingTimerRef.current) clearTimeout(pendingTimerRef.current);
+    actionCallbackRef.current = null;
     setActiveNudge(null);
-    setActionCallback(null);
 
     if (queueRef.current.length > 0) {
       if (queueTimerRef.current) clearTimeout(queueTimerRef.current);
       queueTimerRef.current = setTimeout(() => {
         isOccupiedRef.current = false;
-        // Drain stale/seen entries and activate the first valid one
         while (queueRef.current.length > 0) {
           const next = queueRef.current.shift()!;
           const nextNudge = getNudgeById(next.id);
@@ -107,8 +109,13 @@ export function NudgeProvider({ children }: { children: ReactNode }) {
     }
   }, [activateNudge]);
 
+  // Fonction stable qui lit la ref au moment de l'appel — toujours à jour
+  const fireCurrentAction = useCallback((action: string) => {
+    actionCallbackRef.current?.(action);
+  }, []);
+
   return (
-    <NudgeContext.Provider value={{ activeNudge, actionCallback, showNudge, dismissNudge }}>
+    <NudgeContext.Provider value={{ activeNudge, showNudge, dismissNudge, fireCurrentAction }}>
       {children}
     </NudgeContext.Provider>
   );

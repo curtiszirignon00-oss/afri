@@ -17,6 +17,14 @@ const AUTH_PATHS = [
   '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe',
 ];
 
+const DELEGATED_ACTIONS = [
+  'OPEN_WATCHLIST',
+  'OPEN_ALERT_MODAL',
+  'OPEN_COMPARATOR',
+  'OPEN_HEATMAP',
+  'OPEN_SCREENER',
+];
+
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Star, Bell, BarChart2, BellPlus, SlidersHorizontal, LayoutGrid, Lock,
 };
@@ -42,11 +50,10 @@ function usePrefersReducedMotion() {
 
 interface Props {
   nudge: NudgeConfig;
-  onAction?: (action: string) => void;
 }
 
-export default function NudgeBanner({ nudge, onAction }: Props) {
-  const { dismissNudge } = useNudgeContext();
+export default function NudgeBanner({ nudge }: Props) {
+  const { dismissNudge, fireCurrentAction } = useNudgeContext();
   const navigate = useNavigate();
   const location = useLocation();
   const reducedMotion = usePrefersReducedMotion();
@@ -54,25 +61,20 @@ export default function NudgeBanner({ nudge, onAction }: Props) {
   if (AUTH_PATHS.includes(location.pathname)) return null;
 
   function executeAction(cta_action: string) {
-    dismissNudge(nudge.id);
-    // Actions déléguées à la page parente (watchlist, alerte, comparateur, heatmap, screener)
-    if (
-      cta_action === 'OPEN_WATCHLIST' ||
-      cta_action === 'OPEN_ALERT_MODAL' ||
-      cta_action === 'OPEN_COMPARATOR' ||
-      cta_action === 'OPEN_HEATMAP' ||
-      cta_action === 'OPEN_SCREENER'
-    ) {
-      onAction?.(cta_action);
+    // Actions déléguées : exécuter d'abord, fermer ensuite
+    if (DELEGATED_ACTIONS.includes(cta_action)) {
+      fireCurrentAction(cta_action);
+      dismissNudge(nudge.id);
       return;
     }
+    // Navigation et scroll : fermer d'abord
+    dismissNudge(nudge.id);
     if (cta_action.startsWith('NAVIGATE:')) {
       navigate(cta_action.replace('NAVIGATE:', ''));
       return;
     }
     if (cta_action.startsWith('SCROLL_TO:')) {
       const id = cta_action.replace('SCROLL_TO:', '');
-      // Scroll + pulse avec un léger délai pour laisser le composant se démonter
       setTimeout(() => pulseElement(id, true), 100);
       return;
     }
