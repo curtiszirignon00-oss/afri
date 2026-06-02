@@ -36,10 +36,23 @@ export async function getFeaturedNews(limit: number = 3): Promise<NewsArticle[]>
   }
 }
 
+// Mapping des slugs de la page news vers les valeurs de category stockées en DB
+const CATEGORY_DB_VALUES: Record<string, string[]> = {
+  analyse:    ['analyse', 'Analyse', 'Analyse Fondamentale', 'Fondamentale', 'Secteur', 'Stratégie'],
+  marches:    ['marches', 'Marché', 'Marchés', 'Marche'],
+  economie:   ['economie', 'Économie', 'Economie', 'Macro', 'Macroéconomie'],
+  dividendes: ['dividendes', 'Dividendes', 'Dividende'],
+  interview:  ['interview', 'Interview', 'Interviews'],
+  resultats:  ['resultats', 'Résultats', 'Resultats'],
+};
+
 export async function getRecentNews(limit: number = 8, category?: string, ticker?: string): Promise<NewsArticle[]> {
   try {
     const where: any = {};
-    if (category) where.category = category;
+    if (category) {
+      const mapped = CATEGORY_DB_VALUES[category];
+      where.category = mapped ? { in: mapped } : category;
+    }
     if (ticker) where.tickers = { has: ticker };
 
     const articles = await prisma.newsArticle.findMany({
