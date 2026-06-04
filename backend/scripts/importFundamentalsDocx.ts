@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 
 const prisma = new PrismaClient();
-const JSON_PATH = 'C:/Users/HP/Downloads/brvm_fundamentals_fixed.json';
+const JSON_PATH = 'C:/Users/HP/Downloads/brvm_fundamentals_v2.json';
 
 async function main() {
   const data = JSON.parse(fs.readFileSync(JSON_PATH, 'utf-8'));
