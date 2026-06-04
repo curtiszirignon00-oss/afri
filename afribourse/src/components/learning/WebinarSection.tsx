@@ -282,7 +282,6 @@ const EarlyBirdSeatsIndicator: React.FC<{ count: number; fullPrice: number; dead
 // ─── Modal de pré-inscription ─────────────────────────────────────────────────
 
 const MOBILE_OPERATORS = [
-  { id: 'wave',         label: 'Wave',              emoji: '🔵' },
   { id: 'orange-money', label: 'Orange Money',     emoji: '🟠' },
   { id: 'mtn-momo',     label: 'MTN MoMo',         emoji: '🟡' },
   { id: 'moov-money',   label: 'Moov Money',        emoji: '🔵' },

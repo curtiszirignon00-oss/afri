@@ -20,7 +20,6 @@ const COUNTDOWN_KEY = 'formation_countdown_end';
 const COUNTDOWN_DURATION = 23 * 60 * 60 + 47 * 60 + 13;
 
 const OPERATORS = [
-  { id: 'wave',         label: 'Wave',        emoji: '🌊', bg: '#1A7BE5' },
   { id: 'orange-money', label: 'Orange Money', emoji: '🟠', bg: '#E55A00' },
   { id: 'mtn-momo',    label: 'MTN MoMo',     emoji: '🟡', bg: '#D4A200' },
   { id: 'moov-money',  label: 'Moov Money',   emoji: '🟢', bg: '#007A5E' },
@@ -91,7 +90,7 @@ const FAQ = [
   },
   {
     q: 'Quels opérateurs sont acceptés ?',
-    a: "Wave, Orange Money, MTN Mobile Money et Moov Money. Disponibles dans tous les pays UEMOA (Sénégal, Côte d'Ivoire, Burkina Faso, Mali, Niger, Bénin, Togo, Guinée-Bissau).",
+    a: "Orange Money, MTN Mobile Money et Moov Money. Disponibles dans tous les pays UEMOA (Sénégal, Côte d'Ivoire, Burkina Faso, Mali, Niger, Bénin, Togo, Guinée-Bissau).",
   },
   {
     q: 'Que se passe-t-il si mon paiement échoue ?',
