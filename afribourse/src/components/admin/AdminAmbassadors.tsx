@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Gift, Copy, Check, RefreshCw, Loader2, PauseCircle, PlayCircle } from 'lucide-react';
-
-const API = import.meta.env.VITE_API_URL;
+import { apiClient } from '../../lib/api-client';
 
 interface ReferralCode {
   id: string;
@@ -27,15 +26,11 @@ export default function AdminAmbassadors() {
   const [createError, setCreateError] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const headers = { 'Content-Type': 'application/json' };
-  const creds: RequestCredentials = 'include';
-
   const fetchCodes = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/admin/referrals`, { credentials: creds });
-      const data = await res.json();
-      setCodes(data.data ?? []);
+      const res = await apiClient.get('/admin/referrals');
+      setCodes(res.data.data ?? []);
     } catch { /* ignore */ }
     finally { setLoading(false); }
   };
@@ -48,26 +43,21 @@ export default function AdminAmbassadors() {
     setCreateError('');
     setCreateResult(null);
     try {
-      const res = await fetch(`${API}/admin/referrals/create`, {
-        method: 'POST', headers, credentials: creds,
-        body: JSON.stringify({ email: email.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setCreateError(data.message ?? 'Erreur'); return; }
-      setCreateResult({ link: data.link, code: data.code });
+      const res = await apiClient.post('/admin/referrals/create', { email: email.trim() });
+      setCreateResult({ link: res.data.link, code: res.data.code });
       setEmail('');
       fetchCodes();
-    } catch { setCreateError('Erreur réseau'); }
-    finally { setCreating(false); }
+    } catch (err: any) {
+      setCreateError(err?.response?.data?.message ?? 'Erreur lors de la création');
+    } finally { setCreating(false); }
   };
 
   const toggleStatus = async (codeId: string, current: string) => {
     const next = current === 'active' ? 'paused' : 'active';
-    await fetch(`${API}/admin/referrals/${codeId}/status`, {
-      method: 'PATCH', headers, credentials: creds,
-      body: JSON.stringify({ status: next }),
-    });
-    fetchCodes();
+    try {
+      await apiClient.patch(`/admin/referrals/${codeId}/status`, { status: next });
+      fetchCodes();
+    } catch { /* ignore */ }
   };
 
   const copy = (text: string, id: string) => {
