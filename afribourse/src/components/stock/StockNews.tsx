@@ -5,6 +5,7 @@ import { BRVM_NEWS, BRVMArticle, ContentBlock } from '../../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from '../BRVMNewsGrid';
 import { BlockRenderer } from '../BlockRenderer';
 import ArticleInteractions from '../ArticleInteractions';
+import HtmlArticleRenderer from '../HtmlArticleRenderer';
 
 type NewsItem = {
   id: string;
@@ -398,8 +399,7 @@ function DBArticlePanel({ article, onClose }: { article: DBArticle; onClose: () 
           {blocks ? (
             <BlockRenderer blocks={blocks} variant="news" />
           ) : article.content ? (
-            <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
-                 dangerouslySetInnerHTML={{ __html: article.content }} />
+            <HtmlArticleRenderer html={article.content} />
           ) : (
             <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
           )}

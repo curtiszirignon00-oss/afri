@@ -13,6 +13,7 @@ import { BRVMDetailPanel, BRVMArticleCard } from './BRVMNewsGrid';
 import { BlockRenderer } from './BlockRenderer';
 import { markNewsVisited, getUnseenBrvmCount } from '../hooks/useContentUnseen';
 import ArticleInteractions from './ArticleInteractions';
+import HtmlArticleRenderer from './HtmlArticleRenderer';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 
 const BRVM_CATEGORY_MAP: Record<string, string> = {
@@ -88,7 +89,7 @@ function DBArticlePanel({ article, onClose }: { article: NewsArticle; onClose: (
           {blocks ? (
             <BlockRenderer blocks={blocks} variant="news" />
           ) : article.content ? (
-            <div className="prose prose-sm max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: article.content }} />
+            <HtmlArticleRenderer html={article.content} />
           ) : (
             <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
           )}
