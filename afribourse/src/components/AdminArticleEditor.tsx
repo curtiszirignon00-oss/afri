@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import {
   Upload, Eye, EyeOff, Save, X, FileText, Tag, Star,
-  AlertCircle, Check, Code2,
+  AlertCircle, Check, Code2, ImagePlus, Trash2,
 } from 'lucide-react';
 import { ImpactType, TickerImpact } from '../data/brvm2026News';
 import { authFetch } from '../config/api';
@@ -23,7 +23,7 @@ interface ArticleForm {
 const EMPTY_FORM: ArticleForm = {
   title: '',
   summary: '',
-  category: 'Analyse Fondamentale',
+  category: 'analyse',
   author: 'AfriBourse',
   source: 'AfriBourse Research',
   is_featured: false,
@@ -32,9 +32,14 @@ const EMPTY_FORM: ArticleForm = {
   html_content: '',
 };
 
-const CATEGORIES = [
-  'Analyse Fondamentale', 'Marché', 'Macro',
-  'Dividendes', 'Actualités', 'Secteur', 'Stratégie',
+// Catégories alignées sur les onglets de la page news
+const CATEGORIES: { value: string; label: string }[] = [
+  { value: 'analyse',    label: 'Analyse' },
+  { value: 'marches',   label: 'Marchés' },
+  { value: 'economie',  label: 'Économie' },
+  { value: 'dividendes', label: 'Dividendes' },
+  { value: 'resultats', label: 'Résultats' },
+  { value: 'interview', label: 'Interview' },
 ];
 
 const IMPACTS: ImpactType[] = ['Positif', 'Négatif', 'Neutre', 'Mixte'];
@@ -54,12 +59,25 @@ interface Props {
 }
 
 export default function AdminArticleEditor({ articleId, initialData, onSaved, onCancel }: Props) {
+  // Normalise la catégorie des anciens articles vers les nouveaux slugs
+  function normalizeCategory(cat: string | null | undefined): string {
+    if (!cat) return 'analyse';
+    const map: Record<string, string> = {
+      'analyse fondamentale': 'analyse', 'fondamentale': 'analyse',
+      'secteur': 'analyse', 'stratégie': 'analyse', 'strategie': 'analyse',
+      'marché': 'marches', 'marche': 'marches', 'marchés': 'marches',
+      'macro': 'economie', 'macroéconomie': 'economie',
+      'actualités': 'analyse', 'actualites': 'analyse',
+    };
+    return map[cat.toLowerCase()] ?? cat;
+  }
+
   const [form, setForm] = useState<ArticleForm>({
     ...EMPTY_FORM,
     ...(initialData ? {
       title:        initialData.title ?? '',
       summary:      initialData.summary ?? '',
-      category:     initialData.category ?? 'Analyse Fondamentale',
+      category:     normalizeCategory(initialData.category),
       author:       initialData.author ?? 'AfriBourse',
       source:       initialData.source ?? 'AfriBourse Research',
       is_featured:  initialData.is_featured ?? false,
@@ -77,14 +95,45 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
   const [savedOk, setSavedOk]         = useState(false);
   const [preview, setPreview]         = useState(false);
   const [dragOver, setDragOver]       = useState(false);
-  const fileInputRef                  = useRef<HTMLInputElement>(null);
+  const [imgUploading, setImgUploading] = useState(false);
+  const [imgDragOver, setImgDragOver] = useState(false);
+  const fileInputRef   = useRef<HTMLInputElement>(null);
+  const imageInputRef  = useRef<HTMLInputElement>(null);
 
   const update = useCallback(<K extends keyof ArticleForm>(key: K, val: ArticleForm[K]) => {
     setForm(f => ({ ...f, [key]: val }));
     setSavedOk(false);
   }, []);
 
-  // ── File / drag-drop handling ─────────────────────────────────────────────
+  // ── Upload image de couverture ────────────────────────────────────────────
+
+  const uploadCover = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setSaveError('Fichier non supporté. Utilisez une image (JPG, PNG, WebP).');
+      return;
+    }
+    setImgUploading(true);
+    setSaveError(null);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await authFetch(`${API}/admin/articles/upload-cover`, {
+        method: 'POST',
+        body: fd,
+      });
+      if (!res.ok) throw new Error(`Erreur ${res.status}`);
+      const { url } = await res.json();
+      update('image_url', url);
+    } catch (err: any) {
+      setSaveError('Erreur upload image : ' + (err.message ?? 'inconnue'));
+    } finally {
+      setImgUploading(false);
+    }
+  };
+
+  const handleImageFile = (file: File | undefined) => { if (file) uploadCover(file); };
+
+  // ── File HTML drag-drop ───────────────────────────────────────────────────
 
   const readHtmlFile = (file: File) => {
     if (!file.name.match(/\.(html|htm|txt)$/i) && file.type !== 'text/html' && file.type !== 'text/plain') {
@@ -93,24 +142,16 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
     }
     const reader = new FileReader();
     reader.onload = e => {
-      const text = e.target?.result as string;
-      update('html_content', text);
+      update('html_content', e.target?.result as string);
       setSaveError(null);
     };
     reader.readAsText(file, 'UTF-8');
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) readHtmlFile(file);
-    e.target.value = '';
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
+  const handleHtmlDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) readHtmlFile(file);
+    readHtmlFile(e.dataTransfer.files?.[0]);
   };
 
   // ── Tickers ───────────────────────────────────────────────────────────────
@@ -138,15 +179,15 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
     setSaveError(null);
 
     const payload = {
-      title:       form.title,
-      summary:     form.summary,
-      category:    form.category,
-      author:      form.author,
-      source:      form.source,
-      is_featured: form.is_featured,
-      image_url:   form.image_url,
-      tickers:     form.tickers,
-      content:     form.html_content,
+      title:        form.title,
+      summary:      form.summary,
+      category:     form.category,
+      author:       form.author,
+      source:       form.source,
+      is_featured:  form.is_featured,
+      image_url:    form.image_url,
+      tickers:      form.tickers,
+      content:      form.html_content,
       rich_content: null,
     };
 
@@ -233,6 +274,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             <FileText size={13} /> Informations
           </h3>
 
+          {/* Titre */}
           <div>
             <label className="text-xs font-medium text-slate-600 block mb-1">Titre *</label>
             <input
@@ -243,6 +285,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             />
           </div>
 
+          {/* Résumé */}
           <div>
             <label className="text-xs font-medium text-slate-600 block mb-1">Résumé</label>
             <textarea
@@ -253,6 +296,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             />
           </div>
 
+          {/* Catégorie + Auteur */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-600 block mb-1">Catégorie</label>
@@ -261,7 +305,9 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
                 value={form.category}
                 onChange={e => update('category', e.target.value)}
               >
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {CATEGORIES.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -274,8 +320,9 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          {/* Source + À la une */}
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
               <label className="text-xs font-medium text-slate-600 block mb-1">Source</label>
               <input
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
@@ -283,29 +330,79 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
                 onChange={e => update('source', e.target.value)}
               />
             </div>
-            <div>
-              <label className="text-xs font-medium text-slate-600 block mb-1">Image URL</label>
-              <input
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-                value={form.image_url}
-                onChange={e => update('image_url', e.target.value)}
-                placeholder="/images/..."
-              />
-            </div>
+            <label className="flex items-center gap-2 cursor-pointer pb-2">
+              <div
+                onClick={() => update('is_featured', !form.is_featured)}
+                className={`relative w-10 h-5 rounded-full transition-colors ${form.is_featured ? 'bg-teal-500' : 'bg-slate-200'}`}
+              >
+                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_featured ? 'translate-x-5' : ''}`} />
+              </div>
+              <span className="flex items-center gap-1 text-sm font-medium text-slate-700 whitespace-nowrap">
+                <Star size={13} className={form.is_featured ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
+                À la une
+              </span>
+            </label>
           </div>
+        </section>
 
-          <label className="flex items-center gap-3 cursor-pointer">
-            <div
-              onClick={() => update('is_featured', !form.is_featured)}
-              className={`relative w-10 h-5 rounded-full transition-colors ${form.is_featured ? 'bg-teal-500' : 'bg-slate-200'}`}
-            >
-              <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_featured ? 'translate-x-5' : ''}`} />
+        {/* ── Image de couverture ── */}
+        <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+            <ImagePlus size={13} /> Image de couverture
+          </h3>
+
+          {form.image_url ? (
+            /* Prévisualisation */
+            <div className="relative rounded-xl overflow-hidden bg-slate-100 h-44">
+              <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                <button
+                  onClick={() => imageInputRef.current?.click()}
+                  className="flex items-center gap-1.5 bg-white text-slate-800 text-xs font-semibold px-3 py-2 rounded-lg hover:bg-slate-100"
+                >
+                  <Upload size={13} /> Changer
+                </button>
+                <button
+                  onClick={() => update('image_url', '')}
+                  className="flex items-center gap-1.5 bg-red-500 text-white text-xs font-semibold px-3 py-2 rounded-lg hover:bg-red-600"
+                >
+                  <Trash2 size={13} /> Supprimer
+                </button>
+              </div>
             </div>
-            <span className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
-              <Star size={14} className={form.is_featured ? 'text-amber-500 fill-amber-500' : 'text-slate-400'} />
-              Article à la une
-            </span>
-          </label>
+          ) : (
+            /* Zone d'upload */
+            <div
+              onDragOver={e => { e.preventDefault(); setImgDragOver(true); }}
+              onDragLeave={() => setImgDragOver(false)}
+              onDrop={e => { e.preventDefault(); setImgDragOver(false); handleImageFile(e.dataTransfer.files?.[0]); }}
+              onClick={() => imageInputRef.current?.click()}
+              className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl py-10 px-4 cursor-pointer transition-colors ${
+                imgDragOver ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
+              }`}
+            >
+              {imgUploading ? (
+                <span className="animate-spin w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full" />
+              ) : (
+                <>
+                  <ImagePlus size={28} className={imgDragOver ? 'text-teal-500' : 'text-slate-300'} />
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-slate-600">
+                      Glisser une image <span className="text-teal-600">JPG / PNG / WebP</span>
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">ou cliquer pour sélectionner</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={e => handleImageFile(e.target.files?.[0])}
+          />
         </section>
 
         {/* ── Tickers ── */}
@@ -372,16 +469,13 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             <Code2 size={13} /> Contenu HTML
           </h3>
 
-          {/* Zone de drop */}
           <div
             onDragOver={e => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
-            onDrop={handleDrop}
+            onDrop={handleHtmlDrop}
             onClick={() => fileInputRef.current?.click()}
             className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl py-8 px-4 cursor-pointer transition-colors ${
-              dragOver
-                ? 'border-teal-400 bg-teal-50'
-                : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
+              dragOver ? 'border-teal-400 bg-teal-50' : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50'
             }`}
           >
             <Upload size={28} className={dragOver ? 'text-teal-500' : 'text-slate-300'} />
@@ -402,17 +496,15 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             type="file"
             accept=".html,.htm,.txt"
             className="hidden"
-            onChange={handleFileChange}
+            onChange={e => { const f = e.target.files?.[0]; if (f) readHtmlFile(f); e.target.value = ''; }}
           />
 
-          {/* Séparateur */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-slate-100" />
             <span className="text-xs text-slate-400">ou coller directement</span>
             <div className="flex-1 h-px bg-slate-100" />
           </div>
 
-          {/* Textarea pour paste */}
           <textarea
             className="w-full border border-slate-200 rounded-xl px-4 py-3 text-xs font-mono text-slate-700 resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[200px] bg-slate-50"
             value={form.html_content}
@@ -424,10 +516,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
           {form.html_content && (
             <div className="flex items-center justify-between text-xs text-slate-400">
               <span>{form.html_content.split(/\s+/).length.toLocaleString()} mots environ</span>
-              <button
-                onClick={() => update('html_content', '')}
-                className="text-red-400 hover:text-red-600 font-medium"
-              >
+              <button onClick={() => update('html_content', '')} className="text-red-400 hover:text-red-600 font-medium">
                 Effacer le contenu
               </button>
             </div>
@@ -444,10 +533,8 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
             <div className="px-8 py-6 max-w-2xl mx-auto">
               <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-tight">{form.title || 'Titre'}</h1>
               {form.summary && <p className="text-slate-500 mb-6 text-sm leading-relaxed">{form.summary}</p>}
-              <div
-                className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: form.html_content }}
-              />
+              <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: form.html_content }} />
             </div>
           </section>
         )}

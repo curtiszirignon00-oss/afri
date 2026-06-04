@@ -140,6 +140,17 @@ export async function updateAdminArticle(req: AuthRequest, res: Response, next: 
   }
 }
 
+export async function uploadArticleCover(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'Aucun fichier fourni.' });
+    const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    const url = `${baseUrl}/uploads/posts/${req.file.filename}`;
+    return res.json({ url });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 export async function deleteAdminArticle(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
