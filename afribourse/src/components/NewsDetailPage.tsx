@@ -10,6 +10,7 @@ import OptimizedImage from './ui/OptimizedImage';
 import { BlockRenderer } from './BlockRenderer';
 import { BRVM_NEWS, BRVMArticle, ImpactType, ContentBlock } from '../data/brvm2026News';
 import ArticleInteractions from './ArticleInteractions';
+import HtmlArticleRenderer from './HtmlArticleRenderer';
 
 const SITE_URL = 'https://afribourse.com';
 
@@ -180,7 +181,7 @@ function DBArticlePage({ article }: { article: DBArticle }) {
             {blocks ? (
               <BlockRenderer blocks={blocks} variant="module" />
             ) : article.content ? (
-              <div className="prose prose-slate prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: article.content }} />
+              <HtmlArticleRenderer html={article.content} />
             ) : (
               <p className="text-slate-400 italic">Aucun contenu disponible.</p>
             )}
