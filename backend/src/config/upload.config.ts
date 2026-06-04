@@ -119,6 +119,13 @@ export const uploadPostImages = multer({
     }
 }).array('images', 5);
 
+// Upload d'une seule image (couverture article, etc.)
+export const uploadSingleImage = multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: MAX_FILE_SIZES.post, files: 1 },
+}).single('image');
+
 // Fonction utilitaire pour obtenir l'URL publique d'un fichier
 export const getPublicUrl = (filename: string, type: 'avatars' | 'banners' | 'posts'): string => {
     const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';

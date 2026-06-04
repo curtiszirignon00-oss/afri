@@ -124,7 +124,7 @@ export const authLimiter = rateLimit({
     legacyHeaders: false,
     // req.ip est déjà résolu correctement par Express grâce à "trust proxy 1" dans index.ts
     // Ne pas parser x-forwarded-for manuellement (spoofable et redondant)
-    keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'no-ip',
+    keyGenerator: (req) => ipKeyGenerator(req),
 });
 
 /**
@@ -142,7 +142,7 @@ export const loginEmailLimiter = rateLimit({
     legacyHeaders: false,
     keyGenerator: (req) => {
         const email = req.body?.email;
-        return typeof email === 'string' ? `login:${email.toLowerCase().trim()}` : `login:ip:${req.ip}`;
+        return typeof email === 'string' ? `login:${email.toLowerCase().trim()}` : `login:ip:${ipKeyGenerator(req)}`;
     },
     skip: (req) => !req.body?.email,
 });
@@ -160,7 +160,7 @@ export const resetPasswordLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => req.ip ?? req.socket.remoteAddress ?? 'no-ip',
+    keyGenerator: (req) => ipKeyGenerator(req),
 });
 
 // Rate limiter par email (2/h) — max 2 tentatives par email par heure
@@ -175,7 +175,7 @@ export const resetPasswordEmailLimiter = rateLimit({
     // Clé = email normalisé (lowercase) — stable même depuis des IPs différentes
     keyGenerator: (req) => {
         const email = req.body?.email;
-        return typeof email === 'string' ? `reset:${email.toLowerCase().trim()}` : `reset:ip:${req.ip}`;
+        return typeof email === 'string' ? `reset:${email.toLowerCase().trim()}` : `reset:ip:${ipKeyGenerator(req)}`;
     },
     skip: (req) => !req.body?.email, // Si pas d'email dans le body, le limiter par IP suffit
 });

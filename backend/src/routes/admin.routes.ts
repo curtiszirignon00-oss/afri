@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getPlatformStats, getPremiumIntents, forceVerifyUser, getTrialStats, getAIFeedbackStats, sendWebinarLaunchCampaign } from '../controllers/admin.controller';
 import { listAdminArticles, getAdminArticle, createAdminArticle, updateAdminArticle, deleteAdminArticle, uploadArticleCover } from '../controllers/articles.controller';
-import { uploadPostImages } from '../config/upload.config';
+import { uploadSingleImage } from '../config/upload.config';
 import { listModules, createModule, updateModule, issueCertificate, listCertificatesAdmin, revokeCertificate, resendCertificateEmail } from '../controllers/certificate.controller';
 import { admin } from '../middlewares/auth.middleware';
 
@@ -37,7 +37,7 @@ router.post('/certificates/:id/revoke', admin, revokeCertificate);
 router.post('/certificates/:id/resend-email', admin, resendCertificateEmail);
 
 // ── Gestion des articles (admin) ─────────────────────────────────────────────
-router.post('/articles/upload-cover', admin, uploadPostImages.single('image'), uploadArticleCover);
+router.post('/articles/upload-cover', admin, uploadSingleImage, uploadArticleCover);
 router.get('/articles', admin, listAdminArticles);
 router.get('/articles/:id', admin, getAdminArticle);
 router.post('/articles', admin, createAdminArticle);

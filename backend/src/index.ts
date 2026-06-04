@@ -7,7 +7,7 @@ import MemoryStore from 'memorystore';
 import cors from 'cors';
 import helmet from 'helmet';
 import config from './config/environnement';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandlers';
 import { doubleCsrfProtection, generateCsrfToken } from './middlewares/csrf.middleware';
@@ -211,7 +211,7 @@ class App {
           : Math.min(config.rateLimit.maxRequests, 300), // non-authentifié : 300 max
         standardHeaders: true,   // envoie RateLimit-* headers (RFC 6585)
         legacyHeaders: false,
-        keyGenerator: (req: any) => req._rateLimitUserId ?? req.ip ?? 'unknown',
+        keyGenerator: (req: any) => req._rateLimitUserId ?? ipKeyGenerator(req),
         skip: (req: any) => req._rateLimitUserId && req.user?.role === 'ADMIN',
         handler: (req, res) => {
           const windowSec = Math.ceil(config.rateLimit.windowMs / 1000);
