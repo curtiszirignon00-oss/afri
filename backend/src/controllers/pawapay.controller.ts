@@ -25,6 +25,11 @@ const PLAN_PRICES: Record<string, number> = {
   'premium-modules': 15000,
 };
 
+// Pack Pack Parcours — prix officiels (R5: calcul serveur)
+const PACK_ID = 'pack-parcours-investisseur';
+const PACK_PRICE_FULL = 35000;
+const PACK_PRICE_REFERRAL = 24500;
+
 // ============================================================
 // WEBHOOK — Deposit callback
 // POST /api/pawapay/webhook/deposit
@@ -117,6 +122,64 @@ export async function handleDepositCallback(req: Request, res: Response) {
             }).catch((err) =>
               log.error('[PawaPay] Échec email confirmation paiement', { err, depositId })
             );
+
+            // ── Logique parrainage Pack Parcours ──────────────────────────
+            if (payment.planId === PACK_ID) {
+              // 1. Marquer l'acheteur comme participant au pack
+              if (payment.userId) {
+                await prisma.user.update({
+                  where: { id: payment.userId },
+                  data: { isPackParticipant: true },
+                }).catch(() => {});
+              }
+
+              // 2. Traitement du code ambassadeur utilisé
+              const usedCode = reg.referralCode ?? (payment.metadata as Record<string, string> | null)?.referralCode;
+              if (usedCode) {
+                try {
+                  const refCode = await prisma.packReferralCode.findUnique({ where: { code: usedCode } });
+                  if (refCode && refCode.status === 'active') {
+                    // R1 — Anti auto-parrainage
+                    if (payment.userId && refCode.referrerId === payment.userId) {
+                      log.warn('[REFERRAL] Auto-parrainage bloqué', { userId: payment.userId, code: usedCode });
+                    } else {
+                      // R2 — Un seul parrainage par email
+                      const alreadyUsed = await prisma.packReferral.findFirst({
+                        where: { refereeEmail: reg.email, discountApplied: true },
+                      });
+                      if (!alreadyUsed) {
+                        await prisma.packReferral.create({
+                          data: {
+                            referralCodeId: refCode.id,
+                            referrerId: refCode.referrerId,
+                            refereeEmail: reg.email,
+                            status: 'purchased',
+                            discountApplied: true,
+                            bonusGrantedAt: new Date(),
+                            purchasedAt: new Date(),
+                          },
+                        });
+                        // Incrémenter compteurs du code
+                        await prisma.packReferralCode.update({
+                          where: { id: refCode.id },
+                          data: { totalPurchases: { increment: 1 }, bonusMonthsEarned: { increment: 1 } },
+                        });
+                        // Créditer le parrain
+                        await prisma.user.update({
+                          where: { id: refCode.referrerId },
+                          data: { bonusAccompagnementMonths: { increment: 1 } },
+                        });
+                        log.info('[REFERRAL] Parrainage confirmé — +1 mois accompagnement crédité', {
+                          referrerId: refCode.referrerId, code: usedCode, refereeEmail: reg.email,
+                        });
+                      }
+                    }
+                  }
+                } catch (err) {
+                  log.error('[REFERRAL] Erreur traitement parrainage', { err, code: usedCode, depositId });
+                }
+              }
+            }
           }
         }
 
@@ -195,7 +258,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Non authentifié' });
 
-  const { planId, planName, currency, correspondent, phone, registrationEmail } = req.body;
+  const { planId, planName, currency, correspondent, phone, registrationEmail, referralCode } = req.body;
 
   if (!planId || !planName || !currency || !correspondent || !phone) {
     return res.status(400).json({ error: 'Champs manquants' });
@@ -224,8 +287,20 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     } else {
       finalAmount = officialPrice;
     }
+  } else if (planId === PACK_ID) {
+    // R5 — Pack Parcours : montant toujours calculé côté serveur
+    if (referralCode) {
+      const refCode = await prisma.packReferralCode.findUnique({ where: { code: String(referralCode).toUpperCase() } });
+      const isValidCode = refCode && refCode.status === 'active' && refCode.expiresAt > new Date() && refCode.referrerId !== userId;
+      finalAmount = isValidCode ? PACK_PRICE_REFERRAL : PACK_PRICE_FULL;
+      if (isValidCode) {
+        log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
+      }
+    } else {
+      finalAmount = PACK_PRICE_FULL;
+    }
   } else {
-    // Plan non référencé (webinaire, etc.) : on accepte le montant du frontend
+    // Plan non référencé (webinaire individuel, etc.) : on accepte le montant du frontend
     const raw = req.body.amount;
     if (!raw) return res.status(400).json({ error: 'amount requis' });
     finalAmount = Number(raw);
@@ -251,7 +326,10 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         phone,
         status: 'PENDING',
         userPromoId: activePromoId ?? undefined,
-        metadata: registrationEmail ? { registrationEmail } : undefined,
+        metadata: (registrationEmail || referralCode) ? {
+          ...(registrationEmail ? { registrationEmail } : {}),
+          ...(referralCode ? { referralCode: String(referralCode).toUpperCase() } : {}),
+        } : undefined,
       },
     });
 

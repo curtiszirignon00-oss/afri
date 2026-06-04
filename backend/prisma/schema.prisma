@@ -205,6 +205,12 @@ model User {
   // --- Promos utilisateur ---
   userPromos UserPromo[]
 
+  // --- Programme ambassadeur Pack Parcours ---
+  isPackParticipant         Boolean @default(false)
+  bonusAccompagnementMonths Int     @default(0)
+  packReferralCodes         PackReferralCode[] @relation("ReferralCodes")
+  packReferrals             PackReferral[]     @relation("Referrals")
+
   // --- Avis utilisateurs ---
   reviews Review[]
 
@@ -2127,6 +2133,7 @@ model WebinarRegistration {
   paymentStatus String?  @default("pending") // "pending" | "paid"
   depositId     String?  // PawaPay depositId après paiement
   paidAt        DateTime?
+  referralCode  String?  // Code ambassadeur utilisé lors de l'inscription (programme parrainage)
   created_at    DateTime @default(now())
 
   @@index([webinarId])
@@ -2240,4 +2247,47 @@ model TimeMachineSession {
   @@index([userId])
   @@index([scenarioId])
   @@map("time_machine_sessions")
+}
+
+// ================================= //
+// === PROGRAMME AMBASSADEUR ======= //
+// ================================= //
+
+model PackReferralCode {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  referrerId          String   @db.ObjectId
+  code                String   @unique  // 8 chars alphanumeric, unique
+  status              String   @default("active") // "active" | "paused"
+  expiresAt           DateTime // createdAt + 60 jours
+  totalClicks         Int      @default(0)
+  totalPurchases      Int      @default(0)
+  bonusMonthsEarned   Int      @default(0) // +1 par vente confirmée
+  createdAt           DateTime @default(now())
+
+  referrer  User           @relation("ReferralCodes", fields: [referrerId], references: [id])
+  referrals PackReferral[]
+
+  @@index([referrerId])
+  @@index([status])
+  @@map("pack_referral_codes")
+}
+
+model PackReferral {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  referralCodeId  String    @db.ObjectId
+  referrerId      String    @db.ObjectId
+  refereeEmail    String    // email de la personne parrainée
+  status          String    @default("pending") // "pending" | "purchased"
+  discountApplied Boolean   @default(false)     // true après paiement confirmé
+  bonusGrantedAt  DateTime?
+  createdAt       DateTime  @default(now())
+  purchasedAt     DateTime?
+
+  referralCode PackReferralCode @relation(fields: [referralCodeId], references: [id])
+  referrer     User             @relation("Referrals", fields: [referrerId], references: [id])
+
+  @@index([refereeEmail])
+  @@index([referrerId])
+  @@index([status])
+  @@map("pack_referrals")
 }

@@ -3,6 +3,7 @@ import { getPlatformStats, getPremiumIntents, forceVerifyUser, getTrialStats, ge
 import { listAdminArticles, getAdminArticle, createAdminArticle, updateAdminArticle, deleteAdminArticle, uploadArticleCover } from '../controllers/articles.controller';
 import { uploadSingleImage } from '../config/upload.config';
 import { listModules, createModule, updateModule, issueCertificate, listCertificatesAdmin, revokeCertificate, resendCertificateEmail } from '../controllers/certificate.controller';
+import { adminCreateReferralCode, adminListReferrals, adminUpdateReferralStatus } from '../controllers/referral.controller';
 import { admin } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -35,6 +36,11 @@ router.post('/certificates', admin, issueCertificate);
 router.get('/certificates', admin, listCertificatesAdmin);
 router.post('/certificates/:id/revoke', admin, revokeCertificate);
 router.post('/certificates/:id/resend-email', admin, resendCertificateEmail);
+
+// ── Programme ambassadeur Pack Parcours ──────────────────────────────────────
+router.get('/referrals', admin, adminListReferrals);
+router.post('/referrals/create', admin, adminCreateReferralCode);
+router.patch('/referrals/:codeId/status', admin, adminUpdateReferralStatus);
 
 // ── Gestion des articles (admin) ─────────────────────────────────────────────
 router.post('/articles/upload-cover', admin, uploadSingleImage, uploadArticleCover);

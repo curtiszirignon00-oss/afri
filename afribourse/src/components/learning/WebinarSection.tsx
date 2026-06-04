@@ -9,6 +9,7 @@ import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../../hooks/usePawaPayment';
 import { analytics } from '../../services/analytics';
+import AmbassadorSection from './AmbassadorSection';
 
 // ─── Indicatifs pays ──────────────────────────────────────────────────────────
 
@@ -713,7 +714,9 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
 
 // ─── PackCard ─────────────────────────────────────────────────────────────────
 
-const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
+interface ReferralInfo { valid: boolean; code: string; discountedPrice: number; originalPrice: number }
+
+const PackCard: React.FC<{ onRegister: () => void; referralInfo?: ReferralInfo | null }> = ({ onRegister, referralInfo }) => {
   const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
   const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
   const [countdown, setCountdown] = useState(getPackCountdown(PACK.earlyBirdDeadline));
@@ -799,6 +802,14 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
                     </div>
                   )}
                 </>
+              ) : referralInfo?.valid ? (
+                <>
+                  <p className="text-emerald-300 text-[10px] font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1">
+                    🎁 Code parrainage appliqué · -30%
+                  </p>
+                  <p className="text-3xl font-extrabold text-white">{formatPrice(referralInfo.discountedPrice)}</p>
+                  <p className="text-blue-300 text-xs line-through mt-0.5">{formatPrice(referralInfo.originalPrice)}</p>
+                </>
               ) : (
                 <>
                   <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif</p>
@@ -822,10 +833,11 @@ const PackCard: React.FC<{ onRegister: () => void }> = ({ onRegister }) => {
 
 // ─── PackRegistrationModal ────────────────────────────────────────────────────
 
-const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void }> = ({ onClose }) => {
+const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void; referralInfo?: ReferralInfo | null }> = ({ onClose, referralInfo }) => {
   const { userProfile } = useAuth();
   const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
-  const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
+  // Code parrainage prend priorité sur le tarif préférentiel early bird
+  const currentPrice = referralInfo?.valid ? referralInfo.discountedPrice : (earlyBirdActive ? PACK.earlyBirdPrice : PACK.price);
   const savings = PACK.price - currentPrice;
 
   const [loading, setLoading] = useState(false);
@@ -857,7 +869,12 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
     analytics.trackAction('webinar_pack_payment_initiated', PACK.title, { packId: PACK.id, operator: payOperator, amount: currentPrice });
-    initiatePayment({ planId: PACK.id, planName: PACK.title, amount: String(currentPrice), currency: getCurrency(payDialCode), correspondent, phone: msisdn, registrationEmail: form.email.trim() });
+    initiatePayment({
+      planId: PACK.id, planName: PACK.title, amount: String(currentPrice),
+      currency: getCurrency(payDialCode), correspondent, phone: msisdn,
+      registrationEmail: form.email.trim(),
+      ...(referralInfo?.valid ? { referralCode: referralInfo.code } : {}),
+    });
   };
 
   const handleSubmit = async () => {
@@ -882,6 +899,7 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
           type: 'pack',
           earlyBird: false,
           effectivePrice: currentPrice,
+          ...(referralInfo?.valid ? { referralCode: referralInfo.code } : {}),
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
@@ -1045,6 +1063,11 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
                 <CheckCircle className="w-9 h-9 text-green-500" />
               </div>
               <h4 className="text-xl font-bold text-gray-900">Vous êtes inscrit au Parcours Investisseur ! 🎓</h4>
+              {referralInfo?.valid && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-700 font-semibold">
+                  🎁 Réduction parrainage appliquée — vous avez payé {formatPrice(referralInfo.discountedPrice)} au lieu de {formatPrice(referralInfo.originalPrice)}
+                </div>
+              )}
               <p className="text-sm text-gray-500">Paiement confirmé · Vous recevrez tous les détails par email et WhatsApp.</p>
               <div className="mb-5 text-left">
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-3">Ce que vous allez recevoir</p>
@@ -1070,15 +1093,49 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void 
 
 // ─── WebinarSection — composant principal ─────────────────────────────────────
 
+const REFERRAL_LS_KEY = 'packReferralCode';
+const REFERRAL_TTL_MS = 60 * 24 * 60 * 60 * 1000;
+
+function readStoredReferralCode(): string | null {
+  try {
+    const raw = localStorage.getItem(REFERRAL_LS_KEY);
+    if (!raw) return null;
+    const { code, capturedAt, ttlMs } = JSON.parse(raw);
+    if (Date.now() - capturedAt > (ttlMs ?? REFERRAL_TTL_MS)) {
+      localStorage.removeItem(REFERRAL_LS_KEY);
+      return null;
+    }
+    return code as string;
+  } catch {
+    return null;
+  }
+}
+
 const WebinarSection: React.FC = () => {
   const [selectedWebinar, setSelectedWebinar] = useState<Webinar | null>(null);
   const [showPackModal, setShowPackModal] = useState(false);
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/webinars/counts`)
       .then((r) => r.json())
       .then((d) => { if (d?.data) setCounts(d.data); })
+      .catch(() => {});
+  }, []);
+
+  // Lire et valider le code de parrainage depuis localStorage
+  useEffect(() => {
+    const code = readStoredReferralCode();
+    if (!code) return;
+    fetch(`${API_BASE_URL}/pack-referral/check?code=${encodeURIComponent(code)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.valid) {
+          setReferralInfo({ valid: true, code, discountedPrice: d.discountedPrice, originalPrice: d.originalPrice });
+          analytics.trackAction('pack_referral_code_captured', 'Code parrainage validé', { code });
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -1118,7 +1175,10 @@ const WebinarSection: React.FC = () => {
         </div>
 
         {/* Pack Parcours Investisseur — carte dominante full-width */}
-        <PackCard onRegister={() => { analytics.trackAction('webinar_pack_click', PACK.title, { packId: PACK.id }); setShowPackModal(true); }} />
+        <PackCard
+          referralInfo={referralInfo}
+          onRegister={() => { analytics.trackAction('webinar_pack_click', PACK.title, { packId: PACK.id }); setShowPackModal(true); }}
+        />
 
         {/* Webinaires individuels */}
         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
@@ -1129,6 +1189,9 @@ const WebinarSection: React.FC = () => {
             <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={counts[w.id] ?? 0} />
           ))}
         </div>
+
+        {/* Section Ambassadeur — visible uniquement pour les participants connectés */}
+        <AmbassadorSection />
 
       </section>
 
@@ -1142,7 +1205,7 @@ const WebinarSection: React.FC = () => {
       )}
 
       {showPackModal && (
-        <PackRegistrationModal onClose={() => setShowPackModal(false)} />
+        <PackRegistrationModal referralInfo={referralInfo} onClose={() => setShowPackModal(false)} />
       )}
     </>
   );

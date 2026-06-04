@@ -75,6 +75,7 @@ const WebinarPage = lazy(() => import('./pages/WebinarPage'));
 const PaymentLinkPage = lazy(() => import('./pages/PaymentLinkPage'));
 const CertificatePage = lazy(() => import('./pages/CertificatePage'));
 const FormationPremiumPage = lazy(() => import('./pages/FormationPremiumPage'));
+const ParcoursPage = lazy(() => import('./pages/ParcoursPage'));
 
 // Pages auth lazy — l'utilisateur accepte un délai au moment du clic
 const SignupPage = lazy(() => import('./components/SignupPage'));
@@ -205,6 +206,7 @@ function Layout() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />
+          <Route path="/parcours" element={<ParcoursPage />} />
           <Route path="/pay/:token" element={<PaymentLinkPage />} />
           <Route path="/formation" element={<FormationPremiumPage />} />
           <Route path="/certificat/:uuid" element={<CertificatePage />} />

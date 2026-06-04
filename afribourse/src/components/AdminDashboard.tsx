@@ -44,6 +44,7 @@ import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
 import AdminArticleEditor from './AdminArticleEditor';
 import AdminCertificates from './admin/AdminCertificates';
+import AdminAmbassadors from './admin/AdminAmbassadors';
 
 interface UserStats {
   total: number;
@@ -1688,6 +1689,9 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Programme Ambassadeur */}
+          <AdminAmbassadors />
 
           <ModerationSection />
         </div>

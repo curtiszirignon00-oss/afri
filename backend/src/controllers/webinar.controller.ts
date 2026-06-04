@@ -8,7 +8,7 @@ import {
 
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
-    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird } = req.body;
+    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode } = req.body;
     const userId = (req as any).user?.id ?? null;
 
     if (!webinarId || !email) {
@@ -45,6 +45,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
         phone: phone ?? null,
         earlyBird: earlyBird ?? false,
         userId,
+        referralCode: referralCode ?? null,
       },
     });
 
