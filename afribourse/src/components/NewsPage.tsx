@@ -338,27 +338,27 @@ export default function NewsPage() {
 
       {/* Main content — API articles */}
       {!isStaticOnly && !loading && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div>
 
-          {/* Featured (2/3) */}
+          {/* Featured hero — pleine largeur, uniquement sur "Tout" */}
           {selectedCategory === 'all' && featuredArticle && (
-            <div className="lg:col-span-2 group cursor-pointer" onClick={() => openDBArticle(featuredArticle)}>
-              <div className="relative h-[400px] rounded-2xl overflow-hidden shadow-md">
+            <div className="group cursor-pointer mb-8" onClick={() => openDBArticle(featuredArticle)}>
+              <div className="relative h-[320px] sm:h-[380px] rounded-2xl overflow-hidden shadow-md">
                 <img
                   src={featuredArticle.image_url || '/images/default-news.jpg'}
                   alt={featuredArticle.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-8 w-full">
+                <div className="absolute bottom-0 left-0 p-6 sm:p-8 w-full">
                   <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider mb-3 inline-block">
                     {getCategoryLabel(featuredArticle.category)}
                   </span>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight group-hover:text-blue-200 transition-colors">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight group-hover:text-blue-200 transition-colors max-w-3xl">
                     {featuredArticle.title}
                   </h2>
                   <p className="text-slate-200 line-clamp-2 mb-4 max-w-2xl">{featuredArticle.summary}</p>
-                  <div className="flex items-center gap-4 text-slate-400 text-xs font-medium">
+                  <div className="flex items-center gap-4 text-slate-300 text-xs font-medium">
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(featuredArticle.published_at)}</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(featuredArticle.content)} min de lecture</span>
                   </div>
@@ -367,93 +367,52 @@ export default function NewsPage() {
             </div>
           )}
 
-          {/* Article list */}
-          <div className={selectedCategory === 'all' && featuredArticle ? 'lg:col-span-1' : 'lg:col-span-3'}>
-            {selectedCategory === 'all' && featuredArticle && (
-              <h3 className="font-bold text-slate-900 mb-4">Dernières dépêches</h3>
-            )}
-
-            <div className={selectedCategory === 'all' && featuredArticle ? 'space-y-4' : 'grid md:grid-cols-2 lg:grid-cols-3 gap-6'}>
+          {/* Grille uniforme — toutes les actualités, même style de card */}
+          {listArticles.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {listArticles.map(article => (
-                <div
+                <article
                   key={article.id}
                   onClick={() => openDBArticle(article)}
-                  className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden ${
-                    selectedCategory === 'all' && featuredArticle ? 'p-4' : ''
-                  }`}
+                  className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden flex flex-col"
                 >
-                  {selectedCategory === 'all' && featuredArticle ? (
-                    <div className="flex items-start gap-4">
-                      {article.image_url && (
-                        <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-slate-200">
-                          <img src={article.image_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
-                            {getCategoryLabel(article.category)}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 text-sm">
-                          {article.title}
-                        </h4>
-                        <div className="flex items-center gap-3 text-slate-400 text-[10px]">
-                          <span>Il y a {formatTimeAgo(article.published_at)}</span>
-                          <span>•</span>
-                          <span>{calcReadTime(article.content)} min</span>
-                        </div>
+                  <div className="h-44 overflow-hidden bg-slate-200">
+                    {article.image_url ? (
+                      <img src={article.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                        <Newspaper className="w-8 h-8 text-slate-300" />
                       </div>
+                    )}
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
+                        {getCategoryLabel(article.category)}
+                      </span>
+                      {article.is_featured && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-50 text-yellow-600 border border-yellow-100">
+                          À la une
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <>
-                      {article.image_url && (
-                        <div className="h-40 overflow-hidden bg-slate-200">
-                          <img src={article.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                      )}
-                      <div className="p-5">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
-                            {getCategoryLabel(article.category)}
-                          </span>
-                          {article.is_featured && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-50 text-yellow-600 border border-yellow-100">
-                              À la une
-                            </span>
-                          )}
-                        </div>
-                        <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
-                          {article.title}
-                        </h4>
-                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">{article.summary}</p>
-                        <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-100">
-                          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(article.published_at)}</span>
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(article.content)} min</span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+                      {article.title}
+                    </h4>
+                    <p className="text-sm text-slate-500 line-clamp-2 mb-4 flex-1">{article.summary}</p>
+                    <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-100">
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(article.published_at)}</span>
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(article.content)} min</span>
+                    </div>
+                  </div>
+                </article>
               ))}
-
-              {listArticles.length === 0 && brvmFiltered.length === 0 && (
-                <div className="py-12 text-center text-slate-400 col-span-full">
-                  Aucune actualité dans cette catégorie pour le moment.
-                </div>
-              )}
             </div>
-
-            {selectedCategory === 'all' && featuredArticle && listArticles.length > 0 && (
-              <button className="w-full mt-6 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2">
-                Voir toute l'actualité <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          )}
         </div>
       )}
 
-      {/* BRVM 2026 intelligence — inline below API articles */}
+      {/* BRVM 2026 intelligence — même grille de cards uniforme */}
       {!isStaticOnly && !loading && brvmFiltered.length > 0 && (
         <div className="mt-10">
           <div className="flex items-center gap-2 mb-4">
@@ -463,7 +422,7 @@ export default function NewsPage() {
               {brvmFiltered.length} article{brvmFiltered.length > 1 ? 's' : ''}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {brvmFiltered.map(a => (
               <BRVMArticleCard key={a.id} article={a} onOpen={() => openArticle(a)} />
             ))}
