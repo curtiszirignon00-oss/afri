@@ -50,7 +50,6 @@ const stocks = [
   { ticker: 'SPHC', excelPath: path.join(BASE_DIR, 'sphc', 'SPHC.xlsx') },
   { ticker: 'STAC', excelPath: path.join(BASE_DIR, 'stac', 'STAC.xlsx') },
   { ticker: 'STBC', excelPath: path.join(BASE_DIR, 'stbc', 'STBC.xlsx') },
-  { ticker: 'SVOC', excelPath: path.join(BASE_DIR, 'svoc', 'SVOC.xlsx') },
   { ticker: 'TTLC', excelPath: path.join(BASE_DIR, 'ttlc', 'TTLC.xlsx') },
   { ticker: 'TTLS', excelPath: path.join(BASE_DIR, 'ttls', 'TTLS.xlsx') },
   { ticker: 'UNLC', excelPath: path.join(BASE_DIR, 'unlc', 'UNLC.xlsx') },
