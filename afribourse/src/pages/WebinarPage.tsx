@@ -1,117 +1,426 @@
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookOpen, Shield, Clock, Users, ShieldCheck } from 'lucide-react';
+import { useRef, useState } from 'react';
+import {
+  CheckCircle, ChevronDown, ChevronRight, TrendingUp, BookOpen,
+  Users, BarChart3, Award, Zap, MessageSquare, Calendar,
+} from 'lucide-react';
 import WebinarSection from '../components/learning/WebinarSection';
 
+// ─── Données ──────────────────────────────────────────────────────────────────
+
+const OUTCOMES = [
+  'Comprendre la BRVM et les marchés africains comme un initié',
+  "Lire un bilan et des ratios financiers pour évaluer une action",
+  "Appliquer l'analyse technique sur les graphiques BRVM",
+  "Construire un portefeuille modèle avec une allocation réelle",
+  "Accéder au Deal Flow hebdomadaire et à une communauté active",
+  'Décrocher votre certificat "Investisseur BRVM Niveau 1"',
+];
+
+const PROGRAMME = [
+  {
+    phase: 'Avant le 13 juin',
+    label: 'Confirmation',
+    items: ['Email de confirmation reçu', 'Lien Zoom envoyé par email et WhatsApp'],
+    textColor: 'text-slate-600',
+    dot: 'bg-slate-400',
+    bg: 'bg-white border-gray-100',
+  },
+  {
+    phase: '13 juin — Session 1',
+    label: 'Fondamentaux · 3h live',
+    items: [
+      'La BRVM — fonctionnement, acteurs, instruments',
+      "Lire les cours, volumes et carnets d'ordres",
+      "Ouvrir un compte et passer son premier ordre",
+    ],
+    textColor: 'text-blue-700',
+    dot: 'bg-blue-600',
+    bg: 'bg-blue-50 border-blue-100',
+  },
+  {
+    phase: '14 juin — J+1',
+    label: "Plan d'action Fondamentaux",
+    items: ["PDF livré par email avec les 5 décisions concrètes à prendre cette semaine"],
+    textColor: 'text-slate-600',
+    dot: 'bg-slate-400',
+    bg: 'bg-white border-gray-100',
+  },
+  {
+    phase: '20–21 juin — Session 2',
+    label: 'Analyse fondamentale · 4h live',
+    items: [
+      'Lire un bilan, un compte de résultat, des ratios clés',
+      'Valoriser une action BRVM avec DCF, PER, VCB',
+      'Cas pratiques sur des entreprises cotées réelles',
+    ],
+    textColor: 'text-emerald-700',
+    dot: 'bg-emerald-600',
+    bg: 'bg-emerald-50 border-emerald-100',
+  },
+  {
+    phase: '22 juin — J+1',
+    label: "Plan d'action Analyse fondamentale",
+    items: ["PDF avec 3 entreprises à analyser cette semaine selon la méthode apprise"],
+    textColor: 'text-slate-600',
+    dot: 'bg-slate-400',
+    bg: 'bg-white border-gray-100',
+  },
+  {
+    phase: '27–28 juin — Session 3',
+    label: 'Analyse technique · 4h live',
+    items: [
+      'Lire les graphiques, repérer les patterns clés',
+      "Timing d'entrée et de sortie sur la BRVM",
+      'Indicateurs : RSI, MACD, moyennes mobiles',
+    ],
+    textColor: 'text-orange-700',
+    dot: 'bg-orange-500',
+    bg: 'bg-orange-50 border-orange-100',
+  },
+  {
+    phase: '29 juin',
+    label: "Plan d'action Analyse technique",
+    items: ["PDF avec 5 configurations graphiques à surveiller sur la BRVM"],
+    textColor: 'text-slate-600',
+    dot: 'bg-slate-400',
+    bg: 'bg-white border-gray-100',
+  },
+  {
+    phase: '30 juin — Semaines suivantes',
+    label: 'Communauté + Deal Flow',
+    items: [
+      'Accès à la communauté Afribourse activé (3 mois)',
+      'Deal Flow hebdomadaire — 12 éditions exclusives',
+      'Suivi de portefeuille en groupe',
+    ],
+    textColor: 'text-indigo-700',
+    dot: 'bg-indigo-600',
+    bg: 'bg-indigo-50 border-indigo-100',
+  },
+  {
+    phase: '14 juillet*',
+    label: 'Certificat',
+    items: ['Certificat "Investisseur BRVM Niveau 1" — si quiz complété'],
+    textColor: 'text-amber-700',
+    dot: 'bg-amber-500',
+    bg: 'bg-amber-50 border-amber-100',
+  },
+];
+
+const INCLUSIONS = [
+  { icon: <Users className="w-5 h-5" />, title: '3 webinaires live', desc: 'Fondamentaux (3h) · Analyse fondamentale (4h) · Analyse technique (4h)' },
+  { icon: <MessageSquare className="w-5 h-5" />, title: 'Communauté 3 mois', desc: "Groupe d'investisseurs BRVM actifs avec suivi hebdomadaire" },
+  { icon: <BookOpen className="w-5 h-5" />, title: "3 plans d'action", desc: 'Un PDF livré le lendemain de chaque session avec des exercices concrets' },
+  { icon: <TrendingUp className="w-5 h-5" />, title: 'Deal Flow — 12 éditions', desc: 'Chaque semaine : les opportunités repérées par nos analystes' },
+  { icon: <Award className="w-5 h-5" />, title: 'Certificat officiel', desc: '"Investisseur BRVM Niveau 1" — partageable LinkedIn/WhatsApp' },
+  { icon: <Zap className="w-5 h-5" />, title: 'Replay 30 jours', desc: 'Accès aux enregistrements de chaque session pendant 30 jours' },
+];
+
+const SPEAKERS = [
+  {
+    initials: 'CZ',
+    name: 'Curtis Zirignon',
+    title: 'Fondateur · Afribourse',
+    desc: 'Entrepreneur tech et finance, spécialiste des marchés UEMOA. Accompagne les investisseurs africains depuis 2022.',
+    color: '#1D4ED8',
+  },
+  {
+    initials: 'IB',
+    name: 'Ibrahima Bayo',
+    title: 'Analyste Financier · Fondateur IB Formation',
+    desc: 'Analyste financier certifié, investisseur BRVM, comptable expérimenté. Forme des investisseurs particuliers depuis plusieurs années.',
+    color: '#059669',
+  },
+  {
+    initials: 'EC',
+    name: 'Emmanuel Coulibaly',
+    title: 'Expert Consultant · Banque & Microfinance',
+    desc: 'Consultant international en management bancaire et institutions de microfinance. Expertise pointue sur les marchés financiers africains.',
+    color: '#EA580C',
+  },
+];
+
+const FAQ = [
+  {
+    q: 'Le pack est-il remboursable ?',
+    a: 'Oui — satisfait ou remboursé. Si la formation ne correspond pas à vos attentes, envoyez-nous un email dans les 7 jours suivant votre inscription pour un remboursement complet, sans condition.',
+    highlight: true,
+  },
+  {
+    q: "Dois-je avoir un compte Afribourse pour m'inscrire ?",
+    a: "Non. Vous pouvez vous inscrire et payer sans compte. Il vous suffit de fournir votre nom, email et numéro WhatsApp lors de l'inscription.",
+  },
+  {
+    q: 'Comment reçois-je le lien de connexion Zoom ?',
+    a: 'Le lien Zoom est envoyé par email ET par WhatsApp avant chaque session. Vous recevrez également un rappel 24h avant.',
+  },
+  {
+    q: "Est-ce que je peux assister à une seule session ?",
+    a: "Oui. Chaque webinaire est disponible à l'unité. Si vous souhaitez les 3, le Pack Parcours est plus avantageux — il inclut aussi la communauté, les plans d'action et le Deal Flow.",
+  },
+  {
+    q: 'Quel niveau est requis ?',
+    a: "La session 1 (Fondamentaux) est conçue pour les débutants complets. Les sessions 2 et 3 demandent des bases — idéalement suivies dans l'ordre. Le pack est prévu pour être suivi en séquence.",
+  },
+  {
+    q: 'Le contenu est-il spécifique à la BRVM ?',
+    a: "Oui. Tous les exemples, cas pratiques et données utilisés lors des sessions sont tirés d'entreprises cotées sur la BRVM. Pas de contenu générique.",
+  },
+];
+
+// ─── Composant principal ───────────────────────────────────────────────────────
+
 export default function WebinarPage() {
-  const navigate = useNavigate();
+  const registrationRef = useRef<HTMLDivElement>(null);
+
+  const scrollToRegistration = () => {
+    registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white">
-        <div className="max-w-5xl mx-auto px-4 pt-8 pb-14 sm:px-6">
-          <button
-            onClick={() => navigate('/learn')}
-            className="flex items-center gap-2 text-blue-300 hover:text-white transition-colors text-sm mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour à l'académie
-          </button>
+    <div className="min-h-screen bg-white">
 
-          <div className="flex items-center gap-2 mb-4">
-            <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-              Live · Formation
+      {/* ── Section 1 — Hero ─────────────────────────────────────────────── */}
+      <section
+        style={{ background: 'linear-gradient(135deg, #0D2B4E 0%, #1a3a6b 50%, #0f1f3d 100%)' }}
+        className="text-white px-4 pt-10 pb-20 sm:px-6"
+      >
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-2 mb-6">
+            <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+              Cohorte Juin 2026
             </span>
+            <span className="text-blue-400 text-xs">· Places limitées à 50 par session</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 leading-tight">
-            Webinaires de formation Afribourse
+          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ letterSpacing: '-0.02em' }}>
+            Investissez sur la BRVM<br />
+            <span className="text-blue-400">avec méthode et confiance.</span>
           </h1>
-          <p className="text-blue-200 text-lg max-w-2xl mb-10">
-            Des sessions live animées par nos experts marchés et analystes. Apprenez à investir sur la BRVM, décryptez les données financières et maîtrisez les graphiques — en direct, avec questions en temps réel.
+
+          <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mb-8 leading-relaxed">
+            3 sessions live avec des analystes BRVM. Analyse fondamentale, technique, plans d'action personnalisés — tout ce qu'il faut pour investir avec conviction.
           </p>
 
-          {/* 3 Pillars */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="flex flex-wrap gap-8 mb-10">
             {[
-              { icon: <Users className="w-5 h-5" />, title: 'Experts BRVM', desc: 'Analystes Afribourse & spécialistes marchés africains' },
-              { icon: <Clock className="w-5 h-5" />, title: 'Sessions live', desc: 'Questions en temps réel, cas pratiques et exercices' },
-              { icon: <Shield className="w-5 h-5" />, title: 'Contenu exclusif', desc: 'Supports PDF inclus, replay disponible pendant 30 jours' },
-            ].map((p) => (
-              <div key={p.title} className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                <div className="text-blue-300 mt-0.5 flex-shrink-0">{p.icon}</div>
-                <div>
-                  <p className="font-semibold text-white text-sm">{p.title}</p>
-                  <p className="text-blue-300 text-xs mt-0.5">{p.desc}</p>
-                </div>
+              { v: '3', l: 'sessions live' },
+              { v: '11h', l: 'de formation' },
+              { v: '50', l: 'places max' },
+              { v: '13 juin', l: '1ère session' },
+            ].map((k) => (
+              <div key={k.l}>
+                <p className="text-2xl sm:text-3xl font-extrabold text-white leading-none">{k.v}</p>
+                <p className="text-blue-300 text-xs mt-0.5">{k.l}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-4">
+            <button
+              onClick={scrollToRegistration}
+              className="bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-base px-8 py-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2"
+            >
+              Je m'inscris maintenant <ChevronRight className="w-5 h-5" />
+            </button>
+            <button
+              onClick={scrollToRegistration}
+              className="border border-blue-400/40 hover:bg-white/10 text-blue-200 font-semibold text-base px-6 py-4 rounded-xl transition-all"
+            >
+              Voir le programme ↓
+            </button>
+          </div>
+
+          <p className="mt-6 text-xs text-blue-400 flex items-center gap-1.5">
+            <span className="text-emerald-400">✓</span> Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
+          </p>
+        </div>
+      </section>
+
+      {/* ── Section 2 — Le problème ──────────────────────────────────────── */}
+      <section className="bg-gray-50 px-4 py-16 sm:px-6">
+        <div className="max-w-2xl mx-auto text-center space-y-6">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-4">Pourquoi ce programme existe</p>
+          <p className="text-gray-700 text-lg leading-relaxed">
+            La plupart des investisseurs africains perdent de l'argent non pas par manque d'ambition, mais par manque de méthode. Ils regardent les cours sans savoir pourquoi ils bougent.
+          </p>
+          <p className="text-gray-600 text-base leading-relaxed">
+            L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter. Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.
+          </p>
+          <p className="text-gray-700 text-base leading-relaxed font-medium">
+            Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout. Ce programme existe pour changer ça — concrètement, en 3 sessions.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Section 3 — Outcomes ─────────────────────────────────────────── */}
+      <section className="bg-white px-4 py-16 sm:px-6">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Ce que vous allez accomplir</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10" style={{ letterSpacing: '-0.01em' }}>
+            À la fin de ce parcours, vous aurez...
+          </h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {OUTCOMES.map((o) => (
+              <div key={o} className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-800 text-sm font-medium leading-snug">{o}</p>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Webinar cards — reuses the existing WebinarSection */}
-      <div className="-mt-6">
-        <WebinarSection />
-      </div>
+      {/* ── Section 4 — Programme ────────────────────────────────────────── */}
+      <section className="bg-gray-50 px-4 py-16 sm:px-6">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Le calendrier</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10" style={{ letterSpacing: '-0.01em' }}>
+            90 jours structurés — voici votre programme
+          </h2>
 
-      {/* FAQ */}
-      <div className="max-w-3xl mx-auto px-4 pb-20 sm:px-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6 mt-10">Questions fréquentes</h2>
-        <div className="space-y-4">
-          {[
-            {
-              q: 'Et si le webinaire ne répond pas à mes attentes ?',
-              a: "On vous rembourse. Intégralement, sans condition, sans justificatif à fournir. Envoyez-nous simplement un email dans les 48h suivant la session — le remboursement est traité dans les 2 jours ouvrés. C'est notre engagement pour que vous puissiez vous inscrire en toute confiance.",
-              highlight: true,
-            },
-            {
-              q: 'Comment se déroule un webinaire Afribourse ?',
-              a: 'Chaque session est diffusée en live via Zoom ou Google Meet. Vous recevez le lien de connexion par email 24h avant la session. Un chat en direct vous permet de poser vos questions en temps réel.',
-            },
-            {
-              q: 'Puis-je revoir le replay si je suis indisponible ?',
-              a: "Oui. Le replay est disponible pendant 30 jours après la session pour tous les participants inscrits, même si vous n'avez pas pu assister en direct.",
-            },
-            {
-              q: "Qu'est-ce que la préinscription ?",
-              a: 'La préinscription vous réserve votre place et vous garantit le tarif early bird parmi les 20 premiers. Vous recevrez les instructions de paiement par email — aucun paiement immédiat requis.',
-            },
-            {
-              q: 'Le contenu est-il adapté aux débutants ?',
-              a: 'Chaque webinaire indique son niveau. "Maîtriser les fondamentaux" est conçu pour les débutants complets. "Analyse fondamentale" et "Analyse technique" nécessitent des bases en finance.',
-            },
-          ].map(({ q, a, highlight }) => (
-            <details
-              key={q}
-              className={`rounded-xl border p-5 group ${highlight ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-gray-200'}`}
-            >
-              <summary className="font-semibold text-gray-800 cursor-pointer list-none flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  {highlight && <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
-                  {q}
-                </span>
-                <span className="text-gray-400 group-open:rotate-180 transition-transform text-lg leading-none flex-shrink-0">›</span>
-              </summary>
-              <p className="text-gray-600 text-sm mt-3 leading-relaxed">{a}</p>
-            </details>
-          ))}
+          <div className="relative">
+            <div className="absolute left-3.5 top-0 bottom-0 w-0.5 bg-gray-200" />
+            <div className="space-y-5">
+              {PROGRAMME.map((p, i) => (
+                <div key={i} className="relative flex gap-5">
+                  <div className={`w-7 h-7 rounded-full ${p.dot} flex-shrink-0 z-10 flex items-center justify-center mt-1`}>
+                    <Calendar className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className={`flex-1 rounded-xl border px-4 py-3 ${p.bg}`}>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{p.phase}</p>
+                    <p className={`font-bold text-sm mb-2 ${p.textColor}`}>{p.label}</p>
+                    <ul className="space-y-1">
+                      {p.items.map((item) => (
+                        <li key={item} className="text-xs text-gray-600 flex items-start gap-1.5">
+                          <span className="text-gray-300 mt-0.5 flex-shrink-0">›</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 text-center mt-6">* Le certificat est conditionnel à la complétion du quiz final</p>
         </div>
+      </section>
 
-        <div className="mt-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white text-center">
-          <BookOpen className="w-8 h-8 mx-auto mb-3 opacity-80" />
-          <p className="font-bold text-lg mb-1">Complétez aussi l'académie en ligne</p>
-          <p className="text-blue-200 text-sm mb-4">
-            Modules écrits, quiz, certificat — apprenez à votre rythme entre les webinaires.
+      {/* ── Sections 5, 6 & 9 — Inclusions + Pack + Webinaires + Inscription ── */}
+      <section ref={registrationRef} className="bg-white px-4 pt-14 pb-4 sm:px-6 scroll-mt-4">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Inscription</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-2" style={{ letterSpacing: '-0.01em' }}>
+            Tout ce que vous recevez avec votre inscription
+          </h2>
+          <p className="text-gray-500 text-center text-sm mb-10">Choisissez le pack complet ou commencez par une session individuelle.</p>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-12">
+            {INCLUSIONS.map((inc) => (
+              <div key={inc.title} className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 text-white">
+                  {inc.icon}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 text-sm">{inc.title}</p>
+                  <p className="text-xs text-gray-500 leading-snug mt-0.5">{inc.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Pack + webinaires individuels + modales d'inscription */}
+          <WebinarSection />
+        </div>
+      </section>
+
+      {/* ── Section 7 — Speakers ─────────────────────────────────────────── */}
+      <section className="bg-gray-50 px-4 py-16 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Vos formateurs</p>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10" style={{ letterSpacing: '-0.01em' }}>
+            Qui anime le programme
+          </h2>
+          <div className="grid sm:grid-cols-3 gap-6">
+            {SPEAKERS.map((s) => (
+              <div key={s.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+                <div
+                  className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-xl font-extrabold"
+                  style={{ background: s.color }}
+                >
+                  {s.initials}
+                </div>
+                <p className="font-bold text-gray-900 text-base mb-0.5">{s.name}</p>
+                <p className="text-xs font-semibold text-blue-600 mb-3">{s.title}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 8 — FAQ ──────────────────────────────────────────────── */}
+      <section className="bg-white px-4 py-16 sm:px-6">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">FAQ</p>
+          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-8">
+            Vos questions — nos réponses directes
+          </h2>
+          <div className="space-y-3">
+            {FAQ.map((item, i) => (
+              <FaqItem key={i} item={item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA final ────────────────────────────────────────────────────── */}
+      <section
+        style={{ background: 'linear-gradient(135deg, #0D2B4E 0%, #1a3a6b 100%)' }}
+        className="px-4 py-16 sm:px-6 text-white text-center"
+      >
+        <div className="max-w-xl mx-auto">
+          <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
+          <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
+          <p className="text-blue-200 mb-8 text-base leading-relaxed">
+            La cohorte de juin démarre le 13 juin. Les places sont limitées à 50 par session.
           </p>
           <button
-            onClick={() => navigate('/learn')}
-            className="bg-white text-blue-700 font-bold text-sm px-6 py-2.5 rounded-xl hover:bg-blue-50 transition-colors"
+            onClick={scrollToRegistration}
+            className="bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-base px-10 py-4 rounded-xl transition-all active:scale-95 shadow-lg"
           >
-            Accéder à l'académie
+            Rejoindre le parcours →
           </button>
+          <p className="mt-4 text-xs text-blue-400">Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé</p>
         </div>
-      </div>
+      </section>
+
+    </div>
+  );
+}
+
+// ─── FAQ accordion ────────────────────────────────────────────────────────────
+
+function FaqItem({ item }: { item: { q: string; a: string; highlight?: boolean } }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`rounded-xl border overflow-hidden transition-colors ${item.highlight ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+      >
+        <span className="font-semibold text-gray-800 text-sm flex items-center gap-2">
+          {item.highlight && <span className="text-emerald-500">✓</span>}
+          {item.q}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-200">
+          <p className="pt-3">{item.a}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -219,6 +219,7 @@ export default function AdminDashboard() {
   const [editorMode, setEditorMode] = useState<'none' | 'create' | 'edit'>('none');
   const [editingArticle, setEditingArticle] = useState<any | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -254,19 +255,34 @@ export default function AdminDashboard() {
         const article = await res.json();
         setEditingArticle(article);
         setEditorMode('edit');
+      } else {
+        alert(`Impossible de charger l'article (${res.status}).`);
       }
-    } catch {}
+    } catch {
+      alert('Erreur réseau lors du chargement de l\'article.');
+    }
   };
 
   const deleteArticle = async (id: string) => {
+    if (deleteLoading) return;
+    setDeleteLoading(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/admin/articles/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/articles/${id}`, {
         method: 'DELETE',
         credentials: 'include',
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(`Erreur suppression : ${data.message ?? res.statusText}`);
+        return;
+      }
       setDeleteConfirm(null);
       fetchArticles();
-    } catch {}
+    } catch {
+      alert('Erreur réseau lors de la suppression.');
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const fetchStats = async () => {
@@ -453,9 +469,10 @@ export default function AdminDashboard() {
     const uniqueUsers = Array.from(
       new Map(premiumIntents.map((i) => [i.user.id, i.user])).values()
     );
+    const q = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
     const csv = [
       'Nom,Prénom,Email',
-      ...uniqueUsers.map((u) => `${u.name},${u.lastname},${u.email}`),
+      ...uniqueUsers.map((u) => [q(u.name), q(u.lastname), q(u.email)].join(',')),
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1405,7 +1422,7 @@ export default function AdminDashboard() {
                 <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2"><Video className="w-4 h-4 text-blue-600" /> Envoyer le lien Zoom aux inscrits payés</h3>
                 <p className="text-sm text-gray-500 mb-4">Seuls les inscrits avec statut <strong>Payé</strong> recevront le lien.</p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <select value={zoomWebinarId} onChange={e => setZoomWebinarId(e.target.value)}
+                  <select value={zoomWebinarId} onChange={e => { setZoomWebinarId(e.target.value); setZoomStatus('idle'); setZoomResult(null); }}
                     className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                     <option value="">— Choisir le webinaire —</option>
                     {ZOOM_WEBINARS_LIST.map(w => <option key={w.id} value={w.id}>{w.label} ({w.date})</option>)}
@@ -1651,9 +1668,9 @@ export default function AdminDashboard() {
                       {deleteConfirm === a.id ? (
                         <div className="flex items-center gap-1">
                           <span className="text-xs text-red-600 font-medium">Confirmer ?</span>
-                          <button onClick={() => deleteArticle(a.id)}
-                            className="text-xs text-white bg-red-500 hover:bg-red-600 px-2 py-1 rounded font-semibold">
-                            Oui
+                          <button onClick={() => deleteArticle(a.id)} disabled={deleteLoading}
+                            className="text-xs text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 px-2 py-1 rounded font-semibold">
+                            {deleteLoading ? '...' : 'Oui'}
                           </button>
                           <button onClick={() => setDeleteConfirm(null)}
                             className="text-xs text-slate-600 hover:text-slate-900 px-2 py-1 rounded border border-slate-200">

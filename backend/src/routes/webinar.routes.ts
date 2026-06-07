@@ -6,14 +6,14 @@ import {
   sendZoomLinkToRegistrants,
   getWebinarPaymentStats,
 } from '../controllers/webinar.controller';
-import { auth } from '../middlewares/auth.middleware';
+import { auth, admin } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 router.get('/counts', getWebinarCounts);
 router.post('/preregister', preregisterWebinar);
-router.get('/registrations', auth, getWebinarRegistrations);
-router.get('/stats', auth, getWebinarPaymentStats);
-router.post('/send-zoom-link', auth, sendZoomLinkToRegistrants);
+router.get('/registrations', admin, getWebinarRegistrations);
+router.get('/stats', admin, getWebinarPaymentStats);
+router.post('/send-zoom-link', admin, sendZoomLinkToRegistrants);
 
 export default router;

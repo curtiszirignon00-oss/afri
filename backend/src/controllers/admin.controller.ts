@@ -314,7 +314,8 @@ export const getTrialStats = async (req: AuthRequest, res: Response) => {
 // ─────────────────────────────────────────────────────────────────
 export const getAIFeedbackStats = async (req: AuthRequest, res: Response) => {
   try {
-    const days = parseInt((req.query.days as string) ?? '30', 10);
+    const daysRaw = parseInt((req.query.days as string) ?? '30', 10);
+    const days = Number.isFinite(daysRaw) && daysRaw > 0 && daysRaw <= 365 ? daysRaw : 30;
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     // Récupérer tous les feedbacks sur la période

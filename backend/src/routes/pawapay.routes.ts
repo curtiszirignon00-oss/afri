@@ -6,7 +6,7 @@ import {
   createRefund,
   getDepositStatus,
 } from '../controllers/pawapay.controller';
-import { auth } from '../middlewares/auth.middleware';
+import { auth, optionalAuth } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -15,9 +15,10 @@ const router = Router();
 router.post('/webhook/deposit', handleDepositCallback);
 router.post('/webhook/refund', handleRefundCallback);
 
-// --- Routes authentifiées ---
-router.post('/deposit', auth, createDeposit);
+// --- Routes dépôt : optionalAuth pour permettre les paiements anonymes (webinaires) ---
+router.post('/deposit', optionalAuth, createDeposit);
+router.get('/deposit/:depositId/status', optionalAuth, getDepositStatus);
+// --- Remboursement : authentification requise ---
 router.post('/refund', auth, createRefund);
-router.get('/deposit/:depositId/status', auth, getDepositStatus);
 
 export default router;
