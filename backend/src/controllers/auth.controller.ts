@@ -62,14 +62,16 @@ export async function register(req: Request, res: Response, next: NextFunction) 
             return next(createError.internal("Impossible de créer l'utilisateur."));
         }
 
-        // 5. Envoyer l'email de confirmation (non-bloquant)
+        // 5. Envoyer l'email de confirmation
         let emailSent = false;
+        log.info(`[AUTH] Tentative envoi email confirmation → ${email}`);
         try {
-            await sendConfirmationEmail({ email, name, confirmationToken });
+            await sendConfirmationEmail({ email, name: name || 'Investisseur', confirmationToken });
             emailSent = true;
+            log.info(`[AUTH] ✅ Email confirmation envoyé → ${email}`);
         } catch (err: any) {
             emailSent = false;
-            log.warn(`[AUTH] Email de confirmation non envoyé pour ${email}: ${err?.message}`);
+            log.error(`[AUTH] ❌ Email de confirmation non envoyé pour ${email}: ${err?.message}`);
         }
 
         // 6. Créer automatiquement un portfolio pour le nouvel utilisateur
@@ -106,7 +108,7 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
         const message = emailSent
             ? "Inscription réussie ! Un email de confirmation a été envoyé à votre adresse."
-            : "Inscription réussie ! Vous pouvez vous connecter dès maintenant.";
+            : "Inscription réussie ! Vérifiez votre boîte mail — si vous ne recevez pas l'email, utilisez le lien 'Renvoyer l'email de confirmation'.";
 
         return res.status(201).json({
             message,

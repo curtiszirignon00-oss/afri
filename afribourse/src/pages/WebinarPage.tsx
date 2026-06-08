@@ -46,12 +46,24 @@ const PROGRAMME = [
     bg: 'bg-white border-gray-100',
   },
   {
-    phase: '20–21 juin — Session 2',
-    label: 'Analyse fondamentale · 4h live',
+    phase: '20 juin — Session 2',
+    label: 'Analyse fondamentale Partie 1 · 3h live',
     items: [
-      'Lire un bilan, un compte de résultat, des ratios clés',
+      'Lire un bilan et un compte de résultat',
+      'Comprendre les ratios financiers clés',
+      'Identifier les entreprises BRVM sous-évaluées',
+    ],
+    textColor: 'text-emerald-700',
+    dot: 'bg-emerald-600',
+    bg: 'bg-emerald-50 border-emerald-100',
+  },
+  {
+    phase: '21 juin — Session 3',
+    label: 'Analyse fondamentale Partie 2 · 3h live',
+    items: [
       'Valoriser une action BRVM avec DCF, PER, VCB',
       'Cas pratiques sur des entreprises cotées réelles',
+      'Construire sa thèse d\'investissement',
     ],
     textColor: 'text-emerald-700',
     dot: 'bg-emerald-600',
@@ -60,25 +72,37 @@ const PROGRAMME = [
   {
     phase: '22 juin — J+1',
     label: "Plan d'action Analyse fondamentale",
-    items: ["PDF avec 3 entreprises à analyser cette semaine selon la méthode apprise"],
+    items: ["PDF avec 3 entreprises à analyser selon la méthode apprise"],
     textColor: 'text-slate-600',
     dot: 'bg-slate-400',
     bg: 'bg-white border-gray-100',
   },
   {
-    phase: '27–28 juin — Session 3',
-    label: 'Analyse technique · 4h live',
+    phase: '27 juin — Session 4',
+    label: 'Analyse technique Partie 1 · 3h live',
     items: [
       'Lire les graphiques, repérer les patterns clés',
-      "Timing d'entrée et de sortie sur la BRVM",
-      'Indicateurs : RSI, MACD, moyennes mobiles',
+      'Supports, résistances et tendances sur la BRVM',
+      'Timing d\'entrée et de sortie',
     ],
     textColor: 'text-orange-700',
     dot: 'bg-orange-500',
     bg: 'bg-orange-50 border-orange-100',
   },
   {
-    phase: '29 juin',
+    phase: '28 juin — Session 5',
+    label: 'Analyse technique Partie 2 · 3h live',
+    items: [
+      'Indicateurs : RSI, MACD, moyennes mobiles',
+      'Signaux d\'achat et de vente sur actions BRVM',
+      'Cas pratiques sur graphiques réels',
+    ],
+    textColor: 'text-orange-700',
+    dot: 'bg-orange-500',
+    bg: 'bg-orange-50 border-orange-100',
+  },
+  {
+    phase: '29 juin — J+1',
     label: "Plan d'action Analyse technique",
     items: ["PDF avec 5 configurations graphiques à surveiller sur la BRVM"],
     textColor: 'text-slate-600',
@@ -108,7 +132,7 @@ const PROGRAMME = [
 ];
 
 const INCLUSIONS = [
-  { icon: <Users className="w-5 h-5" />, title: '3 webinaires live', desc: 'Fondamentaux (3h) · Analyse fondamentale (4h) · Analyse technique (4h)' },
+  { icon: <Users className="w-5 h-5" />, title: '5 sessions live · 15h', desc: 'S1 Fondamentaux (3h) · S2+S3 Fondamentale (2×3h) · S4+S5 Technique (2×3h)' },
   { icon: <MessageSquare className="w-5 h-5" />, title: 'Communauté 3 mois', desc: "Groupe d'investisseurs BRVM actifs avec suivi hebdomadaire" },
   { icon: <BookOpen className="w-5 h-5" />, title: "3 plans d'action", desc: 'Un PDF livré le lendemain de chaque session avec des exercices concrets' },
   { icon: <TrendingUp className="w-5 h-5" />, title: 'Deal Flow — 12 éditions', desc: 'Chaque semaine : les opportunités repérées par nos analystes' },
@@ -204,8 +228,8 @@ export default function WebinarPage() {
 
           <div className="flex flex-wrap gap-8 mb-10">
             {[
-              { v: '3', l: 'sessions live' },
-              { v: '11h', l: 'de formation' },
+              { v: '5', l: 'sessions live' },
+              { v: '15h', l: 'de formation' },
               { v: '50', l: 'places max' },
               { v: '13 juin', l: '1ère session' },
             ].map((k) => (
@@ -314,7 +338,7 @@ export default function WebinarPage() {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-2" style={{ letterSpacing: '-0.01em' }}>
             Tout ce que vous recevez avec votre inscription
           </h2>
-          <p className="text-gray-500 text-center text-sm mb-10">Choisissez le pack complet ou commencez par une session individuelle.</p>
+          <p className="text-gray-500 text-center text-sm mb-10">5 sessions · 15h de formation. Pack complet ou achat par thème (fondamentaux, fondamentale, technique).</p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-12">
             {INCLUSIONS.map((inc) => (
