@@ -76,8 +76,15 @@ export default defineConfig({
         globIgnores: ['**/screenshot/**', '**/AppImages/**'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB
         // SPA: route all navigation to index.html
+        // Exclude static files, XML, TXT and API routes from SW navigate fallback
         navigateFallback: 'index.html',
-        navigateFallbackAllowlist: [/^(?!\/(api|__)).*$/],
+        navigateFallbackDenylist: [
+          /^\/sitemap\.xml$/,
+          /^\/robots\.txt$/,
+          /^\/[^/]+\.xml$/,
+          /^\/[^/]+\.txt$/,
+          /^\/api\//,
+        ],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
