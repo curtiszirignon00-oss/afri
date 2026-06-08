@@ -1,5 +1,5 @@
 import { log } from '../config/logger';
-import transporter from '../config/mailer';
+import transporter, { smtpReady } from '../config/mailer';
 import config from '../config/environnement';
 
 interface SendEmailConfirmationParams {
@@ -29,7 +29,9 @@ export async function sendConfirmationEmail({
   name,
   confirmationToken,
 }: SendEmailConfirmationParams): Promise<void> {
+  const displayName = (name && name.trim()) ? name.trim() : 'Investisseur';
   const confirmationUrl = `${config.app.frontendUrl}/confirmer-inscription?token=${confirmationToken}`;
+  log.info(`[EMAIL] Envoi email confirmation → ${email} (token: ${confirmationToken?.slice(0, 10)}...)`);
 
   const html = `
     <!DOCTYPE html>
@@ -127,7 +129,7 @@ export async function sendConfirmationEmail({
           </div>
         </div>
 
-        <h1>Bienvenue ${name} !</h1>
+        <h1>Bienvenue ${displayName} !</h1>
 
         <p>Merci de vous être inscrit sur AfriBourse, votre plateforme d'apprentissage et de simulation boursière.</p>
 
@@ -156,18 +158,18 @@ export async function sendConfirmationEmail({
   `;
 
   const text = `
-    Bienvenue ${name} !
+Bienvenue ${displayName} !
 
-    Merci de vous être inscrit sur AfriBourse.
+Merci de vous être inscrit sur AfriBourse.
 
-    Pour confirmer votre adresse email, veuillez cliquer sur le lien suivant :
-    ${confirmationUrl}
+Pour confirmer votre adresse email, veuillez cliquer sur le lien suivant :
+${confirmationUrl}
 
-    Ce lien expire dans 72 heures.
+Ce lien expire dans 72 heures.
 
-    Si vous n'avez pas créé de compte sur AfriBourse, ignorez cet email.
+Si vous n'avez pas créé de compte sur AfriBourse, ignorez cet email.
 
-    AfriBourse - Votre plateforme d'apprentissage boursier
+AfriBourse - Votre plateforme d'apprentissage boursier
   `;
 
   await sendEmail({
@@ -530,45 +532,45 @@ AfriBourse — Votre plateforme d'investissement africaine
 }
 
 /**
- * Fonction générique d'envoi d'email
+ * Fonction générique d'envoi d'email avec retry automatique (3 tentatives)
  */
 export async function sendEmail({ to, subject, html, text }: SendEmailParams): Promise<void> {
-  log.debug(`📧 [EMAIL] Tentative d'envoi d'email:`);
-  log.debug(`   → Destinataire: ${to}`);
-  log.debug(`   → Sujet: ${subject}`);
-  log.debug(`   → Expéditeur: "${config.email.fromName}" <${config.email.from}>`);
-  log.debug(`   → Serveur SMTP: ${config.email.host}:${config.email.port}`);
-
-  try {
-    const info = await transporter.sendMail({
-      from: `"${config.email.fromName}" <${config.email.from}>`,
-      to,
-      subject,
-      html,
-      text: text || '',
-    });
-
-    log.debug(`✅ [EMAIL] Email envoyé avec succès!`);
-    log.debug(`   → Message ID: ${info.messageId}`);
-    log.debug(`   → Response: ${info.response}`);
-    log.debug(`   → Accepted: ${info.accepted?.join(', ') || 'N/A'}`);
-    log.debug(`   → Rejected: ${info.rejected?.join(', ') || 'Aucun'}`);
-  } catch (error: any) {
-    log.error(`❌ [EMAIL] ÉCHEC de l'envoi de l'email à ${to}`);
-    log.error(`   → Type d'erreur: ${error.name || 'Unknown'}`);
-    log.error(`   → Message: ${error.message || 'Aucun message'}`);
-    log.error(`   → Code: ${error.code || 'N/A'}`);
-    log.error(`   → Command: ${error.command || 'N/A'}`);
-
-    if (error.response) {
-      log.error(`   → SMTP Response: ${error.response}`);
-    }
-
-    // Log complet de l'erreur pour le debugging
-    log.error(`   → Stack trace:`, error.stack);
-
-    throw new Error(`Échec de l'envoi de l'email: ${error.message || 'Erreur inconnue'}`);
+  if (!smtpReady) {
+    log.error(`[EMAIL] ❌ SMTP non configuré — email non envoyé à ${to} (sujet: "${subject}")`);
+    throw new Error('SMTP non configuré : variables SMTP_HOST/SMTP_USER/SMTP_PASS manquantes');
   }
+
+  const MAX_ATTEMPTS = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const info = await transporter.sendMail({
+        from: `"${config.email.fromName}" <${config.email.from}>`,
+        to,
+        subject,
+        html,
+        text: text || '',
+      });
+
+      log.info(`[EMAIL] ✅ Envoyé à ${to} (sujet: "${subject}", messageId: ${info.messageId})`);
+      return;
+    } catch (error: any) {
+      lastError = error;
+      log.error(
+        `[EMAIL] ❌ Tentative ${attempt}/${MAX_ATTEMPTS} échouée pour ${to} — ` +
+        `${error.code || error.name}: ${error.message}` +
+        (error.response ? ` | SMTP: ${error.response}` : '')
+      );
+
+      if (attempt < MAX_ATTEMPTS) {
+        // Backoff exponentiel : 2s, 4s
+        await new Promise(r => setTimeout(r, attempt * 2000));
+      }
+    }
+  }
+
+  throw new Error(`Échec de l'envoi de l'email après ${MAX_ATTEMPTS} tentatives : ${lastError?.message}`);
 }
 
 /**
@@ -2892,9 +2894,9 @@ export async function sendReengagementEmail0({
   email,
   name,
   confirmationToken,
-}: { email: string; name: string; confirmationToken: string }): Promise<void> {
+}: { email: string; name: string | null; confirmationToken: string }): Promise<void> {
   const confirmationUrl = `${config.app.frontendUrl}/confirmer-inscription?token=${confirmationToken}`;
-  const firstName = name.split(' ')[0];
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -4411,10 +4413,14 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
   'w1-fondamentaux':             { title: 'Fondamentaux de la bourse',        date: '23 mai 2026',          accentColor: '#1D4ED8' },
   'w2-fondamentale':             { title: 'Analyse fondamentale',              date: '30–31 mai 2026',       accentColor: '#059669' },
   'w3-technique':                { title: 'Analyse technique',                 date: '6–7 juin 2026',        accentColor: '#EA580C' },
-  'w1-fondamentaux-juin':        { title: 'Fondamentaux de la bourse',        date: '13 juin 2026',          accentColor: '#1D4ED8' },
-  'w2-fondamentale-juin':        { title: 'Analyse fondamentale',              date: '20–21 juin 2026',       accentColor: '#059669' },
-  'w3-technique-juin':           { title: 'Analyse technique',                 date: '27–28 juin 2026',       accentColor: '#EA580C' },
-  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',  date: '13 juin → 28 juin',    accentColor: '#1D4ED8' },
+  'w1-fondamentaux-juin':        { title: 'Fondamentaux de la bourse',              date: '13 juin 2026',        accentColor: '#1D4ED8' },
+  'w2-fondamentale-juin':        { title: 'Analyse fondamentale',                   date: '20–21 juin 2026',     accentColor: '#059669' },
+  'w2a-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 1',        date: '20 juin 2026',        accentColor: '#059669' },
+  'w2b-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 2',        date: '21 juin 2026',        accentColor: '#059669' },
+  'w3-technique-juin':           { title: 'Analyse technique',                       date: '27–28 juin 2026',     accentColor: '#EA580C' },
+  'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '27 juin 2026',        accentColor: '#EA580C' },
+  'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '28 juin 2026',        accentColor: '#EA580C' },
+  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '13 juin → 28 juin',  accentColor: '#1D4ED8' },
 };
 
 export async function sendWebinarPaymentConfirmEmail({
@@ -5146,6 +5152,520 @@ Formateur — Afribourse`;
   });
 }
 
+export async function sendDangoteIPONewsletterEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name || 'Investisseur').split(' ')[0];
+  const newsUrl = 'https://www.africbourse.com/news';
+
+  const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
+  <title>AfriBourse — L'IPO du siècle arrive à la BRVM</title>
+  <style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; }
+      .kpi-cell { display: block !important; width: 50% !important; float: left; box-sizing: border-box; }
+      .hide-mobile { display: none !important; }
+      .hero-title { font-size: 22px !important; line-height: 1.25 !important; }
+      .section-title { font-size: 15px !important; }
+      .body-text { font-size: 14px !important; }
+      .pad-mobile { padding-left: 20px !important; padding-right: 20px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+
+<!-- PREHEADER -->
+<div style="display:none;max-height:0;overflow:hidden;font-size:1px;color:#f0f2f5;">
+  La plus grande IPO de l'histoire africaine cible la BRVM. Tout ce qu'il faut savoir sur la cotation de la Dangote Refinery.&nbsp;​&zwnj;&nbsp;
+</div>
+
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#f0f2f5;">
+<tr><td align="center" style="padding:20px 10px;">
+<table role="presentation" class="email-container" cellspacing="0" cellpadding="0" border="0" width="600" style="margin:auto;">
+
+  <!-- ── HEADER TOPBAR ── -->
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:16px 32px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#00D4A8;letter-spacing:-0.02em;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.02em;">Bourse</span>
+            <span style="display:inline-block;margin-left:10px;font-size:10px;color:#8898B0;letter-spacing:0.1em;text-transform:uppercase;vertical-align:middle;">BRVM · Marchés Africains</span>
+          </td>
+          <td align="right">
+            <span style="font-size:10px;color:#8898B0;">Juin 2026</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── ÉDITION LABEL ── -->
+  <tr>
+    <td style="background-color:#0d1e38;padding:8px 32px;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+        <tr>
+          <td style="padding-right:8px;">
+            <span style="display:inline-block;background-color:rgba(232,75,75,0.2);color:#E84B4B;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:100px;">Édition Spéciale</span>
+          </td>
+          <td style="padding-right:8px;">
+            <span style="display:inline-block;background-color:rgba(245,166,35,0.15);color:#F5A623;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:100px;">IPO 2026</span>
+          </td>
+          <td>
+            <span style="display:inline-block;background-color:rgba(0,212,168,0.12);color:#00D4A8;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:3px 10px;border-radius:100px;">BRVM · UEMOA</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SALUTATION PERSONNALISÉE ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:24px 32px 0;" class="pad-mobile">
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#A8BDD4;">
+        Bonjour <strong style="color:#ffffff;">${firstName}</strong>,
+      </p>
+      <p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:#8898B0;">
+        Cette semaine, nous suivons de très près un événement qui pourrait marquer l'histoire des marchés financiers africains. Bonne lecture.
+      </p>
+    </td>
+  </tr>
+
+  <!-- ── NOTICE ACTUALITÉS ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:12px 32px 0;" class="pad-mobile">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="background-color:rgba(0,212,168,0.08);border:1px solid rgba(0,212,168,0.2);border-radius:8px;padding:10px 16px;">
+            <p style="margin:0;font-size:12px;line-height:1.5;color:#A8BDD4;">
+              📰 <strong style="color:#00D4A8;">Toutes nos actualités BRVM</strong> sont disponibles en temps réel sur AfriBourse —
+              <a href="${newsUrl}" style="color:#00D4A8;text-decoration:underline;font-weight:700;">africbourse.com/news</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── HERO SECTION ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:24px 32px 28px;" class="pad-mobile">
+
+      <p style="margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#00D4A8;">
+        🔴 Dossier exclusif
+      </p>
+
+      <h1 class="hero-title" style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;line-height:1.2;color:#ffffff;">
+        La raffinerie Dangote s'apprête à ouvrir son capital.<br/>
+        <span style="color:#00D4A8;">L'Afrique de l'Ouest est invitée à l'IPO du siècle.</span>
+      </h1>
+
+      <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#A8BDD4;">
+        Le plus grand actif industriel privé d'Afrique va entrer en bourse. La BRVM joue un rôle central dans ce projet transfrontalier inédit — une opportunité historique pour les investisseurs de la zone UEMOA.
+      </p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr><td style="border-top:1px solid rgba(255,255,255,0.08);font-size:0;">&nbsp;</td></tr>
+      </table>
+
+      <p style="margin:14px 0 0;font-size:11px;color:#8898B0;">
+        AfriBourse Newsroom &nbsp;·&nbsp; Juin 2026 &nbsp;·&nbsp; Temps de lecture : 4 min
+      </p>
+    </td>
+  </tr>
+
+  <!-- ── BANDE KPI ── -->
+  <tr>
+    <td style="background-color:#0d1e38;padding:0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td class="kpi-cell" width="33%" style="padding:18px 16px 18px 24px;border-right:1px solid rgba(255,255,255,0.06);">
+            <p style="margin:0 0 4px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8898B0;">Valorisation</p>
+            <p style="margin:0 0 3px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#F5A623;line-height:1;">40–50 Md$</p>
+            <p style="margin:0;font-size:10px;color:#8898B0;">Record africain absolu</p>
+          </td>
+          <td class="kpi-cell" width="33%" style="padding:18px 16px;border-right:1px solid rgba(255,255,255,0.06);">
+            <p style="margin:0 0 4px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8898B0;">Capital offert</p>
+            <p style="margin:0 0 3px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#00D4A8;line-height:1;">~10 %</p>
+            <p style="margin:0;font-size:10px;color:#8898B0;">4 à 5 milliards de dollars</p>
+          </td>
+          <td class="kpi-cell" width="33%" style="padding:18px 24px 18px 16px;">
+            <p style="margin:0 0 4px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8898B0;">Lancement cible</p>
+            <p style="margin:0 0 3px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#00D4A8;line-height:1;">Sept. 2026</p>
+            <p style="margin:0;font-size:10px;color:#8898B0;">Souscription : août 2026</p>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3" style="border-top:1px solid rgba(255,255,255,0.06);padding:16px 24px;background-color:#0a1830;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td width="50%" style="padding-right:16px;border-right:1px solid rgba(255,255,255,0.06);">
+                  <p style="margin:0 0 3px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8898B0;">Capacité de raffinage</p>
+                  <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;">650 000 b/j &nbsp;<span style="font-size:11px;color:#8898B0;font-family:Arial,sans-serif;font-weight:400;">N°1 mondial</span></p>
+                </td>
+                <td width="50%" style="padding-left:16px;">
+                  <p style="margin:0 0 3px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8898B0;">Intérêt pré-IPO</p>
+                  <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#F5A623;">~2 Md$ <span style="font-size:11px;color:#8898B0;font-family:Arial,sans-serif;font-weight:400;">demandes avant ouverture publique</span></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── CORPS ARTICLE ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:32px 32px 8px;" class="pad-mobile">
+
+      <!-- SECTION 1 -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:24px;">
+        <tr>
+          <td style="border-left:3px solid #00D4A8;padding-left:14px;">
+            <h2 class="section-title" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:#0A1628;">Un géant industriel sort de l'ombre</h2>
+          </td>
+        </tr>
+      </table>
+
+      <p class="body-text" style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#344563;">
+        Inaugurée en 2023 à Lekki (Lagos), la <strong style="color:#0A1628;">Dangote Petroleum Refinery</strong> est la plus grande raffinerie à train unique au monde. Avec <strong style="color:#0A1628;">650 000 barils raffinés par jour</strong>, opérant à 99 % de ses capacités, elle a radicalement transformé le paysage énergétique du Nigeria.
+      </p>
+      <p class="body-text" style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#344563;">
+        Construite pour environ 20 milliards de dollars, elle exporte aujourd'hui son diesel, kérosène et polypropylène vers le Ghana, le Togo, le Cameroun et jusqu'en Europe — les exportations de kérosène ayant progressé de <strong style="color:#0A1628;">770 %</strong> entre 2024 et 2026.
+      </p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;">
+        <tr>
+          <td style="background-color:#FFF9EE;border-left:3px solid #F5A623;border-radius:0 8px 8px 0;padding:16px 20px;">
+            <p style="margin:0 0 8px;font-size:14px;font-style:italic;line-height:1.6;color:#5C4A1E;">
+              « We are trying to make sure that by September, we'll be out there in the market to sell the IPO. »
+            </p>
+            <p style="margin:0;font-size:11px;color:#8C7340;">— <strong>Aliko Dangote</strong>, lors de la visite de Femi Otedola au complexe de Lekki, 20 mai 2026</p>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:24px 0;">
+        <tr><td style="border-top:1px solid #E8ECF0;font-size:0;">&nbsp;</td></tr>
+      </table>
+
+      <!-- SECTION 2 -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:24px;">
+        <tr>
+          <td style="border-left:3px solid #00D4A8;padding-left:14px;">
+            <h2 class="section-title" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:#0A1628;">L'IPO africaine qui brise tous les records</h2>
+          </td>
+        </tr>
+      </table>
+
+      <p class="body-text" style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#344563;">
+        La cession de <strong style="color:#0A1628;">~10 % du capital</strong> représente une transaction de <strong style="color:#0A1628;">4 à 5 milliards de dollars</strong> sur la base d'une valorisation estimée entre 40 et 50 Md$. Pour comparaison, l'IPO MTN Nigeria de 2019 — jusqu'ici la plus grande sur la NGX — avait levé 876 millions de dollars, soit <strong style="color:#0A1628;">5× moins</strong>.
+      </p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:20px 0;border-radius:8px;overflow:hidden;border:1px solid #E8ECF0;">
+        <tr>
+          <td style="background-color:#F7F9FC;padding:6px 16px;border-bottom:1px solid #E8ECF0;">
+            <p style="margin:0;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#8898B0;">Mise en perspective</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="padding:8px 12px;background-color:#FFF8ED;border-radius:6px;margin-bottom:6px;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                      <td><p style="margin:0;font-size:12px;color:#5C4A1E;font-weight:600;">Dangote Refinery IPO (2026)</p></td>
+                      <td align="right"><p style="margin:0;font-size:14px;font-weight:700;color:#F5A623;">4–5 Md$</p></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr><td style="height:6px;"></td></tr>
+              <tr>
+                <td style="padding:8px 12px;background-color:#F7F9FC;border-radius:6px;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                      <td><p style="margin:0;font-size:12px;color:#8898B0;">MTN Nigeria (2019, précédent record)</p></td>
+                      <td align="right"><p style="margin:0;font-size:14px;font-weight:700;color:#8898B0;">876 M$</p></td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:24px 0;">
+        <tr><td style="border-top:1px solid #E8ECF0;font-size:0;">&nbsp;</td></tr>
+      </table>
+
+      <!-- SECTION 3 -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:24px;">
+        <tr>
+          <td style="border-left:3px solid #00D4A8;padding-left:14px;">
+            <h2 class="section-title" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:#0A1628;">La BRVM au cœur du dispositif pan-africain</h2>
+          </td>
+        </tr>
+      </table>
+
+      <p class="body-text" style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#344563;">
+        Début avril 2026, le <strong style="color:#0A1628;">Nigerian Exchange Group (NGX)</strong> a réuni à Lagos les dirigeants des cinq grandes bourses africaines pour structurer une cotation multi-marchés simultanée inédite.
+      </p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:16px 0;">
+        <tr>
+          <td style="padding-right:6px;padding-bottom:6px;">
+            <span style="display:inline-block;background-color:#0A1628;color:#00D4A8;font-size:10px;font-weight:700;padding:5px 12px;border-radius:6px;">🇳🇬 NGX Lagos</span>
+          </td>
+          <td style="padding-right:6px;padding-bottom:6px;">
+            <span style="display:inline-block;background-color:#EEF9F6;color:#0A7A60;border:1px solid #B8E8DA;font-size:10px;font-weight:700;padding:5px 12px;border-radius:6px;">🇨🇮 BRVM Abidjan</span>
+          </td>
+          <td style="padding-right:6px;padding-bottom:6px;">
+            <span style="display:inline-block;background-color:#F7F9FC;color:#344563;border:1px solid #E0E6EF;font-size:10px;font-weight:600;padding:5px 12px;border-radius:6px;">🇿🇦 JSE</span>
+          </td>
+          <td style="padding-right:6px;padding-bottom:6px;">
+            <span style="display:inline-block;background-color:#F7F9FC;color:#344563;border:1px solid #E0E6EF;font-size:10px;font-weight:600;padding:5px 12px;border-radius:6px;">🇰🇪 NSE</span>
+          </td>
+          <td style="padding-bottom:6px;">
+            <span style="display:inline-block;background-color:#F7F9FC;color:#344563;border:1px solid #E0E6EF;font-size:10px;font-weight:600;padding:5px 12px;border-radius:6px;">🇬🇭 GSE</span>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:16px 0;">
+        <tr>
+          <td style="background-color:#EEF9F6;border-left:3px solid #00D4A8;border-radius:0 8px 8px 0;padding:16px 20px;">
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#1A4D3E;">
+              <strong style="color:#0A7A60;">Ce que cela signifie concrètement :</strong> Un investisseur basé à Abidjan, Dakar ou Lomé pourrait, sans intermédiaire complexe, devenir actionnaire d'un géant industriel nigérian via son courtier BRVM habituel. C'est la première IPO pan-africaine conçue comme telle dès sa conception.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:24px 0;">
+        <tr><td style="border-top:1px solid #E8ECF0;font-size:0;">&nbsp;</td></tr>
+      </table>
+
+      <!-- SECTION 4 -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:24px;">
+        <tr>
+          <td style="border-left:3px solid #F5A623;padding-left:14px;">
+            <h2 class="section-title" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:#0A1628;">Innovation financière : investir en FCFA, encaisser en dollars</h2>
+          </td>
+        </tr>
+      </table>
+
+      <p class="body-text" style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#344563;">
+        L'une des caractéristiques les plus remarquables de cette IPO est sa structure de rémunération. Les actions seraient souscrites en monnaie locale — mais les dividendes seraient versés en <strong style="color:#0A1628;">dollars américains</strong>, adossés aux <strong style="color:#0A1628;">6,4 milliards de dollars</strong> de recettes d'exportation annuelles de la raffinerie.
+      </p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:16px 0;">
+        <tr>
+          <td style="background-color:#FFFBF0;border-left:3px solid #F5A623;border-radius:0 8px 8px 0;padding:14px 18px;">
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#5C4A1E;">
+              ⚠️ <strong>Note :</strong> Cette structure est en attente de validation finale de la SEC nigériane. Si approuvée, elle offrirait aux investisseurs de la zone CFA une protection naturelle contre la dépréciation monétaire, sans sortie de capitaux hors du continent.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+
+  <!-- ── TIMELINE ── -->
+  <tr>
+    <td style="background-color:#F7F9FC;padding:28px 32px;" class="pad-mobile">
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:20px;">
+        <tr>
+          <td style="border-left:3px solid #0A1628;padding-left:14px;">
+            <h2 class="section-title" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:#0A1628;">Le calendrier à retenir</h2>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td width="92" valign="top" style="padding-bottom:16px;padding-right:12px;">
+            <span style="display:inline-block;background-color:#EEF9F6;color:#0A7A60;font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 8px;border-radius:4px;white-space:nowrap;">Avr. 2026</span>
+          </td>
+          <td valign="top" style="padding-bottom:16px;border-bottom:1px solid #E0E6EF;">
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#344563;"><strong style="color:#0A1628;">Réunion NGX à Lagos</strong> — JSE, NSE, GSE et BRVM autour de la table pour structurer la cotation multi-bourses. Dépôt du prospectus auprès de la SEC Nigeria.</p>
+          </td>
+        </tr>
+        <tr><td colspan="2" style="height:12px;"></td></tr>
+        <tr>
+          <td width="92" valign="top" style="padding-bottom:16px;padding-right:12px;">
+            <span style="display:inline-block;background-color:#FFF8ED;color:#A06D10;font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 8px;border-radius:4px;white-space:nowrap;">Mai 2026</span>
+          </td>
+          <td valign="top" style="padding-bottom:16px;border-bottom:1px solid #E0E6EF;">
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#344563;"><strong style="color:#0A1628;">Femi Otedola investit 100 M$</strong> en placement privé. Les demandes pré-IPO avoisinent les 2 Md$. Aliko Dangote confirme septembre 2026 comme cible de lancement.</p>
+          </td>
+        </tr>
+        <tr><td colspan="2" style="height:12px;"></td></tr>
+        <tr>
+          <td width="92" valign="top" style="padding-bottom:16px;padding-right:12px;">
+            <span style="display:inline-block;background-color:#EEF9F6;color:#0A7A60;font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 8px;border-radius:4px;white-space:nowrap;">Août 2026</span>
+          </td>
+          <td valign="top" style="padding-bottom:16px;border-bottom:1px solid #E0E6EF;">
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#344563;"><strong style="color:#0A1628;">Ouverture souscription publique</strong> sur la NGX (cotation principale). Fenêtre d'environ 4 semaines pour les investisseurs particuliers et institutionnels.</p>
+          </td>
+        </tr>
+        <tr><td colspan="2" style="height:12px;"></td></tr>
+        <tr>
+          <td width="92" valign="top" style="padding-right:12px;">
+            <span style="display:inline-block;background-color:#0A1628;color:#00D4A8;font-size:9px;font-weight:700;letter-spacing:0.05em;padding:4px 8px;border-radius:4px;white-space:nowrap;">Sept. 2026</span>
+          </td>
+          <td valign="top">
+            <p style="margin:0;font-size:13px;line-height:1.5;color:#344563;"><strong style="color:#0A1628;">Cotation officielle NGX</strong> + lancement multi-bourses. Modalités BRVM en cours de finalisation — répartition du flottant, souscription FCFA, règlement-livraison transfrontalier.</p>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-top:20px;">
+        <tr>
+          <td style="background-color:#0A1628;border-radius:8px;padding:14px 18px;">
+            <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#8898B0;">Banques d'affaires mandatées</p>
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#C4D5E8;">
+              <strong style="color:#00D4A8;">Stanbic IBTC Capital</strong> — Placement international &nbsp;·&nbsp;
+              <strong style="color:#00D4A8;">Vetiva Capital</strong> — Distribution retail &nbsp;·&nbsp;
+              <strong style="color:#00D4A8;">FirstCap</strong> — Institutionnels Nigeria
+            </p>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+
+  <!-- ── OPPORTUNITÉS & RISQUES ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:28px 32px;" class="pad-mobile">
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:20px;">
+        <tr>
+          <td style="border-left:3px solid #0A1628;padding-left:14px;">
+            <h2 class="section-title" style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:700;color:#0A1628;">Pour les investisseurs UEMOA : ce qu'il faut retenir</h2>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td width="48%" valign="top" style="padding-right:12px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="background-color:#EEF9F6;border-radius:8px;padding:16px 18px;">
+                  <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#0A7A60;">✦ Opportunités</p>
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr><td valign="top" style="padding-bottom:8px;"><p style="margin:0;font-size:12px;line-height:1.5;color:#1A4D3E;"><span style="color:#00D4A8;font-weight:700;">✓</span> Accès inédit à un actif industriel mondial via la BRVM</p></td></tr>
+                    <tr><td valign="top" style="padding-bottom:8px;"><p style="margin:0;font-size:12px;line-height:1.5;color:#1A4D3E;"><span style="color:#00D4A8;font-weight:700;">✓</span> Dividendes en dollars — bouclier contre la dépréciation du FCFA</p></td></tr>
+                    <tr><td valign="top" style="padding-bottom:8px;"><p style="margin:0;font-size:12px;line-height:1.5;color:#1A4D3E;"><span style="color:#00D4A8;font-weight:700;">✓</span> Diversification : énergie & pétrochimie absents de la cote BRVM</p></td></tr>
+                    <tr><td valign="top"><p style="margin:0;font-size:12px;line-height:1.5;color:#1A4D3E;"><span style="color:#00D4A8;font-weight:700;">✓</span> Signal fort pour l'intégration financière africaine</p></td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" valign="top">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="background-color:#FFF5F5;border-radius:8px;padding:16px 18px;">
+                  <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#C0392B;">⚠ Vigilance</p>
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr><td valign="top" style="padding-bottom:8px;"><p style="margin:0;font-size:12px;line-height:1.5;color:#5A1A1A;"><span style="color:#E84B4B;font-weight:700;">!</span> Flottant limité (5–10 %) : risque de faible liquidité</p></td></tr>
+                    <tr><td valign="top" style="padding-bottom:8px;"><p style="margin:0;font-size:12px;line-height:1.5;color:#5A1A1A;"><span style="color:#E84B4B;font-weight:700;">!</span> Valorisation élevée : prime sur le coût de remplacement</p></td></tr>
+                    <tr><td valign="top" style="padding-bottom:8px;"><p style="margin:0;font-size:12px;line-height:1.5;color:#5A1A1A;"><span style="color:#E84B4B;font-weight:700;">!</span> Dividendes USD : approbation réglementaire non finalisée</p></td></tr>
+                    <tr><td valign="top"><p style="margin:0;font-size:12px;line-height:1.5;color:#5A1A1A;"><span style="color:#E84B4B;font-weight:700;">!</span> Harmonisation multi-juridictions encore en cours</p></td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+
+  <!-- ── CTA SUIVI ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:28px 32px;" class="pad-mobile">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="border-left:3px solid #00D4A8;padding-left:16px;">
+            <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#00D4A8;">📌 À suivre sur AfriBourse</p>
+            <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#A8BDD4;">
+              Dès que le prospectus officiel est publié et que les modalités de souscription via la BRVM sont confirmées, nous publierons une analyse complète avec les données financières, les ratios de valorisation et le guide pratique de souscription pour les investisseurs UEMOA.
+            </p>
+            <a href="${newsUrl}" style="display:inline-block;background-color:#00D4A8;color:#0A1628;font-size:13px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:0.02em;">Voir toutes les actualités →</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── FOOTER ── -->
+  <tr>
+    <td style="background-color:#070e1c;border-radius:0 0 10px 10px;padding:24px 32px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:16px;">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:700;color:#00D4A8;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:700;color:#ffffff;">Bourse</span>
+          </td>
+          <td align="right">
+            <a href="https://www.africbourse.com/news" style="display:inline-block;margin-left:12px;font-size:11px;color:#8898B0;text-decoration:none;">Actualités</a>
+            <a href="https://www.africbourse.com" style="display:inline-block;margin-left:12px;font-size:11px;color:#8898B0;text-decoration:none;">Site web</a>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:11px;line-height:1.6;color:#8898B0;">
+        <strong style="color:#C4D5E8;">Sources :</strong> Sika Finance · African Markets · Daba Finance · Legit.ng · Zedcrest Wealth · Agence Ecofin · Billionaires Africa
+      </p>
+
+      <p style="margin:0 0 14px;font-size:10px;line-height:1.6;color:#5A6A80;">
+        Les informations contenues dans cette newsletter sont fournies à titre informatif uniquement et ne constituent pas un conseil en investissement. Les marchés financiers comportent des risques. Vérifiez toujours les informations auprès des sources officielles avant toute décision d'investissement.
+      </p>
+
+      <p style="margin:0;font-size:10px;color:#5A6A80;">
+        Vous recevez cet email car vous êtes abonné à la newsletter AfriBourse. &nbsp;·&nbsp;
+        <a href="https://www.africbourse.com/news" style="color:#8898B0;text-decoration:underline;">Toutes les actualités</a> &nbsp;·&nbsp;
+        <a href="#" style="color:#8898B0;text-decoration:underline;">Se désabonner</a> &nbsp;·&nbsp;
+        <a href="#" style="color:#8898B0;text-decoration:underline;">Gérer mes préférences</a>
+      </p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, l'IPO du siècle arrive sur la BRVM — Dangote Refinery`,
+    html,
+    text: `Bonjour ${firstName},\n\nCette semaine, nous suivons de très près un événement qui pourrait marquer l'histoire des marchés financiers africains.\n\n📰 Toutes nos actualités BRVM sont disponibles sur : https://www.africbourse.com/news\n\n──────────────────────────────────────\nL'IPO DANGOTE REFINERY : CE QU'IL FAUT SAVOIR\n──────────────────────────────────────\n\nLa raffinerie Dangote s'apprête à ouvrir son capital. L'Afrique de l'Ouest est invitée à l'IPO du siècle.\n\nChiffres clés :\n• Valorisation : 40–50 Md$ (record africain absolu)\n• Capital offert : ~10 % (4 à 5 milliards de dollars)\n• Lancement cible : septembre 2026\n• Capacité : 650 000 b/j (N°1 mondial)\n\nLa BRVM fait partie des 5 bourses africaines impliquées dans cette cotation multi-marchés inédite. Un investisseur basé à Abidjan, Dakar ou Lomé pourrait devenir actionnaire via son courtier BRVM habituel.\n\nCalendrier :\n→ Avr. 2026 : Réunion NGX + dépôt prospectus SEC Nigeria\n→ Mai 2026 : Femi Otedola investit 100 M$, demandes pré-IPO ~2 Md$\n→ Août 2026 : Ouverture souscription publique NGX\n→ Sept. 2026 : Cotation officielle NGX + lancement multi-bourses\n\nSuivez toute l'actualité sur : https://www.africbourse.com/news\n\nBonne lecture,\nL'équipe AfriBourse\n\nCet email est fourni à titre informatif uniquement — il ne constitue pas un conseil en investissement.`,
+  });
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -5170,5 +5690,6 @@ export default {
   sendInvestisseurPlusPromoEmail,
   sendFailedPaymentReengagementEmail,
   sendPackParcoursBRVMEmail,
+  sendDangoteIPONewsletterEmail,
   sendEmail,
 };
