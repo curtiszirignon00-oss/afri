@@ -13,6 +13,7 @@ import {
     cronSendWatchlistSummaries,
     cronSendReengagementEmails,
     cronPulseMarche,
+    cronCalculateDailyRatios,
 } from '../controllers/cron.controller';
 
 const router = Router();
@@ -55,5 +56,8 @@ router.post('/send-reengagement-emails', cronSendReengagementEmails);
 
 // Lun–ven 17h00 UTC: Pulse du marché — post épinglé BRVM
 router.post('/pulse-marche', cronPulseMarche);
+
+// Lun–ven 17h00 UTC: Recalcul des ratios dépendant du cours (market_cap, P/E, P/B, dividend_yield)
+router.post('/calculate-daily-ratios', cronCalculateDailyRatios);
 
 export default router;

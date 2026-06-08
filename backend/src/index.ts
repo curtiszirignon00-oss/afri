@@ -33,6 +33,7 @@ import './jobs/gamification.job';
 import './jobs/reengagement.job';
 import './jobs/pulse-marche.job';
 import './jobs/weekly-report.job';
+import './jobs/daily-ratios.job';
 import learningRoutes from "./routes/learning.routes";
 import newsRoutes from "./routes/news.routes";
 import authRoutes from './routes/auth.routes';

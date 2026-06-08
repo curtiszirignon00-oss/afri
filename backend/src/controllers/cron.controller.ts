@@ -27,6 +27,7 @@ import { checkWatchlistSignals } from '../services/watchlist-signal.service';
 import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
 import { sendReengagementEmails } from '../services/reengagement.service';
 import { runPulseMarche } from '../jobs/pulse-marche.job';
+import { calculateAndUpdateDailyRatios } from '../services/daily-ratios.service';
 
 // ============================================================
 // POST /api/cron/scrape-stocks
@@ -270,6 +271,28 @@ export async function cronPulseMarche(req: Request, res: Response) {
         });
     } catch (error: any) {
         log.error('[CRON API] Erreur Pulse du marché:', error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// ============================================================
+// POST /api/cron/calculate-daily-ratios
+// Recalcul des ratios dépendant du cours (lun–ven 17h00 UTC, fin de cotation BRVM)
+// ============================================================
+export async function cronCalculateDailyRatios(req: Request, res: Response) {
+    const startTime = Date.now();
+    try {
+        log.debug('[CRON API] Recalcul des ratios journaliers...');
+        const result = await calculateAndUpdateDailyRatios();
+        const duration = Date.now() - startTime;
+        return res.status(200).json({
+            success: true,
+            message: 'Ratios journaliers recalculés',
+            ...result,
+            duration_ms: duration,
+        });
+    } catch (error: any) {
+        log.error('[CRON API] Erreur recalcul ratios journaliers:', error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
