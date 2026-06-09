@@ -22,7 +22,7 @@ const VALUE_PROPS: { icon: React.ReactNode; label: string; desc: string }[] = [
   {
     icon: <Zap className="w-5 h-5 text-amber-500" />,
     label: 'Passage au réel en 1 clic',
-    desc: 'Passe à l\'investissement réel quand tu es prêt',
+    desc: "Passe à l'investissement réel quand tu es prêt",
   },
   {
     icon: <BookOpen className="w-5 h-5 text-purple-500" />,
@@ -78,7 +78,7 @@ export default function SimulatorCarousel() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-      {/* Label section */}
+      {/* Label */}
       <div className="flex items-center gap-3 mb-6">
         <span className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-bold px-3 py-1.5 rounded-full border border-indigo-100">
           <BarChart2 className="w-3.5 h-3.5" />
@@ -88,11 +88,10 @@ export default function SimulatorCarousel() {
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/60 overflow-hidden">
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
 
           {/* — Texte + VPs — */}
           <div className="flex flex-col justify-center p-8 md:p-10 order-2 md:order-1 border-t md:border-t-0 md:border-r border-slate-100">
-
             <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight mb-4">
               De la théorie à la pratique.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-cyan-500">
@@ -106,12 +105,11 @@ export default function SimulatorCarousel() {
               réel quand tu es prêt.
             </p>
 
-            {/* 2 VPs rotatifs */}
             <div className="flex flex-col gap-3">
               {vp.map((v, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-4 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5 transition-all"
+                  className="flex items-start gap-4 bg-slate-50 border border-slate-100 rounded-xl px-4 py-3.5"
                 >
                   <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100 shrink-0">
                     {v.icon}
@@ -125,54 +123,76 @@ export default function SimulatorCarousel() {
             </div>
           </div>
 
-          {/* — Carrousel — */}
-          <div className="relative order-1 md:order-2" style={{ minHeight: 300 }}>
-            {/* Gradient overlay top pour douceur */}
-            <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white/30 to-transparent z-10 pointer-events-none" />
+          {/* — Phone frame — */}
+          <div className="order-1 md:order-2 flex items-center justify-center py-10 px-8 bg-gradient-to-br from-slate-50 via-indigo-50/40 to-slate-50">
+            <div className="relative">
+              {/* Halo décoratif */}
+              <div className="absolute inset-0 -m-6 rounded-[60px] bg-indigo-100/40 blur-2xl pointer-events-none" />
 
-            <div
-              className={`relative h-full min-h-[280px] md:min-h-full overflow-hidden ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-              onPointerDown={onPointerDown}
-              onPointerUp={onPointerUp}
-              onPointerLeave={onPointerUp}
-            >
-              {IMAGES.map((src, i) => (
-                <img
-                  key={src}
-                  src={src}
-                  alt={`Simulateur BRVM — écran ${i + 1}`}
-                  draggable={false}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${i === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                />
-              ))}
-
-              {/* Flèches */}
-              <button
-                aria-label="Image précédente"
-                onClick={() => manualNav(-1)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-slate-700 rounded-full p-1.5 shadow-md transition cursor-pointer"
+              {/* Cadre téléphone */}
+              <div
+                className="relative w-[220px] rounded-[38px] border-[7px] border-slate-800 bg-slate-800 shadow-2xl"
+                style={{ aspectRatio: '9 / 19' }}
               >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                aria-label="Image suivante"
-                onClick={() => manualNav(1)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-slate-700 rounded-full p-1.5 shadow-md transition cursor-pointer"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+                {/* Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[72px] h-[18px] bg-slate-800 rounded-b-2xl z-20" />
 
-              {/* Overlay bottom gradient + dots */}
-              <div className="absolute bottom-0 inset-x-0 h-14 bg-gradient-to-t from-black/30 to-transparent z-10 pointer-events-none" />
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
-                {IMAGES.map((_, i) => (
-                  <button
-                    key={i}
-                    aria-label={`Aller à l'image ${i + 1}`}
-                    onClick={() => { setCurrent(i); resetAuto(); }}
-                    className={`rounded-full transition-all duration-200 cursor-pointer ${i === current ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'}`}
-                  />
-                ))}
+                {/* Écran — zone carrousel */}
+                <div
+                  className={`relative w-full h-full overflow-hidden rounded-[32px] bg-slate-900 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                  onPointerDown={onPointerDown}
+                  onPointerUp={onPointerUp}
+                  onPointerLeave={onPointerUp}
+                >
+                  {IMAGES.map((src, i) => (
+                    <img
+                      key={src}
+                      src={src}
+                      alt={`Simulateur AfriBourse — écran ${i + 1}`}
+                      draggable={false}
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 select-none ${
+                        i === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                      }`}
+                    />
+                  ))}
+
+                  {/* Overlay bottom + dots */}
+                  <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-black/40 to-transparent z-10 pointer-events-none" />
+                  <div className="absolute bottom-2.5 left-0 right-0 flex justify-center gap-1.5 z-20">
+                    {IMAGES.map((_, i) => (
+                      <button
+                        key={i}
+                        aria-label={`Aller à l'écran ${i + 1}`}
+                        onClick={() => { setCurrent(i); resetAuto(); }}
+                        className={`rounded-full transition-all duration-200 cursor-pointer ${
+                          i === current ? 'w-3.5 h-1 bg-white' : 'w-1 h-1 bg-white/50 hover:bg-white/80'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Indicateur home */}
+                <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-slate-600 rounded-full" />
+              </div>
+
+              {/* Flèches sous le téléphone */}
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <button
+                  aria-label="Image précédente"
+                  onClick={() => manualNav(-1)}
+                  className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full p-2 shadow-sm transition cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-slate-400 tabular-nums">{current + 1} / {IMAGES.length}</span>
+                <button
+                  aria-label="Image suivante"
+                  onClick={() => manualNav(1)}
+                  className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-full p-2 shadow-sm transition cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
