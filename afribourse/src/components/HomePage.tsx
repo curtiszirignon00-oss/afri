@@ -33,6 +33,7 @@ import { API_BASE_URL, authFetch } from '../config/api';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { InstallInstructions } from './pwa/InstallPrompt';
 import { BRVM_NEWS } from '../data/brvm2026News';
+import SimulatorCarousel from './SimulatorCarousel';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -412,15 +413,14 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg md:text-2xl text-indigo-100 mb-10 max-w-3xl mx-auto leading-relaxed">
-                Formations gratuites, données en temps réel et analyses d'experts pour vous aider à investir
-                intelligemment sur la BRVM
+                Formations gratuites, 1M de cash virtuel pour créer votre premier portefeuille, données en temps réel et analyses d'experts pour vous aider à investir intelligemment sur la BRVM
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button
                   variant="primary"
                   size="lg"
-                  onClick={() => navigate(isLoggedIn ? '/markets' : '/signup')}
+                  onClick={() => navigate('/markets')}
                 >
                   <BarChart3 className="w-5 h-5 mr-2" />
                   {isLoggedIn ? 'Explorer les marchés' : 'Commencer gratuitement'}
@@ -436,6 +436,24 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* === Stats bar === */}
+        <div className="bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-center gap-10 sm:gap-16">
+            <div className="text-center">
+              <p className="text-2xl font-extrabold text-slate-900">47</p>
+              <p className="text-xs text-slate-500 mt-0.5">actions BRVM</p>
+            </div>
+            <div className="w-px bg-slate-200" />
+            <div className="text-center">
+              <p className="text-2xl font-extrabold text-slate-900">3 000+</p>
+              <p className="text-xs text-slate-500 mt-0.5">investisseurs</p>
+            </div>
+          </div>
+        </div>
+
+        {/* === Simulateur === */}
+        <SimulatorCarousel />
 
         {/* === Académie === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
