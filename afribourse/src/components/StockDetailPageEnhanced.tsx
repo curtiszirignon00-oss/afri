@@ -769,8 +769,11 @@ export default function StockDetailPageEnhanced() {
 
             <StockComparison
               stocks={comparisonStocks}
+              allStocks={compareResults}
               onRemove={removeFromComparison}
+              onAdd={addToComparison}
               onClose={closeComparison}
+              comparisonLimit={comparisonLimit}
             />
           </div>
         </div>

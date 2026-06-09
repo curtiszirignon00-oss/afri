@@ -33,6 +33,7 @@ const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
 export default function Header() {
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
 
   // ✅ Hooks React Router
   const navigate = useNavigate();
@@ -260,21 +261,51 @@ export default function Header() {
 
               {/* Mobile — bouton Connexion / avatar profil */}
               {!loading && (
-                <div className="lg:hidden">
+                <div className="lg:hidden relative">
                   {isLoggedIn ? (
-                    <button
-                      onClick={() => navigate('/profile')}
-                      className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-400 transition-all"
-                      aria-label="Mon profil"
-                    >
-                      {userProfile?.avatar_url ? (
-                        <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-blue-50 flex items-center justify-center">
-                          <User className="w-4 h-4 text-blue-600" />
-                        </div>
+                    <>
+                      <button
+                        onClick={() => setMobileAccountOpen(o => !o)}
+                        className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 active:border-blue-400 transition-all cursor-pointer"
+                        aria-label="Mon compte"
+                      >
+                        {userProfile?.avatar_url ? (
+                          <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-blue-50 flex items-center justify-center">
+                            <User className="w-4 h-4 text-blue-600" />
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Mini-menu mobile */}
+                      {mobileAccountOpen && (
+                        <>
+                          {/* Backdrop */}
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={() => setMobileAccountOpen(false)}
+                          />
+                          <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-50">
+                            <button
+                              onClick={() => { navigate('/profile'); setMobileAccountOpen(false); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
+                            >
+                              <User className="w-4 h-4 text-slate-400" />
+                              Mon profil
+                            </button>
+                            <div className="border-t border-slate-100 my-1" />
+                            <button
+                              onClick={() => { handleLogout(); setMobileAccountOpen(false); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              Déconnexion
+                            </button>
+                          </div>
+                        </>
                       )}
-                    </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => navigate('/login')}

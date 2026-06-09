@@ -168,6 +168,7 @@ const WEBINARS: Webinar[] = [
 
 const EARLY_BIRD_SEATS = 20;
 const MAX_SEATS = 50;
+const WEBINAR_COUNT_OFFSET = 20;
 
 // ─── Pack Parcours Investisseur ───────────────────────────────────────────────
 
@@ -1189,7 +1190,7 @@ const WebinarSection: React.FC = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {WEBINARS.map((w, i) => (
-            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={counts[w.id] ?? 0} />
+            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} />
           ))}
         </div>
 
@@ -1201,7 +1202,7 @@ const WebinarSection: React.FC = () => {
       {selectedWebinar && (
         <RegistrationModal
           webinar={selectedWebinar}
-          count={counts[selectedWebinar.id] ?? 0}
+          count={(counts[selectedWebinar.id] ?? 0) + WEBINAR_COUNT_OFFSET}
           onClose={handleClose}
           onPreregistered={() => setCounts((prev) => ({ ...prev, [selectedWebinar.id]: (prev[selectedWebinar.id] ?? 0) + 1 }))}
         />
