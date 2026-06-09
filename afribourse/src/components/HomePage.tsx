@@ -34,6 +34,7 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { InstallInstructions } from './pwa/InstallPrompt';
 import { BRVM_NEWS } from '../data/brvm2026News';
 import SimulatorCarousel from './SimulatorCarousel';
+import SparklineChart from './SparklineChart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -121,17 +122,17 @@ export default function HomePage() {
 
   const { data, isLoading, error, refetch } = useHomePageData();
   const topStocks = (data?.topStocks || []).slice(0, 3);
-  const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
+  const [sparklines, setSparklines] = useState<Record<string, { time: string; value: number }[]>>({});
 
   useEffect(() => {
     if (topStocks.length === 0) return;
     topStocks.forEach(stock => {
-      fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(stock.symbol)}/history?period=1M`, { credentials: 'include' })
+      fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(stock.symbol)}/history?period=3M`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
         .then(res => {
           if (!res?.data?.length) return;
-          const closes: number[] = res.data.map((d: { close: number }) => d.close);
-          setSparklines(prev => ({ ...prev, [stock.symbol]: closes }));
+          const pts = res.data.map((d: { date: string; close: number }) => ({ time: d.date, value: d.close }));
+          setSparklines(prev => ({ ...prev, [stock.symbol]: pts }));
         })
         .catch(() => {});
     });
@@ -585,87 +586,55 @@ export default function HomePage() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {topStocks.map((stock, idx) => {
-                const closes = sparklines[stock.symbol] ?? [];
                 const isUp = stock.daily_change_percent >= 0;
-                const color = isUp ? '#16a34a' : '#dc2626';
-                const colorLight = isUp ? '#bbf7d0' : '#fecaca';
-
-                // Calcul des points SVG
-                let areaPath = '';
-                let linePath = '';
-                if (closes.length >= 2) {
-                  const min = Math.min(...closes);
-                  const max = Math.max(...closes);
-                  const range = max - min || 1;
-                  const W = 100;
-                  const H = 50;
-                  const pts = closes.map((c, i) => ({
-                    x: (i / (closes.length - 1)) * W,
-                    y: H - ((c - min) / range) * H * 0.85 - H * 0.05,
-                  }));
-                  linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-                  areaPath = `${linePath} L ${W} ${H} L 0 ${H} Z`;
-                }
+                const pts = sparklines[stock.symbol] ?? [];
 
                 return (
                   <AnimatedSection key={stock.id} delay={idx * 60}>
-                    <Card
-                      hoverable
+                    <div
                       onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col"
                     >
-                      {/* Header */}
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shadow-sm shrink-0">
-                            {stock.logo_url ? (
-                              <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
-                            ) : (
-                              stock.symbol.substring(0, 2)
-                            )}
+                      {/* Infos stock */}
+                      <div className="p-5 pb-3">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shadow-sm shrink-0 border border-slate-100">
+                              {stock.logo_url
+                                ? <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
+                                : stock.symbol.substring(0, 2)
+                              }
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-900 text-sm leading-none">{stock.symbol}</p>
+                              <p className="text-xs text-slate-400 mt-1 truncate max-w-[150px]">{stock.company_name}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-bold text-gray-900 text-sm">{stock.symbol}</p>
-                            <p className="text-xs text-gray-500 truncate max-w-[130px]">{stock.company_name}</p>
+                          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
                           </div>
                         </div>
-                        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
-                        </div>
+
+                        <p className="text-2xl font-extrabold text-slate-900 tabular-nums">
+                          {formatNumber(stock.current_price)}<span className="text-sm font-medium text-slate-400 ml-1">FCFA</span>
+                        </p>
+                        {stock.sector && (
+                          <p className="text-[11px] text-slate-400 mt-1">{stock.sector}</p>
+                        )}
                       </div>
 
-                      {/* Prix */}
-                      <p className="text-xl font-extrabold text-gray-900 mb-3">
-                        {formatNumber(stock.current_price)} F
-                      </p>
-
-                      {/* Graphe en aire */}
-                      <div className="rounded-lg overflow-hidden -mx-5 -mb-5" style={{ background: colorLight + '33' }}>
-                        <svg
-                          viewBox="0 0 100 50"
-                          preserveAspectRatio="none"
-                          className="w-full"
-                          style={{ height: 72 }}
-                        >
-                          <defs>
-                            <linearGradient id={`grad-${stock.symbol}`} x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-                              <stop offset="100%" stopColor={color} stopOpacity="0.02" />
-                            </linearGradient>
-                          </defs>
-                          {areaPath && (
-                            <path d={areaPath} fill={`url(#grad-${stock.symbol})`} />
-                          )}
-                          {linePath && (
-                            <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          )}
-                          {!areaPath && (
-                            <line x1="0" y1="25" x2="100" y2="25" stroke={color} strokeWidth="1" strokeDasharray="4 3" opacity="0.4" />
-                          )}
-                        </svg>
+                      {/* Graphique — même rendu que la page stock */}
+                      <div className="flex-1 border-t border-slate-50">
+                        {pts.length >= 2 ? (
+                          <SparklineChart data={pts} isUp={isUp} height={140} />
+                        ) : (
+                          <div className="h-[140px] flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-slate-400 animate-spin" />
+                          </div>
+                        )}
                       </div>
-                    </Card>
+                    </div>
                   </AnimatedSection>
                 );
               })}
