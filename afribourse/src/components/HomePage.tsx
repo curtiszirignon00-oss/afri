@@ -433,24 +433,23 @@ export default function HomePage() {
                 </Button>
 
               </div>
+
+              {/* Stats — ancrées dans le hero */}
+              <div className="mt-14 pt-8 border-t border-white/10 flex justify-center gap-10 sm:gap-20">
+                <div className="text-center">
+                  <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">47</p>
+                  <p className="text-xs text-blue-200 mt-1 uppercase tracking-widest font-medium">actions BRVM</p>
+                </div>
+                <div className="w-px bg-white/15" />
+                <div className="text-center">
+                  <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">3 000+</p>
+                  <p className="text-xs text-blue-200 mt-1 uppercase tracking-widest font-medium">investisseurs</p>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
-
-        {/* === Stats bar === */}
-        <div className="bg-white border-b border-slate-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-center gap-10 sm:gap-16">
-            <div className="text-center">
-              <p className="text-2xl font-extrabold text-slate-900">47</p>
-              <p className="text-xs text-slate-500 mt-0.5">actions BRVM</p>
-            </div>
-            <div className="w-px bg-slate-200" />
-            <div className="text-center">
-              <p className="text-2xl font-extrabold text-slate-900">3 000+</p>
-              <p className="text-xs text-slate-500 mt-0.5">investisseurs</p>
-            </div>
-          </div>
-        </div>
 
         {/* === Simulateur === */}
         <SimulatorCarousel />
