@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X, Search } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
@@ -124,6 +124,7 @@ export default function NewsPage() {
   const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
   const [selectedDBArticle, setSelectedDBArticle] = useState<NewsArticle | null>(null);
   const [counts, setCounts] = useState<Record<string, ArticleCounts>>({});
+  const [search, setSearch] = useState('');
   const { trackAction } = useAnalytics();
 
   function openDBArticle(article: NewsArticle) {
@@ -238,12 +239,35 @@ export default function NewsPage() {
 
   const categories = ['all', 'marches', 'analyse', 'economie', 'interview', 'resultats', 'dividendes'];
 
+  // Recherche (titre / ticker / catégorie / résumé / tags)
+  const q = search.trim().toLowerCase();
+  const matchesDB = (a: NewsArticle) => {
+    if (!q) return true;
+    const hay = [a.title, a.summary, getCategoryLabel(a.category), (a.tickers ?? []).join(' ')]
+      .filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  };
+  const matchesBRVM = (a: BRVMArticle) => {
+    if (!q) return true;
+    const hay = [
+      a.title, a.summary, a.category,
+      (a.tickers ?? []).map(t => t.ticker).join(' '),
+      (a.tags ?? []).join(' '),
+    ].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  };
+
   const brvmFiltered = BRVM_NEWS
     .filter(a => selectedCategory === 'all' || BRVM_CATEGORY_MAP[a.category] === selectedCategory)
+    .filter(matchesBRVM)
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-  const featuredArticle = articles.find(a => a.is_featured);
-  const listArticles    = selectedCategory === 'all' ? articles.filter(a => !a.is_featured) : articles;
+  // En recherche : pas de hero, on inclut tous les articles correspondants (même featured)
+  const featuredArticle = q ? undefined : articles.find(a => a.is_featured);
+  const listArticles    = (q
+    ? articles
+    : (selectedCategory === 'all' ? articles.filter(a => !a.is_featured) : articles)
+  ).filter(matchesDB);
   const isStaticOnly    = STATIC_ONLY.includes(selectedCategory);
 
   // Articles « populaires » : top ~20% par engagement, au-dessus d'un plancher
@@ -338,6 +362,27 @@ export default function NewsPage() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Barre de recherche */}
+      <div className="relative mb-6">
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Rechercher un article, un ticker (BICC, BOABF…), un thème…"
+          className="w-full pl-10 pr-9 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D4A8]/30 focus:border-[#00D4A8] placeholder:text-slate-400"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            aria-label="Effacer la recherche"
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
       {/* Résultats fondamentaux */}
@@ -447,11 +492,13 @@ export default function NewsPage() {
       )}
 
       {/* Empty state */}
-      {!isStaticOnly && !loading && articles.length === 0 && brvmFiltered.length === 0 && (
+      {!isStaticOnly && !loading && listArticles.length === 0 && brvmFiltered.length === 0 && (
         <div className="text-center py-16">
           <Newspaper className="w-12 h-12 mx-auto text-slate-300 mb-4" />
           <p className="text-slate-500">
-            Aucun article trouvé{selectedCategory !== 'all' ? ` dans "${getCategoryLabel(selectedCategory)}"` : ''}.
+            {q
+              ? `Aucun résultat pour « ${search.trim()} ».`
+              : `Aucun article trouvé${selectedCategory !== 'all' ? ` dans "${getCategoryLabel(selectedCategory)}"` : ''}.`}
           </p>
         </div>
       )}
