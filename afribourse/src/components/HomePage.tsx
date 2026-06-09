@@ -30,7 +30,6 @@ import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
 import { apiClient } from '../lib/api-client';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE_URL, authFetch } from '../config/api';
-import { ChallengeCTA } from './challenge';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { InstallInstructions } from './pwa/InstallPrompt';
 import { BRVM_NEWS } from '../data/brvm2026News';
@@ -437,9 +436,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* === Challenge CTA === */}
-        <ChallengeCTA />
 
         {/* === Académie === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
+import { notifyAllUsersOfNewArticle } from '../services/notification.service';
 
 interface AuthRequest extends Request {
   user?: { id: string; email: string; name: string; role?: string };
@@ -94,6 +95,12 @@ export async function createAdminArticle(req: AuthRequest, res: Response, next: 
     });
 
     log.info(`[Admin] Article créé: ${article.id} "${article.title}"`);
+
+    // Notifier tous les utilisateurs (non bloquant pour la réponse)
+    notifyAllUsersOfNewArticle(article.id, article.title, article.slug, article.category)
+      .then(n => log.info(`[Admin] ${n} notifications envoyées pour l'article ${article.id}`))
+      .catch(err => log.warn({ err }, `[Admin] Échec notifications article ${article.id}`));
+
     return res.status(201).json(article);
   } catch (err) {
     return next(err);

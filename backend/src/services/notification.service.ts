@@ -269,6 +269,44 @@ export async function notifyPriceAlert(
     });
 }
 
+/**
+ * Notifie tous les utilisateurs de la publication d'un nouvel article.
+ * Crée une notification SYSTEM par utilisateur (createMany par lots de 1000).
+ * metadata.articleSlug permet au frontend de lier vers /news/:slug.
+ */
+export async function notifyAllUsersOfNewArticle(
+    articleId: string,
+    articleTitle: string,
+    articleSlug: string | null,
+    category?: string | null,
+) {
+    const users = await prisma.user.findMany({ select: { id: true } });
+    if (users.length === 0) return 0;
+
+    const title = 'Nouvel article';
+    const message = `Nouvel article publié : « ${articleTitle} »`;
+    const metadata = { articleId, articleSlug, category };
+
+    let created = 0;
+    const CHUNK = 1000;
+    for (let i = 0; i < users.length; i += CHUNK) {
+        const batch = users.slice(i, i + CHUNK).map(u => ({
+            user_id: u.id,
+            type: 'SYSTEM' as NotificationType,
+            title,
+            message,
+            post_id: undefined,
+            metadata,
+            is_read: false,
+            created_at: new Date(),
+        }));
+        const res = await prisma.notification.createMany({ data: batch });
+        created += res.count ?? batch.length;
+    }
+
+    return created;
+}
+
 // ============= COMMUNITY NOTIFICATIONS =============
 
 /**

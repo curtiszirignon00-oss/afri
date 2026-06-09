@@ -110,6 +110,8 @@ export default function NotificationDropdown() {
         setIsOpen(false);
         if (notification.type === 'CERTIFICATE' && notification.metadata?.certificateId) {
             navigate(`/certificat/${notification.metadata.certificateId}`);
+        } else if (notification.metadata?.articleSlug) {
+            navigate(`/news/${notification.metadata.articleSlug}`);
         } else {
             navigate('/notifications');
         }

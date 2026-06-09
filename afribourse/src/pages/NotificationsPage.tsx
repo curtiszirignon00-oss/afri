@@ -47,7 +47,7 @@ const NAVIGABLE_TYPES = new Set([
     'POST_LIKE', 'POST_COMMENT', 'COMMENT_REPLY', 'MENTION', 'NEW_POST',
     'COMMUNITY_INVITE', 'COMMUNITY_JOIN', 'COMMUNITY_POST',
     'JOIN_REQUEST', 'JOIN_APPROVED', 'JOIN_REJECTED',
-    'CERTIFICATE',
+    'CERTIFICATE', 'SYSTEM',
 ]);
 
 function isNavigable(notification: Notification): boolean {
@@ -55,6 +55,7 @@ function isNavigable(notification: Notification): boolean {
     if (notification.type === 'NEW_FOLLOWER') return !!notification.actor_id;
     if (notification.type === 'PRICE_ALERT') return !!(notification.metadata?.stockSymbol || notification.metadata?.symbol);
     if (notification.type === 'CERTIFICATE') return !!notification.metadata?.certificateId;
+    if (notification.type === 'SYSTEM') return !!notification.metadata?.articleSlug;
     return true;
 }
 
@@ -188,8 +189,12 @@ export default function NotificationsPage() {
                 }
                 break;
 
-            // Système → rien (reste sur la page)
+            // Système → article si metadata.articleSlug, sinon rien
             case 'SYSTEM':
+                if (meta?.articleSlug) {
+                    navigate(`/news/${meta.articleSlug}`);
+                }
+                break;
             default:
                 break;
         }
