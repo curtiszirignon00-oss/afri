@@ -456,46 +456,46 @@ export default function HomePage() {
 
         {/* === Time Machine === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <div className="relative overflow-hidden rounded-2xl bg-slate-900 px-8 py-12 md:px-14 md:py-16">
+          <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/60 px-8 py-12 md:px-14 md:py-16">
             {/* Orbs décoratifs */}
-            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-800/30 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-amber-600/15 blur-3xl" />
+            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-100/60 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-amber-100/60 blur-3xl" />
 
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 md:gap-16">
               {/* Icône horloge + timeline */}
               <div className="shrink-0 flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <circle cx="12" cy="12" r="9" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
                   </svg>
                 </div>
                 <div className="flex flex-col items-center gap-1 text-center">
-                  <span className="text-amber-300 font-bold text-lg font-mono tracking-wider">2010</span>
-                  <div className="w-px h-6 bg-amber-400/30" />
-                  <span className="text-amber-300 font-bold text-lg font-mono tracking-wider">2025</span>
+                  <span className="text-amber-600 font-bold text-lg font-mono tracking-wider">2010</span>
+                  <div className="w-px h-6 bg-amber-300" />
+                  <span className="text-amber-600 font-bold text-lg font-mono tracking-wider">2025</span>
                 </div>
               </div>
 
               {/* Texte */}
               <div className="flex-1 text-center md:text-left">
-                <span className="inline-flex items-center gap-2 bg-amber-400/10 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-400/20 mb-5">
+                <span className="inline-flex items-center gap-2 bg-amber-50 text-amber-600 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-200 mb-5">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
                   Machine à remonter le temps
                 </span>
-                <h2 className="text-2xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+                <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
                   Investis en 2010.<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-200">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-400">
                     Vois ce que ça vaut en 2025.
                   </span>
                 </h2>
-                <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-8 max-w-xl">
+                <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-8 max-w-xl">
                   Rejoue les grands moments de la BRVM avec de l'argent virtuel.
                   Comprends tes erreurs avant de les faire pour de vrai.
                 </p>
                 <button
                   onClick={() => navigate('/time-machine')}
-                  className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-6 py-3 rounded-xl transition-colors duration-150 cursor-pointer text-sm"
+                  className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-bold px-6 py-3 rounded-xl transition-colors duration-150 cursor-pointer text-sm shadow-sm"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
                   Remonter le temps
