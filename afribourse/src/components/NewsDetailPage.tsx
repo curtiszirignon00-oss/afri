@@ -11,6 +11,7 @@ import { BlockRenderer } from './BlockRenderer';
 import { BRVM_NEWS, BRVMArticle, ImpactType, ContentBlock } from '../data/brvm2026News';
 import ArticleInteractions from './ArticleInteractions';
 import HtmlArticleRenderer from './HtmlArticleRenderer';
+import RelatedArticles from './news/RelatedArticles';
 
 const SITE_URL = 'https://afribourse.com';
 
@@ -105,6 +106,16 @@ function DBArticlePage({ article }: { article: DBArticle }) {
     try { return JSON.parse(article.rich_content); } catch { return null; }
   })();
 
+  // Comptage de vue (dédup par session)
+  useEffect(() => {
+    try {
+      const key = `viewed:${article.id}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+      fetch(`${API_BASE_URL}/articles/${encodeURIComponent(article.id)}/view`, { method: 'POST' }).catch(() => {});
+    } catch { /* ignore */ }
+  }, [article.id]);
+
   const canonicalUrl = `${SITE_URL}/news/${article.slug}`;
   const ogImage = article.image_url ?? `https://afribourse-api.onrender.com/api/og/image/page/news`;
   const publishedIso = article.published_at ? new Date(article.published_at).toISOString() : undefined;
@@ -187,6 +198,8 @@ function DBArticlePage({ article }: { article: DBArticle }) {
             )}
 
             <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
+
+            <RelatedArticles articleId={article.id} tickers={article.tickers} category={article.category} />
 
             <p className="text-[11px] text-slate-400 italic border-t border-slate-100 pt-6 mt-8">
               {article.author ?? 'AfriBourse'} · {article.source ?? 'AfriBourse Research'} · Informations éducatives uniquement.

@@ -104,6 +104,61 @@ export async function addComment(req: AuthenticatedRequest, res: Response, next:
   } catch (err) { return next(err); }
 }
 
+// ── Vues ────────────────────────────────────────────────────────────────────
+
+export async function incrementView(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const { id: articleId } = req.params;
+    if (!articleId) return res.status(400).json({ message: 'articleId requis.' });
+
+    const row = await prisma.articleViewCount.upsert({
+      where: { articleId },
+      create: { articleId, count: 1 },
+      update: { count: { increment: 1 } },
+    });
+
+    return res.json({ views: row.count });
+  } catch (err) { return next(err); }
+}
+
+// ── Compteurs en batch (likes + commentaires + vues) ────────────────────────
+
+export async function batchCounts(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const raw = (req.body?.ids ?? []) as unknown;
+    const ids = Array.isArray(raw)
+      ? raw.filter((x): x is string => typeof x === 'string' && x.length > 0).slice(0, 50)
+      : [];
+
+    if (ids.length === 0) return res.json({});
+
+    const [likes, comments, views] = await Promise.all([
+      prisma.articleLike.groupBy({
+        by: ['articleId'],
+        where: { articleId: { in: ids } },
+        _count: { articleId: true },
+      }),
+      prisma.articleComment.groupBy({
+        by: ['articleId'],
+        where: { articleId: { in: ids } },
+        _count: { articleId: true },
+      }),
+      prisma.articleViewCount.findMany({
+        where: { articleId: { in: ids } },
+        select: { articleId: true, count: true },
+      }),
+    ]);
+
+    const result: Record<string, { likes: number; comments: number; views: number }> = {};
+    for (const id of ids) result[id] = { likes: 0, comments: 0, views: 0 };
+    for (const l of likes) result[l.articleId].likes = l._count.articleId;
+    for (const c of comments) result[c.articleId].comments = c._count.articleId;
+    for (const v of views) result[v.articleId].views = v.count;
+
+    return res.json(result);
+  } catch (err) { return next(err); }
+}
+
 export async function deleteComment(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const { commentId } = req.params;

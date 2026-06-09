@@ -14,7 +14,19 @@ import { BlockRenderer } from './BlockRenderer';
 import { markNewsVisited, getUnseenBrvmCount } from '../hooks/useContentUnseen';
 import ArticleInteractions from './ArticleInteractions';
 import HtmlArticleRenderer from './HtmlArticleRenderer';
+import NewsArticleCard from './news/NewsArticleCard';
+import { engagementScore, type ArticleCounts } from './news/newsHelpers';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+
+// Marque une vue (dédup par session via localStorage)
+function trackArticleView(articleId: string) {
+  try {
+    const key = `viewed:${articleId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    fetch(`${API_BASE_URL}/articles/${encodeURIComponent(articleId)}/view`, { method: 'POST' }).catch(() => {});
+  } catch { /* ignore */ }
+}
 
 const BRVM_CATEGORY_MAP: Record<string, string> = {
   'Marché':                 'marches',
@@ -111,6 +123,7 @@ export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedBRVM, setSelectedBRVM] = useState<BRVMArticle | null>(null);
   const [selectedDBArticle, setSelectedDBArticle] = useState<NewsArticle | null>(null);
+  const [counts, setCounts] = useState<Record<string, ArticleCounts>>({});
   const { trackAction } = useAnalytics();
 
   function openDBArticle(article: NewsArticle) {
@@ -120,6 +133,7 @@ export default function NewsPage() {
     if (article.slug) {
       navigate(`/news/${article.slug}`);
     } else {
+      trackArticleView(article.id);
       setSelectedDBArticle(article);
     }
   }
@@ -153,6 +167,19 @@ export default function NewsPage() {
         if (!res.ok) throw new Error(`Erreur ${res.status}`);
         const data: NewsArticle[] = await res.json();
         setArticles(data || []);
+
+        // Compteurs (likes + commentaires + vues) en une requête batch
+        const ids = (data || []).map(a => a.id);
+        if (ids.length > 0) {
+          fetch(`${API_BASE_URL}/articles/batch-counts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+          })
+            .then(r => r.ok ? r.json() : {})
+            .then((c: Record<string, ArticleCounts>) => setCounts(c || {}))
+            .catch(() => {});
+        }
       } catch (err) {
         console.error('Error loading articles:', err);
         setArticles([]);
@@ -218,6 +245,16 @@ export default function NewsPage() {
   const featuredArticle = articles.find(a => a.is_featured);
   const listArticles    = selectedCategory === 'all' ? articles.filter(a => !a.is_featured) : articles;
   const isStaticOnly    = STATIC_ONLY.includes(selectedCategory);
+
+  // Articles « populaires » : top ~20% par engagement, au-dessus d'un plancher
+  const popularIds = (() => {
+    const scored = articles
+      .map(a => ({ id: a.id, score: engagementScore(counts[a.id]) }))
+      .filter(s => s.score > 5)
+      .sort((a, b) => b.score - a.score);
+    const topN = Math.max(1, Math.ceil(scored.length * 0.2));
+    return new Set(scored.slice(0, topN).map(s => s.id));
+  })();
 
   if (loading && articles.length === 0 && !isStaticOnly) {
     return (
@@ -351,9 +388,16 @@ export default function NewsPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6 sm:p-8 w-full">
-                  <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider mb-3 inline-block">
-                    {getCategoryLabel(featuredArticle.category)}
-                  </span>
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider inline-block">
+                      {getCategoryLabel(featuredArticle.category)}
+                    </span>
+                    {featuredArticle.tickers?.slice(0, 3).map(t => (
+                      <span key={t} className="font-mono text-[10px] font-bold text-white bg-white/15 border border-white/25 px-1.5 py-0.5 rounded">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight group-hover:text-blue-200 transition-colors max-w-3xl">
                     {featuredArticle.title}
                   </h2>
@@ -371,41 +415,13 @@ export default function NewsPage() {
           {listArticles.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {listArticles.map(article => (
-                <article
+                <NewsArticleCard
                   key={article.id}
-                  onClick={() => openDBArticle(article)}
-                  className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group overflow-hidden flex flex-col"
-                >
-                  <div className="h-44 overflow-hidden bg-slate-200">
-                    {article.image_url ? (
-                      <img src={article.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-                        <Newspaper className="w-8 h-8 text-slate-300" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getCategoryColor(article.category)}`}>
-                        {getCategoryLabel(article.category)}
-                      </span>
-                      {article.is_featured && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-yellow-50 text-yellow-600 border border-yellow-100">
-                          À la une
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="font-bold text-slate-800 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
-                      {article.title}
-                    </h4>
-                    <p className="text-sm text-slate-500 line-clamp-2 mb-4 flex-1">{article.summary}</p>
-                    <div className="flex items-center justify-between text-slate-400 text-xs pt-3 border-t border-slate-100">
-                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(article.published_at)}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(article.content)} min</span>
-                    </div>
-                  </div>
-                </article>
+                  article={article}
+                  counts={counts[article.id]}
+                  popular={popularIds.has(article.id)}
+                  onOpen={() => openDBArticle(article)}
+                />
               ))}
             </div>
           )}

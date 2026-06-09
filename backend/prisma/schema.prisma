@@ -1245,6 +1245,15 @@ model ArticleComment {
   @@map("article_comments")
 }
 
+model ArticleViewCount {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  articleId  String   @unique // ID de l'article (DB ObjectId ou BRVM string id)
+  count      Int      @default(0)
+  updated_at DateTime @updatedAt
+
+  @@map("article_view_counts")
+}
+
 // ================================= //
 // === ANALYTICS & TRACKING === //
 // ================================= //

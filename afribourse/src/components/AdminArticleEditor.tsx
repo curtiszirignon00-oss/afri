@@ -287,13 +287,23 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
 
           {/* Résumé */}
           <div>
-            <label className="text-xs font-medium text-slate-600 block mb-1">Résumé</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-slate-600">Résumé <span className="text-slate-400 font-normal">(teaser des cards)</span></label>
+              <span className={`text-[11px] font-medium ${
+                form.summary.length > 200 ? 'text-red-500'
+                : form.summary.length > 160 ? 'text-amber-500'
+                : 'text-slate-400'
+              }`}>
+                {form.summary.length}/160
+              </span>
+            </div>
             <textarea
               className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[60px]"
               value={form.summary}
               onChange={e => update('summary', e.target.value)}
-              placeholder="Court résumé affiché dans les cartes..."
+              placeholder="Accroche courte (120-160 caractères) avec un chiffre fort — affichée sur les cards."
             />
+            <p className="text-[10px] text-slate-400 mt-1">Idéal : 120-160 caractères, une accroche + un chiffre clé. Au-delà de 160, le texte est tronqué sur les cards.</p>
           </div>
 
           {/* Catégorie + Auteur */}
