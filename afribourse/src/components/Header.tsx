@@ -1,4 +1,4 @@
-import { TrendingUp, BookOpen, User, Menu, X, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video } from 'lucide-react';
+import { TrendingUp, BookOpen, User, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -31,7 +31,6 @@ const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
 };
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
@@ -68,7 +67,7 @@ export default function Header() {
   const ActiveMegaMenuComponent = activeMegaMenu ? MEGA_MENU_COMPONENTS[activeMegaMenu] : null;
 
   return (
-    <div className="sticky top-0 z-50" translate="no">
+    <div className="fixed top-0 inset-x-0 z-50" translate="no">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
@@ -252,122 +251,44 @@ export default function Header() {
                 </div>
               )}
                 
-              {/* Mobile Notification Bell - visible next to hamburger */}
+              {/* Mobile — cloche notifs si connecté */}
               {!loading && isLoggedIn && (
                 <div className="lg:hidden">
                   <NotificationDropdown />
                 </div>
               )}
 
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Toggle menu"
-                aria-expanded={mobileMenuOpen}
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-gray-700" />
-                ) : (
-                  <Menu className="w-6 h-6 text-gray-700" />
-                )}
-              </button>
+              {/* Mobile — bouton Connexion / avatar profil */}
+              {!loading && (
+                <div className="lg:hidden">
+                  {isLoggedIn ? (
+                    <button
+                      onClick={() => navigate('/profile')}
+                      className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 hover:border-blue-400 transition-all"
+                      aria-label="Mon profil"
+                    >
+                      {userProfile?.avatar_url ? (
+                        <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-blue-50 flex items-center justify-center">
+                          <User className="w-4 h-4 text-blue-600" />
+                        </div>
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => navigate('/login')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 text-slate-700 bg-transparent rounded-lg text-sm font-semibold hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
+                    >
+                      <User className="w-4 h-4" />
+                      Connexion
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Mobile Menu Panel */}
-          {mobileMenuOpen && (
-            <div className="lg:hidden pb-4 space-y-2">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      navigate(`/${item.id}`);
-                      setMobileMenuOpen(false);
-                      if (item.id === 'news')      markNewsVisited();
-                      if (item.id === 'community') markCommunityVisited();
-                    }}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      currentPage === item.id
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="flex-1 text-left">{item.name}</span>
-                    {item.id === 'news' && unseenNewsCount > 0 && (
-                      <Badge count={unseenNewsCount} />
-                    )}
-                    {item.id === 'community' && communityBadge > 0 && (
-                      <Badge count={communityBadge} />
-                    )}
-                  </button>
-                );
-              })}
-              
-              {/* Bouton Webinaire - Mobile */}
-              <Link
-                to="/webinaires"
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Video className="w-5 h-5" />
-                <span>Webinaires</span>
-              </Link>
-
-              {/* Mobile Account Actions */}
-              {!loading && (
-                <>
-                  <button
-                    onClick={() => {
-                      navigate(isLoggedIn ? '/dashboard' : '/login');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                  >
-                    <User className="w-5 h-5" />
-                    <span>{isLoggedIn ? 'Mon Compte' : 'Connexion'}</span>
-                  </button>
-
-                  {isLoggedIn && (
-                    <>
-                      <button
-                        onClick={() => {
-                          navigate('/watchlist');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors font-semibold"
-                      >
-                        <Star className="w-5 h-5 fill-amber-400" />
-                        <span>Ma Watchlist</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          navigate('/profile');
-                          setMobileMenuOpen(false);
-                        }}
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
-                      >
-                        <Settings className="w-5 h-5" />
-                        <span>Mon Profil</span>
-                      </button>
-
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 border border-red-400 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-semibold mt-2"
-                      >
-                        <LogOut className="w-5 h-5" />
-                        <span>Déconnexion</span>
-                      </button>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          )}
         </div>
       </header>
 

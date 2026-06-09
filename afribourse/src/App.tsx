@@ -25,6 +25,7 @@ import SilentErrorBoundary from './components/SilentErrorBoundary';
 
 // Composants chemin critique (eager) — visibles dès le premier paint
 import Header from './components/Header';
+import MobileBottomNav from './components/MobileBottomNav';
 import HomePage from './components/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
@@ -185,6 +186,7 @@ function Layout() {
 
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
+      <MobileBottomNav />
 
       {/* Discovery survey popup for users who haven't completed it */}
       <SilentErrorBoundary name="SurveyPopup">
@@ -193,7 +195,7 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      <main className="flex-grow">
+      <main className="flex-grow pt-16 lg:pt-20 pb-16 md:pb-0">
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}

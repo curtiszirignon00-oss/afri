@@ -11,6 +11,7 @@ import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, api
 import type { MarketIndex } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
+import PillTabs from './ui/PillTabs';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import StockComparison from './markets/StockComparison';
 import BRVMMarketMap from './markets/BRVMMarketMap';
@@ -45,6 +46,9 @@ export default function MarketsPageRefactored() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('all');
   const [sortBy, setSortBy] = useState<'name' | 'change' | 'price' | 'volume' | 'pe' | 'dividend'>('change');
+
+  // Pill tabs navigation
+  const [activeTab, setActiveTab] = useState<'all' | 'gainers' | 'losers' | 'sectors'>('all');
 
   // Advanced filters
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -125,7 +129,14 @@ export default function MarketsPageRefactored() {
   }, []);
 
   // Hooks React Query
-  const { data: stocks = [], isLoading, error, refetch } = useStocks(filters);
+  const { data: rawStocks = [], isLoading, error, refetch } = useStocks(filters);
+
+  // Filtrage par tab actif
+  const stocks = useMemo(() => {
+    if (activeTab === 'gainers') return rawStocks.filter(s => s.daily_change_percent > 0);
+    if (activeTab === 'losers')  return rawStocks.filter(s => s.daily_change_percent < 0).sort((a, b) => a.daily_change_percent - b.daily_change_percent);
+    return rawStocks;
+  }, [rawStocks, activeTab]);
   const { data: watchlist = [] } = useWatchlist(isLoggedIn);
   const addToWatchlist = useAddToWatchlist();
   const removeFromWatchlist = useRemoveFromWatchlist();
@@ -359,11 +370,49 @@ export default function MarketsPageRefactored() {
         )}
 
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Marchés BRVM</h1>
           <p className="text-sm sm:text-base text-gray-600">
             {stocks.length} action{stocks.length > 1 ? 's' : ''} disponible{stocks.length > 1 ? 's' : ''}
           </p>
+        </div>
+
+        {/* Pill tabs — sticky sous le header sur mobile */}
+        <div className="sticky top-14 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pt-3 bg-gray-50/95 backdrop-blur-sm border-b border-slate-100 mb-6">
+          <PillTabs
+            tabs={[
+              { key: 'all',     label: 'Toutes actions', badge: rawStocks.length },
+              { key: 'gainers', label: 'Gainers',        badge: rawStocks.filter(s => s.daily_change_percent > 0).length },
+              { key: 'losers',  label: 'Losers',         badge: rawStocks.filter(s => s.daily_change_percent < 0).length },
+              { key: 'sectors', label: 'Secteurs' },
+            ]}
+            active={activeTab}
+            onChange={(key) => {
+              setActiveTab(key as typeof activeTab);
+              if (key !== 'sectors') setSelectedSector('all');
+            }}
+          />
+
+          {/* Sous-pills secteurs — visibles uniquement sur l'onglet Secteurs */}
+          {activeTab === 'sectors' && (
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide py-2.5" style={{ scrollbarWidth: 'none' }}>
+              {sectors.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSector(s)}
+                  className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer shrink-0 border ${
+                    selectedSector === s
+                      ? 'bg-slate-800 text-white border-slate-800'
+                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
+                  }`}
+                >
+                  {s === 'all' ? 'Tous' : s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {activeTab !== 'sectors' && <div className="pb-0.5" />}
         </div>
 
         {/* Indices du marché */}

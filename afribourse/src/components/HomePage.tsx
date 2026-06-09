@@ -121,7 +121,7 @@ export default function HomePage() {
   ];
 
   const { data, isLoading, error, refetch } = useHomePageData();
-  const topStocks = (data?.topStocks || []).slice(0, 3);
+  const topStocks = (data?.topStocks || []).slice(0, 2);
   const [sparklines, setSparklines] = useState<Record<string, { time: string; value: number }[]>>({});
 
   useEffect(() => {
@@ -467,6 +467,26 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* === Bannière annonce === */}
+        <div
+          onClick={() => navigate('/webinaires')}
+          className="bg-indigo-50 border-b border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors duration-150"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-3 text-sm">
+            <span className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+              Nouveau
+            </span>
+            <p className="text-indigo-800 font-medium text-center">
+              Parcours certifiant BRVM — obtenez votre badge d'investisseur confirmé
+            </p>
+            <span className="hidden sm:flex items-center gap-1 text-indigo-500 font-semibold shrink-0 text-xs">
+              Découvrir
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </span>
+          </div>
+        </div>
+
         {/* === Simulateur === */}
         <SimulatorCarousel />
 
@@ -584,7 +604,7 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 gap-6">
               {topStocks.map((stock, idx) => {
                 const isUp = stock.daily_change_percent >= 0;
                 const pts = sparklines[stock.symbol] ?? [];
@@ -596,40 +616,39 @@ export default function HomePage() {
                       className="bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col"
                     >
                       {/* Infos stock */}
-                      <div className="p-5 pb-3">
-                        <div className="flex justify-between items-start mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shadow-sm shrink-0 border border-slate-100">
+                      <div className="p-6 pb-4">
+                        <div className="flex justify-between items-start mb-5">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-sm overflow-hidden shadow-sm shrink-0 border border-slate-100">
                               {stock.logo_url
                                 ? <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
                                 : stock.symbol.substring(0, 2)
                               }
                             </div>
                             <div>
-                              <p className="font-bold text-slate-900 text-sm leading-none">{stock.symbol}</p>
-                              <p className="text-xs text-slate-400 mt-1 truncate max-w-[150px]">{stock.company_name}</p>
+                              <p className="font-extrabold text-slate-900 text-lg leading-none">{stock.symbol}</p>
+                              <p className="text-sm text-slate-400 mt-1 truncate max-w-[200px]">{stock.company_name}</p>
+                              {stock.sector && <p className="text-xs text-blue-500 mt-0.5 font-medium">{stock.sector}</p>}
                             </div>
                           </div>
-                          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${isUp ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                            {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                             {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
                           </div>
                         </div>
 
-                        <p className="text-2xl font-extrabold text-slate-900 tabular-nums">
-                          {formatNumber(stock.current_price)}<span className="text-sm font-medium text-slate-400 ml-1">FCFA</span>
+                        <p className="text-4xl font-extrabold text-slate-900 tabular-nums tracking-tight">
+                          {formatNumber(stock.current_price)}
+                          <span className="text-base font-semibold text-slate-400 ml-2">FCFA</span>
                         </p>
-                        {stock.sector && (
-                          <p className="text-[11px] text-slate-400 mt-1">{stock.sector}</p>
-                        )}
                       </div>
 
-                      {/* Graphique — même rendu que la page stock */}
-                      <div className="flex-1 border-t border-slate-50">
+                      {/* Graphique */}
+                      <div className="border-t border-slate-50">
                         {pts.length >= 2 ? (
-                          <SparklineChart data={pts} isUp={isUp} height={140} />
+                          <SparklineChart data={pts} isUp={isUp} height={200} />
                         ) : (
-                          <div className="h-[140px] flex items-center justify-center">
+                          <div className="h-[200px] flex items-center justify-center">
                             <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-slate-400 animate-spin" />
                           </div>
                         )}
@@ -784,7 +803,36 @@ export default function HomePage() {
               };
 
               return (
-                <div key={article.id} className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%]">
+                <div key={article.id} className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%] relative group/card">
+
+                  {/* Aperçu étendu au survol */}
+                  <div className="absolute bottom-full left-0 right-0 mb-2 z-50 pointer-events-none opacity-0 translate-y-1 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-200">
+                    <div className="bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden">
+                      {article.image_url && (
+                        <div className="h-40 overflow-hidden">
+                          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${style.badge} ${style.text} mb-2 inline-block`}>
+                          {article.category}
+                        </span>
+                        <h3 className="text-sm font-bold text-slate-900 leading-snug mb-2">
+                          {article.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 leading-relaxed">
+                          {article.summary}
+                        </p>
+                        <div className="flex items-center gap-1 mt-3 text-[10px] text-slate-400">
+                          <Clock size={10} />
+                          {timeAgo(article.publishedAt)}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Flèche */}
+                    <div className="w-3 h-3 bg-white border-r border-b border-slate-100 rotate-45 mx-auto -mt-1.5 shadow-sm" />
+                  </div>
+
                   <article
                     className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden flex flex-col"
                     onClick={() => navigate('/news')}

@@ -1,6 +1,6 @@
 // src/components/SignupPage.tsx - VERSION MIGRÉE
 import { useState, useRef, useEffect } from 'react';
-import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon, Phone, ChevronDown } from 'lucide-react';
+import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon, Phone, ChevronDown, ChevronLeft, GraduationCap, TrendingUp, Bot, Unlock, Globe } from 'lucide-react';
 import { Button, Input, Card } from './ui';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useNavigate } from 'react-router-dom';
@@ -207,8 +207,41 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
   );
 }
 
+const BENEFITS = [
+  {
+    icon: <GraduationCap className="w-5 h-5" />,
+    title: 'Apprends à ton rythme',
+    desc: 'Des modules clairs, sans jargon, pour maîtriser la BRVM.',
+    color: 'text-blue-300',
+    bg: 'bg-blue-500/20',
+  },
+  {
+    icon: <TrendingUp className="w-5 h-5" />,
+    title: 'Pratique sans risquer un franc',
+    desc: '10 000 000 FCFA virtuels pour tester tes stratégies.',
+    color: 'text-emerald-300',
+    bg: 'bg-emerald-500/20',
+  },
+  {
+    icon: <Bot className="w-5 h-5" />,
+    title: 'SIMBA t\'accompagne à chaque étape',
+    desc: 'Ton coach IA disponible 24h/24 pour répondre à tes questions.',
+    color: 'text-purple-300',
+    bg: 'bg-purple-500/20',
+  },
+  {
+    icon: <Unlock className="w-5 h-5" />,
+    title: '100% gratuit. Aucune carte requise.',
+    desc: 'L\'accès complet ne coûte rien. Investis en connaissance, pas en abonnement.',
+    color: 'text-amber-300',
+    bg: 'bg-amber-500/20',
+  },
+];
+
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [slide, setSlide] = useState(0);
+  const touchStartX = useRef(0);
   const [name, setName] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
@@ -219,6 +252,13 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (delta > 50)  setSlide(1);
+    if (delta < -50) setSlide(0);
+  };
 
   const passwordValid = passwordRules.every((r) => r.test(password));
 
@@ -279,24 +319,9 @@ export default function SignupPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo / Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl mb-4 shadow-md">
-            <img
-              src="/images/logo_afribourse.png"
-              alt="AfriBourse Logo"
-              className="w-16 h-16 object-contain"
-            />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h1>
-          <p className="text-gray-600">Commencez votre aventure d'investissement</p>
-        </div>
-
-        <Card>
-          <form onSubmit={handleSignup} className="space-y-6" translate="no">
+  // Formulaire partagé (desktop + slide 2 mobile)
+  const formContent = (
+    <form onSubmit={handleSignup} className="space-y-6" translate="no">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="text"
@@ -392,32 +417,135 @@ export default function SignupPage() {
               {loading ? 'Création du compte...' : 'Créer mon compte'}
             </Button>
           </form>
+  );
 
-          {/* OAuth Social Login */}
-          <div className="mt-2">
-            <OAuthButtons mode="register" />
-          </div>
+  const oauthAndLinks = (
+    <>
+      <div className="mt-2"><OAuthButtons mode="register" /></div>
+      <div className="mt-6 text-center text-sm text-gray-600">
+        Déjà un compte ?{' '}
+        <button onClick={() => navigate('/login')} className="text-indigo-600 font-semibold hover:underline" disabled={loading}>
+          Se connecter
+        </button>
+      </div>
+    </>
+  );
 
-          {/* Lien vers connexion */}
-          <div className="mt-6 text-center text-sm text-gray-600">
-            Déjà un compte ?{' '}
+  return (
+    <>
+      {/* ── MOBILE : 2 slides ──────────────────────────────────────── */}
+      <div
+        className="lg:hidden min-h-screen overflow-hidden relative"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Track coulissant */}
+        <div
+          className="flex h-full transition-transform duration-300 ease-in-out"
+          style={{ transform: `translateX(-${slide * 100}%)`, width: '200%' }}
+        >
+          {/* ── Slide 1 : Bénéfices ── */}
+          <div className="w-1/2 min-h-screen flex flex-col bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 px-6 pt-12 pb-10">
+            {/* Logo */}
+            <div className="flex flex-col items-center mb-8">
+              <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
+                <img src="/images/logo_afribourse.png" alt="AfriBourse" className="w-12 h-12 object-contain" />
+              </div>
+              <h1 className="text-2xl font-extrabold text-white text-center leading-tight">
+                Ton portefeuille BRVM<br />commence ici.
+              </h1>
+            </div>
+
+            {/* Bénéfices */}
+            <div className="flex flex-col gap-4 flex-1">
+              {BENEFITS.map((b, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${b.bg} ${b.color}`}>
+                    {b.icon}
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm leading-snug">{b.title}</p>
+                    <p className="text-white/60 text-xs mt-0.5 leading-relaxed">{b.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Social proof */}
+            <div className="flex items-center gap-2 mt-8 mb-6">
+              <Globe className="w-4 h-4 text-blue-300 shrink-0" />
+              <p className="text-blue-200 text-xs font-medium">+3 000 investisseurs de 8 pays UEMOA</p>
+            </div>
+
+            {/* Invite swipe */}
             <button
-              onClick={() => navigate('/login')}
-              className="text-indigo-600 font-semibold hover:underline"
-              disabled={loading}
+              onClick={() => setSlide(1)}
+              className="w-full text-center text-white/80 text-sm font-semibold animate-pulse cursor-pointer"
             >
-              Se connecter
+              Glissez pour vous inscrire →
             </button>
-          </div>
-        </Card>
 
-        {/* Retour à l'accueil */}
-        <div className="mt-6 text-center">
-          <Button variant="ghost" onClick={() => navigate('/')} disabled={loading}>
-            Retour à l'accueil
-          </Button>
+            {/* Dots */}
+            <div className="flex justify-center gap-2 mt-6">
+              <span className="w-5 h-1.5 rounded-full bg-white" />
+              <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+            </div>
+          </div>
+
+          {/* ── Slide 2 : Formulaire ── */}
+          <div className="w-1/2 min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex flex-col">
+            {/* Header slide 2 */}
+            <div className="flex items-center px-4 pt-4 pb-2">
+              <button
+                onClick={() => setSlide(0)}
+                className="flex items-center gap-1 text-slate-500 text-sm font-medium cursor-pointer hover:text-indigo-600 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Retour
+              </button>
+              <div className="flex gap-2 mx-auto">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                <span className="w-5 h-1.5 rounded-full bg-indigo-600" />
+              </div>
+              <div className="w-16" /> {/* spacer pour centrer les dots */}
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Créer un compte</h2>
+              <p className="text-gray-500 text-sm mb-5">Commencez votre aventure d'investissement</p>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                {formContent}
+                {oauthAndLinks}
+              </div>
+              <div className="mt-4 text-center">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/')} disabled={loading}>
+                  Retour à l'accueil
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* ── DESKTOP : layout existant inchangé ─────────────────────── */}
+      <div className="hidden lg:flex min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl mb-4 shadow-md">
+              <img src="/images/logo_afribourse.png" alt="AfriBourse Logo" className="w-16 h-16 object-contain" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h1>
+            <p className="text-gray-600">Commencez votre aventure d'investissement</p>
+          </div>
+          <Card>
+            {formContent}
+            {oauthAndLinks}
+          </Card>
+          <div className="mt-6 text-center">
+            <Button variant="ghost" onClick={() => navigate('/')} disabled={loading}>Retour à l'accueil</Button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
