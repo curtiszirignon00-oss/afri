@@ -120,7 +120,22 @@ export default function HomePage() {
   ];
 
   const { data, isLoading, error, refetch } = useHomePageData();
-  const topStocks = data?.topStocks || [];
+  const topStocks = (data?.topStocks || []).slice(0, 3);
+  const [sparklines, setSparklines] = useState<Record<string, number[]>>({});
+
+  useEffect(() => {
+    if (topStocks.length === 0) return;
+    topStocks.forEach(stock => {
+      fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(stock.symbol)}/history?period=1M`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(res => {
+          if (!res?.data?.length) return;
+          const closes: number[] = res.data.map((d: { close: number }) => d.close);
+          setSparklines(prev => ({ ...prev, [stock.symbol]: closes }));
+        })
+        .catch(() => {});
+    });
+  }, [topStocks.map(s => s.symbol).join(',')]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Actualités — BRVM_NEWS triées par date décroissante (les 8 plus récentes)
   const recentNewsItems = [...BRVM_NEWS]
@@ -569,52 +584,91 @@ export default function HomePage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {topStocks.map((stock, idx) => (
-                <AnimatedSection key={stock.id} delay={idx * 60}>
-                  <Card
-                    hoverable
-                    onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                    className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-sm overflow-hidden shadow-md">
-                          {stock.logo_url ? (
-                            <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
-                          ) : (
-                            stock.symbol.substring(0, 2)
+              {topStocks.map((stock, idx) => {
+                const closes = sparklines[stock.symbol] ?? [];
+                const isUp = stock.daily_change_percent >= 0;
+                const color = isUp ? '#16a34a' : '#dc2626';
+                const colorLight = isUp ? '#bbf7d0' : '#fecaca';
+
+                // Calcul des points SVG
+                let areaPath = '';
+                let linePath = '';
+                if (closes.length >= 2) {
+                  const min = Math.min(...closes);
+                  const max = Math.max(...closes);
+                  const range = max - min || 1;
+                  const W = 100;
+                  const H = 50;
+                  const pts = closes.map((c, i) => ({
+                    x: (i / (closes.length - 1)) * W,
+                    y: H - ((c - min) / range) * H * 0.85 - H * 0.05,
+                  }));
+                  linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                  areaPath = `${linePath} L ${W} ${H} L 0 ${H} Z`;
+                }
+
+                return (
+                  <AnimatedSection key={stock.id} delay={idx * 60}>
+                    <Card
+                      hoverable
+                      onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                      className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl overflow-hidden"
+                    >
+                      {/* Header */}
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shadow-sm shrink-0">
+                            {stock.logo_url ? (
+                              <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
+                            ) : (
+                              stock.symbol.substring(0, 2)
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-bold text-gray-900 text-sm">{stock.symbol}</p>
+                            <p className="text-xs text-gray-500 truncate max-w-[130px]">{stock.company_name}</p>
+                          </div>
+                        </div>
+                        <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${isUp ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                          {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                        </div>
+                      </div>
+
+                      {/* Prix */}
+                      <p className="text-xl font-extrabold text-gray-900 mb-3">
+                        {formatNumber(stock.current_price)} F
+                      </p>
+
+                      {/* Graphe en aire */}
+                      <div className="rounded-lg overflow-hidden -mx-5 -mb-5" style={{ background: colorLight + '33' }}>
+                        <svg
+                          viewBox="0 0 100 50"
+                          preserveAspectRatio="none"
+                          className="w-full"
+                          style={{ height: 72 }}
+                        >
+                          <defs>
+                            <linearGradient id={`grad-${stock.symbol}`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+                              <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+                            </linearGradient>
+                          </defs>
+                          {areaPath && (
+                            <path d={areaPath} fill={`url(#grad-${stock.symbol})`} />
                           )}
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-900">{stock.symbol}</p>
-                          <p className="text-xs text-gray-500 truncate max-w-[140px]">{stock.company_name}</p>
-                        </div>
+                          {linePath && (
+                            <path d={linePath} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          )}
+                          {!areaPath && (
+                            <line x1="0" y1="25" x2="100" y2="25" stroke={color} strokeWidth="1" strokeDasharray="4 3" opacity="0.4" />
+                          )}
+                        </svg>
                       </div>
-
-                      <div className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ${stock.daily_change_percent >= 0
-                        ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800'
-                        : 'bg-gradient-to-r from-red-100 to-pink-100 text-red-800'}`}>
-                        {stock.daily_change_percent >= 0
-                          ? <TrendingUp className="w-3 h-3" />
-                          : <TrendingDown className="w-3 h-3" />}
-                        <span>
-                          {stock.daily_change_percent >= 0 ? '+' : ''}
-                          {stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="text-2xl font-bold text-gray-900 mb-1">
-                      {formatNumber(stock.current_price)} F
-                    </p>
-
-                    <div className="pt-3 border-t border-gray-100 mt-3 text-xs text-gray-500 flex justify-between">
-                      <span>Cap: {formatCurrency(stock.market_cap)}</span>
-                      {stock.sector && <span className="font-medium text-blue-600">{stock.sector}</span>}
-                    </div>
-                  </Card>
-                </AnimatedSection>
-              ))}
+                    </Card>
+                  </AnimatedSection>
+                );
+              })}
             </div>
           </AnimatedSection>
         )}
