@@ -12,14 +12,10 @@ const TABS = [
   { key: 'learn',     label: 'Apprendre',   icon: GraduationCap,    path: '/learn'     },
 ];
 
-const AUTH_PATHS = ['/signup', '/login', '/survey', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'];
-
 export default function MobileBottomNav() {
   const location  = useLocation();
   const navigate  = useNavigate();
   const { isLoggedIn } = useAuth();
-
-  if (AUTH_PATHS.includes(location.pathname)) return null;
 
   const { data: unseenCommunityCount } = useUnseenCommunityCount(isLoggedIn);
   const unseenCommunityPublic          = useUnseenCommunityPublicCount(!isLoggedIn);

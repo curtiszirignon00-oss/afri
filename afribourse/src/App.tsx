@@ -186,7 +186,7 @@ function Layout() {
 
       {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
-      <MobileBottomNav />
+      {showLayout && <MobileBottomNav />}
 
       {/* Discovery survey popup for users who haven't completed it */}
       <SilentErrorBoundary name="SurveyPopup">

@@ -1,6 +1,6 @@
 // src/components/SignupPage.tsx - VERSION MIGRÉE
 import { useState, useRef, useEffect } from 'react';
-import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon, Phone, ChevronDown, ChevronLeft, GraduationCap, TrendingUp, Bot, Unlock, Globe } from 'lucide-react';
+import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon, Phone, ChevronDown, ChevronLeft, ChevronRight, GraduationCap, TrendingUp, Bot, Unlock, Globe } from 'lucide-react';
 import { Button, Input, Card } from './ui';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useNavigate } from 'react-router-dom';
@@ -434,71 +434,92 @@ export default function SignupPage() {
   return (
     <>
       {/* ── MOBILE : 2 slides ──────────────────────────────────────── */}
+      {/* fixed inset-0 = exactement le viewport, aucun overflow possible */}
       <div
-        className="lg:hidden min-h-screen overflow-hidden relative"
+        className="lg:hidden fixed inset-0 overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Track coulissant */}
+        {/* Track : 200vw, chaque slide = 100vw */}
         <div
           className="flex h-full transition-transform duration-300 ease-in-out"
-          style={{ transform: `translateX(-${slide * 100}%)`, width: '200%' }}
+          style={{ width: '200vw', transform: `translateX(-${slide * 100}vw)` }}
         >
+
           {/* ── Slide 1 : Bénéfices ── */}
-          <div className="w-1/2 min-h-screen flex flex-col bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 px-6 pt-12 pb-10">
-            {/* Logo */}
-            <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm">
-                <img src="/images/logo_afribourse.png" alt="AfriBourse" className="w-12 h-12 object-contain" />
-              </div>
-              <h1 className="text-2xl font-extrabold text-white text-center leading-tight">
-                Ton portefeuille BRVM<br />commence ici.
+          <div
+            className="flex flex-col bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900"
+            style={{ width: '100vw', height: '100%' }}
+          >
+            {/* Logo — cliquable → accueil */}
+            <div className="flex flex-col items-center pt-10 pb-4 px-6">
+              <button
+                onClick={() => navigate('/')}
+                className="flex flex-col items-center cursor-pointer mb-3"
+                aria-label="Retour à l'accueil"
+              >
+                <div className="w-14 h-14 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <img src="/images/logo_afribourse.png" alt="AfriBourse" className="w-10 h-10 object-contain" />
+                </div>
+              </button>
+              <h1 className="text-xl font-extrabold text-white text-center leading-tight">
+                Ton portefeuille BRVM commence ici.
               </h1>
             </div>
 
-            {/* Bénéfices */}
-            <div className="flex flex-col gap-4 flex-1">
+            {/* Bénéfices — répartis dans l'espace restant */}
+            <div className="flex-1 flex flex-col justify-evenly px-5">
               {BENEFITS.map((b, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className={`shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${b.bg} ${b.color}`}>
+                <div key={i} className="flex items-center gap-3">
+                  <div className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center ${b.bg} ${b.color}`}>
                     {b.icon}
                   </div>
                   <div>
-                    <p className="text-white font-semibold text-sm leading-snug">{b.title}</p>
-                    <p className="text-white/60 text-xs mt-0.5 leading-relaxed">{b.desc}</p>
+                    <p className="text-white font-semibold text-sm leading-none">{b.title}</p>
+                    <p className="text-white/55 text-xs mt-0.5 leading-snug">{b.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Social proof */}
-            <div className="flex items-center gap-2 mt-8 mb-6">
-              <Globe className="w-4 h-4 text-blue-300 shrink-0" />
-              <p className="text-blue-200 text-xs font-medium">+3 000 investisseurs de 8 pays UEMOA</p>
-            </div>
+            {/* Social proof + CTA */}
+            <div className="px-5 pb-8 flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+                <p className="text-blue-200 text-xs font-medium">+3 000 investisseurs de 8 pays UEMOA</p>
+              </div>
 
-            {/* Invite swipe */}
-            <button
-              onClick={() => setSlide(1)}
-              className="w-full text-center text-white/80 text-sm font-semibold animate-pulse cursor-pointer"
-            >
-              Glissez pour vous inscrire →
-            </button>
+              {/* Bouton CTA principal */}
+              <button
+                onClick={() => setSlide(1)}
+                className="w-full bg-white text-indigo-900 font-extrabold text-base py-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-transform shadow-lg shadow-indigo-950/40"
+              >
+                S'inscrire maintenant
+                <ChevronRight className="w-5 h-5" />
+              </button>
 
-            {/* Dots */}
-            <div className="flex justify-center gap-2 mt-6">
-              <span className="w-5 h-1.5 rounded-full bg-white" />
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+              {/* Hint swipe discret */}
+              <p className="text-center text-white/40 text-xs">ou glissez vers la droite</p>
+
+              {/* Dots */}
+              <div className="flex justify-center gap-2">
+                <span className="w-5 h-1.5 rounded-full bg-white" />
+                <span className="w-1.5 h-1.5 rounded-full bg-white/35" />
+              </div>
             </div>
           </div>
 
           {/* ── Slide 2 : Formulaire ── */}
-          <div className="w-1/2 min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex flex-col">
-            {/* Header slide 2 */}
-            <div className="flex items-center px-4 pt-4 pb-2">
+          <div
+            className="flex flex-col bg-slate-50"
+            style={{ width: '100vw', height: '100%' }}
+          >
+            {/* Header */}
+            <div className="flex items-center px-4 pt-4 pb-2 shrink-0 bg-white border-b border-slate-100">
               <button
                 onClick={() => setSlide(0)}
-                className="flex items-center gap-1 text-slate-500 text-sm font-medium cursor-pointer hover:text-indigo-600 transition-colors"
+                className="flex items-center gap-1 text-slate-500 text-sm font-medium cursor-pointer"
+                aria-label="Retour aux bénéfices"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Retour
@@ -507,23 +528,25 @@ export default function SignupPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                 <span className="w-5 h-1.5 rounded-full bg-indigo-600" />
               </div>
-              <div className="w-16" /> {/* spacer pour centrer les dots */}
+              <div className="w-14" />
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Créer un compte</h2>
+            {/* Formulaire scrollable */}
+            <div className="flex-1 overflow-y-auto px-4 py-5">
+              <h2 className="text-xl font-bold text-gray-900 mb-0.5">Créer un compte</h2>
               <p className="text-gray-500 text-sm mb-5">Commencez votre aventure d'investissement</p>
               <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
                 {formContent}
                 {oauthAndLinks}
               </div>
-              <div className="mt-4 text-center">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/')} disabled={loading}>
+              <div className="mt-4 pb-6 text-center">
+                <button onClick={() => navigate('/')} className="text-slate-400 text-xs underline cursor-pointer">
                   Retour à l'accueil
-                </Button>
+                </button>
               </div>
             </div>
           </div>
+
         </div>
       </div>
 
