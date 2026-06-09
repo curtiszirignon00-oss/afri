@@ -454,6 +454,58 @@ export default function HomePage() {
         {/* === Simulateur === */}
         <SimulatorCarousel />
 
+        {/* === Time Machine === */}
+        <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+          <div className="relative overflow-hidden rounded-2xl bg-slate-900 px-8 py-12 md:px-14 md:py-16">
+            {/* Orbs décoratifs */}
+            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-800/30 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-amber-600/15 blur-3xl" />
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 md:gap-16">
+              {/* Icône horloge + timeline */}
+              <div className="shrink-0 flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <circle cx="12" cy="12" r="9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+                  </svg>
+                </div>
+                <div className="flex flex-col items-center gap-1 text-center">
+                  <span className="text-amber-300 font-bold text-lg font-mono tracking-wider">2010</span>
+                  <div className="w-px h-6 bg-amber-400/30" />
+                  <span className="text-amber-300 font-bold text-lg font-mono tracking-wider">2025</span>
+                </div>
+              </div>
+
+              {/* Texte */}
+              <div className="flex-1 text-center md:text-left">
+                <span className="inline-flex items-center gap-2 bg-amber-400/10 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-400/20 mb-5">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
+                  Machine à remonter le temps
+                </span>
+                <h2 className="text-2xl md:text-4xl font-extrabold text-white leading-tight mb-4">
+                  Investis en 2010.<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-200">
+                    Vois ce que ça vaut en 2025.
+                  </span>
+                </h2>
+                <p className="text-slate-400 text-sm md:text-base leading-relaxed mb-8 max-w-xl">
+                  Rejoue les grands moments de la BRVM avec de l'argent virtuel.
+                  Comprends tes erreurs avant de les faire pour de vrai.
+                </p>
+                <button
+                  onClick={() => navigate('/time-machine')}
+                  className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-6 py-3 rounded-xl transition-colors duration-150 cursor-pointer text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
+                  Remonter le temps
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </AnimatedSection>
+
         {/* === Académie === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
@@ -481,22 +533,21 @@ export default function HomePage() {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+              <div className="flex flex-wrap gap-2.5 justify-center md:justify-end w-full md:w-auto md:max-w-xs">
                 {[
-                  { level: '1', title: 'Niveau Débutant', subtitle: 'Les bases', color: 'green' },
-                  { level: '2', title: 'Intermédiaire', subtitle: 'Analyse', color: 'yellow' },
-                  { level: '3', title: 'Avancé', subtitle: 'Stratégies', color: 'orange' },
-                  { level: '✓', title: 'Certification', subtitle: 'Validez', color: 'red' },
-                ].map((item, idx) => (
-                  <AnimatedSection key={idx} delay={idx * 80}>
-                    <Card hoverable className="text-center cursor-pointer">
-                      <span className={`text-2xl font-bold text-${item.color}-500 block mb-1`}>
-                        {item.level}
-                      </span>
-                      <span className="text-sm font-semibold block">{item.title}</span>
-                      <span className="text-xs text-gray-500 block">{item.subtitle}</span>
-                    </Card>
-                  </AnimatedSection>
+                  { label: 'Psychologie', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
+                  { label: 'Analyse fondamentale', color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
+                  { label: 'Analyse technique', color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' },
+                  { label: 'Connaissance BRVM', color: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' },
+                  { label: 'Portefeuille', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    onClick={() => navigate('/learn')}
+                    className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors duration-150 cursor-pointer ${item.color}`}
+                  >
+                    {item.label}
+                  </button>
                 ))}
               </div>
             </div>
