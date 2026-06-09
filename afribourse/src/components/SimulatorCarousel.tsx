@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Shield, TrendingUp, BarChart2, Zap, BookOpen, Target } from 'lucide-react';
 
-const IMAGES = Array.from({ length: 10 }, (_, i) => `/images/simulator/${i + 1}.jpg`);
+const IMAGES = [1,2,3,4,5,6,8,9,10].map(n => `/images/simulator/${n}.jpg`);
 
 const VALUE_PROPS: { icon: React.ReactNode; label: string; desc: string }[] = [
   {
@@ -185,7 +185,7 @@ export default function SimulatorCarousel() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs text-slate-400 tabular-nums">{current + 1} / {IMAGES.length}</span>
+                <span className="w-8" />
                 <button
                   aria-label="Image suivante"
                   onClick={() => manualNav(1)}
