@@ -34,6 +34,7 @@ const OPERATORS = [
   { id: 'orange-money', label: 'Orange Money', emoji: '🟠' },
   { id: 'mtn-momo',     label: 'MTN MoMo',     emoji: '🟡' },
   { id: 'moov-money',   label: 'Moov Money',   emoji: '🔵' },
+  { id: 't-money',      label: 'T-Money',      emoji: '🟤' },
   { id: 'free-money',   label: 'Free Money',   emoji: '🟢' },
 ];
 

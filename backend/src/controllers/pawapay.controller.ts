@@ -255,8 +255,7 @@ export async function handleRefundCallback(req: Request, res: Response) {
 // POST /api/pawapay/deposit
 // ============================================================
 export async function createDeposit(req: AuthenticatedRequest, res: Response) {
-  const userId = req.user?.id;
-  if (!userId) return res.status(401).json({ error: 'Non authentifié' });
+  const userId = req.user?.id ?? null;
 
   const { planId, planName, currency, correspondent, phone, registrationEmail, referralCode } = req.body;
 
@@ -276,9 +275,9 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const officialPrice = PLAN_PRICES[planId];
   if (officialPrice) {
     // Plan d'abonnement connu : on ignore le montant frontend et on applique le prix officiel (+ promo éventuelle)
-    const promo = await prisma.userPromo.findFirst({
+    const promo = userId ? await prisma.userPromo.findFirst({
       where: { userId, planId, expiresAt: { gt: new Date() } },
-    });
+    }) : null;
 
     if (promo && promo.usedCount < promo.maxUses) {
       finalAmount = Math.round(officialPrice * (1 - promo.discountPercent / 100));
@@ -430,8 +429,9 @@ export async function getDepositStatus(req: AuthenticatedRequest, res: Response)
   const payment = await prisma.payment.findUnique({ where: { depositId } });
 
   if (!payment) return res.status(404).json({ error: 'Paiement introuvable' });
-  // Un utilisateur normal ne peut consulter que ses propres paiements
-  if (req.user?.role !== 'admin' && payment.userId !== userId) {
+  // Un utilisateur connecté ne peut consulter que ses propres paiements.
+  // Les paiements anonymes (payment.userId=null) sont accessibles via depositId (UUID secret).
+  if (payment.userId !== null && req.user?.role !== 'admin' && payment.userId !== userId) {
     return res.status(403).json({ error: 'Accès refusé' });
   }
 
