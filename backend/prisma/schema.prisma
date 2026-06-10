@@ -1071,7 +1071,7 @@ model SubscriptionIntent {
 model Payment {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   depositId     String   @unique // UUID généré côté AfriBourse, envoyé à PawaPay
-  userId        String   @db.ObjectId
+  userId        String?  @db.ObjectId
   planId        String   // "investisseur-plus" | "pro"
   planName      String
   amount        String   // Ex: "9900"
@@ -1085,7 +1085,7 @@ model Payment {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userPromo UserPromo? @relation(fields: [userPromoId], references: [id])
   refunds   Refund[]
 
