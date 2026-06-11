@@ -400,3 +400,63 @@ export async function togglePinPost(req: AuthRequest, res: Response) {
         res.status(400).json({ error: error.message });
     }
 }
+
+// ============= INVITE LINKS =============
+
+export async function getOrCreateInviteLink(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { communityId } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const result = await communityService.getOrCreateInviteToken(communityId, userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function regenerateInviteLink(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { communityId } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const result = await communityService.regenerateInviteToken(communityId, userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function getCommunityPreviewByInvite(req: AuthRequest, res: Response) {
+    try {
+        const { token } = req.params;
+        const community = await communityService.getCommunityByInviteToken(token);
+        res.status(200).json({ success: true, data: community });
+    } catch (error: any) {
+        res.status(404).json({ error: error.message });
+    }
+}
+
+export async function joinByInvite(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { token } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const result = await communityService.joinByInviteToken(token, userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}

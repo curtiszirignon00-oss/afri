@@ -28,6 +28,10 @@ import {
     Eye,
     EyeOff,
     Play,
+    Share2,
+    Copy,
+    RefreshCw,
+    X,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
@@ -36,6 +40,8 @@ import {
     useJoinCommunity,
     useLeaveCommunity,
     useCommunityMembers,
+    useGetInviteLink,
+    useRegenerateInviteLink,
     COMMUNITY_CATEGORIES,
     type CommunityPost,
 } from '../hooks/useCommunity';
@@ -80,6 +86,8 @@ export default function CommunityDetailPage() {
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showEventFormModal, setShowEventFormModal] = useState(false);
     const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const [showInviteModal, setShowInviteModal] = useState(false);
+    const [inviteLink, setInviteLink] = useState<string | null>(null);
 
     const { data: community, isLoading, error } = useCommunity(slug || '');
 
@@ -101,6 +109,8 @@ export default function CommunityDetailPage() {
 
     const joinCommunity = useJoinCommunity();
     const leaveCommunity = useLeaveCommunity();
+    const getInviteLink = useGetInviteLink(community?.id || '');
+    const regenerateInvite = useRegenerateInviteLink();
 
     const posts = postsData?.data || [];
     const totalPostsPages = postsData?.totalPages || 1;
@@ -132,6 +142,38 @@ export default function CommunityDetailPage() {
         } catch (error: any) {
             toast.error(error.response?.data?.error || 'Erreur lors du depart');
         }
+    };
+
+    const handleOpenInvite = async () => {
+        if (!community) return;
+        setShowInviteModal(true);
+        if (!inviteLink) {
+            try {
+                const result = await getInviteLink.refetch();
+                if (result.data) {
+                    setInviteLink(`${window.location.origin}/communities/join/${result.data.invite_token}`);
+                }
+            } catch {
+                toast.error('Erreur lors de la génération du lien');
+            }
+        }
+    };
+
+    const handleRegenerateInvite = async () => {
+        if (!community) return;
+        try {
+            const result = await regenerateInvite.mutateAsync(community.id);
+            setInviteLink(`${window.location.origin}/communities/join/${result.invite_token}`);
+            toast.success('Lien d\'invitation regénéré');
+        } catch {
+            toast.error('Erreur lors de la regénération du lien');
+        }
+    };
+
+    const handleCopyInviteLink = () => {
+        if (!inviteLink) return;
+        navigator.clipboard.writeText(inviteLink);
+        toast.success('Lien copié !');
     };
 
     const getVisibilityIcon = (visibility: string) => {
@@ -242,6 +284,17 @@ export default function CommunityDetailPage() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
+                            {/* Bouton Inviter — visible pour les membres (owner/admin) */}
+                            {canManage && (
+                                <button
+                                    onClick={handleOpenInvite}
+                                    className="flex items-center gap-2 px-4 py-3 bg-green-50 text-green-700 rounded-xl hover:bg-green-100 transition-colors border border-green-200"
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                    Inviter
+                                </button>
+                            )}
+
                             {isLoggedIn && !community.isMember && !community.hasPendingRequest && (
                                 <button
                                     onClick={handleJoin}
@@ -1032,6 +1085,78 @@ export default function CommunityDetailPage() {
                     }}
                     event={editingEvent}
                 />
+            )}
+
+            {/* Modal lien d'invitation */}
+            {showInviteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+                        <div className="flex items-center justify-between p-5 border-b">
+                            <div className="flex items-center gap-2">
+                                <Share2 className="w-5 h-5 text-indigo-600" />
+                                <h3 className="font-semibold text-gray-900">Inviter des membres</h3>
+                            </div>
+                            <button onClick={() => setShowInviteModal(false)} className="p-1 rounded-lg hover:bg-gray-100">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        <div className="p-5">
+                            <p className="text-sm text-gray-600 mb-4">
+                                Partagez ce lien pour permettre à d'autres personnes de rejoindre <strong>{community.name}</strong>.
+                                Même les communautés privées et secrètes peuvent être rejointes via ce lien.
+                            </p>
+
+                            {getInviteLink.isFetching ? (
+                                <div className="flex items-center justify-center py-6">
+                                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                                </div>
+                            ) : inviteLink ? (
+                                <>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <input
+                                            readOnly
+                                            value={inviteLink}
+                                            className="flex-1 text-sm px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 truncate focus:outline-none"
+                                        />
+                                        <button
+                                            onClick={handleCopyInviteLink}
+                                            className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex-shrink-0"
+                                            title="Copier le lien"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={handleCopyInviteLink}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium mb-3"
+                                    >
+                                        <Copy className="w-4 h-4" />
+                                        Copier le lien d'invitation
+                                    </button>
+
+                                    <button
+                                        onClick={handleRegenerateInvite}
+                                        disabled={regenerateInvite.isPending}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                                    >
+                                        {regenerateInvite.isPending ? (
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                        ) : (
+                                            <RefreshCw className="w-3 h-3" />
+                                        )}
+                                        Regénérer le lien (invalide l'ancien)
+                                    </button>
+                                </>
+                            ) : (
+                                <div className="text-center py-4 text-gray-500 text-sm">
+                                    Erreur lors de la génération du lien
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

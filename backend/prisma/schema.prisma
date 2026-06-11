@@ -1583,6 +1583,9 @@ model Community {
   members_count Int @default(1) // Le créateur est inclus
   posts_count   Int @default(0)
 
+  // Invitation
+  invite_token String? @unique // Token unique pour inviter des membres
+
   // Modération
   is_verified Boolean @default(false) // Communauté officielle
   is_active   Boolean @default(true)

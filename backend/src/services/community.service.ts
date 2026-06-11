@@ -1,5 +1,6 @@
 import { log } from '../config/logger';
 // src/services/community.service.ts
+import { randomUUID } from 'crypto';
 import { prisma } from '../config/database';
 import type { CommunityVisibility, CommunityMemberRole, PostType } from '@prisma/client';
 import * as notificationService from './notification.service';
@@ -1496,4 +1497,147 @@ export async function togglePinPost(postId: string, userId: string) {
     });
 
     return updatedPost;
+}
+
+// ============= INVITE LINKS =============
+
+/**
+ * Get or create an invite token for a community (owner/admin only)
+ */
+export async function getOrCreateInviteToken(communityId: string, userId: string) {
+    const community = await prisma.community.findUnique({
+        where: { id: communityId },
+    });
+
+    if (!community || !community.is_active) {
+        throw new Error('Community not found');
+    }
+
+    const membership = await prisma.communityMember.findUnique({
+        where: { community_id_user_id: { community_id: communityId, user_id: userId } },
+    });
+
+    if (!membership || !['OWNER', 'ADMIN'].includes(membership.role)) {
+        throw new Error('Only owners and admins can generate invite links');
+    }
+
+    if (community.invite_token) {
+        return { invite_token: community.invite_token, community_name: community.name };
+    }
+
+    const token = randomUUID();
+    await prisma.community.update({
+        where: { id: communityId },
+        data: { invite_token: token },
+    });
+
+    return { invite_token: token, community_name: community.name };
+}
+
+/**
+ * Regenerate the invite token (invalidates old links)
+ */
+export async function regenerateInviteToken(communityId: string, userId: string) {
+    const community = await prisma.community.findUnique({ where: { id: communityId } });
+
+    if (!community || !community.is_active) {
+        throw new Error('Community not found');
+    }
+
+    const membership = await prisma.communityMember.findUnique({
+        where: { community_id_user_id: { community_id: communityId, user_id: userId } },
+    });
+
+    if (!membership || !['OWNER', 'ADMIN'].includes(membership.role)) {
+        throw new Error('Only owners and admins can regenerate invite links');
+    }
+
+    const token = randomUUID();
+    await prisma.community.update({ where: { id: communityId }, data: { invite_token: token } });
+
+    return { invite_token: token, community_name: community.name };
+}
+
+/**
+ * Join a community via invite token
+ */
+export async function joinByInviteToken(token: string, userId: string) {
+    const community = await prisma.community.findUnique({
+        where: { invite_token: token },
+        select: {
+            id: true, name: true, slug: true, description: true,
+            avatar_url: true, visibility: true, members_count: true,
+            is_active: true, invite_token: true, creator_id: true,
+            settings: true,
+        },
+    });
+
+    if (!community || !community.is_active) {
+        throw new Error('Lien d\'invitation invalide ou expiré');
+    }
+
+    const existingMember = await prisma.communityMember.findUnique({
+        where: { community_id_user_id: { community_id: community.id, user_id: userId } },
+    });
+
+    if (existingMember) {
+        return { status: 'already_member', community };
+    }
+
+    // Direct join regardless of visibility (invite link overrides)
+    await prisma.$transaction([
+        prisma.communityMember.create({
+            data: { community_id: community.id, user_id: userId, role: 'MEMBER' },
+        }),
+        prisma.community.update({
+            where: { id: community.id },
+            data: { members_count: { increment: 1 } },
+        }),
+    ]);
+
+    // Notify community owner
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, lastname: true },
+    });
+
+    if (user) {
+        notificationService
+            .createNotification({
+                userId: community.creator_id,
+                type: 'JOIN_REQUEST',
+                title: 'Nouveau membre',
+                message: `${user.name} ${user.lastname} a rejoint ${community.name} via un lien d'invitation`,
+                actorId: userId,
+                metadata: { communityId: community.id, communityName: community.name },
+            })
+            .catch(() => {});
+    }
+
+    return { status: 'joined', community };
+}
+
+/**
+ * Preview community info from an invite token (no auth required)
+ */
+export async function getCommunityByInviteToken(token: string) {
+    const community = await prisma.community.findUnique({
+        where: { invite_token: token },
+        select: {
+            id: true, name: true, slug: true, description: true,
+            avatar_url: true, visibility: true, members_count: true, is_active: true,
+            creator: {
+                select: {
+                    id: true, name: true, lastname: true,
+                    profile: { select: { username: true, avatar_url: true } },
+                },
+            },
+        },
+    });
+
+    if (!community || !community.is_active) {
+        throw new Error('Lien d\'invitation invalide ou expiré');
+    }
+
+    return community;
 }

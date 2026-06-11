@@ -22,6 +22,12 @@ router.get('/:idOrSlug', optionalAuth, communityController.getCommunity); // Get
 router.put('/:communityId', auth, validateUpdateCommunity, communityController.updateCommunity); // Update community
 router.delete('/:communityId', auth, communityController.deleteCommunity); // Delete community
 
+// ============= INVITE LINKS =============
+router.get('/invite/:token', optionalAuth, communityController.getCommunityPreviewByInvite); // Preview community via invite (no auth)
+router.post('/invite/:token/join', auth, communityController.joinByInvite); // Join via invite link
+router.get('/:communityId/invite', auth, communityController.getOrCreateInviteLink); // Get/create invite token (admin/owner)
+router.post('/:communityId/invite/regenerate', auth, communityController.regenerateInviteLink); // Regenerate invite token
+
 // ============= MEMBERSHIP =============
 router.post('/:communityId/join', auth, communityController.joinCommunity); // Join community
 router.delete('/:communityId/leave', auth, communityController.leaveCommunity); // Leave community

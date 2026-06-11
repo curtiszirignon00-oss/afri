@@ -550,6 +550,63 @@ export function useTogglePinPost() {
     });
 }
 
+// ============= INVITE LINK HOOKS =============
+
+export function useGetInviteLink(communityId: string) {
+    return useQuery({
+        queryKey: ['community-invite', communityId],
+        queryFn: async () => {
+            const res = await apiClient.get(`/communities/${communityId}/invite`);
+            return res.data.data as { invite_token: string; community_name: string };
+        },
+        enabled: false, // Only fetch on demand
+        retry: false,
+    });
+}
+
+export function useRegenerateInviteLink() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (communityId: string) => {
+            const res = await apiClient.post(`/communities/${communityId}/invite/regenerate`);
+            return res.data.data as { invite_token: string; community_name: string };
+        },
+        onSuccess: (_, communityId) => {
+            queryClient.invalidateQueries({ queryKey: ['community-invite', communityId] });
+        },
+    });
+}
+
+export function useGetCommunityByInviteToken(token: string) {
+    return useQuery({
+        queryKey: ['community-invite-preview', token],
+        queryFn: async () => {
+            const res = await apiClient.get(`/communities/invite/${token}`);
+            return res.data.data as {
+                id: string; name: string; slug: string; description?: string;
+                avatar_url?: string; visibility: CommunityVisibility; members_count: number;
+                creator: { id: string; name: string; lastname: string; profile?: { username?: string; avatar_url?: string } };
+            };
+        },
+        enabled: !!token,
+        retry: false,
+    });
+}
+
+export function useJoinByInvite() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (token: string) => {
+            const res = await apiClient.post(`/communities/invite/${token}/join`);
+            return res.data.data as { status: 'joined' | 'already_member'; community: { slug: string; name: string } };
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['communities'] });
+            queryClient.invalidateQueries({ queryKey: ['my-communities'] });
+        },
+    });
+}
+
 // ============= CATEGORY CONSTANTS =============
 
 export const COMMUNITY_CATEGORIES = [
