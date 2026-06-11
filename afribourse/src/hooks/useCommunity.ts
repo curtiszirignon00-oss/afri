@@ -651,15 +651,12 @@ export function useToggleSurveyPublic(postId: string) {
 
 // ============= INVITE LINK HOOKS =============
 
-export function useGetInviteLink(communityId: string) {
-    return useQuery({
-        queryKey: ['community-invite', communityId],
-        queryFn: async () => {
+export function useGetInviteLink() {
+    return useMutation({
+        mutationFn: async (communityId: string) => {
             const res = await apiClient.get(`/communities/${communityId}/invite`);
             return res.data.data as { invite_token: string; community_name: string };
         },
-        enabled: false, // Only fetch on demand
-        retry: false,
     });
 }
 

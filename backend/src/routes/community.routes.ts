@@ -18,13 +18,15 @@ router.post('/mark-visited', auth, communityController.markCommunityVisited); //
 router.get('/', optionalAuth, communityController.listCommunities); // List all communities
 router.get('/my', auth, communityController.getUserCommunities); // Get user's communities
 router.post('/', auth, validateCreateCommunity, communityController.createCommunity); // Create community
+
+// ============= INVITE LINKS (avant /:idOrSlug pour éviter le conflit) =============
+router.get('/invite/:token', optionalAuth, communityController.getCommunityPreviewByInvite); // Preview community via invite (no auth)
+router.post('/invite/:token/join', auth, communityController.joinByInvite); // Join via invite link
+
+// ============= ROUTES DYNAMIQUES (doivent être après les routes statiques) =============
 router.get('/:idOrSlug', optionalAuth, communityController.getCommunity); // Get community by id or slug
 router.put('/:communityId', auth, validateUpdateCommunity, communityController.updateCommunity); // Update community
 router.delete('/:communityId', auth, communityController.deleteCommunity); // Delete community
-
-// ============= INVITE LINKS =============
-router.get('/invite/:token', optionalAuth, communityController.getCommunityPreviewByInvite); // Preview community via invite (no auth)
-router.post('/invite/:token/join', auth, communityController.joinByInvite); // Join via invite link
 router.get('/:communityId/invite', auth, communityController.getOrCreateInviteLink); // Get/create invite token (admin/owner)
 router.post('/:communityId/invite/regenerate', auth, communityController.regenerateInviteLink); // Regenerate invite token
 

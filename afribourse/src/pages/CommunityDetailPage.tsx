@@ -45,6 +45,7 @@ import {
     COMMUNITY_CATEGORIES,
     type CommunityPost,
 } from '../hooks/useCommunity';
+
 import { useAuth } from '../contexts/AuthContext';
 import CommunityPostCard from '../components/community/CommunityPostCard';
 import CommunityPostComposer from '../components/community/CommunityPostComposer';
@@ -109,7 +110,7 @@ export default function CommunityDetailPage() {
 
     const joinCommunity = useJoinCommunity();
     const leaveCommunity = useLeaveCommunity();
-    const getInviteLink = useGetInviteLink(community?.id || '');
+    const getInviteLink = useGetInviteLink();
     const regenerateInvite = useRegenerateInviteLink();
 
     const posts = postsData?.data || [];
@@ -149,12 +150,10 @@ export default function CommunityDetailPage() {
         setShowInviteModal(true);
         if (!inviteLink) {
             try {
-                const result = await getInviteLink.refetch();
-                if (result.data) {
-                    setInviteLink(`${window.location.origin}/communities/join/${result.data.invite_token}`);
-                }
+                const result = await getInviteLink.mutateAsync(community.id);
+                setInviteLink(`${window.location.origin}/communities/join/${result.invite_token}`);
             } catch {
-                toast.error('Erreur lors de la génération du lien');
+                toast.error('Erreur lors de la génération du lien d\'invitation');
             }
         }
     };
@@ -1107,7 +1106,7 @@ export default function CommunityDetailPage() {
                                 Même les communautés privées et secrètes peuvent être rejointes via ce lien.
                             </p>
 
-                            {getInviteLink.isFetching ? (
+                            {getInviteLink.isPending ? (
                                 <div className="flex items-center justify-center py-6">
                                     <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
                                 </div>
