@@ -18,12 +18,8 @@ async function sendPWAAnnouncement() {
   console.log('='.repeat(60));
 
   try {
-    // Récupérer tous les vrais utilisateurs (exclure les fakes et non confirmés)
     const users = await prisma.user.findMany({
       where: {
-        email: {
-          not: { endsWith: '@---.com' },
-        },
         email_verified_at: { not: null },
       },
       select: {

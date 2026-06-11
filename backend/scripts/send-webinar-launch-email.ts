@@ -29,17 +29,15 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 15000,
 });
 
-// ─── Filtrage comptes fake ────────────────────────────────────────────────────
-
-const FAKE_PATTERNS = [
-  'afribourse', 'africbourse', 'yopmail', 'mailinator',
-  'guerrillamail', 'tempmail', 'throwam', 'sharklasers',
-  'dispostable', 'trashmail', 'fakeinbox', 'spamgourmet',
+const BLOCKED_EMAIL_PATTERNS = [
+  'yopmail', 'mailinator', 'guerrillamail', 'tempmail',
+  'throwam', 'sharklasers', 'dispostable', 'trashmail',
+  'fakeinbox', 'spamgourmet',
 ];
 
 function isRealEmail(email: string): boolean {
   const e = email.toLowerCase();
-  return !FAKE_PATTERNS.some((p) => e.includes(p));
+  return !BLOCKED_EMAIL_PATTERNS.some((p) => e.includes(p));
 }
 
 // ─── Template HTML ────────────────────────────────────────────────────────────
@@ -209,8 +207,8 @@ async function main() {
 
   const users = allUsers.filter((u) => isRealEmail(u.email));
   const excluded = allUsers.length - users.length;
-  console.log(`🚫 Comptes exclus (fake) : ${excluded}`);
-  console.log(`📨 Destinataires réels  : ${users.length}\n`);
+  console.log(`🚫 Comptes exclus : ${excluded}`);
+  console.log(`📨 Destinataires  : ${users.length}\n`);
 
   if (users.length === 0) {
     console.log('Aucun destinataire. Arrêt.');

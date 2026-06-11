@@ -20,10 +20,8 @@ async function sendGrandChallengeAnnouncement() {
   console.log('='.repeat(60));
 
   try {
-    // 1. Récupérer tous les vrais utilisateurs confirmés
     const users = await prisma.user.findMany({
       where: {
-        email: { not: { endsWith: '@---.com' } },
         email_verified_at: { not: null },
       },
       select: { id: true, email: true, name: true, lastname: true },

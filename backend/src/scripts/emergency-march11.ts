@@ -67,21 +67,7 @@ async function emergencyMarch11() {
         }
     }
 
-    // 3. Vérifier si des comptes ---.com sont encore actifs avec des sessions
-    console.log('\n3. Comptes ---.com avec sessions actives...');
-    const fakeAccounts = await prisma.user.findMany({
-        where: { email: { endsWith: '@---.com' } },
-        select: { email: true, remember_token: true, updated_at: true },
-        take: 10,
-    });
-    console.log(`  ${fakeAccounts.length} comptes ---.com trouvés`);
-    const recentFake = fakeAccounts.filter(u => u.updated_at && u.updated_at > yesterday);
-    if (recentFake.length > 0) {
-        console.log('  ⚠️  Comptes fake avec connexion récente :');
-        recentFake.forEach(u => console.log(`    - ${u.email} — modifié: ${u.updated_at}`));
-    }
-
-    // 4. Envoyer email d'alerte à sanei4152 via reset password
+    // 3. Envoyer email d'alerte à sanei4152 via reset password
     console.log('\n4. Envoi reset password à la nouvelle victime sanei4152@gmail.com...');
     const sanei = await prisma.user.findUnique({ where: { email: 'sanei4152@gmail.com' } });
     if (sanei) {

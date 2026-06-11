@@ -1,6 +1,5 @@
 /**
  * Script : envoie un email d'essai gratuit à TOUS les utilisateurs réels
- * — Exclut les emails contenant "---"
  * — Exclut les utilisateurs ayant déjà un token de trial en base
  * — Crée un token persisté en base avant chaque envoi
  * — Pause de 1,5 s entre chaque envoi pour éviter le rate-limiting SMTP
@@ -37,13 +36,9 @@ async function run() {
     orderBy: { created_at: 'asc' },
   });
 
-  // 2. Filtrer les faux comptes
-  const realUsers = allUsers.filter(
-    u => !u.email.includes('---')
-  );
+  const realUsers = allUsers;
 
   console.log(`👥 Utilisateurs totaux       : ${allUsers.length}`);
-  console.log(`🚫 Comptes fake exclus       : ${allUsers.length - realUsers.length}`);
   console.log(`✅ Candidats retenus         : ${realUsers.length}\n`);
 
   // 3. Identifier ceux qui ont déjà un trial en base
@@ -115,7 +110,6 @@ async function run() {
   console.log(`✅ Envoyés avec succès : ${sent}`);
   console.log(`❌ Échecs              : ${failed}`);
   console.log(`⏭️  Déjà traités        : ${skipped}`);
-  console.log(`🚫 Fake exclus         : ${allUsers.length - realUsers.length}`);
 
   if (errors.length > 0) {
     console.log('\n⚠️  Détail des échecs :');

@@ -2,7 +2,7 @@
  * Campagne email — Pack Parcours Investisseur BRVM
  * Objet : 🎓 Votre dernière chance d'entrer dans le Parcours Investisseur BRVM
  *
- * Cible : tous les utilisateurs réels (hors comptes ---)
+ * Cible : tous les utilisateurs
  *
  * Usage    : npx tsx src/scripts/send-pack-parcours-brvm.ts
  * Dry-run  : DRY_RUN=true npx tsx src/scripts/send-pack-parcours-brvm.ts
@@ -34,11 +34,9 @@ async function run() {
     orderBy: { created_at: 'asc' },
   });
 
-  const targets = allUsers.filter(u => !u.email.includes('---'));
-  const excluded = allUsers.length - targets.length;
+  const targets = allUsers;
 
   console.log(`👥 Utilisateurs totaux  : ${allUsers.length}`);
-  console.log(`🚫 Comptes fake exclus : ${excluded}`);
   console.log(`📬 À envoyer           : ${targets.length}`);
   console.log('='.repeat(60));
 
@@ -76,7 +74,6 @@ async function run() {
   console.log('='.repeat(60));
   console.log(`✅ Envoyés avec succès : ${sent}`);
   console.log(`❌ Échecs              : ${failed}`);
-  console.log(`🚫 Fake exclus         : ${excluded}`);
 
   if (errors.length > 0) {
     console.log('\n⚠️  Détail des échecs :');

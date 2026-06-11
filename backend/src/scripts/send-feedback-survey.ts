@@ -1,7 +1,7 @@
 /// <reference types="node" />
 /**
  * Script : envoie l'email de sondage feedback à tous les utilisateurs réels
- * Utilisateurs réels = email vérifié + pas de domaine @---.com
+ * Utilisateurs réels = email vérifié
  *
  * Usage : npx tsx src/scripts/send-feedback-survey.ts
  */
@@ -120,7 +120,6 @@ async function main() {
     const users = await prisma.user.findMany({
       where: {
         email_verified_at: { not: null },
-        email: { not: { endsWith: '@---.com' } },
       },
       select: {
         id: true,

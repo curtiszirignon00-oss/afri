@@ -1,6 +1,5 @@
 /// <reference types="node" />
 // Script pour envoyer un email invitant les utilisateurs à compléter leur profil
-// Exclut les fake users (@---.com)
 // Usage: npx ts-node src/scripts/send-complete-profile.ts
 
 import prisma from '../config/prisma';
@@ -19,12 +18,8 @@ async function sendCompleteProfile() {
   console.log('='.repeat(60));
 
   try {
-    // Récupérer tous les vrais utilisateurs vérifiés (exclure les fakes)
     const users = await prisma.user.findMany({
       where: {
-        email: {
-          not: { endsWith: '@---.com' },
-        },
         email_verified_at: { not: null },
       },
       select: {

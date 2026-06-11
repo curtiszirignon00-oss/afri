@@ -1,6 +1,5 @@
 /**
  * Script : envoie l'email "SAFC — Augmentation de capital 2026" à tous les utilisateurs réels
- * — Exclut les emails contenant "---"
  * — Pause de 1,5 s entre chaque envoi pour respecter les limites SMTP Brevo
  *
  * Usage    : npx tsx src/scripts/send-safc-article-email.ts
@@ -33,11 +32,9 @@ async function run() {
     orderBy: { created_at: 'asc' },
   });
 
-  const targets = allUsers.filter(u => !u.email.includes('---'));
-  const excluded = allUsers.length - targets.length;
+  const targets = allUsers;
 
   console.log(`👥 Utilisateurs totaux  : ${allUsers.length}`);
-  console.log(`🚫 Comptes fake exclus : ${excluded}`);
   console.log(`📬 À envoyer           : ${targets.length}`);
   console.log('='.repeat(60));
 
@@ -80,7 +77,6 @@ async function run() {
   console.log('='.repeat(60));
   console.log(`✅ Envoyés avec succès : ${sent}`);
   console.log(`❌ Échecs              : ${failed}`);
-  console.log(`🚫 Fake exclus         : ${excluded}`);
 
   if (errors.length > 0) {
     console.log('\n⚠️  Détail des échecs :');

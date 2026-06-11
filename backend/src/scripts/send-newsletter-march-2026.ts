@@ -1,6 +1,6 @@
 /// <reference types="node" />
 // Newsletter mars 2026 : Badges, Dashboards et Challenge 10M FCFA
-// Envoie un email à tous les utilisateurs réels confirmés (hors ---)
+// Envoie un email à tous les utilisateurs confirmés
 // Usage: npx ts-node src/scripts/send-newsletter-march-2026.ts
 
 import prisma from '../config/prisma';
@@ -21,7 +21,6 @@ async function sendNewsletter() {
   try {
     const users = await prisma.user.findMany({
       where: {
-        email: { not: { endsWith: '@---.com' } },
         email_verified_at: { not: null },
       },
       select: { id: true, email: true, name: true, lastname: true },

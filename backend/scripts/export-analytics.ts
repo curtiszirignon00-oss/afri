@@ -2,8 +2,6 @@
  * Script d'export analytique complet — AfriBourse
  * Exporte toutes les collections nécessaires à l'analyse des comportements utilisateurs
  * en un seul fichier Excel multi-onglets organisé par domaine.
- * Les ~2000 comptes fictifs (@---.com) sont exclus de tous les exports.
- *
  * Usage: npx ts-node scripts/export-analytics.ts [--days=90]
  *
  * Onglets générés:
@@ -38,9 +36,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 const prisma = new PrismaClient();
-
-// Filtre Prisma pour exclure les comptes fictifs dans TOUTES les requêtes
-const REAL_USER = { email: { not: { endsWith: '@---.com' } } } as const;
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
@@ -118,11 +113,10 @@ async function main() {
   // ── Onglet 2 : Utilisateurs ──────────────────────────────────────────────
   console.log('👥 [2/23] Export utilisateurs...');
   const users = await prisma.user.findMany({
-    where: { ...REAL_USER },
+    where: {},
     include: { profile: true },
     orderBy: { created_at: 'desc' },
   });
-  // IDs des vrais utilisateurs — utilisés pour filtrer les tables sans relation User directe
   const realUserIds = users.map(u => u.id);
 
   {
@@ -208,7 +202,7 @@ async function main() {
   // ── Onglet 3 : ADN Investisseur ──────────────────────────────────────────
   console.log('🧬 [3/23] Export ADN Investisseur...');
   const investorProfiles = await prisma.investorProfile.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { name: true, lastname: true, email: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -276,7 +270,6 @@ async function main() {
   const pageViews = await prisma.pageView.findMany({
     where: {
       created_at: { gte: since },
-      OR: [{ userId: null }, { user: REAL_USER }],
     },
     orderBy: { created_at: 'desc' },
   });
@@ -320,7 +313,7 @@ async function main() {
   // ── Onglet 5 : Actions utilisateurs ─────────────────────────────────────
   console.log('🎯 [5/23] Export actions utilisateurs...');
   const actions = await prisma.userActionTracking.findMany({
-    where: { created_at: { gte: since }, user: REAL_USER },
+    where: { created_at: { gte: since } },
     orderBy: { created_at: 'desc' },
   });
 
@@ -357,7 +350,7 @@ async function main() {
   // ── Onglet 6 : Paywall & Features ────────────────────────────────────────
   console.log('💳 [6/23] Export feature usage & paywall...');
   const featureUsage = await prisma.featureUsage.findMany({
-    where: { created_at: { gte: since }, user: REAL_USER },
+    where: { created_at: { gte: since } },
     include: { user: { select: { email: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -407,7 +400,7 @@ async function main() {
   // ── Onglet 7 : Rétention par cohorte ─────────────────────────────────────
   console.log('📈 [7/23] Calcul rétention par cohorte...');
   const allUsers = await (prisma.user.findMany as any)({
-    where: { ...REAL_USER },
+    where: {},
     select: { id: true, created_at: true, last_login_at: true },
   }) as Array<{ id: string; created_at: Date | null; last_login_at: Date | null }>;
 
@@ -574,7 +567,7 @@ async function main() {
   // ── Onglet 10 : Learning Progress ────────────────────────────────────────
   console.log('📚 [10/23] Export apprentissage...');
   const learningProgress = await prisma.learningProgress.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: {
       user: { select: { name: true, lastname: true, email: true, subscriptionTier: true } },
       module: { select: { title: true, slug: true, difficulty_level: true, content_type: true, duration_minutes: true } },
@@ -633,7 +626,7 @@ async function main() {
   // ── Onglet 11 : Transactions ─────────────────────────────────────────────
   console.log('💰 [11/23] Export transactions simulation...');
   const transactions = await prisma.transaction.findMany({
-    where: { created_at: { gte: since }, portfolio: { user: REAL_USER } },
+    where: { created_at: { gte: since } },
     include: {
       portfolio: {
         select: { userId: true, wallet_type: true, name: true, status: true },
@@ -687,7 +680,7 @@ async function main() {
   // ── Onglet 12 : Watchlist ─────────────────────────────────────────────────
   console.log('👀 [12/23] Export watchlist...');
   const watchlistItems = await prisma.watchlistItem.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { email: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -729,7 +722,7 @@ async function main() {
   // ── Onglet 13 : Posts sociaux ─────────────────────────────────────────────
   console.log('💬 [13/23] Export posts sociaux...');
   const posts = await prisma.post.findMany({
-    where: { created_at: { gte: since }, author: REAL_USER },
+    where: { created_at: { gte: since } },
     include: { author: { select: { email: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -779,7 +772,7 @@ async function main() {
   // ── Onglet 14 : Communautés ──────────────────────────────────────────────
   console.log('🏘️  [14/23] Export communautés...');
   const communityMembers = await prisma.communityMember.findMany({
-    where: { joined_at: { gte: since }, user: REAL_USER },
+    where: { joined_at: { gte: since } },
     include: {
       community: { select: { name: true, slug: true, visibility: true, category: true } },
       user: { select: { email: true } },
@@ -824,7 +817,7 @@ async function main() {
   // ── Onglet 15 : Follows ──────────────────────────────────────────────────
   console.log('👥 [15/23] Export follows...');
   const follows = await prisma.follow.findMany({
-    where: { created_at: { gte: since }, follower: { user: REAL_USER } },
+    where: { created_at: { gte: since } },
     orderBy: { created_at: 'desc' },
   });
 
@@ -851,7 +844,7 @@ async function main() {
   // ── Onglet 16 : Intents abonnement ───────────────────────────────────────
   console.log('💸 [16/23] Export intents abonnement...');
   const subscriptionIntents = await prisma.subscriptionIntent.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { email: true, name: true, lastname: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -897,7 +890,7 @@ async function main() {
   // ── Onglet 17 : Essais gratuits ──────────────────────────────────────────
   console.log('🆓 [17/23] Export free trials...');
   const freeTrials = await prisma.freeTrial.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { email: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -943,7 +936,7 @@ async function main() {
   // ── Onglet 18 : Challenge 2026 ───────────────────────────────────────────
   console.log('🏁 [18/23] Export Challenge 2026...');
   const challengeParticipants = await prisma.challengeParticipant.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: {
       user: {
         select: { email: true, name: true, lastname: true,
@@ -1014,7 +1007,7 @@ async function main() {
   // ── Onglet 19 : Alertes Prix ─────────────────────────────────────────────
   console.log('🔔 [19/23] Export alertes prix...');
   const priceAlerts = await prisma.priceAlert.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { email: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -1060,7 +1053,7 @@ async function main() {
   // ── Onglet 20 : Événements ───────────────────────────────────────────────
   console.log('📅 [20/23] Export événements...');
   const eventRegistrations = await prisma.eventRegistration.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: {
       event: { select: { title: true, type: true, event_date: true, status: true } },
       user: { select: { email: true } },
@@ -1109,7 +1102,6 @@ async function main() {
   const auditLogs = await prisma.auditLog.findMany({
     where: {
       created_at: { gte: since },
-      NOT: { userEmail: { endsWith: '@---.com' } },
     },
     orderBy: { created_at: 'desc' },
   });
@@ -1153,7 +1145,7 @@ async function main() {
   // ── Onglet 22 : Avis utilisateurs ───────────────────────────────────────
   console.log('⭐ [22/23] Export avis...');
   const reviews = await prisma.review.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { email: true, subscriptionTier: true } } },
     orderBy: { created_at: 'desc' },
   });
@@ -1189,12 +1181,12 @@ async function main() {
   // ── Onglet 23 : Modération ───────────────────────────────────────────────
   console.log('🛡️  [23/23] Export modération...');
   const reports = await prisma.report.findMany({
-    where: { created_at: { gte: since }, reporter: REAL_USER },
+    where: { created_at: { gte: since } },
     include: { reporter: { select: { email: true } } },
     orderBy: { created_at: 'desc' },
   });
   const userBans = await prisma.userBan.findMany({
-    where: { user: REAL_USER },
+    where: {},
     include: { user: { select: { email: true } } },
     orderBy: { created_at: 'desc' },
   });
