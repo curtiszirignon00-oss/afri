@@ -43,6 +43,15 @@ router.post('/join-requests/:requestId/process', auth, validateProcessJoinReques
 router.get('/:communityId/posts', optionalAuth, communityController.getCommunityPosts); // Get posts
 router.post('/:communityId/posts', auth, communityPostCreationLimiter, validateCreateCommunityPost, communityController.createCommunityPost); // Create post - Rate limited
 
+// ============= TASK LISTS =============
+router.get('/posts/:postId/tasks/checks', optionalAuth, communityController.getTaskChecks); // Get task checks
+router.post('/posts/:postId/tasks/:taskId/check', auth, communityController.toggleTaskCheck); // Toggle task check
+
+// ============= SURVEYS =============
+router.get('/posts/:postId/survey/responses', auth, communityController.getSurveyResponses); // Get responses
+router.post('/posts/:postId/survey/respond', auth, communityController.submitSurveyResponse); // Submit response
+router.post('/posts/:postId/survey/toggle-public', auth, communityController.toggleSurveyResponsesPublic); // Toggle public
+
 // ============= POST INTERACTIONS =============
 router.post('/posts/:postId/like', auth, communityController.likeCommunityPost); // Like post
 router.delete('/posts/:postId/like', auth, communityController.unlikeCommunityPost); // Unlike post

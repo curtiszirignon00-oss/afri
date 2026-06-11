@@ -75,6 +75,25 @@ export interface CreateCommunityDto {
 
 export interface UpdateCommunityDto extends Partial<CreateCommunityDto> { }
 
+export interface TaskItem {
+    id: string;
+    text: string;
+    order: number;
+}
+
+export interface SurveyMeta {
+    survey_type: 'multiple_choice' | 'open';
+    question: string;
+    options?: string[];          // pour multiple_choice
+    responses_public: boolean;
+}
+
+export interface PostMetadata {
+    tasks?: TaskItem[];
+    survey?: SurveyMeta;
+    achievement?: Record<string, unknown>;
+}
+
 export interface CreateCommunityPostDto {
     type?: PostType;
     content: string;
@@ -85,6 +104,7 @@ export interface CreateCommunityPostDto {
     images?: string[];
     video_url?: string;
     tags?: string[];
+    metadata?: PostMetadata;
 }
 
 // ============= HELPER FUNCTIONS =============
@@ -1043,6 +1063,7 @@ export async function createCommunityPost(communityId: string, authorId: string,
             images: postData.images || [],
             video_url: postData.video_url,
             tags: postData.tags || [],
+            metadata: (postData.metadata ?? undefined) as any,
             is_approved: !requireApproval,
         },
         include: {
@@ -1497,6 +1518,141 @@ export async function togglePinPost(postId: string, userId: string) {
     });
 
     return updatedPost;
+}
+
+// ============= TASK LISTS =============
+
+/**
+ * Toggle un check de tâche pour un utilisateur
+ */
+export async function toggleTaskCheck(postId: string, userId: string, taskId: string) {
+    const post = await prisma.communityPost.findUnique({ where: { id: postId } });
+    if (!post || post.type !== 'TASK_LIST') throw new Error('Post introuvable ou type invalide');
+
+    const meta = post.metadata as PostMetadata | null;
+    const taskExists = meta?.tasks?.some((t) => t.id === taskId);
+    if (!taskExists) throw new Error('Tâche introuvable');
+
+    const existing = await prisma.communityTaskCheck.findUnique({
+        where: { post_id_user_id_task_id: { post_id: postId, user_id: userId, task_id: taskId } },
+    });
+
+    if (existing) {
+        await prisma.communityTaskCheck.delete({ where: { id: existing.id } });
+        return { checked: false, taskId };
+    }
+
+    await prisma.communityTaskCheck.create({
+        data: { post_id: postId, user_id: userId, task_id: taskId },
+    });
+    return { checked: true, taskId };
+}
+
+/**
+ * Récupère tous les checks d'un post de tâches (+ check de l'utilisateur courant)
+ */
+export async function getTaskChecks(postId: string, viewerId?: string) {
+    const checks = await prisma.communityTaskCheck.findMany({
+        where: { post_id: postId },
+        select: { task_id: true, user_id: true, checked_at: true },
+    });
+
+    // Agréger par task_id : nombre de membres + si l'user courant a coché
+    const byTask: Record<string, { count: number; checkedByMe: boolean }> = {};
+    for (const c of checks) {
+        if (!byTask[c.task_id]) byTask[c.task_id] = { count: 0, checkedByMe: false };
+        byTask[c.task_id].count++;
+        if (viewerId && c.user_id === viewerId) byTask[c.task_id].checkedByMe = true;
+    }
+    return byTask;
+}
+
+// ============= SURVEYS =============
+
+/**
+ * Soumettre / modifier une réponse à un sondage
+ */
+export async function submitSurveyResponse(postId: string, userId: string, answer: Record<string, unknown>) {
+    const post = await prisma.communityPost.findUnique({
+        where: { id: postId },
+        include: { community: { select: { id: true } } },
+    });
+    if (!post || post.type !== 'SURVEY') throw new Error('Post introuvable ou type invalide');
+
+    const isMember = await prisma.communityMember.findUnique({
+        where: { community_id_user_id: { community_id: post.community_id, user_id: userId } },
+    });
+    if (!isMember) throw new Error('Vous devez être membre pour répondre');
+
+    const response = await prisma.communitySurveyResponse.upsert({
+        where: { post_id_user_id: { post_id: postId, user_id: userId } },
+        create: { post_id: postId, user_id: userId, answer: answer as any },
+        update: { answer: answer as any, updated_at: new Date() },
+    });
+    return response;
+}
+
+/**
+ * Récupère les réponses d'un sondage
+ * - Admin/Owner/Moderator → toutes les réponses toujours
+ * - Membres → uniquement si responses_public=true + leur propre réponse
+ */
+export async function getSurveyResponses(postId: string, viewerId: string) {
+    const post = await prisma.communityPost.findUnique({ where: { id: postId } });
+    if (!post || post.type !== 'SURVEY') throw new Error('Post introuvable');
+
+    const membership = await prisma.communityMember.findUnique({
+        where: { community_id_user_id: { community_id: post.community_id, user_id: viewerId } },
+    });
+
+    const isManager = membership && ['OWNER', 'ADMIN', 'MODERATOR'].includes(membership.role);
+    const meta = post.metadata as PostMetadata | null;
+    const isPublic = meta?.survey?.responses_public ?? false;
+
+    if (!isManager && !isPublic) {
+        // L'utilisateur ne voit que sa propre réponse
+        const own = await prisma.communitySurveyResponse.findUnique({
+            where: { post_id_user_id: { post_id: postId, user_id: viewerId } },
+            include: { user: { select: { id: true, name: true, lastname: true, profile: { select: { username: true, avatar_url: true } } } } },
+        });
+        return { responses: own ? [own] : [], total: null, is_public: false };
+    }
+
+    const responses = await prisma.communitySurveyResponse.findMany({
+        where: { post_id: postId },
+        include: {
+            user: { select: { id: true, name: true, lastname: true, profile: { select: { username: true, avatar_url: true } } } },
+        },
+        orderBy: { created_at: 'asc' },
+    });
+
+    return { responses, total: responses.length, is_public: isPublic };
+}
+
+/**
+ * Basculer la visibilité publique des réponses (admin/owner/moderator uniquement)
+ */
+export async function toggleSurveyResponsesPublic(postId: string, userId: string) {
+    const post = await prisma.communityPost.findUnique({ where: { id: postId } });
+    if (!post || post.type !== 'SURVEY') throw new Error('Post introuvable');
+
+    const membership = await prisma.communityMember.findUnique({
+        where: { community_id_user_id: { community_id: post.community_id, user_id: userId } },
+    });
+    if (!membership || !['OWNER', 'ADMIN', 'MODERATOR'].includes(membership.role)) {
+        throw new Error('Permission insuffisante');
+    }
+
+    const meta = (post.metadata ?? {}) as PostMetadata;
+    const survey = meta.survey;
+    if (!survey) throw new Error('Ce post n\'a pas de sondage');
+
+    const newPublic = !survey.responses_public;
+    await prisma.communityPost.update({
+        where: { id: postId },
+        data: { metadata: { ...meta, survey: { ...survey, responses_public: newPublic } } as any },
+    });
+    return { responses_public: newPublic };
 }
 
 // ============= INVITE LINKS =============

@@ -822,7 +822,7 @@ export default function CommunityDetailPage() {
                         {/* Post Composer */}
                         {!POSTS_DISABLED && community.isMember && (
                             <div className="mb-6">
-                                <CommunityPostComposer communityId={community.id} />
+                                <CommunityPostComposer communityId={community.id} canModerate={canManage} />
                             </div>
                         )}
 

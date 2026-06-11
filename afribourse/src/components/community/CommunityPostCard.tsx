@@ -26,6 +26,8 @@ import {
 } from '../../hooks/useCommunity';
 import { useAuth } from '../../contexts/AuthContext';
 import CommunityCommentSection from './CommunityCommentSection';
+import CommunityTaskListBlock from './CommunityTaskListBlock';
+import CommunitySurveyBlock from './CommunitySurveyBlock';
 import ReportModal from '../moderation/ReportModal';
 import RareBadgeIcon from '../common/RareBadgeIcon';
 
@@ -42,6 +44,8 @@ const POST_TYPE_LABELS: Record<string, { label: string; color: string }> = {
     QUESTION: { label: 'Question', color: 'bg-yellow-100 text-yellow-700' },
     ACHIEVEMENT: { label: 'Succes', color: 'bg-orange-100 text-orange-700' },
     ARTICLE: { label: 'Article', color: 'bg-gray-100 text-gray-700' },
+    TASK_LIST: { label: 'Tâches', color: 'bg-green-100 text-green-700' },
+    SURVEY: { label: 'Sondage', color: 'bg-purple-100 text-purple-700' },
 };
 
 export default function CommunityPostCard({ post, communityId: _communityId, canModerate }: Props) {
@@ -237,6 +241,25 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
 
                 {/* Content */}
                 <p className="text-gray-800 mt-2 whitespace-pre-wrap">{post.content}</p>
+
+                {/* Task List Block */}
+                {post.type === 'TASK_LIST' && post.metadata?.tasks && post.metadata.tasks.length > 0 && (
+                    <CommunityTaskListBlock
+                        postId={post.id}
+                        tasks={post.metadata.tasks}
+                        canModerate={canModerate}
+                    />
+                )}
+
+                {/* Survey Block */}
+                {post.type === 'SURVEY' && post.metadata?.survey && (
+                    <CommunitySurveyBlock
+                        postId={post.id}
+                        survey={post.metadata.survey}
+                        canModerate={canModerate}
+                        authorId={post.author_id}
+                    />
+                )}
 
                 {/* Badge Embed for ACHIEVEMENT posts */}
                 {post.type === 'ACHIEVEMENT' && (post as any).metadata?.achievement && (

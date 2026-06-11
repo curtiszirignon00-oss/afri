@@ -6,7 +6,7 @@ import { apiClient } from '../lib/api-client';
 
 export type CommunityVisibility = 'PUBLIC' | 'PRIVATE' | 'SECRET';
 export type CommunityMemberRole = 'OWNER' | 'ADMIN' | 'MODERATOR' | 'MEMBER';
-export type PostType = 'ANALYSIS' | 'TRANSACTION' | 'OPINION' | 'QUESTION' | 'ACHIEVEMENT' | 'ARTICLE';
+export type PostType = 'ANALYSIS' | 'TRANSACTION' | 'OPINION' | 'QUESTION' | 'ACHIEVEMENT' | 'ARTICLE' | 'TASK_LIST' | 'SURVEY';
 
 export interface CommunityRule {
     title: string;
@@ -34,6 +34,37 @@ export interface CreateCommunityData {
 
 export interface UpdateCommunityData extends Partial<CreateCommunityData> {}
 
+export interface TaskItem {
+    id: string;
+    text: string;
+    order: number;
+}
+
+export interface SurveyMeta {
+    survey_type: 'multiple_choice' | 'open';
+    question: string;
+    options?: string[];
+    responses_public: boolean;
+}
+
+export interface PostMetadata {
+    tasks?: TaskItem[];
+    survey?: SurveyMeta;
+    achievement?: Record<string, unknown>;
+}
+
+export interface TaskCheckMap {
+    [taskId: string]: { count: number; checkedByMe: boolean };
+}
+
+export interface SurveyResponse {
+    id: string;
+    user_id: string;
+    answer: { option_index?: number; text?: string };
+    created_at: string;
+    user: { id: string; name: string; lastname: string; profile?: { username?: string; avatar_url?: string } };
+}
+
 export interface CreateCommunityPostData {
     type?: PostType;
     content: string;
@@ -44,6 +75,7 @@ export interface CreateCommunityPostData {
     images?: string[];
     video_url?: string;
     tags?: string[];
+    metadata?: PostMetadata;
 }
 
 export interface Community {
@@ -129,6 +161,7 @@ export interface CommunityPost {
         };
     };
     hasLiked?: boolean;
+    metadata?: PostMetadata;
 }
 
 // ============= COMMUNITY CRUD HOOKS =============
@@ -545,6 +578,72 @@ export function useTogglePinPost() {
             return response.data;
         },
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['community-posts'] });
+        },
+    });
+}
+
+// ============= TASK LIST HOOKS =============
+
+export function useTaskChecks(postId: string) {
+    return useQuery({
+        queryKey: ['task-checks', postId],
+        queryFn: async () => {
+            const res = await apiClient.get(`/communities/posts/${postId}/tasks/checks`);
+            return res.data.data as TaskCheckMap;
+        },
+        enabled: !!postId,
+    });
+}
+
+export function useToggleTaskCheck(postId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (taskId: string) => {
+            const res = await apiClient.post(`/communities/posts/${postId}/tasks/${taskId}/check`);
+            return res.data.data as { checked: boolean; taskId: string };
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['task-checks', postId] });
+        },
+    });
+}
+
+// ============= SURVEY HOOKS =============
+
+export function useSurveyResponses(postId: string, enabled: boolean) {
+    return useQuery({
+        queryKey: ['survey-responses', postId],
+        queryFn: async () => {
+            const res = await apiClient.get(`/communities/posts/${postId}/survey/responses`);
+            return res.data.data as { responses: SurveyResponse[]; total: number | null; is_public: boolean };
+        },
+        enabled: !!postId && enabled,
+    });
+}
+
+export function useSubmitSurveyResponse(postId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (answer: { option_index?: number; text?: string }) => {
+            const res = await apiClient.post(`/communities/posts/${postId}/survey/respond`, { answer });
+            return res.data.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['survey-responses', postId] });
+        },
+    });
+}
+
+export function useToggleSurveyPublic(postId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async () => {
+            const res = await apiClient.post(`/communities/posts/${postId}/survey/toggle-public`);
+            return res.data.data as { responses_public: boolean };
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['survey-responses', postId] });
             queryClient.invalidateQueries({ queryKey: ['community-posts'] });
         },
     });

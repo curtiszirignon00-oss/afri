@@ -45,6 +45,8 @@ enum PostType {
   QUESTION // Question à la communauté
   ACHIEVEMENT // Accomplissement/Milestone
   ARTICLE // Article de fond
+  TASK_LIST // Liste de tâches partagée
+  SURVEY // Sondage / Question avec réponses
 }
 
 // ================================= //
@@ -172,8 +174,10 @@ model User {
   communityPosts        CommunityPost[]
   communityPostLikes    CommunityPostLike[]
   communityPostComments CommunityPostComment[]
-  joinRequests          CommunityJoinRequest[] @relation("JoinRequestUser")
-  processedJoinRequests CommunityJoinRequest[] @relation("JoinRequestProcessor")
+  joinRequests          CommunityJoinRequest[]   @relation("JoinRequestUser")
+  processedJoinRequests CommunityJoinRequest[]   @relation("JoinRequestProcessor")
+  communityTaskChecks   CommunityTaskCheck[]
+  surveyResponses       CommunitySurveyResponse[]
 
   // Statistiques dénormalisées
   posts_count Int @default(0)
@@ -1682,6 +1686,7 @@ model CommunityPost {
   // Métadonnées
   tags            String[] @default([])
   mentioned_users String[] @default([])
+  metadata        Json? // Structure pour TASK_LIST et SURVEY
 
   // Engagement (dénormalisé)
   likes_count    Int @default(0)
@@ -1697,10 +1702,12 @@ model CommunityPost {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  community Community             @relation(fields: [community_id], references: [id], onDelete: Cascade)
-  author    User                  @relation(fields: [author_id], references: [id], onDelete: Cascade)
-  likes     CommunityPostLike[]
-  comments  CommunityPostComment[]
+  community       Community              @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  author          User                   @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  likes           CommunityPostLike[]
+  comments        CommunityPostComment[]
+  taskChecks      CommunityTaskCheck[]
+  surveyResponses CommunitySurveyResponse[]
 
   @@index([community_id])
   @@index([author_id])
@@ -1753,6 +1760,41 @@ model CommunityPostComment {
   @@index([parent_id])
   @@index([created_at])
   @@map("community_post_comments")
+}
+
+// Cochage d'une tâche par un membre
+model CommunityTaskCheck {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  post_id    String   @db.ObjectId
+  user_id    String   @db.ObjectId
+  task_id    String   // ID local de la tâche (UUID stocké dans metadata)
+  checked_at DateTime @default(now())
+
+  post CommunityPost @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([post_id, user_id, task_id])
+  @@index([post_id])
+  @@index([user_id])
+  @@map("community_task_checks")
+}
+
+// Réponse d'un membre à un sondage
+model CommunitySurveyResponse {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  post_id    String   @db.ObjectId
+  user_id    String   @db.ObjectId
+  answer     Json     // Pour QCM: { option_index: number } | Pour ouvert: { text: string }
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  post CommunityPost @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([post_id, user_id])
+  @@index([post_id])
+  @@index([user_id])
+  @@map("community_survey_responses")
 }
 
 // ============= NOTIFICATIONS =============

@@ -401,6 +401,69 @@ export async function togglePinPost(req: AuthRequest, res: Response) {
     }
 }
 
+// ============= TASK LISTS =============
+
+export async function toggleTaskCheck(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { postId, taskId } = req.params;
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        const result = await communityService.toggleTaskCheck(postId, userId, taskId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function getTaskChecks(req: AuthRequest, res: Response) {
+    try {
+        const { postId } = req.params;
+        const viewerId = req.user?.id;
+        const result = await communityService.getTaskChecks(postId, viewerId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+// ============= SURVEYS =============
+
+export async function submitSurveyResponse(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        const result = await communityService.submitSurveyResponse(postId, userId, req.body.answer);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function getSurveyResponses(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        const result = await communityService.getSurveyResponses(postId, userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+export async function toggleSurveyResponsesPublic(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        const { postId } = req.params;
+        if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+        const result = await communityService.toggleSurveyResponsesPublic(postId, userId);
+        res.status(200).json({ success: true, data: result });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
 // ============= INVITE LINKS =============
 
 export async function getOrCreateInviteLink(req: AuthRequest, res: Response) {
