@@ -21,7 +21,6 @@ const DIAL_CODES = [
   { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
   { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
   { code: '+223', flag: '🇲🇱', name: 'Mali' },
-  { code: '+228', flag: '🇹🇬', name: 'Togo' },
   { code: '+229', flag: '🇧🇯', name: 'Bénin' },
   { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
   { code: '+233', flag: '🇬🇭', name: 'Ghana' },
@@ -34,7 +33,6 @@ const OPERATORS = [
   { id: 'orange-money', label: 'Orange Money', emoji: '🟠' },
   { id: 'mtn-momo',     label: 'MTN MoMo',     emoji: '🟡' },
   { id: 'moov-money',   label: 'Moov Money',   emoji: '🔵' },
-  { id: 't-money',      label: 'T-Money',      emoji: '🟤' },
   { id: 'free-money',   label: 'Free Money',   emoji: '🟢' },
 ];
 

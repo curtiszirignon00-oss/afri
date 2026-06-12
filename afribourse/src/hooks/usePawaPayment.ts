@@ -141,11 +141,7 @@ export const PAWAPAY_CORRESPONDENTS: Record<string, Record<string, string>> = {
   'moov-money': {
     '+225': 'MOOV_CIV',
     '+226': 'MOOV_BFA',
-    '+228': 'MOOV_TGO',
     '+229': 'MOOV_BEN',
-  },
-  't-money': {
-    '+228': 'TOGOCEL_TGO',
   },
   'free-money': {
     '+221': 'AFITECH_FREE_SEN',
