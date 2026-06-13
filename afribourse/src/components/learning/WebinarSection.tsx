@@ -19,6 +19,7 @@ const DIAL_CODES = [
   { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
   { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
   { code: '+223', flag: '🇲🇱', name: 'Mali' },
+  { code: '+228', flag: '🇹🇬', name: 'Togo' },
   { code: '+229', flag: '🇧🇯', name: 'Bénin' },
   { code: '+227', flag: '🇳🇪', name: 'Niger' },
   { code: '+224', flag: '🇬🇳', name: 'Guinée' },
@@ -93,6 +94,7 @@ interface Webinar {
   earlyBirdTaken?: number;
   hideEarlyBirdIndicator?: boolean;
   closed?: boolean;
+  passed?: boolean;
   price: number;
   discountPercent: number;
   duration: string;
@@ -116,6 +118,7 @@ const WEBINARS: Webinar[] = [
     endDate: '2026-06-13T12:00:00Z',
     earlyBirdDeadline: '2026-05-01T00:00:00Z',
     hideEarlyBirdIndicator: true,
+    passed: true,
     price: 10000,
     discountPercent: 0,
     duration: '3H',
@@ -174,13 +177,13 @@ const WEBINAR_COUNT_OFFSET = 20;
 const PACK = {
   id: 'pack-parcours-investisseur',
   title: 'Pack Parcours Investisseur BRVM',
-  tagline: '5 sessions · 15h de formation live · Experts BRVM · Certification officielle',
+  tagline: '4 sessions restantes · 12h de formation live · Experts BRVM · Certification officielle',
   earlyBirdDeadline: '2026-06-02T23:59:59Z',
-  price: 35000,
+  price: 30000,
   earlyBirdPrice: 25000,
   gradient: 'from-blue-700 to-indigo-800',
   inclusions: [
-    '5 webinaires live · 15h de formation (S1 à S5)',
+    '4 sessions restantes · 12h live (S2–S5 · Fondamentale & Technique)',
     "Communauté Afribourse — 3 mois d'accès",
     "3 Plans d'action personnalisés (après chaque thème)",
     'Deal Flow hebdomadaire — 12 éditions exclusives',
@@ -556,8 +559,8 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
 
 // ─── WebinarCard ──────────────────────────────────────────────────────────────
 
-const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number }> = ({
-  webinar, onRegister, isFirst, count,
+const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number; showW1Note?: boolean }> = ({
+  webinar, onRegister, isFirst, count, showW1Note,
 }) => {
   const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
   const earlyBird = effectiveCount(displayCount, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
@@ -571,9 +574,14 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
   }, [webinar.earlyBirdDeadline]);
 
   return (
-    <div className={`relative bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
-      isFirst ? 'border-blue-200 shadow-md' : 'border-gray-200 shadow-sm'
+    <div className={`relative bg-white rounded-2xl border overflow-hidden transition-all duration-200 ${
+      webinar.passed ? 'opacity-70 border-gray-200 shadow-sm' : 'hover:shadow-lg hover:-translate-y-0.5 ' + (isFirst ? 'border-blue-200 shadow-md' : 'border-gray-200 shadow-sm')
     }`}>
+      {webinar.passed && (
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-gray-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
+          <CheckCircle className="w-3 h-3" /> Session dispensée
+        </div>
+      )}
       {webinar.badge && (
         <div className={`absolute top-4 right-4 text-xs font-bold px-2.5 py-1 rounded-full text-white bg-gradient-to-r ${webinar.gradient}`}>
           {webinar.badge}
@@ -612,6 +620,13 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
             <span>{webinar.speakers}</span>
           </div>
         </div>
+
+        {showW1Note && (
+          <div className="mb-3 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+            <CheckCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+            <span className="text-xs text-blue-700">Le <strong>Webinaire 1 — Fondamentaux</strong> a déjà eu lieu le 13 juin. Rejoignez la suite du parcours.</span>
+          </div>
+        )}
 
         {webinar.investisseurPlusBonus && (
           <div className="mb-3 flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-xl px-3 py-2">
@@ -695,7 +710,11 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
             )}
           </div>
 
-          {webinar.closed ? (
+          {webinar.passed ? (
+            <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-400 bg-gray-100 flex-shrink-0 cursor-not-allowed">
+              Session terminée
+            </span>
+          ) : webinar.closed ? (
             <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-400 bg-gray-100 flex-shrink-0 cursor-not-allowed">
               Inscriptions fermées
             </span>
@@ -1093,6 +1112,104 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
   );
 };
 
+// ─── PromoPopup — offre parcours post-W1 ─────────────────────────────────────
+
+const PROMO_POPUP_KEY = 'parcours_promo_seen_v1';
+const PROMO_DEADLINE = '2026-06-20T00:00:00Z';
+
+const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onClose, onCta }) => {
+  const [cd, setCd] = useState(getPackCountdown(PROMO_DEADLINE));
+
+  useEffect(() => {
+    const t = setInterval(() => setCd(getPackCountdown(PROMO_DEADLINE)), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+        {/* Bande top */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-blue-600 to-indigo-700" />
+
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="p-6 pt-5">
+          {/* Icône + badge */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <TrendingUp className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Offre spéciale · Post-Webinaire 1</span>
+              <p className="text-base font-extrabold text-gray-900 leading-snug">Complétez votre parcours investisseur</p>
+            </div>
+          </div>
+
+          {/* Texte principal */}
+          <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+            Le <strong>Webinaire 1 — Fondamentaux de la bourse</strong> vient d'avoir lieu.{' '}
+            Rejoignez les <strong>2 prochains webinaires</strong> (Analyse fondamentale · Analyse technique)
+            et obtenez votre <strong>Certificat Investisseur BRVM Niveau 1</strong>.
+          </p>
+
+          {/* Prix */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+              <Flame className="w-3.5 h-3.5 animate-pulse" /> Tarif réduit — offre limitée
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-extrabold text-gray-900">30 000 XOF</span>
+              <span className="text-sm text-gray-400 line-through">35 000 XOF</span>
+            </div>
+            <p className="text-xs text-gray-500 mt-0.5">4 sessions live · 12h de formation · Communauté · Certificat</p>
+
+            {/* Compteur 7 jours */}
+            {!cd.expired && (
+              <div className="mt-3">
+                <p className="text-[10px] font-bold text-amber-700 mb-1.5">Cette offre expire dans :</p>
+                <div className="flex gap-1.5">
+                  {cd.days > 0 && (
+                    <div className="flex-1 bg-amber-100 rounded-lg py-2 text-center">
+                      <p className="text-base font-extrabold text-amber-800 leading-none">{pad2(cd.days)}</p>
+                      <p className="text-[9px] text-amber-600 mt-0.5">j</p>
+                    </div>
+                  )}
+                  <div className="flex-1 bg-amber-100 rounded-lg py-2 text-center">
+                    <p className="text-base font-extrabold text-amber-800 leading-none">{pad2(cd.hours)}</p>
+                    <p className="text-[9px] text-amber-600 mt-0.5">h</p>
+                  </div>
+                  <div className="flex-1 bg-amber-100 rounded-lg py-2 text-center">
+                    <p className="text-base font-extrabold text-amber-800 leading-none">{pad2(cd.minutes)}</p>
+                    <p className="text-[9px] text-amber-600 mt-0.5">min</p>
+                  </div>
+                  <div className="flex-1 bg-amber-100 rounded-lg py-2 text-center">
+                    <p className="text-base font-extrabold text-amber-800 leading-none">{pad2(cd.seconds)}</p>
+                    <p className="text-[9px] text-amber-600 mt-0.5">sec</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={onCta}
+            className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 hover:opacity-90 active:scale-95 transition-all shadow-md"
+          >
+            Je rejoins le parcours — 30 000 XOF →
+          </button>
+          <button onClick={onClose} className="w-full mt-2 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors">
+            Peut-être plus tard
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── WebinarSection — composant principal ─────────────────────────────────────
 
 const REFERRAL_LS_KEY = 'packReferralCode';
@@ -1116,6 +1233,7 @@ function readStoredReferralCode(): string | null {
 const WebinarSection: React.FC = () => {
   const [selectedWebinar, setSelectedWebinar] = useState<Webinar | null>(null);
   const [showPackModal, setShowPackModal] = useState(false);
+  const [showPromoPopup, setShowPromoPopup] = useState(false);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
 
@@ -1124,6 +1242,15 @@ const WebinarSection: React.FC = () => {
       .then((r) => r.json())
       .then((d) => { if (d?.data) setCounts(d.data); })
       .catch(() => {});
+  }, []);
+
+  // Popup promo — affiché une seule fois (localStorage)
+  useEffect(() => {
+    const seen = localStorage.getItem(PROMO_POPUP_KEY);
+    if (!seen && !getPackCountdown(PROMO_DEADLINE).expired) {
+      const timer = setTimeout(() => setShowPromoPopup(true), 1800);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Lire et valider le code de parrainage depuis localStorage
@@ -1147,6 +1274,18 @@ const WebinarSection: React.FC = () => {
   }, []);
   const handleClose = useCallback(() => {
     setSelectedWebinar(null);
+  }, []);
+
+  const handleClosePromo = useCallback(() => {
+    localStorage.setItem(PROMO_POPUP_KEY, '1');
+    setShowPromoPopup(false);
+  }, []);
+
+  const handlePromoCtaClick = useCallback(() => {
+    localStorage.setItem(PROMO_POPUP_KEY, '1');
+    setShowPromoPopup(false);
+    analytics.trackAction('promo_popup_cta_click', 'Pack Parcours 30000', {});
+    setShowPackModal(true);
   }, []);
 
   return (
@@ -1188,7 +1327,7 @@ const WebinarSection: React.FC = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {WEBINARS.map((w, i) => (
-            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} />
+            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} showW1Note={!w.passed} />
           ))}
         </div>
 
@@ -1208,6 +1347,10 @@ const WebinarSection: React.FC = () => {
 
       {showPackModal && (
         <PackRegistrationModal referralInfo={referralInfo} onClose={() => setShowPackModal(false)} />
+      )}
+
+      {showPromoPopup && (
+        <PromoPopup onClose={handleClosePromo} onCta={handlePromoCtaClick} />
       )}
     </>
   );
