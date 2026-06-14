@@ -50,6 +50,7 @@ import priceAlertRoutes from './routes/price-alert.routes';
 import socialRoutes from './routes/social.routes';
 import investorProfileRoutes from './routes/investor-profile.routes';
 import uploadRoutes from './routes/upload.routes';
+import { UPLOADS_ROOT } from './config/upload.config';
 import notificationRoutes from './routes/notification.routes';
 import communityRoutes from './routes/community.routes';
 import moderationRoutes from './routes/moderation.routes';
@@ -317,8 +318,8 @@ class App {
     this.app?.use('/api/articles', articleInteractionRoutes);              // Likes & commentaires articles
     this.app?.use('/api/certificates', certificateRoutes);                 // Certificats de participation webinaires
 
-    // Static Uploads Route
-    this.app?.use('/uploads', Express.static(path.join(__dirname, '../public/uploads')));
+    // Static Uploads Route — même racine absolue que l'écriture des fichiers (upload.config)
+    this.app?.use('/uploads', Express.static(UPLOADS_ROOT));
 
     logger.info('Routes initialized');
   }

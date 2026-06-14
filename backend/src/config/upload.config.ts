@@ -5,18 +5,19 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
 
+// Racine absolue des uploads — basée sur le CWD (pas sur __dirname, qui change
+// avec le bundling esbuild où tout est compilé dans dist/index.js).
+// Garantit que l'écriture des fichiers et leur serving statique pointent au même endroit.
+const rawUploadPath = process.env.UPLOAD_PATH || 'public/uploads';
+export const UPLOADS_ROOT = path.isAbsolute(rawUploadPath)
+    ? rawUploadPath
+    : path.resolve(process.cwd(), rawUploadPath);
+
+const UPLOAD_SUBDIRS = ['avatars', 'banners', 'posts', 'docs'] as const;
+
 // Créer les dossiers d'upload s'ils n'existent pas
 const createUploadDirs = () => {
-    const dirs = [
-        'public/uploads',
-        'public/uploads/avatars',
-        'public/uploads/banners',
-        'public/uploads/posts',
-        'public/uploads/docs'
-    ];
-
-    dirs.forEach(dir => {
-        const fullPath = path.join(__dirname, '../../', dir);
+    [UPLOADS_ROOT, ...UPLOAD_SUBDIRS.map((d) => path.join(UPLOADS_ROOT, d))].forEach((fullPath) => {
         if (!fs.existsSync(fullPath)) {
             fs.mkdirSync(fullPath, { recursive: true });
             console.log(`📁 Dossier créé: ${fullPath}`);
@@ -58,21 +59,20 @@ const MAX_FILE_SIZES = {
 // Configuration du stockage
 const storage = multer.diskStorage({
     destination: (req: Request, file, cb) => {
-        // Déterminer le dossier selon le type d'upload
-        let uploadDir = 'public/uploads';
+        // Déterminer le sous-dossier selon le type d'upload
+        let subdir = '';
 
         if (req.path.includes('avatar')) {
-            uploadDir = 'public/uploads/avatars';
+            subdir = 'avatars';
         } else if (req.path.includes('banner')) {
-            uploadDir = 'public/uploads/banners';
+            subdir = 'banners';
         } else if (req.path.includes('pdf') || req.path.includes('doc')) {
-            uploadDir = 'public/uploads/docs';
+            subdir = 'docs';
         } else if (req.path.includes('post')) {
-            uploadDir = 'public/uploads/posts';
+            subdir = 'posts';
         }
 
-        const fullPath = path.join(__dirname, '../../', uploadDir);
-        cb(null, fullPath);
+        cb(null, path.join(UPLOADS_ROOT, subdir));
     },
     filename: (req, file, cb) => {
         // Extension dérivée du MIME type — jamais du nom original fourni par le client
@@ -157,7 +157,9 @@ export const getPublicUrl = (filename: string, type: 'avatars' | 'banners' | 'po
 // Fonction pour supprimer un fichier
 export const deleteFile = (filePath: string): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const fullPath = path.join(__dirname, '../../public', filePath);
+        // Normalise : accepte 'uploads/posts/x.jpg', '/uploads/posts/x.jpg' ou 'posts/x.jpg'
+        const relative = filePath.replace(/^\/?uploads\//, '');
+        const fullPath = path.join(UPLOADS_ROOT, relative);
 
         if (fs.existsSync(fullPath)) {
             fs.unlink(fullPath, (err) => {
