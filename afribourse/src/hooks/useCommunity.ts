@@ -7,6 +7,13 @@ import { apiClient } from '../lib/api-client';
 export type CommunityVisibility = 'PUBLIC' | 'PRIVATE' | 'SECRET';
 export type CommunityMemberRole = 'OWNER' | 'ADMIN' | 'MODERATOR' | 'MEMBER';
 export type PostType = 'ANALYSIS' | 'TRANSACTION' | 'OPINION' | 'QUESTION' | 'ACHIEVEMENT' | 'ARTICLE' | 'TASK_LIST' | 'SURVEY';
+export type CommunitySection = 'DEAL_FLOW' | 'RECAPS_REPLAYS' | 'MES_ANALYSES' | 'EXERCICES_CHALLENGES' | 'GENERAL' | 'ANNONCES';
+
+export interface PostAttachment {
+    url: string;
+    name: string;
+    size?: number;
+}
 
 export interface CommunityRule {
     title: string;
@@ -18,6 +25,7 @@ export interface CommunitySettings {
     require_post_approval?: boolean;
     min_level?: number;
     allow_invitations?: boolean;
+    sections_enabled?: boolean;
 }
 
 export interface CreateCommunityData {
@@ -51,6 +59,9 @@ export interface PostMetadata {
     tasks?: TaskItem[];
     survey?: SurveyMeta;
     achievement?: Record<string, unknown>;
+    is_html?: boolean;
+    unlock_level?: number;
+    locked?: boolean;
 }
 
 export interface TaskCheckMap {
@@ -69,11 +80,13 @@ export interface CreateCommunityPostData {
     type?: PostType;
     content: string;
     title?: string;
+    section?: CommunitySection;
     stock_symbol?: string;
     stock_price?: number;
     stock_change?: number;
     images?: string[];
     video_url?: string;
+    attachments?: PostAttachment[];
     tags?: string[];
     metadata?: PostMetadata;
 }
@@ -162,6 +175,8 @@ export interface CommunityPost {
     };
     hasLiked?: boolean;
     metadata?: PostMetadata;
+    section?: CommunitySection;
+    attachments?: PostAttachment[];
 }
 
 // ============= COMMUNITY CRUD HOOKS =============
@@ -457,13 +472,47 @@ export function useCreateCommunityPost() {
 }
 
 /**
+ * Upload images for a post — returns public URLs
+ */
+export function useUploadPostImages() {
+    return useMutation({
+        mutationFn: async (files: File[]) => {
+            const formData = new FormData();
+            files.forEach((f) => formData.append('images', f));
+            const res = await apiClient.post('/upload/post-images', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return res.data.data.images as string[];
+        },
+    });
+}
+
+/**
+ * Upload a PDF document — returns { url, name, size }
+ */
+export function useUploadPdf() {
+    return useMutation({
+        mutationFn: async (file: File) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await apiClient.post('/upload/post-pdf', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return res.data.data as PostAttachment & { filename: string };
+        },
+    });
+}
+
+/**
  * Get posts in a community
  */
-export function useCommunityPosts(communityId: string, page: number = 1) {
+export function useCommunityPosts(communityId: string, page: number = 1, section?: CommunitySection) {
     return useQuery({
-        queryKey: ['community-posts', communityId, page],
+        queryKey: ['community-posts', communityId, page, section ?? null],
         queryFn: async () => {
-            const response = await apiClient.get(`/communities/${communityId}/posts?page=${page}`);
+            const params = new URLSearchParams({ page: String(page) });
+            if (section) params.set('section', section);
+            const response = await apiClient.get(`/communities/${communityId}/posts?${params.toString()}`);
             return response.data as {
                 data: CommunityPost[];
                 total: number;

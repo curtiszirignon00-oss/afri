@@ -264,13 +264,20 @@ export async function createCommunityPost(req: AuthRequest, res: Response) {
     }
 }
 
+const VALID_SECTIONS = ['DEAL_FLOW', 'RECAPS_REPLAYS', 'MES_ANALYSES', 'EXERCICES_CHALLENGES', 'GENERAL', 'ANNONCES'];
+
 export async function getCommunityPosts(req: AuthRequest, res: Response) {
     try {
         const { communityId } = req.params;
         const viewerId = req.user?.id;
         const { limit, page, skip } = parsePagination(req.query.limit, req.query.page, 10);
 
-        const result = await communityService.getCommunityPosts(communityId, page, limit, viewerId);
+        const sectionParam = typeof req.query.section === 'string' ? req.query.section : undefined;
+        const section = sectionParam && VALID_SECTIONS.includes(sectionParam)
+            ? (sectionParam as any)
+            : undefined;
+
+        const result = await communityService.getCommunityPosts(communityId, page, limit, viewerId, section);
         res.status(200).json({ success: true, ...result });
     } catch (error: any) {
         res.status(400).json({ error: error.message });

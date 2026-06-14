@@ -5666,6 +5666,642 @@ export async function sendDangoteIPONewsletterEmail({
   });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Newsletter Semaine du 8 au 14 juin 2026
+// ─────────────────────────────────────────────────────────────────────────────
+export async function sendWeeklyNewsletterJuin2026Email({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AfriBourse — Semaine du 8 au 14 juin 2026</title>
+</head>
+<body style="margin:0;padding:0;background-color:#0A1628;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#0A1628;">
+<tr><td align="center" style="padding:20px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:680px;">
+
+  <!-- ── HEADER ── -->
+  <tr>
+    <td style="background-color:#1E3A5F;border-radius:10px 10px 0 0;padding:28px 32px 24px;border-bottom:1px solid #2A4A72;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:900;line-height:1;color:#ffffff;">Afri<span style="color:#00D4A8;">Bourse</span></div>
+            <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#8898AA;margin-top:6px;">Intelligence des marchés UEMOA</div>
+          </td>
+          <td align="right" valign="top">
+            <span style="display:inline-block;background:#00D4A8;color:#0A1628;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:3px;">Édition #24</span>
+            <div style="font-size:11px;color:#8898AA;margin-top:6px;font-family:monospace;">8 – 14 juin 2026</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── TICKER (statique) ── -->
+  <tr>
+    <td style="background-color:#142236;border-bottom:1px solid #2A4A72;padding:10px 32px;">
+      <span style="font-size:10px;font-family:monospace;color:#00D4A8;font-weight:600;margin-right:12px;">BRVM LIVE</span>
+      <span style="font-size:11px;font-family:monospace;color:#F0F4F8;">ORAC 14 215 <span style="color:#E8473F;">▼ -5,23 %</span></span>
+      &nbsp;&nbsp;
+      <span style="font-size:11px;font-family:monospace;color:#F0F4F8;">SGBC 33 450 <span style="color:#4ADE80;">▲ +0,45 %</span></span>
+      &nbsp;&nbsp;
+      <span style="font-size:11px;font-family:monospace;color:#F0F4F8;">CBIBF 22 050 <span style="color:#4ADE80;">▲ +0,23 %</span></span>
+      &nbsp;&nbsp;
+      <span style="font-size:11px;font-family:monospace;color:#F0F4F8;">PALC 8 680 <span style="color:#4ADE80;">▲ +0,35 %</span></span>
+    </td>
+  </tr>
+
+  <!-- ── SALUTATION ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:28px 32px 0;">
+      <p style="margin:0 0 6px;font-size:16px;color:#C8D8E8;">Bonjour <strong style="color:#ffffff;">${firstName}</strong>,</p>
+      <p style="margin:0;font-size:14px;color:#8898AA;line-height:1.6;">Voici votre résumé des marchés BRVM pour la semaine du 8 au 14 juin 2026.</p>
+    </td>
+  </tr>
+
+  <!-- ── LEAD / L'ESSENTIEL ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:20px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#142236;border-left:3px solid #00D4A8;border-radius:0 6px 6px 0;">
+        <tr>
+          <td style="padding:22px 24px;">
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#00D4A8;margin-bottom:10px;font-family:monospace;">L'essentiel de la semaine</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#ffffff;line-height:1.35;margin-bottom:12px;">Stabilité monétaire, dividendes en cascade et une BRVM sous les projecteurs internationaux</div>
+            <p style="margin:0;font-size:14px;color:#B8C8D8;line-height:1.75;">Un signal fort venu de Dakar : la BCEAO a maintenu ses taux inchangés dans un contexte de croissance solide et d'inflation quasi nulle. Le marché a marqué une pause après une semaine précédente brillante (+2,75 %). La saison des dividendes continue d'animer les cours, avec Orange CI en vedette involontaire d'une baisse mécanique. La BRVM s'est aussi offert une vitrine internationale à Riga, devant les participants du Forum de la BERD.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SECTION 1 : BCEAO ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-bottom:1px solid #2A4A72;padding-bottom:16px;margin-bottom:20px;">
+        <tr>
+          <td valign="top" style="padding-right:14px;" width="30">
+            <div style="background:#00D4A8;color:#0A1628;font-family:monospace;font-size:11px;font-weight:600;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;">1</div>
+          </td>
+          <td>
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:4px;font-family:monospace;">Politique monétaire</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;">La BCEAO maintient tous ses taux — ce que ça signifie pour votre portefeuille</div>
+            <div style="font-size:11px;color:#8898AA;font-family:monospace;margin-top:4px;">Réunion CPM · Dakar, 10 juin 2026</div>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 16px;font-size:14.5px;color:#C8D8E8;line-height:1.75;">Le Comité de Politique Monétaire de la BCEAO s'est réuni mardi 10 juin à Dakar. Verdict sans surprise, mais ô combien rassurant : <strong style="color:#fff;">aucun mouvement</strong>. Les trois taux directeurs restent inchangés pour la troisième fois consécutive.</p>
+
+      <!-- Taux cards -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="padding-right:6px;" width="33%">
+            <div style="background:#1E3A5F;border:1px solid #2A4A72;border-radius:6px;padding:16px 14px;text-align:center;">
+              <div style="font-size:11px;color:#8898AA;line-height:1.4;margin-bottom:10px;">Taux minimum d'injection de liquidité</div>
+              <div style="font-family:monospace;font-size:26px;font-weight:500;color:#00D4A8;line-height:1;">3,00 %</div>
+              <div style="display:inline-block;margin-top:8px;font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#0A1628;background:#00D4A8;padding:2px 8px;border-radius:3px;">Inchangé</div>
+            </div>
+          </td>
+          <td style="padding:0 3px;" width="33%">
+            <div style="background:#1E3A5F;border:1px solid #2A4A72;border-radius:6px;padding:16px 14px;text-align:center;">
+              <div style="font-size:11px;color:#8898AA;line-height:1.4;margin-bottom:10px;">Taux du guichet de prêt marginal</div>
+              <div style="font-family:monospace;font-size:26px;font-weight:500;color:#00D4A8;line-height:1;">5,00 %</div>
+              <div style="display:inline-block;margin-top:8px;font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#0A1628;background:#00D4A8;padding:2px 8px;border-radius:3px;">Inchangé</div>
+            </div>
+          </td>
+          <td style="padding-left:6px;" width="33%">
+            <div style="background:#1E3A5F;border:1px solid #2A4A72;border-radius:6px;padding:16px 14px;text-align:center;">
+              <div style="font-size:11px;color:#8898AA;line-height:1.4;margin-bottom:10px;">Coefficient de réserves obligatoires</div>
+              <div style="font-family:monospace;font-size:26px;font-weight:500;color:#00D4A8;line-height:1;">3,00 %</div>
+              <div style="display:inline-block;margin-top:8px;font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#0A1628;background:#00D4A8;padding:2px 8px;border-radius:3px;">Depuis mars 2026</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:16px 0 0;font-size:14.5px;color:#C8D8E8;line-height:1.75;"><strong style="color:#fff;">Pourquoi c'est structurellement favorable à la BRVM.</strong> Quand les taux restent bas et stables, les banques empruntent moins cher, les entreprises se financent à moindre coût, et les investisseurs ont moins de raisons de quitter la bourse pour des placements obligataires. C'est un environnement porteur pour les valeurs bancaires et industrielles.</p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#142236;border:1px solid #2A4A72;border-radius:6px;margin:16px 0 0;">
+        <tr>
+          <td style="padding:18px 22px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#00D4A8;margin-bottom:12px;">Le contexte macro</div>
+            <p style="margin:0 0 8px;font-size:13.5px;color:#C8D8E8;line-height:1.65;"><strong style="color:#fff;">Inflation :</strong> -0,2 % au T1 2026 (légèrement négative) — prévision 1,6 % pour l'année, très en dessous des seuils d'alerte.</p>
+            <p style="margin:0 0 8px;font-size:13.5px;color:#C8D8E8;line-height:1.65;"><strong style="color:#fff;">Croissance UEMOA :</strong> +6,1 % au T1 2026, portée par les secteurs extractifs, manufacturiers et agricoles.</p>
+            <p style="margin:0;font-size:13.5px;color:#C8D8E8;line-height:1.65;"><strong style="color:#fff;">Risque surveillé :</strong> Les tensions géopolitiques au Moyen-Orient pourraient faire remonter le pétrole et l'inflation importée. Pour l'heure, ce risque reste latent.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SECTION 2 : PERFORMANCE ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-bottom:1px solid #2A4A72;padding-bottom:16px;margin-bottom:20px;">
+        <tr>
+          <td valign="top" style="padding-right:14px;" width="30">
+            <div style="background:#00D4A8;color:#0A1628;font-family:monospace;font-size:11px;font-weight:600;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;">2</div>
+          </td>
+          <td>
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:4px;font-family:monospace;">Indices &amp; Performance</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;">Le marché marque une pause après une semaine brillante</div>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="padding-right:6px;" width="50%">
+            <div style="background:#142236;border:1px solid #2A4A72;border-radius:6px;padding:16px 18px;">
+              <div style="font-size:10px;color:#8898AA;text-transform:uppercase;letter-spacing:0.08em;font-family:monospace;margin-bottom:8px;">BRVM Composite S-1</div>
+              <div style="font-family:monospace;font-size:22px;font-weight:500;color:#4ADE80;line-height:1;">+2,75 %</div>
+              <div style="font-size:11px;color:#8898AA;margin-top:4px;">437,24 pts · 1–5 juin</div>
+            </div>
+          </td>
+          <td style="padding-left:6px;" width="50%">
+            <div style="background:#142236;border:1px solid #2A4A72;border-radius:6px;padding:16px 18px;">
+              <div style="font-size:10px;color:#8898AA;text-transform:uppercase;letter-spacing:0.08em;font-family:monospace;margin-bottom:8px;">BRVM Composite lundi 8 juin</div>
+              <div style="font-family:monospace;font-size:22px;font-weight:500;color:#E8473F;line-height:1;">-0,13 %</div>
+              <div style="font-size:11px;color:#8898AA;margin-top:4px;">436,68 pts · correction technique</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:16px 0 0;font-size:14.5px;color:#C8D8E8;line-height:1.75;">Le recul de lundi est directement attribué à l'<strong style="color:#fff;">ajustement mécanique du cours d'Orange CI</strong> après son ex-dividende du 5 juin. Le reste de la semaine s'est maintenu en consolidation — une respiration normale dans une tendance haussière de fond. Rappel : la BRVM avait clôturé 2025 avec <strong style="color:#4ADE80;">+25,26 %</strong>.</p>
+    </td>
+  </tr>
+
+  <!-- ── SECTION 3 : DIVIDENDES ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-bottom:1px solid #2A4A72;padding-bottom:16px;margin-bottom:20px;">
+        <tr>
+          <td valign="top" style="padding-right:14px;" width="30">
+            <div style="background:#00D4A8;color:#0A1628;font-family:monospace;font-size:11px;font-weight:600;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;">3</div>
+          </td>
+          <td>
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:4px;font-family:monospace;">Saison des dividendes</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;">Qui paie quoi en juin — le calendrier complet</div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Table dividendes -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse;">
+        <thead>
+          <tr style="background-color:#1E3A5F;">
+            <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;">Date paiement</th>
+            <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;">Société</th>
+            <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;">Montant / action</th>
+            <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;">Ex-date</th>
+            <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #2A4A72;">
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;color:#C8D8E8;">1er juin</td>
+            <td style="padding:10px 12px;font-size:13px;color:#fff;font-weight:500;">SICABLE CI <span style="color:#8898AA;font-size:10px;font-family:monospace;">CABC</span></td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:500;color:#fff;">152,02 FCFA</td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#8898AA;">29 mai</td>
+            <td style="padding:10px 12px;"><span style="font-family:monospace;font-size:10px;color:#4ADE80;background:rgba(74,222,128,.1);padding:3px 8px;border-radius:12px;">✓ Versé</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #2A4A72;">
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;color:#C8D8E8;">8 juin</td>
+            <td style="padding:10px 12px;font-size:13px;color:#fff;font-weight:500;">Orange CI <span style="color:#8898AA;font-size:10px;font-family:monospace;">ORAC</span></td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:500;color:#4ADE80;">800,00 FCFA</td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#8898AA;">5 juin</td>
+            <td style="padding:10px 12px;"><span style="font-family:monospace;font-size:10px;color:#4ADE80;background:rgba(74,222,128,.1);padding:3px 8px;border-radius:12px;">✓ Versé</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #2A4A72;">
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;color:#C8D8E8;">15 juin</td>
+            <td style="padding:10px 12px;font-size:13px;color:#fff;font-weight:500;">ONATEL BF <span style="color:#8898AA;font-size:10px;font-family:monospace;">ONTBF</span></td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:500;color:#fff;">145,32 FCFA</td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#8898AA;">12 juin</td>
+            <td style="padding:10px 12px;"><span style="font-family:monospace;font-size:10px;color:#F5A623;background:rgba(245,166,35,.1);padding:3px 8px;border-radius:12px;">⚡ Cette semaine</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #2A4A72;">
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;color:#C8D8E8;">19 juin</td>
+            <td style="padding:10px 12px;font-size:13px;color:#fff;font-weight:500;">Coris Bank International BF <span style="color:#8898AA;font-size:10px;font-family:monospace;">CBIBF</span></td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:500;color:#F5A623;">900,00 FCFA</td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#8898AA;">18 juin</td>
+            <td style="padding:10px 12px;"><span style="font-family:monospace;font-size:10px;color:#00D4A8;background:rgba(0,212,168,.1);padding:3px 8px;border-radius:12px;">⏳ Fenêtre ouverte</span></td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;color:#C8D8E8;">29 juin</td>
+            <td style="padding:10px 12px;font-size:13px;color:#fff;font-weight:500;">PALM CI <span style="color:#8898AA;font-size:10px;font-family:monospace;">PALC</span></td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:13px;font-weight:500;color:#F5A623;">501,60 FCFA</td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:#8898AA;">26 juin</td>
+            <td style="padding:10px 12px;"><span style="font-family:monospace;font-size:10px;color:#00D4A8;background:rgba(0,212,168,.1);padding:3px 8px;border-radius:12px;">⏳ Fenêtre ouverte</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:rgba(0,212,168,.06);border:1px solid rgba(0,212,168,.2);border-radius:6px;margin:14px 0 0;">
+        <tr>
+          <td style="padding:14px 18px;">
+            <p style="margin:0;font-size:13.5px;color:#A8C8B8;line-height:1.65;"><strong style="color:#00D4A8;">Rappel fondamental :</strong> pour percevoir un dividende à la BRVM, vous devez détenir l'action <strong style="color:#fff;">avant la date ex-dividende</strong>, pas la date de paiement. Il vous reste encore une fenêtre sur <strong style="color:#fff;">Coris Bank (ex-date : 18 juin)</strong> et <strong style="color:#fff;">PALM CI (ex-date : 26 juin)</strong>.</p>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:18px 0 10px;font-size:14px;color:#C8D8E8;line-height:1.7;">Plusieurs autres valeurs ont confirmé leurs montants pour l'exercice 2025 mais n'ont pas encore annoncé leurs dates officielles — paiement attendu en juillet :</p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="padding-right:6px;" width="50%">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr><td style="padding:0 0 6px;">
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;display:flex;justify-content:space-between;">
+                  <span style="font-size:13px;color:#C8D8E8;">SGBCI <span style="font-family:monospace;font-size:10px;color:#8898AA;">SGBC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">1 646 FCFA</span>
+                </div>
+              </td></tr>
+              <tr><td style="padding:0 0 6px;">
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">SMB CI <span style="font-family:monospace;font-size:10px;color:#8898AA;">SMBC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">704 FCFA</span>
+                </div>
+              </td></tr>
+              <tr><td style="padding:0 0 6px;">
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">SODECI <span style="font-family:monospace;font-size:10px;color:#8898AA;">SDCC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">462 FCFA</span>
+                </div>
+              </td></tr>
+              <tr><td>
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">Nestlé CI <span style="font-family:monospace;font-size:10px;color:#8898AA;">NTLC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">369,60 FCFA</span>
+                </div>
+              </td></tr>
+            </table>
+          </td>
+          <td style="padding-left:6px;" width="50%">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr><td style="padding:0 0 6px;">
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">SIB CI <span style="font-family:monospace;font-size:10px;color:#8898AA;">SIBC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">374 FCFA</span>
+                </div>
+              </td></tr>
+              <tr><td style="padding:0 0 6px;">
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">CIE CI <span style="font-family:monospace;font-size:10px;color:#8898AA;">CIEC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">~205 FCFA</span>
+                </div>
+              </td></tr>
+              <tr><td style="padding:0 0 6px;">
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">Vivo Energy CI <span style="font-family:monospace;font-size:10px;color:#8898AA;">SHEC</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">85,07 FCFA</span>
+                </div>
+              </td></tr>
+              <tr><td>
+                <div style="background:#142236;border:1px solid #2A4A72;border-radius:4px;padding:10px 14px;">
+                  <span style="font-size:13px;color:#C8D8E8;">TotalEnergies SN <span style="font-family:monospace;font-size:10px;color:#8898AA;">TTLS</span></span>
+                  <span style="font-family:monospace;font-size:13px;font-weight:500;color:#00D4A8;float:right;">169,81 FCFA</span>
+                </div>
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SECTION 4 : PÉDAGOGIE GAP ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-bottom:1px solid #2A4A72;padding-bottom:16px;margin-bottom:20px;">
+        <tr>
+          <td valign="top" style="padding-right:14px;" width="30">
+            <div style="background:#00D4A8;color:#0A1628;font-family:monospace;font-size:11px;font-weight:600;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;">4</div>
+          </td>
+          <td>
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:4px;font-family:monospace;">Pédagogie investisseur</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;">Pourquoi Orange CI a « baissé » lundi matin — et ce que ça signifie vraiment</div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 16px;font-size:14.5px;color:#C8D8E8;line-height:1.75;">Lundi 8 juin, beaucoup d'investisseurs ont observé une baisse marquée du cours d'Orange CI. Aucune mauvaise nouvelle pourtant. Ce mouvement était <strong style="color:#fff;">mécanique, prévisible, et parfaitement normal</strong>. Il s'appelle le <em>gap de détachement</em>.</p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#1E3A5F;border-radius:8px;margin-bottom:16px;">
+        <tr>
+          <td style="padding:22px 24px;">
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:12px;">Le principe en une phrase</div>
+            <p style="margin:0 0 10px;font-size:14px;color:#C8D8E8;line-height:1.7;">Quand une entreprise sort de l'argent de sa trésorerie pour le donner à ses actionnaires, elle vaut mécaniquement moins. Son cours s'ajuste à la baisse du montant distribué.</p>
+            <p style="margin:0;font-size:14px;color:#C8D8E8;line-height:1.7;">Vous avez reçu 800 FCFA en cash. La valeur boursière de votre action a baissé de 800 FCFA. <strong style="color:#fff;">Votre patrimoine total n'a pas changé d'un franc.</strong></p>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Calcul flow -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:16px;">
+        <tr>
+          <td width="33%" style="padding-right:4px;">
+            <div style="background:#0A1628;border:1px solid #2A4A72;border-radius:6px;padding:14px;text-align:center;">
+              <div style="font-family:monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:6px;">Cours avant détachement</div>
+              <div style="font-family:monospace;font-size:20px;font-weight:500;color:#fff;">15 000</div>
+              <div style="font-size:11px;color:#8898AA;margin-top:4px;">FCFA · Av. 5 juin</div>
+            </div>
+          </td>
+          <td width="5%" align="center" style="font-size:18px;color:#2A4A72;padding:0 2px;">→</td>
+          <td width="33%" style="padding:0 4px;">
+            <div style="background:#0A1628;border:1px solid #2A4A72;border-radius:6px;padding:14px;text-align:center;">
+              <div style="font-family:monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:6px;">Dividende distribué</div>
+              <div style="font-family:monospace;font-size:20px;font-weight:500;color:#F5A623;">800</div>
+              <div style="font-size:11px;color:#8898AA;margin-top:4px;">FCFA · Ex-date 5 juin</div>
+            </div>
+          </td>
+          <td width="5%" align="center" style="font-size:18px;color:#2A4A72;padding:0 2px;">=</td>
+          <td width="33%" style="padding-left:4px;">
+            <div style="background:#0A1628;border:1px solid #00D4A8;border-radius:6px;padding:14px;text-align:center;">
+              <div style="font-family:monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:6px;">Cours ajusté théorique</div>
+              <div style="font-family:monospace;font-size:20px;font-weight:500;color:#00D4A8;">14 200</div>
+              <div style="font-size:11px;color:#8898AA;margin-top:4px;">FCFA · Ouverture 8 juin</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#C8D8E8;line-height:1.7;">Ce même mécanisme se répètera dans les prochains jours :</p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#142236;border:1px solid #2A4A72;border-radius:6px;overflow:hidden;">
+        <tr>
+          <td style="background:#1E3A5F;padding:9px 16px;border-bottom:1px solid #2A4A72;">
+            <span style="font-family:monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;">Prochains gaps à anticiper</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 16px;border-bottom:1px solid #2A4A72;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td><span style="font-family:monospace;font-size:11px;color:#00D4A8;">18 juin</span></td>
+                <td><span style="font-size:13.5px;color:#C8D8E8;">Cours de <strong style="color:#fff;">Coris Bank International BF</strong> ajusté à la baisse</span></td>
+                <td align="right"><span style="font-family:monospace;font-size:13px;font-weight:500;color:#F5A623;">- 900 FCFA</span></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:14px 16px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td><span style="font-family:monospace;font-size:11px;color:#00D4A8;">26 juin</span></td>
+                <td><span style="font-size:13.5px;color:#C8D8E8;">Cours de <strong style="color:#fff;">PALM CI</strong> ajusté à la baisse</span></td>
+                <td align="right"><span style="font-family:monospace;font-size:13px;font-weight:500;color:#F5A623;">- 501,60 FCFA</span></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SECTION 5 : BRVM INTERNATIONAL ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-bottom:1px solid #2A4A72;padding-bottom:16px;margin-bottom:20px;">
+        <tr>
+          <td valign="top" style="padding-right:14px;" width="30">
+            <div style="background:#00D4A8;color:#0A1628;font-family:monospace;font-size:11px;font-weight:600;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;">5</div>
+          </td>
+          <td>
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:4px;font-family:monospace;">Rayonnement international</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;">La BRVM sur la scène mondiale : Forum BERD à Riga</div>
+            <div style="font-size:11px;color:#8898AA;font-family:monospace;margin-top:4px;">5 juin 2026 · Lettonie</div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 14px;font-size:14.5px;color:#C8D8E8;line-height:1.75;">Le 5 juin 2026, le Directeur Général de la BRVM, <strong style="color:#fff;">Dr Edoh Kossi Amenounve</strong>, a présenté le modèle du marché financier régional de l'UEMOA devant les participants du Forum annuel de la <strong style="color:#fff;">Banque Européenne pour la Reconstruction et le Développement (BERD)</strong>, à Riga en Lettonie.</p>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#142236;border:1px solid #2A4A72;border-radius:6px;">
+        <tr>
+          <td style="padding:18px 22px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#00D4A8;margin-bottom:12px;">Pourquoi c'est important à long terme</div>
+            <p style="margin:0 0 10px;font-size:13.5px;color:#C8D8E8;line-height:1.65;">Chaque exposition de la BRVM sur une tribune internationale de ce calibre élargit l'audience des investisseurs potentiels et renforce la crédibilité institutionnelle du marché.</p>
+            <p style="margin:0;font-size:13.5px;color:#C8D8E8;line-height:1.65;">La BRVM se positionne comme un marché émergent de référence en Afrique subsaharienne, avec une capitalisation franchissant les <strong style="color:#fff;">14 000 milliards FCFA</strong> et une progression de <strong style="color:#4ADE80;">+25,26 %</strong> en 2025.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SECTION 6 : SATELLITE ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-bottom:1px solid #2A4A72;padding-bottom:16px;margin-bottom:20px;">
+        <tr>
+          <td valign="top" style="padding-right:14px;" width="30">
+            <div style="background:#00D4A8;color:#0A1628;font-family:monospace;font-size:11px;font-weight:600;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;">6</div>
+          </td>
+          <td>
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#8898AA;margin-bottom:4px;font-family:monospace;">À suivre</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:700;color:#ffffff;line-height:1.3;">BOA en forme, cacao et pétrole : le contexte satellite</div>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:collapse;">
+        <tr style="background-color:#1E3A5F;">
+          <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;font-weight:400;" width="40%">Actualité</th>
+          <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;font-weight:400;" width="45%">Impact BRVM</th>
+          <th style="padding:9px 12px;text-align:left;font-family:monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#8898AA;border-bottom:1px solid #2A4A72;font-weight:400;" width="15%">Niveau</th>
+        </tr>
+        <tr style="border-bottom:1px solid #2A4A72;">
+          <td style="padding:12px 12px;font-size:13px;color:#C8D8E8;vertical-align:top;"><strong style="color:#fff;">Résultats Bank of Africa T1 2026</strong><br><span style="font-size:11px;color:#8898AA;">+9 % de bénéfice</span></td>
+          <td style="padding:12px 12px;font-size:13px;color:#C8D8E8;vertical-align:top;">Sentiment positif sur BOAB, BOAC, BOABF, BOAS, BOAN. Ces valeurs figurent parmi les meilleurs rendements dividendes de la saison.</td>
+          <td style="padding:12px 12px;vertical-align:top;"><span style="font-size:11px;color:#4ADE80;font-weight:500;">Moyen +</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #2A4A72;">
+          <td style="padding:12px 12px;font-size:13px;color:#C8D8E8;vertical-align:top;"><strong style="color:#fff;">Prix du cacao &amp; caoutchouc</strong><br><span style="font-size:11px;color:#8898AA;">Pas de choc majeur</span></td>
+          <td style="padding:12px 12px;font-size:13px;color:#C8D8E8;vertical-align:top;">Influence indirecte via l'économie ivoirienne — SAPH CI, SOGB CI, PALM CI.</td>
+          <td style="padding:12px 12px;vertical-align:top;"><span style="font-size:11px;color:#F5A623;">Moyen / Faible</span></td>
+        </tr>
+        <tr>
+          <td style="padding:12px 12px;font-size:13px;color:#C8D8E8;vertical-align:top;"><strong style="color:#fff;">Tensions géopolitiques Moyen-Orient</strong><br><span style="font-size:11px;color:#8898AA;">Pression latente pétrole</span></td>
+          <td style="padding:12px 12px;font-size:13px;color:#C8D8E8;vertical-align:top;">Risque inflationniste surveillé par la BCEAO. À monitorer pour Vivo Energy et TotalEnergies CI/SN.</td>
+          <td style="padding:12px 12px;vertical-align:top;"><span style="font-size:11px;color:#8898AA;">Indirect</span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── SYNTHÈSE ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 0;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:linear-gradient(135deg,#1E3A5F 0%,#0E1E34 100%);border:1px solid #2A4A72;border-radius:8px;">
+        <tr>
+          <td style="padding:28px 28px;">
+            <div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#00D4A8;margin-bottom:10px;font-family:monospace;">Ce qu'il faut retenir</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:16px;line-height:1.3;">Une semaine neutre à légèrement positive, sur des fondamentaux solides</div>
+            <p style="margin:0 0 12px;font-size:14px;color:#C8D8E8;line-height:1.75;">La décision de la BCEAO confirme une politique monétaire accommodante dans une zone en croissance. La saison des dividendes entre dans sa dernière ligne droite avec trois paiements encore à venir avant la fin juin.</p>
+            <p style="margin:0 0 20px;font-size:14px;color:#C8D8E8;line-height:1.75;">Les prochains gaps de détachement — Coris Bank le 18 juin, PALM CI le 26 juin — ne sont pas des alertes : ce sont des entreprises qui tiennent leurs engagements. Contextualisez-les avant d'interpréter les mouvements de cours.</p>
+            <!-- Dates clés pills -->
+            <div style="margin-bottom:6px;"><span style="display:inline-block;background:rgba(0,212,168,.12);border:1px solid rgba(0,212,168,.25);border-radius:20px;padding:5px 12px;font-family:monospace;font-size:11px;color:#00D4A8;margin:4px 4px 4px 0;">15 juin — Paiement ONATEL BF (145,32 FCFA)</span></div>
+            <div style="margin-bottom:6px;"><span style="display:inline-block;background:rgba(0,212,168,.12);border:1px solid rgba(0,212,168,.25);border-radius:20px;padding:5px 12px;font-family:monospace;font-size:11px;color:#00D4A8;margin:4px 4px 4px 0;">18 juin — Ex-date Coris Bank (900 FCFA)</span></div>
+            <div style="margin-bottom:6px;"><span style="display:inline-block;background:rgba(0,212,168,.12);border:1px solid rgba(0,212,168,.25);border-radius:20px;padding:5px 12px;font-family:monospace;font-size:11px;color:#00D4A8;margin:4px 4px 4px 0;">26 juin — Ex-date PALM CI (501,60 FCFA)</span></div>
+            <div><span style="display:inline-block;background:rgba(0,212,168,.12);border:1px solid rgba(0,212,168,.25);border-radius:20px;padding:5px 12px;font-family:monospace;font-size:11px;color:#00D4A8;margin:4px 4px 4px 0;">29 juin — Paiement PALM CI</span></div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── CTA : TOUTES LES ACTUALITÉS ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:28px 32px 0;text-align:center;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#142236;border:1px solid #2A4A72;border-radius:8px;">
+        <tr>
+          <td style="padding:24px 28px;text-align:center;">
+            <p style="margin:0 0 6px;font-size:13px;color:#8898AA;font-family:monospace;letter-spacing:0.08em;text-transform:uppercase;">Restez informé</p>
+            <p style="margin:0 0 18px;font-size:15px;color:#C8D8E8;line-height:1.6;">Retrouvez toutes les actualités des marchés BRVM, les analyses et les dernières nouvelles directement sur notre plateforme.</p>
+            <a href="https://www.africbourse.com/news" style="display:inline-block;background:#00D4A8;color:#0A1628;font-size:14px;font-weight:700;text-decoration:none;padding:13px 32px;border-radius:6px;letter-spacing:0.02em;">Consulter toutes les actualités</a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── FOOTER ── -->
+  <tr>
+    <td style="background-color:#070e1c;border-radius:0 0 10px 10px;padding:24px 32px;margin-top:28px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:16px;">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:700;color:#00D4A8;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:700;color:#ffffff;">Bourse</span>
+          </td>
+          <td align="right">
+            <a href="https://www.africbourse.com/news" style="display:inline-block;margin-left:12px;font-size:11px;color:#8898B0;text-decoration:none;">Actualités</a>
+            <a href="https://www.africbourse.com" style="display:inline-block;margin-left:12px;font-size:11px;color:#8898B0;text-decoration:none;">Site web</a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 12px;font-size:11px;line-height:1.6;color:#8898B0;">
+        <strong style="color:#C4D5E8;">Sources :</strong> BCEAO · BOC BRVM · brvm.org · SikaFinance · Financial Afrik
+      </p>
+      <p style="margin:0 0 14px;font-size:10px;line-height:1.6;color:#5A6A80;">
+        Cette newsletter est fournie à titre strictement informatif et éducatif. Elle ne constitue pas un conseil en investissement, une recommandation d'achat ou de vente de valeurs mobilières. Les données de marché, dates de détachement et montants de dividendes sont indicatifs et peuvent évoluer. Consultez les avis officiels de la BRVM et votre SGI avant toute décision d'investissement.
+      </p>
+      <p style="margin:0;font-size:10px;color:#5A6A80;">
+        Vous recevez cet email car vous êtes inscrit sur AfriBourse. &nbsp;·&nbsp;
+        <a href="https://www.africbourse.com/news" style="color:#8898B0;text-decoration:underline;">Toutes les actualités</a>
+      </p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, votre résumé marchés BRVM — Semaine du 8 au 14 juin 2026`,
+    html,
+    text: `Bonjour ${firstName},\n\nVoici votre résumé des marchés BRVM pour la semaine du 8 au 14 juin 2026.\n\n📰 Consultez toutes nos actualités sur : https://www.africbourse.com/news\n\n──────────────────────────────────────\nL'ESSENTIEL DE LA SEMAINE\n──────────────────────────────────────\n\n1. BCEAO — Taux inchangés (3e fois consécutive)\nTaux injection : 3,00 % · Prêt marginal : 5,00 % · Réserves : 3,00 %\nCroissance UEMOA : +6,1 % T1 2026 · Inflation : -0,2 % (quasi nulle)\n\n2. PERFORMANCE BRVM\nS-1 (1–5 juin) : BRVM Composite +2,75 %, BRVM 30 +2,92 %\nLundi 8 juin : -0,13 % (correction mécanique Orange CI ex-dividende)\n\n3. DIVIDENDES JUIN\n• 1er juin — SICABLE CI (CABC) : 152,02 FCFA — Versé\n• 8 juin — Orange CI (ORAC) : 800,00 FCFA — Versé\n• 15 juin — ONATEL BF (ONTBF) : 145,32 FCFA — Cette semaine\n• 19 juin — Coris Bank International (CBIBF) : 900,00 FCFA — Ex-date 18 juin (fenêtre ouverte)\n• 29 juin — PALM CI (PALC) : 501,60 FCFA — Ex-date 26 juin (fenêtre ouverte)\n\nAttendus en juillet : SGBC 1 646 FCFA · SMBC 704 FCFA · SDCC 462 FCFA · NTLC 369,60 FCFA · SIBC 374 FCFA · CIEC ~205 FCFA\n\n4. PÉDAGOGIE — GAP DE DÉTACHEMENT\nOrange CI n'a pas « baissé » — la baisse est mécanique :\nCours avant : 15 000 FCFA - Dividende 800 FCFA = Cours ajusté 14 200 FCFA\nVotre patrimoine total n'a pas changé d'un franc.\n\n5. BRVM À RIGA\nLe DG Dr Edoh Kossi Amenounve a présenté la BRVM au Forum BERD (5 juin, Lettonie).\nCapitalisation : >14 000 Mds FCFA · Performance 2025 : +25,26 %\n\n6. À SUIVRE\n• BOA T1 2026 : +9 % de bénéfice → positif pour BOAB/BOAC/BOABF\n• Cacao & caoutchouc : impact indirect sur SAPH CI, SOGB CI, PALM CI\n• Tensions Moyen-Orient : risque pétrolier latent à surveiller\n\n──────────────────────────────────────\nDATES CLÉS\n──────────────────────────────────────\n→ 15 juin : Paiement ONATEL BF (145,32 FCFA)\n→ 18 juin : Ex-date Coris Bank (900 FCFA) — dernière chance !\n→ 19 juin : Paiement Coris Bank\n→ 26 juin : Ex-date PALM CI (501,60 FCFA) — dernière chance !\n→ 29 juin : Paiement PALM CI\n\nBonne lecture,\nL'équipe AfriBourse\nhttps://www.africbourse.com/news\n\nCet email est fourni à titre informatif uniquement — il ne constitue pas un conseil en investissement.`,
+  });
+}
+
+// ============================================================
+// EMAIL : Nouveau post dans une rubrique de communauté
+// ============================================================
+
+const SECTION_EMAIL_LABELS: Record<string, { label: string; emoji: string }> = {
+  DEAL_FLOW: { label: 'Deal Flow', emoji: '📊' },
+  RECAPS_REPLAYS: { label: 'Récaps & Replays', emoji: '🎓' },
+  MES_ANALYSES: { label: 'Mes analyses', emoji: '📈' },
+  EXERCICES_CHALLENGES: { label: 'Exercices & Challenges', emoji: '🎯' },
+  GENERAL: { label: 'Général', emoji: '💬' },
+  ANNONCES: { label: 'Annonces', emoji: '📢' },
+};
+
+function stripHtml(input: string): string {
+  return input.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+interface BroadcastCommunityPostEmailParams {
+  communityId: string;
+  communityName: string;
+  communitySlug: string;
+  sectionKey: string;
+  postTitle: string | null;
+  postContent: string;
+  authorName: string;
+  excludeUserId: string;
+}
+
+/**
+ * Envoie un email à tous les membres d'une communauté (sauf l'auteur) lors d'un
+ * nouveau post dans une rubrique. Envoi séquentiel en arrière-plan (non bloquant).
+ */
+export async function broadcastCommunityPostEmail(params: BroadcastCommunityPostEmailParams): Promise<void> {
+  const { prisma } = await import('../config/database');
+
+  const members = await prisma.communityMember.findMany({
+    where: {
+      community_id: params.communityId,
+      user_id: { not: params.excludeUserId },
+      notifications_enabled: true,
+    },
+    select: {
+      user: { select: { email: true, name: true } },
+    },
+  });
+
+  const recipients = members
+    .map((m) => ({ email: m.user?.email, name: m.user?.name || '' }))
+    .filter((r): r is { email: string; name: string } => !!r.email);
+
+  if (recipients.length === 0) return;
+
+  const section = SECTION_EMAIL_LABELS[params.sectionKey] ?? { label: 'Communauté', emoji: '📣' };
+  const url = `${config.app.frontendUrl}/communities/${params.communitySlug}`;
+  const excerpt = stripHtml(params.postContent).slice(0, 280);
+  const heading = params.postTitle || `${section.emoji} ${section.label}`;
+  const subject = `${section.emoji} ${params.communityName} — ${params.postTitle || `Nouveau post dans ${section.label}`}`;
+
+  for (const r of recipients) {
+    const html = `
+      <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 560px; margin: 0 auto; color: #1f2937;">
+        <div style="background: linear-gradient(135deg,#4f46e5,#7c3aed); padding: 24px; border-radius: 12px 12px 0 0; color: #fff;">
+          <div style="font-size: 13px; opacity: .9;">${section.emoji} ${section.label} · ${params.communityName}</div>
+          <h1 style="margin: 8px 0 0; font-size: 20px;">${heading}</h1>
+        </div>
+        <div style="border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px; padding: 24px;">
+          <p style="color:#374151; line-height:1.6; margin-top:0;">${excerpt}${excerpt.length >= 280 ? '…' : ''}</p>
+          <p style="font-size: 13px; color:#6b7280;">Publié par ${params.authorName}</p>
+          <a href="${url}" style="display:inline-block; margin-top: 8px; background:#4f46e5; color:#fff; text-decoration:none; padding: 12px 24px; border-radius: 10px; font-weight:600;">
+            Voir la publication
+          </a>
+          <p style="margin-top: 24px; font-size: 12px; color:#9ca3af;">
+            Vous recevez cet email car vous êtes membre de ${params.communityName} sur AfriBourse.<br/>
+            Questions ? Contactez-nous à contact@africbourse.com
+          </p>
+        </div>
+      </div>`;
+
+    const text = `${section.emoji} ${section.label} — ${params.communityName}\n\n${heading}\n\n${excerpt}\n\nPublié par ${params.authorName}\n\nVoir : ${url}`;
+
+    try {
+      await sendEmail({ to: r.email, subject, html, text });
+    } catch (err) {
+      log.error(`[EMAIL] Échec envoi post communauté à ${r.email}:`, err);
+    }
+  }
+}
+
 export default {
   sendConfirmationEmail,
   sendPasswordResetEmail,
@@ -5691,5 +6327,6 @@ export default {
   sendFailedPaymentReengagementEmail,
   sendPackParcoursBRVMEmail,
   sendDangoteIPONewsletterEmail,
+  sendWeeklyNewsletterJuin2026Email,
   sendEmail,
 };

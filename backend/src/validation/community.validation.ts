@@ -13,6 +13,7 @@ const communitySettingsSchema = zod.object({
     require_post_approval: zod.boolean().optional(),
     min_level: zod.number().int().nonnegative().optional(),
     allow_invitations: zod.boolean().optional(),
+    sections_enabled: zod.boolean().optional(), // Active les rubriques (Deal Flow, Récaps, etc.)
 }).optional();
 
 export const createCommunitySchema = zod.object({
@@ -41,18 +42,33 @@ export const processJoinRequestSchema = zod.object({
     rejectReason: zod.string().max(500).optional(),
 });
 
-const postTypeEnum = zod.enum(['ANALYSIS', 'TRANSACTION', 'OPINION', 'NEWS', 'QUESTION', 'EDUCATION']);
+const postTypeEnum = zod.enum([
+    'ANALYSIS', 'TRANSACTION', 'OPINION', 'QUESTION', 'ACHIEVEMENT', 'ARTICLE', 'TASK_LIST', 'SURVEY',
+]);
+
+const sectionEnum = zod.enum([
+    'DEAL_FLOW', 'RECAPS_REPLAYS', 'MES_ANALYSES', 'EXERCICES_CHALLENGES', 'GENERAL', 'ANNONCES',
+]);
+
+const attachmentSchema = zod.object({
+    url: zod.string().url('URL de pièce jointe invalide'),
+    name: zod.string().max(255),
+    size: zod.number().nonnegative().optional(),
+});
 
 export const createCommunityPostSchema = zod.object({
     type: postTypeEnum.optional(),
-    content: zod.string().min(1, 'Le contenu est requis').max(5000),
+    content: zod.string().min(1, 'Le contenu est requis').max(50000),
     title: zod.string().max(200).optional(),
+    section: sectionEnum.optional(),
     stock_symbol: zod.string().max(10).optional(),
     stock_price: zod.number().nonnegative().optional(),
     stock_change: zod.number().optional(),
     images: zod.array(zod.string().url('URL d\'image invalide')).max(10).optional(),
     video_url: urlOrEmpty,
+    attachments: zod.array(attachmentSchema).max(10).optional(),
     tags: zod.array(zod.string().max(50)).max(10).optional(),
+    metadata: zod.any().optional(),
 });
 
 export const commentCommunityPostSchema = zod.object({

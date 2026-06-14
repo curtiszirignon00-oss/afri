@@ -2,8 +2,10 @@ import { log } from '../config/logger';
 // src/services/community.service.ts
 import { randomUUID } from 'crypto';
 import { prisma } from '../config/database';
-import type { CommunityVisibility, CommunityMemberRole, PostType } from '@prisma/client';
+import type { CommunityVisibility, CommunityMemberRole, PostType, CommunitySection } from '@prisma/client';
 import * as notificationService from './notification.service';
+import * as emailService from './email.service';
+import { SECTION_CONFIG } from '../config/communitySections';
 
 // ============= HELPERS =============
 
@@ -92,17 +94,28 @@ export interface PostMetadata {
     tasks?: TaskItem[];
     survey?: SurveyMeta;
     achievement?: Record<string, unknown>;
+    is_html?: boolean;      // contenu riche (admin) à rendre en HTML sanitisé
+    unlock_level?: number;  // niveau requis pour débloquer fichiers (Récaps)
+    locked?: boolean;       // calculé à la lecture si le viewer n'a pas le niveau
+}
+
+export interface PostAttachment {
+    url: string;
+    name: string;
+    size?: number;
 }
 
 export interface CreateCommunityPostDto {
     type?: PostType;
     content: string;
     title?: string;
+    section?: CommunitySection;
     stock_symbol?: string;
     stock_price?: number;
     stock_change?: number;
     images?: string[];
     video_url?: string;
+    attachments?: PostAttachment[];
     tags?: string[];
     metadata?: PostMetadata;
 }
@@ -1050,6 +1063,48 @@ export async function createCommunityPost(communityId: string, authorId: string,
     const settings = (community.settings ?? {}) as Record<string, unknown>;
     const requireApproval = settings.require_post_approval && !['OWNER', 'ADMIN', 'MODERATOR'].includes(membership.role);
 
+    // Manager = admin plateforme OU propriétaire/admin de la communauté
+    const author = await prisma.user.findUnique({ where: { id: authorId }, select: { role: true } });
+    const isManager = author?.role === 'admin' || ['OWNER', 'ADMIN'].includes(membership.role);
+
+    // ===== Application des règles de rubrique (sections) =====
+    let metadata: PostMetadata | undefined = postData.metadata;
+    let attachments = postData.attachments;
+    let videoUrl = postData.video_url;
+    let images = postData.images;
+
+    if (postData.section) {
+        const cfg = SECTION_CONFIG[postData.section];
+        if (!cfg) throw new Error('Rubrique invalide');
+
+        // Permission d'écriture
+        if (cfg.write === 'admin' && !isManager) {
+            throw new Error('Seul l\'administrateur peut publier dans cette rubrique');
+        }
+        // 'members' et 'everyone' : tout membre peut poster (déjà vérifié plus haut)
+
+        // Types de post autorisés pour les membres non-managers
+        if (!isManager && cfg.memberPostTypes.length > 0 && postData.type) {
+            if (!cfg.memberPostTypes.includes(postData.type)) {
+                throw new Error('Ce type de publication n\'est pas autorisé dans cette rubrique');
+            }
+        }
+
+        // Médias autorisés
+        if (!cfg.allowVideo) videoUrl = undefined;
+        if (!cfg.allowImages) images = [];
+        if (!cfg.allowPdf) attachments = undefined;
+
+        // Contenu HTML réservé aux managers, et seulement si la rubrique l'autorise
+        metadata = { ...(metadata ?? {}) };
+        metadata.is_html = !!(cfg.adminHtml && isManager && metadata.is_html);
+
+        // Déblocage par niveau (Récaps) : conservé seulement si la rubrique est gated
+        if (!cfg.levelGated) {
+            delete metadata.unlock_level;
+        }
+    }
+
     const post = await prisma.communityPost.create({
         data: {
             community_id: communityId,
@@ -1057,13 +1112,15 @@ export async function createCommunityPost(communityId: string, authorId: string,
             type: postData.type || 'OPINION',
             content: postData.content,
             title: postData.title,
+            section: postData.section,
             stock_symbol: postData.stock_symbol,
             stock_price: postData.stock_price,
             stock_change: postData.stock_change,
-            images: postData.images || [],
-            video_url: postData.video_url,
+            images: images || [],
+            video_url: videoUrl,
+            attachments: (attachments ?? undefined) as any,
             tags: postData.tags || [],
-            metadata: (postData.metadata ?? undefined) as any,
+            metadata: (metadata ?? undefined) as any,
             is_approved: !requireApproval,
         },
         include: {
@@ -1106,6 +1163,29 @@ export async function createCommunityPost(communityId: string, authorId: string,
                 postData.title
             )
             .catch((err) => log.error('Error notifying community post:', err));
+
+        // Email aux membres selon la politique de la rubrique
+        if (postData.section) {
+            const cfg = SECTION_CONFIG[postData.section];
+            const shouldEmail =
+                cfg.emailOnPost === 'all' ||
+                (cfg.emailOnPost === 'admin_only' && isManager);
+
+            if (shouldEmail) {
+                emailService
+                    .broadcastCommunityPostEmail({
+                        communityId,
+                        communityName: post.community.name,
+                        communitySlug: post.community.slug,
+                        sectionKey: postData.section,
+                        postTitle: postData.title || null,
+                        postContent: postData.content,
+                        authorName: `${post.author.name} ${post.author.lastname}`,
+                        excludeUserId: authorId,
+                    })
+                    .catch((err) => log.error('Error broadcasting community post email:', err));
+            }
+        }
     }
 
     // Always notify platform admins about new community posts for review
@@ -1131,7 +1211,8 @@ export async function getCommunityPosts(
     communityId: string,
     page: number = 1,
     limit: number = 10,
-    viewerId?: string
+    viewerId?: string,
+    section?: CommunitySection
 ) {
     const skip = (page - 1) * limit;
 
@@ -1161,13 +1242,16 @@ export async function getCommunityPosts(
         throw new Error('You must be logged in to view posts in this community');
     }
 
+    const postWhere = {
+        community_id: communityId,
+        is_approved: true,
+        is_hidden: false,
+        ...(section ? { section } : {}),
+    };
+
     const [posts, total] = await Promise.all([
         prisma.communityPost.findMany({
-            where: {
-                community_id: communityId,
-                is_approved: true,
-                is_hidden: false,
-            },
+            where: postWhere,
             skip,
             take: limit,
             orderBy: [{ is_pinned: 'desc' }, { created_at: 'desc' }],
@@ -1188,13 +1272,7 @@ export async function getCommunityPosts(
                 },
             },
         }),
-        prisma.communityPost.count({
-            where: {
-                community_id: communityId,
-                is_approved: true,
-                is_hidden: false,
-            },
-        }),
+        prisma.communityPost.count({ where: postWhere }),
     ]);
 
     // Check if viewer has liked posts
@@ -1215,12 +1293,61 @@ export async function getCommunityPosts(
         }));
     }
 
+    // Déblocage par niveau (Récaps) : masquer fichiers/vidéo si le viewer n'a pas le niveau requis
+    const gatedPosts = await applyLevelGating(postsWithLikeStatus, viewerId, communityId);
+
     return {
-        data: postsWithLikeStatus,
+        data: gatedPosts,
         total,
         page,
         totalPages: Math.ceil(total / limit),
     };
+}
+
+/**
+ * Masque vidéo et pièces jointes des posts gated (Récaps) si le viewer n'a pas le niveau requis.
+ * Les managers (admin plateforme / owner / admin de la communauté) ne sont jamais bloqués.
+ */
+async function applyLevelGating<T extends { metadata: any; video_url: string | null; attachments: any; section: CommunitySection | null }>(
+    posts: T[],
+    viewerId: string | undefined,
+    communityId: string
+): Promise<T[]> {
+    const hasGated = posts.some(
+        (p) => p.section && SECTION_CONFIG[p.section]?.levelGated && (p.metadata?.unlock_level ?? 0) > 0
+    );
+    if (!hasGated) return posts;
+
+    let viewerLevel = 0;
+    let isManager = false;
+
+    if (viewerId) {
+        const [profile, user, membership] = await Promise.all([
+            prisma.userProfile.findUnique({ where: { userId: viewerId }, select: { level: true } }),
+            prisma.user.findUnique({ where: { id: viewerId }, select: { role: true } }),
+            prisma.communityMember.findUnique({
+                where: { community_id_user_id: { community_id: communityId, user_id: viewerId } },
+                select: { role: true },
+            }),
+        ]);
+        viewerLevel = profile?.level ?? 0;
+        isManager = user?.role === 'admin' || (!!membership && ['OWNER', 'ADMIN'].includes(membership.role));
+    }
+
+    return posts.map((post) => {
+        const cfg = post.section ? SECTION_CONFIG[post.section] : null;
+        const unlockLevel = post.metadata?.unlock_level ?? 0;
+        if (!cfg?.levelGated || unlockLevel <= 0 || isManager || viewerLevel >= unlockLevel) {
+            return post;
+        }
+        // Verrouillé : on retire les fichiers, on garde le teaser (titre/contenu)
+        return {
+            ...post,
+            video_url: null,
+            attachments: null,
+            metadata: { ...(post.metadata ?? {}), locked: true, unlock_level: unlockLevel },
+        };
+    });
 }
 
 /**

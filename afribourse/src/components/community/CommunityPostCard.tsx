@@ -13,7 +13,11 @@ import {
     CheckCircle,
     Flag,
     Zap,
+    FileText,
+    Download,
+    Lock,
 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'react-hot-toast';
@@ -47,6 +51,51 @@ const POST_TYPE_LABELS: Record<string, { label: string; color: string }> = {
     TASK_LIST: { label: 'Tâches', color: 'bg-green-100 text-green-700' },
     SURVEY: { label: 'Sondage', color: 'bg-purple-100 text-purple-700' },
 };
+
+/** Sanitise du HTML admin avant rendu (anti-XSS). */
+function sanitizeHtml(html: string): string {
+    return DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: [
+            'p', 'br', 'b', 'strong', 'i', 'em', 'u', 'a', 'ul', 'ol', 'li',
+            'h1', 'h2', 'h3', 'h4', 'blockquote', 'code', 'pre', 'span', 'div',
+            'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr', 'img',
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class', 'style'],
+    });
+}
+
+/** Embarque une vidéo YouTube/Vimeo, sinon affiche un lien. */
+function renderVideoEmbed(url: string) {
+    const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+    const vimeo = url.match(/vimeo\.com\/(\d+)/);
+    let embedUrl: string | null = null;
+    if (yt) embedUrl = `https://www.youtube.com/embed/${yt[1]}`;
+    else if (vimeo) embedUrl = `https://player.vimeo.com/video/${vimeo[1]}`;
+
+    if (embedUrl) {
+        return (
+            <div className="relative w-full rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Vidéo"
+                />
+            </div>
+        );
+    }
+    return (
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-indigo-600 hover:underline text-sm"
+        >
+            ▶ Regarder la vidéo
+        </a>
+    );
+}
 
 export default function CommunityPostCard({ post, communityId: _communityId, canModerate }: Props) {
     const { isLoggedIn, userProfile } = useAuth();
@@ -240,7 +289,56 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                 )}
 
                 {/* Content */}
-                <p className="text-gray-800 mt-2 whitespace-pre-wrap">{post.content}</p>
+                {post.metadata?.is_html ? (
+                    <div
+                        className="prose prose-sm max-w-none mt-2 text-gray-800"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
+                    />
+                ) : (
+                    <p className="text-gray-800 mt-2 whitespace-pre-wrap">{post.content}</p>
+                )}
+
+                {/* Vidéo (Récaps) */}
+                {post.video_url && (
+                    <div className="mt-3">
+                        {renderVideoEmbed(post.video_url)}
+                    </div>
+                )}
+
+                {/* Pièces jointes PDF */}
+                {post.attachments && post.attachments.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                        {post.attachments.map((att, i) => (
+                            <a
+                                key={i}
+                                href={att.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 hover:bg-gray-100 transition-colors"
+                            >
+                                <FileText className="w-5 h-5 text-red-500 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-800 truncate">{att.name}</p>
+                                    {att.size != null && (
+                                        <p className="text-xs text-gray-400">{(att.size / 1024 / 1024).toFixed(1)} Mo · PDF</p>
+                                    )}
+                                </div>
+                                <Download className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            </a>
+                        ))}
+                    </div>
+                )}
+
+                {/* Contenu verrouillé par niveau (Récaps) */}
+                {post.metadata?.locked && (
+                    <div className="mt-3 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                        <Lock className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                        <p className="text-sm text-amber-800">
+                            Fichiers réservés aux membres de niveau {post.metadata.unlock_level}+.
+                            Continuez à progresser pour les débloquer.
+                        </p>
+                    </div>
+                )}
 
                 {/* Task List Block */}
                 {post.type === 'TASK_LIST' && post.metadata?.tasks && post.metadata.tasks.length > 0 && (

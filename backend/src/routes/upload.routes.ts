@@ -5,6 +5,7 @@ import {
     handleAvatarUpload,
     handleBannerUpload,
     handlePostImagesUpload,
+    handlePdfUpload,
     handleDeleteImage
 } from '../controllers/upload.controller';
 
@@ -34,6 +35,13 @@ router.post('/banner', auth, handleBannerUpload);
  * Body: multipart/form-data avec champ "images"
  */
 router.post('/post-images', auth, handlePostImagesUpload);
+
+/**
+ * POST /api/upload/post-pdf
+ * Upload d'un document PDF (Annonces, Récaps)
+ * Body: multipart/form-data avec champ "file"
+ */
+router.post('/post-pdf', auth, handlePdfUpload);
 
 /**
  * DELETE /api/upload/:type/:filename

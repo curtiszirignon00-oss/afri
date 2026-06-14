@@ -49,7 +49,10 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import CommunityPostCard from '../components/community/CommunityPostCard';
 import CommunityPostComposer from '../components/community/CommunityPostComposer';
+import CommunitySectionComposer from '../components/community/CommunitySectionComposer';
+import CommunitySectionBar from '../components/community/CommunitySectionBar';
 import CommunityMembersModal from '../components/community/CommunityMembersModal';
+import { isSectionsCommunity, canPostInSection, SECTION_CONFIG, type CommunitySection } from '../config/communitySections';
 import CommunitySettingsModal from '../components/community/CommunitySettingsModal';
 import { Leaderboard } from '../components/challenge/Leaderboard';
 import {
@@ -83,6 +86,7 @@ export default function CommunityDetailPage() {
         isChallengeCommunity ? 'leaderboard' : 'posts'
     );
     const [postsPage, setPostsPage] = useState(1);
+    const [activeSection, setActiveSection] = useState<CommunitySection>('MES_ANALYSES');
     const [showMembersModal, setShowMembersModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showEventFormModal, setShowEventFormModal] = useState(false);
@@ -105,7 +109,12 @@ export default function CommunityDetailPage() {
 
     // Utiliser tous les événements si admin, sinon seulement les publiés
     const events = isEventsAdmin ? allEvents : publishedEvents;
-    const { data: postsData, isLoading: postsLoading } = useCommunityPosts(community?.id || '', postsPage);
+    const sectionsEnabled = isSectionsCommunity(slug, community?.settings);
+    const { data: postsData, isLoading: postsLoading } = useCommunityPosts(
+        community?.id || '',
+        postsPage,
+        sectionsEnabled ? activeSection : undefined
+    );
     const { data: membersData } = useCommunityMembers(community?.id || '', 1);
 
     const joinCommunity = useJoinCommunity();
@@ -818,11 +827,38 @@ export default function CommunityDetailPage() {
                 {/* Posts Tab */}
                 {activeTab === 'posts' && (
                     <div className="max-w-2xl mx-auto">
+                        {/* Barre de rubriques (communautés à sections) */}
+                        {sectionsEnabled && (
+                            <CommunitySectionBar
+                                active={activeSection}
+                                onChange={(s) => {
+                                    setActiveSection(s);
+                                    setPostsPage(1);
+                                }}
+                            />
+                        )}
+
                         {/* Post Composer */}
                         {!POSTS_DISABLED && community.isMember && (
-                            <div className="mb-6">
-                                <CommunityPostComposer communityId={community.id} canModerate={canManage} />
-                            </div>
+                            sectionsEnabled ? (
+                                canPostInSection(activeSection, canManage) ? (
+                                    <div className="mb-6">
+                                        <CommunitySectionComposer
+                                            communityId={community.id}
+                                            section={activeSection}
+                                            isAdmin={canManage}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="mb-6 bg-white rounded-xl p-4 text-sm text-gray-500 text-center border border-dashed">
+                                        {SECTION_CONFIG[activeSection].emoji} Cette rubrique est en lecture seule — seul l'administrateur peut y publier. Vous pouvez liker et commenter.
+                                    </div>
+                                )
+                            ) : (
+                                <div className="mb-6">
+                                    <CommunityPostComposer communityId={community.id} canModerate={canManage} />
+                                </div>
+                            )
                         )}
 
                         {/* Posts Loading */}

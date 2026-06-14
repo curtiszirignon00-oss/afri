@@ -11,7 +11,8 @@ const createUploadDirs = () => {
         'public/uploads',
         'public/uploads/avatars',
         'public/uploads/banners',
-        'public/uploads/posts'
+        'public/uploads/posts',
+        'public/uploads/docs'
     ];
 
     dirs.forEach(dir => {
@@ -64,6 +65,8 @@ const storage = multer.diskStorage({
             uploadDir = 'public/uploads/avatars';
         } else if (req.path.includes('banner')) {
             uploadDir = 'public/uploads/banners';
+        } else if (req.path.includes('pdf') || req.path.includes('doc')) {
+            uploadDir = 'public/uploads/docs';
         } else if (req.path.includes('post')) {
             uploadDir = 'public/uploads/posts';
         }
@@ -73,10 +76,27 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         // Extension dérivée du MIME type — jamais du nom original fourni par le client
-        const ext = MIME_TO_EXT[file.mimetype] ?? '.jpg';
+        const ext = MIME_TO_EXT[file.mimetype] ?? (file.mimetype === 'application/pdf' ? '.pdf' : '.jpg');
         cb(null, `${uuidv4()}${ext}`);
     }
 });
+
+// Filtre dédié aux PDF
+const pdfFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (file.mimetype === 'application/pdf' && ext === '.pdf') {
+        cb(null, true);
+    } else {
+        cb(new Error('Type de fichier non autorisé. Seuls les PDF sont acceptés.'));
+    }
+};
+
+// Upload d'un document PDF (Annonces, Récaps)
+export const uploadPdf = multer({
+    storage,
+    fileFilter: pdfFileFilter,
+    limits: { fileSize: 20 * 1024 * 1024, files: 1 }, // 20MB
+}).single('file');
 
 // Filtre de fichiers — double validation MIME + extension
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -127,7 +147,7 @@ export const uploadSingleImage = multer({
 }).single('image');
 
 // Fonction utilitaire pour obtenir l'URL publique d'un fichier
-export const getPublicUrl = (filename: string, type: 'avatars' | 'banners' | 'posts'): string => {
+export const getPublicUrl = (filename: string, type: 'avatars' | 'banners' | 'posts' | 'docs'): string => {
     const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
     return `${baseUrl}/uploads/${type}/${filename}`;
 };
