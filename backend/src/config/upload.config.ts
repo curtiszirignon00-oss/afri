@@ -148,7 +148,9 @@ export const uploadSingleImage = multer({
 
 // Fonction utilitaire pour obtenir l'URL publique d'un fichier
 export const getPublicUrl = (filename: string, type: 'avatars' | 'banners' | 'posts' | 'docs'): string => {
-    const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    const raw = process.env.BACKEND_URL || 'http://localhost:3001';
+    // Garantit une URL absolue valide même si BACKEND_URL est défini sans schéma
+    const baseUrl = (/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).replace(/\/$/, '');
     return `${baseUrl}/uploads/${type}/${filename}`;
 };
 

@@ -50,8 +50,20 @@ const sectionEnum = zod.enum([
     'DEAL_FLOW', 'RECAPS_REPLAYS', 'MES_ANALYSES', 'EXERCICES_CHALLENGES', 'GENERAL', 'ANNONCES',
 ]);
 
+// URLs générées par notre propre serveur d'upload : on accepte une URL absolue
+// (http/https) OU un chemin relatif (/uploads/...). La validation .url() stricte
+// cassait les uploads quand BACKEND_URL était défini sans schéma.
+const serverFileUrl = zod
+    .string()
+    .min(1, 'URL requise')
+    .max(2000)
+    .refine(
+        (v) => /^https?:\/\//i.test(v) || v.startsWith('/') || v.includes('/uploads/'),
+        'URL de pièce jointe invalide'
+    );
+
 const attachmentSchema = zod.object({
-    url: zod.string().url('URL de pièce jointe invalide'),
+    url: serverFileUrl,
     name: zod.string().max(255),
     size: zod.number().nonnegative().optional(),
 });
@@ -64,7 +76,7 @@ export const createCommunityPostSchema = zod.object({
     stock_symbol: zod.string().max(10).optional(),
     stock_price: zod.number().nonnegative().optional(),
     stock_change: zod.number().optional(),
-    images: zod.array(zod.string().url('URL d\'image invalide')).max(10).optional(),
+    images: zod.array(serverFileUrl).max(10).optional(),
     video_url: urlOrEmpty,
     attachments: zod.array(attachmentSchema).max(10).optional(),
     tags: zod.array(zod.string().max(50)).max(10).optional(),
