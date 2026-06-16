@@ -71,6 +71,7 @@ import ogRoutes from './routes/og.routes'; // Open Graph images pour le partage 
 import pawaPayRoutes from './routes/pawapay.routes'; // PawaPay Mobile Money
 import promoRoutes from './routes/promo.routes';       // Promos utilisateur (réductions ciblées)
 import paymentLinkRoutes from './routes/paymentLink.routes'; // Liens de paiement uniques (admin)
+import installmentRoutes from './routes/installment.routes'; // Paiement échelonné (Pack Parcours 3x)
 import articleInteractionRoutes from './routes/article-interactions.routes'; // Likes & commentaires articles
 import certificateRoutes from './routes/certificate.routes';                 // Certificats de participation webinaires
 import { buildKnowledgeBase } from './ai/tutorRAG';
@@ -247,6 +248,8 @@ class App {
       // Webhooks PawaPay : POST depuis les serveurs PawaPay, pas de CSRF token navigateur
       if (req.path.startsWith('/pawapay/webhook')) return next();
       if (req.path.match(/^\/payment-links\/[^/]+\/pay$/)) return next();
+      // Paiement échelonné via lien tokenisé (email/WhatsApp) : pas de token CSRF navigateur
+      if (req.path.match(/^\/installments\/by-token\/[^/]+\/pay$/)) return next();
       return doubleCsrfProtection(req, res, next);
     });
 
@@ -315,6 +318,7 @@ class App {
     this.app?.use('/api/pawapay', pawaPayRoutes);                          // PawaPay Mobile Money (dépôts, remboursements, webhooks)
     this.app?.use('/api/promo', promoRoutes);                              // Promos utilisateur ciblées (réductions automatiques)
     this.app?.use('/api/payment-links', paymentLinkRoutes);               // Liens de paiement uniques (admin → client)
+    this.app?.use('/api/installments', installmentRoutes);                 // Paiement échelonné Pack Parcours (3 mensualités)
     this.app?.use('/api/articles', articleInteractionRoutes);              // Likes & commentaires articles
     this.app?.use('/api/certificates', certificateRoutes);                 // Certificats de participation webinaires
 

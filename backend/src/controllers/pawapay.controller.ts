@@ -8,7 +8,8 @@ import {
   type PawaPayDepositCallback,
   type PawaPayRefundCallback,
 } from '../services/pawapay.service';
-import { sendWebinarPaymentConfirmEmail } from '../services/email.service';
+import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail } from '../services/email.service';
+import { buildInstallmentPayUrl } from './installment.controller';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // Plans supportés et leur abonnement correspondant
@@ -29,6 +30,99 @@ const PLAN_PRICES: Record<string, number> = {
 const PACK_ID = 'pack-parcours-investisseur';
 const PACK_PRICE_FULL = 35000;
 const PACK_PRICE_REFERRAL = 24500;
+
+// ============================================================
+// Paiement échelonné — traitement d'une mensualité confirmée
+// ============================================================
+async function handleInstallmentCompleted(payment: any, depositId: string, payload: any) {
+  await prisma.payment.update({
+    where: { depositId },
+    data: { status: 'COMPLETED', metadata: payload as any },
+  });
+
+  const meta = payment.metadata as Record<string, any> | null;
+  const planId = meta?.installmentPlanId as string | undefined;
+  const installmentIndex = Number(meta?.installmentIndex);
+  if (!planId || !installmentIndex) return;
+
+  const plan = await prisma.installmentPlan.findUnique({ where: { id: planId } });
+  if (!plan) {
+    log.warn('[Installment] Plan introuvable pour ce paiement', { depositId, planId });
+    return;
+  }
+
+  const schedule = (plan.schedule as any[]) ?? [];
+  const line = schedule.find((l) => l.index === installmentIndex);
+  if (line?.status === 'paid') {
+    // Déjà traité (idempotence)
+    return;
+  }
+
+  const now = new Date();
+  const updatedSchedule = schedule.map((l) =>
+    l.index === installmentIndex
+      ? { ...l, status: 'paid', depositId, paidAt: now.toISOString(), pendingAt: undefined }
+      : l,
+  );
+  const installmentsPaid = updatedSchedule.filter((l) => l.status === 'paid').length;
+  const amountPaid = updatedSchedule.filter((l) => l.status === 'paid').reduce((s, l) => s + (l.amount ?? 0), 0);
+  const nextLine = updatedSchedule.find((l) => l.status === 'pending');
+  const isFinal = installmentsPaid >= plan.installmentsTotal;
+
+  await prisma.installmentPlan.update({
+    where: { id: plan.id },
+    data: {
+      schedule: updatedSchedule as any,
+      installmentsPaid,
+      amountPaid,
+      nextDueAt: nextLine ? new Date(nextLine.dueAt) : null,
+      status: isFinal ? 'completed' : 'active',
+    },
+  });
+
+  // Accès complet dès le 1er paiement
+  await prisma.user.update({ where: { id: plan.userId }, data: { isPackParticipant: true } }).catch(() => {});
+
+  const reg = await prisma.webinarRegistration.findFirst({ where: { webinarId: plan.planId, email: plan.email } });
+  const firstName = reg?.firstName ?? '';
+
+  if (isFinal) {
+    if (reg) {
+      await prisma.webinarRegistration.update({
+        where: { id: reg.id },
+        data: { paymentStatus: 'paid', depositId, paidAt: now },
+      });
+    }
+    sendWebinarPaymentConfirmEmail({
+      email: plan.email,
+      firstName,
+      webinarId: plan.planId,
+      amount: String(plan.totalAmount),
+      currency: plan.currency,
+    }).catch((err) => log.error('[Installment] Échec email confirmation finale', { err, planId }));
+    log.info('[Installment] Plan complété', { planId, totalAmount: plan.totalAmount });
+  } else {
+    if (reg && reg.paymentStatus !== 'paid') {
+      await prisma.webinarRegistration.update({
+        where: { id: reg.id },
+        data: { paymentStatus: 'partial' },
+      });
+    }
+    if (nextLine) {
+      sendInstallmentProgressEmail({
+        email: plan.email,
+        firstName,
+        paidIndex: installmentsPaid,
+        total: plan.installmentsTotal,
+        amountPaid,
+        nextAmount: nextLine.amount,
+        nextDueAt: new Date(nextLine.dueAt),
+        payUrl: buildInstallmentPayUrl(plan.payToken),
+      }).catch((err) => log.error('[Installment] Échec email progression', { err, planId }));
+    }
+    log.info('[Installment] Mensualité confirmée', { planId, installmentsPaid, total: plan.installmentsTotal });
+  }
+}
 
 // ============================================================
 // WEBHOOK — Deposit callback
@@ -88,6 +182,9 @@ export async function handleDepositCallback(req: Request, res: Response) {
 
         await prisma.$transaction(ops);
         log.info('[PawaPay] Abonnement activé', { depositId, userId: payment.userId, tier, promoUsed: !!payment.userPromoId });
+      } else if ((payment.metadata as any)?.installmentPlanId) {
+        // ── Paiement échelonné : progression d'une mensualité ──────────────
+        await handleInstallmentCompleted(payment, depositId, payload);
       } else {
         // Webinaire ou pack → marquer le paiement COMPLETED + lier l'inscription
         await prisma.payment.update({

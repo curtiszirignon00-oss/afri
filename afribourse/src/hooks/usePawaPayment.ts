@@ -19,6 +19,8 @@ interface UsePawaPaymentReturn {
   depositId: string | null;
   errorMessage: string | null;
   initiate: (params: PaymentParams) => Promise<void>;
+  /** Attache le hook à un dépôt déjà initié ailleurs (ex: paiement échelonné) et démarre le polling. */
+  track: (depositId: string) => void;
   reset: () => void;
 }
 
@@ -110,6 +112,13 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
     }
   }, [pollStatus]);
 
+  const track = useCallback((id: string) => {
+    setErrorMessage(null);
+    setDepositId(id);
+    setStatus('pending');
+    pollStatus(id);
+  }, [pollStatus]);
+
   const reset = useCallback(() => {
     stopPolling();
     setStatus('idle');
@@ -117,7 +126,7 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
     setErrorMessage(null);
   }, [stopPolling]);
 
-  return { status, depositId, errorMessage, initiate, reset };
+  return { status, depositId, errorMessage, initiate, track, reset };
 }
 
 // ─── Mapping opérateur + indicatif pays → correspondent PawaPay ───────────────

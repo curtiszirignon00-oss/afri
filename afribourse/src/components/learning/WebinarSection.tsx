@@ -5,6 +5,7 @@ import {
   Flame, Video, Tag, X, Loader2, Star, TrendingUp, Award,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../../hooks/usePawaPayment';
@@ -123,7 +124,7 @@ const WEBINARS: Webinar[] = [
     discountPercent: 0,
     duration: '3H',
     speakers: 'Experts marchés & Analystes Afribourse',
-    badge: 'S1 · 13 juin',
+    badge: 'Session 1',
     gradient: 'from-blue-600 to-indigo-700',
     accentColor: '#3B82F6',
     icon: () => <Star className="w-5 h-5" />,
@@ -141,7 +142,7 @@ const WEBINARS: Webinar[] = [
     discountPercent: 0,
     duration: '2 × 3H',
     speakers: 'Analystes financiers Afribourse',
-    badge: 'S2–S3 · 20–21 juin',
+    badge: 'Sessions 2–3',
     gradient: 'from-emerald-600 to-teal-700',
     accentColor: '#10B981',
     icon: () => <TrendingUp className="w-5 h-5" />,
@@ -159,7 +160,7 @@ const WEBINARS: Webinar[] = [
     discountPercent: 0,
     duration: '2 × 3H',
     speakers: 'Analystes techniques Afribourse',
-    badge: 'S4–S5 · 27–28 juin',
+    badge: 'Sessions 4–5',
     gradient: 'from-orange-500 to-rose-600',
     accentColor: '#F97316',
     icon: () => <Flame className="w-5 h-5" />,
@@ -190,17 +191,15 @@ const PACK = {
     'Certificat "Investisseur BRVM — Niveau 1"',
   ],
   deliveryCalendar: [
-    { when: 'Avant le 13 juin', what: 'Email de confirmation + lien Zoom' },
-    { when: '13 juin — S1', what: 'Fondamentaux de la bourse (3h)' },
-    { when: '14 juin', what: "Plan d'action Fondamentaux — livré par email" },
-    { when: '20 juin — S2', what: 'Analyse fondamentale Partie 1 (3h)' },
-    { when: '21 juin — S3', what: 'Analyse fondamentale Partie 2 (3h)' },
-    { when: '22 juin', what: "Plan d'action Analyse fondamentale" },
-    { when: '27 juin — S4', what: 'Analyse technique Partie 1 (3h)' },
-    { when: '28 juin — S5', what: 'Analyse technique Partie 2 (3h)' },
-    { when: '29 juin', what: "Plan d'action Analyse technique" },
-    { when: '30 juin', what: 'Accès Communauté activé + 1ère édition Deal Flow' },
-    { when: '14 juillet*', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
+    { when: 'Dès l\'inscription', what: 'Email de confirmation + lien Zoom' },
+    { when: 'Session 2', what: 'Analyse fondamentale Partie 1 (3h)' },
+    { when: 'Session 3', what: 'Analyse fondamentale Partie 2 (3h)' },
+    { when: 'Après le thème', what: "Plan d'action Analyse fondamentale" },
+    { when: 'Session 4', what: 'Analyse technique Partie 1 (3h)' },
+    { when: 'Session 5', what: 'Analyse technique Partie 2 (3h)' },
+    { when: 'Après le thème', what: "Plan d'action Analyse technique" },
+    { when: 'En continu', what: 'Accès Communauté + éditions Deal Flow' },
+    { when: 'En fin de parcours', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
   ],
 };
 
@@ -222,20 +221,6 @@ function pad2(n: number) { return String(n).padStart(2, '0'); }
 
 function formatPrice(xof: number): string {
   return xof.toLocaleString('fr-FR') + ' XOF';
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
-}
-
-function formatDateShort(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-}
-
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function isDeadlinePassed(deadline: string): boolean {
@@ -410,7 +395,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
           </p>
           <h3 className="text-white font-bold text-lg leading-snug pr-6">{webinar.title}</h3>
           <p className="text-white/70 text-sm mt-1">
-            {formatDate(webinar.date)} • {formatTime(webinar.date)}
+            Session live · {webinar.duration} · date communiquée après inscription
           </p>
         </div>
 
@@ -565,7 +550,6 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
   const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
   const earlyBird = effectiveCount(displayCount, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
-  const isMultiDay = new Date(webinar.date).toDateString() !== new Date(webinar.endDate).toDateString();
   const [countdown, setCountdown] = useState(getPackCountdown(webinar.earlyBirdDeadline));
 
   useEffect(() => {
@@ -605,15 +589,11 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            {isMultiDay ? (
-              <span>{formatDateShort(webinar.date)} & {formatDateShort(webinar.endDate)}</span>
-            ) : (
-              <span>{formatDate(webinar.date)}</span>
-            )}
+            <span>Sessions live · dates communiquées après inscription</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <span>{formatTime(webinar.date)} — {webinar.duration} de formation live</span>
+            <span>{webinar.duration} de formation live</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Video className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -624,7 +604,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         {showW1Note && (
           <div className="mb-3 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
             <CheckCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-            <span className="text-xs text-blue-700">Le <strong>Webinaire 1 — Fondamentaux</strong> a déjà eu lieu le 13 juin. Rejoignez la suite du parcours.</span>
+            <span className="text-xs text-blue-700">Le <strong>Webinaire 1 — Fondamentaux</strong> a déjà été dispensé. Rejoignez la suite du parcours.</span>
           </div>
         )}
 
@@ -738,6 +718,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
 interface ReferralInfo { valid: boolean; code: string; discountedPrice: number; originalPrice: number }
 
 const PackCard: React.FC<{ onRegister: () => void; referralInfo?: ReferralInfo | null }> = ({ onRegister, referralInfo }) => {
+  const navigate = useNavigate();
   const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
   const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
   const [countdown, setCountdown] = useState(getPackCountdown(PACK.earlyBirdDeadline));
@@ -841,6 +822,15 @@ const PackCard: React.FC<{ onRegister: () => void; referralInfo?: ReferralInfo |
 
             <button onClick={onRegister} className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
               Rejoindre le parcours complet →
+            </button>
+            <button
+              onClick={() => {
+                analytics.trackAction('installment_mode_selected', PACK.title, { packId: PACK.id });
+                navigate('/parcours/paiement-3-fois');
+              }}
+              className="w-full py-2.5 bg-white/10 border border-white/25 text-white font-bold text-xs rounded-xl hover:bg-white/20 active:scale-95 transition-all"
+            >
+              💳 Payer en 3 fois — 15 000 puis 2× 10 000 ({formatPrice(PACK.price)})
             </button>
             <p className="text-blue-300 text-[10px] text-center leading-relaxed">
               Satisfait ou remboursé · Paiement Mobile Money sécurisé
@@ -1115,15 +1105,30 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
 // ─── PromoPopup — offre parcours post-W1 ─────────────────────────────────────
 
 const PROMO_POPUP_KEY = 'parcours_promo_seen_v1';
-const PROMO_DEADLINE = '2026-06-20T00:00:00Z';
+const PROMO_DEADLINE_KEY = 'parcours_promo_deadline_v1';
+const PROMO_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours glissants par visiteur
+
+// Deadline glissant : 7 jours à partir de la 1ère visite, mémorisé en localStorage
+function getPromoDeadline(): string {
+  try {
+    const stored = localStorage.getItem(PROMO_DEADLINE_KEY);
+    if (stored) return stored;
+    const deadline = new Date(Date.now() + PROMO_DURATION_MS).toISOString();
+    localStorage.setItem(PROMO_DEADLINE_KEY, deadline);
+    return deadline;
+  } catch {
+    return new Date(Date.now() + PROMO_DURATION_MS).toISOString();
+  }
+}
 
 const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onClose, onCta }) => {
-  const [cd, setCd] = useState(getPackCountdown(PROMO_DEADLINE));
+  const [deadline] = useState(getPromoDeadline);
+  const [cd, setCd] = useState(() => getPackCountdown(deadline));
 
   useEffect(() => {
-    const t = setInterval(() => setCd(getPackCountdown(PROMO_DEADLINE)), 1000);
+    const t = setInterval(() => setCd(getPackCountdown(deadline)), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [deadline]);
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -1210,6 +1215,171 @@ const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onCl
   );
 };
 
+// ─── InstallmentBanner — relance in-app pour mensualité due ───────────────────
+
+interface InstallmentPlanData {
+  id: string;
+  planName: string;
+  totalAmount: number;
+  amountPaid: number;
+  installmentsPaid: number;
+  installmentsTotal: number;
+  nextInstallment: { index: number; amount: number; dueAt: string } | null;
+}
+
+const InstallmentBanner: React.FC = () => {
+  const { isLoggedIn } = useAuth();
+  const [plan, setPlan] = useState<InstallmentPlanData | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [payOperator, setPayOperator] = useState<string | null>(null);
+  const [payDialCode, setPayDialCode] = useState('+225');
+  const [payPhone, setPayPhone] = useState('');
+
+  const { status: payStatus, errorMessage: payError, track, reset } = usePawaPayment(() => {
+    analytics.trackAction('installment_next_paid', plan?.planName ?? '', { planId: plan?.id });
+  });
+
+  const loadPlan = useCallback(() => {
+    authFetch(`${API_BASE_URL}/installments/mine`)
+      .then((r) => r.json())
+      .then((d) => { if (d?.hasPlan && d.plan?.nextInstallment) setPlan(d.plan); else setPlan(null); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) loadPlan();
+  }, [isLoggedIn, loadPlan]);
+
+  if (!plan || !plan.nextInstallment) return null;
+  const next = plan.nextInstallment;
+  const dueFmt = new Date(next.dueAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const handlePay = async () => {
+    if (!payOperator) return;
+    const correspondent = getCorrespondent(payOperator, payDialCode);
+    if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
+    const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    try {
+      const res = await authFetch(`${API_BASE_URL}/installments/pay-next`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ installmentPlanId: plan.id, correspondent, phone: msisdn }),
+      });
+      const data = await res.json();
+      if (res.ok && data.depositId) track(data.depositId);
+      else toast.error(data.error ?? 'Erreur lors du paiement.');
+    } catch {
+      toast.error('Erreur réseau. Réessayez.');
+    }
+  };
+
+  return (
+    <>
+      <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <Flame className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-amber-900">
+              Mensualité {plan.installmentsPaid + 1}/{plan.installmentsTotal} à régler : {formatPrice(next.amount)}
+            </p>
+            <p className="text-xs text-amber-700">
+              Échéance le {dueFmt} · Déjà payé {formatPrice(plan.amountPaid)} / {formatPrice(plan.totalAmount)}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => { reset(); setShowModal(true); }}
+          className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all"
+        >
+          Régler maintenant →
+        </button>
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-5">
+              <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-white/70 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+              <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">
+                Mensualité {plan.installmentsPaid + 1}/{plan.installmentsTotal}
+              </p>
+              <h3 className="text-white font-bold text-lg">{formatPrice(next.amount)}</h3>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {payStatus === 'completed' ? (
+                <div className="text-center py-4 space-y-3">
+                  <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-8 h-8 text-green-500" />
+                  </div>
+                  <p className="font-bold text-gray-900">Mensualité confirmée 🎉</p>
+                  <button onClick={() => { setShowModal(false); loadPlan(); }} className="w-full py-3 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700">
+                    Fermer
+                  </button>
+                </div>
+              ) : payStatus === 'pending' ? (
+                <div className="text-center py-4 space-y-3">
+                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
+                  <p className="font-bold text-gray-900">Vérifiez votre téléphone</p>
+                  <p className="text-sm text-gray-600">Entrez votre PIN Mobile Money pour confirmer {formatPrice(next.amount)}</p>
+                </div>
+              ) : payStatus === 'failed' ? (
+                <div className="text-center py-2 space-y-3">
+                  <p className="text-red-600 font-semibold text-sm">{payError}</p>
+                  <button onClick={reset} className="text-sm font-semibold text-blue-600 hover:underline">Réessayer</button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Opérateur Mobile Money</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {MOBILE_OPERATORS.map(op => {
+                        const available = getAvailableCountries(op.id).includes(payDialCode);
+                        return (
+                          <button key={op.id} onClick={() => available && setPayOperator(op.id)} disabled={!available}
+                            className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all text-left
+                              ${payOperator === op.id ? 'border-blue-600 bg-blue-50 text-blue-800' : 'border-gray-200 text-gray-700 hover:border-blue-300'}
+                              ${!available ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                            {op.emoji} {op.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Pays</label>
+                    <select value={payDialCode} onChange={e => { setPayDialCode(e.target.value); setPayOperator(null); }}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                      {PAYMENT_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name} ({c.code})</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro Mobile Money</label>
+                    <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                      <span className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 flex items-center">{payDialCode}</span>
+                      <input type="tel" value={payPhone} onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                        placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
+                    </div>
+                  </div>
+                  <button onClick={handlePay} disabled={!payOperator || !payPhone.trim()}
+                    className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Payer {formatPrice(next.amount)}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 // ─── WebinarSection — composant principal ─────────────────────────────────────
 
 const REFERRAL_LS_KEY = 'packReferralCode';
@@ -1247,7 +1417,7 @@ const WebinarSection: React.FC = () => {
   // Popup promo — affiché une seule fois (localStorage)
   useEffect(() => {
     const seen = localStorage.getItem(PROMO_POPUP_KEY);
-    if (!seen && !getPackCountdown(PROMO_DEADLINE).expired) {
+    if (!seen) {
       const timer = setTimeout(() => setShowPromoPopup(true), 1800);
       return () => clearTimeout(timer);
     }
@@ -1305,7 +1475,7 @@ const WebinarSection: React.FC = () => {
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               Sessions live animées par des analystes et experts de marché Afribourse.
-              Places limitées — tarif préférentiel pour les 3 premiers jours.
+              Inscrivez-vous à tout moment — places limitées par session.
             </p>
           </div>
 
@@ -1314,6 +1484,9 @@ const WebinarSection: React.FC = () => {
             <div className="text-xs font-semibold opacity-80 mt-0.5">places<br />par session</div>
           </div>
         </div>
+
+        {/* Bannière mensualité due (paiement échelonné en cours) */}
+        <InstallmentBanner />
 
         {/* Pack Parcours Investisseur — carte dominante full-width */}
         <PackCard

@@ -224,6 +224,9 @@ model User {
   packReferralCodes         PackReferralCode[] @relation("ReferralCodes")
   packReferrals             PackReferral[]     @relation("Referrals")
 
+  // --- Paiement échelonné (3x) ---
+  installmentPlans InstallmentPlan[]
+
   // --- Avis utilisateurs ---
   reviews Review[]
 
@@ -2200,7 +2203,7 @@ model WebinarRegistration {
   phone         String?
   earlyBird     Boolean? @default(false)
   userId        String?  @db.ObjectId // null si non connecté
-  paymentStatus String?  @default("pending") // "pending" | "paid"
+  paymentStatus String?  @default("pending") // "pending" | "partial" | "paid"
   depositId     String?  // PawaPay depositId après paiement
   paidAt        DateTime?
   referralCode  String?  // Code ambassadeur utilisé lors de l'inscription (programme parrainage)
@@ -2210,6 +2213,37 @@ model WebinarRegistration {
   @@index([email])
   @@index([paymentStatus])
   @@map("webinar_registrations")
+}
+
+// ================================= //
+// === PAIEMENT ÉCHELONNÉ (3X) ===== //
+// ================================= //
+
+model InstallmentPlan {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId // compte obligatoire
+  email             String
+  planId            String    // 'pack-parcours-investisseur'
+  planName          String
+  currency          String    @default("XOF")
+  totalAmount       Int       // 35000
+  installmentsTotal Int       @default(3)
+  installmentsPaid  Int       @default(0)
+  amountPaid        Int       @default(0)
+  status            String    @default("active") // active | completed | defaulted
+  schedule          Json      // [{ index, amount, status:'pending'|'paid', dueAt, depositId?, paidAt? }]
+  nextDueAt         DateTime?
+  payToken          String    @unique // secret pour lien email/WhatsApp
+  lastReminderAt    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([userId])
+  @@index([status])
+  @@map("installment_plans")
 }
 
 // ================================= //
