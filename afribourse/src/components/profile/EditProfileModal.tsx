@@ -1,7 +1,25 @@
 // src/components/profile/EditProfileModal.tsx
-import { useState, useEffect } from 'react';
-import { X, Loader2, Globe, Linkedin, Twitter, Instagram, Facebook } from 'lucide-react';
-import { useUpdateProfile, type ProfileUpdateData } from '../../hooks/useUpload';
+import { useState, useEffect, useRef } from 'react';
+import { X, Loader2, Globe, Linkedin, Twitter, Instagram, Facebook, Camera, Trash2, ImagePlus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import {
+    useUpdateProfile,
+    useUploadAvatar,
+    useUploadBanner,
+    useDeleteImage,
+    validateImageFile,
+    type ProfileUpdateData,
+} from '../../hooks/useUpload';
+
+/** Extrait le nom de fichier d'une URL (dernier segment). */
+function filenameFromUrl(url?: string | null): string | null {
+    if (!url) return null;
+    try {
+        return new URL(url).pathname.split('/').pop() || null;
+    } catch {
+        return url.split('/').pop() || null;
+    }
+}
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -26,6 +44,16 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
     });
 
     const { mutate: updateProfile, isPending } = useUpdateProfile();
+    const uploadAvatar = useUploadAvatar();
+    const uploadBanner = useUploadBanner();
+    const deleteImage = useDeleteImage();
+
+    const avatarInputRef = useRef<HTMLInputElement>(null);
+    const bannerInputRef = useRef<HTMLInputElement>(null);
+
+    // Aperçus locaux (mis à jour en direct après upload)
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [bannerUrl, setBannerUrl] = useState<string | null>(null);
 
     // Initialiser le formulaire avec les données du profil
     useEffect(() => {
@@ -44,8 +72,66 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                 instagram: profile.profile?.social_links?.instagram || '',
                 facebook: profile.profile?.social_links?.facebook || '',
             });
+            setAvatarUrl(profile.profile?.avatar_url || null);
+            setBannerUrl(profile.profile?.banner_url || null);
         }
     }, [profile]);
+
+    const handleAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (avatarInputRef.current) avatarInputRef.current.value = '';
+        if (!file) return;
+        const check = validateImageFile(file, { maxSizeMB: 5 });
+        if (!check.valid) {
+            toast.error(check.error || 'Fichier invalide');
+            return;
+        }
+        try {
+            const res = await uploadAvatar.mutateAsync(file);
+            if (res.data.avatar_url) setAvatarUrl(res.data.avatar_url);
+        } catch {
+            /* toast géré par le hook */
+        }
+    };
+
+    const handleBannerFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (bannerInputRef.current) bannerInputRef.current.value = '';
+        if (!file) return;
+        const check = validateImageFile(file, { maxSizeMB: 10 });
+        if (!check.valid) {
+            toast.error(check.error || 'Fichier invalide');
+            return;
+        }
+        try {
+            const res = await uploadBanner.mutateAsync(file);
+            if (res.data.banner_url) setBannerUrl(res.data.banner_url);
+        } catch {
+            /* toast géré par le hook */
+        }
+    };
+
+    const handleRemoveAvatar = async () => {
+        const filename = filenameFromUrl(avatarUrl);
+        if (!filename) return;
+        try {
+            await deleteImage.mutateAsync({ type: 'avatars', filename });
+            setAvatarUrl(null);
+        } catch {
+            /* toast géré par le hook */
+        }
+    };
+
+    const handleRemoveBanner = async () => {
+        const filename = filenameFromUrl(bannerUrl);
+        if (!filename) return;
+        try {
+            await deleteImage.mutateAsync({ type: 'banners', filename });
+            setBannerUrl(null);
+        } catch {
+            /* toast géré par le hook */
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,6 +214,93 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    {/* Photos : bannière + avatar */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Photos
+                        </label>
+
+                        {/* Bannière */}
+                        <div className="relative">
+                            <div
+                                className={`h-28 rounded-xl overflow-hidden ${bannerUrl ? '' : `bg-gradient-to-br ${formData.banner_color || 'from-blue-600 via-indigo-600 to-purple-700'}`}`}
+                                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                            >
+                                <div className="absolute inset-0 bg-black/15" />
+                            </div>
+
+                            {/* Actions bannière */}
+                            <div className="absolute top-2 right-2 flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => bannerInputRef.current?.click()}
+                                    disabled={uploadBanner.isPending}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-black/50 hover:bg-black/70 text-white rounded-lg text-xs font-medium backdrop-blur-sm transition-colors disabled:opacity-60"
+                                >
+                                    {uploadBanner.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+                                    {bannerUrl ? 'Changer' : 'Ajouter une bannière'}
+                                </button>
+                                {bannerUrl && (
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveBanner}
+                                        disabled={deleteImage.isPending}
+                                        className="p-1.5 bg-black/50 hover:bg-red-600/80 text-white rounded-lg backdrop-blur-sm transition-colors"
+                                        title="Supprimer la bannière"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Avatar (chevauche la bannière) */}
+                            <div className="absolute -bottom-8 left-4">
+                                <div className="relative">
+                                    {avatarUrl ? (
+                                        <img
+                                            src={avatarUrl}
+                                            alt="Avatar"
+                                            className="w-20 h-20 rounded-2xl border-4 border-white object-cover shadow-lg"
+                                        />
+                                    ) : (
+                                        <div className={`w-20 h-20 rounded-2xl border-4 border-white bg-gradient-to-br ${formData.avatar_color || 'from-blue-500 to-purple-600'} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
+                                            {`${profile?.name?.[0] || ''}${profile?.lastname?.[0] || ''}`}
+                                        </div>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => avatarInputRef.current?.click()}
+                                        disabled={uploadAvatar.isPending}
+                                        className="absolute -bottom-1 -right-1 p-1.5 bg-gray-900 hover:bg-gray-700 text-white rounded-lg shadow-md transition-colors disabled:opacity-60"
+                                        title="Changer la photo de profil"
+                                    >
+                                        {uploadAvatar.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-10 flex items-center justify-between">
+                            <p className="text-xs text-gray-500">
+                                JPG, PNG, GIF ou WebP. Avatar ≤ 5 Mo, bannière ≤ 10 Mo.
+                            </p>
+                            {avatarUrl && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveAvatar}
+                                    disabled={deleteImage.isPending}
+                                    className="text-xs text-red-600 hover:text-red-700 font-medium"
+                                >
+                                    Supprimer la photo de profil
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Inputs fichiers cachés */}
+                        <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleAvatarFile} />
+                        <input ref={bannerInputRef} type="file" accept="image/*" hidden onChange={handleBannerFile} />
+                    </div>
+
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -224,7 +397,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                     {/* Avatar Color */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Couleur de l'avatar
+                            Couleur de l'avatar <span className="font-normal text-gray-400">(si aucune photo)</span>
                         </label>
                         <div className="grid grid-cols-4 gap-2">
                             {[
@@ -254,7 +427,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                     {/* Banner Color */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Couleur de la bannière
+                            Couleur de la bannière <span className="font-normal text-gray-400">(si aucune photo)</span>
                         </label>
                         <div className="grid grid-cols-4 gap-2">
                             {[
