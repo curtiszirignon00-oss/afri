@@ -4540,6 +4540,102 @@ export async function sendWebinarPaymentConfirmEmail({
   });
 }
 
+// ─── Paiement échelonné — email de progression (mensualité réglée) ────────────
+
+interface InstallmentProgressParams {
+  email: string;
+  firstName: string;
+  paidIndex: number;   // nombre de mensualités déjà payées
+  total: number;       // nombre total de mensualités
+  amountPaid: number;  // cumul payé
+  nextAmount: number;  // montant de la prochaine mensualité
+  nextDueAt: Date;     // échéance suivante
+  payUrl: string;      // lien de paiement de la mensualité suivante
+}
+
+export async function sendInstallmentProgressEmail({
+  email, firstName, paidIndex, total, amountPaid, nextAmount, nextDueAt, payUrl,
+}: InstallmentProgressParams): Promise<void> {
+  const name = firstName || 'Investisseur';
+  const dueFmt = nextDueAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const nextFmt = `${nextAmount.toLocaleString('fr-FR')} XOF`;
+  const paidFmt = `${amountPaid.toLocaleString('fr-FR')} XOF`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Mensualité ${paidIndex}/${total} reçue — Pack Parcours Investisseur</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <span style="display:none;max-height:0;overflow:hidden;">Mensualité ${paidIndex}/${total} reçue — prochaine échéance le ${dueFmt} &#847;&zwnj;&nbsp;</span>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+          <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Pack Parcours Investisseur</p>
+        </td></tr>
+
+        <tr><td style="background:linear-gradient(135deg,#1E3A8A 0%,#3730A3 100%);padding:36px 40px;text-align:center;">
+          <div style="width:60px;height:60px;background:rgba(255,255,255,0.18);border-radius:50%;margin:0 auto 14px;line-height:60px;">
+            <span style="font-size:28px;">💸</span>
+          </div>
+          <h1 style="margin:0 0 6px;font-size:23px;font-weight:900;color:#fff;">Mensualité ${paidIndex}/${total} reçue !</h1>
+          <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.85);">Merci — votre accès au parcours reste actif.</p>
+        </td></tr>
+
+        <tr><td style="background:#fff;padding:36px 40px;">
+          <p style="margin:0 0 18px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
+          <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+            Nous avons bien reçu votre mensualité. Vous avez réglé <strong>${paidFmt}</strong> sur les 35 000 XOF du Pack Parcours Investisseur.
+          </p>
+
+          <!-- Prochaine échéance -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Prochaine mensualité</p>
+              <p style="margin:0 0 2px;font-size:24px;font-weight:900;color:#0F172A;">${nextFmt}</p>
+              <p style="margin:0;font-size:14px;color:#64748B;">À régler avant le <strong>${dueFmt}</strong></p>
+            </td></tr>
+          </table>
+
+          <!-- CTA payer -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+            <tr><td align="center">
+              <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#2563EB 0%,#4F46E5 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
+                Payer ma mensualité maintenant →
+              </a>
+            </td></tr>
+          </table>
+
+          <p style="margin:0;font-size:13px;color:#94A3B8;line-height:1.6;text-align:center;">
+            Vous pouvez aussi régler depuis la page Webinaires une fois connecté.<br>
+            Lien : <a href="${payUrl}" style="color:#2563EB;">${payUrl}</a>
+          </p>
+        </td></tr>
+
+        <tr><td style="background:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+          <p style="margin:0 0 4px;font-size:12px;color:#94A3B8;">Questions ? Répondez à cet email ou contactez-nous sur WhatsApp.</p>
+          <p style="margin:0;font-size:12px;color:#CBD5E1;">© 2026 AfriBourse · africbourse.com</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `💸 Mensualité ${paidIndex}/${total} reçue — prochaine échéance le ${dueFmt}`,
+    html,
+    text: `Bonjour ${name}, mensualité ${paidIndex}/${total} reçue (${paidFmt} payés). Prochaine mensualité : ${nextFmt} avant le ${dueFmt}. Payez ici : ${payUrl}`,
+  });
+}
+
 // ─── Webinar zoom link email ──────────────────────────────────────────────────
 
 interface WebinarZoomLinkParams {
