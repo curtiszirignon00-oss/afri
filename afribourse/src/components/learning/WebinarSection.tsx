@@ -95,7 +95,6 @@ interface Webinar {
   earlyBirdTaken?: number;
   hideEarlyBirdIndicator?: boolean;
   closed?: boolean;
-  passed?: boolean;
   price: number;
   discountPercent: number;
   duration: string;
@@ -119,7 +118,6 @@ const WEBINARS: Webinar[] = [
     endDate: '2026-06-13T12:00:00Z',
     earlyBirdDeadline: '2026-05-01T00:00:00Z',
     hideEarlyBirdIndicator: true,
-    passed: true,
     price: 10000,
     discountPercent: 0,
     duration: '3H',
@@ -178,13 +176,13 @@ const WEBINAR_COUNT_OFFSET = 20;
 const PACK = {
   id: 'pack-parcours-investisseur',
   title: 'Pack Parcours Investisseur BRVM',
-  tagline: '4 sessions restantes · 12h de formation live · Experts BRVM · Certification officielle',
+  tagline: '5 sessions · 15h de formation live · Experts BRVM · Certification officielle',
   earlyBirdDeadline: '2026-06-02T23:59:59Z',
   price: 30000,
   earlyBirdPrice: 25000,
   gradient: 'from-blue-700 to-indigo-800',
   inclusions: [
-    '4 sessions restantes · 12h live (S2–S5 · Fondamentale & Technique)',
+    '5 webinaires live · 15h de formation (S1 à S5)',
     "Communauté Afribourse — 3 mois d'accès",
     "3 Plans d'action personnalisés (après chaque thème)",
     'Deal Flow hebdomadaire — 12 éditions exclusives',
@@ -192,12 +190,10 @@ const PACK = {
   ],
   deliveryCalendar: [
     { when: 'Dès l\'inscription', what: 'Email de confirmation + lien Zoom' },
-    { when: 'Session 2', what: 'Analyse fondamentale Partie 1 (3h)' },
-    { when: 'Session 3', what: 'Analyse fondamentale Partie 2 (3h)' },
-    { when: 'Après le thème', what: "Plan d'action Analyse fondamentale" },
-    { when: 'Session 4', what: 'Analyse technique Partie 1 (3h)' },
-    { when: 'Session 5', what: 'Analyse technique Partie 2 (3h)' },
-    { when: 'Après le thème', what: "Plan d'action Analyse technique" },
+    { when: 'Samedi suivant', what: 'S1 — Fondamentaux de la bourse (3h)' },
+    { when: '+2 semaines', what: 'S2 & S3 — Analyse fondamentale (2×3h)' },
+    { when: '+4 semaines', what: 'S4 & S5 — Analyse technique (2×3h)' },
+    { when: 'Après chaque thème', what: "Plan d'action personnalisé" },
     { when: 'En continu', what: 'Accès Communauté + éditions Deal Flow' },
     { when: 'En fin de parcours', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
   ],
@@ -216,6 +212,39 @@ function getPackCountdown(targetIso: string) {
   };
 }
 function pad2(n: number) { return String(n).padStart(2, '0'); }
+
+// ─── Dates dynamiques ─────────────────────────────────────────────────────────
+// Inscription possible à tout moment : la 1ère session est le samedi qui suit
+// l'inscription, puis une session toutes les 2 semaines.
+
+const SESSION_INTERVAL_DAYS = 14;
+
+// Prochain samedi STRICTEMENT après aujourd'hui (à 9h)
+function nextSaturday(from: Date = new Date()): Date {
+  const d = new Date(from);
+  d.setHours(9, 0, 0, 0);
+  const day = d.getDay(); // 0=dim … 6=sam
+  let diff = (6 - day + 7) % 7;
+  if (diff === 0) diff = 7; // si on est samedi, on prend le samedi suivant
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+// Date de la session n° index (0 = 1ère session = prochain samedi)
+function getSessionDate(index: number, from: Date = new Date()): Date {
+  const base = nextSaturday(from);
+  const d = new Date(base);
+  d.setDate(d.getDate() + index * SESSION_INTERVAL_DAYS);
+  return d;
+}
+
+function formatSessionDate(d: Date): string {
+  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function formatTime(d: Date): string {
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -394,8 +423,8 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
             Pré-inscription webinaire
           </p>
           <h3 className="text-white font-bold text-lg leading-snug pr-6">{webinar.title}</h3>
-          <p className="text-white/70 text-sm mt-1">
-            Session live · {webinar.duration} · date communiquée après inscription
+          <p className="text-white/70 text-sm mt-1 capitalize">
+            {formatSessionDate(getSessionDate(Math.max(0, WEBINARS.findIndex(w => w.id === webinar.id))))} · {formatTime(getSessionDate(Math.max(0, WEBINARS.findIndex(w => w.id === webinar.id))))}
           </p>
         </div>
 
@@ -544,13 +573,15 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
 
 // ─── WebinarCard ──────────────────────────────────────────────────────────────
 
-const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number; showW1Note?: boolean }> = ({
-  webinar, onRegister, isFirst, count, showW1Note,
+const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number; sessionIndex: number }> = ({
+  webinar, onRegister, isFirst, count, sessionIndex,
 }) => {
   const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
   const earlyBird = effectiveCount(displayCount, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
   const [countdown, setCountdown] = useState(getPackCountdown(webinar.earlyBirdDeadline));
+  // Date dynamique : 1ère session = prochain samedi, puis +2 semaines par session
+  const sessionDate = getSessionDate(sessionIndex);
 
   useEffect(() => {
     const t = setInterval(() => setCountdown(getPackCountdown(webinar.earlyBirdDeadline)), 1000);
@@ -558,14 +589,9 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
   }, [webinar.earlyBirdDeadline]);
 
   return (
-    <div className={`relative bg-white rounded-2xl border overflow-hidden transition-all duration-200 ${
-      webinar.passed ? 'opacity-70 border-gray-200 shadow-sm' : 'hover:shadow-lg hover:-translate-y-0.5 ' + (isFirst ? 'border-blue-200 shadow-md' : 'border-gray-200 shadow-sm')
+    <div className={`relative bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${
+      isFirst ? 'border-blue-200 shadow-md' : 'border-gray-200 shadow-sm'
     }`}>
-      {webinar.passed && (
-        <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-gray-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
-          <CheckCircle className="w-3 h-3" /> Session dispensée
-        </div>
-      )}
       {webinar.badge && (
         <div className={`absolute top-4 right-4 text-xs font-bold px-2.5 py-1 rounded-full text-white bg-gradient-to-r ${webinar.gradient}`}>
           {webinar.badge}
@@ -589,11 +615,11 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <span>Sessions live · dates communiquées après inscription</span>
+            <span className="capitalize">{formatSessionDate(sessionDate)}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <span>{webinar.duration} de formation live</span>
+            <span>{formatTime(sessionDate)} — {webinar.duration} de formation live</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Video className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -601,10 +627,10 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
           </div>
         </div>
 
-        {showW1Note && (
+        {sessionIndex === 0 && (
           <div className="mb-3 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
-            <CheckCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-            <span className="text-xs text-blue-700">Le <strong>Webinaire 1 — Fondamentaux</strong> a déjà été dispensé. Rejoignez la suite du parcours.</span>
+            <Calendar className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+            <span className="text-xs text-blue-700">Inscrivez-vous à tout moment : votre 1ère session a lieu le <strong>samedi suivant</strong>, puis une session toutes les 2 semaines.</span>
           </div>
         )}
 
@@ -690,11 +716,7 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
             )}
           </div>
 
-          {webinar.passed ? (
-            <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-400 bg-gray-100 flex-shrink-0 cursor-not-allowed">
-              Session terminée
-            </span>
-          ) : webinar.closed ? (
+          {webinar.closed ? (
             <span className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-400 bg-gray-100 flex-shrink-0 cursor-not-allowed">
               Inscriptions fermées
             </span>
@@ -1148,15 +1170,15 @@ const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onCl
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Offre spéciale · Post-Webinaire 1</span>
-              <p className="text-base font-extrabold text-gray-900 leading-snug">Complétez votre parcours investisseur</p>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Offre spéciale · Parcours Investisseur</span>
+              <p className="text-base font-extrabold text-gray-900 leading-snug">Démarrez votre parcours investisseur</p>
             </div>
           </div>
 
           {/* Texte principal */}
           <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-            Le <strong>Webinaire 1 — Fondamentaux de la bourse</strong> vient d'avoir lieu.{' '}
-            Rejoignez les <strong>2 prochains webinaires</strong> (Analyse fondamentale · Analyse technique)
+            Inscrivez-vous <strong>quand vous voulez</strong> : votre 1ère session a lieu le <strong>samedi qui suit</strong>,
+            puis une session toutes les 2 semaines. Suivez les <strong>5 sessions live</strong> (Fondamentaux · Analyse fondamentale · Analyse technique)
             et obtenez votre <strong>Certificat Investisseur BRVM Niveau 1</strong>.
           </p>
 
@@ -1169,7 +1191,7 @@ const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onCl
               <span className="text-3xl font-extrabold text-gray-900">30 000 XOF</span>
               <span className="text-sm text-gray-400 line-through">35 000 XOF</span>
             </div>
-            <p className="text-xs text-gray-500 mt-0.5">4 sessions live · 12h de formation · Communauté · Certificat</p>
+            <p className="text-xs text-gray-500 mt-0.5">5 sessions live · 15h de formation · Communauté · Certificat</p>
 
             {/* Compteur 7 jours */}
             {!cd.expired && (
@@ -1475,7 +1497,7 @@ const WebinarSection: React.FC = () => {
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               Sessions live animées par des analystes et experts de marché Afribourse.
-              Inscrivez-vous à tout moment — places limitées par session.
+              Inscrivez-vous à tout moment : 1ère session le samedi qui suit, puis une toutes les 2 semaines.
             </p>
           </div>
 
@@ -1500,7 +1522,7 @@ const WebinarSection: React.FC = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {WEBINARS.map((w, i) => (
-            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} showW1Note={!w.passed} />
+            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} sessionIndex={i} />
           ))}
         </div>
 
