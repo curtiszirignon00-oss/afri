@@ -530,6 +530,7 @@ export function useCommunityPost(postId: string) {
             const res = await apiClient.get(`/communities/posts/${postId}`);
             return res.data.data as CommunityPost & {
                 community?: { id: string; name: string; slug: string };
+                html_content?: string;
             };
         },
         enabled: !!postId,

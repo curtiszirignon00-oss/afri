@@ -1349,6 +1349,21 @@ export async function getCommunityPost(postId: string, viewerId?: string) {
     }
 
     const [gated] = await applyLevelGating([result], viewerId, post.community_id);
+
+    // Contenu HTML riche : on récupère le fichier depuis R2 côté serveur (pas de souci CORS)
+    // pour le rendre inline (comme les articles news) — scripts/graphiques fonctionnels.
+    const meta = gated.metadata as PostMetadata | null;
+    if (meta?.html_url && !meta.locked) {
+        try {
+            const resp = await fetch(meta.html_url);
+            if (resp.ok) {
+                gated.html_content = await resp.text();
+            }
+        } catch (err) {
+            log.warn('Impossible de récupérer le contenu HTML du post:', err);
+        }
+    }
+
     return gated;
 }
 

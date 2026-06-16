@@ -13,6 +13,7 @@ import {
 import { SECTION_CONFIG } from '../config/communitySections';
 import { useAuth } from '../contexts/AuthContext';
 import CommunityCommentSection from '../components/community/CommunityCommentSection';
+import HtmlArticleRenderer from '../components/HtmlArticleRenderer';
 
 export default function CommunityPostDetailPage() {
     const { postId } = useParams<{ postId: string }>();
@@ -79,6 +80,7 @@ export default function CommunityPostDetailPage() {
     const sectionCfg = post.section ? SECTION_CONFIG[post.section] : null;
     const communitySlug = (post as any).community?.slug;
     const htmlUrl = post.metadata?.html_url;
+    const htmlContent = (post as any).html_content as string | undefined;
     const locked = post.metadata?.locked;
 
     return (
@@ -128,7 +130,7 @@ export default function CommunityPostDetailPage() {
                     )}
                 </div>
 
-                {/* Contenu HTML (page dédiée) */}
+                {/* Contenu HTML (page dédiée) — rendu inline comme les articles news */}
                 {locked ? (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex items-center gap-3">
                         <Lock className="w-6 h-6 text-amber-500 flex-shrink-0" />
@@ -137,15 +139,21 @@ export default function CommunityPostDetailPage() {
                             Continuez à progresser pour le débloquer.
                         </p>
                     </div>
-                ) : htmlUrl ? (
+                ) : htmlContent ? (
                     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <iframe
-                            src={htmlUrl}
-                            title={post.title || 'Contenu'}
-                            className="w-full"
-                            style={{ height: '80vh', border: 'none' }}
-                            sandbox="allow-popups allow-popups-to-escape-sandbox"
-                        />
+                        <HtmlArticleRenderer html={htmlContent} />
+                    </div>
+                ) : htmlUrl ? (
+                    // Fallback : si le contenu n'a pas pu être chargé inline, lien direct
+                    <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                        <a
+                            href={htmlUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"
+                        >
+                            Ouvrir le contenu
+                        </a>
                     </div>
                 ) : null}
 
