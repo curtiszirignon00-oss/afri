@@ -235,7 +235,7 @@ export default function InstallmentStartPage() {
                 {[
                   { icon: ShieldCheck, text: 'Accès complet au parcours activé dès le 1er paiement (15 000 XOF).' },
                   { icon: CalendarClock, text: "Rappels par email et WhatsApp avant chaque échéance pour régler les mensualités suivantes." },
-                  { icon: CheckCircle, text: 'Engagement à régler les 3 mensualités (total 35 000 XOF). Le tarif comptant à 30 000 XOF reste disponible en 1 fois.' },
+                  { icon: CheckCircle, text: 'Engagement à régler les 3 mensualités (total 35 000 XOF, le tarif normal du parcours). Vous pouvez aussi payer en 1 fois.' },
                   { icon: Lock, text: 'Paiement Mobile Money 100% sécurisé via PawaPay.' },
                 ].map((c, i) => (
                   <div key={i} className="flex items-start gap-2.5">
