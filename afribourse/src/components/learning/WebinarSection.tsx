@@ -845,15 +845,21 @@ const PackCard: React.FC<{ onRegister: () => void; referralInfo?: ReferralInfo |
             <button onClick={onRegister} className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
               Rejoindre le parcours complet →
             </button>
-            <button
-              onClick={() => {
-                analytics.trackAction('installment_mode_selected', PACK.title, { packId: PACK.id });
-                navigate('/parcours/paiement-3-fois');
-              }}
-              className="w-full py-2.5 bg-white/10 border border-white/25 text-white font-bold text-xs rounded-xl hover:bg-white/20 active:scale-95 transition-all"
-            >
-              💳 Payer en 3 fois — 15 000 puis 2× 10 000 ({formatPrice(PACK.price)})
-            </button>
+            <div className="relative">
+              <span className="absolute -top-2 right-3 z-10 bg-amber-400 text-amber-950 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-md">
+                Facilité de paiement
+              </span>
+              <button
+                onClick={() => {
+                  analytics.trackAction('installment_mode_selected', PACK.title, { packId: PACK.id });
+                  navigate('/parcours/paiement-3-fois');
+                }}
+                className="w-full py-3 bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 font-extrabold text-sm rounded-xl hover:from-amber-300 hover:to-orange-300 active:scale-95 transition-all shadow-lg flex flex-col items-center leading-tight"
+              >
+                <span className="flex items-center gap-1.5">💳 Payer en 3 fois</span>
+                <span className="text-[11px] font-bold opacity-90">15 000 maintenant, puis 2× 10 000 XOF</span>
+              </button>
+            </div>
             <p className="text-blue-300 text-[10px] text-center leading-relaxed">
               Satisfait ou remboursé · Paiement Mobile Money sécurisé
             </p>
