@@ -4,16 +4,79 @@ import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
-// Racine absolue des uploads — basée sur le CWD (pas sur __dirname, qui change
-// avec le bundling esbuild où tout est compilé dans dist/index.js).
-// Garantit que l'écriture des fichiers et leur serving statique pointent au même endroit.
+// Racine absolue des uploads (fallback disque local en dev) — basée sur le CWD
+// (pas sur __dirname, qui change avec le bundling esbuild où tout est compilé dans dist/index.js).
 const rawUploadPath = process.env.UPLOAD_PATH || 'public/uploads';
 export const UPLOADS_ROOT = path.isAbsolute(rawUploadPath)
     ? rawUploadPath
     : path.resolve(process.cwd(), rawUploadPath);
 
 const UPLOAD_SUBDIRS = ['avatars', 'banners', 'posts', 'docs'] as const;
+type UploadSubdir = (typeof UPLOAD_SUBDIRS)[number];
+
+// ============================================================
+// Cloudflare R2 (stockage objet persistant) — actif si configuré
+// ============================================================
+const R2_BUCKET = process.env.R2_BUCKET || '';
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+export const R2_ENABLED = !!(
+    process.env.R2_ACCOUNT_ID &&
+    process.env.R2_ACCESS_KEY_ID &&
+    process.env.R2_SECRET_ACCESS_KEY &&
+    R2_BUCKET &&
+    R2_PUBLIC_URL
+);
+
+let _s3: S3Client | null = null;
+function getS3(): S3Client {
+    if (!_s3) {
+        _s3 = new S3Client({
+            region: 'auto',
+            endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+            credentials: {
+                accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+                secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+            },
+        });
+    }
+    return _s3;
+}
+
+export interface PersistedFile {
+    url: string;
+    filename: string;
+    key: string;
+}
+
+/**
+ * Persiste un fichier uploadé (buffer mémoire) : sur R2 si configuré, sinon sur disque local.
+ * Retourne l'URL publique, le nom de fichier et la clé objet.
+ */
+export async function persistFile(file: Express.Multer.File, subdir: UploadSubdir): Promise<PersistedFile> {
+    const ext = MIME_TO_EXT[file.mimetype] ?? (file.mimetype === 'application/pdf' ? '.pdf' : '');
+    const filename = `${uuidv4()}${ext}`;
+    const key = `${subdir}/${filename}`;
+
+    if (R2_ENABLED) {
+        await getS3().send(
+            new PutObjectCommand({
+                Bucket: R2_BUCKET,
+                Key: key,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            })
+        );
+        return { url: `${R2_PUBLIC_URL}/${key}`, filename, key };
+    }
+
+    // Fallback disque local (dev sans R2)
+    const dir = path.join(UPLOADS_ROOT, subdir);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, filename), file.buffer);
+    return { url: getPublicUrl(filename, subdir), filename, key };
+}
 
 // Créer les dossiers d'upload s'ils n'existent pas
 const createUploadDirs = () => {
@@ -25,8 +88,10 @@ const createUploadDirs = () => {
     });
 };
 
-// Créer les dossiers au démarrage
-createUploadDirs();
+// Créer les dossiers au démarrage (uniquement en mode disque local)
+if (!process.env.R2_BUCKET) {
+    createUploadDirs();
+}
 
 // Types de fichiers autorisés
 const ALLOWED_MIME_TYPES = [
@@ -56,30 +121,8 @@ const MAX_FILE_SIZES = {
     post: 10 * 1024 * 1024      // 10MB par image
 };
 
-// Configuration du stockage
-const storage = multer.diskStorage({
-    destination: (req: Request, file, cb) => {
-        // Déterminer le sous-dossier selon le type d'upload
-        let subdir = '';
-
-        if (req.path.includes('avatar')) {
-            subdir = 'avatars';
-        } else if (req.path.includes('banner')) {
-            subdir = 'banners';
-        } else if (req.path.includes('pdf') || req.path.includes('doc')) {
-            subdir = 'docs';
-        } else if (req.path.includes('post')) {
-            subdir = 'posts';
-        }
-
-        cb(null, path.join(UPLOADS_ROOT, subdir));
-    },
-    filename: (req, file, cb) => {
-        // Extension dérivée du MIME type — jamais du nom original fourni par le client
-        const ext = MIME_TO_EXT[file.mimetype] ?? (file.mimetype === 'application/pdf' ? '.pdf' : '.jpg');
-        cb(null, `${uuidv4()}${ext}`);
-    }
-});
+// Stockage en mémoire : le buffer est ensuite persisté via persistFile() (R2 ou disque).
+const storage = multer.memoryStorage();
 
 // Filtre dédié aux PDF
 const pdfFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -154,41 +197,48 @@ export const getPublicUrl = (filename: string, type: 'avatars' | 'banners' | 'po
     return `${baseUrl}/uploads/${type}/${filename}`;
 };
 
-// Fonction pour supprimer un fichier
-export const deleteFile = (filePath: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        // Normalise : accepte 'uploads/posts/x.jpg', '/uploads/posts/x.jpg' ou 'posts/x.jpg'
-        const relative = filePath.replace(/^\/?uploads\//, '');
-        const fullPath = path.join(UPLOADS_ROOT, relative);
+/** Dérive la clé objet ('posts/x.jpg') depuis une URL complète ou un chemin. */
+function toObjectKey(input: string): string {
+    let p = input;
+    try {
+        p = new URL(input).pathname; // URL complète (R2 ou backend) → pathname
+    } catch {
+        // pas une URL absolue : on garde tel quel
+    }
+    // retire un éventuel '/' initial et le préfixe 'uploads/'
+    return p.replace(/^\/+/, '').replace(/^uploads\//, '');
+}
 
-        if (fs.existsSync(fullPath)) {
-            fs.unlink(fullPath, (err) => {
-                if (err) {
-                    console.error('Erreur suppression fichier:', err);
-                    reject(err);
-                } else {
-                    console.log(`🗑️ Fichier supprimé: ${fullPath}`);
-                    resolve();
-                }
-            });
-        } else {
-            resolve(); // Fichier n'existe pas, pas d'erreur
+// Fonction pour supprimer un fichier (R2 ou disque local)
+export const deleteFile = async (filePathOrUrl: string): Promise<void> => {
+    const key = toObjectKey(filePathOrUrl);
+    if (!key) return;
+
+    if (R2_ENABLED) {
+        try {
+            await getS3().send(new DeleteObjectCommand({ Bucket: R2_BUCKET, Key: key }));
+        } catch (err) {
+            console.error('Erreur suppression objet R2:', err);
         }
-    });
+        return;
+    }
+
+    // Fallback disque local
+    const fullPath = path.join(UPLOADS_ROOT, key);
+    if (fs.existsSync(fullPath)) {
+        try {
+            fs.unlinkSync(fullPath);
+            console.log(`🗑️ Fichier supprimé: ${fullPath}`);
+        } catch (err) {
+            console.error('Erreur suppression fichier:', err);
+        }
+    }
 };
 
-// Fonction pour extraire le chemin du fichier depuis l'URL
+// Fonction pour extraire le chemin du fichier depuis l'URL (compat ascendante)
 export const getFilePathFromUrl = (url: string): string | null => {
     if (!url) return null;
-
-    try {
-        const urlObj = new URL(url);
-        return urlObj.pathname.replace('/uploads/', '');
-    } catch {
-        // Si ce n'est pas une URL valide, essayer d'extraire directement
-        const match = url.match(/uploads\/(.+)/);
-        return match ? match[1] : null;
-    }
+    return toObjectKey(url) || null;
 };
 
 export default {

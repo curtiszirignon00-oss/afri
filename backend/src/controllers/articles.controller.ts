@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import { notifyAllUsersOfNewArticle } from '../services/notification.service';
+import { persistFile } from '../config/upload.config';
 
 interface AuthRequest extends Request {
   user?: { id: string; email: string; name: string; role?: string };
@@ -150,8 +151,7 @@ export async function updateAdminArticle(req: AuthRequest, res: Response, next: 
 export async function uploadArticleCover(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     if (!req.file) return res.status(400).json({ message: 'Aucun fichier fourni.' });
-    const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
-    const url = `${baseUrl}/uploads/posts/${req.file.filename}`;
+    const { url } = await persistFile(req.file, 'posts');
     return res.json({ url });
   } catch (err) {
     return next(err);

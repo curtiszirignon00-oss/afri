@@ -1,7 +1,7 @@
 import { log } from '../config/logger';
 // src/controllers/upload.controller.ts
 import { Request, Response, NextFunction } from 'express';
-import { uploadAvatar, uploadBanner, uploadPostImages, uploadPdf, getPublicUrl, deleteFile, getFilePathFromUrl } from '../config/upload.config';
+import { uploadAvatar, uploadBanner, uploadPostImages, uploadPdf, persistFile, deleteFile, getFilePathFromUrl } from '../config/upload.config';
 import { prisma } from '../config/database';
 
 // ========================================
@@ -34,8 +34,8 @@ export async function handleAvatarUpload(req: Request, res: Response, next: Next
                 });
             }
 
-            // Générer l'URL publique
-            const avatarUrl = getPublicUrl(req.file.filename, 'avatars');
+            // Persister le fichier (R2 ou disque) et obtenir l'URL publique
+            const { url: avatarUrl, filename: avatarFilename } = await persistFile(req.file, 'avatars');
 
             // Récupérer l'ancien avatar pour le supprimer
             const existingProfile = await prisma.userProfile.findUnique({
@@ -72,7 +72,7 @@ export async function handleAvatarUpload(req: Request, res: Response, next: Next
                 message: 'Avatar mis à jour avec succès',
                 data: {
                     avatar_url: avatarUrl,
-                    filename: req.file.filename
+                    filename: avatarFilename
                 }
             });
 
@@ -116,8 +116,8 @@ export async function handleBannerUpload(req: Request, res: Response, next: Next
                 });
             }
 
-            // Générer l'URL publique
-            const bannerUrl = getPublicUrl(req.file.filename, 'banners');
+            // Persister le fichier (R2 ou disque) et obtenir l'URL publique
+            const { url: bannerUrl, filename: bannerFilename } = await persistFile(req.file, 'banners');
 
             // Récupérer l'ancienne bannière pour la supprimer
             const existingProfile = await prisma.userProfile.findUnique({
@@ -158,7 +158,7 @@ export async function handleBannerUpload(req: Request, res: Response, next: Next
                 message: 'Bannière mise à jour avec succès',
                 data: {
                     banner_url: bannerUrl,
-                    filename: req.file.filename
+                    filename: bannerFilename
                 }
             });
 
@@ -204,8 +204,9 @@ export async function handlePostImagesUpload(req: Request, res: Response, next: 
                 });
             }
 
-            // Générer les URLs publiques pour toutes les images
-            const imageUrls = files.map(file => getPublicUrl(file.filename, 'posts'));
+            // Persister toutes les images (R2 ou disque) et générer les URLs publiques
+            const persisted = await Promise.all(files.map((file) => persistFile(file, 'posts')));
+            const imageUrls = persisted.map((p) => p.url);
 
             log.debug(`✅ ${files.length} image(s) uploadée(s) pour user ${userId}`);
 
@@ -214,7 +215,7 @@ export async function handlePostImagesUpload(req: Request, res: Response, next: 
                 message: `${files.length} image(s) uploadée(s) avec succès`,
                 data: {
                     images: imageUrls,
-                    filenames: files.map(f => f.filename)
+                    filenames: persisted.map((p) => p.filename)
                 }
             });
 
@@ -252,7 +253,7 @@ export async function handlePdfUpload(req: Request, res: Response, next: NextFun
                 return res.status(401).json({ success: false, message: 'Non autorisé' });
             }
 
-            const url = getPublicUrl(req.file.filename, 'docs');
+            const { url, filename } = await persistFile(req.file, 'docs');
 
             log.debug(`✅ PDF uploadé pour user ${userId}: ${url}`);
 
@@ -263,7 +264,7 @@ export async function handlePdfUpload(req: Request, res: Response, next: NextFun
                     url,
                     name: req.file.originalname,
                     size: req.file.size,
-                    filename: req.file.filename,
+                    filename,
                 }
             });
         } catch (error: any) {
