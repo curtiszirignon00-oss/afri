@@ -94,7 +94,8 @@ export interface PostMetadata {
     tasks?: TaskItem[];
     survey?: SurveyMeta;
     achievement?: Record<string, unknown>;
-    is_html?: boolean;      // contenu riche (admin) à rendre en HTML sanitisé
+    is_html?: boolean;      // contenu riche (admin) à rendre en HTML sanitisé (inline, legacy)
+    html_url?: string;      // fichier HTML uploadé (rendu sur une page dédiée)
     unlock_level?: number;  // niveau requis pour débloquer fichiers (Récaps)
     locked?: boolean;       // calculé à la lecture si le viewer n'a pas le niveau
 }
@@ -1305,6 +1306,53 @@ export async function getCommunityPosts(
 }
 
 /**
+ * Récupère un post unique (pour la page dédiée d'un contenu HTML).
+ * Applique les mêmes contrôles d'accès et le déblocage par niveau.
+ */
+export async function getCommunityPost(postId: string, viewerId?: string) {
+    const post = await prisma.communityPost.findUnique({
+        where: { id: postId },
+        include: {
+            author: {
+                select: {
+                    id: true,
+                    name: true,
+                    lastname: true,
+                    profile: { select: AUTHOR_PROFILE_SELECT },
+                },
+            },
+            community: { select: { id: true, name: true, slug: true, visibility: true } },
+            _count: { select: { likes: true, comments: true } },
+        },
+    });
+
+    if (!post || post.is_hidden) {
+        throw new Error('Post introuvable');
+    }
+
+    // Contrôle d'accès : communauté non publique → membre requis
+    if (post.community && post.community.visibility !== 'PUBLIC') {
+        if (!viewerId) throw new Error('Vous devez être connecté pour voir ce contenu');
+        const isMember = await prisma.communityMember.findUnique({
+            where: { community_id_user_id: { community_id: post.community_id, user_id: viewerId } },
+        });
+        if (!isMember) throw new Error('Vous devez être membre pour voir ce contenu');
+    }
+
+    let result: any = { ...post, author: withRareBadge(post.author) };
+
+    if (viewerId) {
+        const liked = await prisma.communityPostLike.findUnique({
+            where: { post_id_user_id: { post_id: postId, user_id: viewerId } },
+        });
+        result.hasLiked = !!liked;
+    }
+
+    const [gated] = await applyLevelGating([result], viewerId, post.community_id);
+    return gated;
+}
+
+/**
  * Masque vidéo et pièces jointes des posts gated (Récaps) si le viewer n'a pas le niveau requis.
  * Les managers (admin plateforme / owner / admin de la communauté) ne sont jamais bloqués.
  */
@@ -1345,7 +1393,7 @@ async function applyLevelGating<T extends { metadata: any; video_url: string | n
             ...post,
             video_url: null,
             attachments: null,
-            metadata: { ...(post.metadata ?? {}), locked: true, unlock_level: unlockLevel },
+            metadata: { ...(post.metadata ?? {}), html_url: undefined, locked: true, unlock_level: unlockLevel },
         };
     });
 }

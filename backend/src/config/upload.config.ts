@@ -55,7 +55,11 @@ export interface PersistedFile {
  * Retourne l'URL publique, le nom de fichier et la clé objet.
  */
 export async function persistFile(file: Express.Multer.File, subdir: UploadSubdir): Promise<PersistedFile> {
-    const ext = MIME_TO_EXT[file.mimetype] ?? (file.mimetype === 'application/pdf' ? '.pdf' : '');
+    const ext = MIME_TO_EXT[file.mimetype] ?? (
+        file.mimetype === 'application/pdf' ? '.pdf'
+            : file.mimetype === 'text/html' ? '.html'
+                : ''
+    );
     const filename = `${uuidv4()}${ext}`;
     const key = `${subdir}/${filename}`;
 
@@ -139,6 +143,24 @@ export const uploadPdf = multer({
     storage,
     fileFilter: pdfFileFilter,
     limits: { fileSize: 20 * 1024 * 1024, files: 1 }, // 20MB
+}).single('file');
+
+// Filtre dédié aux fichiers HTML (contenus riches : deal flow, analyses…)
+const htmlFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mimeOk = file.mimetype === 'text/html' || file.mimetype === 'application/xhtml+xml';
+    if (mimeOk && (ext === '.html' || ext === '.htm')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Type de fichier non autorisé. Seuls les fichiers .html sont acceptés.'));
+    }
+};
+
+// Upload d'un fichier HTML (Deal Flow, Analyses, Annonces…)
+export const uploadHtml = multer({
+    storage,
+    fileFilter: htmlFileFilter,
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 }, // 5MB
 }).single('file');
 
 // Filtre de fichiers — double validation MIME + extension

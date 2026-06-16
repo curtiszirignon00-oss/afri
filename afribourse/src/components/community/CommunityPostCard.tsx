@@ -289,7 +289,19 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                 )}
 
                 {/* Content */}
-                {post.metadata?.is_html ? (
+                {post.metadata?.html_url ? (
+                    // Contenu HTML riche : aperçu (description) + bouton vers la page dédiée
+                    <>
+                        <p className="text-gray-800 mt-2 whitespace-pre-wrap">{post.content}</p>
+                        <Link
+                            to={`/communities/post/${post.id}`}
+                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                        >
+                            <FileText className="w-4 h-4" />
+                            Lire le contenu
+                        </Link>
+                    </>
+                ) : post.metadata?.is_html ? (
                     <div
                         className="prose prose-sm max-w-none mt-2 text-gray-800"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}

@@ -54,6 +54,9 @@ router.get('/posts/:postId/survey/responses', auth, communityController.getSurve
 router.post('/posts/:postId/survey/respond', auth, communityController.submitSurveyResponse); // Submit response
 router.post('/posts/:postId/survey/toggle-public', auth, communityController.toggleSurveyResponsesPublic); // Toggle public
 
+// ============= SINGLE POST =============
+router.get('/posts/:postId', optionalAuth, communityController.getCommunityPost); // Get a single post (page dédiée HTML)
+
 // ============= POST INTERACTIONS =============
 router.post('/posts/:postId/like', auth, communityController.likeCommunityPost); // Like post
 router.delete('/posts/:postId/like', auth, communityController.unlikeCommunityPost); // Unlike post

@@ -1,11 +1,12 @@
 // src/components/community/CommunitySectionComposer.tsx
 import { useState, useRef } from 'react';
-import { Send, Loader2, Image as ImageIcon, FileText, X, Video, Lock, Code } from 'lucide-react';
+import { Send, Loader2, Image as ImageIcon, FileText, X, Video, Lock, FileCode } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
     useCreateCommunityPost,
     useUploadPostImages,
     useUploadPdf,
+    useUploadHtml,
     type PostType,
     type PostAttachment,
 } from '../../hooks/useCommunity';
@@ -31,7 +32,8 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [type, setType] = useState<PostType>(cfg.memberPostTypes[0] ?? 'ARTICLE');
-    const [isHtml, setIsHtml] = useState(false);
+    const [htmlUrl, setHtmlUrl] = useState<string | null>(null);
+    const [htmlName, setHtmlName] = useState<string | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [videoUrl, setVideoUrl] = useState('');
     const [attachments, setAttachments] = useState<PostAttachment[]>([]);
@@ -39,24 +41,41 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
 
     const imageInputRef = useRef<HTMLInputElement>(null);
     const pdfInputRef = useRef<HTMLInputElement>(null);
+    const htmlInputRef = useRef<HTMLInputElement>(null);
 
     const createPost = useCreateCommunityPost();
     const uploadImages = useUploadPostImages();
     const uploadPdf = useUploadPdf();
+    const uploadHtml = useUploadHtml();
 
-    // L'admin peut basculer en mode HTML ; pour les rubriques admin-only, HTML est le défaut
-    const adminHtmlAvailable = isAdmin && cfg.adminHtml;
-    const showTypeSelector = cfg.memberPostTypes.length > 0 && !(adminHtmlAvailable && isHtml);
+    // L'admin peut importer un fichier HTML (contenu riche affiché sur une page dédiée)
+    const htmlImportAvailable = isAdmin && cfg.adminHtml;
+    const showTypeSelector = cfg.memberPostTypes.length > 0 && !htmlUrl;
 
     const reset = () => {
         setTitle('');
         setContent('');
         setType(cfg.memberPostTypes[0] ?? 'ARTICLE');
-        setIsHtml(false);
+        setHtmlUrl(null);
+        setHtmlName(null);
         setImages([]);
         setVideoUrl('');
         setAttachments([]);
         setUnlockLevel(0);
+    };
+
+    const handleHtmlPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (htmlInputRef.current) htmlInputRef.current.value = '';
+        if (!file) return;
+        try {
+            const res = await uploadHtml.mutateAsync(file);
+            setHtmlUrl(res.url);
+            setHtmlName(res.name);
+            toast.success('Fichier HTML importé');
+        } catch {
+            toast.error('Erreur lors de l\'import du fichier HTML');
+        }
     };
 
     const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +111,6 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
             return;
         }
 
-        const useHtml = adminHtmlAvailable && isHtml;
         const finalType: PostType = showTypeSelector ? type : 'ARTICLE';
 
         try {
@@ -107,7 +125,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                     video_url: cfg.allowVideo && videoUrl.trim() ? videoUrl.trim() : undefined,
                     attachments: cfg.allowPdf && attachments.length > 0 ? attachments : undefined,
                     metadata: {
-                        ...(useHtml ? { is_html: true } : {}),
+                        ...(htmlUrl ? { html_url: htmlUrl } : {}),
                         ...(cfg.levelGated && unlockLevel > 0 ? { unlock_level: unlockLevel } : {}),
                     },
                 },
@@ -149,39 +167,52 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                     </div>
                 )}
 
-                {/* Toggle HTML (admin) */}
-                {adminHtmlAvailable && (
-                    <button
-                        type="button"
-                        onClick={() => setIsHtml((v) => !v)}
-                        className={`flex items-center gap-1.5 mb-3 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                            isHtml ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                    >
-                        <Code className="w-3 h-3" />
-                        {isHtml ? 'Mode HTML activé' : 'Mode HTML'}
-                    </button>
-                )}
-
                 {/* Titre */}
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Titre (optionnel)"
+                    placeholder={htmlImportAvailable ? 'Titre' : 'Titre (optionnel)'}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
 
-                {/* Contenu */}
+                {/* Contenu / description */}
                 <textarea
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder={adminHtmlAvailable && isHtml ? 'Collez votre HTML ici…' : cfg.placeholder}
-                    rows={adminHtmlAvailable && isHtml ? 6 : 4}
-                    className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none ${
-                        adminHtmlAvailable && isHtml ? 'font-mono text-sm' : ''
-                    }`}
+                    placeholder={htmlImportAvailable
+                        ? 'Description / aperçu affiché dans le fil (le contenu complet s\'ouvre sur une page dédiée)…'
+                        : cfg.placeholder}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
+
+                {/* Import fichier HTML (admin) */}
+                {htmlImportAvailable && (
+                    <div className="mt-3">
+                        {htmlUrl ? (
+                            <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
+                                <FileCode className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                                <span className="flex-1 text-sm text-indigo-800 truncate">{htmlName}</span>
+                                <span className="text-xs text-indigo-400">page dédiée</span>
+                                <button type="button" onClick={() => { setHtmlUrl(null); setHtmlName(null); }}>
+                                    <X className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => htmlInputRef.current?.click()}
+                                disabled={uploadHtml.isPending}
+                                className="flex items-center gap-2 px-3 py-2 text-sm text-indigo-600 border border-dashed border-indigo-300 rounded-lg hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                            >
+                                {uploadHtml.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCode className="w-4 h-4" />}
+                                Importer un fichier HTML (contenu riche)
+                            </button>
+                        )}
+                        <input ref={htmlInputRef} type="file" accept=".html,.htm,text/html" hidden onChange={handleHtmlPick} />
+                    </div>
+                )}
 
                 {/* Vidéo (Récaps) */}
                 {cfg.allowVideo && (

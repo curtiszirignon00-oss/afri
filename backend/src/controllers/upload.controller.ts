@@ -1,7 +1,7 @@
 import { log } from '../config/logger';
 // src/controllers/upload.controller.ts
 import { Request, Response, NextFunction } from 'express';
-import { uploadAvatar, uploadBanner, uploadPostImages, uploadPdf, persistFile, deleteFile, getFilePathFromUrl } from '../config/upload.config';
+import { uploadAvatar, uploadBanner, uploadPostImages, uploadPdf, uploadHtml, persistFile, deleteFile, getFilePathFromUrl } from '../config/upload.config';
 import { prisma } from '../config/database';
 
 // ========================================
@@ -269,6 +269,51 @@ export async function handlePdfUpload(req: Request, res: Response, next: NextFun
             });
         } catch (error: any) {
             log.error('❌ Erreur handlePdfUpload:', error);
+            return res.status(500).json({ success: false, message: 'Erreur serveur lors de l\'upload' });
+        }
+    });
+}
+
+// ========================================
+// UPLOAD HTML (contenus riches : Deal Flow, Analyses…)
+// ========================================
+
+export async function handleHtmlUpload(req: Request, res: Response, next: NextFunction) {
+    uploadHtml(req, res, async (err) => {
+        try {
+            if (err) {
+                log.error('❌ Erreur upload HTML:', err.message);
+                return res.status(400).json({
+                    success: false,
+                    message: err.message || 'Erreur lors de l\'upload du fichier HTML'
+                });
+            }
+
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'Aucun fichier fourni' });
+            }
+
+            const userId = req.user?.id;
+            if (!userId) {
+                return res.status(401).json({ success: false, message: 'Non autorisé' });
+            }
+
+            const { url, filename } = await persistFile(req.file, 'docs');
+
+            log.debug(`✅ HTML uploadé pour user ${userId}: ${url}`);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Fichier HTML uploadé avec succès',
+                data: {
+                    url,
+                    name: req.file.originalname,
+                    size: req.file.size,
+                    filename,
+                }
+            });
+        } catch (error: any) {
+            log.error('❌ Erreur handleHtmlUpload:', error);
             return res.status(500).json({ success: false, message: 'Erreur serveur lors de l\'upload' });
         }
     });

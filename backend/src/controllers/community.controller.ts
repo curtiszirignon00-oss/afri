@@ -284,6 +284,17 @@ export async function getCommunityPosts(req: AuthRequest, res: Response) {
     }
 }
 
+export async function getCommunityPost(req: AuthRequest, res: Response) {
+    try {
+        const { postId } = req.params;
+        const viewerId = req.user?.id;
+        const post = await communityService.getCommunityPost(postId, viewerId);
+        res.status(200).json({ success: true, data: post });
+    } catch (error: any) {
+        res.status(404).json({ error: error.message });
+    }
+}
+
 export async function likeCommunityPost(req: AuthRequest, res: Response) {
     try {
         const userId = req.user?.id;

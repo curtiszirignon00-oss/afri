@@ -60,6 +60,7 @@ export interface PostMetadata {
     survey?: SurveyMeta;
     achievement?: Record<string, unknown>;
     is_html?: boolean;
+    html_url?: string;
     unlock_level?: number;
     locked?: boolean;
 }
@@ -500,6 +501,38 @@ export function useUploadPdf() {
             });
             return res.data.data as PostAttachment & { filename: string };
         },
+    });
+}
+
+/**
+ * Upload an HTML file (rich content: deal flow, analyses…) — returns { url, name }
+ */
+export function useUploadHtml() {
+    return useMutation({
+        mutationFn: async (file: File) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await apiClient.post('/upload/post-html', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return res.data.data as { url: string; name: string; size: number; filename: string };
+        },
+    });
+}
+
+/**
+ * Get a single community post (dedicated page for HTML content)
+ */
+export function useCommunityPost(postId: string) {
+    return useQuery({
+        queryKey: ['community-post', postId],
+        queryFn: async () => {
+            const res = await apiClient.get(`/communities/posts/${postId}`);
+            return res.data.data as CommunityPost & {
+                community?: { id: string; name: string; slug: string };
+            };
+        },
+        enabled: !!postId,
     });
 }
 

@@ -64,6 +64,7 @@ const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const CommunitiesPage = lazy(() => import('./pages/CommunitiesPage'));
 const CommunityDetailPage = lazy(() => import('./pages/CommunityDetailPage'));
 const CommunityJoinByInvitePage = lazy(() => import('./pages/CommunityJoinByInvitePage'));
+const CommunityPostDetailPage = lazy(() => import('./pages/CommunityPostDetailPage'));
 const TrialClaimPage = lazy(() => import('./pages/TrialClaimPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage'));
@@ -233,6 +234,7 @@ function Layout() {
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
           <Route path="/communities/join/:token" element={<CommunityJoinByInvitePage />} />
+          <Route path="/communities/post/:postId" element={<CommunityPostDetailPage />} />
           <Route path="/communities/:slug" element={<CommunityDetailPage />} />
 
           {/* Challenge AfriBourse 2026 - Protected route */}
