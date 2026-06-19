@@ -225,7 +225,7 @@ async function processEmail1(): Promise<{ sent: number; errors: number }> {
     return u.last_login_at <= u.email_verified_at; // connecté avant la confirmation
   });
 
-  log.debug(`[REENGAGEMENT] Email 1 — ${targets.length} candidat(s)`);
+  log.info(`[REENGAGEMENT] Email 1 — ${targets.length} candidat(s)`);
 
   for (const user of targets) {
     try {
@@ -237,7 +237,7 @@ async function processEmail1(): Promise<{ sent: number; errors: number }> {
       });
 
       sent++;
-      log.debug(`[REENGAGEMENT] Email 1 envoyé → ${user.email}`);
+      log.info(`[REENGAGEMENT] Email 1 envoyé → ${user.email}`);
     } catch (err: any) {
       errors++;
       log.error(`[REENGAGEMENT] Email 1 erreur → ${user.email}: ${err.message}`);
@@ -278,7 +278,7 @@ async function processEmail2(): Promise<{ sent: number; errors: number }> {
     return u.last_login_at <= u.email_verified_at;
   });
 
-  log.debug(`[REENGAGEMENT] Email 2 — ${targets.length} candidat(s)`);
+  log.info(`[REENGAGEMENT] Email 2 — ${targets.length} candidat(s)`);
 
   // Fetch market data once for all targets
   const allMovers = await getWeeklyTopMovers();
@@ -297,7 +297,7 @@ async function processEmail2(): Promise<{ sent: number; errors: number }> {
       });
 
       sent++;
-      log.debug(`[REENGAGEMENT] Email 2 envoyé → ${user.email}`);
+      log.info(`[REENGAGEMENT] Email 2 envoyé → ${user.email}`);
     } catch (err: any) {
       errors++;
       log.error(`[REENGAGEMENT] Email 2 erreur → ${user.email}: ${err.message}`);
@@ -338,7 +338,7 @@ async function processEmail3(): Promise<{ sent: number; errors: number }> {
     return u.last_login_at <= u.email_verified_at;
   });
 
-  log.debug(`[REENGAGEMENT] Email 3 — ${targets.length} candidat(s)`);
+  log.info(`[REENGAGEMENT] Email 3 — ${targets.length} candidat(s)`);
 
   // Fetch real leaderboard once for all targets
   const leaders = await getTop3Leaders();
@@ -353,7 +353,7 @@ async function processEmail3(): Promise<{ sent: number; errors: number }> {
       });
 
       sent++;
-      log.debug(`[REENGAGEMENT] Email 3 envoyé → ${user.email}`);
+      log.info(`[REENGAGEMENT] Email 3 envoyé → ${user.email}`);
     } catch (err: any) {
       errors++;
       log.error(`[REENGAGEMENT] Email 3 erreur → ${user.email}: ${err.message}`);

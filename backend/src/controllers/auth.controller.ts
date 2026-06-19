@@ -7,7 +7,7 @@ import { signJWT } from "../utils";
 import { createError } from "../middlewares/errorHandlers";
 import config from "../config/environnement";
 import { generateConfirmationToken, getTokenExpirationDate, isTokenExpired, hashToken } from "../utils/token.utils";
-import { sendConfirmationEmail, sendPasswordResetEmail } from "../services/email.service";
+import { sendConfirmationEmail, sendPasswordResetEmail, sendReengagementEmail1 } from "../services/email.service";
 
 // --- CONSOLIDATION : N'IMPORTER QUE LE SERVICE PRISMA ---
 import * as usersServicePrisma from "../services/users.service.prisma";
@@ -394,6 +394,18 @@ export async function confirmEmail(req: Request, res: Response, next: NextFuncti
         const alreadyVerified = !!user.email_verified_at;
         if (!alreadyVerified) {
             await usersServicePrisma.confirmUserEmail(user.id);
+
+            // Envoyer l'email d'accueil immédiatement après confirmation (non-bloquant)
+            try {
+                await sendReengagementEmail1({ email: user.email, name: user.name });
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: { reengagement_email1_sent: true } as any,
+                });
+                log.info(`[AUTH] Email d'accueil envoyé → ${user.email}`);
+            } catch (err: any) {
+                log.warn(`[AUTH] Email d'accueil non envoyé pour ${user.email}: ${err?.message}`);
+            }
         }
 
         // 4. Créer une session (magic link — connexion automatique)
