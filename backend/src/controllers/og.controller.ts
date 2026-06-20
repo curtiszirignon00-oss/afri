@@ -3,11 +3,14 @@
 import { Request, Response, NextFunction } from 'express';
 import prisma from '../config/prisma';
 import {
-  buildStockSVG, buildBadgeSVG, buildPortfolioSVG, buildPageSVG, svgToPng,
+  buildStockSVG, buildBadgeSVG, buildPortfolioSVG, buildPageSVG, buildProfileSVG, svgToPng,
   PAGE_CONFIGS,
-  type StockOGData, type BadgeOGData, type PortfolioOGData,
+  type StockOGData, type BadgeOGData, type PortfolioOGData, type ProfileOGData,
 } from '../services/og-image.service';
 import { generateCertificateOGPng } from '../services/certificate-image.service';
+import { LearningServicePrisma } from '../services/learning.service.prisma';
+
+const ogLearningService = new LearningServicePrisma();
 
 // Simple in-memory cache (Buffer + expiry). Avoids Redis for binary blobs.
 interface CacheEntry { buf: Buffer; expiresAt: number }
@@ -133,6 +136,61 @@ export async function getPortfolioOGImage(req: Request, res: Response, next: Nex
     const svg = buildPortfolioSVG(data);
     const png = await svgToPng(svg);
     cacheSet(cacheKey, png, 300);
+
+    return sendPng(res, png, 300);
+  } catch (err) {
+    return next(err);
+  }
+}
+
+// ─── GET /api/og/image/profile/:username ─────────────────────────────────────
+// Carte Passeport Investisseur (ADN) — 1080×1080 ou 1080×1920 (?format=story).
+
+export async function getProfileOGImage(req: Request, res: Response, next: NextFunction) {
+  try {
+    const username = req.params.username;
+    if (!username) return res.status(400).json({ error: 'username requis' });
+    const format = req.query.format === 'story' ? 'story' : 'square';
+
+    const cacheKey = `og:profile:${username.toLowerCase()}:${format}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return sendPng(res, cached, 300);
+
+    const profile = await prisma.userProfile.findFirst({
+      where: { username: { equals: username, mode: 'insensitive' } },
+      select: {
+        userId: true, username: true, total_xp: true, level: true, profile_type: true,
+        user: { select: { name: true, lastname: true } },
+      },
+    });
+    if (!profile) return res.status(404).json({ error: 'Profil non trouvé' });
+
+    // Données complémentaires (best-effort)
+    const [badgesCount, totalUsers, better, learning] = await Promise.all([
+      prisma.userAchievement.count({ where: { userId: profile.userId } }).catch(() => 0),
+      prisma.userProfile.count().catch(() => 0),
+      prisma.userProfile.count({ where: { total_xp: { gt: profile.total_xp ?? 0 } } }).catch(() => 0),
+      ogLearningService.getProgressSummary(profile.userId).catch(() => null),
+    ]);
+
+    const percentile = totalUsers > 0 ? Math.max(1, Math.round((better / totalUsers) * 100)) : null;
+    const displayName = `${profile.user?.name ?? ''} ${profile.user?.lastname ?? ''}`.trim() || 'Investisseur';
+
+    const data: ProfileOGData = {
+      displayName,
+      username: profile.username ?? username,
+      dnaType: profile.profile_type,
+      level: profile.level ?? 1,
+      percentile,
+      badgesCount,
+      coursePercent: learning?.progressPercent ?? null,
+      showsPerformance: false,
+      format,
+    };
+
+    const svg = buildProfileSVG(data);
+    const png = await svgToPng(svg);
+    cacheSet(cacheKey, png, 300); // 5 min
 
     return sendPng(res, png, 300);
   } catch (err) {

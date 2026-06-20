@@ -40,6 +40,32 @@ export async function getPublicProfile(req: Request, res: Response, next: NextFu
 }
 
 /**
+ * GET /api/profile/by-username/:username
+ * Récupère le profil public à partir du username (URL lisible /u/:username)
+ */
+export async function getProfileByUsername(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { username } = req.params;
+    const viewerId = req.user?.id;
+
+    const userId = await profileService.getUserIdByUsername(username);
+    if (!userId) {
+      return res.status(404).json({ message: 'Profil non trouvé' });
+    }
+
+    const profile = await profileService.getPublicProfile(userId, viewerId);
+    if (!profile) {
+      return res.status(404).json({ message: 'Profil non trouvé' });
+    }
+
+    return res.status(200).json(profile);
+  } catch (error: any) {
+    log.error('❌ Erreur getProfileByUsername:', error);
+    return next(error);
+  }
+}
+
+/**
  * GET /api/profile/me
  * Récupère le profil complet de l'utilisateur connecté
  */
@@ -371,6 +397,25 @@ export async function getFollowing(req: Request, res: Response, next: NextFuncti
     if (error.message.includes('privée')) {
       return res.status(403).json({ message: error.message });
     }
+    return next(error);
+  }
+}
+
+/**
+ * GET /api/profile/similar-users
+ * Profils similaires (même ADN / niveau / pays)
+ */
+export async function getSimilarUsers(req: Request, res: Response, next: NextFunction) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+    const limit = parsePagination(req.query.limit, undefined, 3).limit;
+    const users = await profileService.getSimilarUsers(userId, limit);
+    return res.status(200).json(users);
+  } catch (error) {
+    log.error('❌ Erreur getSimilarUsers:', error);
     return next(error);
   }
 }

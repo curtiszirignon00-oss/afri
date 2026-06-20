@@ -24,6 +24,24 @@ export async function getNewAchievements(req: Request, res: Response, next: Next
 }
 import { parsePagination } from '../utils/pagination.util';
 
+/**
+ * GET /api/achievements/:code/stats
+ * Statistiques de rareté d'un badge (% de membres l'ayant débloqué)
+ */
+export async function getAchievementStats(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { code } = req.params;
+    const stats = await achievementService.getAchievementUnlockStats(code);
+    return res.status(200).json(stats);
+  } catch (error: any) {
+    if (error.message?.includes('introuvable')) {
+      return res.status(404).json({ message: error.message });
+    }
+    log.error('❌ Erreur getAchievementStats:', error);
+    return next(error);
+  }
+}
+
 // =====================================
 // RÉCUPÉRATION ACHIEVEMENTS
 // =====================================

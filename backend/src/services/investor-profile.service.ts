@@ -2,6 +2,7 @@
 import { prisma } from '../config/database';
 import type { RiskProfile, InvestmentHorizon, VisibilityLevel } from '@prisma/client';
 import { calculateLevelFromXP } from './xp.service';
+import { generateUniqueUsername } from './profile.service';
 
 // ============= TYPES =============
 
@@ -81,20 +82,37 @@ export async function getInvestorProfile(userId: string) {
     let userProfile = existingUserProfile;
     if (!userProfile) {
         // Compter les vrais followers, following et posts depuis la DB
-        const [followersCount, followingCount, postsCount] = await Promise.all([
+        const [followersCount, followingCount, postsCount, user] = await Promise.all([
             prisma.follow.count({ where: { followingId: userId } }),
             prisma.follow.count({ where: { followerId: userId } }),
             prisma.post.count({ where: { author_id: userId, is_hidden: false } }),
+            prisma.user.findUnique({ where: { id: userId }, select: { name: true, lastname: true } }),
         ]);
+
+        // Username auto-généré pour tout nouveau profil (URL publique lisible)
+        const username = await generateUniqueUsername(user?.name ?? undefined, user?.lastname ?? undefined);
 
         userProfile = await prisma.userProfile.create({
             data: {
                 userId: userId,
+                username,
                 followers_count: followersCount,
                 following_count: followingCount,
                 posts_count: postsCount,
             },
         });
+    } else if (!userProfile.username) {
+        // Back-fill paresseux : profil existant sans username → en générer un
+        try {
+            const user = await prisma.user.findUnique({ where: { id: userId }, select: { name: true, lastname: true } });
+            const username = await generateUniqueUsername(user?.name ?? undefined, user?.lastname ?? undefined);
+            userProfile = await prisma.userProfile.update({
+                where: { userId },
+                data: { username },
+            });
+        } catch (e) {
+            // Ne pas bloquer l'affichage du profil si la génération échoue
+        }
     }
 
     // Transformer les badges en format simplifié
@@ -121,6 +139,7 @@ export async function getInvestorProfile(userId: string) {
         banner_type: userProfile?.banner_type || 'gradient',
         country: userProfile?.country || investorProfile?.favorite_sectors?.[0] || null,
         social_links: userProfile?.social_links || null,
+        specialty_tags: userProfile?.specialty_tags || [],
         verified_investor: userProfile?.verified_investor || false,
         // Stats sociales
         followers_count: userProfile?.followers_count || 0,
@@ -146,6 +165,35 @@ export async function getInvestorProfile(userId: string) {
         // Timestamp
         created_at: investorProfile?.created_at || userProfile?.created_at,
     };
+}
+
+/**
+ * Heatmap d'activité : nombre d'événements par jour sur les N derniers jours (défaut 84 = 12 semaines).
+ */
+export async function getActivityHeatmap(userId: string, days = 84) {
+    const since = new Date();
+    since.setHours(0, 0, 0, 0);
+    since.setDate(since.getDate() - (days - 1));
+
+    const activities = await prisma.userActivity.findMany({
+        where: { userId, created_at: { gte: since } },
+        select: { created_at: true },
+    });
+
+    const counts: Record<string, number> = {};
+    for (const a of activities) {
+        const key = a.created_at.toISOString().slice(0, 10);
+        counts[key] = (counts[key] || 0) + 1;
+    }
+
+    const result: { date: string; count: number }[] = [];
+    for (let i = 0; i < days; i++) {
+        const d = new Date(since);
+        d.setDate(since.getDate() + i);
+        const key = d.toISOString().slice(0, 10);
+        result.push({ date: key, count: counts[key] || 0 });
+    }
+    return result;
 }
 
 /**

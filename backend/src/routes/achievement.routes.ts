@@ -11,7 +11,8 @@ import {
   checkMyAchievements,
   checkCategoryAchievements,
   getNextAchievements,
-  getNewAchievements
+  getNewAchievements,
+  getAchievementStats
 } from '../controllers/achievement.controller';
 
 const router = Router();
@@ -31,6 +32,12 @@ router.get('/', getAllAchievements);
  * Achievements publics d'un utilisateur
  */
 router.get('/user/:userId', optionalAuth, getUserAchievements);
+
+/**
+ * GET /api/achievements/:code/stats
+ * Rareté d'un badge (% de membres l'ayant débloqué)
+ */
+router.get('/:code/stats', getAchievementStats);
 
 // =====================================
 // ROUTES PROTÉGÉES

@@ -37,6 +37,8 @@ function identifyAmplitudeUser(profile: UserProfile) {
 
   const identify = new amplitude.Identify();
   identify.set('email', profile.email);
+  // Identifiant DB immuable conservé comme propriété (stable même si l'email change)
+  if (profile.id) identify.set('db_id', profile.id);
   identify.set('name', `${profile.name ?? ''} ${profile.lastname ?? ''}`.trim());
   identify.set('plan', profile.subscriptionTier ?? 'free');
   identify.set('role', profile.role ?? 'user');

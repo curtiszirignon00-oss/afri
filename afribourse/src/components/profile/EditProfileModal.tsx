@@ -42,6 +42,29 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
         instagram: '',
         facebook: '',
     });
+    const [specialtyTags, setSpecialtyTags] = useState<string[]>([]);
+
+    const isFounder = profile?.role === 'admin';
+
+    // Suggestions de bio orientées identité (chantier 4.2)
+    const bioSuggestions = isFounder
+        ? [
+            "Fondateur d'Afribourse. Mission : rendre l'investissement boursier plus accessible, plus pédagogique et plus communautaire en Afrique de l'Ouest.",
+        ]
+        : [
+            "J'apprends à investir progressivement sur la BRVM.",
+            "Je m'intéresse aux actions à dividendes et à l'analyse fondamentale.",
+            "Je construis mon premier portefeuille virtuel sur Afribourse.",
+        ];
+
+    // Tags de spécialité proposés (chantier 4.3)
+    const SPECIALTY_OPTIONS = ['BRVM', 'Dividendes', 'Banques', 'Obligations', 'Analyse fondamentale', 'Débutant', 'Croissance', 'Gestion du risque'];
+
+    const toggleTag = (tag: string) => {
+        setSpecialtyTags(prev =>
+            prev.includes(tag) ? prev.filter(t => t !== tag) : prev.length >= 8 ? prev : [...prev, tag]
+        );
+    };
 
     const { mutate: updateProfile, isPending } = useUpdateProfile();
     const uploadAvatar = useUploadAvatar();
@@ -74,6 +97,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
             });
             setAvatarUrl(profile.profile?.avatar_url || null);
             setBannerUrl(profile.profile?.banner_url || null);
+            setSpecialtyTags(Array.isArray(profile.profile?.specialty_tags) ? profile.profile.specialty_tags : []);
         }
     }, [profile]);
 
@@ -180,6 +204,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
         if (Object.keys(socialLinks).length > 0) {
             updateData.social_links = socialLinks;
         }
+        // Toujours envoyer les tags (permet de tout retirer)
+        updateData.specialty_tags = specialtyTags;
 
         console.log('📝 [EDIT MODAL] Sending update data:', updateData);
 
@@ -368,6 +394,46 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                         <p className="text-xs text-gray-500 mt-1 text-right">
                             {formData.bio.length}/200
                         </p>
+                        {/* Suggestions de bio cliquables */}
+                        <div className="mt-2">
+                            <p className="text-xs text-gray-400 mb-1.5">Suggestions :</p>
+                            <div className="flex flex-wrap gap-2">
+                                {bioSuggestions.map((s) => (
+                                    <button
+                                        key={s}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, bio: s.slice(0, 200) })}
+                                        className="text-left text-xs px-2.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors max-w-full"
+                                    >
+                                        {s.length > 70 ? s.slice(0, 70) + '…' : s}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Tags de spécialité */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Tags de spécialité <span className="font-normal text-gray-400">({specialtyTags.length}/8)</span>
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {SPECIALTY_OPTIONS.map((tag) => {
+                                const active = specialtyTags.includes(tag);
+                                return (
+                                    <button
+                                        key={tag}
+                                        type="button"
+                                        onClick={() => toggleTag(tag)}
+                                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${active
+                                            ? 'bg-teal-600 text-white border-teal-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'}`}
+                                    >
+                                        {tag}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Country */}

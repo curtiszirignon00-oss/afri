@@ -91,3 +91,42 @@ export function trackUpgradeCompleted(plan: string, amount: number) {
 export function trackShare(contentType: string, ticker = '', platform = 'community') {
   amplitude.track('Content Shared', { content_type: contentType, ticker, platform });
 }
+
+// ── Profil / Passeport Investisseur ─────────────────────────────────────────────
+// Events de la refonte de la page Profil. Cf. plan "Refonte page Profil".
+
+export function trackProfileViewed(profileId: string, isOwnProfile: boolean) {
+  amplitude.track('profile_viewed', { profile_id: profileId, is_own_profile: isOwnProfile });
+}
+
+export function trackProfileLinkCopied(profileId: string, url: string) {
+  amplitude.track('profile_link_copied', { profile_id: profileId, url });
+}
+
+export function trackShareCardGenerated(dnaType: string, format: string) {
+  amplitude.track('share_card_generated', { dna_type: dnaType, format });
+}
+
+export function trackShareCardDownloaded(dnaType: string, format: string) {
+  amplitude.track('share_card_downloaded', { dna_type: dnaType, format });
+}
+
+export function trackInvestorDnaStarted(source = 'profile_teaser') {
+  amplitude.track('investor_dna_started', { source });
+}
+
+export function trackInvestorDnaCompleted(dnaType: string) {
+  amplitude.track('investor_dna_completed', { dna_type: dnaType });
+}
+
+export function trackProfileFollowClicked(targetProfileId: string) {
+  amplitude.track('profile_follow_clicked', { target_profile_id: targetProfileId });
+}
+
+export function trackPinnedPostClicked(postId: string) {
+  amplitude.track('pinned_post_clicked', { post_id: postId });
+}
+
+export function trackSimilarProfileClicked(targetProfileId: string, dnaType?: string) {
+  amplitude.track('similar_profile_clicked', { target_profile_id: targetProfileId, dna_type: dnaType });
+}

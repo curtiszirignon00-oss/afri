@@ -183,6 +183,7 @@ export interface ProfileUpdateData {
         instagram?: string;
         facebook?: string;
     };
+    specialty_tags?: string[];
 }
 
 export function useUpdateProfile() {

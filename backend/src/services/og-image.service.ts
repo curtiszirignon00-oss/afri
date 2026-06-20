@@ -462,6 +462,125 @@ export function buildPageSVG(data: PageOGData): string {
 </svg>`;
 }
 
+// ─── Carte Passeport Investisseur (ADN) — format carré social ─────────────────
+
+/** Label court de l'ADN par clé de profil (6 archétypes brandés + 4 legacy). */
+const DNA_LABELS: Record<string, string> = {
+  chasseur_dividendes: 'Chasseur de Dividendes',
+  analyste_valeur: 'Analyste Valeur',
+  explorateur_croissance: 'Explorateur Croissance',
+  stratege_defensif: 'Stratège Défensif',
+  batisseur_long_terme: 'Bâtisseur Long Terme',
+  opportuniste_controle: 'Opportuniste Contrôlé',
+  // Legacy KYC
+  prudent: 'Investisseur Prudent',
+  equilibre: 'Investisseur Équilibré',
+  dynamique: 'Investisseur Dynamique',
+  offensif: 'Investisseur Offensif',
+};
+
+export function dnaLabelFromType(profileType?: string | null): string {
+  if (!profileType) return 'Investisseur BRVM';
+  return DNA_LABELS[profileType] ?? 'Investisseur BRVM';
+}
+
+export interface ProfileOGData {
+  displayName: string;
+  username: string;
+  dnaType?: string | null;
+  level: number;
+  percentile?: number | null;   // "Top X%"
+  badgesCount: number;
+  coursePercent?: number | null; // % du parcours BRVM
+  /** true si une métrique de performance est affichée → mention conformité */
+  showsPerformance?: boolean;
+  /** 1080×1080 (carré) ou 1080×1920 (story) */
+  format?: 'square' | 'story';
+}
+
+export function buildProfileSVG(data: ProfileOGData): string {
+  const PW = 1080;
+  const PH = data.format === 'story' ? 1920 : 1080;
+  const cx = PW / 2;
+
+  const initials = (data.displayName || 'AB')
+    .split(' ').map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  const dna = xmlEscape(dnaLabelFromType(data.dnaType));
+  const name = xmlEscape(data.displayName || 'Investisseur');
+  const handle = xmlEscape('@' + (data.username || 'investisseur'));
+  const topStr = data.percentile != null ? `Top ${Math.max(1, Math.round(data.percentile))}%` : '—';
+  const courseStr = data.coursePercent != null ? `${Math.round(data.coursePercent)}%` : '—';
+
+  // Bloc statistiques (4 colonnes)
+  const stats = [
+    { label: 'Niveau', value: String(data.level) },
+    { label: 'Classement', value: topStr },
+    { label: 'Badges', value: String(data.badgesCount) },
+    { label: 'Parcours', value: courseStr },
+  ];
+  const statW = 220;
+  const gap = 24;
+  const totalW = stats.length * statW + (stats.length - 1) * gap;
+  const startX = cx - totalW / 2;
+  const statsY = data.format === 'story' ? 1180 : 720;
+
+  const statsXml = stats.map((s, i) => {
+    const x = startX + i * (statW + gap);
+    return `
+    <g>
+      <rect x="${x}" y="${statsY}" width="${statW}" height="150" rx="20" fill="${BRAND_CARD}" stroke="${BRAND_BORDER}"/>
+      <text x="${x + statW / 2}" y="${statsY + 78}" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${s.value}</text>
+      <text x="${x + statW / 2}" y="${statsY + 118}" font-family="Arial, Helvetica, sans-serif" font-size="26" fill="#94A3B8" text-anchor="middle">${s.label}</text>
+    </g>`;
+  }).join('');
+
+  const avatarY = data.format === 'story' ? 520 : 250;
+  const nameY = avatarY + 320;
+  const footerY = PH - 80;
+  const complianceY = footerY - 56;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${PW}" height="${PH}" viewBox="0 0 ${PW} ${PH}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${BRAND_DARK}"/>
+      <stop offset="100%" stop-color="#1E2A40"/>
+    </linearGradient>
+    <linearGradient id="pacc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="${PW}" height="${PH}" fill="url(#pbg)"/>
+  <rect x="0" y="0" width="${PW}" height="10" fill="url(#pacc)"/>
+
+  <!-- Brand -->
+  <text x="${cx}" y="120" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF" text-anchor="middle" letter-spacing="6">AFRIBOURSE</text>
+  <text x="${cx}" y="160" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="${BRAND_GREEN}" text-anchor="middle" letter-spacing="2">PASSEPORT INVESTISSEUR</text>
+
+  <!-- Avatar -->
+  <circle cx="${cx}" cy="${avatarY}" r="120" fill="url(#pacc)"/>
+  <text x="${cx}" y="${avatarY + 42}" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${xmlEscape(initials)}</text>
+
+  <!-- Name + handle -->
+  <text x="${cx}" y="${nameY}" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="bold" fill="#FFFFFF" text-anchor="middle">${name}</text>
+  <text x="${cx}" y="${nameY + 50}" font-family="Arial, Helvetica, sans-serif" font-size="34" fill="#94A3B8" text-anchor="middle">${handle}</text>
+
+  <!-- ADN -->
+  <rect x="${cx - 320}" y="${nameY + 90}" width="640" height="84" rx="42" fill="url(#pacc)"/>
+  <text x="${cx}" y="${nameY + 144}" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="bold" fill="#FFFFFF" text-anchor="middle">ADN : ${dna}</text>
+
+  <!-- Stats -->
+  ${statsXml}
+
+  ${data.showsPerformance ? `<text x="${cx}" y="${complianceY}" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#64748B" text-anchor="middle">Portefeuille virtuel — simulation pédagogique</text>` : ''}
+
+  <!-- Footer URL -->
+  <text x="${cx}" y="${footerY}" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="bold" fill="${BRAND_GREEN}" text-anchor="middle">africbourse.com/u/${xmlEscape(data.username || '')}</text>
+</svg>`;
+}
+
 // ─── SVG → PNG via sharp ──────────────────────────────────────────────────────
 
 export async function svgToPng(svgString: string): Promise<Buffer> {

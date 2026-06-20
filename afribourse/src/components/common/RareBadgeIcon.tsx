@@ -27,6 +27,17 @@ export function getRareBadge(
     };
 }
 
+/** Retourne les N badges les plus rares (legendary > epic > rare > common). */
+export function getTopRareBadges<T extends { achievement: { rarity: string } }>(
+    achievements: T[] | undefined,
+    n = 3
+): T[] {
+    if (!achievements || achievements.length === 0) return [];
+    return [...achievements]
+        .sort((a, b) => (RARITY_RANK[b.achievement.rarity] ?? 0) - (RARITY_RANK[a.achievement.rarity] ?? 0))
+        .slice(0, n);
+}
+
 const RARITY_STYLE: Record<AchievementRarity, string> = {
     legendary: 'ring-2 ring-amber-400 bg-amber-50',
     epic:      'ring-2 ring-purple-400 bg-purple-50',

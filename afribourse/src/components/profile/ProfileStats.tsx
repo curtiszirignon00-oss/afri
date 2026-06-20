@@ -15,7 +15,6 @@ import {
     Star,
     X,
     Loader2,
-    BarChart3,
     Bookmark,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -50,6 +49,10 @@ interface ProfileStatsProps {
         totalValue: number;
         gainLoss: number;
         gainLossPercent: number;
+        /** Liquidités disponibles (cash) — affichées dans le résumé condensé. */
+        cashBalance?: number;
+        /** Série de valeurs pour la sparkline (évolution du portefeuille). */
+        history?: number[];
     } | null;
     positions?: PositionItem[];
     watchlist?: WatchlistItem[];
@@ -59,6 +62,29 @@ interface ProfileStatsProps {
         completedQuizzes: number;
         averageScore: number;
     } | null;
+}
+
+// Mini-courbe SVG sans axes (sparkline) pour l'évolution du portefeuille virtuel.
+function Sparkline({ data, positive }: { data: number[]; positive: boolean }) {
+    if (!data || data.length < 2) return null;
+    const w = 120;
+    const h = 36;
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const points = data
+        .map((v, i) => {
+            const x = (i / (data.length - 1)) * w;
+            const y = h - ((v - min) / range) * h;
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+        })
+        .join(' ');
+    const stroke = positive ? '#16a34a' : '#dc2626';
+    return (
+        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible" preserveAspectRatio="none">
+            <polyline points={points} fill="none" stroke={stroke} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
 }
 
 // Format number with K/M suffixes
@@ -120,7 +146,6 @@ export default function ProfileStats({
     const showXp = investorProfile?.show_xp === true;
     const showStreak = investorProfile?.show_streak !== false;
     const showPortfolio = investorProfile?.show_portfolio_value !== false;
-    const showPositions = investorProfile?.show_positions !== false;
     const showWatchlist = investorProfile?.show_watchlist !== false;
 
     // Stats from profile
@@ -285,7 +310,7 @@ export default function ProfileStats({
                     </div>
                 )}
 
-                {/* Portfolio Value */}
+                {/* Performance simulée (résumé condensé — pas de tableau de positions) */}
                 {portfolioData && (
                     <div className="relative">
                         {!showPortfolio && !isOwnProfile ? (
@@ -298,126 +323,73 @@ export default function ProfileStats({
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <Wallet className="w-5 h-5 text-green-600" />
-                                        <span className="font-medium text-gray-900">Portefeuille virtuel</span>
+                                        <span className="font-medium text-gray-900">Performance simulée</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {isOwnProfile && showPortfolio && (
-                                            <ShareButton
-                                                onClick={() => {
-                                                    const shareDataObj: ShareablePortfolioData = {
-                                                        totalValue: portfolioData.totalValue,
-                                                        gainLoss: portfolioData.gainLoss,
-                                                        gainLossPercent: portfolioData.gainLossPercent,
-                                                        cashBalance: 0,
-                                                        stocksValue: portfolioData.totalValue,
-                                                    };
-                                                    openShareModal({
-                                                        type: 'PORTFOLIO_VALUE',
-                                                        data: shareDataObj,
-                                                        generatedContent: '',
-                                                    });
-                                                }}
-                                                variant="ghost"
-                                                size="sm"
-                                                label=""
-                                            />
-                                        )}
-                                        <Link
-                                            to="/dashboard"
-                                            className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
-                                        >
-                                            Voir
-                                            <ChevronRight className="w-3 h-3" />
-                                        </Link>
-                                    </div>
+                                    {isOwnProfile && showPortfolio && (
+                                        <ShareButton
+                                            onClick={() => {
+                                                const shareDataObj: ShareablePortfolioData = {
+                                                    totalValue: portfolioData.totalValue,
+                                                    gainLoss: portfolioData.gainLoss,
+                                                    gainLossPercent: portfolioData.gainLossPercent,
+                                                    cashBalance: portfolioData.cashBalance ?? 0,
+                                                    stocksValue: portfolioData.totalValue - (portfolioData.cashBalance ?? 0),
+                                                };
+                                                openShareModal({
+                                                    type: 'PORTFOLIO_VALUE',
+                                                    data: shareDataObj,
+                                                    generatedContent: '',
+                                                });
+                                            }}
+                                            variant="ghost"
+                                            size="sm"
+                                            label=""
+                                        />
+                                    )}
                                 </div>
-                                <div className="flex items-end justify-between">
+
+                                {/* Chiffre principal + ROI + sparkline */}
+                                <div className="flex items-end justify-between gap-3">
                                     <div>
                                         <div className="text-2xl font-bold text-gray-900">
                                             {formatCurrency(portfolioData.totalValue)}
                                         </div>
-                                        <div className="text-xs text-gray-500">Valeur totale</div>
+                                        <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${portfolioData.gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {portfolioData.gainLoss >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                                            <span>{portfolioData.gainLoss >= 0 ? '+' : ''}{portfolioData.gainLossPercent.toFixed(2)}%</span>
+                                            <span className="text-gray-400">·</span>
+                                            <span>{portfolioData.gainLoss >= 0 ? '+' : ''}{formatCurrency(portfolioData.gainLoss)}</span>
+                                        </div>
                                     </div>
-                                    <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${portfolioData.gainLoss >= 0
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-red-100 text-red-700'
-                                        }`}>
-                                        {portfolioData.gainLoss >= 0
-                                            ? <TrendingUp className="w-4 h-4" />
-                                            : <TrendingDown className="w-4 h-4" />
-                                        }
-                                        <span className="font-medium text-sm">
-                                            {portfolioData.gainLoss >= 0 ? '+' : ''}{portfolioData.gainLossPercent.toFixed(2)}%
-                                        </span>
+                                    {portfolioData.history && portfolioData.history.length >= 2 && (
+                                        <Sparkline data={portfolioData.history} positive={portfolioData.gainLoss >= 0} />
+                                    )}
+                                </div>
+
+                                {/* Deux métriques : liquidités + nombre de positions */}
+                                <div className="grid grid-cols-2 gap-2 mt-3">
+                                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                                        <div className="text-sm font-semibold text-gray-900">{formatCurrency(portfolioData.cashBalance ?? 0)}</div>
+                                        <div className="text-xs text-gray-500">Liquidités</div>
+                                    </div>
+                                    <div className="bg-white/60 rounded-lg px-3 py-2">
+                                        <div className="text-sm font-semibold text-gray-900">{positions.length}</div>
+                                        <div className="text-xs text-gray-500">Position{positions.length > 1 ? 's' : ''}</div>
                                     </div>
                                 </div>
+
+                                <Link
+                                    to="/dashboard"
+                                    className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:text-green-800"
+                                >
+                                    Voir le détail sur le Dashboard
+                                    <ChevronRight className="w-3 h-3" />
+                                </Link>
+                                <p className="mt-2 text-[11px] text-gray-400 leading-snug">
+                                    Portefeuille virtuel · simulation pédagogique. Ne reflète pas une performance réelle.
+                                </p>
                             </div>
                         )}
-                    </div>
-                )}
-
-                {/* Positions (Actions achetées) */}
-                {(positions.length > 0 || (!isOwnProfile && !showPositions)) && (
-                    <div className="relative">
-                        {!showPositions && !isOwnProfile ? (
-                            <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
-                                <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-500">Positions privées</span>
-                            </div>
-                        ) : positions.length > 0 ? (
-                            <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <BarChart3 className="w-5 h-5 text-blue-600" />
-                                        <span className="font-medium text-gray-900">Actions achetées</span>
-                                    </div>
-                                    {isOwnProfile && (
-                                        <Link
-                                            to="/dashboard"
-                                            className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                                        >
-                                            Dashboard
-                                            <ChevronRight className="w-3 h-3" />
-                                        </Link>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    {positions.slice(0, 5).map((pos) => (
-                                        <div
-                                            key={pos.ticker}
-                                            className="flex items-center justify-between py-2 px-3 bg-white/60 rounded-lg"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-sm text-gray-900">{pos.ticker}</span>
-                                                <span className="text-xs text-gray-500 truncate max-w-[100px]">{pos.name}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-gray-500">{pos.quantity} titres</span>
-                                                <div className={`flex items-center gap-0.5 text-xs font-medium ${
-                                                    pos.gainLossPercent >= 0 ? 'text-green-600' : 'text-red-600'
-                                                }`}>
-                                                    {pos.gainLossPercent >= 0
-                                                        ? <TrendingUp className="w-3 h-3" />
-                                                        : <TrendingDown className="w-3 h-3" />
-                                                    }
-                                                    {pos.gainLossPercent >= 0 ? '+' : ''}{pos.gainLossPercent.toFixed(1)}%
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {positions.length > 5 && (
-                                        <div className="text-center">
-                                            <Link
-                                                to="/dashboard"
-                                                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                                            >
-                                                +{positions.length - 5} autres positions
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ) : null}
                     </div>
                 )}
 

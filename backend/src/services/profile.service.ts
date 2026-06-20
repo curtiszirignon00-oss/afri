@@ -23,8 +23,76 @@ const RESERVED_USERNAMES = [
 ];
 
 // =====================================
+// USERNAME (génération + unicité)
+// =====================================
+
+/**
+ * Normalise une base de username : minuscules, sans accents, alphanumérique + underscore.
+ */
+export function normalizeUsernameBase(input: string): string {
+  return (input || 'investisseur')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // retirer les accents
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '')
+    .slice(0, 20) || 'investisseur';
+}
+
+/**
+ * Vérifie si un username est déjà pris (insensible à la casse), en excluant éventuellement un user.
+ */
+export async function isUsernameTaken(username: string, excludeUserId?: string): Promise<boolean> {
+  const existing = await prisma.userProfile.findFirst({
+    where: {
+      username: { equals: username, mode: 'insensitive' },
+      ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
+    },
+    select: { userId: true },
+  });
+  return !!existing;
+}
+
+/**
+ * Génère un username unique à partir du prénom (+ nom en repli).
+ * Stratégie : base → base_brvm → base + chiffres aléatoires.
+ */
+export async function generateUniqueUsername(firstName?: string, lastName?: string): Promise<string> {
+  const base = normalizeUsernameBase(firstName || lastName || 'investisseur');
+
+  const candidates = [base, `${base}_brvm`];
+  for (const candidate of candidates) {
+    if (candidate.length >= 3 && !RESERVED_USERNAMES.includes(candidate) && !(await isUsernameTaken(candidate))) {
+      return candidate;
+    }
+  }
+
+  // Repli : suffixe numérique jusqu'à trouver un libre
+  for (let i = 0; i < 50; i++) {
+    const suffix = Math.floor(100 + Math.random() * 9900); // 3-4 chiffres
+    const candidate = `${base}${suffix}`;
+    if (!RESERVED_USERNAMES.includes(candidate) && !(await isUsernameTaken(candidate))) {
+      return candidate;
+    }
+  }
+
+  // Garde-fou ultime
+  return `${base}_${Date.now().toString(36)}`;
+}
+
+// =====================================
 // PROFIL PUBLIC
 // =====================================
+
+/**
+ * Résout un userId à partir d'un username (insensible à la casse).
+ */
+export async function getUserIdByUsername(username: string): Promise<string | null> {
+  const profile = await prisma.userProfile.findFirst({
+    where: { username: { equals: username, mode: 'insensitive' } },
+    select: { userId: true },
+  });
+  return profile?.userId ?? null;
+}
 
 /**
  * Récupère le profil public d'un utilisateur avec filtrage selon ses paramètres de confidentialité
@@ -121,6 +189,8 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
       social_links: profile.social_links || null,
       profile_type: profile.profile_type || null,
       verified_investor: profile.verified_investor || false,
+      // Tags de spécialité toujours publics
+      specialty_tags: profile.specialty_tags || [],
     };
 
     // Appliquer les filtres
@@ -285,6 +355,10 @@ export async function updateProfileSocial(userId: string, data: any) {
       if (RESERVED_USERNAMES.includes(normalizedUsername)) {
         throw new Error("Ce nom d'utilisateur est réservé et ne peut pas être utilisé");
       }
+      // Unicité applicative (pas de contrainte @unique en base sur Mongo tant que des nulls subsistent)
+      if (await isUsernameTaken(data.username, userId)) {
+        throw new Error("Ce nom d'utilisateur est déjà pris");
+      }
       profileUpdateData.username = data.username;
     }
     if (data.bio !== undefined) profileUpdateData.bio = data.bio;
@@ -295,6 +369,12 @@ export async function updateProfileSocial(userId: string, data: any) {
     if (data.banner_color !== undefined) profileUpdateData.banner_color = data.banner_color;
     if (data.banner_type !== undefined) profileUpdateData.banner_type = data.banner_type;
     if (data.social_links !== undefined) profileUpdateData.social_links = data.social_links;
+    if (data.specialty_tags !== undefined) {
+      // Limiter à 8 tags non vides, dédupliqués
+      profileUpdateData.specialty_tags = Array.from(
+        new Set((data.specialty_tags as string[]).map(t => String(t).trim()).filter(Boolean))
+      ).slice(0, 8);
+    }
 
     // Champs du User (name et lastname)
     if (data.name !== undefined) userUpdateData.name = data.name;
@@ -710,6 +790,62 @@ export async function getSuggestions(userId: string, limit: number = 10) {
     log.error('❌ Erreur getSuggestions:', error);
     throw error;
   }
+}
+
+/**
+ * Profils similaires : même ADN (profile_type) en priorité, puis même pays / niveau proche.
+ * Encourage les visites croisées (chantier 4.4).
+ */
+export async function getSimilarUsers(userId: string, limit: number = 3) {
+  const me = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { profile_type: true, country: true, level: true },
+  });
+  if (!me) return [];
+
+  const alreadyFollowing = await prisma.follow.findMany({
+    where: { followerId: userId },
+    select: { followingId: true },
+  });
+  const excludeIds = [userId, ...alreadyFollowing.map(f => f.followingId)];
+
+  const candidates = await prisma.userProfile.findMany({
+    where: {
+      userId: { notIn: excludeIds },
+      is_public: true,
+      appear_in_suggestions: true,
+      OR: [
+        me.profile_type ? { profile_type: me.profile_type } : {},
+        me.country ? { country: me.country } : {},
+        { level: { gte: Math.max(1, (me.level || 1) - 5), lte: (me.level || 1) + 5 } },
+      ],
+    },
+    include: {
+      user: { select: { name: true, lastname: true } },
+    },
+    take: limit * 3,
+  });
+
+  const scored = candidates.map(c => {
+    let score = 0;
+    if (me.profile_type && c.profile_type === me.profile_type) score += 50; // même ADN
+    if (me.country && c.country === me.country) score += 20;
+    score += Math.max(0, 15 - Math.abs((c.level || 1) - (me.level || 1)) * 3);
+    return {
+      userId: c.userId,
+      username: c.username,
+      name: c.user?.name,
+      lastname: c.user?.lastname,
+      avatar_url: c.avatar_url,
+      avatar_color: c.avatar_color,
+      level: c.level,
+      profile_type: c.profile_type,
+      specialty_tags: c.specialty_tags || [],
+      matchScore: score,
+    };
+  });
+
+  return scored.sort((a, b) => b.matchScore - a.matchScore).slice(0, limit);
 }
 
 // =====================================

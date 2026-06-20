@@ -37,6 +37,34 @@ export async function getAllAchievements() {
 }
 
 /**
+ * Statistiques de rareté d'un badge : % de membres l'ayant débloqué.
+ * Sert à rendre les badges "statutaires" (preuve sociale).
+ */
+export async function getAchievementUnlockStats(code: string) {
+  const achievement = await prisma.achievement.findUnique({
+    where: { code },
+    select: { code: true, name: true, description: true, icon: true, rarity: true, category: true },
+  });
+  if (!achievement) {
+    throw new Error('Badge introuvable');
+  }
+
+  const [unlockedCount, totalUsers] = await Promise.all([
+    prisma.userAchievement.count({ where: { achievement: { code } } }),
+    prisma.userProfile.count(),
+  ]);
+
+  const percent = totalUsers > 0 ? Math.round((unlockedCount / totalUsers) * 1000) / 10 : 0;
+
+  return {
+    ...achievement,
+    unlocked_count: unlockedCount,
+    total_users: totalUsers,
+    percent, // ex. 7.2 → "seulement 7.2% des membres l'ont"
+  };
+}
+
+/**
  * Récupère les achievements non encore notifiés (nouveaux) d'un utilisateur
  * et les marque comme notifiés
  */

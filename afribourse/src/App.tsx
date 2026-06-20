@@ -283,6 +283,9 @@ function Layout() {
           {/* Profil public (avec userId optionnel) - Accessible sans onboarding */}
           <Route path="/profile/:userId?" element={<ProfilePage />} />
 
+          {/* URL publique lisible /u/:username — Passeport Investisseur */}
+          <Route path="/u/:username" element={<ProfilePage />} />
+
           {/* Checkout - Protégé avec vérification onboarding */}
           <Route
             path="/checkout"

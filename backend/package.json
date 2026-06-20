@@ -7,6 +7,7 @@
     "import-fundamentals-2025": "tsx scripts/importFundamentals2025.ts",
     "import-fundamentals-nsbc": "tsx scripts/importFundamentalsNSBC.ts",
     "calc-missing-ratios": "tsx scripts/calculateMissingRatios.ts",
+    "backfill-usernames": "tsx scripts/backfillUsernames.ts",
     "init-challenge": "ts-node src/scripts/init-challenge-classement.ts",
     "update-streaks": "ts-node src/scripts/update-leaderboard-streaks.ts",
     "update-roi-ranks": "ts-node src/scripts/update-roi-ranks.ts",

@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import * as investorProfileService from '../services/investor-profile.service';
 import { computeInvestorScore } from '../services/investor-score.service';
+import { computePassportScore } from '../services/passport-score.service';
 import { generateBRVMAllocation } from '../services/simba-allocation.service';
 import { saveDiscoverySurvey, getSurveySummary } from '../services/discovery-survey.service';
 
@@ -27,6 +28,38 @@ export async function getInvestorProfile(req: AuthRequest, res: Response) {
 
         const profile = await investorProfileService.getInvestorProfile(userId);
         res.status(200).json({ success: true, data: profile });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+/**
+ * Get Passeport composite score (5 composantes pondérées)
+ */
+export async function getPassportScore(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const score = await computePassportScore(userId);
+        res.status(200).json({ success: true, data: score });
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
+
+/**
+ * Get activity heatmap (12 semaines glissantes)
+ */
+export async function getActivityHeatmap(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const data = await investorProfileService.getActivityHeatmap(userId);
+        res.status(200).json({ success: true, data });
     } catch (error: any) {
         res.status(400).json({ error: error.message });
     }

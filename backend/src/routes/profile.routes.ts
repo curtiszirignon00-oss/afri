@@ -5,6 +5,7 @@ import { Router } from 'express';
 import { auth, optionalAuth } from '../middlewares/auth.middleware';
 import {
   getPublicProfile,
+  getProfileByUsername,
   getMyProfile,
   getMyStats,
   updateMyProfile,
@@ -13,7 +14,8 @@ import {
   unfollowUser,
   getFollowers,
   getFollowing,
-  getSuggestions
+  getSuggestions,
+  getSimilarUsers
 } from '../controllers/profile.controller';
 import { validateUpdateProfile, validateUpdatePrivacy } from '../validation/profile.validation';
 
@@ -58,6 +60,26 @@ router.patch('/me/privacy', auth, validateUpdatePrivacy, updateMyPrivacy);
 // =====================================
 
 /**
+ * GET /api/profile/by-username/:username
+ * Récupère le profil public à partir du username (URL lisible /u/:username)
+ * Déclaré avant /:userId pour la lisibilité (chemin à 2 segments, pas de collision)
+ */
+router.get('/by-username/:username', optionalAuth, getProfileByUsername);
+
+/**
+ * GET /api/profile/suggestions
+ * Suggestions d'amis
+ * Protégé — déclaré avant /:userId pour ne pas être capturé comme un userId
+ */
+router.get('/suggestions', auth, getSuggestions);
+
+/**
+ * GET /api/profile/similar-users
+ * Profils similaires (même ADN / niveau / pays) — avant /:userId
+ */
+router.get('/similar-users', auth, getSimilarUsers);
+
+/**
  * GET /api/profile/:userId
  * Récupère le profil public d'un utilisateur
  * Public avec auth optionnelle (pour calculer isFollowing si connecté)
@@ -89,12 +111,5 @@ router.post('/:userId/follow', auth, followUser);
  * Protégé
  */
 router.delete('/:userId/unfollow', auth, unfollowUser);
-
-/**
- * GET /api/profile/suggestions
- * Suggestions d'amis
- * Protégé
- */
-router.get('/suggestions', auth, getSuggestions);
 
 export default router;

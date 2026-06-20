@@ -8,6 +8,12 @@ const router = Router();
 // Get investor profile
 router.get('/', auth, investorProfileController.getInvestorProfile);
 
+// Score Investisseur composite (Passeport)
+router.get('/passport-score', auth, investorProfileController.getPassportScore);
+
+// Heatmap d'activité (12 semaines glissantes)
+router.get('/activity-heatmap', auth, investorProfileController.getActivityHeatmap);
+
 // Update investor DNA
 router.put('/dna', auth, investorProfileController.updateInvestorDNA);
 

@@ -3,7 +3,7 @@
 // Accessibles sans authentification — utilisés par les crawlers sociaux.
 
 import { Router } from 'express';
-import { getStockOGImage, getBadgeOGImage, getPortfolioOGImage, getCertificateOGImage, getPageOGImage } from '../controllers/og.controller';
+import { getStockOGImage, getBadgeOGImage, getPortfolioOGImage, getCertificateOGImage, getPageOGImage, getProfileOGImage } from '../controllers/og.controller';
 
 const router = Router();
 
@@ -15,6 +15,9 @@ router.get('/image/badge/:code', getBadgeOGImage);
 
 // GET /api/og/image/portfolio/:userId
 router.get('/image/portfolio/:userId', getPortfolioOGImage);
+
+// GET /api/og/image/profile/:username  (carte Passeport Investisseur ADN ; ?format=story)
+router.get('/image/profile/:username', getProfileOGImage);
 
 // GET /api/og/image/certificate/:uuid
 router.get('/image/certificate/:uuid', getCertificateOGImage);

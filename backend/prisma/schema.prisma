@@ -315,6 +315,9 @@ model UserProfile {
   // Liens sociaux
   social_links Json? // { linkedin: "url", twitter: "url", instagram: "url" }
 
+  // Tags de spécialité (choisis ou dérivés de l'activité) — ex: BRVM, Dividendes, Banques…
+  specialty_tags String[] @default([])
+
   // Visibilité globale
   is_public Boolean @default(true)
 

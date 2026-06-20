@@ -8,6 +8,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../lib/api-client';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import InvestorDNA from '../components/profile/InvestorDNA';
+import InvestorScore from '../components/profile/InvestorScore';
+import ActivityHeatmap from '../components/profile/ActivityHeatmap';
+import SimilarProfiles from '../components/profile/SimilarProfiles';
 import SocialStats from '../components/profile/SocialStats';
 import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
@@ -16,33 +19,56 @@ import { Loader2, Users, Plus, Trophy, Snowflake } from 'lucide-react';
 import { useUserProfile } from '../hooks/useApi';
 
 // Gamification imports
-import { useMyAchievements, useStreak } from '../hooks/useGamification';
+import { useMyAchievements, useStreak, useGlobalLeaderboard } from '../hooks/useGamification';
 import { AchievementCard, StreakFreezeIndicator, NextAchievements } from '../components/gamification';
 import BadgeShareModal from '../components/share/BadgeShareModal';
+import BadgeDetailModal from '../components/profile/BadgeDetailModal';
+import ShareCardModal from '../components/profile/ShareCardModal';
 import MyCertificates from '../components/certificate/MyCertificates';
+import { getTopRareBadges } from '../components/common/RareBadgeIcon';
 import type { Achievement } from '../types';
 
 export default function ProfilePage() {
-    const { userId } = useParams();
+    const { userId: routeUserId, username } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { userProfile } = useAuth();
     const { mutate: syncStats } = useSyncSocialStats();
     const [showCreateCommunityModal, setShowCreateCommunityModal] = useState(false);
     const [sharingBadge, setSharingBadge] = useState<Achievement | null>(null);
+    const [detailBadge, setDetailBadge] = useState<{ achievement: Achievement; unlockedDate?: string | null } | null>(null);
+    const [showShareCard, setShowShareCard] = useState(false);
 
     // Partager un badge (ouvre le modal de partage social)
     const handleShareBadge = (achievement: Achievement) => {
         setSharingBadge(achievement);
     };
 
-    // Determiner si c'est son propre profil
     const isLoggedIn = !!userProfile?.id;
-    const isOwnProfile = !userId || userId === userProfile?.id;
+
+    // Résolution du profil par username (route /u/:username)
+    const { data: byUsernameProfile, isLoading: loadingByUsername, error: errByUsername } = useQuery({
+        queryKey: ['public-profile-username', username],
+        queryFn: async () => {
+            const response = await apiClient.get(`/profile/by-username/${username}`);
+            return response.data;
+        },
+        enabled: !!username,
+    });
+
+    // userId effectif : depuis /profile/:userId, ou résolu depuis le username
+    const userId = username ? byUsernameProfile?.userId : routeUserId;
+
+    // Determiner si c'est son propre profil
+    const isOwnProfile = username
+        ? (!!byUsernameProfile && byUsernameProfile.userId === userProfile?.id)
+        : (!routeUserId || routeUserId === userProfile?.id);
 
     // Gamification hooks (only for own profile - hooks doivent toujours etre appeles)
     const { data: myAchievements } = useMyAchievements();
     const { data: streakData } = useStreak();
+    // Classement global pour le percentile / rang affichés dans le hero
+    const { data: leaderboardData } = useGlobalLeaderboard(100);
 
     // Full user profile pour profile_type (déterminé par Module 3)
     const { data: fullUserProfile } = useUserProfile();
@@ -57,18 +83,24 @@ export default function ProfilePage() {
         enabled: isOwnProfile && isLoggedIn,
     });
 
-    // Recuperer le profil public d'un autre utilisateur
-    const { data: otherUserProfile, isLoading: isLoadingOther, error: errorOther } = useQuery({
+    // Recuperer le profil public d'un autre utilisateur (route /profile/:userId)
+    const { data: otherUserProfileRaw, isLoading: isLoadingOther, error: errorOtherRaw } = useQuery({
         queryKey: ['public-profile', userId],
         queryFn: async () => {
             const response = await apiClient.get(`/profile/${userId}`);
             return response.data;
         },
-        enabled: !!userId && !isOwnProfile,
+        enabled: !!userId && !isOwnProfile && !username,
     });
 
+    // Le profil "autre utilisateur" provient soit du username, soit de l'id
+    const otherUserProfile = username ? byUsernameProfile : otherUserProfileRaw;
+    const errorOther = username ? errByUsername : errorOtherRaw;
+
     // Etats combines
-    const isLoading = isOwnProfile ? isLoadingOwn : isLoadingOther;
+    const isLoading = username
+        ? (loadingByUsername || (isOwnProfile && isLoadingOwn))
+        : (isOwnProfile ? isLoadingOwn : isLoadingOther);
 
     // Fetch portfolio data (only for own profile)
     const { data: portfolioData } = useQuery({
@@ -197,6 +229,7 @@ export default function ProfilePage() {
                 country: investorProfile?.country || null,
                 verified_investor: investorProfile?.verified_investor || false,
                 social_links: investorProfile?.social_links || null,
+                specialty_tags: investorProfile?.specialty_tags || [],
                 followers_count: investorProfile?.followers_count || 0,
                 following_count: investorProfile?.following_count || 0,
                 posts_count: investorProfile?.posts_count || 0,
@@ -229,6 +262,7 @@ export default function ProfilePage() {
                 country: otherUserProfile?.country || null,
                 verified_investor: otherUserProfile?.verified_investor || false,
                 social_links: otherUserProfile?.social_links || null,
+                specialty_tags: otherUserProfile?.specialty_tags || [],
                 followers_count: otherUserProfile?.followersCount || otherUserProfile?.followers_count || 0,
                 following_count: otherUserProfile?.followingCount || otherUserProfile?.following_count || 0,
                 posts_count: otherUserProfile?.posts_count || 0,
@@ -248,13 +282,43 @@ export default function ProfilePage() {
           <meta name="description"        content="Profil investisseur AfriBourse — portefeuille, badges et performances sur la BRVM."/>
           <meta property="og:title"       content={profileTitle}/>
           <meta property="og:description" content="Profil investisseur AfriBourse — portefeuille, badges et performances sur la BRVM."/>
-          <meta property="og:url"         content={`https://africbourse.com/profile${userId ? `/${userId}` : ''}`}/>
-          <meta property="og:image"       content="https://africbourse.com/images/logo_afribourse.png"/>
+          <meta property="og:url"         content={profileData.profile?.username ? `https://africbourse.com/u/${profileData.profile.username}` : `https://africbourse.com/profile${userId ? `/${userId}` : ''}`}/>
+          <meta property="og:image"       content={profileData.profile?.username ? `${import.meta.env.VITE_API_URL || 'https://api.africbourse.com/api'}/og/image/profile/${profileData.profile.username}` : "https://africbourse.com/images/logo_afribourse.png"}/>
           <meta name="twitter:card"       content="summary_large_image"/>
         </Helmet>
         <div className="min-h-[calc(100vh-5rem)] bg-gray-50">
             {/* Profile Header (bouton Retour intégré dans la bannière) */}
-            <ProfileHeader profile={profileData} isOwnProfile={isOwnProfile} onBack={() => navigate(-1)} />
+            <ProfileHeader
+                profile={profileData}
+                isOwnProfile={isOwnProfile}
+                onBack={() => navigate(-1)}
+                onShareCard={() => setShowShareCard(true)}
+                profileUrl={
+                    typeof window !== 'undefined'
+                        ? (profileData.profile?.username
+                            ? `${window.location.origin}/u/${profileData.profile.username}`
+                            : `${window.location.origin}/profile/${profileData.id}`)
+                        : undefined
+                }
+                heroStats={{
+                    level: isOwnProfile ? investorProfile?.level : otherUserProfile?.level,
+                    totalXp: isOwnProfile ? investorProfile?.total_xp : otherUserProfile?.total_xp,
+                    currentStreak: isOwnProfile
+                        ? (streakData?.current_streak ?? investorProfile?.current_streak)
+                        : otherUserProfile?.current_streak,
+                    percentile: isOwnProfile ? (leaderboardData?.percentile ?? null) : null,
+                    rank: isOwnProfile
+                        ? (leaderboardData?.user_rank ?? investorProfile?.global_rank ?? null)
+                        : (otherUserProfile?.global_rank ?? null),
+                    monthlyRoi: null,
+                    completedModules: learningData
+                        ? (learningData.completedModules || learningData.completed_modules || 0)
+                        : null,
+                    profileType: isOwnProfile
+                        ? (fullUserProfile?.profile_type ?? null)
+                        : (otherUserProfile?.profile_type ?? null),
+                }}
+            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -270,6 +334,8 @@ export default function ProfilePage() {
                                         totalValue: portfolioData.totalValue || portfolioData.total_value || 0,
                                         gainLoss: portfolioData.gainLoss || portfolioData.gain_loss || 0,
                                         gainLossPercent: portfolioData.gainLossPercent || portfolioData.gain_loss_percent || 0,
+                                        cashBalance: portfolioData.cashBalance ?? portfolioData.cash_balance ?? portfolioData.liquidity ?? 0,
+                                        history: portfolioData.history || portfolioData.valueHistory || portfolioData.value_history || undefined,
                                     } : null)
                                     : (otherUserProfile?.portfolioStats || null)
                             }
@@ -301,7 +367,24 @@ export default function ProfilePage() {
                                     : (otherUserProfile?.profile_type ?? null)
                             }
                             isOwnProfile={isOwnProfile}
+                            completionPercentage={
+                                learningData && (learningData.totalModules || learningData.total_modules)
+                                    ? Math.round(
+                                          ((learningData.completedModules || learningData.completed_modules || 0) /
+                                              (learningData.totalModules || learningData.total_modules || 10)) *
+                                              100
+                                      )
+                                    : null
+                            }
+                            onShareCard={() => setShowShareCard(true)}
                         />
+
+                        {/* Score Investisseur composite — uniquement sur son propre profil */}
+                        {isOwnProfile && isLoggedIn && (
+                            <div id="score-investisseur" className="scroll-mt-24">
+                                <InvestorScore enabled={isOwnProfile && isLoggedIn} />
+                            </div>
+                        )}
                         <SocialStats profile={profileData} />
 
                         {/* Gamification Section - Only for own profile */}
@@ -309,7 +392,7 @@ export default function ProfilePage() {
                             <>
                                 {/* Streak Freezes */}
                                 {streakData && streakData.streak_freezes > 0 && (
-                                    <div className="bg-white rounded-2xl shadow-sm p-6">
+                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                         <div className="flex items-center gap-3 mb-4">
                                             <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                                                 <Snowflake className="w-5 h-5 text-blue-600" />
@@ -330,7 +413,7 @@ export default function ProfilePage() {
 
                                 {/* Recent Achievements */}
                                 {myAchievements && myAchievements.length > 0 && (
-                                    <div className="bg-white rounded-2xl shadow-sm p-6">
+                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
@@ -339,7 +422,7 @@ export default function ProfilePage() {
                                                 <div>
                                                     <h3 className="font-semibold text-gray-900">Mes Badges</h3>
                                                     <p className="text-sm text-gray-500">
-                                                        {myAchievements.length} badge{myAchievements.length > 1 ? 's' : ''} débloqués
+                                                        {myAchievements.length} badge{myAchievements.length > 1 ? 's' : ''} débloqués · top 3 les plus rares
                                                     </p>
                                                 </div>
                                             </div>
@@ -351,16 +434,23 @@ export default function ProfilePage() {
                                             </button>
                                         </div>
                                         <div className="space-y-3">
-                                            {myAchievements.slice(0, 3).map((ua) => (
-                                                <AchievementCard
+                                            {getTopRareBadges(myAchievements, 3).map((ua) => (
+                                                <button
                                                     key={ua.id}
-                                                    achievement={ua.achievement}
-                                                    userAchievement={ua}
-                                                    isUnlocked={true}
-                                                    onShare={handleShareBadge}
-                                                    isSharing={false}
-                                                    size="sm"
-                                                />
+                                                    type="button"
+                                                    onClick={() => setDetailBadge({ achievement: ua.achievement, unlockedDate: ua.unlocked_at })}
+                                                    className="w-full text-left rounded-xl cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 motion-reduce:transition-none"
+                                                    aria-label={`Voir le détail du badge ${ua.achievement.name}`}
+                                                >
+                                                    <AchievementCard
+                                                        achievement={ua.achievement}
+                                                        userAchievement={ua}
+                                                        isUnlocked={true}
+                                                        onShare={handleShareBadge}
+                                                        isSharing={false}
+                                                        size="sm"
+                                                    />
+                                                </button>
                                             ))}
                                         </div>
                                         {myAchievements.length > 3 && (
@@ -374,21 +464,46 @@ export default function ProfilePage() {
                                     </div>
                                 )}
 
+                                {/* Empty state badges : aucun badge encore débloqué */}
+                                {(!myAchievements || myAchievements.length === 0) && (
+                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+                                        <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <Trophy className="w-6 h-6 text-amber-600" />
+                                        </div>
+                                        <p className="text-sm font-medium text-gray-900">Aucun badge pour l'instant</p>
+                                        <p className="text-xs text-gray-500 mt-1">Termine ton premier quiz pour débloquer ton premier badge.</p>
+                                        <button
+                                            onClick={() => navigate('/learn')}
+                                            className="mt-3 inline-flex items-center gap-1 text-sm text-amber-600 hover:text-amber-700 font-medium cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
+                                        >
+                                            Commencer un quiz →
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Heatmap d'activité (12 semaines glissantes) */}
+                                <ActivityHeatmap enabled={isOwnProfile && isLoggedIn} />
+
                                 {/* Prochains Badges - objectifs les plus proches */}
                                 <NextAchievements />
                             </>
                         )}
 
+                        {/* Profils similaires — uniquement sur son propre profil */}
+                        {isOwnProfile && isLoggedIn && (
+                            <SimilarProfiles enabled={isOwnProfile && isLoggedIn} dnaType={fullUserProfile?.profile_type ?? null} />
+                        )}
+
                         {/* Mes Certificats — uniquement sur son propre profil */}
                         {isOwnProfile && isLoggedIn && (
-                            <div className="bg-white rounded-2xl shadow-sm p-6">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <MyCertificates />
                             </div>
                         )}
 
                         {/* Create Community Button - Only for own profile */}
                         {isOwnProfile && (
-                            <div className="bg-white rounded-2xl shadow-sm p-6">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
                                         <Users className="w-5 h-5 text-indigo-600" />
@@ -436,6 +551,22 @@ export default function ProfilePage() {
                 onClose={() => setSharingBadge(null)}
                 achievement={sharingBadge}
                 unlockedDate={sharingBadge ? myAchievements?.find(ua => ua.achievement.id === sharingBadge.id)?.unlocked_at : undefined}
+            />
+
+            {/* Badge Detail Modal (preuve sociale : % de membres) */}
+            <BadgeDetailModal
+                isOpen={!!detailBadge}
+                onClose={() => setDetailBadge(null)}
+                achievement={detailBadge?.achievement ?? null}
+                unlockedDate={detailBadge?.unlockedDate}
+            />
+
+            {/* Carte ADN partageable */}
+            <ShareCardModal
+                isOpen={showShareCard}
+                onClose={() => setShowShareCard(false)}
+                username={profileData.profile?.username}
+                dnaType={isOwnProfile ? (fullUserProfile?.profile_type ?? null) : (otherUserProfile?.profile_type ?? null)}
             />
 
         </div>
