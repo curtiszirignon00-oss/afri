@@ -1354,18 +1354,9 @@ function readStoredReferralCode(): string | null {
 }
 
 const WebinarSection: React.FC = () => {
-  const [selectedWebinar, setSelectedWebinar] = useState<Webinar | null>(null);
   const [showPackModal, setShowPackModal] = useState(false);
   const [showPromoPopup, setShowPromoPopup] = useState(false);
-  const [counts, setCounts] = useState<Record<string, number>>({});
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/webinars/counts`)
-      .then((r) => r.json())
-      .then((d) => { if (d?.data) setCounts(d.data); })
-      .catch(() => {});
-  }, []);
 
   // Popup promo — affiché une seule fois (localStorage)
   useEffect(() => {
@@ -1389,14 +1380,6 @@ const WebinarSection: React.FC = () => {
         }
       })
       .catch(() => {});
-  }, []);
-
-  const handleRegister = useCallback((w: Webinar) => {
-    analytics.trackAction('webinar_register_click', w.title, { webinarId: w.id, price: w.price });
-    setSelectedWebinar(w);
-  }, []);
-  const handleClose = useCallback(() => {
-    setSelectedWebinar(null);
   }, []);
 
   const handleClosePromo = useCallback(() => {
@@ -1447,29 +1430,10 @@ const WebinarSection: React.FC = () => {
           onRegister={() => { analytics.trackAction('webinar_pack_click', PACK.title, { packId: PACK.id }); setShowPackModal(true); }}
         />
 
-        {/* Webinaires individuels */}
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-          Ou choisissez un webinaire individuel
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {WEBINARS.map((w, i) => (
-            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} />
-          ))}
-        </div>
-
         {/* Section Ambassadeur — visible uniquement pour les participants connectés */}
         <AmbassadorSection />
 
       </section>
-
-      {selectedWebinar && (
-        <RegistrationModal
-          webinar={selectedWebinar}
-          count={(counts[selectedWebinar.id] ?? 0) + WEBINAR_COUNT_OFFSET}
-          onClose={handleClose}
-          onPreregistered={() => setCounts((prev) => ({ ...prev, [selectedWebinar.id]: (prev[selectedWebinar.id] ?? 0) + 1 }))}
-        />
-      )}
 
       {showPackModal && (
         <PackRegistrationModal referralInfo={referralInfo} onClose={() => setShowPackModal(false)} />

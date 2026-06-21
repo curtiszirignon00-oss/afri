@@ -180,8 +180,8 @@ const FAQ = [
     a: 'Le lien Zoom est envoyé par email ET par WhatsApp avant chaque session. Vous recevrez également un rappel 24h avant.',
   },
   {
-    q: "Est-ce que je peux assister à une seule session ?",
-    a: "Oui. Chaque webinaire est disponible à l'unité. Si vous souhaitez le parcours complet, le Pack Parcours est plus avantageux — il inclut aussi la communauté, les plans d'action et le Deal Flow.",
+    q: "Comment fonctionne le parcours ?",
+    a: "Le parcours se suit en cohorte complète : 5 sessions live (Fondamentaux, Analyse fondamentale, Analyse technique) sur 3 semaines. Le Pack Parcours inclut aussi la communauté, les plans d'action et le Deal Flow.",
   },
   {
     q: 'Quel niveau est requis ?',
