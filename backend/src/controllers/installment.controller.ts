@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
-import { initiateDeposit } from '../services/pawapay.service';
+import { initiateDeposit, initiatePaymentPageSession } from '../services/pawapay.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // ── Paramètres du paiement échelonné (Pack Parcours) ──────────────────────────
@@ -56,6 +56,7 @@ function publicPlan(plan: any) {
 interface InitResult {
   ok: boolean;
   depositId?: string;
+  redirectUrl?: string;
   status?: number;
   error?: string;
 }
@@ -70,6 +71,7 @@ async function initiateInstallment(
   correspondent: string,
   phone: string,
   currency: string,
+  returnUrl?: string,
 ): Promise<InitResult> {
   if (plan.status !== 'active') {
     return { ok: false, status: 409, error: 'Ce plan de paiement est déjà clôturé.' };
@@ -119,6 +121,32 @@ async function initiateInstallment(
     where: { id: plan.id },
     data: { schedule: updatedSchedule as any },
   });
+
+  // Wave : pas de dépôt direct → Payment Page (redirection)
+  if (String(correspondent).toUpperCase().startsWith('WAVE')) {
+    try {
+      const country = String(correspondent).split('_').pop() || undefined;
+      const session = await initiatePaymentPageSession({
+        depositId,
+        returnUrl: returnUrl || `${FRONTEND_URL}/paiement/retour`,
+        amount: String(next.amount),
+        country,
+        reason: plan.planName.slice(0, 50),
+        statementDescription: description,
+        language: 'FR',
+      });
+      log.info('[Installment] Session Wave initiée', { depositId, planId: plan.id, index: next.index });
+      return { ok: true, redirectUrl: session.redirectUrl };
+    } catch (err) {
+      await prisma.payment.update({ where: { depositId }, data: { status: 'FAILED', failureReason: 'WAVE_SESSION_ERROR' } }).catch(() => {});
+      await prisma.installmentPlan.update({
+        where: { id: plan.id },
+        data: { schedule: schedule.map((l) => (l.index === next.index ? { ...l, pendingAt: undefined } : l)) as any },
+      }).catch(() => {});
+      log.error('[Installment] Échec session Wave', { err, planId: plan.id });
+      return { ok: false, status: 502, error: "Impossible d'initier le paiement Wave. Réessayez." };
+    }
+  }
 
   try {
     const result = await initiateDeposit({ depositId, amount: String(next.amount), currency, correspondent, phone, description });
@@ -203,10 +231,10 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
       },
     });
 
-    const result = await initiateInstallment(plan, correspondent, payPhone, currency);
+    const result = await initiateInstallment(plan, correspondent, payPhone, currency, req.body.returnUrl);
     if (!result.ok) return res.status(result.status ?? 500).json({ error: result.error });
 
-    return res.status(201).json({ depositId: result.depositId, installmentPlanId: plan.id });
+    return res.status(201).json({ depositId: result.depositId, redirectUrl: result.redirectUrl, installmentPlanId: plan.id });
   } catch (error) {
     log.error('[Installment] Erreur start', { error, userId });
     return res.status(500).json({ error: 'Erreur serveur' });
@@ -227,10 +255,10 @@ export async function payNextInstallment(req: AuthenticatedRequest, res: Respons
     const plan = await prisma.installmentPlan.findFirst({ where: { id: installmentPlanId, userId } });
     if (!plan) return res.status(404).json({ error: 'Plan introuvable.' });
 
-    const result = await initiateInstallment(plan, correspondent, phone, plan.currency);
+    const result = await initiateInstallment(plan, correspondent, phone, plan.currency, req.body.returnUrl);
     if (!result.ok) return res.status(result.status ?? 500).json({ error: result.error });
 
-    return res.status(201).json({ depositId: result.depositId, installmentPlanId: plan.id });
+    return res.status(201).json({ depositId: result.depositId, redirectUrl: result.redirectUrl, installmentPlanId: plan.id });
   } catch (error) {
     log.error('[Installment] Erreur pay-next', { error, userId });
     return res.status(500).json({ error: 'Erreur serveur' });
@@ -278,10 +306,10 @@ export async function payByToken(req: Request, res: Response) {
     const plan = await prisma.installmentPlan.findUnique({ where: { payToken: token } });
     if (!plan) return res.status(404).json({ error: 'Plan introuvable.' });
 
-    const result = await initiateInstallment(plan, correspondent, phone, currency ?? plan.currency);
+    const result = await initiateInstallment(plan, correspondent, phone, currency ?? plan.currency, req.body.returnUrl);
     if (!result.ok) return res.status(result.status ?? 500).json({ error: result.error });
 
-    return res.status(201).json({ depositId: result.depositId, installmentPlanId: plan.id });
+    return res.status(201).json({ depositId: result.depositId, redirectUrl: result.redirectUrl, installmentPlanId: plan.id });
   } catch (error) {
     log.error('[Installment] Erreur pay-by-token', { error });
     return res.status(500).json({ error: 'Erreur serveur' });

@@ -1216,9 +1216,10 @@ const InstallmentBanner: React.FC = () => {
       const res = await authFetch(`${API_BASE_URL}/installments/pay-next`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ installmentPlanId: plan.id, correspondent, phone: msisdn }),
+        body: JSON.stringify({ installmentPlanId: plan.id, correspondent, phone: msisdn, returnUrl: `${window.location.origin}/paiement/retour` }),
       });
       const data = await res.json();
+      if (res.ok && data.redirectUrl) { window.location.assign(data.redirectUrl); return; } // Wave
       if (res.ok && data.depositId) track(data.depositId);
       else toast.error(data.error ?? 'Erreur lors du paiement.');
     } catch {

@@ -86,9 +86,13 @@ export default function InstallmentPayPage() {
       const res = await fetch(`${API_BASE_URL}/installments/by-token/${token}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correspondent, phone: msisdn, currency: getCurrency(dialCode) }),
+        body: JSON.stringify({ correspondent, phone: msisdn, currency: getCurrency(dialCode), returnUrl: `${window.location.origin}/paiement/retour` }),
       });
       const data = await res.json();
+      if (res.ok && data.redirectUrl) {
+        window.location.assign(data.redirectUrl); // Wave → Payment Page
+        return;
+      }
       if (res.ok && data.depositId) {
         setStep('success');
       } else {

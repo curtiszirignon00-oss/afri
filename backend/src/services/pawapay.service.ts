@@ -128,3 +128,54 @@ export async function initiateRefund(
 
   return response.json() as Promise<PawaPayRefundResponse>;
 }
+
+// ─── Payment Page (widget) — utilisé pour Wave (pas dispo en dépôt direct) ─────
+
+export interface PawaPayPaymentPageRequest {
+  depositId: string;       // UUID — devient l'ID du dépôt
+  returnUrl: string;       // URL de retour après paiement
+  amount?: string;         // ex "35000" (string, sans zéro non significatif)
+  country?: string;        // ISO 3166-1 alpha-3, ex "CIV"
+  reason?: string;         // <= 50 car. — affiché au client
+  statementDescription?: string; // 4-22 car. alphanum + espaces
+  language?: 'EN' | 'FR';
+}
+
+export interface PawaPayPaymentPageResponse {
+  redirectUrl: string;
+}
+
+/**
+ * Crée une session Payment Page PawaPay et renvoie l'URL de redirection.
+ * La complétion arrive ensuite via le webhook /deposits classique (même depositId).
+ */
+export async function initiatePaymentPageSession(
+  params: PawaPayPaymentPageRequest,
+): Promise<PawaPayPaymentPageResponse> {
+  const body = JSON.stringify({
+    depositId: params.depositId,
+    returnUrl: params.returnUrl,
+    ...(params.amount ? { amount: params.amount } : {}),
+    ...(params.country ? { country: params.country } : {}),
+    ...(params.reason ? { reason: params.reason } : {}),
+    ...(params.statementDescription ? { statementDescription: params.statementDescription } : {}),
+    language: params.language ?? 'FR',
+  });
+
+  const response = await fetch(`${PAWAPAY_API_URL}/v1/widget/sessions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${PAWAPAY_API_TOKEN}`,
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    log.error('[PawaPay] Erreur création session Payment Page', { status: response.status, body: errorText });
+    throw new Error(`PawaPay payment page error: ${response.status} — ${errorText}`);
+  }
+
+  return response.json() as Promise<PawaPayPaymentPageResponse>;
+}

@@ -78,6 +78,7 @@ const WebinarPage = lazy(() => import('./pages/WebinarPage'));
 const PaymentLinkPage = lazy(() => import('./pages/PaymentLinkPage'));
 const InstallmentStartPage = lazy(() => import('./pages/InstallmentStartPage'));
 const InstallmentPayPage = lazy(() => import('./pages/InstallmentPayPage'));
+const PaymentReturnPage = lazy(() => import('./pages/PaymentReturnPage'));
 const CertificatePage = lazy(() => import('./pages/CertificatePage'));
 const FormationPremiumPage = lazy(() => import('./pages/FormationPremiumPage'));
 const ParcoursPage = lazy(() => import('./pages/ParcoursPage'));
@@ -216,6 +217,7 @@ function Layout() {
           <Route path="/pay/:token" element={<PaymentLinkPage />} />
           <Route path="/parcours/paiement-3-fois" element={<InstallmentStartPage />} />
           <Route path="/echelonner/:token" element={<InstallmentPayPage />} />
+          <Route path="/paiement/retour" element={<PaymentReturnPage />} />
           <Route path="/formation" element={<FormationPremiumPage />} />
           <Route path="/certificat/:uuid" element={<CertificatePage />} />
 

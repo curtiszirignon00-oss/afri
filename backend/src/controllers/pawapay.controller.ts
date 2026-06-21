@@ -5,9 +5,12 @@ import { log } from '../config/logger';
 import {
   initiateDeposit,
   initiateRefund,
+  initiatePaymentPageSession,
   type PawaPayDepositCallback,
   type PawaPayRefundCallback,
 } from '../services/pawapay.service';
+
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
 import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail } from '../services/email.service';
 import { buildInstallmentPayUrl } from './installment.controller';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
@@ -408,6 +411,9 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
 
   const depositId = crypto.randomUUID();
 
+  // Wave n'est pas disponible en dépôt direct → on passe par la Payment Page (redirection)
+  const isWave = String(correspondent).toUpperCase().startsWith('WAVE');
+
   try {
     // Créer le paiement en base avant d'appeler PawaPay (traçabilité)
     await prisma.payment.create({
@@ -428,6 +434,27 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         } : undefined,
       },
     });
+
+    if (isWave) {
+      const country = String(correspondent).split('_').pop() || undefined;
+      const returnUrl = (req.body.returnUrl as string) || `${FRONTEND_URL}/paiement/retour`;
+      try {
+        const session = await initiatePaymentPageSession({
+          depositId,
+          returnUrl,
+          amount: String(finalAmount),
+          country,
+          reason: planName.slice(0, 50),
+          statementDescription: description,
+          language: 'FR',
+        });
+        return res.status(201).json({ success: true, depositId, paymentPage: true, redirectUrl: session.redirectUrl });
+      } catch (err) {
+        await prisma.payment.update({ where: { depositId }, data: { status: 'FAILED', failureReason: 'WAVE_SESSION_ERROR' } }).catch(() => {});
+        log.error('[PawaPay] Échec session Wave', { err, depositId });
+        return res.status(502).json({ success: false, error: "Impossible d'initier le paiement Wave. Réessayez." });
+      }
+    }
 
     const result = await initiateDeposit({
       depositId,

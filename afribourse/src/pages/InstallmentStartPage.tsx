@@ -142,9 +142,14 @@ export default function InstallmentStartPage() {
           correspondent,
           payPhone: msisdn,                          // Mobile Money
           currency: getCurrency(payDialCode),
+          returnUrl: `${window.location.origin}/paiement/retour`,
         }),
       });
       const data = await res.json();
+      if (res.ok && data.redirectUrl) {
+        window.location.assign(data.redirectUrl); // Wave → Payment Page
+        return;
+      }
       if (res.ok && data.depositId) {
         track(data.depositId);
       } else {

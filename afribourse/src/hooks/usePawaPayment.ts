@@ -84,6 +84,7 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
           phone: params.phone,
           ...(params.registrationEmail ? { registrationEmail: params.registrationEmail } : {}),
           ...(params.referralCode ? { referralCode: params.referralCode } : {}),
+          returnUrl: `${window.location.origin}/paiement/retour`,
         }),
       });
 
@@ -94,6 +95,12 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
         const rejCode = data.reason?.rejectionCode ?? data.reason?.failureCode ?? '';
         const detail = rejCode ? ` [${rejCode}]` : '';
         setErrorMessage((data.error ?? 'Erreur lors de l\'initiation du paiement.') + detail);
+        return;
+      }
+
+      // Wave (Payment Page) → redirection vers la page de paiement hébergée
+      if (data.redirectUrl) {
+        window.location.assign(data.redirectUrl);
         return;
       }
 
