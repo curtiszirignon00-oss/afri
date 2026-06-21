@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getPlatformStats, getPremiumIntents, forceVerifyUser, getTrialStats, getAIFeedbackStats, sendWebinarLaunchCampaign } from '../controllers/admin.controller';
+import { getPlatformStats, getPremiumIntents, getFormationLeads, forceVerifyUser, getTrialStats, getAIFeedbackStats, sendWebinarLaunchCampaign } from '../controllers/admin.controller';
 import { listAdminArticles, getAdminArticle, createAdminArticle, updateAdminArticle, deleteAdminArticle, uploadArticleCover } from '../controllers/articles.controller';
 import { uploadSingleImage } from '../config/upload.config';
 import { listModules, createModule, updateModule, issueCertificate, listCertificatesAdmin, revokeCertificate, resendCertificateEmail } from '../controllers/certificate.controller';
@@ -13,6 +13,9 @@ router.get('/platform-stats', admin, getPlatformStats);
 
 // Obtenir la liste des utilisateurs avec intentions premium
 router.get('/premium-intents', admin, getPremiumIntents);
+
+// Prospects formation : toute personne ayant cliqué « Payer » sur /formation (+ numéro)
+router.get('/formation-leads', admin, getFormationLeads);
 
 // Forcer la vérification d'email d'un utilisateur
 router.post('/force-verify-email', admin, forceVerifyUser);

@@ -105,6 +105,54 @@ export const getPremiumIntents = async (req: AuthRequest, res: Response) => {
 };
 
 /**
+ * Liste des prospects formation (page /formation) — toute personne ayant cliqué
+ * sur « Payer » et saisi son numéro. Chaque clic crée un Payment (planId=premium-modules)
+ * avant l'appel PawaPay : on capture donc le lead même si le paiement n'aboutit pas.
+ * (admin uniquement)
+ */
+export const getFormationLeads = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Accès refusé. Admin uniquement.' });
+    }
+
+    const leads = await prisma.payment.findMany({
+      where: { planId: 'premium-modules' },
+      orderBy: { created_at: 'desc' },
+      select: {
+        id: true,
+        phone: true,
+        correspondent: true,
+        amount: true,
+        currency: true,
+        status: true,
+        created_at: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            lastname: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({ success: true, data: leads });
+  } catch (error) {
+    log.error('Erreur getFormationLeads:', error);
+    return res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+/**
  * Obtenir toutes les statistiques de la plateforme (admin uniquement) - VERSION SIMPLIFIÉE
  */
 export const getPlatformStats = async (req: AuthRequest, res: Response) => {

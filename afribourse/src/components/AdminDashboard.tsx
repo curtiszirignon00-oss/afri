@@ -131,6 +131,22 @@ interface PremiumIntent {
   };
 }
 
+interface FormationLead {
+  id: string;
+  phone: string;
+  correspondent: string;
+  amount: string;
+  currency: string;
+  status: string; // PENDING | COMPLETED | FAILED
+  created_at: string;
+  user: {
+    id: string;
+    name: string;
+    lastname: string;
+    email: string;
+  } | null;
+}
+
 interface WebinarRegistrationRecord {
   id: string;
   webinarId: string;
@@ -191,6 +207,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<PlatformStats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [premiumIntents, setPremiumIntents] = useState<PremiumIntent[]>([]);
+  const [formationLeads, setFormationLeads] = useState<FormationLead[]>([]);
   const [trialStats, setTrialStats] = useState<TrialStats | null>(null);
   const [aiFeedbackStats, setAIFeedbackStats] = useState<AIFeedbackStats | null>(null);
   const [webinarRegistrations, setWebinarRegistrations] = useState<WebinarRegistrationRecord[]>([]);
@@ -225,6 +242,7 @@ export default function AdminDashboard() {
     fetchStats();
     fetchAnalytics();
     fetchPremiumIntents();
+    fetchFormationLeads();
     fetchTrialStats();
     fetchAIFeedbackStats();
     fetchWebinarRegistrations();
@@ -348,6 +366,25 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Erreur premium intents:', err);
+    }
+  };
+
+  const fetchFormationLeads = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/formation-leads`,
+        {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        }
+      );
+      if (response.ok) {
+        const result = await response.json();
+        setFormationLeads(result.data ?? []);
+      }
+    } catch (err) {
+      console.error('Erreur formation leads:', err);
     }
   };
 
@@ -479,6 +516,39 @@ export default function AdminDashboard() {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'intentions_premium.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const OPERATOR_FROM_CORRESPONDENT = (c: string): string => {
+    const up = (c || '').toUpperCase();
+    if (up.startsWith('WAVE')) return 'Wave';
+    if (up.startsWith('ORANGE')) return 'Orange Money';
+    if (up.startsWith('MTN')) return 'MTN MoMo';
+    if (up.startsWith('MOOV')) return 'Moov Money';
+    if (up.includes('FREE')) return 'Free Money';
+    return c || '—';
+  };
+
+  const exportFormationLeadsCSV = () => {
+    const q = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = ['Nom', 'Prénom', 'Email', 'Téléphone', 'Opérateur', 'Statut', 'Montant', 'Date'];
+    const lines = formationLeads.map((l) => [
+      q(l.user?.name ?? ''),
+      q(l.user?.lastname ?? ''),
+      q(l.user?.email ?? ''),
+      q(l.phone),
+      q(OPERATOR_FROM_CORRESPONDENT(l.correspondent)),
+      q(l.status),
+      q(`${l.amount} ${l.currency}`),
+      q(new Date(l.created_at).toLocaleString('fr-FR')),
+    ].join(','));
+    const csv = [header.join(','), ...lines].join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `prospects_formation_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1070,6 +1140,98 @@ export default function AdminDashboard() {
                   <tr>
                     <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-400">
                       Aucune intention premium enregistrée
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Prospects Formation — clics sur « Payer » + numéro (page /formation) */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <Phone className="w-5 h-5 text-green-600 mr-2" />
+                Prospects Formation — Numéros ({formationLeads.length})
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Toute personne ayant cliqué « Payer » sur la page formation et saisi son numéro
+                (capturé même si le paiement n'est pas finalisé).
+              </p>
+            </div>
+            <button
+              onClick={exportFormationLeadsCSV}
+              disabled={formationLeads.length === 0}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Exporter CSV
+            </button>
+          </div>
+          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opérateur</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {formationLeads.map((lead) => {
+                  const statusBadge =
+                    lead.status === 'COMPLETED'
+                      ? 'bg-green-100 text-green-800'
+                      : lead.status === 'FAILED'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-800';
+                  const statusLabel =
+                    lead.status === 'COMPLETED'
+                      ? 'Payé'
+                      : lead.status === 'FAILED'
+                      ? 'Échoué'
+                      : 'En attente';
+                  return (
+                    <tr key={lead.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {lead.user ? `${lead.user.name} ${lead.user.lastname}` : '—'}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        <a href={`tel:+${lead.phone}`} className="text-blue-600 hover:underline">
+                          +{lead.phone}
+                        </a>
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-blue-600">
+                        {lead.user?.email ?? '—'}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {OPERATOR_FROM_CORRESPONDENT(lead.correspondent)}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusBadge}`}>
+                          {statusLabel}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(lead.created_at).toLocaleString('fr-FR', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {formationLeads.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-400">
+                      Aucun prospect formation pour l'instant
                     </td>
                   </tr>
                 )}
