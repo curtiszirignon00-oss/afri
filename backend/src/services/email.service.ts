@@ -4413,14 +4413,14 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
   'w1-fondamentaux':             { title: 'Fondamentaux de la bourse',        date: '23 mai 2026',          accentColor: '#1D4ED8' },
   'w2-fondamentale':             { title: 'Analyse fondamentale',              date: '30–31 mai 2026',       accentColor: '#059669' },
   'w3-technique':                { title: 'Analyse technique',                 date: '6–7 juin 2026',        accentColor: '#EA580C' },
-  'w1-fondamentaux-juin':        { title: 'Fondamentaux de la bourse',              date: '13 juin 2026',        accentColor: '#1D4ED8' },
-  'w2-fondamentale-juin':        { title: 'Analyse fondamentale',                   date: '20–21 juin 2026',     accentColor: '#059669' },
-  'w2a-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 1',        date: '20 juin 2026',        accentColor: '#059669' },
-  'w2b-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 2',        date: '21 juin 2026',        accentColor: '#059669' },
-  'w3-technique-juin':           { title: 'Analyse technique',                       date: '27–28 juin 2026',     accentColor: '#EA580C' },
-  'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '27 juin 2026',        accentColor: '#EA580C' },
-  'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '28 juin 2026',        accentColor: '#EA580C' },
-  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '13 juin → 28 juin',  accentColor: '#1D4ED8' },
+  'w1-fondamentaux-juin':        { title: 'Fondamentaux de la bourse',              date: '4 juillet 2026',      accentColor: '#1D4ED8' },
+  'w2-fondamentale-juin':        { title: 'Analyse fondamentale',                   date: '18–19 juillet 2026',  accentColor: '#059669' },
+  'w2a-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 1',        date: '18 juillet 2026',     accentColor: '#059669' },
+  'w2b-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 2',        date: '19 juillet 2026',     accentColor: '#059669' },
+  'w3-technique-juin':           { title: 'Analyse technique',                       date: '1–2 août 2026',       accentColor: '#EA580C' },
+  'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '1 août 2026',         accentColor: '#EA580C' },
+  'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '2 août 2026',         accentColor: '#EA580C' },
+  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '4 juillet → 2 août', accentColor: '#1D4ED8' },
 };
 
 export async function sendWebinarPaymentConfirmEmail({

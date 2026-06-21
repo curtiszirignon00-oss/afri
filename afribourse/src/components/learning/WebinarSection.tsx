@@ -114,8 +114,8 @@ const WEBINARS: Webinar[] = [
     title: 'Fondamentaux de la bourse',
     tagline: 'Passez de zéro à investisseur en une session',
     theme: 'Initiation • Stratégie • BRVM',
-    date: '2026-06-13T09:00:00Z',
-    endDate: '2026-06-13T12:00:00Z',
+    date: '2026-07-04T09:00:00Z',
+    endDate: '2026-07-04T12:00:00Z',
     earlyBirdDeadline: '2026-05-01T00:00:00Z',
     hideEarlyBirdIndicator: true,
     price: 10000,
@@ -133,8 +133,8 @@ const WEBINARS: Webinar[] = [
     title: 'Analyse fondamentale',
     tagline: '2 sessions · Bilans, ratios, valorisation DCF/PER sur la BRVM',
     theme: 'Analyse • Valorisation • Données financières',
-    date: '2026-06-20T09:00:00Z',
-    endDate: '2026-06-21T12:00:00Z',
+    date: '2026-07-18T09:00:00Z',
+    endDate: '2026-07-19T12:00:00Z',
     earlyBirdDeadline: '2026-05-01T00:00:00Z',
     price: 20000,
     discountPercent: 0,
@@ -151,8 +151,8 @@ const WEBINARS: Webinar[] = [
     title: 'Analyse technique',
     tagline: '2 sessions · Graphiques, patterns, RSI, MACD sur la BRVM',
     theme: 'Graphiques • Patterns • Indicateurs',
-    date: '2026-06-27T09:00:00Z',
-    endDate: '2026-06-28T12:00:00Z',
+    date: '2026-08-01T09:00:00Z',
+    endDate: '2026-08-02T12:00:00Z',
     earlyBirdDeadline: '2026-05-01T00:00:00Z',
     price: 20000,
     discountPercent: 0,
@@ -189,13 +189,13 @@ const PACK = {
     'Certificat "Investisseur BRVM — Niveau 1"',
   ],
   deliveryCalendar: [
-    { when: 'Dès l\'inscription', what: 'Email de confirmation + lien Zoom' },
-    { when: 'Samedi suivant', what: 'S1 — Fondamentaux de la bourse (3h)' },
-    { when: '+2 semaines', what: 'S2 & S3 — Analyse fondamentale (2×3h)' },
-    { when: '+4 semaines', what: 'S4 & S5 — Analyse technique (2×3h)' },
+    { when: 'Avant le 4 juillet', what: 'Email de confirmation + lien Zoom' },
+    { when: '4 juillet — S1', what: 'Fondamentaux de la bourse (3h)' },
+    { when: '18–19 juillet — S2 & S3', what: 'Analyse fondamentale (2×3h)' },
+    { when: '1–2 août — S4 & S5', what: 'Analyse technique (2×3h)' },
     { when: 'Après chaque thème', what: "Plan d'action personnalisé" },
     { when: 'En continu', what: 'Accès Communauté + éditions Deal Flow' },
-    { when: 'En fin de parcours', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
+    { when: '18 août*', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
   ],
 };
 
@@ -213,43 +213,22 @@ function getPackCountdown(targetIso: string) {
 }
 function pad2(n: number) { return String(n).padStart(2, '0'); }
 
-// ─── Dates dynamiques ─────────────────────────────────────────────────────────
-// Inscription possible à tout moment : la 1ère session est le samedi qui suit
-// l'inscription, puis une session toutes les 2 semaines.
-
-const SESSION_INTERVAL_DAYS = 14;
-
-// Prochain samedi STRICTEMENT après aujourd'hui (à 9h)
-function nextSaturday(from: Date = new Date()): Date {
-  const d = new Date(from);
-  d.setHours(9, 0, 0, 0);
-  const day = d.getDay(); // 0=dim … 6=sam
-  let diff = (6 - day + 7) % 7;
-  if (diff === 0) diff = 7; // si on est samedi, on prend le samedi suivant
-  d.setDate(d.getDate() + diff);
-  return d;
-}
-
-// Date de la session n° index (0 = 1ère session = prochain samedi)
-function getSessionDate(index: number, from: Date = new Date()): Date {
-  const base = nextSaturday(from);
-  const d = new Date(base);
-  d.setDate(d.getDate() + index * SESSION_INTERVAL_DAYS);
-  return d;
-}
-
-function formatSessionDate(d: Date): string {
-  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-}
-
-function formatTime(d: Date): string {
-  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatPrice(xof: number): string {
   return xof.toLocaleString('fr-FR') + ' XOF';
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatDateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function isDeadlinePassed(deadline: string): boolean {
@@ -424,7 +403,7 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
           </p>
           <h3 className="text-white font-bold text-lg leading-snug pr-6">{webinar.title}</h3>
           <p className="text-white/70 text-sm mt-1 capitalize">
-            {formatSessionDate(getSessionDate(Math.max(0, WEBINARS.findIndex(w => w.id === webinar.id))))} · {formatTime(getSessionDate(Math.max(0, WEBINARS.findIndex(w => w.id === webinar.id))))}
+            {formatDate(webinar.date)} · {formatTime(webinar.date)}
           </p>
         </div>
 
@@ -573,15 +552,14 @@ const RegistrationModal: React.FC<{ webinar: Webinar; count: number; onClose: (r
 
 // ─── WebinarCard ──────────────────────────────────────────────────────────────
 
-const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number; sessionIndex: number }> = ({
-  webinar, onRegister, isFirst, count, sessionIndex,
+const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void; isFirst: boolean; count: number }> = ({
+  webinar, onRegister, isFirst, count,
 }) => {
   const displayCount = Math.max(count, webinar.earlyBirdTaken ?? 0);
   const earlyBird = effectiveCount(displayCount, webinar.earlyBirdDeadline) < EARLY_BIRD_SEATS;
   const discountedPrice = webinar.price * (1 - webinar.discountPercent / 100);
+  const isMultiDay = new Date(webinar.date).toDateString() !== new Date(webinar.endDate).toDateString();
   const [countdown, setCountdown] = useState(getPackCountdown(webinar.earlyBirdDeadline));
-  // Date dynamique : 1ère session = prochain samedi, puis +2 semaines par session
-  const sessionDate = getSessionDate(sessionIndex);
 
   useEffect(() => {
     const t = setInterval(() => setCountdown(getPackCountdown(webinar.earlyBirdDeadline)), 1000);
@@ -615,11 +593,15 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <span className="capitalize">{formatSessionDate(sessionDate)}</span>
+            {isMultiDay ? (
+              <span>{formatDateShort(webinar.date)} & {formatDateShort(webinar.endDate)}</span>
+            ) : (
+              <span className="capitalize">{formatDate(webinar.date)}</span>
+            )}
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <span>{formatTime(sessionDate)} — {webinar.duration} de formation live</span>
+            <span>{formatTime(webinar.date)} — {webinar.duration} de formation live</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Video className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -1146,16 +1128,16 @@ const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onCl
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Offre spéciale · Parcours Investisseur</span>
-              <p className="text-base font-extrabold text-gray-900 leading-snug">Démarrez votre parcours investisseur</p>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">Cohorte Juillet 2026</span>
+              <p className="text-base font-extrabold text-gray-900 leading-snug">Rejoignez le parcours investisseur</p>
             </div>
           </div>
 
           {/* Texte principal */}
           <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-            Inscrivez-vous <strong>quand vous voulez</strong> : votre 1ère session a lieu le <strong>samedi qui suit</strong>,
-            puis une session toutes les 2 semaines. Suivez les <strong>5 sessions live</strong> (Fondamentaux · Analyse fondamentale · Analyse technique)
-            et obtenez votre <strong>Certificat Investisseur BRVM Niveau 1</strong>.
+            La <strong>cohorte de juillet</strong> démarre le <strong>samedi 4 juillet</strong>.
+            Suivez les <strong>5 sessions live</strong> (Fondamentaux · Analyse fondamentale · Analyse technique),
+            du 4 juillet au 2 août, et obtenez votre <strong>Certificat Investisseur BRVM Niveau 1</strong>.
           </p>
 
           {/* Prix */}
@@ -1446,7 +1428,7 @@ const WebinarSection: React.FC = () => {
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               Sessions live animées par des analystes et experts de marché Afribourse.
-              Inscrivez-vous à tout moment : 1ère session le samedi qui suit, puis une toutes les 2 semaines.
+              Cohorte juillet 2026 — 1ère session le samedi 4 juillet. Places limitées à 50 par session.
             </p>
           </div>
 
@@ -1471,7 +1453,7 @@ const WebinarSection: React.FC = () => {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {WEBINARS.map((w, i) => (
-            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} sessionIndex={i} />
+            <WebinarCard key={w.id} webinar={w} onRegister={handleRegister} isFirst={i === 0} count={(counts[w.id] ?? 0) + WEBINAR_COUNT_OFFSET} />
           ))}
         </div>
 

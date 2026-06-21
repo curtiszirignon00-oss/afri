@@ -18,7 +18,7 @@ const OUTCOMES = [
 
 const PROGRAMME = [
   {
-    phase: 'Avant le 13 juin',
+    phase: 'Avant le 4 juillet',
     label: 'Confirmation',
     items: ['Email de confirmation reçu', 'Lien Zoom envoyé par email et WhatsApp'],
     textColor: 'text-slate-600',
@@ -26,7 +26,7 @@ const PROGRAMME = [
     bg: 'bg-white border-gray-100',
   },
   {
-    phase: '13 juin — Session 1',
+    phase: '4 juillet — Session 1',
     label: 'Fondamentaux · 3h live',
     items: [
       'La BRVM — fonctionnement, acteurs, instruments',
@@ -38,7 +38,7 @@ const PROGRAMME = [
     bg: 'bg-blue-50 border-blue-100',
   },
   {
-    phase: '14 juin — J+1',
+    phase: '5 juillet — J+1',
     label: "Plan d'action Fondamentaux",
     items: ["PDF livré par email avec les 5 décisions concrètes à prendre cette semaine"],
     textColor: 'text-slate-600',
@@ -46,7 +46,7 @@ const PROGRAMME = [
     bg: 'bg-white border-gray-100',
   },
   {
-    phase: '20 juin — Session 2',
+    phase: '18 juillet — Session 2',
     label: 'Analyse fondamentale Partie 1 · 3h live',
     items: [
       'Lire un bilan et un compte de résultat',
@@ -58,7 +58,7 @@ const PROGRAMME = [
     bg: 'bg-emerald-50 border-emerald-100',
   },
   {
-    phase: '21 juin — Session 3',
+    phase: '19 juillet — Session 3',
     label: 'Analyse fondamentale Partie 2 · 3h live',
     items: [
       'Valoriser une action BRVM avec DCF, PER, VCB',
@@ -70,7 +70,7 @@ const PROGRAMME = [
     bg: 'bg-emerald-50 border-emerald-100',
   },
   {
-    phase: '22 juin — J+1',
+    phase: '20 juillet — J+1',
     label: "Plan d'action Analyse fondamentale",
     items: ["PDF avec 3 entreprises à analyser selon la méthode apprise"],
     textColor: 'text-slate-600',
@@ -78,7 +78,7 @@ const PROGRAMME = [
     bg: 'bg-white border-gray-100',
   },
   {
-    phase: '27 juin — Session 4',
+    phase: '1 août — Session 4',
     label: 'Analyse technique Partie 1 · 3h live',
     items: [
       'Lire les graphiques, repérer les patterns clés',
@@ -90,7 +90,7 @@ const PROGRAMME = [
     bg: 'bg-orange-50 border-orange-100',
   },
   {
-    phase: '28 juin — Session 5',
+    phase: '2 août — Session 5',
     label: 'Analyse technique Partie 2 · 3h live',
     items: [
       'Indicateurs : RSI, MACD, moyennes mobiles',
@@ -102,7 +102,7 @@ const PROGRAMME = [
     bg: 'bg-orange-50 border-orange-100',
   },
   {
-    phase: '29 juin — J+1',
+    phase: '3 août — J+1',
     label: "Plan d'action Analyse technique",
     items: ["PDF avec 5 configurations graphiques à surveiller sur la BRVM"],
     textColor: 'text-slate-600',
@@ -110,7 +110,7 @@ const PROGRAMME = [
     bg: 'bg-white border-gray-100',
   },
   {
-    phase: '30 juin — Semaines suivantes',
+    phase: '4 août — Semaines suivantes',
     label: 'Communauté + Deal Flow',
     items: [
       'Accès à la communauté Afribourse activé (3 mois)',
@@ -122,7 +122,7 @@ const PROGRAMME = [
     bg: 'bg-indigo-50 border-indigo-100',
   },
   {
-    phase: '14 juillet*',
+    phase: '18 août*',
     label: 'Certificat',
     items: ['Certificat "Investisseur BRVM Niveau 1" — si quiz complété'],
     textColor: 'text-amber-700',
@@ -212,7 +212,7 @@ export default function WebinarPage() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-2 mb-6">
             <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              Cohorte Juin 2026
+              Cohorte Juillet 2026
             </span>
             <span className="text-blue-400 text-xs">· Places limitées à 50 par session</span>
           </div>
@@ -223,7 +223,7 @@ export default function WebinarPage() {
           </h1>
 
           <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mb-8 leading-relaxed">
-            3 sessions live avec des analystes BRVM. Analyse fondamentale, technique, plans d'action personnalisés — tout ce qu'il faut pour investir avec conviction.
+            5 sessions live avec des analystes BRVM. Analyse fondamentale, technique, plans d'action personnalisés — tout ce qu'il faut pour investir avec conviction.
           </p>
 
           <div className="flex flex-wrap gap-8 mb-10">
@@ -231,7 +231,7 @@ export default function WebinarPage() {
               { v: '5', l: 'sessions live' },
               { v: '15h', l: 'de formation' },
               { v: '50', l: 'places max' },
-              { v: '13 juin', l: '1ère session' },
+              { v: '4 juil.', l: '1ère session' },
             ].map((k) => (
               <div key={k.l}>
                 <p className="text-2xl sm:text-3xl font-extrabold text-white leading-none">{k.v}</p>
@@ -408,7 +408,7 @@ export default function WebinarPage() {
           <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
           <p className="text-blue-200 mb-8 text-base leading-relaxed">
-            La cohorte de juin démarre le 13 juin. Les places sont limitées à 50 par session.
+            La cohorte de juillet démarre le 4 juillet. Les places sont limitées à 50 par session.
           </p>
           <button
             onClick={scrollToRegistration}
