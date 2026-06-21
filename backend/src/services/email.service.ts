@@ -4093,11 +4093,11 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
 
   if (webinarId === 'w1-fondamentaux' || webinarId === 'w1-fondamentaux-juin') {
     return {
-      subject: '✅ Votre place est réservée — Webinaire du 13 juin',
+      subject: '✅ Votre place est réservée — Webinaire du 4 juillet',
       preheader: 'Tout ce que vous devez savoir avant la session',
       headerBg: '#1D4ED8',
       heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 50%,#4338CA 100%)',
-      heroLabel: 'Session 1 · 13 juin 2026',
+      heroLabel: 'Session 1 · 4 juillet 2026',
       heroTitle: '🎉 Inscription confirmée !',
       heroSub: "Maîtriser les fondamentaux de la bourse — votre première étape vers l'investissement sur la BRVM.",
       accentColor: '#1D4ED8',
@@ -4106,7 +4106,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
       intro: 'Votre inscription est confirmée.',
       recap: `
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Titre</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Maîtriser les fondamentaux de la bourse</td></tr>
-        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Date</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 13 juin 2026</td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Date</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 4 juillet 2026</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Heure</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">09h00 — 12h00 GMT</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Durée</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">3 heures de formation live</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Format</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Visioconférence</td></tr>
@@ -4117,8 +4117,8 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
         <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">3. <strong>Rejoignez 5 min avant le début.</strong> Le lien sera actif à partir de 08h50.</p>
         <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">4. <strong>Ayez un bloc-notes.</strong> Vous recevrez aussi un résumé par email après la session.</p>`,
       after: `
-        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le lendemain (14 juin)</strong> : vous recevrez votre Plan d'Action personnalisé — 3 actions concrètes à réaliser sur la BRVM.</p>
-        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Session 2</strong> : Analyse fondamentale les 20-21 juin. En tant que participant, vous bénéficiez d'un accès prioritaire.</p>`,
+        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le lendemain (5 juillet)</strong> : vous recevrez votre Plan d'Action personnalisé — 3 actions concrètes à réaliser sur la BRVM.</p>
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Sessions 2 & 3</strong> : Analyse fondamentale les 18-19 juillet. En tant que participant, vous bénéficiez d'un accès prioritaire.</p>`,
       learning: [
         'Comprendre la BRVM : structure, acteurs, fonctionnement des 8 pays UEMOA',
         'Actions vs obligations : différences, rendements, risques',
@@ -4126,18 +4126,18 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
         'Les erreurs classiques des débutants et comment les éviter',
         'Ouvrir un compte SGI : les étapes concrètes et les bonnes questions à poser',
       ],
-      signoff: 'À samedi 13 juin,',
+      signoff: 'À samedi 4 juillet,',
       amount: '10 000 XOF',
     };
   }
 
   if (webinarId === 'w2-fondamentale' || webinarId === 'w2-fondamentale-juin') {
     return {
-      subject: "✅ C'est confirmé — Vous analysez comme un pro le 20 juin",
+      subject: "✅ C'est confirmé — Vous analysez comme un pro le 18 juillet",
       preheader: 'Bilans, ratios, rapports annuels — tout commence ici',
       headerBg: '#065F46',
       heroGradient: 'linear-gradient(135deg,#064E3B 0%,#065F46 50%,#047857 100%)',
-      heroLabel: 'Session 2 · 20-21 juin 2026',
+      heroLabel: 'Sessions 2 & 3 · 18-19 juillet 2026',
       heroTitle: '✅ Inscription confirmée !',
       heroSub: "Vous avez fait le bon choix. L'analyse fondamentale sépare ceux qui investissent avec méthode de ceux qui investissent à l'instinct.",
       accentColor: '#065F46',
@@ -4146,17 +4146,17 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
       intro: 'Votre inscription est confirmée.',
       recap: `
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Titre</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Analyse fondamentale — lire les données comme un pro</td></tr>
-        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Vendredi 20 juin & Samedi 21 juin 2026</td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 18 juillet & Dimanche 19 juillet 2026</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Heure</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">09h00 — 13h00 GMT (chaque jour)</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Durée</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">4 heures de formation live par jour</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Format</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Visioconférence</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Animé par</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Analystes financiers Afribourse</td></tr>`,
       prep: `
-        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">Sur africbourse.com, révisez les modules <strong>« Comprendre les états financiers »</strong> et <strong>« Ratios boursiers »</strong>. Vous aurez une longueur d'avance le 20 juin.</p>
+        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">Sur africbourse.com, révisez les modules <strong>« Comprendre les états financiers »</strong> et <strong>« Ratios boursiers »</strong>. Vous aurez une longueur d'avance le 18 juillet.</p>
         <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Téléchargez le rapport annuel 2024</strong> de 2 sociétés BRVM de votre choix — on les analysera ensemble pendant la session.</p>`,
       after: `
-        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le 22 juin</strong> : votre Plan d'Action Analyse Fondamentale — une liste de 3 actions BRVM à étudier avec la méthode apprise, et un template d'analyse à remplir.</p>
-        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Session 3</strong> : Analyse technique les 27-28 juin.</p>`,
+        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le 20 juillet</strong> : votre Plan d'Action Analyse Fondamentale — une liste de 3 actions BRVM à étudier avec la méthode apprise, et un template d'analyse à remplir.</p>
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Sessions 4 & 5</strong> : Analyse technique les 1-2 août.</p>`,
       learning: [
         'Lire un bilan comptable et identifier les signaux de solidité financière',
         'Décrypter les ratios clés : PER, PBR, rendement du dividende, dette nette/EBITDA',
@@ -4164,7 +4164,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
         'Comparer des entreprises du même secteur pour trouver les valeurs sous-évaluées',
         'Cas pratiques : analyse en direct de 3 sociétés cotées à la BRVM',
       ],
-      signoff: 'À vendredi 20 juin,',
+      signoff: 'À samedi 18 juillet,',
       amount: '20 000 XOF',
     };
   }
@@ -4172,10 +4172,10 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
   if (webinarId === 'w3-technique' || webinarId === 'w3-technique-juin') {
     return {
       subject: '✅ Inscrit — Vous lirez les graphiques avant tout le monde',
-      preheader: 'Patterns, indicateurs, timing — votre arsenal complet le 27 juin',
+      preheader: 'Patterns, indicateurs, timing — votre arsenal complet le 1 août',
       headerBg: '#C2410C',
       heroGradient: 'linear-gradient(135deg,#9A3412 0%,#C2410C 50%,#EA580C 100%)',
-      heroLabel: 'Session 3 · 27-28 juin 2026',
+      heroLabel: 'Sessions 4 & 5 · 1-2 août 2026',
       heroTitle: '🔥 Inscription confirmée !',
       heroSub: "L'analyse technique, c'est l'art de lire ce que le marché dit déjà — avant que tout le monde ne le voie.",
       accentColor: '#C2410C',
@@ -4184,7 +4184,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
       intro: 'Votre inscription est confirmée.',
       recap: `
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Titre</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Analyse technique — lisez les graphiques avant tout le monde</td></tr>
-        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 27 juin & Dimanche 28 juin 2026</td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 1 août & Dimanche 2 août 2026</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Heure</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">09h00 — 13h00 GMT (chaque jour)</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Durée</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">4 heures de formation live par jour</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Format</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Visioconférence</td></tr>
@@ -4193,8 +4193,8 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
         <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">Ouvrez le <strong>simulateur de portefeuille Afribourse</strong> et l'outil d'analyse des cours. Vous travaillerez sur les graphiques en temps réel — ayez les deux onglets prêts.</p>
         <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Choisissez 2-3 actions BRVM</strong> qui vous intéressent. On les analysera ensemble à partir de leurs graphiques réels.</p>`,
       after: `
-        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le 29 juin</strong> : votre Plan d'Action Analyse Technique — une short-list de 3 actions avec les niveaux d'entrée et de sortie identifiés pendant la session.</p>
-        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Semaine du 30 juin</strong> : si vous avez participé aux 3 sessions, votre dossier de candidature au Certificat Investisseur BRVM Niveau 1 est automatiquement ouvert.</p>`,
+        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le 3 août</strong> : votre Plan d'Action Analyse Technique — une short-list de 3 actions avec les niveaux d'entrée et de sortie identifiés pendant la session.</p>
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Semaine du 4 août</strong> : si vous avez participé aux 5 sessions, votre dossier de candidature au Certificat Investisseur BRVM Niveau 1 est automatiquement ouvert.</p>`,
       learning: [
         'Les patterns de prix incontournables : supports, résistances, tendances',
         "Les indicateurs techniques adaptés à la BRVM : RSI, MACD, moyennes mobiles",
@@ -4202,54 +4202,54 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
         'Gérer le risque : stop-loss, take-profit, position sizing sur petit capital',
         'Analyse en direct : 3 graphiques BRVM décryptés en temps réel',
       ],
-      signoff: 'À samedi 27 juin,',
+      signoff: 'À samedi 1 août,',
       amount: '20 000 XOF',
     };
   }
 
-  // Pack Parcours Investisseur
+  // Pack Parcours Investisseur — Cohorte Juillet 2026
   return {
     subject: '🎓 Bienvenue dans le Parcours Investisseur BRVM — Tout commence maintenant',
     preheader: 'Votre calendrier complet, vos accès, et ce qui vous attend semaine par semaine',
     headerBg: '#1D4ED8',
     heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 40%,#7C3AED 100%)',
-    heroLabel: 'Pack Parcours Investisseur · 3 sessions · Communauté · Certificat',
+    heroLabel: 'Pack Parcours Investisseur · 5 sessions · Communauté · Certificat',
     heroTitle: '🎓 Bienvenue dans le Parcours !',
-    heroSub: "D'ici le 14 juillet, vous aurez assisté à 3 sessions intensives, reçu 3 plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.",
+    heroSub: "D'ici la mi-août, vous aurez suivi 5 sessions live (15h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.",
     accentColor: '#1D4ED8',
     accentLight: '#EFF6FF',
     accentBorder: '#BFDBFE',
     intro: 'Vous avez pris une décision importante aujourd\'hui.',
     recap: `
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Pack</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Parcours Investisseur BRVM</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 13 juin 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 2</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">20-21 juin 2026 · 09h00-13h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 3</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">27-28 juin 2026 · 09h00-13h00 GMT</td></tr>`,
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 4 juillet 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">18-19 juillet 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">1-2 août 2026 · 09h00-12h00 GMT</td></tr>`,
     prep: `
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>3 webinaires live</strong> (13 juin + 20-21 juin + 27-28 juin)</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif le 30 juin)</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>3 Plans d'Action personnalisés</strong> — livrés J+1 après chaque session</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Deal Flow hebdomadaire</strong> — 12 éditions (démarrage le 30 juin)</p>
-      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible le 14 juillet si quiz complété</p>`,
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>5 sessions live · 15h</strong> (4 juillet + 18-19 juillet + 1-2 août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif début août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>3 Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Deal Flow hebdomadaire</strong> — 12 éditions exclusives</p>
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible mi-août si quiz complété</p>`,
     after: `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
         <tr style="background-color:#F8FAFC;">
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Date</td>
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Livrable</td>
         </tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 13 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 14 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">20-21 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 2 — Analyse fondamentale (4H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 22 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">27-28 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 3 — Analyse technique (4H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 29 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 30 juin</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Lun. 14 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 4 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 5 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">18-19 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 20 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">1-2 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 3 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 4 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Mi-août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
       </table>`,
     learning: [
-      'Session 1 : Comprendre la BRVM, ses acteurs et ses mécanismes',
-      'Session 2 : Lire et analyser les états financiers des entreprises cotées',
-      'Session 3 : Maîtriser les graphiques, patterns et timing d\'entrée',
+      'S1 : Comprendre la BRVM, ses acteurs et ses mécanismes',
+      'S2 & S3 : Lire et analyser les états financiers des entreprises cotées',
+      'S4 & S5 : Maîtriser les graphiques, patterns et timing d\'entrée',
       'Deal Flow : analyses BRVM exclusives chaque semaine pendant 3 mois',
       'Certificat nominatif, horodaté et vérifiable par QR code — partageable sur LinkedIn',
     ],
