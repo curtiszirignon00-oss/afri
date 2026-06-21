@@ -14,6 +14,7 @@ import {
     cronSendReengagementEmails,
     cronPulseMarche,
     cronCalculateDailyRatios,
+    cronTestSmtp,
 } from '../controllers/cron.controller';
 
 const router = Router();
@@ -59,5 +60,8 @@ router.post('/pulse-marche', cronPulseMarche);
 
 // Lun–ven 17h00 UTC: Recalcul des ratios dépendant du cours (market_cap, P/E, P/B, dividend_yield)
 router.post('/calculate-daily-ratios', cronCalculateDailyRatios);
+
+// Diagnostic: Test SMTP — vérifie que Brevo envoie correctement
+router.post('/test-smtp', cronTestSmtp);
 
 export default router;

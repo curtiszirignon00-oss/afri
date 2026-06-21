@@ -18,7 +18,7 @@ if (missingVars.length > 0) {
     `Les emails ne seront PAS envoyés. Configurez ces variables dans le dashboard Render.`
   );
 } else {
-  log.debug(`[MAILER] ✅ SMTP configuré → ${config.email.host}:${port} (user: ${config.email.user})`);
+  log.info(`[MAILER] ✅ SMTP configuré → ${config.email.host}:${port} (user: ${config.email.user})`);
 }
 
 // ── Transporter Nodemailer ────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ const transporter = nodemailer.createTransport({
 // ── Vérification de la connexion au démarrage (asynchrone, non-bloquant) ─────
 if (missingVars.length === 0) {
   transporter.verify().then(() => {
-    log.debug('[MAILER] ✅ Connexion SMTP vérifiée avec succès');
+    log.info('[MAILER] ✅ Connexion SMTP vérifiée avec succès');
   }).catch((err: Error) => {
     log.error(`[MAILER] ❌ Connexion SMTP échouée au démarrage : ${err.message}`);
     log.error('[MAILER] → Vérifiez SMTP_HOST, SMTP_USER, SMTP_PASS dans les variables Render.');

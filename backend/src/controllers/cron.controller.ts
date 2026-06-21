@@ -255,6 +255,39 @@ export async function cronSendReengagementEmails(req: Request, res: Response) {
 }
 
 // ============================================================
+// POST /api/cron/test-smtp
+// Diagnostic SMTP : envoie un email de test pour vérifier la config Brevo
+// Body (optionnel) : { "to": "email@example.com" }
+// ============================================================
+export async function cronTestSmtp(req: Request, res: Response) {
+    const { sendEmail } = await import('../services/email.service');
+    const { smtpReady } = await import('../config/mailer');
+    const to: string = req.body?.to || 'curtiszirignon00@gmail.com';
+
+    if (!smtpReady) {
+        log.error('[CRON API] Test SMTP — SMTP non configuré (variables manquantes)');
+        return res.status(500).json({
+            success: false,
+            error: 'SMTP non configuré : vérifiez SMTP_HOST, SMTP_USER, SMTP_PASS dans Render',
+        });
+    }
+
+    try {
+        await sendEmail({
+            to,
+            subject: '[AfriBourse] Test SMTP — ' + new Date().toISOString(),
+            html: `<p>Test SMTP réussi depuis le serveur AfriBourse.</p><p>Date: ${new Date().toLocaleString('fr-FR')}</p>`,
+            text: `Test SMTP réussi depuis le serveur AfriBourse. Date: ${new Date().toLocaleString('fr-FR')}`,
+        });
+        log.info(`[CRON API] Test SMTP — email envoyé à ${to}`);
+        return res.status(200).json({ success: true, message: `Email de test envoyé à ${to}` });
+    } catch (error: any) {
+        log.error('[CRON API] Test SMTP — échec:', error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// ============================================================
 // POST /api/cron/pulse-marche
 // Post quotidien Pulse du marché (lun–ven 17h00 UTC)
 // ============================================================
