@@ -4636,6 +4636,87 @@ export async function sendInstallmentProgressEmail({
   });
 }
 
+// ─── Pré-inscription cohorte (liste d'attente, gratuit) ──────────────────────
+
+interface CohortPreregistrationParams {
+  email: string;
+  firstName: string;
+}
+
+export async function sendCohortPreregistrationEmail({
+  email, firstName,
+}: CohortPreregistrationParams): Promise<void> {
+  const name = firstName || 'Investisseur';
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Pré-inscription reçue — Cohorte Juillet 2026</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <span style="display:none;max-height:0;overflow:hidden;">Vous êtes sur la liste de la cohorte de juillet — on vous recontacte sur WhatsApp &#847;&zwnj;&nbsp;</span>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+          <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Parcours Investisseur · Cohorte Juillet 2026</p>
+        </td></tr>
+
+        <tr><td style="background:linear-gradient(135deg,#1E3A8A 0%,#3730A3 100%);padding:40px;text-align:center;">
+          <div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;line-height:64px;">
+            <span style="font-size:32px;">✅</span>
+          </div>
+          <h1 style="margin:0 0 8px;font-size:26px;font-weight:900;color:#fff;">Pré-inscription reçue !</h1>
+          <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);">Vous êtes sur la liste de la cohorte de juillet 2026.</p>
+        </td></tr>
+
+        <tr><td style="background:#fff;padding:36px 40px;">
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
+          <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+            Merci pour votre intérêt ! Votre pré-inscription au <strong>Parcours Investisseur BRVM</strong> (cohorte de juillet) est bien enregistrée.
+            <strong>Notre équipe vous recontacte très vite sur WhatsApp</strong> pour finaliser votre inscription et vous transmettre toutes les informations.
+          </p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Programme — cohorte juillet</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>4 juillet</strong> — S1 · Fondamentaux de la bourse</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>18–19 juillet</strong> — S2 & S3 · Analyse fondamentale</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>1–2 août</strong> — S4 & S5 · Analyse technique</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>
+              </table>
+            </td></tr>
+          </table>
+
+          <p style="margin:0;font-size:13px;color:#94A3B8;line-height:1.6;">
+            Les places sont limitées à 50 par session. En finalisant rapidement, vous sécurisez la vôtre.
+          </p>
+        </td></tr>
+
+        <tr><td style="background:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+          <p style="margin:0 0 4px;font-size:12px;color:#94A3B8;">Questions ? Répondez à cet email ou contactez-nous sur WhatsApp.</p>
+          <p style="margin:0;font-size:12px;color:#CBD5E1;">© 2026 AfriBourse · africbourse.com</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: '✅ Pré-inscription reçue — Cohorte Juillet 2026 (on vous recontacte)',
+    html,
+    text: `Bonjour ${name}, votre pré-inscription au Parcours Investisseur BRVM (cohorte juillet) est enregistrée. Notre équipe vous recontacte sur WhatsApp pour finaliser. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
+  });
+}
+
 // ─── Webinar zoom link email ──────────────────────────────────────────────────
 
 interface WebinarZoomLinkParams {

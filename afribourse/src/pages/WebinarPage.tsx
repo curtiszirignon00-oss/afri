@@ -4,6 +4,7 @@ import {
   Users, BarChart3, Award, Zap, MessageSquare, Calendar,
 } from 'lucide-react';
 import WebinarSection from '../components/learning/WebinarSection';
+import CohortPreregister from '../components/learning/CohortPreregister';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -180,7 +181,7 @@ const FAQ = [
   },
   {
     q: "Est-ce que je peux assister à une seule session ?",
-    a: "Oui. Chaque webinaire est disponible à l'unité. Si vous souhaitez les 3, le Pack Parcours est plus avantageux — il inclut aussi la communauté, les plans d'action et le Deal Flow.",
+    a: "Oui. Chaque webinaire est disponible à l'unité. Si vous souhaitez le parcours complet, le Pack Parcours est plus avantageux — il inclut aussi la communauté, les plans d'action et le Deal Flow.",
   },
   {
     q: 'Quel niveau est requis ?',
@@ -261,6 +262,9 @@ export default function WebinarPage() {
         </div>
       </section>
 
+      {/* ── Pré-inscription gratuite — Cohorte Juillet ───────────────────── */}
+      <CohortPreregister />
+
       {/* ── Section 2 — Le problème ──────────────────────────────────────── */}
       <section className="bg-gray-50 px-4 py-16 sm:px-6">
         <div className="max-w-2xl mx-auto text-center space-y-6">
@@ -272,7 +276,7 @@ export default function WebinarPage() {
             L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter. Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.
           </p>
           <p className="text-gray-700 text-base leading-relaxed font-medium">
-            Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout. Ce programme existe pour changer ça — concrètement, en 3 sessions.
+            Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout. Ce programme existe pour changer ça — concrètement, en 5 sessions.
           </p>
         </div>
       </section>
