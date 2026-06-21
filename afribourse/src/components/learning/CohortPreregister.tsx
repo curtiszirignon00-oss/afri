@@ -66,9 +66,18 @@ const CohortPreregister: React.FC = () => {
                 Pré-inscription gratuite
               </span>
               <h2 className="text-2xl font-extrabold leading-snug mb-2">Réservez votre place — Cohorte Juillet 2026</h2>
-              <p className="text-blue-200 text-sm mb-5">
+              <p className="text-blue-200 text-sm mb-4">
                 Laissez vos coordonnées : on vous recontacte sur WhatsApp pour finaliser. Aucun paiement maintenant.
               </p>
+
+              {/* Avantage préinscrit — 10% + date limite */}
+              <div className="bg-amber-400/15 border border-amber-300/40 rounded-xl p-3 mb-4">
+                <p className="text-amber-200 text-sm font-extrabold flex items-center gap-1.5">🎁 -10% pour tous les préinscrits</p>
+                <p className="text-amber-100 text-xs mt-1">
+                  <span className="line-through opacity-70">35 000</span> <strong className="text-white">31 500 XOF</strong> · paiement à finaliser <strong>avant le 3 juillet</strong>
+                </p>
+              </div>
+
               <div className="space-y-2.5 text-sm">
                 <div className="flex items-center gap-2"><CalendarClock className="w-4 h-4 text-blue-300 flex-shrink-0" /> 1ère session le samedi 4 juillet</div>
                 <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-300 flex-shrink-0" /> 5 sessions live · 15h de formation</div>
@@ -84,7 +93,10 @@ const CohortPreregister: React.FC = () => {
                     <CheckCircle className="w-8 h-8 text-green-500" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-1">Pré-inscription confirmée 🎉</h3>
-                  <p className="text-sm text-gray-600">Notre équipe vous recontacte très vite sur WhatsApp pour finaliser votre place.</p>
+                  <p className="text-sm text-gray-600 mb-3">Notre équipe vous recontacte très vite sur WhatsApp pour finaliser votre place.</p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 font-semibold">
+                    🎁 -10% réservé aux préinscrits : 31 500 XOF au lieu de 35 000 · à régler avant le 3 juillet
+                  </div>
                 </div>
               ) : (
                 <>

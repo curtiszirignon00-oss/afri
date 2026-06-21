@@ -4676,10 +4676,22 @@ export async function sendCohortPreregistrationEmail({
 
         <tr><td style="background:#fff;padding:36px 40px;">
           <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
-          <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
             Merci pour votre intérêt ! Votre pré-inscription au <strong>Parcours Investisseur BRVM</strong> (cohorte de juillet) est bien enregistrée.
             <strong>Notre équipe vous recontacte très vite sur WhatsApp</strong> pour finaliser votre inscription et vous transmettre toutes les informations.
           </p>
+
+          <!-- Avantage préinscrit : -10% + date limite -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:18px 22px;text-align:center;">
+              <p style="margin:0 0 6px;font-size:16px;font-weight:900;color:#92400E;">🎁 -10% réservé aux préinscrits</p>
+              <p style="margin:0 0 4px;font-size:15px;color:#374151;">
+                <span style="text-decoration:line-through;color:#9CA3AF;">35 000 XOF</span>
+                &nbsp;<strong style="color:#059669;font-size:18px;">31 500 XOF</strong>
+              </p>
+              <p style="margin:0;font-size:13px;color:#92400E;font-weight:700;">⏳ Offre valable jusqu'au 3 juillet — finalisez votre paiement avant cette date.</p>
+            </td></tr>
+          </table>
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:20px 24px;">
@@ -4711,9 +4723,9 @@ export async function sendCohortPreregistrationEmail({
 
   await sendEmail({
     to: email,
-    subject: '✅ Pré-inscription reçue — Cohorte Juillet 2026 (on vous recontacte)',
+    subject: '🎁 Pré-inscription reçue : -10% pour la Cohorte Juillet (avant le 3 juillet)',
     html,
-    text: `Bonjour ${name}, votre pré-inscription au Parcours Investisseur BRVM (cohorte juillet) est enregistrée. Notre équipe vous recontacte sur WhatsApp pour finaliser. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
+    text: `Bonjour ${name}, votre pré-inscription au Parcours Investisseur BRVM (cohorte juillet) est enregistrée. Avantage préinscrit : -10% (31 500 XOF au lieu de 35 000), à finaliser avant le 3 juillet. Notre équipe vous recontacte sur WhatsApp. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
   });
 }
 
