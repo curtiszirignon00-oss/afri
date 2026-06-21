@@ -4647,6 +4647,7 @@ export async function sendCohortPreregistrationEmail({
   email, firstName,
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
+  const payUrl = `${process.env.FRONTEND_URL ?? 'https://www.africbourse.com'}/parcours/cohorte-juillet`;
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -4693,6 +4694,16 @@ export async function sendCohortPreregistrationEmail({
             </td></tr>
           </table>
 
+          <!-- CTA Payer maintenant -->
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+            <tr><td align="center">
+              <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#EA580C 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
+                💳 Payer maintenant -10% (31 500 XOF) →
+              </a>
+              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Ou payer en 3 fois — choix proposé sur la page.</p>
+            </td></tr>
+          </table>
+
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:20px 24px;">
               <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Programme — cohorte juillet</p>
@@ -4725,7 +4736,7 @@ export async function sendCohortPreregistrationEmail({
     to: email,
     subject: '🎁 Pré-inscription reçue : -10% pour la Cohorte Juillet (avant le 3 juillet)',
     html,
-    text: `Bonjour ${name}, votre pré-inscription au Parcours Investisseur BRVM (cohorte juillet) est enregistrée. Avantage préinscrit : -10% (31 500 XOF au lieu de 35 000), à finaliser avant le 3 juillet. Notre équipe vous recontacte sur WhatsApp. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
+    text: `Bonjour ${name}, votre pré-inscription au Parcours Investisseur BRVM (cohorte juillet) est enregistrée. Avantage préinscrit : -10% (31 500 XOF au lieu de 35 000), à finaliser avant le 3 juillet. Payez ici : ${payUrl}. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
   });
 }
 

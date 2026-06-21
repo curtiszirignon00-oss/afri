@@ -34,6 +34,28 @@ const PACK_ID = 'pack-parcours-investisseur';
 const PACK_PRICE_FULL = 35000;
 const PACK_PRICE_REFERRAL = 24500;
 
+// Offre cohorte juillet — -10% pour les préinscrits jusqu'au 3 juillet
+const PACK_PRICE_COHORT = 31500;
+const COHORT_REG_ID = 'cohorte-juillet-2026';
+const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
+
+// Réconcilie la pré-inscription cohorte (liste d'attente) en "paid" quand le pack est réglé
+async function reconcileCohortPreregistration(email: string | undefined | null, depositId: string) {
+  if (!email) return;
+  try {
+    const reg = await prisma.webinarRegistration.findFirst({ where: { webinarId: COHORT_REG_ID, email } });
+    if (reg && reg.paymentStatus !== 'paid') {
+      await prisma.webinarRegistration.update({
+        where: { id: reg.id },
+        data: { paymentStatus: 'paid', depositId, paidAt: new Date() },
+      });
+      log.info('[COHORT] Pré-inscription réconciliée → payée', { email });
+    }
+  } catch (err) {
+    log.error('[COHORT] Échec réconciliation pré-inscription', { err, email });
+  }
+}
+
 // ============================================================
 // Paiement échelonné — traitement d'une mensualité confirmée
 // ============================================================
@@ -103,6 +125,7 @@ async function handleInstallmentCompleted(payment: any, depositId: string, paylo
       amount: String(plan.totalAmount),
       currency: plan.currency,
     }).catch((err) => log.error('[Installment] Échec email confirmation finale', { err, planId }));
+    await reconcileCohortPreregistration(plan.email, depositId);
     log.info('[Installment] Plan complété', { planId, totalAmount: plan.totalAmount });
   } else {
     if (reg && reg.paymentStatus !== 'paid') {
@@ -222,6 +245,11 @@ export async function handleDepositCallback(req: Request, res: Response) {
             }).catch((err) =>
               log.error('[PawaPay] Échec email confirmation paiement', { err, depositId })
             );
+
+            // Réconcilier la pré-inscription cohorte (si la personne s'était pré-inscrite)
+            if (payment.planId === PACK_ID) {
+              await reconcileCohortPreregistration(reg.email, depositId);
+            }
 
             // ── Logique parrainage Pack Parcours ──────────────────────────
             if (payment.planId === PACK_ID) {
@@ -388,6 +416,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     }
   } else if (planId === PACK_ID) {
     // R5 — Pack Parcours : montant toujours calculé côté serveur
+    const cohortActive = req.body.cohortDiscount === true && new Date() <= COHORT_DISCOUNT_DEADLINE;
     if (referralCode) {
       const refCode = await prisma.packReferralCode.findUnique({ where: { code: String(referralCode).toUpperCase() } });
       const isValidCode = refCode && refCode.status === 'active' && refCode.expiresAt > new Date() && refCode.referrerId !== userId;
@@ -395,6 +424,10 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
       if (isValidCode) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
+    } else if (cohortActive) {
+      // -10% préinscrits cohorte juillet (jusqu'au 3 juillet, sinon plein tarif)
+      finalAmount = PACK_PRICE_COHORT;
+      log.info('[COHORT] Réduction -10% appliquée', { userId, finalAmount });
     } else {
       finalAmount = PACK_PRICE_FULL;
     }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Loader2, CalendarClock, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
@@ -23,6 +24,7 @@ const DIAL_CODES = [
 ];
 
 const CohortPreregister: React.FC = () => {
+  const navigate = useNavigate();
   const { userProfile } = useAuth();
   const [name, setName] = useState((userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '');
   const [email, setEmail] = useState((userProfile as any)?.email || '');
@@ -94,9 +96,15 @@ const CohortPreregister: React.FC = () => {
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-1">Pré-inscription confirmée 🎉</h3>
                   <p className="text-sm text-gray-600 mb-3">Notre équipe vous recontacte très vite sur WhatsApp pour finaliser votre place.</p>
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 font-semibold">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 font-semibold mb-4">
                     🎁 -10% réservé aux préinscrits : 31 500 XOF au lieu de 35 000 · à régler avant le 3 juillet
                   </div>
+                  <button
+                    onClick={() => navigate('/parcours/cohorte-juillet')}
+                    className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 active:scale-95 transition-all shadow-md"
+                  >
+                    💳 Payer maintenant -10% (31 500 XOF) →
+                  </button>
                 </div>
               ) : (
                 <>

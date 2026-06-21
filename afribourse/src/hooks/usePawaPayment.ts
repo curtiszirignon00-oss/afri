@@ -12,6 +12,7 @@ export interface PaymentParams {
   phone: string;        // MSISDN sans "+" ex: "2250700000000"
   registrationEmail?: string; // email pour lier paiement ↔ inscription webinaire
   referralCode?: string;      // code ambassadeur Pack Parcours (parrainage)
+  cohortDiscount?: boolean;   // -10% préinscrits cohorte juillet (validé côté serveur)
 }
 
 interface UsePawaPaymentReturn {
@@ -84,6 +85,7 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
           phone: params.phone,
           ...(params.registrationEmail ? { registrationEmail: params.registrationEmail } : {}),
           ...(params.referralCode ? { referralCode: params.referralCode } : {}),
+          ...(params.cohortDiscount ? { cohortDiscount: true } : {}),
           returnUrl: `${window.location.origin}/paiement/retour`,
         }),
       });
