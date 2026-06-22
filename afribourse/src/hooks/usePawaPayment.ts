@@ -13,6 +13,7 @@ export interface PaymentParams {
   registrationEmail?: string; // email pour lier paiement ↔ inscription webinaire
   referralCode?: string;      // code ambassadeur Pack Parcours (parrainage)
   cohortDiscount?: boolean;   // -10% préinscrits cohorte juillet (validé côté serveur)
+  pack?: string;              // tier choisi : "starter" | "parcours" | "investisseur"
 }
 
 interface UsePawaPaymentReturn {
@@ -86,6 +87,7 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
           ...(params.registrationEmail ? { registrationEmail: params.registrationEmail } : {}),
           ...(params.referralCode ? { referralCode: params.referralCode } : {}),
           ...(params.cohortDiscount ? { cohortDiscount: true } : {}),
+          ...(params.pack ? { pack: params.pack } : {}),
           returnUrl: `${window.location.origin}/paiement/retour`,
         }),
       });

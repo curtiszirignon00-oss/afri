@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, Loader2, AlertCircle, Lock, ShieldCheck, CalendarClock, ArrowLeft } from 'lucide-react';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -8,9 +8,16 @@ import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } 
 import { analytics } from '../services/analytics';
 
 const PACK_ID = 'pack-parcours-investisseur';
-const PLAN_NAME = 'Pack Parcours Investisseur BRVM';
-const INSTALLMENTS = [15000, 10000, 10000];
-const TOTAL = 35000;
+
+// Échéancier 3× par pack (plein tarif, sans réduction)
+const PACK_TIERS: Record<string, { name: string; installments: number[] }> = {
+  starter:      { name: 'Pack Starter',      installments: [15000, 10000, 10000] },
+  parcours:     { name: 'Pack Parcours',     installments: [20000, 15000, 15000] },
+  investisseur: { name: 'Pack Investisseur', installments: [25000, 25000, 25000] },
+};
+function resolveTier(p: string | null): string {
+  return p && PACK_TIERS[p] ? p : 'starter';
+}
 
 // Indicatifs WhatsApp (large — Togo inclus, car on prend l'inscription même si le paiement n'est pas dispo)
 const WHATSAPP_DIAL_CODES = [
@@ -60,7 +67,14 @@ function addDaysLabel(days: number) {
 
 export default function InstallmentStartPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isLoggedIn, userProfile } = useAuth();
+
+  const tier = resolveTier(searchParams.get('pack'));
+  const tierCfg = PACK_TIERS[tier];
+  const PLAN_NAME = tierCfg.name;
+  const INSTALLMENTS = tierCfg.installments;
+  const TOTAL = INSTALLMENTS.reduce((a, b) => a + b, 0);
 
   const [step, setStep] = useState<'conditions' | 'contact' | 'payment' | 'success'>('conditions');
   const [loading, setLoading] = useState(false);
@@ -142,6 +156,7 @@ export default function InstallmentStartPage() {
           correspondent,
           payPhone: msisdn,                          // Mobile Money
           currency: getCurrency(payDialCode),
+          pack: tier,
           returnUrl: `${window.location.origin}/paiement/retour`,
         }),
       });
@@ -240,7 +255,7 @@ export default function InstallmentStartPage() {
                 {[
                   { icon: ShieldCheck, text: 'Accès complet au parcours activé dès le 1er paiement (15 000 XOF).' },
                   { icon: CalendarClock, text: "Rappels par email et WhatsApp avant chaque échéance pour régler les mensualités suivantes." },
-                  { icon: CheckCircle, text: 'Engagement à régler les 3 mensualités (total 35 000 XOF, le tarif normal du parcours). Vous pouvez aussi payer en 1 fois.' },
+                  { icon: CheckCircle, text: `Engagement à régler les 3 mensualités (total ${formatPrice(TOTAL)}, le tarif normal du ${PLAN_NAME}). Vous pouvez aussi payer en 1 fois.` },
                   { icon: Lock, text: 'Paiement Mobile Money 100% sécurisé via PawaPay.' },
                 ].map((c, i) => (
                   <div key={i} className="flex items-start gap-2.5">

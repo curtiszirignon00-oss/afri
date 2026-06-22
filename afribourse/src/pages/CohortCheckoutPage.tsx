@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, Loader2, AlertCircle, Flame, ArrowLeft, CalendarClock } from 'lucide-react';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -8,10 +8,17 @@ import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } 
 import { analytics } from '../services/analytics';
 
 const PACK_ID = 'pack-parcours-investisseur';
-const PACK_NAME = 'Pack Parcours Investisseur BRVM';
-const FULL_PRICE = 35000;
-const COHORT_PRICE = 31500; // -10%
 const COHORT_DEADLINE = new Date('2026-07-03T23:59:59Z');
+
+// Packs (good-better-best) — comptant : plein tarif et tarif -10% préinscrits
+const PACK_TIERS: Record<string, { name: string; full: number; cohort: number }> = {
+  starter:      { name: 'Pack Starter',      full: 35000, cohort: 31500 },
+  parcours:     { name: 'Pack Parcours',     full: 50000, cohort: 45000 },
+  investisseur: { name: 'Pack Investisseur', full: 75000, cohort: 67500 },
+};
+function resolveTier(p: string | null): string {
+  return p && PACK_TIERS[p] ? p : 'starter';
+}
 
 const WHATSAPP_DIAL_CODES = [
   { code: '+225', flag: '🇨🇮' }, { code: '+221', flag: '🇸🇳' }, { code: '+226', flag: '🇧🇫' },
@@ -44,10 +51,15 @@ function formatPrice(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
 export default function CohortCheckoutPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { userProfile } = useAuth();
 
+  const tier = resolveTier(searchParams.get('pack'));
+  const tierCfg = PACK_TIERS[tier];
+  const PACK_NAME = tierCfg.name;
+  const FULL_PRICE = tierCfg.full;
   const discountActive = new Date() <= COHORT_DEADLINE;
-  const price = discountActive ? COHORT_PRICE : FULL_PRICE;
+  const price = discountActive ? tierCfg.cohort : tierCfg.full;
 
   const [step, setStep] = useState<'form' | 'payment'>('form');
   const [loading, setLoading] = useState(false);
@@ -80,6 +92,7 @@ export default function CohortCheckoutPage() {
           email: form.email.trim(),
           phone: `${waDialCode} ${waPhone.trim()}`,
           type: 'pack',
+          pack: tier,
         }),
       });
       if (PAYMENT_DIAL_CODES.some((c) => c.code === waDialCode)) {
@@ -109,6 +122,7 @@ export default function CohortCheckoutPage() {
       phone: msisdn,
       registrationEmail: form.email.trim(),
       cohortDiscount: true,
+      pack: tier,
     });
   };
 
@@ -195,7 +209,7 @@ export default function CohortCheckoutPage() {
               </button>
 
               <div className="text-center pt-1">
-                <button onClick={() => navigate('/parcours/paiement-3-fois')} className="text-xs font-semibold text-blue-600 hover:underline">
+                <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
                   Ou payer en 3 fois (15 000 + 2× 10 000)
                 </button>
               </div>

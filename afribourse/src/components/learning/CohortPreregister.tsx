@@ -31,6 +31,12 @@ const PACK_LABELS: Record<string, string> = {
   parcours: 'Parcours (50 000 XOF)',
   investisseur: 'Investisseur (75 000 XOF)',
 };
+const PACK_PRICES: Record<string, { full: number; cohort: number; first: number }> = {
+  starter:      { full: 35000, cohort: 31500, first: 15000 },
+  parcours:     { full: 50000, cohort: 45000, first: 20000 },
+  investisseur: { full: 75000, cohort: 67500, first: 25000 },
+};
+function fmt(n: number) { return n.toLocaleString('fr-FR'); }
 const DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z').getTime();
 
 function getCountdown() {
@@ -49,6 +55,7 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
   const navigate = useNavigate();
   const { userProfile } = useAuth();
   const packLabel = selectedPack ? PACK_LABELS[selectedPack] : null;
+  const packPrices = selectedPack ? PACK_PRICES[selectedPack] : null;
   const [name, setName] = useState((userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '');
   const [email, setEmail] = useState((userProfile as any)?.email || '');
   const [dialCode, setDialCode] = useState('+225');
@@ -131,9 +138,15 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
               {/* Avantage préinscrit — 10% + compte à rebours */}
               <div className="bg-amber-400/15 border border-amber-300/40 rounded-xl p-3 mb-4">
                 <p className="text-amber-200 text-sm font-extrabold flex items-center gap-1.5">🎁 -10% pour tous les préinscrits</p>
-                <p className="text-amber-100 text-xs mt-1 mb-2">
-                  À partir de <strong className="text-white">15 000 XOF</strong> en 3 fois · <span className="line-through opacity-70">35 000</span> <strong className="text-white">31 500 XOF</strong>
-                </p>
+                {packPrices ? (
+                  <p className="text-amber-100 text-xs mt-1 mb-2">
+                    À partir de <strong className="text-white">{fmt(packPrices.first)} XOF</strong> en 3 fois · <span className="line-through opacity-70">{fmt(packPrices.full)}</span> <strong className="text-white">{fmt(packPrices.cohort)} XOF</strong>
+                  </p>
+                ) : (
+                  <p className="text-amber-100 text-xs mt-1 mb-2">
+                    Paiement en 1 fois (-10%) ou en 3 fois · réduction réservée aux préinscrits
+                  </p>
+                )}
                 {!cd.expired && (
                   <>
                     <p className="text-[10px] font-bold text-amber-200 mb-1.5 flex items-center gap-1">
@@ -183,13 +196,15 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
                   <h3 className="text-lg font-bold text-gray-900 mb-1">Pré-inscription confirmée 🎉</h3>
                   <p className="text-sm text-gray-600 mb-3">Notre équipe vous recontacte très vite sur WhatsApp pour finaliser votre place.</p>
                   <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-800 font-semibold mb-4">
-                    🎁 -10% réservé aux préinscrits : 31 500 XOF au lieu de 35 000 · à régler avant le 3 juillet
+                    {packPrices
+                      ? `🎁 -10% préinscrit : ${fmt(packPrices.cohort)} XOF au lieu de ${fmt(packPrices.full)} · à régler avant le 3 juillet`
+                      : '🎁 -10% réservé aux préinscrits · à régler avant le 3 juillet'}
                   </div>
                   <button
-                    onClick={() => navigate('/parcours/cohorte-juillet')}
+                    onClick={() => navigate(`/parcours/cohorte-juillet${selectedPack ? `?pack=${selectedPack}` : ''}`)}
                     className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 active:scale-95 transition-all shadow-md"
                   >
-                    💳 Payer maintenant -10% (31 500 XOF) →
+                    💳 Payer maintenant -10% →
                   </button>
                 </div>
               ) : (

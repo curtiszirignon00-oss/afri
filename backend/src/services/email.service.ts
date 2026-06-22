@@ -4641,13 +4641,15 @@ export async function sendInstallmentProgressEmail({
 interface CohortPreregistrationParams {
   email: string;
   firstName: string;
+  pack?: string | null;
 }
 
 export async function sendCohortPreregistrationEmail({
-  email, firstName,
+  email, firstName, pack,
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
-  const payUrl = `${process.env.FRONTEND_URL ?? 'https://www.africbourse.com'}/parcours/cohorte-juillet`;
+  const base = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
+  const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}`;
 
   const html = `<!DOCTYPE html>
 <html lang="fr">

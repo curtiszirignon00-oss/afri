@@ -8,10 +8,25 @@ import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 // ── Paramètres du paiement échelonné (Pack Parcours) ──────────────────────────
 export const PACK_ID = 'pack-parcours-investisseur';
 export const PACK_PLAN_NAME = 'Pack Parcours Investisseur BRVM';
-export const PACK_INSTALLMENTS = [15000, 10000, 10000]; // total 35 000
+export const PACK_INSTALLMENTS = [15000, 10000, 10000]; // total 35 000 (défaut/Starter)
 export const INSTALLMENT_INTERVAL_DAYS = 30;
 const PENDING_LOCK_MS = 3 * 60 * 1000; // anti double-paiement (3 min)
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
+
+// Échéancier 3× par pack (échelonné = plein tarif, sans réduction)
+const PACK_TIER_INSTALLMENTS: Record<string, number[]> = {
+  starter:      [15000, 10000, 10000], // 35 000
+  parcours:     [20000, 15000, 15000], // 50 000
+  investisseur: [25000, 25000, 25000], // 75 000
+};
+const PACK_TIER_NAME: Record<string, string> = {
+  starter:      'Pack Starter BRVM',
+  parcours:     'Pack Parcours Investisseur BRVM',
+  investisseur: 'Pack Investisseur BRVM',
+};
+function resolveTier(pack: unknown): string {
+  return ['starter', 'parcours', 'investisseur'].includes(pack as string) ? (pack as string) : 'starter';
+}
 
 export interface InstallmentLine {
   index: number;        // 1-based
@@ -23,9 +38,9 @@ export interface InstallmentLine {
   pendingAt?: string;   // ISO — verrou anti double-paiement
 }
 
-function buildSchedule(): InstallmentLine[] {
+function buildSchedule(amounts: number[] = PACK_INSTALLMENTS): InstallmentLine[] {
   const now = Date.now();
-  return PACK_INSTALLMENTS.map((amount, i) => ({
+  return amounts.map((amount, i) => ({
     index: i + 1,
     amount,
     status: 'pending',
@@ -182,6 +197,10 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
   if (!resolvedEmail) return res.status(400).json({ error: 'Email requis.' });
   if (!correspondent || !payPhone) return res.status(400).json({ error: 'Opérateur et numéro Mobile Money requis.' });
 
+  const tier = resolveTier(req.body.pack);
+  const tierAmounts = PACK_TIER_INSTALLMENTS[tier];
+  const tierName = PACK_TIER_NAME[tier];
+
   try {
     // Refus si la registration pack est déjà payée
     const existingReg = await prisma.webinarRegistration.findFirst({ where: { webinarId: PACK_ID, email: resolvedEmail } });
@@ -211,20 +230,21 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
           earlyBird: false,
           userId,
           paymentStatus: 'pending',
+          pack: tier,
         },
       });
     }
 
-    const schedule = buildSchedule();
+    const schedule = buildSchedule(tierAmounts);
     const plan = await prisma.installmentPlan.create({
       data: {
         userId,
         email: resolvedEmail,
         planId: PACK_ID,
-        planName: PACK_PLAN_NAME,
+        planName: tierName,
         currency,
-        totalAmount: PACK_INSTALLMENTS.reduce((a, b) => a + b, 0),
-        installmentsTotal: PACK_INSTALLMENTS.length,
+        totalAmount: tierAmounts.reduce((a, b) => a + b, 0),
+        installmentsTotal: tierAmounts.length,
         schedule: schedule as any,
         nextDueAt: new Date(schedule[0].dueAt),
         payToken: crypto.randomBytes(24).toString('hex'),

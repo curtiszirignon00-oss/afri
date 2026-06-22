@@ -39,6 +39,10 @@ const PACK_PRICE_COHORT = 31500;
 const COHORT_REG_ID = 'cohorte-juillet-2026';
 const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 
+// Prix par pack (good-better-best) — comptant
+const PACK_TIER_FULL: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
+const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 45000, investisseur: 67500 }; // -10%
+
 // Réconcilie la pré-inscription cohorte (liste d'attente) en "paid" quand le pack est réglé
 async function reconcileCohortPreregistration(email: string | undefined | null, depositId: string) {
   if (!email) return;
@@ -417,6 +421,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   } else if (planId === PACK_ID) {
     // R5 — Pack Parcours : montant toujours calculé côté serveur
     const cohortActive = req.body.cohortDiscount === true && new Date() <= COHORT_DISCOUNT_DEADLINE;
+    const tier = ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? (req.body.pack as string) : null;
     if (referralCode) {
       const refCode = await prisma.packReferralCode.findUnique({ where: { code: String(referralCode).toUpperCase() } });
       const isValidCode = refCode && refCode.status === 'active' && refCode.expiresAt > new Date() && refCode.referrerId !== userId;
@@ -425,11 +430,11 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
     } else if (cohortActive) {
-      // -10% préinscrits cohorte juillet (jusqu'au 3 juillet, sinon plein tarif)
-      finalAmount = PACK_PRICE_COHORT;
-      log.info('[COHORT] Réduction -10% appliquée', { userId, finalAmount });
+      // -10% préinscrits cohorte juillet (jusqu'au 3 juillet, sinon plein tarif), selon le pack
+      finalAmount = tier ? PACK_TIER_COHORT[tier] : PACK_PRICE_COHORT;
+      log.info('[COHORT] Réduction -10% appliquée', { userId, tier, finalAmount });
     } else {
-      finalAmount = PACK_PRICE_FULL;
+      finalAmount = tier ? PACK_TIER_FULL[tier] : PACK_PRICE_FULL;
     }
   } else {
     // Plan non référencé (webinaire individuel, etc.) : on accepte le montant du frontend

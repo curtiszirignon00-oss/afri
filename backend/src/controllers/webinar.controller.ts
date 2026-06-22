@@ -12,8 +12,9 @@ const COHORT_ID = 'cohorte-juillet-2026';
 
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
-    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode } = req.body;
+    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode, pack } = req.body;
     const userId = (req as any).user?.id ?? null;
+    const resolvedPack = ['starter', 'parcours', 'investisseur'].includes(pack) ? pack : null;
 
     if (!webinarId || !email) {
       return res.status(400).json({ message: 'webinarId et email sont requis.' });
@@ -50,6 +51,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
         earlyBird: earlyBird ?? false,
         userId,
         referralCode: referralCode ?? null,
+        pack: resolvedPack,
       },
     });
 
@@ -115,7 +117,7 @@ export async function cohortPreregister(req: Request, res: Response, next: NextF
 
     logger.info({ email, userId }, '[WEBINAR] Pré-inscription cohorte créée');
 
-    sendCohortPreregistrationEmail({ email, firstName: resolvedFirstName || '' })
+    sendCohortPreregistrationEmail({ email, firstName: resolvedFirstName || '', pack: resolvedPack })
       .catch((err) => logger.error({ err, email }, '[WEBINAR] Échec email pré-inscription cohorte'));
 
     return res.status(201).json({ message: 'Pré-inscription enregistrée avec succès !', data: registration });
