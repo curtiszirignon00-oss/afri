@@ -54,7 +54,7 @@ export default function CohortCheckoutPage() {
   const [searchParams] = useSearchParams();
   const { userProfile } = useAuth();
 
-  const tier = resolveTier(searchParams.get('pack'));
+  const [tier, setTier] = useState(resolveTier(searchParams.get('pack')));
   const tierCfg = PACK_TIERS[tier];
   const PACK_NAME = tierCfg.name;
   const FULL_PRICE = tierCfg.full;
@@ -176,6 +176,25 @@ export default function CohortCheckoutPage() {
           {/* Étape contact */}
           {step === 'form' && (
             <div className="p-6 space-y-4">
+              {/* Sélecteur de pack */}
+              <div>
+                <p className="text-xs font-semibold text-gray-700 mb-2">Votre pack</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(PACK_TIERS) as Array<keyof typeof PACK_TIERS>).map((k) => {
+                    const c = PACK_TIERS[k];
+                    const active = tier === k;
+                    return (
+                      <button key={k} onClick={() => setTier(k)} type="button"
+                        className={`rounded-xl border-2 p-2 text-center transition-all ${active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                        <span className={`block text-xs font-extrabold ${active ? 'text-blue-800' : 'text-gray-700'}`}>{c.name.replace('Pack ', '')}</span>
+                        <span className="block text-[11px] font-bold text-gray-900 mt-0.5">{(discountActive ? c.cohort : c.full).toLocaleString('fr-FR')}</span>
+                        {discountActive && <span className="block text-[9px] text-gray-400 line-through leading-none">{c.full.toLocaleString('fr-FR')}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
                 5 sessions live · 15h · Communauté · Certificat. 1ère session le samedi 4 juillet.
               </div>

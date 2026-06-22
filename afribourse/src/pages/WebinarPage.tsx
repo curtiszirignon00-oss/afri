@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 import {
   CheckCircle, ChevronDown, ChevronRight, TrendingUp, BookOpen,
-  Users, BarChart3, Award, Zap, MessageSquare, Calendar,
+  Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
 } from 'lucide-react';
-import WebinarSection from '../components/learning/WebinarSection';
 import CohortPreregister from '../components/learning/CohortPreregister';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
 
@@ -149,6 +148,7 @@ const SPEAKERS = [
     title: 'Fondateur · Afribourse',
     desc: 'Entrepreneur tech et finance, spécialiste des marchés UEMOA. Accompagne les investisseurs africains depuis 2022.',
     color: '#1D4ED8',
+    linkedin: 'https://www.linkedin.com/in/curtis-zirignon-097424202/',
   },
   {
     initials: 'IB',
@@ -156,6 +156,7 @@ const SPEAKERS = [
     title: 'Analyste Financier · Fondateur IB Formation',
     desc: 'Analyste financier certifié, investisseur BRVM, comptable expérimenté. Forme des investisseurs particuliers depuis plusieurs années.',
     color: '#059669',
+    linkedin: 'https://www.linkedin.com/in/ibrahima-bayo-0b8628161/',
   },
   {
     initials: 'EC',
@@ -163,6 +164,7 @@ const SPEAKERS = [
     title: 'Expert Consultant · Banque & Microfinance',
     desc: 'Consultant international en management bancaire et institutions de microfinance. Expertise pointue sur les marchés financiers africains.',
     color: '#EA580C',
+    linkedin: 'https://www.linkedin.com/in/emmanuel-coulibaly-49554a20a/',
   },
 ];
 
@@ -360,70 +362,6 @@ export default function WebinarPage() {
         </div>
       </section>
 
-      {/* ── Section 4 — Programme ────────────────────────────────────────── */}
-      <section className="bg-gray-50 px-4 py-16 sm:px-6">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Le calendrier</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10" style={{ letterSpacing: '-0.01em' }}>
-            90 jours structurés — voici votre programme
-          </h2>
-
-          <div className="relative">
-            <div className="absolute left-3.5 top-0 bottom-0 w-0.5 bg-gray-200" />
-            <div className="space-y-5">
-              {PROGRAMME.map((p, i) => (
-                <div key={i} className="relative flex gap-5">
-                  <div className={`w-7 h-7 rounded-full ${p.dot} flex-shrink-0 z-10 flex items-center justify-center mt-1`}>
-                    <Calendar className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div className={`flex-1 rounded-xl border px-4 py-3 ${p.bg}`}>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">{p.phase}</p>
-                    <p className={`font-bold text-sm mb-2 ${p.textColor}`}>{p.label}</p>
-                    <ul className="space-y-1">
-                      {p.items.map((item) => (
-                        <li key={item} className="text-xs text-gray-600 flex items-start gap-1.5">
-                          <span className="text-gray-300 mt-0.5 flex-shrink-0">›</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-gray-400 text-center mt-6">* Le certificat est conditionnel à la complétion du quiz final</p>
-        </div>
-      </section>
-
-      {/* ── Sections 5, 6 & 9 — Inclusions + Pack + Webinaires + Inscription ── */}
-      <section ref={registrationRef} className="bg-white px-4 pt-14 pb-4 sm:px-6 scroll-mt-4">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Inscription</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-2" style={{ letterSpacing: '-0.01em' }}>
-            Tout ce que vous recevez avec votre inscription
-          </h2>
-          <p className="text-gray-500 text-center text-sm mb-10">5 sessions · 15h de formation live — Fondamentaux, Analyse fondamentale & Analyse technique.</p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-12">
-            {INCLUSIONS.map((inc) => (
-              <div key={inc.title} className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 text-white">
-                  {inc.icon}
-                </div>
-                <div>
-                  <p className="font-bold text-gray-900 text-sm">{inc.title}</p>
-                  <p className="text-xs text-gray-500 leading-snug mt-0.5">{inc.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Pack + webinaires individuels + modales d'inscription */}
-          <WebinarSection />
-        </div>
-      </section>
-
       {/* ── Section 7 — Speakers ─────────────────────────────────────────── */}
       <section className="bg-gray-50 px-4 py-16 sm:px-6">
         <div className="max-w-4xl mx-auto">
@@ -442,7 +380,15 @@ export default function WebinarPage() {
                 </div>
                 <p className="font-bold text-gray-900 text-base mb-0.5">{s.name}</p>
                 <p className="text-xs font-semibold text-blue-600 mb-3">{s.title}</p>
-                <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
+                <p className="text-xs text-gray-500 leading-relaxed mb-4">{s.desc}</p>
+                <a
+                  href={s.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:underline"
+                >
+                  <Linkedin className="w-4 h-4" /> Voir le profil LinkedIn
+                </a>
               </div>
             ))}
           </div>
