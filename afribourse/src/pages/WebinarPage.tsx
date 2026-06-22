@@ -165,15 +165,34 @@ const SPEAKERS = [
   },
 ];
 
+// Témoignages — remplir avec de vrais verbatims clients (prénom, ville, phrase courte).
+// La section ne s'affiche que si ce tableau contient au moins une entrée.
+const TESTIMONIALS: { name: string; location: string; quote: string; initials: string; color: string }[] = [
+  // Exemple de format (à remplacer par de vrais avis) :
+  // { name: 'Awa K.', location: 'Abidjan', quote: "J'ai enfin compris comment lire un bilan BRVM.", initials: 'AK', color: '#1D4ED8' },
+];
+
 const FAQ = [
   {
-    q: 'Le pack est-il remboursable ?',
-    a: 'Oui — satisfait ou remboursé. Si la formation ne correspond pas à vos attentes, envoyez-nous un email dans les 7 jours suivant votre inscription pour un remboursement complet, sans condition.',
+    q: 'Comment ça marche après ma pré-inscription ?',
+    a: "La pré-inscription est gratuite et sans engagement. Vous laissez votre nom, email et numéro WhatsApp — notre équipe vous recontacte sur WhatsApp pour finaliser votre place. Vous recevez aussi un lien de paiement avec votre réduction préinscrit de -10% (31 500 XOF au lieu de 35 000).",
     highlight: true,
   },
   {
-    q: "Dois-je avoir un compte Afribourse pour m'inscrire ?",
-    a: "Non. Vous pouvez vous inscrire et payer sans compte. Il vous suffit de fournir votre nom, email et numéro WhatsApp lors de l'inscription.",
+    q: 'Puis-je rattraper si je manque une session ?',
+    a: "Oui. Chaque session live est enregistrée et le replay vous est partagé. Vous pouvez donc rattraper à votre rythme si vous manquez une date, et garder accès aux rediffusions.",
+  },
+  {
+    q: "C'est quoi la facilité de paiement en 3 fois ?",
+    a: "Vous pouvez régler le parcours en 3 versements : 15 000 XOF aujourd'hui, puis 10 000 XOF et 10 000 XOF. Vous accédez au parcours dès le 1er paiement, et nous vous relançons pour les échéances suivantes (par email et WhatsApp).",
+  },
+  {
+    q: 'Le pack est-il remboursable ?',
+    a: 'Oui — satisfait ou remboursé. Si la formation ne correspond pas à vos attentes, envoyez-nous un email dans les 7 jours suivant votre paiement pour un remboursement complet, sans condition.',
+  },
+  {
+    q: "Dois-je avoir un compte Afribourse pour me pré-inscrire ?",
+    a: "Non. La pré-inscription se fait avec juste votre nom, email et numéro WhatsApp. Un compte n'est nécessaire que pour le paiement en 3 fois.",
   },
   {
     q: 'Comment reçois-je le lien de connexion Zoom ?',
@@ -198,12 +217,15 @@ const FAQ = [
 export default function WebinarPage() {
   const registrationRef = useRef<HTMLDivElement>(null);
 
+  // Tunnel unique : tous les CTA mènent au formulaire de pré-inscription
   const scrollToRegistration = () => {
-    registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById('preinscription');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-20 sm:pb-0">
 
       {/* ── Section 1 — Hero ─────────────────────────────────────────────── */}
       <section
@@ -246,7 +268,7 @@ export default function WebinarPage() {
               onClick={scrollToRegistration}
               className="bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-base px-8 py-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2"
             >
-              Je m'inscris maintenant <ChevronRight className="w-5 h-5" />
+              🎟️ Je réserve ma place — Cohorte 4 juillet <ChevronRight className="w-5 h-5" />
             </button>
             <button
               onClick={scrollToRegistration}
@@ -264,6 +286,31 @@ export default function WebinarPage() {
 
       {/* ── Pré-inscription gratuite — Cohorte Juillet ───────────────────── */}
       <CohortPreregister />
+
+      {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}
+      {TESTIMONIALS.length > 0 && (
+        <section className="bg-white px-4 py-12 sm:px-6">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Ils ont suivi le parcours</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {TESTIMONIALS.map((t) => (
+                <div key={t.name} className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+                  <p className="text-sm text-gray-700 leading-relaxed mb-4">“{t.quote}”</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-extrabold" style={{ background: t.color }}>
+                      {t.initials}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900 leading-none">{t.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{t.location}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Section 2 — Le problème ──────────────────────────────────────── */}
       <section className="bg-gray-50 px-4 py-16 sm:px-6">
@@ -342,7 +389,7 @@ export default function WebinarPage() {
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-2" style={{ letterSpacing: '-0.01em' }}>
             Tout ce que vous recevez avec votre inscription
           </h2>
-          <p className="text-gray-500 text-center text-sm mb-10">5 sessions · 15h de formation. Pack complet ou achat par thème (fondamentaux, fondamentale, technique).</p>
+          <p className="text-gray-500 text-center text-sm mb-10">5 sessions · 15h de formation live — Fondamentaux, Analyse fondamentale & Analyse technique.</p>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-12">
             {INCLUSIONS.map((inc) => (
@@ -418,11 +465,21 @@ export default function WebinarPage() {
             onClick={scrollToRegistration}
             className="bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-base px-10 py-4 rounded-xl transition-all active:scale-95 shadow-lg"
           >
-            Rejoindre le parcours →
+            🎟️ Je réserve ma place gratuitement →
           </button>
-          <p className="mt-4 text-xs text-blue-400">Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé</p>
+          <p className="mt-4 text-xs text-blue-400">Pré-inscription gratuite · -10% réservé aux préinscrits · sans engagement</p>
         </div>
       </section>
+
+      {/* ── Sticky CTA mobile ────────────────────────────────────────────── */}
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 px-4 py-3" style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
+        <button
+          onClick={scrollToRegistration}
+          className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-95 transition-transform"
+        >
+          🎟️ Pré-inscription gratuite — Cohorte 4 juillet →
+        </button>
+      </div>
 
     </div>
   );

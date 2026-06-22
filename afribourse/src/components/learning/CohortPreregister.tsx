@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Loader2, CalendarClock, Users } from 'lucide-react';
+import { CheckCircle, Loader2, CalendarClock, Users, Flame } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,6 +23,22 @@ const DIAL_CODES = [
   { code: '+33',  flag: '🇫🇷' },
 ];
 
+const COHORT_ID = 'cohorte-juillet-2026';
+const PREREGISTER_OFFSET = 30; // base sociale (cohérent avec WEBINAR_COUNT_OFFSET)
+const DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z').getTime();
+
+function getCountdown() {
+  const diff = Math.max(0, DISCOUNT_DEADLINE - Date.now());
+  return {
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor((diff % 86400000) / 3600000),
+    minutes: Math.floor((diff % 3600000) / 60000),
+    seconds: Math.floor((diff % 60000) / 1000),
+    expired: diff === 0,
+  };
+}
+function pad2(n: number) { return String(n).padStart(2, '0'); }
+
 const CohortPreregister: React.FC = () => {
   const navigate = useNavigate();
   const { userProfile } = useAuth();
@@ -32,6 +48,23 @@ const CohortPreregister: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [cd, setCd] = useState(getCountdown());
+  const [preinscrits, setPreinscrits] = useState<number | null>(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setCd(getCountdown()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/webinars/counts`)
+      .then((r) => r.json())
+      .then((d) => {
+        const n = d?.data?.[COHORT_ID] ?? 0;
+        setPreinscrits(n + PREREGISTER_OFFSET);
+      })
+      .catch(() => setPreinscrits(PREREGISTER_OFFSET));
+  }, []);
 
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) { toast.error('Renseignez votre nom et votre email'); return; }
@@ -49,6 +82,7 @@ const CohortPreregister: React.FC = () => {
       });
       if (!res.ok && res.status !== 200) throw new Error();
       analytics.trackAction('cohort_preregistered', 'Cohorte Juillet 2026', {});
+      setPreinscrits((p) => (p === null ? null : p + 1));
       setDone(true);
     } catch {
       toast.error("Erreur lors de la pré-inscription. Réessayez dans un instant.");
@@ -58,7 +92,7 @@ const CohortPreregister: React.FC = () => {
   };
 
   return (
-    <section className="px-4 sm:px-6 -mt-10 relative z-10">
+    <section id="preinscription" className="px-4 sm:px-6 -mt-10 relative z-10 scroll-mt-20">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="grid md:grid-cols-2">
@@ -72,18 +106,48 @@ const CohortPreregister: React.FC = () => {
                 Laissez vos coordonnées : on vous recontacte sur WhatsApp pour finaliser. Aucun paiement maintenant.
               </p>
 
-              {/* Avantage préinscrit — 10% + date limite */}
+              {/* Avantage préinscrit — 10% + compte à rebours */}
               <div className="bg-amber-400/15 border border-amber-300/40 rounded-xl p-3 mb-4">
                 <p className="text-amber-200 text-sm font-extrabold flex items-center gap-1.5">🎁 -10% pour tous les préinscrits</p>
-                <p className="text-amber-100 text-xs mt-1">
-                  <span className="line-through opacity-70">35 000</span> <strong className="text-white">31 500 XOF</strong> · paiement à finaliser <strong>avant le 3 juillet</strong>
+                <p className="text-amber-100 text-xs mt-1 mb-2">
+                  À partir de <strong className="text-white">15 000 XOF</strong> en 3 fois · <span className="line-through opacity-70">35 000</span> <strong className="text-white">31 500 XOF</strong>
                 </p>
+                {!cd.expired && (
+                  <>
+                    <p className="text-[10px] font-bold text-amber-200 mb-1.5 flex items-center gap-1">
+                      <Flame className="w-3 h-3 animate-pulse" /> L'offre -10% se termine dans :
+                    </p>
+                    <div className="flex gap-1.5">
+                      {cd.days > 0 && (
+                        <div className="flex-1 bg-white/15 rounded-lg py-1.5 text-center">
+                          <p className="text-base font-extrabold text-white leading-none">{pad2(cd.days)}</p>
+                          <p className="text-[9px] text-amber-200 mt-0.5">j</p>
+                        </div>
+                      )}
+                      <div className="flex-1 bg-white/15 rounded-lg py-1.5 text-center">
+                        <p className="text-base font-extrabold text-white leading-none">{pad2(cd.hours)}</p>
+                        <p className="text-[9px] text-amber-200 mt-0.5">h</p>
+                      </div>
+                      <div className="flex-1 bg-white/15 rounded-lg py-1.5 text-center">
+                        <p className="text-base font-extrabold text-white leading-none">{pad2(cd.minutes)}</p>
+                        <p className="text-[9px] text-amber-200 mt-0.5">min</p>
+                      </div>
+                      <div className="flex-1 bg-white/15 rounded-lg py-1.5 text-center">
+                        <p className="text-base font-extrabold text-white leading-none">{pad2(cd.seconds)}</p>
+                        <p className="text-[9px] text-amber-200 mt-0.5">sec</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="space-y-2.5 text-sm">
+                {preinscrits !== null && (
+                  <div className="flex items-center gap-2"><Users className="w-4 h-4 text-emerald-300 flex-shrink-0" /> <strong className="text-white">Déjà {preinscrits} préinscrits</strong> · places limitées</div>
+                )}
                 <div className="flex items-center gap-2"><CalendarClock className="w-4 h-4 text-blue-300 flex-shrink-0" /> 1ère session le samedi 4 juillet</div>
                 <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-300 flex-shrink-0" /> 5 sessions live · 15h de formation</div>
-                <div className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-300 flex-shrink-0" /> Places limitées à 50 par session</div>
+                <div className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-300 flex-shrink-0" /> 50 places maximum par session</div>
               </div>
             </div>
 
@@ -133,10 +197,10 @@ const CohortPreregister: React.FC = () => {
                     </div>
                   </div>
                   <button onClick={handleSubmit} disabled={loading}
-                    className="w-full mt-4 flex items-center justify-center gap-2 py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 hover:opacity-90 active:scale-95 disabled:opacity-60 transition-all shadow-md">
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Je me pré-inscris gratuitement</>}
+                    className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 rounded-xl font-extrabold text-white text-base bg-gradient-to-r from-blue-600 to-indigo-700 hover:opacity-90 active:scale-95 disabled:opacity-60 transition-all shadow-md">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>🎟️ Je réserve ma place (gratuit) →</>}
                   </button>
-                  <p className="text-[11px] text-gray-400 text-center mt-2">Sans engagement · aucun paiement requis</p>
+                  <p className="text-[11px] text-gray-400 text-center mt-2">Sans engagement · aucun paiement requis · -10% réservé aux préinscrits</p>
                 </>
               )}
             </div>

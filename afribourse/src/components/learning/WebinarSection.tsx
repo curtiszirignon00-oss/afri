@@ -1359,14 +1359,9 @@ const WebinarSection: React.FC = () => {
   const [showPromoPopup, setShowPromoPopup] = useState(false);
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
 
-  // Popup promo — affiché une seule fois (localStorage)
-  useEffect(() => {
-    const seen = localStorage.getItem(PROMO_POPUP_KEY);
-    if (!seen) {
-      const timer = setTimeout(() => setShowPromoPopup(true), 1800);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Popup promo désactivé — tunnel unique pré-inscription (pas de push paiement).
+  // setShowPromoPopup reste à false ; conservé pour réactivation éventuelle.
+  void setShowPromoPopup;
 
   // Lire et valider le code de parrainage depuis localStorage
   useEffect(() => {
@@ -1425,11 +1420,12 @@ const WebinarSection: React.FC = () => {
         {/* Bannière mensualité due (paiement échelonné en cours) */}
         <InstallmentBanner />
 
-        {/* Pack Parcours Investisseur — carte dominante full-width */}
+        {/* Paiement direct retiré de la page publique — tunnel unique : pré-inscription + relance WhatsApp.
+            Le paiement se fait via /parcours/cohorte-juillet (lien envoyé sur WhatsApp/email).
         <PackCard
           referralInfo={referralInfo}
           onRegister={() => { analytics.trackAction('webinar_pack_click', PACK.title, { packId: PACK.id }); setShowPackModal(true); }}
-        />
+        /> */}
 
         {/* Section Ambassadeur — visible uniquement pour les participants connectés */}
         <AmbassadorSection />
