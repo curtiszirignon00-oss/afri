@@ -64,6 +64,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
       webinarId,
       earlyBird: earlyBird ?? false,
       registrationId: registration.id,
+      pack: resolvedPack,
     }).catch((err) => logger.error({ err, email, webinarId }, '[WEBINAR] Échec envoi email confirmation'));
 
     return res.status(201).json({

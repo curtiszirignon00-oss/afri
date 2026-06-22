@@ -128,6 +128,7 @@ async function handleInstallmentCompleted(payment: any, depositId: string, paylo
       webinarId: plan.planId,
       amount: String(plan.totalAmount),
       currency: plan.currency,
+      title: plan.planName,
     }).catch((err) => log.error('[Installment] Échec email confirmation finale', { err, planId }));
     await reconcileCohortPreregistration(plan.email, depositId);
     log.info('[Installment] Plan complété', { planId, totalAmount: plan.totalAmount });
@@ -148,6 +149,8 @@ async function handleInstallmentCompleted(payment: any, depositId: string, paylo
         nextAmount: nextLine.amount,
         nextDueAt: new Date(nextLine.dueAt),
         payUrl: buildInstallmentPayUrl(plan.payToken),
+        totalAmount: plan.totalAmount,
+        planName: plan.planName,
       }).catch((err) => log.error('[Installment] Échec email progression', { err, planId }));
     }
     log.info('[Installment] Mensualité confirmée', { planId, installmentsPaid, total: plan.installmentsTotal });
@@ -239,13 +242,14 @@ export async function handleDepositCallback(req: Request, res: Response) {
               data: { paymentStatus: 'paid', depositId, paidAt: new Date() },
             });
 
-            // Email de confirmation de paiement
+            // Email de confirmation de paiement (titre = nom du pack si pack)
             sendWebinarPaymentConfirmEmail({
               email: reg.email,
               firstName: reg.firstName ?? '',
               webinarId: reg.webinarId,
               amount: payment.amount,
               currency: payment.currency,
+              title: payment.planId === PACK_ID ? payment.planName : undefined,
             }).catch((err) =>
               log.error('[PawaPay] Échec email confirmation paiement', { err, depositId })
             );

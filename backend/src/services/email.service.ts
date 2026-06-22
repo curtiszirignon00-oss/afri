@@ -4066,6 +4066,7 @@ interface WebinarConfirmationParams {
   webinarId: string;
   earlyBird: boolean;
   registrationId: string;
+  pack?: string | null;
 }
 
 type WebinarCfg = {
@@ -4088,7 +4089,7 @@ type WebinarCfg = {
   amount: string;
 };
 
-function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
+function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | null): WebinarCfg {
   const eb = earlyBird;
 
   if (webinarId === 'w1-fondamentaux' || webinarId === 'w1-fondamentaux-juin') {
@@ -4208,12 +4209,15 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
   }
 
   // Pack Parcours Investisseur — Cohorte Juillet 2026
+  const tierCfg = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
+  const packAmount = tierCfg ? `${tierCfg.full.toLocaleString('fr-FR')} XOF` : (eb ? '25 000 XOF (Tarif préférentiel)' : '35 000 XOF');
+  const packName = tierCfg ? tierCfg.name : 'Pack Parcours Investisseur';
   return {
-    subject: '🎓 Bienvenue dans le Parcours Investisseur BRVM — Tout commence maintenant',
+    subject: `🎓 Bienvenue dans le ${packName} — Tout commence maintenant`,
     preheader: 'Votre calendrier complet, vos accès, et ce qui vous attend semaine par semaine',
     headerBg: '#1D4ED8',
     heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 40%,#7C3AED 100%)',
-    heroLabel: 'Pack Parcours Investisseur · 5 sessions · Communauté · Certificat',
+    heroLabel: `${packName} · 5 sessions · Communauté · Certificat`,
     heroTitle: '🎓 Bienvenue dans le Parcours !',
     heroSub: "D'ici la mi-août, vous aurez suivi 5 sessions live (15h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.",
     accentColor: '#1D4ED8',
@@ -4254,7 +4258,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean): WebinarCfg {
       'Certificat nominatif, horodaté et vérifiable par QR code — partageable sur LinkedIn',
     ],
     signoff: 'Bienvenue dans le Parcours,',
-    amount: eb ? '25 000 XOF (Tarif préférentiel)' : '35 000 XOF',
+    amount: packAmount,
   };
 }
 
@@ -4264,9 +4268,10 @@ export async function sendWebinarConfirmationEmail({
   webinarId,
   earlyBird,
   registrationId,
+  pack,
 }: WebinarConfirmationParams): Promise<void> {
   const name = firstName || 'Investisseur';
-  const cfg = getWebinarCfg(webinarId, earlyBird);
+  const cfg = getWebinarCfg(webinarId, earlyBird, pack);
   const ref = `AFB-WEB-${registrationId.slice(-8).toUpperCase()}`;
 
   const learningRows = cfg.learning
@@ -4407,6 +4412,7 @@ interface WebinarPaymentConfirmParams {
   webinarId: string;
   amount: string;
   currency: string;
+  title?: string; // surcharge du titre (ex: nom du pack choisi)
 }
 
 const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor: string }> = {
@@ -4424,10 +4430,11 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
 };
 
 export async function sendWebinarPaymentConfirmEmail({
-  email, firstName, webinarId, amount, currency,
+  email, firstName, webinarId, amount, currency, title,
 }: WebinarPaymentConfirmParams): Promise<void> {
   const name = firstName || 'Investisseur';
-  const info = WEBINAR_LABELS[webinarId] ?? { title: webinarId, date: '—', accentColor: '#1D4ED8' };
+  const label = WEBINAR_LABELS[webinarId] ?? { title: webinarId, date: '—', accentColor: '#1D4ED8' };
+  const info = { ...label, title: title || label.title };
   const amountFmt = `${parseInt(amount).toLocaleString('fr-FR')} ${currency}`;
 
   const html = `<!DOCTYPE html>
@@ -4551,15 +4558,19 @@ interface InstallmentProgressParams {
   nextAmount: number;  // montant de la prochaine mensualité
   nextDueAt: Date;     // échéance suivante
   payUrl: string;      // lien de paiement de la mensualité suivante
+  totalAmount?: number; // montant total du pack
+  planName?: string;    // nom du pack (ex: "Pack Parcours")
 }
 
 export async function sendInstallmentProgressEmail({
-  email, firstName, paidIndex, total, amountPaid, nextAmount, nextDueAt, payUrl,
+  email, firstName, paidIndex, total, amountPaid, nextAmount, nextDueAt, payUrl, totalAmount, planName,
 }: InstallmentProgressParams): Promise<void> {
   const name = firstName || 'Investisseur';
   const dueFmt = nextDueAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const nextFmt = `${nextAmount.toLocaleString('fr-FR')} XOF`;
   const paidFmt = `${amountPaid.toLocaleString('fr-FR')} XOF`;
+  const planTitle = planName || 'Pack Parcours Investisseur';
+  const totalFmt = `${(totalAmount ?? 35000).toLocaleString('fr-FR')} XOF`;
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -4590,7 +4601,7 @@ export async function sendInstallmentProgressEmail({
         <tr><td style="background:#fff;padding:36px 40px;">
           <p style="margin:0 0 18px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
           <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
-            Nous avons bien reçu votre mensualité. Vous avez réglé <strong>${paidFmt}</strong> sur les 35 000 XOF du Pack Parcours Investisseur.
+            Nous avons bien reçu votre mensualité. Vous avez réglé <strong>${paidFmt}</strong> sur les ${totalFmt} du ${planTitle}.
           </p>
 
           <!-- Prochaine échéance -->
@@ -4644,12 +4655,27 @@ interface CohortPreregistrationParams {
   pack?: string | null;
 }
 
+// Prix par pack (good-better-best) — partagé par les emails
+const PACK_TIER_PRICES: Record<string, { name: string; full: number; cohort: number }> = {
+  starter:      { name: 'Pack Starter',      full: 35000, cohort: 31500 },
+  parcours:     { name: 'Pack Parcours',     full: 50000, cohort: 45000 },
+  investisseur: { name: 'Pack Investisseur', full: 75000, cohort: 67500 },
+};
+function fmtXof(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
+
 export async function sendCohortPreregistrationEmail({
   email, firstName, pack,
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
   const base = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
   const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}`;
+  const tier = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
+  // Bloc tarif : pack précis si choisi, sinon fourchette générique
+  const priceLine = tier
+    ? `<span style="text-decoration:line-through;color:#9CA3AF;">${fmtXof(tier.full)}</span>&nbsp;<strong style="color:#059669;font-size:18px;">${fmtXof(tier.cohort)}</strong>`
+    : `<strong style="color:#059669;font-size:16px;">-10% sur votre pack</strong> (Starter, Parcours ou Investisseur)`;
+  const ctaLabel = tier ? `💳 Payer maintenant -10% (${fmtXof(tier.cohort)}) →` : '💳 Payer maintenant -10% →';
+  const packTitle = tier ? tier.name : 'Parcours Investisseur BRVM';
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -4680,18 +4706,15 @@ export async function sendCohortPreregistrationEmail({
         <tr><td style="background:#fff;padding:36px 40px;">
           <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
           <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
-            Merci pour votre intérêt ! Votre pré-inscription au <strong>Parcours Investisseur BRVM</strong> (cohorte de juillet) est bien enregistrée.
+            Merci pour votre intérêt ! Votre pré-inscription au <strong>${packTitle}</strong> (cohorte de juillet) est bien enregistrée.
             <strong>Notre équipe vous recontacte très vite sur WhatsApp</strong> pour finaliser votre inscription et vous transmettre toutes les informations.
           </p>
 
           <!-- Avantage préinscrit : -10% + date limite -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:18px 22px;text-align:center;">
-              <p style="margin:0 0 6px;font-size:16px;font-weight:900;color:#92400E;">🎁 -10% réservé aux préinscrits</p>
-              <p style="margin:0 0 4px;font-size:15px;color:#374151;">
-                <span style="text-decoration:line-through;color:#9CA3AF;">35 000 XOF</span>
-                &nbsp;<strong style="color:#059669;font-size:18px;">31 500 XOF</strong>
-              </p>
+              <p style="margin:0 0 6px;font-size:16px;font-weight:900;color:#92400E;">🎁 -10% réservé aux préinscrits${tier ? ` · ${tier.name}` : ''}</p>
+              <p style="margin:0 0 4px;font-size:15px;color:#374151;">${priceLine}</p>
               <p style="margin:0;font-size:13px;color:#92400E;font-weight:700;">⏳ Offre valable jusqu'au 3 juillet — finalisez votre paiement avant cette date.</p>
             </td></tr>
           </table>
@@ -4700,7 +4723,7 @@ export async function sendCohortPreregistrationEmail({
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
             <tr><td align="center">
               <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#EA580C 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
-                💳 Payer maintenant -10% (31 500 XOF) →
+                ${ctaLabel}
               </a>
               <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Ou payer en 3 fois — choix proposé sur la page.</p>
             </td></tr>
@@ -4738,7 +4761,7 @@ export async function sendCohortPreregistrationEmail({
     to: email,
     subject: '🎁 Pré-inscription reçue : -10% pour la Cohorte Juillet (avant le 3 juillet)',
     html,
-    text: `Bonjour ${name}, votre pré-inscription au Parcours Investisseur BRVM (cohorte juillet) est enregistrée. Avantage préinscrit : -10% (31 500 XOF au lieu de 35 000), à finaliser avant le 3 juillet. Payez ici : ${payUrl}. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
+    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte juillet) est enregistrée. Avantage préinscrit : -10%${tier ? ` (${fmtXof(tier.cohort)} au lieu de ${fmtXof(tier.full)})` : ''}, à finaliser avant le 3 juillet. Payez ici : ${payUrl}. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
   });
 }
 
