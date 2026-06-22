@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import WebinarSection from '../components/learning/WebinarSection';
 import CohortPreregister from '../components/learning/CohortPreregister';
+import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -216,12 +217,21 @@ const FAQ = [
 
 export default function WebinarPage() {
   const registrationRef = useRef<HTMLDivElement>(null);
+  const [selectedPack, setSelectedPack] = useState<PackId | null>(null);
 
-  // Tunnel unique : tous les CTA mènent au formulaire de pré-inscription
-  const scrollToRegistration = () => {
-    const el = document.getElementById('preinscription');
+  const scrollToId = (id: string) => {
+    const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     else registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // CTA généraux → présentation des packs (l'offre)
+  const scrollToRegistration = () => scrollToId('packs');
+
+  // Choix d'un pack → on mémorise et on descend vers la pré-inscription
+  const handleChoosePack = (id: PackId) => {
+    setSelectedPack(id);
+    scrollToId('preinscription');
   };
 
   return (
@@ -284,8 +294,12 @@ export default function WebinarPage() {
         </div>
       </section>
 
+      {/* ── Les 3 packs (good-better-best) ───────────────────────────────── */}
+      <PricingPacks onChoose={handleChoosePack} />
+
       {/* ── Pré-inscription gratuite — Cohorte Juillet ───────────────────── */}
-      <CohortPreregister />
+      <CohortPreregister selectedPack={selectedPack} />
+
 
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}
       {TESTIMONIALS.length > 0 && (
@@ -477,7 +491,7 @@ export default function WebinarPage() {
           onClick={scrollToRegistration}
           className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-95 transition-transform"
         >
-          🎟️ Pré-inscription gratuite — Cohorte 4 juillet →
+          🎟️ Choisir mon pack — Cohorte 4 juillet →
         </button>
       </div>
 

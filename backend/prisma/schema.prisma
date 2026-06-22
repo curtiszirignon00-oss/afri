@@ -2210,6 +2210,7 @@ model WebinarRegistration {
   depositId     String?  // PawaPay depositId après paiement
   paidAt        DateTime?
   referralCode  String?  // Code ambassadeur utilisé lors de l'inscription (programme parrainage)
+  pack          String?  // Pack choisi lors d'une pré-inscription : "starter" | "parcours" | "investisseur"
   created_at    DateTime @default(now())
 
   @@index([webinarId])

@@ -76,7 +76,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
 // Pré-inscription gratuite (liste d'attente) à la cohorte juillet — sans paiement
 export async function cohortPreregister(req: Request, res: Response, next: NextFunction) {
   try {
-    const { name, firstName, lastName, email, phone } = req.body;
+    const { name, firstName, lastName, email, phone, pack } = req.body;
     const userId = (req as any).user?.id ?? null;
 
     if (!email) return res.status(400).json({ message: 'Email requis.' });
@@ -85,11 +85,16 @@ export async function cohortPreregister(req: Request, res: Response, next: NextF
     if (!phone) return res.status(400).json({ message: 'Numéro WhatsApp requis.' });
 
     const resolvedFirstName = firstName ?? name ?? null;
+    const resolvedPack = ['starter', 'parcours', 'investisseur'].includes(pack) ? pack : null;
 
     const existing = await prisma.webinarRegistration.findFirst({
       where: { webinarId: COHORT_ID, email },
     });
     if (existing) {
+      // Mettre à jour le pack choisi si fourni (le lead peut préciser son choix en revenant)
+      if (resolvedPack && existing.pack !== resolvedPack) {
+        await prisma.webinarRegistration.update({ where: { id: existing.id }, data: { pack: resolvedPack } });
+      }
       return res.status(200).json({ message: 'Vous êtes déjà pré-inscrit(e) à la cohorte.', data: existing });
     }
 
@@ -104,6 +109,7 @@ export async function cohortPreregister(req: Request, res: Response, next: NextF
         earlyBird: false,
         userId,
         paymentStatus: 'pending',
+        pack: resolvedPack,
       },
     });
 

@@ -25,6 +25,12 @@ const DIAL_CODES = [
 
 const COHORT_ID = 'cohorte-juillet-2026';
 const PREREGISTER_OFFSET = 30; // base sociale (cohérent avec WEBINAR_COUNT_OFFSET)
+
+const PACK_LABELS: Record<string, string> = {
+  starter: 'Starter (35 000 XOF)',
+  parcours: 'Parcours (50 000 XOF)',
+  investisseur: 'Investisseur (75 000 XOF)',
+};
 const DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z').getTime();
 
 function getCountdown() {
@@ -39,9 +45,10 @@ function getCountdown() {
 }
 function pad2(n: number) { return String(n).padStart(2, '0'); }
 
-const CohortPreregister: React.FC = () => {
+const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selectedPack }) => {
   const navigate = useNavigate();
   const { userProfile } = useAuth();
+  const packLabel = selectedPack ? PACK_LABELS[selectedPack] : null;
   const [name, setName] = useState((userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '');
   const [email, setEmail] = useState((userProfile as any)?.email || '');
   const [dialCode, setDialCode] = useState('+225');
@@ -78,10 +85,11 @@ const CohortPreregister: React.FC = () => {
           name: name.trim(),
           email: email.trim(),
           phone: `${dialCode} ${phone.trim()}`,
+          ...(selectedPack ? { pack: selectedPack } : {}),
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
-      analytics.trackAction('cohort_preregistered', 'Cohorte Juillet 2026', {});
+      analytics.trackAction('cohort_preregistered', 'Cohorte Juillet 2026', { pack: selectedPack ?? 'non_precise' });
       setPreinscrits((p) => (p === null ? null : p + 1));
       setDone(true);
     } catch {
@@ -92,7 +100,7 @@ const CohortPreregister: React.FC = () => {
   };
 
   return (
-    <section id="preinscription" className="px-4 sm:px-6 -mt-10 relative z-10 scroll-mt-20">
+    <section id="preinscription" className="px-4 sm:px-6 py-10 bg-gray-50 scroll-mt-20">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="grid md:grid-cols-2">
@@ -101,10 +109,24 @@ const CohortPreregister: React.FC = () => {
               <span className="inline-block bg-amber-400 text-amber-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-3">
                 Pré-inscription gratuite
               </span>
-              <h2 className="text-2xl font-extrabold leading-snug mb-2">Réservez votre place — Cohorte Juillet 2026</h2>
-              <p className="text-blue-200 text-sm mb-4">
-                Laissez vos coordonnées : on vous recontacte sur WhatsApp pour finaliser. Aucun paiement maintenant.
-              </p>
+              {packLabel ? (
+                <>
+                  <h2 className="text-2xl font-extrabold leading-snug mb-2">Plus qu'une étape — Pack {packLabel.split(' (')[0]}</h2>
+                  <div className="bg-white/15 border border-white/20 rounded-lg px-3 py-2 mb-3 text-sm">
+                    🎟️ Pack choisi : <strong>{packLabel}</strong>
+                  </div>
+                  <p className="text-blue-200 text-sm mb-4">
+                    Laissez vos coordonnées : on vous recontacte sur WhatsApp pour finaliser votre inscription. Aucun paiement maintenant.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-extrabold leading-snug mb-2">Pas sûr du pack ? On vous oriente</h2>
+                  <p className="text-blue-200 text-sm mb-4">
+                    Laissez vos coordonnées : notre équipe vous recontacte sur WhatsApp pour vous aider à choisir le bon pack et finaliser. Aucun paiement maintenant.
+                  </p>
+                </>
+              )}
 
               {/* Avantage préinscrit — 10% + compte à rebours */}
               <div className="bg-amber-400/15 border border-amber-300/40 rounded-xl p-3 mb-4">
