@@ -96,6 +96,10 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
+      // Mémoriser les coordonnées pour pré-remplir la page de paiement (pas de ressaisie)
+      try {
+        localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: name.trim(), email: email.trim(), dialCode, phone: phone.trim() }));
+      } catch { /* ignore */ }
       analytics.trackAction('cohort_preregistered', 'Cohorte Juillet 2026', { pack: selectedPack ?? 'non_precise' });
       setPreinscrits((p) => (p === null ? null : p + 1));
       setDone(true);
@@ -181,7 +185,6 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
                   <div className="flex items-center gap-2"><Users className="w-4 h-4 text-emerald-300 flex-shrink-0" /> <strong className="text-white">Déjà {preinscrits} préinscrits</strong> · places limitées</div>
                 )}
                 <div className="flex items-center gap-2"><CalendarClock className="w-4 h-4 text-blue-300 flex-shrink-0" /> 1ère session le samedi 4 juillet</div>
-                <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-300 flex-shrink-0" /> 5 sessions live · 15h de formation</div>
                 <div className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-300 flex-shrink-0" /> 50 places maximum par session</div>
               </div>
             </div>

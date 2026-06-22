@@ -19,6 +19,11 @@ function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';
 }
 
+// Coordonnées mémorisées lors de la pré-inscription (évite la ressaisie)
+function readLead(): { name?: string; email?: string; dialCode?: string; phone?: string } | null {
+  try { return JSON.parse(localStorage.getItem('afb_cohort_lead') || 'null'); } catch { return null; }
+}
+
 // Indicatifs WhatsApp (large — Togo inclus, car on prend l'inscription même si le paiement n'est pas dispo)
 const WHATSAPP_DIAL_CODES = [
   { code: '+225', flag: '🇨🇮', name: "Côte d'Ivoire" },
@@ -76,15 +81,16 @@ export default function InstallmentStartPage() {
   const INSTALLMENTS = tierCfg.installments;
   const TOTAL = INSTALLMENTS.reduce((a, b) => a + b, 0);
 
+  const lead = readLead();
   const [step, setStep] = useState<'conditions' | 'contact' | 'payment' | 'success'>('conditions');
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    name: (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
-    email: (userProfile as any)?.email || '',
+    name: lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
+    email: lead?.email || (userProfile as any)?.email || '',
   });
-  const [waDialCode, setWaDialCode] = useState('+225');
-  const [waPhone, setWaPhone] = useState('');
+  const [waDialCode, setWaDialCode] = useState(lead?.dialCode || '+225');
+  const [waPhone, setWaPhone] = useState(lead?.phone || '');
 
   const [payOperator, setPayOperator] = useState<string | null>(null);
   const [payDialCode, setPayDialCode] = useState('+225');
@@ -123,8 +129,10 @@ export default function InstallmentStartPage() {
           email: form.email.trim(),
           phone: `${waDialCode} ${waPhone.trim()}`,
           type: 'pack',
+          pack: tier,
         }),
       });
+      try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
       analytics.trackAction('installment_preregistered', PLAN_NAME, { packId: PACK_ID });
       // Pré-remplir le numéro de paiement si le pays est éligible PawaPay
       if (PAYMENT_DIAL_CODES.some((c) => c.code === waDialCode)) {

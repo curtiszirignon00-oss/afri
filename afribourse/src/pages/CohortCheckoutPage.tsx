@@ -20,6 +20,11 @@ function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';
 }
 
+// Coordonnées mémorisées lors de la pré-inscription (évite la ressaisie)
+function readLead(): { name?: string; email?: string; dialCode?: string; phone?: string } | null {
+  try { return JSON.parse(localStorage.getItem('afb_cohort_lead') || 'null'); } catch { return null; }
+}
+
 const WHATSAPP_DIAL_CODES = [
   { code: '+225', flag: '🇨🇮' }, { code: '+221', flag: '🇸🇳' }, { code: '+226', flag: '🇧🇫' },
   { code: '+223', flag: '🇲🇱' }, { code: '+228', flag: '🇹🇬' }, { code: '+229', flag: '🇧🇯' },
@@ -61,14 +66,15 @@ export default function CohortCheckoutPage() {
   const discountActive = new Date() <= COHORT_DEADLINE;
   const price = discountActive ? tierCfg.cohort : tierCfg.full;
 
+  const lead = readLead();
   const [step, setStep] = useState<'form' | 'payment'>('form');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    name: (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
-    email: (userProfile as any)?.email || '',
+    name: lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
+    email: lead?.email || (userProfile as any)?.email || '',
   });
-  const [waDialCode, setWaDialCode] = useState('+225');
-  const [waPhone, setWaPhone] = useState('');
+  const [waDialCode, setWaDialCode] = useState(lead?.dialCode || '+225');
+  const [waPhone, setWaPhone] = useState(lead?.phone || '');
   const [payOperator, setPayOperator] = useState<string | null>(null);
   const [payDialCode, setPayDialCode] = useState('+225');
   const [payPhone, setPayPhone] = useState('');
@@ -95,6 +101,7 @@ export default function CohortCheckoutPage() {
           pack: tier,
         }),
       });
+      try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
       if (PAYMENT_DIAL_CODES.some((c) => c.code === waDialCode)) {
         setPayDialCode(waDialCode);
         setPayPhone(waPhone);
