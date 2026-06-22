@@ -159,7 +159,7 @@ export const PAWAPAY_CORRESPONDENTS: Record<string, Record<string, string>> = {
     '+250': 'MTN_MOMO_RWA',
   },
   'moov-money': {
-    '+225': 'MOOV_CIV',
+    // Moov Côte d'Ivoire désactivé (non fonctionnel via PawaPay)
     '+226': 'MOOV_BFA',
     '+229': 'MOOV_BEN',
   },

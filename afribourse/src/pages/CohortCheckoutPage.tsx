@@ -38,11 +38,15 @@ const PAYMENT_DIAL_CODES = [
   { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
   { code: '+223', flag: '🇲🇱', name: 'Mali' },
   { code: '+229', flag: '🇧🇯', name: 'Bénin' },
+  { code: '+228', flag: '🇹🇬', name: 'Togo' },
   { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
   { code: '+233', flag: '🇬🇭', name: 'Ghana' },
   { code: '+256', flag: '🇺🇬', name: 'Ouganda' },
   { code: '+250', flag: '🇷🇼', name: 'Rwanda' },
 ];
+
+// Pays sans paiement en ligne (Mobile Money non disponible) → contact manuel
+const OFFLINE_PAYMENT_CODES = ['+228'];
 
 const MOBILE_OPERATORS = [
   { id: 'wave',         label: 'Wave',         emoji: '🌊' },
@@ -259,6 +263,14 @@ export default function CohortCheckoutPage() {
                       {PAYMENT_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name} ({c.code})</option>)}
                     </select>
                   </div>
+
+                  {OFFLINE_PAYMENT_CODES.includes(payDialCode) ? (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                      <p className="font-bold mb-1">🇹🇬 Paiement en ligne non disponible au Togo</p>
+                      <p className="text-xs leading-relaxed">Pas d'inquiétude — vos coordonnées sont bien enregistrées. Notre équipe vous contacte très vite sur WhatsApp avec les informations pour régler votre place.</p>
+                    </div>
+                  ) : (
+                  <>
                   <div>
                     <p className="text-xs font-semibold text-gray-700 mb-2">Opérateur Mobile Money</p>
                     {(() => {
@@ -292,6 +304,8 @@ export default function CohortCheckoutPage() {
                     className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     {payStatus === 'initiating' ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : `Payer ${formatPrice(price)}`}
                   </button>
+                  </>
+                  )}
                 </>
               )}
 
