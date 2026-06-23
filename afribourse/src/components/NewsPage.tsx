@@ -15,8 +15,13 @@ import { markNewsVisited, getUnseenBrvmCount } from '../hooks/useContentUnseen';
 import ArticleInteractions from './ArticleInteractions';
 import HtmlArticleRenderer from './HtmlArticleRenderer';
 import NewsArticleCard from './news/NewsArticleCard';
+import NewsAuthGate from './news/NewsAuthGate';
 import { engagementScore, type ArticleCounts } from './news/newsHelpers';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
+import { useAuth } from '../contexts/AuthContext';
+
+// Nombre d'articles visibles pour un visiteur non connecté avant le mur d'inscription
+const FREE_PREVIEW_LIMIT = 6;
 
 // Marque une vue (dédup par session via localStorage)
 function trackArticleView(articleId: string) {
@@ -126,6 +131,8 @@ export default function NewsPage() {
   const [counts, setCounts] = useState<Record<string, ArticleCounts>>({});
   const [search, setSearch] = useState('');
   const { trackAction } = useAnalytics();
+  const { isLoggedIn, loading: authLoading } = useAuth();
+  const gated = !authLoading && !isLoggedIn;
 
   function openDBArticle(article: NewsArticle) {
     trackAction(ACTION_TYPES.VIEW_ARTICLE, article.title, {
@@ -459,7 +466,7 @@ export default function NewsPage() {
           {/* Grille uniforme — toutes les actualités, même style de card */}
           {listArticles.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {listArticles.map(article => (
+              {(gated ? listArticles.slice(0, FREE_PREVIEW_LIMIT) : listArticles).map(article => (
                 <NewsArticleCard
                   key={article.id}
                   article={article}
@@ -470,11 +477,18 @@ export default function NewsPage() {
               ))}
             </div>
           )}
+
+          {/* Mur d'inscription gratuit pour les visiteurs non connectés */}
+          {gated && (
+            <div className="mt-8">
+              <NewsAuthGate variant="list" />
+            </div>
+          )}
         </div>
       )}
 
-      {/* BRVM 2026 intelligence — même grille de cards uniforme */}
-      {!isStaticOnly && !loading && brvmFiltered.length > 0 && (
+      {/* BRVM 2026 intelligence — même grille de cards uniforme (masqué si non connecté) */}
+      {!isStaticOnly && !loading && !gated && brvmFiltered.length > 0 && (
         <div className="mt-10">
           <div className="flex items-center gap-2 mb-4">
             <BarChart2 size={15} className="text-[#00D4A8]" />

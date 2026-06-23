@@ -12,6 +12,8 @@ import { BRVM_NEWS, BRVMArticle, ImpactType, ContentBlock } from '../data/brvm20
 import ArticleInteractions from './ArticleInteractions';
 import HtmlArticleRenderer from './HtmlArticleRenderer';
 import RelatedArticles from './news/RelatedArticles';
+import NewsAuthGate from './news/NewsAuthGate';
+import { useAuth } from '../contexts/AuthContext';
 
 const SITE_URL = 'https://afribourse.com';
 
@@ -101,20 +103,24 @@ function ShareButton() {
 // ── Page article DB ────────────────────────────────────────────────────────────
 
 function DBArticlePage({ article }: { article: DBArticle }) {
+  const { isLoggedIn, loading: authLoading } = useAuth();
+  const gated = !authLoading && !isLoggedIn;
+
   const blocks: ContentBlock[] | null = (() => {
     if (!article.rich_content) return null;
     try { return JSON.parse(article.rich_content); } catch { return null; }
   })();
 
-  // Comptage de vue (dédup par session)
+  // Comptage de vue (dédup par session) — uniquement pour les utilisateurs connectés
   useEffect(() => {
+    if (gated) return;
     try {
       const key = `viewed:${article.id}`;
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
       fetch(`${API_BASE_URL}/articles/${encodeURIComponent(article.id)}/view`, { method: 'POST' }).catch(() => {});
     } catch { /* ignore */ }
-  }, [article.id]);
+  }, [article.id, gated]);
 
   const canonicalUrl = `${SITE_URL}/news/${article.slug}`;
   const ogImage = article.image_url ?? `https://afribourse-api.onrender.com/api/og/image/page/news`;
@@ -189,17 +195,23 @@ function DBArticlePage({ article }: { article: DBArticle }) {
               <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">{article.summary}</p>
             )}
 
-            {blocks ? (
-              <BlockRenderer blocks={blocks} variant="module" />
-            ) : article.content ? (
-              <HtmlArticleRenderer html={article.content} />
+            {gated ? (
+              <NewsAuthGate variant="article" />
             ) : (
-              <p className="text-slate-400 italic">Aucun contenu disponible.</p>
+              <>
+                {blocks ? (
+                  <BlockRenderer blocks={blocks} variant="module" />
+                ) : article.content ? (
+                  <HtmlArticleRenderer html={article.content} />
+                ) : (
+                  <p className="text-slate-400 italic">Aucun contenu disponible.</p>
+                )}
+
+                <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
+
+                <RelatedArticles articleId={article.id} tickers={article.tickers} category={article.category} />
+              </>
             )}
-
-            <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
-
-            <RelatedArticles articleId={article.id} tickers={article.tickers} category={article.category} />
 
             <p className="text-[11px] text-slate-400 italic border-t border-slate-100 pt-6 mt-8">
               {article.author ?? 'AfriBourse'} · {article.source ?? 'AfriBourse Research'} · Informations éducatives uniquement.
