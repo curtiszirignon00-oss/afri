@@ -13,6 +13,7 @@ import {
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
 import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail } from '../services/email.service';
 import { buildInstallmentPayUrl } from './installment.controller';
+import { buildUserData, sendMetaEvent } from '../services/meta-capi.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // Plans supportés et leur abonnement correspondant
@@ -57,6 +58,62 @@ async function reconcileCohortPreregistration(email: string | undefined | null, 
     }
   } catch (err) {
     log.error('[COHORT] Échec réconciliation pré-inscription', { err, email });
+  }
+}
+
+// ============================================================
+// Meta API Conversions — évènement Purchase (serveur, source de vérité)
+// event_id = depositId → dédupliqué avec un éventuel Purchase navigateur.
+// Tolérant aux erreurs : ne bloque jamais le traitement du webhook.
+// ============================================================
+async function firePurchaseEvent(payment: any) {
+  try {
+    const meta = (payment.metadata as Record<string, any> | null) ?? {};
+    let email: string | null = meta.registrationEmail ?? null;
+    let firstName: string | null = null;
+    let lastName: string | null = null;
+
+    if (payment.userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: payment.userId },
+        select: { email: true, name: true, lastname: true },
+      });
+      if (user) {
+        email = email ?? user.email;
+        firstName = user.name ?? null;
+        lastName = user.lastname ?? null;
+      }
+    }
+
+    // Pays déduit du correspondent (suffixe ISO, ex: ORANGE_CI → CI)
+    const country = String(payment.correspondent || '').split('_').pop() || null;
+    const value = Number(payment.amount);
+
+    const userData = buildUserData({
+      email,
+      phone: payment.phone,            // numéro Mobile Money
+      firstName,
+      lastName,
+      country: country && country.length === 2 ? country : null,
+      externalId: payment.userId ?? null,
+    });
+
+    await sendMetaEvent({
+      eventName: 'Purchase',
+      eventId: payment.depositId,
+      actionSource: 'website',
+      eventSourceUrl: `${FRONTEND_URL}/paiement/retour`,
+      userData,
+      customData: {
+        currency: payment.currency,
+        value: isNaN(value) ? undefined : value,
+        content_name: payment.planName,
+        content_ids: [payment.planId],
+        content_type: 'product',
+      },
+    });
+  } catch (err) {
+    log.error('[MetaCAPI] Échec Purchase serveur', { err, depositId: payment?.depositId });
   }
 }
 
@@ -188,6 +245,9 @@ export async function handleDepositCallback(req: Request, res: Response) {
     }
 
     if (status === 'COMPLETED') {
+      // Meta API Conversions — Purchase (serveur). Couvre abonnements, échelonné et webinaires/pack.
+      void firePurchaseEvent(payment);
+
       const tier = PLAN_TIER_MAP[payment.planId];
 
       if (tier) {

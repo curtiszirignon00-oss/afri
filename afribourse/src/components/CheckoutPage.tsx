@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authFetch, API_BASE_URL } from '../config/api';
 import PaymentModal from './payment/PaymentModal';
 import { PAWAPAY_CORRESPONDENTS } from '../hooks/usePawaPayment';
+import { metaPixel } from '../utils/metaPixel';
 
 interface PromoInfo {
   hasDiscount: boolean;
@@ -89,6 +90,7 @@ export default function CheckoutPage() {
     } catch { /* non bloquant */ }
 
     if (isMobileMethod(selectedMethod)) {
+      metaPixel.addPaymentInfo(planName, Number(effectiveAmount) || 0); // Meta : Ajout d'infos de paiement
       setShowPaymentModal(true);
     }
   };

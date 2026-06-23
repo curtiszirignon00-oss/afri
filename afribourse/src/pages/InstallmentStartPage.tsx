@@ -6,6 +6,7 @@ import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
 import { analytics } from '../services/analytics';
+import { metaPixel } from '../utils/metaPixel';
 
 const PACK_ID = 'pack-parcours-investisseur';
 
@@ -138,6 +139,7 @@ export default function InstallmentStartPage() {
       });
       try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
       analytics.trackAction('installment_preregistered', PLAN_NAME, { packId: PACK_ID });
+      metaPixel.initiateCheckout(PLAN_NAME, INSTALLMENTS[0]); // Meta : Paiement initié
       // Pré-remplir le numéro de paiement si le pays est éligible PawaPay
       if (PAYMENT_DIAL_CODES.some((c) => c.code === waDialCode)) {
         setPayDialCode(waDialCode);
@@ -156,6 +158,7 @@ export default function InstallmentStartPage() {
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    metaPixel.addPaymentInfo(PLAN_NAME, INSTALLMENTS[0]); // Meta : Ajout d'infos de paiement
     setLoading(true);
     try {
       const res = await authFetch(`${API_BASE_URL}/installments/start`, {

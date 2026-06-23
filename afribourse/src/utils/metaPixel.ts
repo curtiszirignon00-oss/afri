@@ -1,4 +1,8 @@
-// Meta Pixel event helpers — wraps window.fbq with a safe guard
+// Meta Pixel + API Conversions — dual-fire avec déduplication par event_id.
+// Chaque évènement est envoyé au Pixel (navigateur) ET relayé au serveur (CAPI)
+// avec le MÊME event_id : Meta fusionne les deux signaux.
+import { v4 as uuidv4 } from 'uuid';
+import { sendCapiEvent, type CapiUserData } from '../services/metaCapi';
 
 declare global {
   interface Window {
@@ -14,6 +18,25 @@ function fbq(...args: unknown[]) {
   }
 }
 
+// Données utilisateur connues (mises à jour par metaPixelIdentify) — enrichissent
+// le matching côté serveur (CAPI), où le Pixel ne peut pas hacher tout seul.
+let identifiedUser: CapiUserData = {};
+
+/**
+ * Émet un évènement vers le Pixel ET l'API Conversions avec un event_id partagé.
+ */
+function emit(eventName: string, params?: Record<string, unknown>) {
+  const eventId = uuidv4();
+  // Pixel — 4e argument = { eventID } pour la déduplication
+  if (params && Object.keys(params).length > 0) {
+    fbq('track', eventName, params, { eventID: eventId });
+  } else {
+    fbq('track', eventName, {}, { eventID: eventId });
+  }
+  // API Conversions (serveur) — même event_id
+  sendCapiEvent(eventName, eventId, params, identifiedUser);
+}
+
 export interface MetaUserData {
   id?: string;
   email?: string | null;
@@ -24,9 +47,8 @@ export interface MetaUserData {
 
 /**
  * Correspondance avancée — à appeler dès que les données utilisateur sont connues.
- * Le pixel hache automatiquement em/fn/ln via SHA-256.
- * Re-appeler fbq('init') avec les données utilisateur permet à Meta de lier
- * les événements suivants à un profil réel.
+ * Le pixel hache automatiquement em/fn/ln via SHA-256, et on mémorise les données
+ * pour enrichir les évènements CAPI (hachage côté serveur).
  */
 export function metaPixelIdentify(user: MetaUserData) {
   const userData: Record<string, string> = {};
@@ -45,26 +67,51 @@ export function metaPixelIdentify(user: MetaUserData) {
   if (Object.keys(userData).length > 0) {
     fbq('init', PIXEL_ID, userData);
   }
+
+  // Mémoriser pour les évènements CAPI (le serveur se charge du hachage)
+  identifiedUser = {
+    email: user.email ?? undefined,
+    phone: user.telephone ?? undefined,
+    firstName: user.name ?? undefined,
+    lastName: user.lastname ?? undefined,
+    externalId: user.id ?? undefined,
+  };
 }
 
 export const metaPixel = {
   /** Inscription terminée (email ou OAuth) */
   completeRegistration() {
-    fbq('track', 'CompleteRegistration');
+    emit('CompleteRegistration');
   },
 
   /** Début de processus de paiement (clic Abonnement payant) */
   initiateCheckout(planName: string, value: number) {
-    fbq('track', 'InitiateCheckout', {
+    emit('InitiateCheckout', {
       content_name: planName,
       value,
       currency: 'XOF',
     });
   },
 
+  /** Ajout des informations de paiement (saisie opérateur/numéro Mobile Money) */
+  addPaymentInfo(planName: string, value: number) {
+    emit('AddPaymentInfo', {
+      content_name: planName,
+      value,
+      currency: 'XOF',
+    });
+  },
+
+  /** Achat confirmé (navigateur) — dédupliqué avec le Purchase serveur si même event_id. */
+  purchase(planName: string, value: number, eventId?: string) {
+    const id = eventId ?? uuidv4();
+    fbq('track', 'Purchase', { content_name: planName, value, currency: 'XOF' }, { eventID: id });
+    sendCapiEvent('Purchase', id, { content_name: planName, value, currency: 'XOF' }, identifiedUser);
+  },
+
   /** Abonnement payant confirmé */
   subscribe(planName: string, value: number) {
-    fbq('track', 'Subscribe', {
+    emit('Subscribe', {
       content_name: planName,
       value,
       currency: 'XOF',
@@ -74,7 +121,7 @@ export const metaPixel = {
 
   /** Essai gratuit activé */
   startTrial() {
-    fbq('track', 'StartTrial', {
+    emit('StartTrial', {
       value: '0.00',
       currency: 'XOF',
       predicted_ltv: '0.00',
@@ -83,22 +130,22 @@ export const metaPixel = {
 
   /** Formulaire de contact envoyé */
   contact() {
-    fbq('track', 'Contact');
+    emit('Contact');
   },
 
   /** Lead qualifié : survey onboarding complété */
   lead(source: string) {
-    fbq('track', 'Lead', { content_name: source });
+    emit('Lead', { content_name: source });
   },
 
   /** Recherche d'action */
   search(query: string) {
-    fbq('track', 'Search', { search_string: query });
+    emit('Search', { search_string: query });
   },
 
   /** Vue d'une fiche action */
   viewContent(symbol: string) {
-    fbq('track', 'ViewContent', {
+    emit('ViewContent', {
       content_ids: [symbol],
       content_type: 'product',
       content_name: symbol,
@@ -107,7 +154,7 @@ export const metaPixel = {
 
   /** Ajout à la watchlist (≈ liste d'envies) */
   addToWishlist(symbol: string) {
-    fbq('track', 'AddToWishlist', {
+    emit('AddToWishlist', {
       content_ids: [symbol],
       content_type: 'product',
     });

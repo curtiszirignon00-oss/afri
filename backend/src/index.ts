@@ -74,6 +74,7 @@ import paymentLinkRoutes from './routes/paymentLink.routes'; // Liens de paiemen
 import installmentRoutes from './routes/installment.routes'; // Paiement échelonné (Pack Parcours 3x)
 import articleInteractionRoutes from './routes/article-interactions.routes'; // Likes & commentaires articles
 import certificateRoutes from './routes/certificate.routes';                 // Certificats de participation webinaires
+import metaRoutes from './routes/meta.routes';                               // Meta API Conversions (CAPI serveur)
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -239,6 +240,8 @@ class App {
       '/analytics/page-view', '/analytics/page-duration',
       // Préinscription webinaire — public, pas d'état auth
       '/webinars/preregister',
+      // Relais Meta CAPI — appelé par le navigateur (visiteur potentiellement anonyme)
+      '/meta/track',
     ]);
     this.app?.use('/api/', (req, res, next) => {
       // req.path est relatif au préfixe /api/ (ex: /login pour /api/login)
@@ -321,6 +324,7 @@ class App {
     this.app?.use('/api/installments', installmentRoutes);                 // Paiement échelonné Pack Parcours (3 mensualités)
     this.app?.use('/api/articles', articleInteractionRoutes);              // Likes & commentaires articles
     this.app?.use('/api/certificates', certificateRoutes);                 // Certificats de participation webinaires
+    this.app?.use('/api/meta', metaRoutes);                                 // Meta API Conversions (relais navigateur → CAPI serveur)
 
     // Static Uploads Route — même racine absolue que l'écriture des fichiers (upload.config)
     this.app?.use('/uploads', Express.static(UPLOADS_ROOT));
