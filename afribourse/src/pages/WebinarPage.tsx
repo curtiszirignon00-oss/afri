@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import {
-  CheckCircle, ChevronDown, ChevronRight, TrendingUp, BookOpen,
+  CheckCircle, ChevronDown, TrendingUp, BookOpen,
   Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
 } from 'lucide-react';
 import CohortPreregister from '../components/learning/CohortPreregister';
@@ -257,40 +257,7 @@ export default function WebinarPage() {
             <span className="text-blue-400">avec méthode et confiance.</span>
           </h1>
 
-          <p className="text-blue-200 text-lg sm:text-xl max-w-2xl mb-8 leading-relaxed">
-            5 sessions live avec des analystes BRVM. Analyse fondamentale, technique, plans d'action personnalisés — tout ce qu'il faut pour investir avec conviction.
-          </p>
-
-          <div className="flex flex-wrap gap-8 mb-10">
-            {[
-              { v: '5', l: 'sessions live' },
-              { v: '15h', l: 'de formation' },
-              { v: '50', l: 'places max' },
-              { v: '4 juil.', l: '1ère session' },
-            ].map((k) => (
-              <div key={k.l}>
-                <p className="text-2xl sm:text-3xl font-extrabold text-white leading-none">{k.v}</p>
-                <p className="text-blue-300 text-xs mt-0.5">{k.l}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={scrollToRegistration}
-              className="bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-base px-8 py-4 rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2"
-            >
-              🎟️ Je réserve ma place — Cohorte 4 juillet <ChevronRight className="w-5 h-5" />
-            </button>
-            <button
-              onClick={scrollToRegistration}
-              className="border border-blue-400/40 hover:bg-white/10 text-blue-200 font-semibold text-base px-6 py-4 rounded-xl transition-all"
-            >
-              Voir le programme ↓
-            </button>
-          </div>
-
-          <p className="mt-6 text-xs text-blue-400 flex items-center gap-1.5">
+          <p className="mt-2 text-xs text-blue-400 flex items-center gap-1.5">
             <span className="text-emerald-400">✓</span> Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
           </p>
         </div>
