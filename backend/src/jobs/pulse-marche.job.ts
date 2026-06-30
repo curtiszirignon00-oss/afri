@@ -81,7 +81,16 @@ function buildPostContent(
   ].join('\n');
 }
 
+// Publication désactivée : on ne poste plus le Pulse du marché dans la communauté.
+// Mettre à `true` pour réactiver la publication automatique.
+const PULSE_ENABLED = false;
+
 export async function runPulseMarche(): Promise<void> {
+  if (!PULSE_ENABLED) {
+    log.info('[PulseMarché] Publication désactivée — post ignoré.');
+    return;
+  }
+
   log.info('[PulseMarché] Démarrage du post quotidien BRVM...');
 
   // 1. Données du jour
