@@ -101,8 +101,8 @@ export default function CommunityPostDetailPage() {
                 </div>
             </div>
 
-            <div className="max-w-4xl mx-auto px-4 py-6">
-                {/* En-tête du contenu */}
+            {/* En-tête du contenu (centré) */}
+            <div className="max-w-4xl mx-auto px-4 pt-6">
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-4">
                     {post.title && <h1 className="text-2xl font-bold text-gray-900">{post.title}</h1>}
 
@@ -129,9 +129,11 @@ export default function CommunityPostDetailPage() {
                         <p className="text-gray-700 mt-4 whitespace-pre-wrap leading-relaxed">{post.content}</p>
                     )}
                 </div>
+            </div>
 
-                {/* Contenu HTML (page dédiée) — rendu inline comme les articles news */}
-                {locked ? (
+            {/* Contenu HTML — pleine largeur (rendu inline comme les articles news) */}
+            {locked ? (
+                <div className="max-w-4xl mx-auto px-4">
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex items-center gap-3">
                         <Lock className="w-6 h-6 text-amber-500 flex-shrink-0" />
                         <p className="text-amber-800">
@@ -139,12 +141,14 @@ export default function CommunityPostDetailPage() {
                             Continuez à progresser pour le débloquer.
                         </p>
                     </div>
-                ) : htmlContent ? (
-                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                        <HtmlArticleRenderer html={htmlContent} />
-                    </div>
-                ) : htmlUrl ? (
-                    // Fallback : si le contenu n'a pas pu être chargé inline, lien direct
+                </div>
+            ) : htmlContent ? (
+                <div className="w-full bg-white">
+                    <HtmlArticleRenderer html={htmlContent} />
+                </div>
+            ) : htmlUrl ? (
+                // Fallback : si le contenu n'a pas pu être chargé inline, lien direct
+                <div className="max-w-4xl mx-auto px-4">
                     <div className="bg-white rounded-xl shadow-sm p-6 text-center">
                         <a
                             href={htmlUrl}
@@ -155,9 +159,11 @@ export default function CommunityPostDetailPage() {
                             Ouvrir le contenu
                         </a>
                     </div>
-                ) : null}
+                </div>
+            ) : null}
 
-                {/* Actions */}
+            {/* Actions + commentaires (centrés) */}
+            <div className="max-w-4xl mx-auto px-4 pb-6">
                 <div className="bg-white rounded-xl shadow-sm mt-4 px-6 py-3 flex items-center gap-6">
                     <button
                         onClick={handleLike}
@@ -176,7 +182,6 @@ export default function CommunityPostDetailPage() {
                     </button>
                 </div>
 
-                {/* Commentaires */}
                 {showComments && (
                     <div className="bg-white rounded-xl shadow-sm mt-4">
                         <CommunityCommentSection postId={post.id} />
