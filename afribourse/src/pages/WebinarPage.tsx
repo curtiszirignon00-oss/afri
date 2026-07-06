@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle, ChevronDown, TrendingUp, BookOpen,
   Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
 } from 'lucide-react';
-import CohortPreregister from '../components/learning/CohortPreregister';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
@@ -219,7 +219,7 @@ const FAQ = [
 
 export default function WebinarPage() {
   const registrationRef = useRef<HTMLDivElement>(null);
-  const [selectedPack, setSelectedPack] = useState<PackId | null>(null);
+  const navigate = useNavigate();
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -230,10 +230,9 @@ export default function WebinarPage() {
   // CTA généraux → présentation des packs (l'offre)
   const scrollToRegistration = () => scrollToId('packs');
 
-  // Choix d'un pack → on mémorise et on descend vers la pré-inscription
+  // Choix d'un pack → page de paiement (le lead est capturé à l'étape contact du paiement)
   const handleChoosePack = (id: PackId) => {
-    setSelectedPack(id);
-    scrollToId('preinscription');
+    navigate(`/parcours/cohorte-juillet?pack=${id}`);
   };
 
   return (
@@ -265,9 +264,6 @@ export default function WebinarPage() {
 
       {/* ── Les 3 packs (good-better-best) ───────────────────────────────── */}
       <PricingPacks onChoose={handleChoosePack} />
-
-      {/* ── Pré-inscription gratuite — Cohorte Juillet ───────────────────── */}
-      <CohortPreregister selectedPack={selectedPack} />
 
 
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}
@@ -386,7 +382,7 @@ export default function WebinarPage() {
           <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
           <p className="text-blue-200 mb-8 text-base leading-relaxed">
-            La cohorte de juillet démarre le 4 juillet. Les places sont limitées à 50 par session.
+            La prochaine cohorte démarre le 18 juillet. Les places sont limitées à 50 par session.
           </p>
           <button
             onClick={scrollToRegistration}
@@ -404,7 +400,7 @@ export default function WebinarPage() {
           onClick={scrollToRegistration}
           className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-95 transition-transform"
         >
-          🎟️ Choisir mon pack — Cohorte 4 juillet →
+          🎟️ Choisir mon pack — Cohorte 18 juillet →
         </button>
       </div>
 

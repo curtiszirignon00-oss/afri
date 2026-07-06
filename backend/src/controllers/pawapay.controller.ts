@@ -483,8 +483,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
       finalAmount = officialPrice;
     }
   } else if (planId === PACK_ID) {
-    // R5 — Pack Parcours : montant toujours calculé côté serveur
-    const cohortActive = req.body.cohortDiscount === true && new Date() <= COHORT_DISCOUNT_DEADLINE;
+    // R5 — Pack Parcours : montant toujours calculé côté serveur (plein tarif par pack)
     const tier = ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? (req.body.pack as string) : null;
     if (referralCode) {
       const refCode = await prisma.packReferralCode.findUnique({ where: { code: String(referralCode).toUpperCase() } });
@@ -493,10 +492,6 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
       if (isValidCode) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
-    } else if (cohortActive) {
-      // -10% préinscrits cohorte juillet (jusqu'au 3 juillet, sinon plein tarif), selon le pack
-      finalAmount = tier ? PACK_TIER_COHORT[tier] : PACK_PRICE_COHORT;
-      log.info('[COHORT] Réduction -10% appliquée', { userId, tier, finalAmount });
     } else {
       finalAmount = tier ? PACK_TIER_FULL[tier] : PACK_PRICE_FULL;
     }

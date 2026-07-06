@@ -1,20 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, Flame, ArrowLeft, CalendarClock } from 'lucide-react';
+import { CheckCircle, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
 import { analytics } from '../services/analytics';
 
 const PACK_ID = 'pack-parcours-investisseur';
-const COHORT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 
-// Packs (good-better-best) — comptant : plein tarif et tarif -10% préinscrits
-const PACK_TIERS: Record<string, { name: string; full: number; cohort: number }> = {
-  starter:      { name: 'Pack Starter',      full: 35000, cohort: 31500 },
-  parcours:     { name: 'Pack Parcours',     full: 50000, cohort: 45000 },
-  investisseur: { name: 'Pack Investisseur', full: 75000, cohort: 67500 },
+// Packs (good-better-best) — comptant, plein tarif
+const PACK_TIERS: Record<string, { name: string; full: number }> = {
+  starter:      { name: 'Pack Starter',      full: 35000 },
+  parcours:     { name: 'Pack Parcours',     full: 50000 },
+  investisseur: { name: 'Pack Investisseur', full: 75000 },
 };
 function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';
@@ -66,9 +65,7 @@ export default function CohortCheckoutPage() {
   const [tier, setTier] = useState(resolveTier(searchParams.get('pack')));
   const tierCfg = PACK_TIERS[tier];
   const PACK_NAME = tierCfg.name;
-  const FULL_PRICE = tierCfg.full;
-  const discountActive = new Date() <= COHORT_DEADLINE;
-  const price = discountActive ? tierCfg.cohort : tierCfg.full;
+  const price = tierCfg.full;
 
   const lead = readLead();
   const [step, setStep] = useState<'form' | 'payment'>('form');
@@ -132,7 +129,6 @@ export default function CohortCheckoutPage() {
       correspondent,
       phone: msisdn,
       registrationEmail: form.email.trim(),
-      cohortDiscount: true,
       pack: tier,
     });
   };
@@ -167,21 +163,11 @@ export default function CohortCheckoutPage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
-            {discountActive && (
-              <span className="inline-flex items-center gap-1 bg-amber-400 text-amber-950 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide mb-2">
-                <Flame className="w-3 h-3" /> Offre préinscrits -10%
-              </span>
-            )}
+            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Cohorte Juillet 2026</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
-              {discountActive && <span className="text-blue-300 text-sm line-through">{formatPrice(FULL_PRICE)}</span>}
             </div>
-            {discountActive && (
-              <p className="text-blue-200 text-xs mt-1 flex items-center gap-1">
-                <CalendarClock className="w-3.5 h-3.5" /> Tarif réduit valable jusqu'au 3 juillet
-              </p>
-            )}
           </div>
 
           {/* Étape contact */}
@@ -198,8 +184,7 @@ export default function CohortCheckoutPage() {
                       <button key={k} onClick={() => setTier(k)} type="button"
                         className={`rounded-xl border-2 p-2 text-center transition-all ${active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
                         <span className={`block text-xs font-extrabold ${active ? 'text-blue-800' : 'text-gray-700'}`}>{c.name.replace('Pack ', '')}</span>
-                        <span className="block text-[11px] font-bold text-gray-900 mt-0.5">{(discountActive ? c.cohort : c.full).toLocaleString('fr-FR')}</span>
-                        {discountActive && <span className="block text-[9px] text-gray-400 line-through leading-none">{c.full.toLocaleString('fr-FR')}</span>}
+                        <span className="block text-[11px] font-bold text-gray-900 mt-0.5">{c.full.toLocaleString('fr-FR')}</span>
                       </button>
                     );
                   })}
@@ -207,7 +192,7 @@ export default function CohortCheckoutPage() {
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                5 sessions live · 15h · Communauté · Certificat. 1ère session le samedi 4 juillet.
+                5 sessions live · 15h · Communauté · Certificat. 1ère session le samedi 18 juillet.
               </div>
               <div className="space-y-3">
                 <div>

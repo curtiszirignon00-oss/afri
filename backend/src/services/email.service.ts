@@ -4094,11 +4094,11 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
 
   if (webinarId === 'w1-fondamentaux' || webinarId === 'w1-fondamentaux-juin') {
     return {
-      subject: '✅ Votre place est réservée — Webinaire du 4 juillet',
+      subject: '✅ Votre place est réservée — Webinaire du 18 juillet',
       preheader: 'Tout ce que vous devez savoir avant la session',
       headerBg: '#1D4ED8',
       heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 50%,#4338CA 100%)',
-      heroLabel: 'Session 1 · 4 juillet 2026',
+      heroLabel: 'Session 1 · 18 juillet 2026',
       heroTitle: '🎉 Inscription confirmée !',
       heroSub: "Maîtriser les fondamentaux de la bourse — votre première étape vers l'investissement sur la BRVM.",
       accentColor: '#1D4ED8',
@@ -4107,7 +4107,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
       intro: 'Votre inscription est confirmée.',
       recap: `
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Titre</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Maîtriser les fondamentaux de la bourse</td></tr>
-        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Date</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 4 juillet 2026</td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Date</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 18 juillet 2026</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Heure</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">09h00 — 12h00 GMT</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Durée</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">3 heures de formation live</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Format</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Visioconférence</td></tr>
@@ -4118,8 +4118,8 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
         <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">3. <strong>Rejoignez 5 min avant le début.</strong> Le lien sera actif à partir de 08h50.</p>
         <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">4. <strong>Ayez un bloc-notes.</strong> Vous recevrez aussi un résumé par email après la session.</p>`,
       after: `
-        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le lendemain (5 juillet)</strong> : vous recevrez votre Plan d'Action personnalisé — 3 actions concrètes à réaliser sur la BRVM.</p>
-        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Sessions 2 & 3</strong> : Analyse fondamentale les 18-19 juillet. En tant que participant, vous bénéficiez d'un accès prioritaire.</p>`,
+        <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le lendemain (19 juillet)</strong> : vous recevrez votre Plan d'Action personnalisé — 3 actions concrètes à réaliser sur la BRVM.</p>
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Sessions 2 & 3</strong> : Analyse fondamentale les 1-2 août. En tant que participant, vous bénéficiez d'un accès prioritaire.</p>`,
       learning: [
         'Comprendre la BRVM : structure, acteurs, fonctionnement des 8 pays UEMOA',
         'Actions vs obligations : différences, rendements, risques',
@@ -4127,7 +4127,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
         'Les erreurs classiques des débutants et comment les éviter',
         'Ouvrir un compte SGI : les étapes concrètes et les bonnes questions à poser',
       ],
-      signoff: 'À samedi 4 juillet,',
+      signoff: 'À samedi 18 juillet,',
       amount: '10 000 XOF',
     };
   }
@@ -4138,7 +4138,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
       preheader: 'Bilans, ratios, rapports annuels — tout commence ici',
       headerBg: '#065F46',
       heroGradient: 'linear-gradient(135deg,#064E3B 0%,#065F46 50%,#047857 100%)',
-      heroLabel: 'Sessions 2 & 3 · 18-19 juillet 2026',
+      heroLabel: 'Sessions 2 & 3 · 1-2 août 2026',
       heroTitle: '✅ Inscription confirmée !',
       heroSub: "Vous avez fait le bon choix. L'analyse fondamentale sépare ceux qui investissent avec méthode de ceux qui investissent à l'instinct.",
       accentColor: '#065F46',
@@ -4147,7 +4147,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
       intro: 'Votre inscription est confirmée.',
       recap: `
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Titre</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Analyse fondamentale — lire les données comme un pro</td></tr>
-        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 18 juillet & Dimanche 19 juillet 2026</td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 1 août & Dimanche 2 août 2026</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Heure</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">09h00 — 13h00 GMT (chaque jour)</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Durée</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">4 heures de formation live par jour</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Format</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Visioconférence</td></tr>
@@ -4157,7 +4157,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
         <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Téléchargez le rapport annuel 2024</strong> de 2 sociétés BRVM de votre choix — on les analysera ensemble pendant la session.</p>`,
       after: `
         <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;"><strong>Le 20 juillet</strong> : votre Plan d'Action Analyse Fondamentale — une liste de 3 actions BRVM à étudier avec la méthode apprise, et un template d'analyse à remplir.</p>
-        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Sessions 4 & 5</strong> : Analyse technique les 1-2 août.</p>`,
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;"><strong>Sessions 4 & 5</strong> : Analyse technique les 15-16 août.</p>`,
       learning: [
         'Lire un bilan comptable et identifier les signaux de solidité financière',
         'Décrypter les ratios clés : PER, PBR, rendement du dividende, dette nette/EBITDA',
@@ -4176,7 +4176,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
       preheader: 'Patterns, indicateurs, timing — votre arsenal complet le 1 août',
       headerBg: '#C2410C',
       heroGradient: 'linear-gradient(135deg,#9A3412 0%,#C2410C 50%,#EA580C 100%)',
-      heroLabel: 'Sessions 4 & 5 · 1-2 août 2026',
+      heroLabel: 'Sessions 4 & 5 · 15-16 août 2026',
       heroTitle: '🔥 Inscription confirmée !',
       heroSub: "L'analyse technique, c'est l'art de lire ce que le marché dit déjà — avant que tout le monde ne le voie.",
       accentColor: '#C2410C',
@@ -4185,7 +4185,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
       intro: 'Votre inscription est confirmée.',
       recap: `
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Titre</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Analyse technique — lisez les graphiques avant tout le monde</td></tr>
-        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 1 août & Dimanche 2 août 2026</td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 15 août & Dimanche 16 août 2026</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Heure</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">09h00 — 13h00 GMT (chaque jour)</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Durée</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">4 heures de formation live par jour</td></tr>
         <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Format</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Visioconférence</td></tr>
@@ -4219,36 +4219,36 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
     heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 40%,#7C3AED 100%)',
     heroLabel: `${packName} · 5 sessions · Communauté · Certificat`,
     heroTitle: '🎓 Bienvenue dans le Parcours !',
-    heroSub: "D'ici la mi-août, vous aurez suivi 5 sessions live (15h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.",
+    heroSub: "D'ici fin août, vous aurez suivi 5 sessions live (15h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.",
     accentColor: '#1D4ED8',
     accentLight: '#EFF6FF',
     accentBorder: '#BFDBFE',
     intro: 'Vous avez pris une décision importante aujourd\'hui.',
     recap: `
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Pack</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Parcours Investisseur BRVM</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 4 juillet 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">18-19 juillet 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">1-2 août 2026 · 09h00-12h00 GMT</td></tr>`,
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 18 juillet 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">1-2 août 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">15-16 août 2026 · 09h00-12h00 GMT</td></tr>`,
     prep: `
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>5 sessions live · 15h</strong> (4 juillet + 18-19 juillet + 1-2 août)</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif début août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>5 sessions live · 15h</strong> (18 juillet + 1-2 août + 15-16 août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif mi-août)</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>3 Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Deal Flow hebdomadaire</strong> — 12 éditions exclusives</p>
-      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible mi-août si quiz complété</p>`,
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible fin août si quiz complété</p>`,
     after: `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
         <tr style="background-color:#F8FAFC;">
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Date</td>
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Livrable</td>
         </tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 4 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 5 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">18-19 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 20 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">1-2 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 3 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 4 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Mi-août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 18 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 19 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">1-2 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 3 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">15-16 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 17 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 18 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Fin août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
       </table>`,
     learning: [
       'S1 : Comprendre la BRVM, ses acteurs et ses mécanismes',
@@ -4419,14 +4419,14 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
   'w1-fondamentaux':             { title: 'Fondamentaux de la bourse',        date: '23 mai 2026',          accentColor: '#1D4ED8' },
   'w2-fondamentale':             { title: 'Analyse fondamentale',              date: '30–31 mai 2026',       accentColor: '#059669' },
   'w3-technique':                { title: 'Analyse technique',                 date: '6–7 juin 2026',        accentColor: '#EA580C' },
-  'w1-fondamentaux-juin':        { title: 'Fondamentaux de la bourse',              date: '4 juillet 2026',      accentColor: '#1D4ED8' },
-  'w2-fondamentale-juin':        { title: 'Analyse fondamentale',                   date: '18–19 juillet 2026',  accentColor: '#059669' },
-  'w2a-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 1',        date: '18 juillet 2026',     accentColor: '#059669' },
-  'w2b-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 2',        date: '19 juillet 2026',     accentColor: '#059669' },
-  'w3-technique-juin':           { title: 'Analyse technique',                       date: '1–2 août 2026',       accentColor: '#EA580C' },
-  'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '1 août 2026',         accentColor: '#EA580C' },
-  'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '2 août 2026',         accentColor: '#EA580C' },
-  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '4 juillet → 2 août', accentColor: '#1D4ED8' },
+  'w1-fondamentaux-juin':        { title: 'Fondamentaux de la bourse',              date: '18 juillet 2026',     accentColor: '#1D4ED8' },
+  'w2-fondamentale-juin':        { title: 'Analyse fondamentale',                   date: '1–2 août 2026',       accentColor: '#059669' },
+  'w2a-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 1',        date: '1 août 2026',         accentColor: '#059669' },
+  'w2b-fondamentale-juin':       { title: 'Analyse fondamentale — Partie 2',        date: '2 août 2026',         accentColor: '#059669' },
+  'w3-technique-juin':           { title: 'Analyse technique',                       date: '15–16 août 2026',     accentColor: '#EA580C' },
+  'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '15 août 2026',        accentColor: '#EA580C' },
+  'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '16 août 2026',        accentColor: '#EA580C' },
+  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '18 juillet → 16 août', accentColor: '#1D4ED8' },
 };
 
 export async function sendWebinarPaymentConfirmEmail({
@@ -6553,5 +6553,220 @@ export default {
   sendPackParcoursBRVMEmail,
   sendDangoteIPONewsletterEmail,
   sendWeeklyNewsletterJuin2026Email,
+  sendInvitationNouveauxInscritsEmail,
   sendEmail,
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Email invitation Parcours — Nouveaux inscrits (compte < 30 jours, plan free)
+// ─────────────────────────────────────────────────────────────────────────────
+export async function sendInvitationNouveauxInscritsEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le marché BRVM explose — AfriBourse</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#F0F4F8;">
+<tr><td align="center" style="padding:24px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;">
+
+  <!-- ── HEADER ── -->
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:24px 32px 20px;border-bottom:2px solid #00D4A8;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#ffffff;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#00D4A8;">Bourse</span>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8898AA;margin-top:4px;">Investir mieux sur la BRVM</div>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display:inline-block;background:rgba(0,212,168,.15);border:1px solid rgba(0,212,168,.3);color:#00D4A8;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;">Parcours Investisseur</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── HERO ── -->
+  <tr>
+    <td style="background-color:#0A1628;padding:32px 32px 28px;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:#ffffff;line-height:1.3;margin-bottom:16px;">Le marché BRVM explose&nbsp;—<br>et vous n'êtes pas encore positionné</div>
+      <p style="margin:0;font-size:14px;color:#8898AA;line-height:1.6;font-family:monospace;letter-spacing:0.02em;">La bourse africaine progresse de 99&nbsp;% sur 5 ans. Voici comment en profiter avant les autres.</p>
+    </td>
+  </tr>
+
+  <!-- ── CORPS ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:32px 32px 8px;">
+      <p style="margin:0 0 16px;font-size:15.5px;color:#1E293B;line-height:1.75;">Bonjour <strong>${firstName}</strong>,</p>
+
+      <p style="margin:0 0 16px;font-size:15px;color:#334155;line-height:1.75;">Vous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment. Et vous avez raison de vous y intéresser maintenant.</p>
+
+      <!-- Stat block -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:linear-gradient(135deg,#0A1628 0%,#1E3A5F 100%);border-radius:8px;margin:0 0 20px;">
+        <tr>
+          <td style="padding:24px 28px;">
+            <div style="font-family:Georgia,serif;font-size:38px;font-weight:900;color:#00D4A8;line-height:1;margin-bottom:8px;">+99 %</div>
+            <div style="font-size:14px;color:#C8D8E8;line-height:1.5;">La BRVM sur les <strong style="color:#fff;">5 dernières années</strong>.<br>Pendant que la plupart des épargnants laissaient leur argent dormir.</div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 16px;font-size:15px;color:#334155;line-height:1.75;">Le marché boursier régional — celui de vos 8 pays UEMOA — est en pleine expansion. De nouvelles entreprises s'introduisent. Les volumes augmentent. Et pourtant, <strong>moins de 1&nbsp;% des épargnants de la zone y participent.</strong></p>
+
+      <p style="margin:0 0 24px;font-size:15px;color:#334155;line-height:1.75;">C'est exactement le moment où il faut se positionner : quand le marché monte, mais <strong>avant que tout le monde s'y intéresse.</strong></p>
+
+      <div style="border-left:3px solid #E2E8F0;padding-left:18px;margin:0 0 24px;">
+        <p style="margin:0 0 12px;font-size:15px;color:#64748B;line-height:1.75;font-style:italic;">Le vrai obstacle n'est pas l'argent. C'est de savoir par où commencer.</p>
+        <p style="margin:0;font-size:14px;color:#94A3B8;line-height:1.7;">La plupart des gens qui veulent investir sur la BRVM restent bloqués à la même étape : ils ne savent pas comment analyser une action, comment ouvrir un compte, ni comment passer leur premier ordre. Résultat : ils attendent. Et pendant qu'ils attendent, le marché avance sans eux.</p>
+      </div>
+
+      <p style="margin:0 0 8px;font-size:15px;color:#334155;line-height:1.75;">C'est précisément pour ça que nous avons créé le <strong>Parcours Investisseur BRVM</strong>.</p>
+      <p style="margin:0 0 24px;font-size:14.5px;color:#64748B;line-height:1.7;">Un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée — avec des experts à vos côtés à chaque étape.</p>
+    </td>
+  </tr>
+
+  <!-- ── CE QUE VOUS OBTENEZ ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:0 32px 28px;">
+      <div style="background-color:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:24px 24px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0A1628;margin-bottom:18px;">Ce que vous obtenez avec le Parcours</div>
+
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr><td style="padding:0 0 13px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td valign="top" width="32" style="padding-top:1px;"><span style="font-size:18px;">🎓</span></td>
+                <td><span style="font-size:14.5px;color:#1E293B;line-height:1.5;"><strong>5 webinaires live</strong> avec des analystes qui connaissent la BRVM</span></td>
+              </tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:0 0 13px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td valign="top" width="32" style="padding-top:1px;"><span style="font-size:18px;">📋</span></td>
+                <td><span style="font-size:14.5px;color:#1E293B;line-height:1.5;"><strong>Un plan d'action personnalisé</strong> après chaque session</span></td>
+              </tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:0 0 13px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td valign="top" width="32" style="padding-top:1px;"><span style="font-size:18px;">📊</span></td>
+                <td><span style="font-size:14.5px;color:#1E293B;line-height:1.5;"><strong>Le Deal Flow chaque semaine</strong> — les valeurs à surveiller</span></td>
+              </tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:0 0 13px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td valign="top" width="32" style="padding-top:1px;"><span style="font-size:18px;">👥</span></td>
+                <td><span style="font-size:14.5px;color:#1E293B;line-height:1.5;"><strong>Une communauté d'investisseurs</strong> qui apprennent avec vous</span></td>
+              </tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:0 0 13px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td valign="top" width="32" style="padding-top:1px;"><span style="font-size:18px;">🏦</span></td>
+                <td><span style="font-size:14.5px;color:#1E293B;line-height:1.5;"><strong>L'accompagnement</strong> pour ouvrir votre compte et acheter votre première action</span></td>
+              </tr>
+            </table>
+          </td></tr>
+          <tr><td>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td valign="top" width="32" style="padding-top:1px;"><span style="font-size:18px;">🏆</span></td>
+                <td><span style="font-size:14.5px;color:#1E293B;line-height:1.5;"><strong>Votre Certificat Investisseur BRVM</strong> Niveau 1</span></td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid #E2E8F0;text-align:center;">
+          <span style="font-size:13px;color:#64748B;">À partir de </span><span style="font-family:monospace;font-size:20px;font-weight:700;color:#0A1628;">35 000 XOF</span>
+          <div style="font-size:12px;color:#94A3B8;margin-top:4px;">Un investissement dans une compétence qui vous servira toute votre vie.</div>
+        </div>
+      </div>
+    </td>
+  </tr>
+
+  <!-- ── URGENCE ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:0 32px 28px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#FFF8ED;border:1px solid #FDE68A;border-radius:8px;">
+        <tr>
+          <td style="padding:20px 22px;">
+            <div style="font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#92400E;margin-bottom:10px;">⏰ Pourquoi maintenant, et pas dans 6 mois ?</div>
+            <p style="margin:0 0 10px;font-size:14px;color:#78350F;line-height:1.7;">Parce que les meilleures opportunités se saisissent quand le marché est en mouvement — pas après. Ceux qui se forment aujourd'hui seront positionnés quand les autres commenceront à peine à s'y intéresser.</p>
+            <p style="margin:0;font-size:14px;color:#92400E;line-height:1.7;font-weight:500;">La prochaine cohorte démarre bientôt, et les places sont <strong>limitées à 20 personnes</strong> pour garantir la qualité de l'accompagnement.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ── CTA ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:0 32px 36px;text-align:center;">
+      <a href="https://www.africbourse.com/webinaires" style="display:inline-block;background-color:#00D4A8;color:#0A1628;font-size:16px;font-weight:700;text-decoration:none;padding:16px 40px;border-radius:8px;letter-spacing:0.01em;">Je réserve ma place →</a>
+      <div style="margin-top:10px;font-size:12px;color:#94A3B8;">Préinscription sans paiement · Vous décidez ensuite</div>
+    </td>
+  </tr>
+
+  <!-- ── SÉPARATEUR ── -->
+  <tr>
+    <td style="background-color:#ffffff;padding:0 32px 32px;">
+      <div style="border-top:1px solid #E2E8F0;padding-top:24px;">
+        <p style="margin:0 0 14px;font-size:15px;color:#334155;line-height:1.75;font-style:italic;text-align:center;">Le marché n'attend pas. Mais nous, on vous accompagne.</p>
+        <p style="margin:0;font-size:14px;color:#1E293B;line-height:1.6;"><strong>Curtis Zirignon</strong><br><span style="color:#64748B;font-size:13px;">Fondateur — Afribourse</span></p>
+      </div>
+    </td>
+  </tr>
+
+  <!-- ── PS ── -->
+  <tr>
+    <td style="background-color:#F8FAFC;border-top:1px solid #E2E8F0;padding:20px 32px;">
+      <p style="margin:0;font-size:12.5px;color:#64748B;line-height:1.7;"><strong style="color:#475569;">P.S.</strong> — Le chiffre de 99&nbsp;% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé qui montre une chose : ce marché mérite votre attention. Ceux qui se forment maintenant prennent une longueur d'avance.</p>
+    </td>
+  </tr>
+
+  <!-- ── FOOTER ── -->
+  <tr>
+    <td style="background-color:#0A1628;border-radius:0 0 10px 10px;padding:20px 32px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,serif;font-size:14px;font-weight:700;color:#00D4A8;">Afri</span><span style="font-family:Georgia,serif;font-size:14px;font-weight:700;color:#fff;">Bourse</span>
+          </td>
+          <td align="right">
+            <a href="https://www.africbourse.com/webinaires" style="font-size:11px;color:#8898AA;text-decoration:none;margin-left:14px;">Webinaires</a>
+            <a href="https://www.africbourse.com" style="font-size:11px;color:#8898AA;text-decoration:none;margin-left:14px;">Site web</a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:12px 0 0;font-size:10px;color:#5A6A80;line-height:1.6;">Vous recevez cet email car vous êtes inscrit sur AfriBourse (compte créé il y a moins de 30 jours). Cet email est fourni à titre informatif uniquement et ne constitue pas un conseil en investissement.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: '📈 Le marché BRVM explose — et vous n\'êtes pas encore positionné',
+    html,
+    text: `Bonjour ${firstName},\n\nVous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment.\n\nLa BRVM a progressé de près de 99% sur les 5 dernières années. Pendant que la plupart des épargnants laissaient leur argent dormir.\n\nC'est exactement le moment où il faut se positionner : quand le marché monte, mais avant que tout le monde s'y intéresse.\n\nNous avons créé le Parcours Investisseur BRVM — un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée.\n\nCe que vous obtenez :\n• 5 webinaires live avec des analystes BRVM\n• Un plan d'action personnalisé après chaque session\n• Le Deal Flow chaque semaine\n• Une communauté d'investisseurs\n• L'accompagnement pour ouvrir votre compte\n• Votre Certificat Investisseur BRVM Niveau 1\n\nÀ partir de 35 000 XOF.\n\n→ Réservez votre place (préinscription gratuite) : https://www.africbourse.com/webinaires\n\nLa prochaine cohorte démarre bientôt. Places limitées à 20 personnes.\n\nCurtis Zirignon\nFondateur — Afribourse\n\nP.S. — Le chiffre de 99% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé. Ceux qui se forment maintenant prennent une longueur d'avance.`,
+  });
+}
