@@ -10,10 +10,38 @@ import { analytics } from '../services/analytics';
 const PACK_ID = 'pack-parcours-investisseur';
 
 // Packs (good-better-best) — comptant, plein tarif
-const PACK_TIERS: Record<string, { name: string; full: number }> = {
-  starter:      { name: 'Pack Starter',      full: 35000 },
-  parcours:     { name: 'Pack Parcours',     full: 50000 },
-  investisseur: { name: 'Pack Investisseur', full: 75000 },
+// +2 sessions et +6h par palier (Starter 5/15h · Parcours 7/21h · Investisseur 9/27h)
+const PACK_TIERS: Record<string, { name: string; full: number; sessions: number; hours: number; perks: string[] }> = {
+  starter: {
+    name: 'Pack Starter', full: 35000, sessions: 5, hours: 15,
+    perks: [
+      '5 webinaires live (W1 → W5)',
+      "5 plans d'action personnalisés",
+      'Deal Flow hebdo + Communauté (3 mois)',
+      'Replays à vie + Certificat BRVM Niveau 1',
+      'Ouverture compte SGI — guide écrit',
+    ],
+  },
+  parcours: {
+    name: 'Pack Parcours', full: 50000, sessions: 7, hours: 21,
+    perks: [
+      'Tout le Starter, plus :',
+      'W6 — Constitution de portefeuille',
+      'W7 — Gestion du risque',
+      'Revue de portefeuille perso + Q&A live mensuelle',
+      'Ouverture SGI — session collective live',
+    ],
+  },
+  investisseur: {
+    name: 'Pack Investisseur', full: 75000, sessions: 9, hours: 27,
+    perks: [
+      'Tout le Parcours, plus :',
+      "W8 — Psychologie de l'investisseur",
+      'Appel 1:1 de 30 min avec Curtis',
+      'Investment Policy Statement + accès à vie',
+      'Ouverture SGI — accompagnement main dans la main',
+    ],
+  },
 };
 function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';
@@ -168,6 +196,7 @@ export default function CohortCheckoutPage() {
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
             </div>
+            <p className="text-blue-200 text-xs mt-1">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation</p>
           </div>
 
           {/* Étape contact */}
@@ -192,7 +221,21 @@ export default function CohortCheckoutPage() {
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                5 sessions live · 15h · Communauté · Certificat. 1ère session le samedi 18 juillet.
+                <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
+                <p className="text-xs mt-0.5">1ère session le samedi 18 juillet.</p>
+              </div>
+
+              {/* Avantages clés du pack sélectionné */}
+              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Inclus dans le {tierCfg.name}</p>
+                <ul className="space-y-1.5">
+                  {tierCfg.perks.map((perk) => (
+                    <li key={perk} className="flex items-start gap-2 text-xs text-gray-700">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <span className={perk.endsWith('plus :') ? 'font-bold text-gray-900' : ''}>{perk}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
               <div className="space-y-3">
                 <div>
