@@ -4208,31 +4208,55 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
     };
   }
 
-  // Pack Parcours Investisseur — Cohorte Juillet 2026
+  // Pack Parcours Investisseur — Cohorte Juillet 2026 (contenu selon le pack)
   const tierCfg = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
   const packAmount = tierCfg ? `${tierCfg.full.toLocaleString('fr-FR')} XOF` : (eb ? '25 000 XOF (Tarif préférentiel)' : '35 000 XOF');
   const packName = tierCfg ? tierCfg.name : 'Pack Parcours Investisseur';
+  // Sessions / heures / webinaires & avantages en plus selon le pack (+2 sessions, +6h par palier)
+  const tierDetails: Record<string, { sessions: number; hours: number; extras: string[] }> = {
+    starter:      { sessions: 5, hours: 15, extras: [] },
+    parcours:     { sessions: 7, hours: 21, extras: [
+      'Webinaire W6 — Constitution de portefeuille',
+      'Webinaire W7 — Gestion du risque',
+      'Revue de portefeuille personnalisée + Q&A live mensuelle (×3)',
+      'Ouverture compte SGI — session collective live',
+    ] },
+    investisseur: { sessions: 9, hours: 27, extras: [
+      'Webinaire W6 — Constitution de portefeuille',
+      'Webinaire W7 — Gestion du risque',
+      "Webinaire W8 — Psychologie de l'investisseur",
+      'Appel 1:1 de 30 min avec Curtis (revue personnelle)',
+      'Investment Policy Statement personnalisé + accès à vie',
+      'Ouverture compte SGI — accompagnement main dans la main',
+    ] },
+  };
+  const det = (pack && tierDetails[pack]) ? tierDetails[pack] : tierDetails.starter;
+  const extrasHtml = det.extras.length
+    ? `<p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1D4ED8;">➕ En plus dans votre ${packName} :</p>`
+      + det.extras.map((e) => `<p style="margin:0 0 8px;font-size:14px;color:#374151;line-height:1.6;">✓ <strong>${e}</strong></p>`).join('')
+    : '';
   return {
     subject: `🎓 Bienvenue dans le ${packName} — Tout commence maintenant`,
     preheader: 'Votre calendrier complet, vos accès, et ce qui vous attend semaine par semaine',
     headerBg: '#1D4ED8',
     heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 40%,#7C3AED 100%)',
-    heroLabel: `${packName} · 5 sessions · Communauté · Certificat`,
+    heroLabel: `${packName} · ${det.sessions} sessions · Communauté · Certificat`,
     heroTitle: '🎓 Bienvenue dans le Parcours !',
-    heroSub: "D'ici fin août, vous aurez suivi 5 sessions live (15h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.",
+    heroSub: `D'ici fin août, vous aurez suivi ${det.sessions} sessions live (${det.hours}h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.`,
     accentColor: '#1D4ED8',
     accentLight: '#EFF6FF',
     accentBorder: '#BFDBFE',
     intro: 'Vous avez pris une décision importante aujourd\'hui.',
     recap: `
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Pack</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Parcours Investisseur BRVM</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Pack</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${packName} · ${det.sessions} sessions · ${det.hours}h</td></tr>
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 18 juillet 2026 · 09h00-12h00 GMT</td></tr>
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">1-2 août 2026 · 09h00-12h00 GMT</td></tr>
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">15-16 août 2026 · 09h00-12h00 GMT</td></tr>`,
     prep: `
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>5 sessions live · 15h</strong> (18 juillet + 1-2 août + 15-16 août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>${det.sessions} sessions live · ${det.hours}h de formation</strong> (base : 18 juillet + 1-2 août + 15-16 août)</p>
+      ${extrasHtml}
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif mi-août)</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>3 Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Deal Flow hebdomadaire</strong> — 12 éditions exclusives</p>
       <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible fin août si quiz complété</p>`,
     after: `
@@ -4436,6 +4460,16 @@ export async function sendWebinarPaymentConfirmEmail({
   const label = WEBINAR_LABELS[webinarId] ?? { title: webinarId, date: '—', accentColor: '#1D4ED8' };
   const info = { ...label, title: title || label.title };
   const amountFmt = `${parseInt(amount).toLocaleString('fr-FR')} ${currency}`;
+  // Nombre de sessions/heures selon le pack (si l'achat est un pack)
+  const packSessions: Record<string, string> = {
+    'Pack Starter': '5 sessions live · 15h',
+    'Pack Parcours': '7 sessions live · 21h',
+    'Pack Investisseur': '9 sessions live · 27h',
+  };
+  const sessionsLine = title && packSessions[title] ? packSessions[title] : null;
+  const sessionsRow = sessionsLine
+    ? `<tr><td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Formule</td><td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${sessionsLine}</td></tr>`
+    : '';
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -4478,11 +4512,12 @@ export async function sendWebinarPaymentConfirmEmail({
               <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;">Récapitulatif</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:45%;">Session</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:45%;">Formule choisie</td>
                   <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${info.title}</td>
                 </tr>
+                ${sessionsRow}
                 <tr>
-                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Date</td>
+                  <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Dates</td>
                   <td style="padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${info.date}</td>
                 </tr>
                 <tr>
