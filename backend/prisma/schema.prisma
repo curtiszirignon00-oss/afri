@@ -244,11 +244,19 @@ model User {
   isNewUser   Boolean?  @default(true)  // true = n'a jamais vu l'onboarding guidé
   onboardedAt DateTime?                 // horodatage du premier accès au dashboard
 
+  // --- Emails automatisés — Segments comportementaux ---
+  segment_b_email_sent        Boolean @default(false) // Apprenants : modules OK, 0 trades
+  segment_c_email_sent        Boolean @default(false) // Impulsifs : trades OK, 0 modules
+  segment_d_recent_email_sent Boolean @default(false) // Dormants récents : 0 modules 0 trades < 30j
+
   // --- OAuth ---
   oauth_accounts OAuthAccount[]
 
   // --- Time Machine ---
   timeMachineSessions TimeMachineSession[]
+
+  // --- Performance emails ---
+  performanceEmailLogs PerformanceEmailLog[]
 
   @@map("users")
 }
@@ -931,6 +939,21 @@ model Transaction {
   @@index([created_at])
   @@index([stock_ticker]) // Pour comptage tickers uniques
   @@map("transactions")
+}
+
+// Tracks which performance milestone emails have been sent per (user, ticker, palier)
+// @@unique prevents duplicate sends even if the script is re-run
+model PerformanceEmailLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ticker    String
+  palier    String   // "+25" | "+50" | "+100" | "-15" | "-30"
+  sentAt    DateTime @default(now())
+
+  @@unique([userId, ticker])
+  @@index([userId])
+  @@map("performance_email_logs")
 }
 
 model WatchlistItem {

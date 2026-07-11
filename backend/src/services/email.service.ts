@@ -6805,3 +6805,474 @@ export async function sendInvitationNouveauxInscritsEmail({
     text: `Bonjour ${firstName},\n\nVous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment.\n\nLa BRVM a progressé de près de 99% sur les 5 dernières années. Pendant que la plupart des épargnants laissaient leur argent dormir.\n\nC'est exactement le moment où il faut se positionner : quand le marché monte, mais avant que tout le monde s'y intéresse.\n\nNous avons créé le Parcours Investisseur BRVM — un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée.\n\nCe que vous obtenez :\n• 5 webinaires live avec des analystes BRVM\n• Un plan d'action personnalisé après chaque session\n• Le Deal Flow chaque semaine\n• Une communauté d'investisseurs\n• L'accompagnement pour ouvrir votre compte\n• Votre Certificat Investisseur BRVM Niveau 1\n\nÀ partir de 35 000 XOF.\n\n→ Réservez votre place (préinscription gratuite) : https://www.africbourse.com/webinaires\n\nLa prochaine cohorte démarre bientôt. Places limitées à 20 personnes.\n\nCurtis Zirignon\nFondateur — Afribourse\n\nP.S. — Le chiffre de 99% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé. Ceux qui se forment maintenant prennent une longueur d'avance.`,
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMAILS AUTOMATISÉS — SEGMENTS COMPORTEMENTAUX
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Segment B — Apprenants (modules complétés, 0 transactions) ───────────────
+
+export async function sendSegmentBEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+  const marketsUrl = `${config.app.frontendUrl}/markets`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu connais la théorie — AfriBourse</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#F0F4F8;">
+<tr><td align="center" style="padding:24px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;">
+
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:24px 32px 20px;border-bottom:2px solid #00D4A8;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#ffffff;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#00D4A8;">Bourse</span>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8898AA;margin-top:4px;">Investir mieux sur la BRVM</div>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display:inline-block;background:rgba(0,212,168,.15);border:1px solid rgba(0,212,168,.3);color:#00D4A8;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;">Formation → Action</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#1a2942;padding:28px 32px 24px;">
+      <div style="font-size:32px;margin-bottom:10px;">📚→📈</div>
+      <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#ffffff;line-height:1.3;">${firstName}, tu as les bases.<br>Il manque juste une chose.</h1>
+      <p style="margin:0;font-size:15px;color:#8898AA;line-height:1.6;">Tu as complété ta formation sur AfriBourse. C'est impressionnant — la majorité des inscrits ne va pas jusqu'au bout. Mais la vraie frontière entre un apprenant et un investisseur, c'est une seule action : avoir agi.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:32px 32px 8px;">
+      <p style="margin:0 0 16px;font-size:15px;color:#1a2942;line-height:1.7;">Le simulateur AfriBourse est là exactement pour ça : <strong>faire ton premier achat sans risquer un seul franc</strong>. Tu choisis une action BRVM, tu entres un montant virtuel, et tu regardes ton portefeuille prendre vie en temps réel.</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:16px;">
+        <tr>
+          <td style="background:#F0FDF4;border-left:4px solid #00D4A8;border-radius:0 8px 8px 0;padding:14px 18px;">
+            <p style="margin:0;font-size:14px;color:#166534;line-height:1.6;"><strong>Ce que font les meilleurs investisseurs dès le départ :</strong><br>
+            ▸ Ils posent une hypothèse ("je pense que SNTS va monter")<br>
+            ▸ Ils l'investissent (même virtuellement)<br>
+            ▸ Ils observent, ajustent, apprennent</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 8px;font-size:15px;color:#1a2942;line-height:1.7;">Tu as déjà l'analyse. Maintenant, mets-la à l'épreuve.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:16px 32px 32px;text-align:center;">
+      <a href="${marketsUrl}" style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg,#00D4A8,#00B894);color:#0A1628;text-decoration:none;border-radius:10px;font-weight:800;font-size:15px;">Simuler mon 1er trade →</a>
+      <p style="margin:16px 0 0;font-size:12px;color:#8898AA;">Portefeuille virtuel · Aucun risque · 47 titres BRVM disponibles</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:20px 32px;border-top:1px solid #E2E8F0;">
+      <p style="margin:0 0 8px;font-size:13px;color:#374151;line-height:1.6;">— <strong>Curtis Zirignon</strong>, Fondateur AfriBourse</p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;">Vous recevez cet email car vous avez complété au moins un module de formation sur AfriBourse. Cet email ne constitue pas un conseil en investissement.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, tu as les bases — il manque juste une chose`,
+    html,
+    text: `${firstName},\n\nTu as complété ta formation sur AfriBourse. C'est impressionnant.\n\nMais la vraie frontière entre un apprenant et un investisseur, c'est une seule action : avoir agi.\n\nFais ton premier achat simulé maintenant — sans risquer un franc :\n${marketsUrl}\n\n47 titres BRVM disponibles. Portefeuille virtuel. Résultats en temps réel.\n\n— Curtis Zirignon\nFondateur AfriBourse · africbourse.com`,
+  });
+}
+
+// ─── Segment C — Impulsifs (transactions OK, 0 modules complétés) ─────────────
+
+export async function sendSegmentCEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+  const learnUrl    = `${config.app.frontendUrl}/learn`;
+  const webinairesUrl = `${config.app.frontendUrl}/webinaires`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tes trades sont bons — AfriBourse</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#F0F4F8;">
+<tr><td align="center" style="padding:24px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;">
+
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:24px 32px 20px;border-bottom:2px solid #7C3AED;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#ffffff;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#00D4A8;">Bourse</span>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8898AA;margin-top:4px;">Investir mieux sur la BRVM</div>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);color:#A78BFA;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;">Instinct → Méthode</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:linear-gradient(135deg,#1a1040,#0d0626);padding:28px 32px 24px;">
+      <div style="font-size:32px;margin-bottom:10px;">⚡</div>
+      <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#ffffff;line-height:1.3;">${firstName}, tu as déjà l'instinct.<br>Voici comment le rendre redoutable.</h1>
+      <p style="margin:0;font-size:15px;color:#A78BFA;line-height:1.6;">Tu as déjà passé un ordre sur AfriBourse. C'est plus que 90% des inscrits sur n'importe quelle plateforme d'apprentissage.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:32px 32px 8px;">
+      <p style="margin:0 0 16px;font-size:15px;color:#1a2942;line-height:1.7;">Mais voici ce que la plupart des traders autodidactes ne voient pas : <strong>sans méthode, un bon trade est souvent de la chance. Avec la méthode, c'est un système reproductible.</strong></p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:16px;">
+        <tr>
+          <td width="50%" style="padding-right:8px;vertical-align:top;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="background:#F5F3FF;border-radius:10px;padding:16px;">
+                  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#5B21B6;">Sans formation</p>
+                  <p style="margin:0;font-size:13px;color:#6B7280;line-height:1.5;">→ Trade basé sur l'intuition<br>→ Aucun critère d'entrée/sortie<br>→ Résultats aléatoires</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td width="50%" style="padding-left:8px;vertical-align:top;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="background:#F0FDF4;border-radius:10px;padding:16px;">
+                  <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#166534;">Avec la méthode</p>
+                  <p style="margin:0;font-size:13px;color:#166534;line-height:1.5;">→ Trade basé sur l'analyse<br>→ Plan d'action clair<br>→ Résultats reproductibles</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 8px;font-size:15px;color:#1a2942;line-height:1.7;">La formation est gratuite sur AfriBourse. Les webinaires commencent le 4 juillet. Les deux ensemble = un avantage que peu d'investisseurs ont sur la BRVM.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:16px 32px 32px;text-align:center;">
+      <a href="${learnUrl}" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:800;font-size:14px;margin-bottom:10px;">Démarrer ma formation →</a>
+      <br>
+      <a href="${webinairesUrl}" style="display:inline-block;padding:12px 28px;background:#F5F3FF;color:#5B21B6;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;border:1px solid #DDD6FE;">Voir les webinaires →</a>
+      <p style="margin:16px 0 0;font-size:12px;color:#8898AA;">Formation en accès libre · Webinaires à partir de 35 000 XOF</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:20px 32px;border-top:1px solid #E2E8F0;">
+      <p style="margin:0 0 8px;font-size:13px;color:#374151;line-height:1.6;">— <strong>Curtis Zirignon</strong>, Fondateur AfriBourse</p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;">Vous recevez cet email car vous avez effectué un trade simulé sur AfriBourse. Cet email ne constitue pas un conseil en investissement.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, tes trades sont bons — voici comment les rendre redoutables`,
+    html,
+    text: `${firstName},\n\nTu as déjà passé un ordre sur AfriBourse. C'est plus que 90% des inscrits.\n\nMais sans méthode, un bon trade est souvent de la chance. Avec la méthode, c'est un système reproductible.\n\nDémarre ta formation (accès libre) :\n${learnUrl}\n\nVoir les prochains webinaires (à partir de 35 000 XOF) :\n${webinairesUrl}\n\n— Curtis Zirignon\nFondateur AfriBourse · africbourse.com`,
+  });
+}
+
+// ─── Segment D récents — Dormants < 30 jours (0 modules, 0 transactions) ──────
+
+export async function sendSegmentDRecentEmail({
+  email,
+  name,
+}: { email: string; name: string }): Promise<void> {
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+  const learnUrl = `${config.app.frontendUrl}/learn`;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ton compte AfriBourse t'attend</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#F0F4F8;">
+<tr><td align="center" style="padding:24px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;">
+
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:24px 32px 20px;border-bottom:2px solid #F59E0B;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#ffffff;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#00D4A8;">Bourse</span>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8898AA;margin-top:4px;">Investir mieux sur la BRVM</div>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display:inline-block;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:#F59E0B;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;">1er pas</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:linear-gradient(135deg,#1c1408,#0d0d00);padding:28px 32px 24px;">
+      <div style="font-size:32px;margin-bottom:10px;">🚀</div>
+      <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#ffffff;line-height:1.3;">${firstName}, ton compte AfriBourse t'attend.</h1>
+      <p style="margin:0;font-size:15px;color:#FCD34D;line-height:1.6;">Tu t'es inscrit il y a quelques jours. Ce que tu ne sais peut-être pas encore…</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:32px 32px 8px;">
+      <p style="margin:0 0 16px;font-size:15px;color:#1a2942;line-height:1.7;">Des centaines d'investisseurs ont commencé exactement comme toi — <strong>sans expérience, sans argent à risquer</strong>. Aujourd'hui certains ont doublé leur mise simulée sur la BRVM. La différence ? Ils ont commencé par le premier module.</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:16px;">
+        <tr>
+          <td style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:16px 20px;">
+            <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#92400E;">Ce qui t'attend dans le Module 1 :</p>
+            <p style="margin:0;font-size:14px;color:#78350F;line-height:1.7;">▸ Comment fonctionne la BRVM (en 8 minutes)<br>▸ Pourquoi investir en Afrique de l'Ouest maintenant<br>▸ Ton premier achat simulé — guidé pas à pas</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 8px;font-size:15px;color:#1a2942;line-height:1.7;">8 minutes. C'est tout ce qu'il faut pour que ton compte commence à avoir du sens.</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:16px 32px 32px;text-align:center;">
+      <a href="${learnUrl}" style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg,#F59E0B,#D97706);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:800;font-size:15px;">Démarrer la formation →</a>
+      <p style="margin:16px 0 0;font-size:12px;color:#8898AA;">Gratuit · 8 minutes · Aucune installation requise</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:20px 32px;border-top:1px solid #E2E8F0;">
+      <p style="margin:0 0 8px;font-size:13px;color:#374151;line-height:1.6;">— <strong>Curtis Zirignon</strong>, Fondateur AfriBourse</p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;">Vous recevez cet email car vous avez créé un compte AfriBourse récemment. Cet email ne constitue pas un conseil en investissement.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, ton compte AfriBourse t'attend — 8 minutes pour commencer`,
+    html,
+    text: `${firstName},\n\nTu t'es inscrit il y a quelques jours sur AfriBourse. Des centaines d'investisseurs ont commencé exactement comme toi — sans expérience, sans argent à risquer.\n\nCommence par le Module 1 (8 minutes) :\n${learnUrl}\n\nTu verras comment fonctionne la BRVM et tu feras ton premier achat simulé, guidé pas à pas.\n\n— Curtis Zirignon\nFondateur AfriBourse · africbourse.com`,
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMAILS AUTOMATISÉS — PERFORMANCE DE PORTEFEUILLE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// palier : "+25" | "+50" | "+100" | "-15" | "-30"
+export async function sendPerformanceEmail({
+  email,
+  name,
+  ticker,
+  companyName,
+  rendement,
+  palier,
+}: {
+  email: string;
+  name: string;
+  ticker: string;
+  companyName: string;
+  rendement: number;
+  palier: '+25' | '+50' | '+100' | '-15' | '-30';
+}): Promise<void> {
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+  const dashboardUrl  = `${config.app.frontendUrl}/dashboard`;
+  const stockUrl      = `${config.app.frontendUrl}/stock/${ticker}`;
+  const profileUrl    = `${config.app.frontendUrl}/profile`;
+  const webinairesUrl = `${config.app.frontendUrl}/webinaires`;
+
+  const pct = Math.round(Math.abs(rendement));
+  const isGain = rendement >= 0;
+
+  // ── Config par palier ──────────────────────────────────────────────────────
+  const configs: Record<string, {
+    subject: string;
+    badge: string;
+    badgeColor: string;
+    headerBg: string;
+    accentColor: string;
+    emoji: string;
+    headline: string;
+    subline: string;
+    body: string;
+    primaryCta: { label: string; url: string; bg: string; color: string };
+    secondaryCta?: { label: string; url: string };
+  }> = {
+    '+25': {
+      subject: `${ticker} +${pct}% — hasard ou flair, ${firstName} ?`,
+      badge: 'Gain +25%',
+      badgeColor: '#00D4A8',
+      headerBg: 'linear-gradient(135deg,#0a2a1a,#0A1628)',
+      accentColor: '#00D4A8',
+      emoji: '📈',
+      headline: `${companyName} est en hausse de ${pct}%.`,
+      subline: 'Hasard ou flair ?',
+      body: `Ta position ${ticker} progresse de <strong>+${rendement.toFixed(1)}%</strong> depuis ton prix d'achat moyen. Ce n'est pas rien. Mais la vraie question n'est pas le chiffre — c'est la compréhension.<br><br>Pourquoi ${ticker} monte ? Est-ce le bon moment de renforcer ? Ou de sécuriser une partie des gains ? KOFI peut t'aider à lire le signal derrière le mouvement.`,
+      primaryCta: { label: 'Voir mon portefeuille →', url: dashboardUrl, bg: 'linear-gradient(135deg,#00D4A8,#00B894)', color: '#0A1628' },
+      secondaryCta: { label: `Analyser ${ticker} avec KOFI →`, url: stockUrl },
+    },
+    '+50': {
+      subject: `${ticker} +${pct}% — ce gain mérite d'être compris`,
+      badge: 'Gain +50%',
+      badgeColor: '#00D4A8',
+      headerBg: 'linear-gradient(135deg,#0a2a1a,#0A1628)',
+      accentColor: '#00D4A8',
+      emoji: '🎯',
+      headline: `+50% sur ${companyName}.`,
+      subline: 'Le gain marquant.',
+      body: `Ta position ${ticker} affiche <strong>+${rendement.toFixed(1)}%</strong> depuis ton achat. C'est le type de gain qui reste dans la mémoire d'un investisseur.<br><br>Tu es maintenant dans une position stratégique. Est-ce que tu encaisses une partie ? Tu renforces ta conviction ? Tu laisses courir jusqu'au prochain palier ? C'est exactement là que la méthode fait la différence entre un gain ponctuel et un portefeuille qui croît durablement.`,
+      primaryCta: { label: 'Voir mon portefeuille →', url: dashboardUrl, bg: 'linear-gradient(135deg,#00D4A8,#00B894)', color: '#0A1628' },
+    },
+    '+100': {
+      subject: `Tu as doublé ta mise sur ${ticker} 🚀`,
+      badge: '×2 — Double mise',
+      badgeColor: '#F59E0B',
+      headerBg: 'linear-gradient(135deg,#1c1408,#0A1628)',
+      accentColor: '#F59E0B',
+      emoji: '🏆',
+      headline: `Bravo ${firstName}.`,
+      subline: `${companyName} t'a offert +${pct}%.`,
+      body: `C'est le type de gain que la majorité des épargnants UEMOA ne verra jamais. Non pas parce qu'ils n'ont pas les moyens — mais parce qu'ils n'ont pas pris la décision d'investir et d'apprendre.<br><br>Toi, tu l'as fait. <strong>Ce n'est pas de la chance. C'est de l'analyse, de la patience, et de la conviction.</strong><br><br>Partage cette performance avec ta communauté — tu pourrais être la preuve vivante que les marchés africains sont accessibles et rentables.`,
+      primaryCta: { label: 'Partager ma performance →', url: profileUrl, bg: 'linear-gradient(135deg,#F59E0B,#D97706)', color: '#ffffff' },
+    },
+    '-15': {
+      subject: `${ticker} baisse — voici comment y répondre, ${firstName}`,
+      badge: 'Alerte position',
+      badgeColor: '#F97316',
+      headerBg: 'linear-gradient(135deg,#1c0a00,#0A1628)',
+      accentColor: '#F97316',
+      emoji: '⚠️',
+      headline: `Ta position ${ticker} recule de ${pct}%.`,
+      subline: 'La première baisse. Voici quoi en faire.',
+      body: `${companyName} affiche <strong>-${rendement.toFixed(1)}%</strong> depuis ton achat. C'est une baisse qui mérite attention — <em>pas panique</em>.<br><br>Les meilleurs investisseurs de la BRVM distinguent deux choses : une correction normale (opportunité de renforcer) et un signal de danger (il faut protéger le capital). KOFI analyse les fondamentaux de ${ticker} pour t'aider à faire cette distinction.`,
+      primaryCta: { label: `Analyser ${ticker} avec KOFI →`, url: stockUrl, bg: 'linear-gradient(135deg,#F97316,#EA580C)', color: '#ffffff' },
+    },
+    '-30': {
+      subject: `${ticker} -${pct}% — ce que le marché essaie de te dire`,
+      badge: 'Baisse significative',
+      badgeColor: '#EF4444',
+      headerBg: 'linear-gradient(135deg,#1c0000,#0A1628)',
+      accentColor: '#EF4444',
+      emoji: '📉',
+      headline: `${companyName} recule de ${pct}%.`,
+      subline: "Le marché parle. Apprends à l'écouter.",
+      body: `Ta position ${ticker} affiche <strong>-${rendement.toFixed(1)}%</strong>. C'est une baisse qui fait mal — et qui pose une vraie question : est-ce que tu comprends <em>pourquoi</em> ${ticker} baisse ?<br><br>Derrière chaque mouvement de marché significatif, il y a une information. Les investisseurs formés lisent ces signaux et prennent une décision éclairée. Les autres subissent.<br><br>Les prochaines sessions de formation abordent exactement ce type de situation : gestion du risque, lecture des signaux baissiers, décisions en situation de stress.`,
+      primaryCta: { label: 'Voir les prochaines sessions →', url: webinairesUrl, bg: 'linear-gradient(135deg,#EF4444,#DC2626)', color: '#ffffff' },
+    },
+  };
+
+  const c = configs[palier];
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${c.subject}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#F0F4F8;">
+<tr><td align="center" style="padding:24px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;">
+
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:24px 32px 20px;border-bottom:2px solid ${c.accentColor};">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#ffffff;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#00D4A8;">Bourse</span>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8898AA;margin-top:4px;">Suivi de portefeuille</div>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:${c.badgeColor};font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;">${c.badge}</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:${c.headerBg};padding:28px 32px 24px;">
+      <div style="font-size:36px;margin-bottom:10px;">${c.emoji}</div>
+      <h1 style="margin:0 0 6px;font-size:24px;font-weight:800;color:#ffffff;line-height:1.2;">${c.headline}</h1>
+      <p style="margin:0;font-size:16px;color:${c.badgeColor};font-weight:600;">${c.subline}</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:32px 32px 8px;">
+      <p style="margin:0 0 20px;font-size:15px;color:#1a2942;line-height:1.8;">${c.body}</p>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#ffffff;padding:8px 32px 32px;text-align:center;">
+      <a href="${c.primaryCta.url}" style="display:inline-block;padding:15px 32px;background:${c.primaryCta.bg};color:${c.primaryCta.color};text-decoration:none;border-radius:10px;font-weight:800;font-size:15px;margin-bottom:${c.secondaryCta ? '12px' : '0'};">${c.primaryCta.label}</a>
+      ${c.secondaryCta ? `<br><a href="${c.secondaryCta.url}" style="display:inline-block;padding:12px 28px;background:#F0F4F8;color:#1a2942;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;border:1px solid #E2E8F0;">${c.secondaryCta.label}</a>` : ''}
+    </td>
+  </tr>
+
+  <tr>
+    <td style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:20px 32px;border-top:1px solid #E2E8F0;">
+      <p style="margin:0 0 6px;font-size:13px;color:#374151;">— <strong>L'équipe AfriBourse</strong></p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;line-height:1.6;">Vous recevez cet email car vous détenez une position ${ticker} sur votre portefeuille simulé AfriBourse. Les performances passées ne préjugent pas des performances futures. Cet email ne constitue pas un conseil en investissement.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  const textBody = isGain
+    ? `${firstName},\n\nVotre position ${ticker} (${companyName}) affiche ${rendement >= 0 ? '+' : ''}${rendement.toFixed(1)}% depuis votre achat.\n\n${c.body.replace(/<[^>]+>/g, '')}\n\n→ ${c.primaryCta.label}\n${c.primaryCta.url}${c.secondaryCta ? `\n\n→ ${c.secondaryCta.label}\n${c.secondaryCta.url}` : ''}\n\n— L'équipe AfriBourse · africbourse.com`
+    : `${firstName},\n\nVotre position ${ticker} (${companyName}) affiche ${rendement.toFixed(1)}% depuis votre achat.\n\n${c.body.replace(/<[^>]+>/g, '')}\n\n→ ${c.primaryCta.label}\n${c.primaryCta.url}\n\n— L'équipe AfriBourse · africbourse.com`;
+
+  await sendEmail({
+    to: email,
+    subject: c.subject,
+    html,
+    text: textBody,
+  });
+}
