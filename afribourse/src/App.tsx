@@ -201,7 +201,7 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      <main className="flex-grow pt-16 lg:pt-20 pb-16 md:pb-0">
+      <main className="flex-grow pt-16 lg:pt-20 pb-16 lg:pb-0">
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}

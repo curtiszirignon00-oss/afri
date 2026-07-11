@@ -1,77 +1,60 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Calendar, Flame, Star, TrendingUp, ShieldCheck, Users } from 'lucide-react';
+import { X, ShieldCheck, Users, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { API_BASE_URL } from '../config/api';
 
 // Versionné — incrémenter pour forcer le re-affichage sur tous les comptes
-const POPUP_KEY = 'afb_webinar_announcement_v2';
+const POPUP_KEY = 'afb_webinar_announcement_v4';
 
-const EARLY_BIRD_SEATS = 20;
-const MAX_SEATS = 50;
-
-const WEBINARS = [
+const PACKS = [
   {
-    id: 'w1-fondamentaux-juin',
-    title: 'Fondamentaux de la bourse',
-    date: '2026-06-13T09:00:00Z',
-    price: 10000,
-    discountPercent: 0,
-    gradient: 'from-blue-600 to-indigo-600',
-    icon: Star,
-    badge: 'S1 · 13 juin',
+    id: 'starter',
+    label: 'Starter',
+    emoji: '🌱',
+    price: 35000,
+    installmentAmount: 12000,
+    gradient: 'from-blue-600 to-indigo-700',
+    popular: false,
+    summary: '5 webinaires live W1→W5 · Certificat · Communauté',
   },
   {
-    id: 'w2-fondamentale-juin',
-    title: 'Analyse fondamentale (2 sessions)',
-    date: '2026-06-20T09:00:00Z',
-    price: 20000,
-    discountPercent: 0,
-    gradient: 'from-emerald-600 to-teal-600',
-    icon: TrendingUp,
-    badge: 'S2–S3 · 20–21 juin',
+    id: 'parcours',
+    label: 'Parcours',
+    emoji: '⭐',
+    price: 50000,
+    installmentAmount: 17000,
+    gradient: 'from-violet-600 to-purple-700',
+    popular: true,
+    summary: 'Starter + W6 (portefeuille) · W7 (risque) · Q&A live mensuel',
   },
   {
-    id: 'w3-technique-juin',
-    title: 'Analyse technique (2 sessions)',
-    date: '2026-06-27T09:00:00Z',
-    price: 20000,
-    discountPercent: 0,
-    gradient: 'from-orange-500 to-rose-600',
-    icon: Flame,
-    badge: 'S4–S5 · 27–28 juin',
+    id: 'investisseur',
+    label: 'Investisseur',
+    emoji: '🏆',
+    price: 75000,
+    installmentAmount: 26000,
+    gradient: 'from-amber-500 to-orange-600',
+    popular: false,
+    summary: 'Parcours + W8 · Appel 1:1 Curtis · IPS personnalisé',
   },
 ];
 
-function formatDateShort(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+function formatPrice(n: number) {
+  return n.toLocaleString('fr-FR') + ' XOF';
 }
 
 export default function WebinarAnnouncementPopup() {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
-  const [counts, setCounts] = useState<Record<string, number>>({});
 
-  // Determine visibility — only once per version key
   useEffect(() => {
     if (!isLoggedIn) return;
     const dismissed = localStorage.getItem(POPUP_KEY);
     if (dismissed) return;
-
-    // Delay slightly so the page finishes loading first
     const t = setTimeout(() => setVisible(true), 900);
     return () => clearTimeout(t);
   }, [isLoggedIn]);
-
-  // Fetch seat counts for urgency display
-  useEffect(() => {
-    if (!visible) return;
-    fetch(`${API_BASE_URL}/webinars/counts`)
-      .then((r) => r.json())
-      .then((d) => { if (d?.data) setCounts(d.data); })
-      .catch(() => {});
-  }, [visible]);
 
   const dismiss = () => {
     localStorage.setItem(POPUP_KEY, '1');
@@ -85,11 +68,6 @@ export default function WebinarAnnouncementPopup() {
 
   if (!visible) return null;
 
-  const w1Count = counts['w1-fondamentaux'] ?? 0;
-  const earlyBirdActive = w1Count < EARLY_BIRD_SEATS;
-  const earlyBirdRemaining = Math.max(0, EARLY_BIRD_SEATS - w1Count);
-  const totalTaken = Object.values(counts).reduce((a, b) => a + b, 0);
-
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center p-4"
@@ -98,15 +76,11 @@ export default function WebinarAnnouncementPopup() {
       aria-label="Annonce webinaires Afribourse"
     >
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={dismiss}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={dismiss} />
 
       {/* Card */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in-up">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
 
-        {/* Close */}
         <button
           onClick={dismiss}
           className="absolute top-3 right-3 z-10 text-white/70 hover:text-white transition-colors p-1"
@@ -119,79 +93,57 @@ export default function WebinarAnnouncementPopup() {
         <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 px-6 pt-6 pb-5 text-white">
           <div className="flex items-center gap-2 mb-3">
             <span className="bg-blue-500/30 border border-blue-400/40 text-blue-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-              Annonce
+              Cohorte Juillet 2026
             </span>
             <span className="text-blue-300 text-[10px] font-medium">Formation live · BRVM</span>
           </div>
           <h2 className="text-xl font-extrabold leading-snug mb-1">
-            Nos webinaires de formation arrivent ! 🎓
+            Formation investissement BRVM 🎓
           </h2>
           <p className="text-blue-200 text-sm leading-relaxed">
-            3 sessions live avec nos experts marchés et analystes Afribourse.
-            Places limitées — les <strong className="text-white">20 premiers</strong> bénéficient d'un tarif réduit de 50%.
+            3 niveaux disponibles — du <strong className="text-white">Starter (35 000 XOF)</strong> à
+            l'<strong className="text-white">Investisseur (75 000 XOF)</strong>.
+            1ère session le <strong className="text-white">samedi 4 juillet</strong>.
           </p>
-
-          {/* Urgence early bird */}
-          {earlyBirdActive && (
-            <div className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 ${earlyBirdRemaining <= 5 ? 'bg-red-500/20 border border-red-400/30' : 'bg-amber-500/20 border border-amber-400/30'}`}>
-              <Flame className={`w-3.5 h-3.5 flex-shrink-0 animate-pulse ${earlyBirdRemaining <= 5 ? 'text-red-300' : 'text-amber-300'}`} />
-              <span className={`text-xs font-bold ${earlyBirdRemaining <= 5 ? 'text-red-200' : 'text-amber-200'}`}>
-                {earlyBirdRemaining <= 5
-                  ? `⚠ Plus que ${earlyBirdRemaining} place${earlyBirdRemaining > 1 ? 's' : ''} à tarif réduit !`
-                  : `Il reste ${earlyBirdRemaining} places à tarif réduit sur ${EARLY_BIRD_SEATS}`}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Webinar list */}
-        <div className="px-6 py-4 space-y-2.5">
-          {WEBINARS.map((w) => {
-            const Icon = w.icon;
-            const discountedPrice = w.price * (1 - w.discountPercent / 100);
-            const wCount = counts[w.id] ?? 0;
-            const wEarlyBird = wCount < EARLY_BIRD_SEATS;
-            const wRemaining = MAX_SEATS - wCount;
-            return (
-              <div
-                key={w.id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <div className={`flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br ${w.gradient} flex items-center justify-center`}>
-                  <Icon className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{w.title}</p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                    <span className="text-xs text-gray-500">{formatDateShort(w.date)}</span>
-                    <span className="text-gray-300">·</span>
-                    <span className="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">{w.badge}</span>
-                  </div>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  {wEarlyBird ? (
-                    <>
-                      <p className="text-sm font-bold text-gray-900">{discountedPrice.toLocaleString('fr-FR')} XOF</p>
-                      <p className="text-[10px] text-gray-400 line-through">{w.price.toLocaleString('fr-FR')}</p>
-                    </>
-                  ) : (
-                    <p className="text-sm font-bold text-gray-900">{w.price.toLocaleString('fr-FR')} XOF</p>
+        {/* 3 packs */}
+        <div className="px-5 py-4 space-y-2.5">
+          {PACKS.map((p) => (
+            <div
+              key={p.id}
+              className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                p.popular ? 'bg-violet-50 border-violet-200' : 'bg-gray-50 border-gray-100 hover:bg-gray-100'
+              }`}
+            >
+              <div className={`flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br ${p.gradient} flex items-center justify-center text-base`}>
+                {p.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-sm font-extrabold ${p.popular ? 'text-violet-800' : 'text-gray-800'}`}>{p.label}</p>
+                  {p.popular && (
+                    <span className="bg-violet-100 text-violet-700 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wide">
+                      Populaire
+                    </span>
                   )}
                 </div>
+                <p className="text-[10px] text-gray-400 leading-snug truncate">{p.summary}</p>
               </div>
-            );
-          })}
+              <div className="text-right flex-shrink-0">
+                <p className={`text-sm font-extrabold ${p.popular ? 'text-violet-800' : 'text-gray-900'}`}>{formatPrice(p.price)}</p>
+                <p className="text-[10px] text-gray-400">ou {formatPrice(p.installmentAmount)}/mois</p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Total registered + guarantee */}
-        <div className="px-6 pb-2 flex items-center gap-4">
-          {totalTaken > 0 && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Users className="w-3.5 h-3.5 text-gray-400" />
-              <span><strong className="text-gray-700">{totalTaken}</strong> personnes déjà préinscrites</span>
-            </div>
-          )}
+        {/* Pied de card */}
+        <div className="px-5 pb-2 flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Users className="w-3.5 h-3.5 text-gray-400" />
+            <span>Places limitées · 50 par session</span>
+          </div>
           <div className="flex items-center gap-1.5 text-xs text-emerald-700 ml-auto">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
             <span className="font-medium">Satisfait ou remboursé</span>
@@ -199,12 +151,13 @@ export default function WebinarAnnouncementPopup() {
         </div>
 
         {/* CTAs */}
-        <div className="px-6 pb-6 pt-3 flex gap-3">
+        <div className="px-5 pb-5 pt-3 flex gap-3">
           <button
             onClick={goToWebinars}
-            className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl transition-all shadow-sm active:scale-95"
+            className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
           >
-            Voir les webinaires →
+            <Zap className="w-4 h-4" />
+            Voir les offres →
           </button>
           <button
             onClick={dismiss}

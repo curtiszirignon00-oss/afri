@@ -36,13 +36,13 @@ const DIAL_CODES = [
 // ─── Données partagées (prochain webinaire uniquement) ────────────────────────
 
 const NEXT_WEBINAR = {
-  id: 'w1-fondamentaux',
-  title: 'Maîtriser les fondamentaux de la bourse',
-  tagline: 'De zéro à investisseur en une session',
-  date: '2026-05-23T09:00:00Z',
-  endDate: '2026-05-23T12:00:00Z',
-  price: 5000,
-  discountPercent: 50,
+  id: 'w1-fondamentaux-juin',
+  title: 'Fondamentaux de la bourse',
+  tagline: 'Passez de zéro à investisseur en une session',
+  date: '2026-07-04T09:00:00Z',
+  endDate: '2026-07-04T12:00:00Z',
+  price: 10000,
+  discountPercent: 0,
   duration: '3H',
   gradient: 'from-blue-600 to-indigo-700',
 };
@@ -128,7 +128,7 @@ const QuickRegisterModal: React.FC<{ registeredCount: number; onClose: () => voi
           </div>
         ) : (
           <div className="p-5 space-y-4">
-            {earlyBird ? (
+            {earlyBird && NEXT_WEBINAR.discountPercent > 0 ? (
               <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                 <Flame className="w-4 h-4 text-amber-500 animate-pulse" />
                 <div>
@@ -140,8 +140,10 @@ const QuickRegisterModal: React.FC<{ registeredCount: number; onClose: () => voi
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-                <span className="text-xs text-gray-600">Tarif plein : {NEXT_WEBINAR.price.toLocaleString('fr-FR')} XOF</span>
+              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+                <span className="text-xs font-semibold text-blue-800">
+                  Tarif : {NEXT_WEBINAR.price.toLocaleString('fr-FR')} XOF · Session 1 — 4 juillet
+                </span>
               </div>
             )}
 
@@ -220,12 +222,7 @@ const DashboardWebinarWidget: React.FC = () => {
 
   if (webinarPassed) return null;
 
-  const earlyBirdActive = count < EARLY_BIRD_SEATS;
-  const remaining = Math.max(0, EARLY_BIRD_SEATS - count);
   const totalRemaining = Math.max(0, MAX_SEATS - count);
-  const effectivePrice = earlyBirdActive
-    ? NEXT_WEBINAR.price * (1 - NEXT_WEBINAR.discountPercent / 100)
-    : NEXT_WEBINAR.price;
 
   return (
     <>
@@ -256,42 +253,32 @@ const DashboardWebinarWidget: React.FC = () => {
             <span className="text-xs text-gray-500">09h00</span>
           </div>
 
-          {/* Prix + early bird */}
+          {/* Prix */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-lg font-extrabold text-gray-900">
-                {effectivePrice.toLocaleString('fr-FR')} XOF
+                {NEXT_WEBINAR.price.toLocaleString('fr-FR')} XOF
               </span>
-              {earlyBirdActive && (
-                <span className="text-[10px] text-gray-400 line-through">
-                  {NEXT_WEBINAR.price.toLocaleString('fr-FR')}
-                </span>
-              )}
             </div>
-            {earlyBirdActive && (
-              <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                -{NEXT_WEBINAR.discountPercent}% early bird
-              </span>
-            )}
+            <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              Session 1 · 4 juillet
+            </span>
           </div>
 
           {/* Urgence places */}
-          {earlyBirdActive ? (
-            <div className={`flex items-center gap-1.5 rounded-xl px-3 py-2 border ${remaining <= 5 ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-100'}`}>
-              <Flame className={`w-3.5 h-3.5 flex-shrink-0 animate-pulse ${remaining <= 5 ? 'text-red-500' : 'text-amber-500'}`} />
-              <span className={`text-[10px] font-semibold flex-1 ${remaining <= 5 ? 'text-red-700' : 'text-amber-700'}`}>
-                {remaining <= 5
-                  ? `⚠ Plus que ${remaining} place${remaining > 1 ? 's' : ''} à tarif réduit !`
-                  : `Il reste ${remaining} places à tarif réduit`}
-              </span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${remaining <= 5 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
-                {EARLY_BIRD_SEATS - remaining}/{EARLY_BIRD_SEATS}
+          {totalRemaining <= 10 ? (
+            <div className="flex items-center gap-1.5 rounded-xl px-3 py-2 border bg-red-50 border-red-200">
+              <Flame className="w-3.5 h-3.5 flex-shrink-0 animate-pulse text-red-500" />
+              <span className="text-[10px] font-semibold flex-1 text-red-700">
+                ⚠ Plus que {totalRemaining} place{totalRemaining > 1 ? 's' : ''} disponible{totalRemaining > 1 ? 's' : ''} !
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-              <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-              <span className="text-[10px] text-gray-500 font-semibold">Places early bird épuisées · tarif plein</span>
+            <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+              <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+              <span className="text-[10px] text-blue-700 font-semibold">
+                Places limitées · Starter dès 35 000 XOF · 3 niveaux disponibles
+              </span>
             </div>
           )}
 

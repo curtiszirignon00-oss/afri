@@ -294,6 +294,13 @@ export default function Header() {
                               <User className="w-4 h-4 text-slate-400" />
                               Mon profil
                             </button>
+                            <button
+                              onClick={() => { navigate('/webinaires'); setMobileAccountOpen(false); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
+                            >
+                              <Video className="w-4 h-4 text-orange-500" />
+                              Webinaires
+                            </button>
                             <div className="border-t border-slate-100 my-1" />
                             <button
                               onClick={() => { handleLogout(); setMobileAccountOpen(false); }}

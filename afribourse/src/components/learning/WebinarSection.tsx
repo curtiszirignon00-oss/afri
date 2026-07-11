@@ -171,33 +171,121 @@ const EARLY_BIRD_SEATS = 20;
 const MAX_SEATS = 50;
 const WEBINAR_COUNT_OFFSET = 20;
 
-// ─── Pack Parcours Investisseur ───────────────────────────────────────────────
+// ─── Packs 3 niveaux ─────────────────────────────────────────────────────────
 
-const PACK = {
-  id: 'pack-parcours-investisseur',
-  title: 'Pack Parcours Investisseur BRVM',
-  tagline: '5 sessions · 15h de formation live · Experts BRVM · Certification officielle',
-  earlyBirdDeadline: '2026-06-02T23:59:59Z',
-  price: 35000,
-  earlyBirdPrice: 35000,
-  gradient: 'from-blue-700 to-indigo-800',
-  inclusions: [
-    '5 webinaires live · 15h de formation (S1 à S5)',
-    "Communauté Afribourse — 3 mois d'accès",
-    "3 Plans d'action personnalisés (après chaque thème)",
-    'Deal Flow hebdomadaire — 12 éditions exclusives',
-    'Certificat "Investisseur BRVM — Niveau 1"',
-  ],
-  deliveryCalendar: [
-    { when: 'Avant le 4 juillet', what: 'Email de confirmation + lien Zoom' },
-    { when: '4 juillet — S1', what: 'Fondamentaux de la bourse (3h)' },
-    { when: '18–19 juillet — S2 & S3', what: 'Analyse fondamentale (2×3h)' },
-    { when: '1–2 août — S4 & S5', what: 'Analyse technique (2×3h)' },
-    { when: 'Après chaque thème', what: "Plan d'action personnalisé" },
-    { when: 'En continu', what: 'Accès Communauté + éditions Deal Flow' },
-    { when: '18 août*', what: 'Certificat "Investisseur BRVM Niveau 1" (si quiz complété)' },
-  ],
-};
+interface Pack {
+  id: string;
+  label: string;
+  emoji: string;
+  tagline: string;
+  price: number;
+  installmentAmount: number;
+  installmentPage: string;
+  gradient: string;
+  popular: boolean;
+  inclusions: string[];
+  sgiNote: string;
+  bonus: string;
+  cta: string;
+  deliveryCalendar: { when: string; what: string }[];
+}
+
+const PACKS: Pack[] = [
+  {
+    id: 'pack-starter',
+    label: 'Starter',
+    emoji: '🌱',
+    tagline: 'Je comprends la BRVM et je pose mes bases',
+    price: 35000,
+    installmentAmount: 12000,
+    installmentPage: '/parcours/paiement-3-fois?pack=starter',
+    gradient: 'from-blue-600 to-indigo-700',
+    popular: false,
+    inclusions: [
+      '5 webinaires live W1→W5 (fondamentaux + analyse + technique)',
+      '5 plans d\'action personnalisés',
+      'Deal Flow hebdomadaire — 12 éditions (3 mois)',
+      'Communauté Afribourse — 3 mois',
+      'Replays à vie des 5 sessions',
+      'Certificat Investisseur BRVM Niveau 1',
+      'Ouverture de compte SGI',
+    ],
+    sgiNote: 'Guide écrit complet + contact SGI partenaire + accès à la session W9 live (vous faites les démarches avec le guide).',
+    bonus: '1 mois Investisseur+ offert · -10% de réduction sur la cohorte suivante',
+    cta: 'Choisir Starter →',
+    deliveryCalendar: [
+      { when: 'Avant le 4 juillet', what: 'Email de confirmation + lien Zoom' },
+      { when: '4 juillet — W1', what: 'Fondamentaux de la bourse (3h)' },
+      { when: '18–19 juillet — W2 & W3', what: 'Analyse fondamentale (2×3h)' },
+      { when: '1–2 août — W4 & W5', what: 'Analyse technique (2×3h)' },
+      { when: 'Après chaque thème', what: "Plan d'action personnalisé" },
+      { when: 'En continu', what: 'Accès Communauté + Deal Flow' },
+      { when: '18 août*', what: 'Certificat Investisseur BRVM Niveau 1 (si quiz complété)' },
+    ],
+  },
+  {
+    id: 'pack-parcours-investisseur',
+    label: 'Parcours',
+    emoji: '⭐',
+    tagline: 'Je construis ma stratégie et je gère mon risque',
+    price: 50000,
+    installmentAmount: 17000,
+    installmentPage: '/parcours/paiement-3-fois?pack=parcours',
+    gradient: 'from-violet-600 to-purple-700',
+    popular: true,
+    inclusions: [
+      'Tout le Starter — W1→W5 + plans + deal flow + communauté + replays + certificat',
+      'Webinaire W6 — Constitution de portefeuille',
+      'Webinaire W7 — Gestion du risque',
+      'Revue de portefeuille simulé personnalisée (semaine 6)',
+      'Session Q&A live mensuelle — 1h/mois × 3 mois',
+      'Ouverture de compte SGI',
+    ],
+    sgiNote: 'Session collective live avec le représentant SGI — tu ouvres ton compte avec le groupe, guidé étape par étape.',
+    bonus: '1 mois Investisseur+ · Invitation d\'un proche à -20% · Template portefeuille BRVM Excel',
+    cta: 'Je rejoins le Parcours →',
+    deliveryCalendar: [
+      { when: 'Avant le 4 juillet', what: 'Email de confirmation + lien Zoom' },
+      { when: '4 juillet — W1', what: 'Fondamentaux de la bourse (3h)' },
+      { when: '18–19 juillet — W2 & W3', what: 'Analyse fondamentale (2×3h)' },
+      { when: '1–2 août — W4 & W5', what: 'Analyse technique (2×3h)' },
+      { when: 'Semaine 6', what: 'W6 — Constitution de portefeuille + revue simulée' },
+      { when: 'Semaine 7', what: 'W7 — Gestion du risque' },
+      { when: 'Mensuel (3 mois)', what: 'Session Q&A live 1h avec Curtis' },
+      { when: '18 août*', what: 'Certificat Investisseur BRVM Niveau 1' },
+    ],
+  },
+  {
+    id: 'pack-investisseur',
+    label: 'Investisseur',
+    emoji: '🏆',
+    tagline: 'De la simulation à l\'achat réel — accompagnement premium',
+    price: 75000,
+    installmentAmount: 26000,
+    installmentPage: '/parcours/paiement-3-fois?pack=investisseur',
+    gradient: 'from-amber-500 to-orange-600',
+    popular: false,
+    inclusions: [
+      'Tout le Parcours — W1→W7 + tout le reste',
+      'Webinaire W8 — Psychologie de l\'investisseur',
+      'Appel 1:1 de 30 min avec Curtis (revue personnelle)',
+      'Investment Policy Statement personnalisé (tes règles)',
+      'Accès à vie aux replays, y compris cohortes futures',
+      'Ouverture de compte SGI — Main dans la main',
+    ],
+    sgiNote: 'Curtis ou un analyste vérifie ton dossier avant soumission + mise en relation directe avec un interlocuteur SGI nommé + accompagnement pour ton premier ordre réel.',
+    bonus: '2 mois Investisseur+ · Accès cohortes futures à -50% permanent · Badge Membre Fondateur · Invitation à co-animer une session',
+    cta: 'Rejoindre en Investisseur →',
+    deliveryCalendar: [
+      { when: 'Avant le 4 juillet', what: 'Email de confirmation + lien Zoom' },
+      { when: 'W1→W7', what: 'Toutes les sessions Parcours (cf. ci-dessus)' },
+      { when: 'Semaine 8', what: 'W8 — Psychologie de l\'investisseur' },
+      { when: 'Semaines 2–3', what: 'Appel 1:1 de 30 min avec Curtis' },
+      { when: 'Sous 48h', what: 'Investment Policy Statement livré' },
+      { when: '18 août*', what: 'Certificat Investisseur BRVM Niveau 1' },
+    ],
+  },
+];
 
 // ─── Countdown helpers (time-based, pour le pack) ────────────────────────────
 
@@ -710,149 +798,128 @@ const WebinarCard: React.FC<{ webinar: Webinar; onRegister: (w: Webinar) => void
   );
 };
 
-// ─── PackCard ─────────────────────────────────────────────────────────────────
+// ─── PacksGrid — 3 niveaux ────────────────────────────────────────────────────
 
 interface ReferralInfo { valid: boolean; code: string; discountedPrice: number; originalPrice: number }
 
-const PackCard: React.FC<{ onRegister: () => void; referralInfo?: ReferralInfo | null }> = ({ onRegister, referralInfo }) => {
+const PacksGrid: React.FC<{ onSelect: (pack: Pack) => void; referralInfo?: ReferralInfo | null }> = ({ onSelect, referralInfo }) => {
   const navigate = useNavigate();
-  const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
-  const currentPrice = earlyBirdActive ? PACK.earlyBirdPrice : PACK.price;
-  const [countdown, setCountdown] = useState(getPackCountdown(PACK.earlyBirdDeadline));
-
-  useEffect(() => {
-    if (!earlyBirdActive) return;
-    const t = setInterval(() => setCountdown(getPackCountdown(PACK.earlyBirdDeadline)), 1000);
-    return () => clearInterval(t);
-  }, [earlyBirdActive]);
-
   return (
-    <div className="relative bg-gradient-to-br from-blue-700 to-indigo-900 rounded-2xl overflow-hidden shadow-xl mb-6 border border-blue-600/30">
-      {/* Badge */}
-      <div className="absolute top-4 right-4 z-10">
-        <span className="bg-amber-400 text-amber-900 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wide shadow">
-          ⭐ Meilleure offre
-        </span>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {PACKS.map((pack) => {
+        const isReferral = pack.id === 'pack-parcours-investisseur' && referralInfo?.valid;
+        const displayPrice = isReferral ? referralInfo!.discountedPrice : pack.price;
+        return (
+          <div
+            key={pack.id}
+            className={`relative flex flex-col bg-white rounded-2xl border overflow-hidden transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 ${
+              pack.popular
+                ? 'border-violet-300 shadow-lg ring-2 ring-violet-200'
+                : 'border-gray-200 shadow-sm'
+            }`}
+          >
+            {pack.popular && (
+              <div className="absolute top-0 inset-x-0 flex justify-center z-10">
+                <span className="bg-gradient-to-r from-violet-600 to-purple-700 text-white text-[10px] font-extrabold px-4 py-0.5 rounded-b-xl uppercase tracking-widest shadow">
+                  ⭐ Le plus populaire
+                </span>
+              </div>
+            )}
 
-      <div className="p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-start gap-6">
-          {/* Colonne gauche — présentation & inclusions */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="bg-white/15 border border-white/20 text-blue-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-                Pack complet · 3 sessions
-              </span>
-            </div>
-            <h3 className="text-xl font-extrabold text-white leading-snug mb-1">{PACK.title}</h3>
-            <p className="text-blue-200 text-sm mb-5">{PACK.tagline}</p>
+            <div className={`h-1.5 w-full bg-gradient-to-r ${pack.gradient}`} />
 
-            <div className="mb-4 flex items-center gap-2 bg-yellow-400/15 border border-yellow-300/30 rounded-xl px-3 py-2">
-              <Zap className="w-3.5 h-3.5 text-yellow-300 flex-shrink-0" />
-              <span className="text-xs font-bold text-yellow-200">🎁 Bonus : 1 semaine Investisseur+ offerte</span>
-            </div>
+            <div className={`flex flex-col flex-1 p-5 ${pack.popular ? 'pt-7' : ''}`}>
+              {/* Header */}
+              <div className="mb-3">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-lg">{pack.emoji}</span>
+                  <span className={`text-sm font-extrabold bg-gradient-to-r ${pack.gradient} bg-clip-text text-transparent`}>
+                    {pack.label}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 leading-snug italic">{pack.tagline}</p>
+              </div>
 
-            <ul className="space-y-2.5">
-              {PACK.inclusions.map((item, i) => {
-                const icons = [Video, Users, Calendar, TrendingUp, Award];
-                const Icon = icons[i] ?? CheckCircle;
-                return (
-                  <li key={item} className="flex items-start gap-2.5">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-400/20 flex items-center justify-center mt-0.5">
-                      <Icon className="w-3 h-3 text-emerald-400" />
-                    </div>
-                    <span className="text-white text-sm leading-snug">{item}</span>
+              {/* Prix */}
+              <div className="mb-4">
+                {isReferral && (
+                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mb-0.5">Code parrainage -30%</p>
+                )}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-gray-900">{formatPrice(displayPrice)}</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  ou dès <strong className="text-gray-600">{formatPrice(pack.installmentAmount)}/mois</strong> (paiement en 3×)
+                </p>
+                {isReferral && (
+                  <p className="text-[10px] text-gray-400 line-through mt-0.5">{formatPrice(referralInfo!.originalPrice)}</p>
+                )}
+              </div>
+
+              {/* Inclusions */}
+              <ul className="space-y-1.5 mb-3 flex-1">
+                {pack.inclusions.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-xs text-gray-700">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className="leading-snug">{item}</span>
                   </li>
-                );
-              })}
-            </ul>
-          </div>
+                ))}
+              </ul>
 
-          {/* Colonne droite — prix + CTA */}
-          <div className="md:w-60 flex-shrink-0 bg-white/10 backdrop-blur-sm rounded-2xl p-5 flex flex-col gap-3 border border-white/10">
-            <div>
-              {earlyBirdActive ? (
-                <>
-                  <p className="text-amber-300 text-[10px] font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1">
-                    <Flame className="w-3 h-3 animate-pulse" /> Tarif préférentiel · 7 jours
-                  </p>
-                  <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
-                  <p className="text-blue-300 text-xs line-through mt-0.5">{formatPrice(PACK.price)}</p>
-                  {!countdown.expired && (
-                    <div className="mt-2 flex gap-1">
-                      {countdown.days > 0 && (
-                        <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
-                          <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.days)}</p>
-                          <p className="text-[9px] text-amber-300 mt-0.5">j</p>
-                        </div>
-                      )}
-                      <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
-                        <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.hours)}</p>
-                        <p className="text-[9px] text-amber-300 mt-0.5">h</p>
-                      </div>
-                      <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
-                        <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.minutes)}</p>
-                        <p className="text-[9px] text-amber-300 mt-0.5">min</p>
-                      </div>
-                      <div className="flex-1 bg-amber-400/20 rounded-lg py-1 text-center">
-                        <p className="text-xs font-extrabold text-amber-200 leading-none">{pad2(countdown.seconds)}</p>
-                        <p className="text-[9px] text-amber-300 mt-0.5">sec</p>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : referralInfo?.valid ? (
-                <>
-                  <p className="text-emerald-300 text-[10px] font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1">
-                    🎁 Code parrainage appliqué · -30%
-                  </p>
-                  <p className="text-3xl font-extrabold text-white">{formatPrice(referralInfo.discountedPrice)}</p>
-                  <p className="text-blue-300 text-xs line-through mt-0.5">{formatPrice(referralInfo.originalPrice)}</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-blue-200 text-xs font-semibold mb-0.5 uppercase tracking-wide">Tarif</p>
-                  <p className="text-3xl font-extrabold text-white">{formatPrice(currentPrice)}</p>
-                </>
-              )}
-            </div>
+              {/* SGI note */}
+              <div className="text-[11px] text-gray-500 bg-gray-50 rounded-lg px-2.5 py-2 mb-3 leading-relaxed border border-gray-100">
+                <span className="font-semibold text-gray-600">Ouverture SGI :</span> {pack.sgiNote}
+              </div>
 
-            <button onClick={onRegister} className="w-full py-3 bg-white text-blue-800 font-extrabold text-sm rounded-xl hover:bg-blue-50 active:scale-95 transition-all shadow-lg">
-              Rejoindre le parcours complet →
-            </button>
-            <div className="relative">
-              <span className="absolute -top-2 right-3 z-10 bg-amber-400 text-amber-950 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-md">
-                Facilité de paiement
-              </span>
-              <button
-                onClick={() => {
-                  analytics.trackAction('installment_mode_selected', PACK.title, { packId: PACK.id });
-                  navigate('/parcours/paiement-3-fois');
-                }}
-                className="w-full py-3 bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 font-extrabold text-sm rounded-xl hover:from-amber-300 hover:to-orange-300 active:scale-95 transition-all shadow-lg flex flex-col items-center leading-tight"
-              >
-                <span className="flex items-center gap-1.5">💳 Payer en 3 fois</span>
-                <span className="text-[11px] font-bold opacity-90">15 000 maintenant, puis 2× 10 000 XOF</span>
-              </button>
+              {/* Bonus */}
+              <div className="flex items-start gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2 mb-4">
+                <Zap className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />
+                <span className="text-[11px] text-amber-800 font-semibold leading-snug">Bonus : {pack.bonus}</span>
+              </div>
+
+              {/* CTAs */}
+              <div className="space-y-2 mt-auto">
+                <button
+                  onClick={() => {
+                    analytics.trackAction('webinar_pack_click', pack.label, { packId: pack.id });
+                    onSelect(pack);
+                  }}
+                  className={`w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r ${pack.gradient} hover:opacity-90 active:scale-95 transition-all shadow-sm`}
+                >
+                  {pack.cta}
+                </button>
+                <div className="relative">
+                  <span className="absolute -top-2 right-3 bg-amber-400 text-amber-950 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-md">
+                    Facilité de paiement
+                  </span>
+                  <button
+                    onClick={() => {
+                      analytics.trackAction('installment_mode_selected', pack.label, { packId: pack.id });
+                      navigate(pack.installmentPage);
+                    }}
+                    className="w-full py-2.5 bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 font-bold text-sm rounded-xl hover:from-amber-300 hover:to-orange-300 active:scale-95 transition-all flex flex-col items-center leading-tight"
+                  >
+                    <span>💳 Payer en 3 fois</span>
+                    <span className="text-[10px] font-bold opacity-90">{formatPrice(pack.installmentAmount)} maintenant, puis 2× {formatPrice(pack.installmentAmount)}</span>
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400 text-center">Satisfait ou remboursé · Mobile Money sécurisé</p>
+              </div>
             </div>
-            <p className="text-blue-300 text-[10px] text-center leading-relaxed">
-              Satisfait ou remboursé · Paiement Mobile Money sécurisé
-            </p>
           </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 };
 
 // ─── PackRegistrationModal ────────────────────────────────────────────────────
 
-const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void; referralInfo?: ReferralInfo | null }> = ({ onClose, referralInfo }) => {
+const PackRegistrationModal: React.FC<{ pack: Pack; onClose: (registered?: boolean) => void; referralInfo?: ReferralInfo | null }> = ({ pack, onClose, referralInfo }) => {
   const { userProfile } = useAuth();
-  const earlyBirdActive = !isDeadlinePassed(PACK.earlyBirdDeadline);
-  // Code parrainage prend priorité sur le tarif préférentiel early bird
-  const currentPrice = referralInfo?.valid ? referralInfo.discountedPrice : (earlyBirdActive ? PACK.earlyBirdPrice : PACK.price);
-  const savings = PACK.price - currentPrice;
+  const isReferral = pack.id === 'pack-parcours-investisseur' && referralInfo?.valid;
+  const currentPrice = isReferral ? referralInfo!.discountedPrice : pack.price;
+  const savings = pack.price - currentPrice;
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
@@ -867,13 +934,13 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
   });
 
   const { status: payStatus, errorMessage: payError, initiate: initiatePayment, reset: resetPayment } = usePawaPayment(() => {
-    analytics.trackAction('webinar_pack_payment_success', PACK.title, { packId: PACK.id, amount: currentPrice });
+    analytics.trackAction('webinar_pack_payment_success', pack.label, { packId: pack.id, amount: currentPrice });
     setStep('success');
   });
 
   useEffect(() => {
     if (payStatus === 'failed') {
-      analytics.trackAction('webinar_pack_payment_failed', PACK.title, { packId: PACK.id });
+      analytics.trackAction('webinar_pack_payment_failed', pack.label, { packId: pack.id });
     }
   }, [payStatus]);
 
@@ -882,12 +949,12 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
     const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
-    analytics.trackAction('webinar_pack_payment_initiated', PACK.title, { packId: PACK.id, operator: payOperator, amount: currentPrice });
+    analytics.trackAction('webinar_pack_payment_initiated', pack.label, { packId: pack.id, operator: payOperator, amount: currentPrice });
     initiatePayment({
-      planId: PACK.id, planName: PACK.title, amount: String(currentPrice),
+      planId: pack.id, planName: pack.label, amount: String(currentPrice),
       currency: getCurrency(payDialCode), correspondent, phone: msisdn,
       registrationEmail: form.email.trim(),
-      ...(referralInfo?.valid ? { referralCode: referralInfo.code } : {}),
+      ...(isReferral ? { referralCode: referralInfo!.code } : {}),
     });
   };
 
@@ -906,14 +973,14 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          webinarId: PACK.id,
+          webinarId: pack.id,
           name: form.name.trim(),
           email: form.email.trim(),
           phone: `${form.dialCode} ${form.phoneNumber.trim()}`,
           type: 'pack',
           earlyBird: false,
           effectivePrice: currentPrice,
-          ...(referralInfo?.valid ? { referralCode: referralInfo.code } : {}),
+          ...(isReferral ? { referralCode: referralInfo!.code } : {}),
         }),
       });
       if (!res.ok && res.status !== 200) throw new Error();
@@ -933,13 +1000,13 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
 
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[92vh] flex flex-col">
         {/* Zone 1 — Header gradient */}
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-5 flex-shrink-0">
+        <div className={`bg-gradient-to-r ${pack.gradient} px-6 py-5 flex-shrink-0`}>
           <button onClick={() => onClose()} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
-          <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">Pré-inscription · Pack complet</p>
-          <h3 className="text-white font-bold text-lg leading-snug pr-6">{PACK.title}</h3>
-          <p className="text-blue-200 text-sm mt-0.5">3 webinaires + communauté + certificat</p>
+          <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">Pré-inscription · {pack.emoji} {pack.label}</p>
+          <h3 className="text-white font-bold text-lg leading-snug pr-6">{pack.tagline}</h3>
+          <p className="text-white/70 text-sm mt-0.5">{formatPrice(currentPrice)}</p>
         </div>
 
         <div className="overflow-y-auto flex-1">
@@ -950,7 +1017,7 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
                 <div className="col-span-2 sm:col-span-1 bg-gray-50 rounded-xl p-3 border border-gray-100">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Inclus dans le pack</p>
                   <ul className="space-y-1.5">
-                    {PACK.inclusions.map((item) => (
+                    {pack.inclusions.map((item) => (
                       <li key={item} className="flex items-start gap-1.5 text-xs text-gray-700">
                         <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
                         <span>{item}</span>
@@ -958,12 +1025,12 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
                     ))}
                   </ul>
                 </div>
-                <div className={`col-span-2 sm:col-span-1 rounded-xl p-3 border ${earlyBirdActive ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className={`col-span-2 sm:col-span-1 rounded-xl p-3 border ${isReferral ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'}`}>
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Votre tarif</p>
                   <p className="text-2xl font-extrabold text-gray-900">{formatPrice(currentPrice)}</p>
-                  {earlyBirdActive && savings > 0 && (
+                  {isReferral && savings > 0 && (
                     <>
-                      <p className="text-xs text-gray-400 line-through mt-0.5">{formatPrice(PACK.price)}</p>
+                      <p className="text-xs text-gray-400 line-through mt-0.5">{formatPrice(pack.price)}</p>
                       <p className="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" /> Vous économisez {formatPrice(savings)}
                       </p>
@@ -1076,17 +1143,17 @@ const PackRegistrationModal: React.FC<{ onClose: (registered?: boolean) => void;
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                 <CheckCircle className="w-9 h-9 text-green-500" />
               </div>
-              <h4 className="text-xl font-bold text-gray-900">Vous êtes inscrit au Parcours Investisseur ! 🎓</h4>
-              {referralInfo?.valid && (
+              <h4 className="text-xl font-bold text-gray-900">Vous êtes inscrit — {pack.emoji} {pack.label} ! 🎓</h4>
+              {isReferral && (
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-700 font-semibold">
-                  🎁 Réduction parrainage appliquée — vous avez payé {formatPrice(referralInfo.discountedPrice)} au lieu de {formatPrice(referralInfo.originalPrice)}
+                  🎁 Réduction parrainage appliquée — vous avez payé {formatPrice(referralInfo!.discountedPrice)} au lieu de {formatPrice(referralInfo!.originalPrice)}
                 </div>
               )}
               <p className="text-sm text-gray-500">Paiement confirmé · Vous recevrez tous les détails par email et WhatsApp.</p>
               <div className="mb-5 text-left">
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-3">Ce que vous allez recevoir</p>
                 <div className="space-y-2 border-l-2 border-blue-100 pl-4">
-                  {PACK.deliveryCalendar.map((item, i) => (
+                  {pack.deliveryCalendar.map((item, i) => (
                     <div key={i} className="flex gap-2 text-xs">
                       <span className="text-blue-600 font-semibold flex-shrink-0 w-32">{item.when}</span>
                       <span className="text-gray-600">{item.what}</span>
@@ -1136,20 +1203,24 @@ const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onCl
           {/* Texte principal */}
           <p className="text-sm text-gray-600 mb-4 leading-relaxed">
             La <strong>cohorte de juillet</strong> démarre le <strong>samedi 4 juillet</strong>.
-            Suivez les <strong>5 sessions live</strong> (Fondamentaux · Analyse fondamentale · Analyse technique),
-            du 4 juillet au 2 août, et obtenez votre <strong>Certificat Investisseur BRVM Niveau 1</strong>.
+            3 niveaux disponibles — dès le <strong>Starter à 35 000 XOF</strong> pour les 5 sessions fondamentales,
+            jusqu'à l'<strong>Investisseur à 75 000 XOF</strong> pour un accompagnement premium.
           </p>
 
-          {/* Prix */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
-            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-1">Parcours complet</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-gray-900">35 000 XOF</span>
-            </div>
-            <p className="text-xs text-gray-500 mt-0.5">5 sessions live · 15h de formation · Communauté · Certificat</p>
-            <p className="text-xs font-semibold text-amber-700 mt-2 flex items-center gap-1">
-              💳 Possibilité de payer en 3 fois (15 000 puis 2× 10 000)
-            </p>
+          {/* Prix 3 niveaux */}
+          <div className="space-y-2 mb-4">
+            {PACKS.map((p) => (
+              <div key={p.id} className={`flex items-center justify-between rounded-xl px-3 py-2.5 border ${p.popular ? 'bg-violet-50 border-violet-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{p.emoji}</span>
+                  <div>
+                    <p className={`text-xs font-extrabold ${p.popular ? 'text-violet-700' : 'text-gray-800'}`}>{p.label}</p>
+                    <p className="text-[10px] text-gray-400">dès {formatPrice(p.installmentAmount)}/mois en 3×</p>
+                  </div>
+                </div>
+                <span className={`text-sm font-extrabold ${p.popular ? 'text-violet-700' : 'text-gray-800'}`}>{formatPrice(p.price)}</span>
+              </div>
+            ))}
           </div>
 
           {/* CTA */}
@@ -1157,7 +1228,7 @@ const PromoPopup: React.FC<{ onClose: () => void; onCta: () => void }> = ({ onCl
             onClick={onCta}
             className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 hover:opacity-90 active:scale-95 transition-all shadow-md"
           >
-            Je rejoins le parcours →
+            Voir les offres détaillées →
           </button>
           <button onClick={onClose} className="w-full mt-2 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors">
             Peut-être plus tard
@@ -1355,12 +1426,11 @@ function readStoredReferralCode(): string | null {
 }
 
 const WebinarSection: React.FC = () => {
-  const [showPackModal, setShowPackModal] = useState(false);
+  const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [showPromoPopup, setShowPromoPopup] = useState(false);
   const [referralInfo, setReferralInfo] = useState<ReferralInfo | null>(null);
 
-  // Popup promo désactivé — tunnel unique pré-inscription (pas de push paiement).
-  // setShowPromoPopup reste à false ; conservé pour réactivation éventuelle.
+  // Popup promo désactivé — tunnel unique pré-inscription.
   void setShowPromoPopup;
 
   // Lire et valider le code de parrainage depuis localStorage
@@ -1387,53 +1457,46 @@ const WebinarSection: React.FC = () => {
     localStorage.setItem(PROMO_POPUP_KEY, '1');
     setShowPromoPopup(false);
     analytics.trackAction('promo_popup_cta_click', 'Pack Parcours', {});
-    setShowPackModal(true);
+    setSelectedPack(PACKS[1]);
   }, []);
 
   return (
     <>
       <section className="mt-12 mb-4">
         {/* En-tête */}
-        <div className="flex items-start justify-between mb-6 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-4 h-4 text-blue-600" />
-              </div>
-              <span className="text-xs font-bold uppercase tracking-widest text-blue-600">Formation Live</span>
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Users className="w-4 h-4 text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">
-              Approfondissez avec nos webinaires d'experts
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Sessions live animées par des analystes et experts de marché Afribourse.
-              Cohorte juillet 2026 — 1ère session le samedi 4 juillet. Places limitées à 50 par session.
-            </p>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600">Formation Live · Cohorte Juillet 2026</span>
           </div>
-
-          <div className="flex-shrink-0 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl px-4 py-3 text-center hidden sm:block">
-            <div className="text-2xl font-black leading-none">50</div>
-            <div className="text-xs font-semibold opacity-80 mt-0.5">places<br />par session</div>
-          </div>
+          <h2 className="text-xl font-bold text-gray-900 leading-tight">
+            Choisissez votre niveau de formation
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Sessions live animées par des analystes et experts de marché Afribourse.
+            1ère session le <strong>samedi 4 juillet</strong>. Places limitées à 50 par session.
+          </p>
         </div>
 
         {/* Bannière mensualité due (paiement échelonné en cours) */}
         <InstallmentBanner />
 
-        {/* Paiement direct retiré de la page publique — tunnel unique : pré-inscription + relance WhatsApp.
-            Le paiement se fait via /parcours/cohorte-juillet (lien envoyé sur WhatsApp/email).
-        <PackCard
-          referralInfo={referralInfo}
-          onRegister={() => { analytics.trackAction('webinar_pack_click', PACK.title, { packId: PACK.id }); setShowPackModal(true); }}
-        /> */}
+        {/* Grille 3 packs */}
+        <PacksGrid onSelect={setSelectedPack} referralInfo={referralInfo} />
 
         {/* Section Ambassadeur — visible uniquement pour les participants connectés */}
         <AmbassadorSection />
 
       </section>
 
-      {showPackModal && (
-        <PackRegistrationModal referralInfo={referralInfo} onClose={() => setShowPackModal(false)} />
+      {selectedPack && (
+        <PackRegistrationModal
+          pack={selectedPack}
+          referralInfo={referralInfo}
+          onClose={() => setSelectedPack(null)}
+        />
       )}
 
       {showPromoPopup && (
