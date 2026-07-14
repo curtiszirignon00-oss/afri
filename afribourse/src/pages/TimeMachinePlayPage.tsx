@@ -38,16 +38,25 @@ export default function TimeMachinePlayPage() {
   const prevYearForDb = displayStep > 0 ? scenario?.years[displayStep - 1] : null;
   const { data: prevStockData } = useScenarioStockData(slug, prevYearForDb ?? undefined);
 
+  // Prix seed prioritaires — c'est la source des calculs de cash côté client
+  // ET de la validation serveur. Les données DB ne servent qu'à compléter les
+  // fondamentaux manquants ou les tickers absents du seed.
   const fundamentals: Record<string, any> = {};
-  if (stockData && stockData.length > 0) {
-    for (const s of stockData) fundamentals[s.ticker] = s;
-  } else if (scenario?.fundamentalsByYear && year) {
+  if (scenario?.fundamentalsByYear && year) {
     Object.assign(fundamentals, scenario.fundamentalsByYear[String(year)] ?? {});
   }
+  if (stockData) {
+    for (const s of stockData) {
+      const seed = fundamentals[s.ticker];
+      fundamentals[s.ticker] = seed
+        ? { ...seed, per: seed.per ?? s.per, bna: seed.bna ?? s.bna, div: seed.div ?? s.div, roe: seed.roe ?? s.roe }
+        : s;
+    }
+  }
 
-  const tickers = stockData && stockData.length > 0
-    ? stockData.map(s => s.ticker)
-    : (scenario?.availableStocks ?? []);
+  const tickers = (scenario?.availableStocks && scenario.availableStocks.length > 0)
+    ? scenario.availableStocks
+    : (stockData?.map(s => s.ticker) ?? []);
 
   useEffect(() => {
     async function init() {
@@ -112,11 +121,12 @@ export default function TimeMachinePlayPage() {
   const prevYear = displayStep > 0 ? scenario.years[displayStep - 1] : null;
   const prevFundamentals: Record<string, any> = {};
   if (prevYear) {
-    // Prefer DB data (consistent source with current-year fundamentals)
-    if (prevStockData && prevStockData.length > 0) {
-      for (const s of prevStockData) prevFundamentals[s.ticker] = s;
-    } else {
-      Object.assign(prevFundamentals, scenario.fundamentalsByYear?.[String(prevYear)] ?? {});
+    // Seed prioritaire (cohérent avec les prix de l'année courante), DB en complément
+    Object.assign(prevFundamentals, scenario.fundamentalsByYear?.[String(prevYear)] ?? {});
+    if (prevStockData) {
+      for (const s of prevStockData) {
+        if (!prevFundamentals[s.ticker]) prevFundamentals[s.ticker] = s;
+      }
     }
   }
 

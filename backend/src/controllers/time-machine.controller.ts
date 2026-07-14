@@ -24,10 +24,19 @@ export async function listScenarios(req: Request, res: Response) {
 
 export async function getScenario(req: Request, res: Response) {
   try {
+    const user = (req as any).user;
     const { slug } = req.params;
     const scenario = await tmService.getScenario(slug);
     if (!scenario) return res.status(404).json({ error: 'Scénario introuvable' });
-    res.json({ scenario });
+
+    // Scénario au-dessus du tier de l'utilisateur → métadonnées seules, aucun contenu
+    if (!tmService.hasTierAccess(user?.subscriptionTier, (scenario as any).tier)) {
+      const sanitized = tmService.sanitizeScenarioForClient(scenario, -1);
+      return res.json({ scenario: { ...sanitized, locked: true } });
+    }
+
+    // Page détail : seule la première année part au client (le reste se débloque en jouant)
+    res.json({ scenario: tmService.sanitizeScenarioForClient(scenario, 0) });
   } catch (err: any) {
     log.error('[TimeMachine] getScenario error:', err.message);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -36,8 +45,23 @@ export async function getScenario(req: Request, res: Response) {
 
 export async function getStepContext(req: Request, res: Response) {
   try {
+    const user = (req as any).user;
     const { slug, year } = req.params;
-    const ctx = await tmService.getStepContext(slug, parseInt(year));
+
+    const scenario = await tmService.getScenario(slug);
+    if (!scenario) return res.status(404).json({ error: 'Scénario introuvable' });
+    if (!tmService.hasTierAccess(user?.subscriptionTier, (scenario as any).tier)) {
+      return res.status(403).json({ error: 'Accès réservé', requiredTier: (scenario as any).tier });
+    }
+
+    // Ne servir que les étapes déjà atteintes par l'utilisateur (anti-triche)
+    const yearNum = parseInt(year);
+    const stepIdx = ((scenario as any).years ?? []).indexOf(yearNum);
+    if (stepIdx === -1) return res.status(404).json({ error: 'Étape introuvable' });
+    const maxStep = await tmService.getMaxUnlockedStep(user.id, scenario);
+    if (stepIdx > maxStep) return res.status(403).json({ error: 'Étape non débloquée' });
+
+    const ctx = await tmService.getStepContext(slug, yearNum);
     if (!ctx) return res.status(404).json({ error: 'Étape introuvable' });
     res.json(ctx);
   } catch (err: any) {
@@ -61,10 +85,8 @@ export async function createSession(req: Request, res: Response) {
 
     const userTier = user?.subscriptionTier ?? 'free';
     const scenarioTier = (scenario as any).tier;
-    const tierOrder: Record<string, number> = { FREE: 0, PLUS: 1, MAX: 2 };
-    const userTierMapped = userTier === 'max' ? 2 : userTier === 'premium' ? 1 : 0;
 
-    if ((tierOrder[scenarioTier] ?? 0) > userTierMapped) {
+    if (!tmService.hasTierAccess(userTier, scenarioTier)) {
       return res.status(403).json({
         error: 'Accès réservé',
         requiredTier: scenarioTier,
@@ -73,7 +95,7 @@ export async function createSession(req: Request, res: Response) {
     }
 
     const session = await tmService.createSession(user.id, scenarioSlug);
-    res.status(201).json({ session });
+    res.status(201).json({ session: tmService.sanitizeSessionForClient(session) });
   } catch (err: any) {
     log.error('[TimeMachine] createSession error:', err.message);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -86,7 +108,7 @@ export async function getSession(req: Request, res: Response) {
     const { id } = req.params;
     const session = await tmService.getSession(id, user.id);
     if (!session) return res.status(404).json({ error: 'Session introuvable' });
-    res.json({ session });
+    res.json({ session: tmService.sanitizeSessionForClient(session) });
   } catch (err: any) {
     log.error('[TimeMachine] getSession error:', err.message);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -115,20 +137,33 @@ export async function submitStep(req: Request, res: Response) {
 
     const session = await tmService.submitStep(id, user.id, stepIndex, allocation, note ?? '');
 
-    // Gamification — déclenché à chaque étape + bonus à la complétion
+    // Gamification — XP uniquement à la première partie du scénario (anti-farming),
+    // le streak reste enregistré à chaque étape
     let gamification: { xpGained: number; levelUp: boolean; bonusXP: number } | undefined;
     try {
-      let totalXP = 30; // XP par étape soumise
+      const firstPlay = await tmService.isFirstPlay(user.id, (session as any).scenarioId, id);
+
+      let totalXP = 0;
       let levelUp = false;
       let bonusXP = 0;
 
-      if ((session as any).status === 'COMPLETED') {
-        bonusXP = 150; // bonus complétion scénario
-        totalXP += bonusXP;
-      }
+      if (firstPlay) {
+        totalXP = 30; // XP par étape soumise
 
-      const xpResult = await addXP(user.id, totalXP, 'time_machine_step', 'Time Machine — étape validée');
-      levelUp = xpResult.leveled_up;
+        if ((session as any).status === 'COMPLETED') {
+          bonusXP = 150; // bonus complétion scénario
+          totalXP += bonusXP;
+        }
+
+        const xpResult = await addXP(
+          user.id,
+          totalXP,
+          'time_machine_step',
+          'Time Machine — étape validée',
+          { scenarioId: (session as any).scenarioId, stepIndex },
+        );
+        levelUp = xpResult.leveled_up;
+      }
 
       // Enregistrer l'activité pour le streak
       await streakService.recordActivity(user.id, 'TIME_MACHINE_STEP').catch(() => {});
@@ -138,9 +173,13 @@ export async function submitStep(req: Request, res: Response) {
       log.warn('[TimeMachine] Gamification error (non-blocking):', gamErr?.message);
     }
 
-    res.json({ session, gamification });
+    res.json({ session: tmService.sanitizeSessionForClient(session), gamification });
   } catch (err: any) {
-    if (err.message?.startsWith('Budget dépassé')) {
+    if (
+      err.message?.startsWith('Budget dépassé') ||
+      err.message?.startsWith('Étape invalide') ||
+      err.message?.startsWith('Allocation invalide')
+    ) {
       return res.status(400).json({ error: err.message });
     }
     log.error('[TimeMachine] submitStep error:', err.message);
@@ -153,7 +192,7 @@ export async function completeSession(req: Request, res: Response) {
     const user = (req as any).user;
     const { id } = req.params;
     const session = await tmService.completeSession(id, user.id);
-    res.json({ session });
+    res.json({ session: tmService.sanitizeSessionForClient(session) });
   } catch (err: any) {
     log.error('[TimeMachine] completeSession error:', err.message);
     res.status(500).json({ error: 'Erreur serveur' });
@@ -192,13 +231,24 @@ export async function getKofiRecap(req: Request, res: Response) {
 
 export async function getScenarioStockData(req: Request, res: Response) {
   try {
+    const user = (req as any).user;
     const { slug, year } = req.params;
     const scenario = await tmService.getScenario(slug);
     if (!scenario) return res.status(404).json({ error: 'Scénario introuvable' });
+    if (!tmService.hasTierAccess(user?.subscriptionTier, (scenario as any).tier)) {
+      return res.status(403).json({ error: 'Accès réservé', requiredTier: (scenario as any).tier });
+    }
+
+    // Ne servir que les années déjà atteintes par l'utilisateur (anti-triche)
+    const yearNum = parseInt(year);
+    const stepIdx = ((scenario as any).years ?? []).indexOf(yearNum);
+    if (stepIdx === -1) return res.status(404).json({ error: 'Année hors scénario' });
+    const maxStep = await tmService.getMaxUnlockedStep(user.id, scenario);
+    if (stepIdx > maxStep) return res.status(403).json({ error: 'Étape non débloquée' });
 
     const tickers = (scenario as any).availableStocks ?? [];
     const fundamentalsFallback = (scenario as any).fundamentalsByYear;
-    const stocks = await tmService.getStockDataForYear(tickers, parseInt(year), fundamentalsFallback);
+    const stocks = await tmService.getStockDataForYear(tickers, yearNum, fundamentalsFallback);
     res.json({ stocks });
   } catch (err: any) {
     log.error('[TimeMachine] getScenarioStockData error:', err.message);

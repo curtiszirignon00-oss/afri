@@ -100,12 +100,15 @@ const COMING_SOON_EXTRA: StaticScenario[] = [
   },
 ];
 
+// Slugs des cards statiques — les scénarios API portant ces slugs sont exclus
+// de la liste dynamique pour éviter les doublons (leur card statique est affichée)
+const STATIC_SLUGS = new Set([...COMING_SOON, ...COMING_SOON_EXTRA].map((s) => s.slug));
+
 export default function TimeMachinePage() {
   const { data: apiScenarios = [], isLoading, error } = useTimeMachineScenarios();
 
-  // Filter out crise-subprimes from the dynamic API results (shown as "coming soon" card below)
   const liveScenarios = (apiScenarios as StaticScenario[]).filter(
-    (s: StaticScenario) => s.slug !== 'crise-subprimes-2008'
+    (s: StaticScenario) => !STATIC_SLUGS.has(s.slug)
   );
 
   // Only the first live scenario is accessible — all others are "bientôt disponible"
@@ -130,12 +133,18 @@ export default function TimeMachinePage() {
           <p className="text-lg text-blue-200 max-w-2xl mx-auto leading-relaxed">
             Rejouez les grands événements de la BRVM. Composez votre portefeuille virtuel, prenez vos décisions et découvrez ce qui se serait réellement passé.
           </p>
-          {/* Stats bar */}
+          {/* Stats bar — valeurs dérivées des scénarios réels */}
           <div className="flex items-center justify-center gap-8 pt-4">
             {[
-              { label: 'Scénarios', value: String(allScenarios.length) },
-              { label: 'Années couvertes', value: '2008–2023' },
-              { label: 'Tickers BRVM', value: '17' },
+              { label: 'Disponibles', value: String(allScenarios.filter((s) => !s.comingSoon).length) },
+              { label: 'À venir', value: String(allScenarios.filter((s) => s.comingSoon).length) },
+              {
+                label: 'Années couvertes',
+                value: (() => {
+                  const ys = allScenarios.flatMap((s) => s.years);
+                  return ys.length > 0 ? `${Math.min(...ys)}–${Math.max(...ys)}` : '—';
+                })(),
+              },
             ].map(({ label, value }) => (
               <div key={label} className="text-center">
                 <p className="text-2xl font-extrabold text-white">{value}</p>
@@ -159,7 +168,7 @@ export default function TimeMachinePage() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-20" role="status" aria-label="Chargement des scénarios">
             <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}

@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TrendingUp } from 'lucide-react';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { lazyWithRetry as lazy } from './lib/lazyWithRetry';
 
 // Query Client
@@ -29,7 +29,6 @@ import MobileBottomNav from './components/MobileBottomNav';
 import HomePage from './components/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import EmailVerificationBanner from './components/EmailVerificationBanner';
 import WelcomePopup from './components/WelcomePopup';
 import WebinarAnnouncementPopup from './components/WebinarAnnouncementPopup';
 import CertificatePopup from './components/certificate/CertificatePopup';
@@ -117,9 +116,13 @@ if (import.meta.env.DEV) {
 // Composant pour gérer le scroll automatique lors du changement de route
 function ScrollToTop() {
   const location = useLocation();
+  const firstRender = useRef(true);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Premier montage : scroll instantané (évite l'animation de défilement au chargement sur mobile).
+    // Navigations suivantes : scroll smooth conservé.
+    window.scrollTo({ top: 0, behavior: firstRender.current ? 'auto' : 'smooth' });
+    firstRender.current = false;
   }, [location.pathname]);
 
   return null;
@@ -190,7 +193,6 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      {isLoggedIn && <EmailVerificationBanner />}
       {showLayout && <Header />}
       {showLayout && <MobileBottomNav />}
 
@@ -201,7 +203,7 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      <main className="flex-grow pt-16 lg:pt-20 pb-16 lg:pb-0">
+      <main className="flex-grow pb-16 lg:pb-0" style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}

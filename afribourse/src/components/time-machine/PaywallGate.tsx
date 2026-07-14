@@ -14,8 +14,8 @@ const TIER_CONFIG = {
     light: 'bg-blue-50 border-blue-200',
     Icon: Zap,
     perks: [
-      '22 scénarios historiques supplémentaires',
-      'Analyse KOFI avancée',
+      'Accès aux scénarios Investisseur+ dès leur sortie',
+      'Analyse Simba avancée',
       'Accès au simulateur portefeuille',
     ],
   },
@@ -26,9 +26,8 @@ const TIER_CONFIG = {
     light: 'bg-purple-50 border-purple-200',
     Icon: Star,
     perks: [
-      '8 scénarios exclusifs Max',
+      'Tous les scénarios en avant-première',
       'Toutes les fonctionnalités Investisseur+',
-      'Accès en avant-première',
     ],
   },
 };

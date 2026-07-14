@@ -1,5 +1,5 @@
 // src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
@@ -53,10 +53,17 @@ function AnimatedSection({
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setVisible(true);
+      return;
+    }
+    // Déjà dans le viewport au montage → afficher immédiatement (avant paint), sans flash opacity-0.
+    // L'IntersectionObserver ne sert que pour les sections sous la ligne de flottaison (reveal au scroll).
+    const r = el.getBoundingClientRect();
+    if (r.top < window.innerHeight && r.bottom > 0) {
       setVisible(true);
       return;
     }

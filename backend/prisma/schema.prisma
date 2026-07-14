@@ -245,9 +245,10 @@ model User {
   onboardedAt DateTime?                 // horodatage du premier accès au dashboard
 
   // --- Emails automatisés — Segments comportementaux ---
-  segment_b_email_sent        Boolean @default(false) // Apprenants : modules OK, 0 trades
-  segment_c_email_sent        Boolean @default(false) // Impulsifs : trades OK, 0 modules
-  segment_d_recent_email_sent Boolean @default(false) // Dormants récents : 0 modules 0 trades < 30j
+  segment_b_email_sent        Boolean   @default(false) // Apprenants : modules OK, 0 trades
+  segment_c_email_sent        Boolean   @default(false) // Impulsifs : trades OK, 0 modules
+  segment_d_recent_email_sent Boolean   @default(false) // Dormants récents : 0 modules 0 trades < 30j
+  badge_nudge_email_sent_at   DateTime?                 // Dernière relance badge/XP (cooldown 30j)
 
   // --- OAuth ---
   oauth_accounts OAuthAccount[]

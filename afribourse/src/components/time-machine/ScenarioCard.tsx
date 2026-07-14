@@ -45,10 +45,20 @@ export default function ScenarioCard({ scenario }: Props) {
   return (
     <div
       onClick={handleClick}
+      role="button"
+      tabIndex={isLocked ? -1 : 0}
+      aria-disabled={isLocked}
+      aria-label={`${scenario.title}${isLocked ? ' — bientôt disponible' : ''}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
       className={`relative group rounded-2xl border bg-gradient-to-br ${gradient} p-5 flex flex-col gap-3 transition-all duration-200 ${
         isLocked
           ? 'opacity-75 cursor-not-allowed'
-          : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5'
+          : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500'
       }`}
     >
       {/* Coming soon overlay */}
@@ -64,9 +74,14 @@ export default function ScenarioCard({ scenario }: Props) {
 
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${tier.cls}`}>
-          {tier.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {!isLocked && (
+            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" title="Disponible" />
+          )}
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${tier.cls}`}>
+            {tier.label}
+          </span>
+        </div>
         {!isLocked && (
           <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors shrink-0 mt-0.5" />
         )}

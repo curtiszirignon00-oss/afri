@@ -7276,3 +7276,210 @@ export async function sendPerformanceEmail({
     text: textBody,
   });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMAIL BADGE NUDGE — XP progress + badges proches + actions disponibles
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface BadgeNudgeAction {
+  label: string;
+  xp: number;
+  url: string;
+  emoji: string;
+}
+
+export interface BadgeNudgeParams {
+  email: string;
+  name: string;
+  currentXP: number;
+  currentLevel: number;
+  xpNeeded: number;       // XP restant pour passer au niveau suivant
+  nextLevel: number;
+  progressPercent: number; // 0-100
+  unearnedBadges: { name: string; icon: string; description: string; xp_reward: number }[];
+  availableActions: BadgeNudgeAction[];
+}
+
+export async function sendBadgeNudgeEmail(params: BadgeNudgeParams): Promise<void> {
+  const {
+    email, name, currentXP, currentLevel, xpNeeded, nextLevel,
+    progressPercent, unearnedBadges, availableActions,
+  } = params;
+
+  const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
+  const frontendUrl = config.app.frontendUrl;
+
+  // Barre de progression textuelle (10 blocs)
+  const filled  = Math.round(progressPercent / 10);
+  const empty   = 10 - filled;
+  const bar     = '█'.repeat(filled) + '░'.repeat(empty);
+
+  // Couleur selon niveau
+  const levelColors: Record<string, string> = {
+    Débutant:      '#3B82F6',
+    Intermédiaire: '#8B5CF6',
+    Avancé:        '#10B981',
+    Expert:        '#F59E0B',
+    Maître:        '#EF4444',
+  };
+  // Déduire le titre courant
+  const levelTitle =
+    currentLevel <= 10 ? 'Débutant'
+    : currentLevel <= 25 ? 'Intermédiaire'
+    : currentLevel <= 50 ? 'Avancé'
+    : currentLevel <= 75 ? 'Expert'
+    : 'Maître';
+  const accentColor = levelColors[levelTitle] ?? '#3B82F6';
+
+  const badgesHtml = unearnedBadges.slice(0, 3).map(b => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td width="40" style="font-size:22px;text-align:center;vertical-align:middle;">${b.icon}</td>
+            <td style="padding-left:12px;vertical-align:middle;">
+              <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:#1E293B;">${b.name}</p>
+              <p style="margin:0;font-size:12px;color:#64748B;">${b.description}</p>
+            </td>
+            <td align="right" width="70" style="vertical-align:middle;white-space:nowrap;">
+              <span style="background:#F0FDF4;color:#16A34A;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">+${b.xp_reward} XP</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`).join('');
+
+  const actionsHtml = availableActions.slice(0, 4).map(a => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #F1F5F9;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td width="32" style="font-size:18px;text-align:center;vertical-align:middle;">${a.emoji}</td>
+            <td style="padding-left:12px;vertical-align:middle;">
+              <a href="${a.url}" style="font-size:14px;font-weight:600;color:#1E293B;text-decoration:none;">${a.label}</a>
+            </td>
+            <td align="right" width="70" style="vertical-align:middle;white-space:nowrap;">
+              <span style="background:#EFF6FF;color:${accentColor};font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;">+${a.xp} XP</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`).join('');
+
+  const topAction = availableActions[0];
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu es à ${xpNeeded} XP du niveau ${nextLevel} — AfriBourse</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F0F4F8;font-family:'Segoe UI',Arial,sans-serif;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#F0F4F8;">
+<tr><td align="center" style="padding:24px 12px 40px;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;">
+
+  <!-- HEADER -->
+  <tr>
+    <td style="background-color:#0A1628;border-radius:10px 10px 0 0;padding:24px 32px 20px;border-bottom:2px solid ${accentColor};">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#ffffff;">Afri</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:900;color:#00D4A8;">Bourse</span>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#8898AA;margin-top:4px;">Gamification · Progression</div>
+          </td>
+          <td align="right" valign="middle">
+            <span style="display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:${accentColor};font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;">Niv. ${currentLevel} · ${levelTitle}</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- HERO XP -->
+  <tr>
+    <td style="background:linear-gradient(135deg,#0f1f3d,#0A1628);padding:28px 32px 24px;">
+      <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#8898AA;text-transform:uppercase;letter-spacing:0.1em;">Ta progression</p>
+      <h1 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#ffffff;line-height:1.3;">
+        ${firstName}, tu es à <span style="color:${accentColor};">${xpNeeded.toLocaleString('fr-FR')} XP</span><br>du niveau ${nextLevel}.
+      </h1>
+
+      <!-- Barre XP -->
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td>
+            <div style="background:#1E3A5F;border-radius:8px;height:10px;overflow:hidden;margin-bottom:8px;">
+              <div style="background:linear-gradient(90deg,${accentColor},#00D4A8);height:10px;width:${Math.round(progressPercent)}%;border-radius:8px;"></div>
+            </div>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td style="font-size:11px;color:#8898AA;">Niv. ${currentLevel} · ${currentXP.toLocaleString('fr-FR')} XP</td>
+                <td align="right" style="font-size:11px;color:#8898AA;">Niv. ${nextLevel} · encore ${xpNeeded.toLocaleString('fr-FR')} XP</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- BADGES PROCHES -->
+  ${unearnedBadges.length > 0 ? `
+  <tr>
+    <td style="background:#ffffff;padding:24px 32px 0;">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#8898AA;text-transform:uppercase;letter-spacing:0.1em;">Badges que tu peux débloquer</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        ${badgesHtml}
+      </table>
+    </td>
+  </tr>` : ''}
+
+  <!-- ACTIONS DISPONIBLES -->
+  <tr>
+    <td style="background:#ffffff;padding:24px 32px 0;">
+      <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#8898AA;text-transform:uppercase;letter-spacing:0.1em;">Actions pour gagner des XP maintenant</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        ${actionsHtml}
+      </table>
+    </td>
+  </tr>
+
+  <!-- CTA -->
+  <tr>
+    <td style="background:#ffffff;padding:24px 32px 32px;text-align:center;">
+      ${topAction ? `<a href="${topAction.url}" style="display:inline-block;padding:15px 36px;background:linear-gradient(135deg,${accentColor},#00D4A8);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:800;font-size:15px;">
+        ${topAction.emoji} ${topAction.label} →
+      </a>
+      <p style="margin:12px 0 0;font-size:12px;color:#94A3B8;">+${topAction.xp} XP garantis · Aucun risque réel</p>` : `
+      <a href="${frontendUrl}/dashboard" style="display:inline-block;padding:15px 36px;background:linear-gradient(135deg,${accentColor},#00D4A8);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:800;font-size:15px;">
+        Voir ma progression →
+      </a>`}
+    </td>
+  </tr>
+
+  <!-- FOOTER -->
+  <tr>
+    <td style="background:#F8FAFC;border-radius:0 0 10px 10px;padding:20px 32px;border-top:1px solid #E2E8F0;">
+      <p style="margin:0 0 6px;font-size:13px;color:#374151;">— <strong>L'équipe AfriBourse</strong></p>
+      <p style="margin:0;font-size:11px;color:#9CA3AF;line-height:1.6;">Vous recevez cet email car vous avez un compte AfriBourse actif. Pour ne plus recevoir ces rappels, ignorez simplement cet email — nous ne vous en enverrons pas plus d'un par mois.</p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+
+  const actionsText = availableActions.slice(0, 4)
+    .map(a => `▸ ${a.label} → +${a.xp} XP — ${a.url}`)
+    .join('\n');
+
+  await sendEmail({
+    to: email,
+    subject: `${firstName}, tu es à ${xpNeeded} XP du niveau ${nextLevel} 🎯`,
+    html,
+    text: `${firstName},\n\nTu es à ${xpNeeded} XP du niveau ${nextLevel} (actuellement niveau ${currentLevel} · ${Math.round(progressPercent)}% accompli).\n\nActions disponibles :\n${actionsText}\n\n— L'équipe AfriBourse · africbourse.com`,
+  });
+}

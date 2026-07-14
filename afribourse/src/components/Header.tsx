@@ -1,9 +1,10 @@
 import { TrendingUp, BookOpen, User, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
+import EmailVerificationBanner from './EmailVerificationBanner';
 import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
 import {
   useUnseenNewsCount,
@@ -67,8 +68,32 @@ export default function Header() {
 
   const ActiveMegaMenuComponent = activeMegaMenu ? MEGA_MENU_COMPONENTS[activeMegaMenu] : null;
 
+  // Mesure la hauteur réelle du bloc fixe (bannière + header) et l'expose en variable CSS.
+  // Le <main> l'utilise comme padding-top → pas de chevauchement ni de saut quand la bannière
+  // apparaît/disparaît. useLayoutEffect + ResizeObserver garantissent une mesure avant paint.
+  const topBlockRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = topBlockRef.current;
+    if (!el) return;
+    const setHeight = () => {
+      document.documentElement.style.setProperty('--app-top-h', `${el.offsetHeight}px`);
+    };
+    setHeight();
+    const ro = new ResizeObserver(setHeight);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.documentElement.style.removeProperty('--app-top-h');
+    };
+  }, []);
+
   return (
     <div className="fixed top-0 inset-x-0 z-50" translate="no">
+      {/* Bloc mesuré = bannière + header uniquement (exclut les mega menus pour ne pas gonfler --app-top-h) */}
+      <div ref={topBlockRef}>
+      {/* Bandeau vérification email — dans le bloc fixe, au-dessus du header (retourne null si email vérifié) */}
+      {isLoggedIn && <EmailVerificationBanner />}
+
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
@@ -329,6 +354,7 @@ export default function Header() {
 
         </div>
       </header>
+      </div>
 
       {/* Mega Menus - rendered inside the sticky wrapper so they attach to the header */}
       {ActiveMegaMenuComponent && (

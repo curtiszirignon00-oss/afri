@@ -607,47 +607,62 @@ export default function StockDetailPageEnhanced() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center space-x-1 sm:space-x-2">
+              <div className="flex items-start space-x-1 sm:space-x-3">
                 {/* Watchlist Button */}
-                <button
-                  id="nudge-watchlist-btn"
-                  onClick={handleToggleWatchlist}
-                  disabled={isTogglingWatchlist}
-                  className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  title={isInWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
-                >
-                  {isTogglingWatchlist ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
-                  ) : (
-                    <Star
-                      className={`w-5 h-5 ${isInWatchlist ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400 hover:text-yellow-500'
-                        }`}
-                    />
-                  )}
-                </button>
+                <div className="flex flex-col items-center w-[70px] sm:w-[84px]">
+                  <button
+                    id="nudge-watchlist-btn"
+                    onClick={handleToggleWatchlist}
+                    disabled={isTogglingWatchlist}
+                    className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    title={isInWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
+                  >
+                    {isTogglingWatchlist ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
+                    ) : (
+                      <Star
+                        className={`w-5 h-5 ${isInWatchlist ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400 hover:text-yellow-500'
+                          }`}
+                      />
+                    )}
+                  </button>
+                  <span className="mt-0.5 text-[10px] sm:text-[11px] leading-tight text-center text-gray-500">
+                    Surveiller cette action
+                  </span>
+                </div>
                 {/* Price Alert Button */}
-                <button
-                  id="nudge-alert-btn"
-                  onClick={() => setIsAlertModalOpen(true)}
-                  className="p-2 rounded-full hover:bg-orange-100 transition-colors"
-                  title="Créer une alerte de prix"
-                >
-                  <Bell className="w-5 h-5 text-gray-400 hover:text-orange-600" />
-                </button>
+                <div className="flex flex-col items-center w-[70px] sm:w-[84px]">
+                  <button
+                    id="nudge-alert-btn"
+                    onClick={() => setIsAlertModalOpen(true)}
+                    className="p-2 rounded-full hover:bg-orange-100 transition-colors"
+                    title="Créer une alerte de prix"
+                  >
+                    <Bell className="w-5 h-5 text-gray-400 hover:text-orange-600" />
+                  </button>
+                  <span className="mt-0.5 text-[10px] sm:text-[11px] leading-tight text-center text-gray-500">
+                    Notification au prix visé
+                  </span>
+                </div>
                 {/* Compare Button */}
-                <button
-                  id="nudge-compare-btn"
-                  onClick={showComparison ? closeComparison : openComparison}
-                  className={`p-2 rounded-full transition-colors ${
-                    showComparison
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'hover:bg-blue-100 text-gray-400 hover:text-blue-600'
-                  }`}
-                  title={showComparison ? 'Fermer la comparaison' : 'Comparer avec un autre titre'}
-                >
-                  <Scale className="w-5 h-5" />
-                </button>
+                <div className="flex flex-col items-center w-[70px] sm:w-[84px]">
+                  <button
+                    id="nudge-compare-btn"
+                    onClick={showComparison ? closeComparison : openComparison}
+                    className={`p-2 rounded-full transition-colors ${
+                      showComparison
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'hover:bg-blue-100 text-gray-400 hover:text-blue-600'
+                    }`}
+                    title={showComparison ? 'Fermer la comparaison' : 'Comparer avec un autre titre'}
+                  >
+                    <Scale className="w-5 h-5" />
+                  </button>
+                  <span className="mt-0.5 text-[10px] sm:text-[11px] leading-tight text-center text-gray-500">
+                    Comparer au secteur
+                  </span>
+                </div>
               </div>
             </div>
 

@@ -153,11 +153,76 @@ export async function getAllScenarios() {
       id: true, slug: true, title: true, description: true,
       category: true, tier: true, years: true, availableStocks: true, startBudget: true,
     },
+    orderBy: { createdAt: 'asc' },
   });
 }
 
 export async function getScenario(slug: string) {
   return prisma.timeMachineScenario.findUnique({ where: { slug } });
+}
+
+// ─── Contrôle d'accès & sanitisation des réponses ─────────────────────────────
+
+const TIER_ORDER: Record<string, number> = { FREE: 0, PLUS: 1, MAX: 2 };
+
+export function hasTierAccess(userTier: string | undefined, scenarioTier: string): boolean {
+  const userMapped = userTier === 'max' ? 2 : userTier === 'premium' ? 1 : 0;
+  return (TIER_ORDER[scenarioTier] ?? 0) <= userMapped;
+}
+
+const SCENARIO_CONTENT_KEYS = [
+  'contextByYear',
+  'fundamentalsByYear',
+  'dividendsByYear',
+  'availableActionsByYear',
+  'lessonsByYear',
+  'quizByYear',
+] as const;
+
+// Ne renvoie au client que le contenu des années déjà atteintes (années 0..upToStepIndex).
+// upToStepIndex = -1 → métadonnées seules, aucun contenu par année.
+// Empêche de lire les cours/leçons futurs dans les DevTools (anti-triche)
+// et protège le contenu des scénarios payants.
+export function sanitizeScenarioForClient(scenario: any, upToStepIndex: number) {
+  if (!scenario) return scenario;
+  const years: number[] = scenario.years ?? [];
+  const allowedYears = new Set(years.slice(0, upToStepIndex + 1).map(String));
+
+  const out: any = { ...scenario };
+  for (const key of SCENARIO_CONTENT_KEYS) {
+    const src = scenario[key];
+    if (!src || typeof src !== 'object') continue;
+    const filtered: Record<string, any> = {};
+    for (const y of Object.keys(src)) {
+      if (allowedYears.has(y)) filtered[y] = src[y];
+    }
+    out[key] = filtered;
+  }
+  return out;
+}
+
+export function sanitizeSessionForClient(session: any) {
+  if (!session?.scenario) return session;
+  return {
+    ...session,
+    scenario: sanitizeScenarioForClient(session.scenario, session.currentStep ?? 0),
+  };
+}
+
+// Étape maximale atteinte par l'utilisateur sur un scénario, toutes sessions
+// confondues (une session COMPLETED débloque toutes les étapes).
+export async function getMaxUnlockedStep(userId: string, scenario: any): Promise<number> {
+  const sessions = await prisma.timeMachineSession.findMany({
+    where: { userId, scenarioId: scenario.id },
+    select: { currentStep: true, status: true },
+  });
+  const lastStep = (scenario.years?.length ?? 1) - 1;
+  let max = 0;
+  for (const s of sessions) {
+    const reached = s.status === 'COMPLETED' ? lastStep : Math.min(s.currentStep, lastStep);
+    if (reached > max) max = reached;
+  }
+  return max;
 }
 
 export async function getStepContext(slug: string, year: number) {
@@ -219,6 +284,15 @@ export async function getUserSessions(userId: string) {
   });
 }
 
+// Vraie première partie sur ce scénario ? (les replays créent de nouvelles
+// sessions, les anciennes restant en DB avec le statut ABANDONED/COMPLETED)
+export async function isFirstPlay(userId: string, scenarioId: string, currentSessionId: string) {
+  const priorSessions = await prisma.timeMachineSession.count({
+    where: { userId, scenarioId, id: { not: currentSessionId } },
+  });
+  return priorSessions === 0;
+}
+
 export async function submitStep(
   sessionId: string,
   userId: string,
@@ -233,6 +307,23 @@ export async function submitStep(
   if (!session) throw new Error('Session not found or not in progress');
 
   const scenario = session.scenario as any;
+
+  // Validation : on ne peut soumettre que l'étape courante de la session
+  if (stepIndex !== session.currentStep) {
+    throw new Error('Étape invalide : seule l\'étape courante peut être soumise');
+  }
+
+  // Validation : quantités entières positives, tickers autorisés par le scénario
+  const availableStocks: string[] = scenario.availableStocks ?? [];
+  for (const [ticker, qty] of Object.entries(allocation)) {
+    if (typeof qty !== 'number' || !Number.isInteger(qty) || qty < 0) {
+      throw new Error(`Allocation invalide : quantité incorrecte pour ${ticker}`);
+    }
+    if (!availableStocks.includes(ticker)) {
+      throw new Error(`Allocation invalide : titre non autorisé (${ticker})`);
+    }
+  }
+
   const year = scenario.years[stepIndex];
   const prevHoldings: PortfolioAllocation = stepIndex > 0
     ? ((session.portfolioByStep as any)?.[String(stepIndex - 1)] ?? {})
@@ -354,21 +445,22 @@ export async function generateKofiFeedback(
   const perf = (session.performanceByStep as any)?.[String(stepIndex)];
   const capital = (session.capitalByStep as any)?.[String(stepIndex)] ?? scenario.startBudget;
 
-  // Fetch real DB prices for this year's tickers — same source as the play page
+  // Prix seed prioritaires — même source que la page de jeu et la validation serveur.
+  // Les données DB ne complètent que les fondamentaux manquants ou tickers absents du seed.
   const allTickers = Object.keys(allocation).filter(t => (allocation[t] as number) > 0);
   const seedFundamentals = (scenario.fundamentalsByYear as any)?.[String(year)] ?? {};
   const dbStockData = allTickers.length > 0
     ? await getStockDataForYear(allTickers, year, scenario.fundamentalsByYear)
     : [];
   const priceMap: Record<string, { cours: number; per?: any; bna?: any; div?: any; roe?: any; note?: string }> = {};
-  for (const s of dbStockData) {
-    priceMap[s.ticker] = s;
-  }
-  // Merge with seed for tickers not in DB
   for (const ticker of allTickers) {
-    if (!priceMap[ticker] && seedFundamentals[ticker]) {
-      priceMap[ticker] = seedFundamentals[ticker];
-    }
+    if (seedFundamentals[ticker]) priceMap[ticker] = seedFundamentals[ticker];
+  }
+  for (const s of dbStockData) {
+    const seed = priceMap[s.ticker];
+    priceMap[s.ticker] = seed
+      ? { ...seed, per: seed.per ?? s.per, bna: seed.bna ?? s.bna, div: seed.div ?? s.div, roe: seed.roe ?? s.roe }
+      : s;
   }
 
   const activePositions = Object.entries(allocation).filter(([, qty]) => (qty as number) > 0);

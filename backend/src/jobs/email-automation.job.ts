@@ -18,7 +18,10 @@ import {
   sendSegmentCEmail,
   sendSegmentDRecentEmail,
   sendPerformanceEmail,
+  sendBadgeNudgeEmail,
+  BadgeNudgeAction,
 } from '../services/email.service';
+import { getXPRequiredForLevel, calculateLevelFromXP } from '../services/xp.service';
 
 // Comptes générés automatiquement à exclure
 const GENERATED_EMAIL_REGEX = /^[^@]+\.[^@]*\d+@gmail\.com$/i;
@@ -253,6 +256,143 @@ async function runPerformanceEmails(): Promise<void> {
   }
 }
 
+// ─── Badge Nudge — XP progress + badges proches + actions disponibles ────────
+
+const NUDGE_COOLDOWN_DAYS = 30;
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
+
+async function runBadgeNudge(): Promise<void> {
+  log.info('[EMAIL-AUTO][BadgeNudge] Démarrage — scan des profils éligibles');
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - NUDGE_COOLDOWN_DAYS);
+
+  try {
+    // Cibler : email vérifié, a un profil XP, email pas envoyé depuis 30j
+    const users = await prisma.user.findMany({
+      where: {
+        email_verified_at: { not: null },
+        NOT: { email: { endsWith: '@fake-afribourse.com' } },
+        OR: [
+          { badge_nudge_email_sent_at: null },
+          { badge_nudge_email_sent_at: { lt: cutoff } },
+        ],
+        profile: { total_xp: { gt: 50 } }, // a au moins interagi
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        lastname: true,
+        badge_nudge_email_sent_at: true,
+        profile: {
+          select: {
+            total_xp: true,
+            level: true,
+            current_streak: true,
+            achievements: { select: { achievementId: true } },
+          },
+        },
+        portfolios: {
+          select: { transactions: { select: { id: true }, take: 1 } },
+        },
+        learningProgress: {
+          where: { is_completed: true },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+
+    // Charger tous les badges non-hidden pour comparaison
+    const allBadges = await prisma.achievement.findMany({
+      where: { is_hidden: false },
+      select: { id: true, name: true, icon: true, description: true, xp_reward: true, category: true },
+      orderBy: { xp_reward: 'asc' },
+    });
+
+    let totalSent = 0;
+    let totalSkipped = 0;
+
+    for (const user of users) {
+      if (!user.profile) { totalSkipped++; continue; }
+
+      const totalXP    = user.profile.total_xp;
+      const curLevel   = calculateLevelFromXP(totalXP);
+      const nextLevel  = curLevel + 1;
+      const xpForNext  = getXPRequiredForLevel(nextLevel);
+      const xpForCur   = curLevel <= 1 ? 0 : getXPRequiredForLevel(curLevel);
+      const xpNeeded   = Math.max(0, xpForNext - totalXP);
+      const xpInLevel  = Math.max(0, totalXP - xpForCur);
+      const levelRange = xpForNext - xpForCur;
+      const progressPct = levelRange > 0 ? Math.min(100, Math.round((xpInLevel / levelRange) * 100)) : 0;
+
+      // Badges non encore débloqués
+      const earnedIds = new Set(user.profile.achievements.map((a: any) => a.achievementId));
+      const unearnedBadges = allBadges.filter(b => !earnedIds.has(b.id)).slice(0, 3);
+
+      // Actions disponibles personnalisées
+      const hasTraded   = user.portfolios.some((p: any) => p.transactions.length > 0);
+      const hasModule   = user.learningProgress.length > 0;
+      const hasStreak7  = user.profile.current_streak >= 7;
+
+      const actions: BadgeNudgeAction[] = [];
+
+      if (!hasModule) {
+        actions.push({ emoji: '📚', label: 'Complète ton premier module de formation', xp: 200, url: `${FRONTEND_URL}/learn` });
+      } else {
+        actions.push({ emoji: '📚', label: 'Continue ta formation (1 module = 200 XP)', xp: 200, url: `${FRONTEND_URL}/learn` });
+      }
+
+      if (!hasTraded) {
+        actions.push({ emoji: '📊', label: 'Fais ton premier trade simulé', xp: 200, url: `${FRONTEND_URL}/markets` });
+      } else {
+        actions.push({ emoji: '📊', label: 'Passe un trade aujourd\'hui (10 XP/trade)', xp: 10, url: `${FRONTEND_URL}/markets` });
+      }
+
+      if (!hasStreak7) {
+        const daysLeft = Math.max(1, 7 - user.profile.current_streak);
+        actions.push({ emoji: '🔥', label: `Maintiens ta série ${daysLeft}j de plus → badge Streak 7j`, xp: 200, url: `${FRONTEND_URL}/dashboard` });
+      }
+
+      actions.push({ emoji: '👤', label: 'Complète ton profil investisseur', xp: 250, url: `${FRONTEND_URL}/profile` });
+      actions.push({ emoji: '🤝', label: 'Invite un ami à rejoindre AfriBourse', xp: 500, url: `${FRONTEND_URL}/profile` });
+
+      const displayName = user.name
+        ? `${user.name}${user.lastname ? ' ' + user.lastname : ''}`
+        : 'Investisseur';
+
+      try {
+        await sendBadgeNudgeEmail({
+          email:           user.email,
+          name:            displayName,
+          currentXP:       totalXP,
+          currentLevel:    curLevel,
+          xpNeeded,
+          nextLevel,
+          progressPercent: progressPct,
+          unearnedBadges,
+          availableActions: actions,
+        });
+        await prisma.user.update({
+          where: { id: user.id },
+          data:  { badge_nudge_email_sent_at: new Date() },
+        });
+        totalSent++;
+        log.info(`[EMAIL-AUTO][BadgeNudge] ${user.email} · Niv.${curLevel} · ${xpNeeded} XP manquants ✅`);
+      } catch (e: any) {
+        log.error(`[EMAIL-AUTO][BadgeNudge] Erreur ${user.email}: ${e.message}`);
+      }
+
+      await sleep(DELAY_MS);
+    }
+
+    log.info(`[EMAIL-AUTO][BadgeNudge] Terminé — envoyés: ${totalSent}, ignorés: ${totalSkipped}`);
+  } catch (err: any) {
+    log.error('[EMAIL-AUTO][BadgeNudge] Erreur critique:', err.message);
+  }
+}
+
 // ─── Planification ────────────────────────────────────────────────────────────
 
 // Segments : tous les lundis à 09h00 (rattrape les nouveaux basculements de segment)
@@ -267,7 +407,13 @@ cron.schedule('5 9 * * *', () => {
   runPerformanceEmails();
 }, { timezone: 'Africa/Abidjan' });
 
-log.info('[EMAIL-AUTO] Planifié — Segments: lundi 09h00 · Performance: quotidien 09h05');
+// Badge Nudge : tous les mercredis à 10h00
+cron.schedule('0 10 * * 3', () => {
+  log.info('[EMAIL-AUTO][BadgeNudge] Cron mercredi 10h00 — déclenchement');
+  runBadgeNudge();
+}, { timezone: 'Africa/Abidjan' });
+
+log.info('[EMAIL-AUTO] Planifié — Segments: lundi 09h00 · Performance: quotidien 09h05 · Badge Nudge: mercredi 10h00');
 
 // ─── Envoi immédiat au démarrage du serveur ───────────────────────────────────
 // Délai de 30s pour laisser le serveur et la DB se stabiliser
@@ -275,8 +421,10 @@ log.info('[EMAIL-AUTO] Planifié — Segments: lundi 09h00 · Performance: quoti
 setTimeout(() => {
   log.info('[EMAIL-AUTO] Démarrage serveur — lancement immédiat des segments (B · C · D)');
   runAllSegments().then(() => {
-    // Après les segments, lancer les emails de performance
     log.info('[EMAIL-AUTO] Segments terminés — lancement des emails performance');
-    runPerformanceEmails();
+    runPerformanceEmails().then(() => {
+      log.info('[EMAIL-AUTO] Performance terminée — lancement badge nudge');
+      runBadgeNudge();
+    });
   });
 }, 30_000);
