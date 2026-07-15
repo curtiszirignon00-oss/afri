@@ -13,12 +13,40 @@ export async function saveCurrentDayHistory() {
   try {
     log.debug('📊 Sauvegarde de l\'historique du jour...');
 
-    // Récupérer les données du scraper existant
-    const stocks = await scrapeStock();
-
     // Date d'aujourd'hui à minuit UTC (évite les doublons timezone)
     const now = new Date();
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    // BRVM fermée le week-end : ne pas dupliquer la bougie du vendredi
+    const dow = today.getUTCDay();
+    if (dow === 0 || dow === 6) {
+      log.debug('📊 Week-end (BRVM fermée) — pas de sauvegarde d\'historique');
+      return { success: true, savedCount: 0, errorCount: 0, date: today };
+    }
+
+    // Récupérer les données du scraper existant
+    const stocks = await scrapeStock();
+
+    // Extrêmes intraday du jour (snapshots toutes les 15 min pendant la séance).
+    // Les +Haut/+Bas de la page scrapée ne dépassent JAMAIS l'intervalle
+    // [ouverture, dernier] (vérifié : 0/48 lignes) — sans cette fusion, les
+    // bougies n'ont aucune mèche.
+    const intradayExtremes = new Map<string, { max: number; min: number }>();
+    try {
+      const grouped = await prisma.intradaySnapshot.groupBy({
+        by: ['stock_ticker'],
+        where: { timestamp: { gte: today } },
+        _max: { price: true },
+        _min: { price: true },
+      });
+      for (const g of grouped) {
+        if (g._max.price !== null && g._min.price !== null) {
+          intradayExtremes.set(g.stock_ticker, { max: g._max.price, min: g._min.price });
+        }
+      }
+    } catch (err) {
+      log.error('⚠️ Extrêmes intraday indisponibles (high/low scrapés seuls):', err);
+    }
 
     let savedCount = 0;
     let errorCount = 0;
@@ -43,10 +71,13 @@ export async function saveCurrentDayHistory() {
 
         // Utiliser les valeurs disponibles, avec des fallbacks intelligents
         const open = stock.opening ?? stock.lastPrice;
-        const high = stock.high ?? stock.lastPrice;
-        const low = stock.low ?? stock.lastPrice;
         const close = stock.lastPrice;
         const volume = stock.volume ?? 0;
+
+        // Fusionner les extrêmes intraday : vrais plus hauts/plus bas de séance
+        const extremes = intradayExtremes.get(stock.symbol);
+        const high = Math.max(stock.high ?? stock.lastPrice, extremes?.max ?? -Infinity, open, close);
+        const low = Math.min(stock.low ?? stock.lastPrice, extremes?.min ?? Infinity, open, close);
 
         // Sauvegarder dans StockHistory avec upsert (évite les doublons)
         await prisma.stockHistory.upsert({

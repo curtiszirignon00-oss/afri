@@ -274,13 +274,16 @@ export default function StockDetailPageEnhanced() {
         lastPoint.high = Math.max(lastPoint.high, stock.current_price);
         lastPoint.low = Math.min(lastPoint.low, stock.current_price);
       } else if (todayStr > lastPoint.time) {
-        // Jour suivant : ajouter un nouveau point avec le prix actuel
+        // Jour suivant : nouveau point avec le prix actuel.
+        // open = clôture de la veille (proxy) pour que la bougie du jour montre
+        // le mouvement au lieu d'un trait plat open=high=low=close.
+        const open = stock.previous_close || stock.current_price;
         converted.push({
           date: todayStr,
           time: todayStr,
-          open: stock.current_price,
-          high: stock.current_price,
-          low: stock.current_price,
+          open,
+          high: Math.max(open, stock.current_price),
+          low: Math.min(open, stock.current_price),
           close: stock.current_price,
           volume: 0,
         });
