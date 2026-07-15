@@ -33,6 +33,12 @@ interface UseStockChartProps {
   theme: 'light' | 'dark';
   data: OHLCVData[];
   indicators?: string[]; // Liste des indicateurs actifs
+  /** Nombre de bougies visibles par défaut à l'ouverture (undefined = fitContent).
+   *  L'utilisateur peut toujours scroller/dézoomer pour voir tout l'historique. */
+  defaultVisibleBars?: number;
+  /** Vrai quand les données sont intraday (time = timestamp Unix en secondes) :
+   *  affiche l'heure sur l'axe du temps. */
+  isIntraday?: boolean;
 }
 
 // Couleurs AfriBourse (constante hors du hook)
@@ -45,7 +51,7 @@ const CHART_COLORS: ChartColors = {
   borderDownColor: '#ef4444',
 };
 
-export const useStockChart = ({ chartType, theme, data, indicators }: UseStockChartProps) => {
+export const useStockChart = ({ chartType, theme, data, indicators, defaultVisibleBars, isIntraday }: UseStockChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const oscillatorContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -98,6 +104,31 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
   const aroonDownSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
 
   const [isReady, setIsReady] = useState(false);
+
+  // ── Zoom par défaut ────────────────────────────────────────────────────────
+  /** Vrai une fois le zoom initial appliqué (premier passage largeur 0 → >0) */
+  const hasInitialZoomRef = useRef(false);
+
+  /**
+   * Affiche les `defaultVisibleBars` dernières bougies (mèches lisibles) au lieu
+   * d'écraser tout l'historique avec fitContent. Le chart oscillateur suit via
+   * la synchronisation des échelles de temps déjà en place.
+   */
+  const applyDefaultZoom = () => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const len = data.length;
+    if (defaultVisibleBars && len > defaultVisibleBars) {
+      // +2 : petite marge à droite de la dernière bougie
+      chart.timeScale().setVisibleLogicalRange({ from: len - defaultVisibleBars, to: len + 2 });
+    } else {
+      chart.timeScale().fitContent();
+      oscillatorChartRef.current?.timeScale().fitContent();
+    }
+  };
+  // Version ref pour les callbacks créés une seule fois (ResizeObserver, fullscreen)
+  const applyDefaultZoomRef = useRef(applyDefaultZoom);
+  applyDefaultZoomRef.current = applyDefaultZoom;
 
   // ── Suivi de session de dessin (API publique uniquement) ──────────────────
   /** IDs des outils présents AVANT de commencer la session de dessin */
@@ -207,19 +238,23 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       },
       timeScale: {
         borderColor: isDark ? '#374151' : '#e2e8f0',
-        timeVisible: false,     // inutile en daily — on n'affiche pas l'heure
+        timeVisible: !!isIntraday, // heure affichée uniquement pour les bougies intraday
         secondsVisible: false,
         tickMarkFormatter: (time: { year: number; month: number; day: number } | number, tickMarkType: number) => {
-          // Avec les dates YYYY-MM-DD, lightweight-charts passe un BusinessDay {year, month, day}
-          const t = time as { year: number; month: number; day: number };
-          const d = new Date(t.year, t.month - 1, t.day);
+          // time est un number (timestamp Unix s) pour l'intraday,
+          // sinon un BusinessDay {year, month, day} (dates YYYY-MM-DD)
+          const d = typeof time === 'number'
+            ? new Date(time * 1000)
+            : new Date(time.year, time.month - 1, time.day);
           switch (tickMarkType) {
             case 0: // Year
-              return String(t.year);
+              return String(d.getFullYear());
             case 1: // Month
               return d.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
-            default: // DayOfMonth
+            case 2: // DayOfMonth
               return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+            default: // Time / TimeWithSeconds (intraday)
+              return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
           }
         },
       },
@@ -353,9 +388,12 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
       if (width > 0) {
         chartRef.current.applyOptions({ width });
         oscillatorChartRef.current?.applyOptions({ width });
-        // fitContent à chaque resize pour maintenir la vue complète
-        chartRef.current.timeScale().fitContent();
-        oscillatorChartRef.current?.timeScale().fitContent();
+        // Zoom par défaut uniquement au premier passage largeur 0 → >0.
+        // Les resizes suivants préservent le zoom/scroll de l'utilisateur.
+        if (!hasInitialZoomRef.current) {
+          hasInitialZoomRef.current = true;
+          applyDefaultZoomRef.current();
+        }
       }
     });
 
@@ -370,8 +408,8 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
           const w = chartContainerRef.current.clientWidth;
           chartRef.current.applyOptions({ width: w });
           oscillatorChartRef.current?.applyOptions({ width: w });
-          chartRef.current.timeScale().fitContent();
-          oscillatorChartRef.current?.timeScale().fitContent();
+          // Changement volontaire de vue → réappliquer le zoom par défaut
+          applyDefaultZoomRef.current();
         }
       }, 100);
     };
@@ -570,9 +608,10 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
         }
       }
 
-      // fitContent après mise à jour des données
+      // Zoom par défaut après mise à jour des données (65 dernières bougies en 1J
+      // au lieu d'écraser tout l'historique — mèches et corps lisibles)
       requestAnimationFrame(() => {
-        chartRef.current?.timeScale().fitContent();
+        applyDefaultZoomRef.current();
       });
 
       prevChartTypeRef.current = chartType;
@@ -608,7 +647,7 @@ export const useStockChart = ({ chartType, theme, data, indicators }: UseStockCh
     if (seriesRef.current) {
       seriesRef.current.applyOptions(getSeriesOptions());
     }
-  }, [theme, isReady]);
+  }, [theme, isReady, isIntraday]); // isIntraday : bascule timeVisible + format des ticks
 
   // Gestion des indicateurs techniques
   useEffect(() => {

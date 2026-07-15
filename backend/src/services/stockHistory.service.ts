@@ -3,7 +3,7 @@ import { log } from '../config/logger';
 // Service pour sauvegarder l'historique quotidien à partir du scraper existant
 
 import prisma from '../config/prisma';
-import { scrapeStock } from './scraping.service';
+import { scrapeStock, StockData } from './scraping.service';
 
 /**
  * Sauvegarde l'historique du jour pour toutes les actions
@@ -100,6 +100,65 @@ export async function saveCurrentDayHistory() {
     log.error('❌ Erreur globale lors de la sauvegarde de l\'historique:', error);
     throw error;
   }
+}
+
+/**
+ * Vrai si l'instant donné est dans la fenêtre de cotation BRVM (élargie).
+ * Séance BRVM ≈ 9h30–15h00 GMT — on garde 9h00–15h30 GMT, lun–ven.
+ */
+export function isWithinBRVMTradingHours(date: Date = new Date()): boolean {
+  const day = date.getUTCDay(); // 0=dim, 6=sam
+  if (day === 0 || day === 6) return false;
+  const minutes = date.getUTCHours() * 60 + date.getUTCMinutes();
+  return minutes >= 9 * 60 && minutes <= 15 * 60 + 30;
+}
+
+/**
+ * Sauvegarde un snapshot intraday (prix + volume cumulé) pour chaque action.
+ * Appelé par le cron de scraping toutes les 15 min ; les snapshots sont ensuite
+ * agrégés en bougies horaires par getIntradayHourly().
+ * Ne fait rien hors des heures de cotation BRVM.
+ */
+export async function saveIntradaySnapshots(stocks: StockData[]) {
+  const now = new Date();
+  if (!isWithinBRVMTradingHours(now)) {
+    return { success: true, savedCount: 0, skipped: 'hors heures de cotation' };
+  }
+
+  try {
+    const snapshots = stocks
+      .filter(s => s.symbol && s.lastPrice !== null)
+      .map(s => ({
+        stock_ticker: s.symbol,
+        timestamp: now,
+        price: s.lastPrice as number,
+        volume: s.volume ?? 0,
+      }));
+
+    if (snapshots.length === 0) {
+      return { success: true, savedCount: 0 };
+    }
+
+    await prisma.intradaySnapshot.createMany({ data: snapshots });
+    log.debug(`📸 ${snapshots.length} snapshots intraday sauvegardés (${now.toISOString()})`);
+    return { success: true, savedCount: snapshots.length };
+  } catch (error) {
+    log.error('❌ Erreur sauvegarde snapshots intraday:', error);
+    throw error;
+  }
+}
+
+/**
+ * Purge les snapshots intraday plus vieux que `days` jours (par défaut 30).
+ */
+export async function purgeOldIntradaySnapshots(days: number = 30) {
+  const cutoff = new Date();
+  cutoff.setUTCDate(cutoff.getUTCDate() - days);
+  const result = await prisma.intradaySnapshot.deleteMany({
+    where: { timestamp: { lt: cutoff } },
+  });
+  log.debug(`🧹 Purge intraday: ${result.count} snapshots supprimés (avant ${cutoff.toISOString()})`);
+  return result.count;
 }
 
 /**

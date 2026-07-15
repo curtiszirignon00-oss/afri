@@ -3,14 +3,14 @@
  */
 
 export interface IndicatorData {
-  time: string; // date YYYY-MM-DD (BusinessDay string pour lightweight-charts)
+  time: string | number; // date YYYY-MM-DD (BusinessDay string pour lightweight-charts)
   value: number;
 }
 
 /**
  * Calcule la Moyenne Mobile Simple (SMA)
  */
-export function calculateSMA(data: { time: string; close: number }[], period: number): IndicatorData[] {
+export function calculateSMA(data: { time: string | number; close: number }[], period: number): IndicatorData[] {
   const result: IndicatorData[] = [];
 
   for (let i = period - 1; i < data.length; i++) {
@@ -30,7 +30,7 @@ export function calculateSMA(data: { time: string; close: number }[], period: nu
 /**
  * Calcule la Moyenne Mobile Exponentielle (EMA)
  */
-export function calculateEMA(data: { time: string; close: number }[], period: number): IndicatorData[] {
+export function calculateEMA(data: { time: string | number; close: number }[], period: number): IndicatorData[] {
   const result: IndicatorData[] = [];
   const multiplier = 2 / (period + 1);
 
@@ -62,7 +62,7 @@ export function calculateEMA(data: { time: string; close: number }[], period: nu
  * Calcule les Bandes de Bollinger
  */
 export function calculateBollingerBands(
-  data: { time: string; close: number }[],
+  data: { time: string | number; close: number }[],
   period: number = 20,
   stdDev: number = 2
 ): {
@@ -104,7 +104,7 @@ export function calculateBollingerBands(
 /**
  * Calcule le RSI (Relative Strength Index)
  */
-export function calculateRSI(data: { time: string; close: number }[], period: number = 14): IndicatorData[] {
+export function calculateRSI(data: { time: string | number; close: number }[], period: number = 14): IndicatorData[] {
   const result: IndicatorData[] = [];
 
   if (data.length < period + 1) return result;
@@ -143,7 +143,7 @@ export function calculateRSI(data: { time: string; close: number }[], period: nu
  * Slow %K = SMA(%K brut, smoothK) — Slow %D = SMA(Slow %K, smoothD)
  */
 export function calculateStochastic(
-  data: { time: string; high: number; low: number; close: number }[],
+  data: { time: string | number; high: number; low: number; close: number }[],
   period: number = 14,
   smoothK: number = 3,
   smoothD: number = 3
@@ -151,7 +151,7 @@ export function calculateStochastic(
   if (data.length < period) return { k: [], d: [] };
 
   // Fast %K brut
-  const rawK: { time: string; value: number }[] = [];
+  const rawK: { time: string | number; value: number }[] = [];
   for (let i = period - 1; i < data.length; i++) {
     const slice = data.slice(i - period + 1, i + 1);
     const lowestLow = Math.min(...slice.map(d => d.low));
@@ -186,7 +186,7 @@ export function calculateStochastic(
  * Plage : -100 (survente) à 0 (surachat)
  */
 export function calculateWilliamsR(
-  data: { time: string; high: number; low: number; close: number }[],
+  data: { time: string | number; high: number; low: number; close: number }[],
   period: number = 14
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
@@ -210,7 +210,7 @@ export function calculateWilliamsR(
  * CCI = (TP - SMA(TP)) / (0.015 × DévMoyenne)
  */
 export function calculateCCI(
-  data: { time: string; high: number; low: number; close: number }[],
+  data: { time: string | number; high: number; low: number; close: number }[],
   period: number = 20
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
@@ -235,7 +235,7 @@ export function calculateCCI(
  * ROC = (Close / Close[n] - 1) × 100
  */
 export function calculateROC(
-  data: { time: string; close: number }[],
+  data: { time: string | number; close: number }[],
   period: number = 12
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
@@ -256,7 +256,7 @@ export function calculateROC(
  * MFI = 100 - 100 / (1 + MF+/MF-)
  */
 export function calculateMFI(
-  data: { time: string; high: number; low: number; close: number; volume: number }[],
+  data: { time: string | number; high: number; low: number; close: number; volume: number }[],
   period: number = 14
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
@@ -284,7 +284,7 @@ export function calculateMFI(
  * Aroon Down = (N - BarsSinceLowestLow) / N × 100
  */
 export function calculateAroon(
-  data: { time: string; high: number; low: number }[],
+  data: { time: string | number; high: number; low: number }[],
   period: number = 25
 ): { up: IndicatorData[]; down: IndicatorData[] } {
   const up: IndicatorData[] = [];
@@ -311,7 +311,7 @@ export function calculateAroon(
  * Calcule le MACD (Moving Average Convergence Divergence)
  */
 export function calculateMACD(
-  data: { time: string; close: number }[],
+  data: { time: string | number; close: number }[],
   fastPeriod: number = 12,
   slowPeriod: number = 26,
   signalPeriod: number = 9
@@ -361,7 +361,7 @@ export function calculateMACD(
  * TR = max(H-L, |H-PrevC|, |L-PrevC|)
  */
 export function calculateATR(
-  data: { time: string; high: number; low: number; close: number }[],
+  data: { time: string | number; high: number; low: number; close: number }[],
   period: number = 14
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
@@ -397,7 +397,7 @@ export function calculateATR(
  * Retourne { diPlus, diMinus, adx }
  */
 export function calculateADX(
-  data: { time: string; high: number; low: number; close: number }[],
+  data: { time: string | number; high: number; low: number; close: number }[],
   period: number = 14
 ): { diPlus: IndicatorData[]; diMinus: IndicatorData[]; adx: IndicatorData[] } {
   const diPlus: IndicatorData[]  = [];
@@ -428,7 +428,7 @@ export function calculateADX(
   let smP  = dmP.slice(0, period).reduce((s, v) => s + v, 0);
   let smM  = dmM.slice(0, period).reduce((s, v) => s + v, 0);
 
-  const dxValues: { time: string; value: number }[] = [];
+  const dxValues: { time: string | number; value: number }[] = [];
 
   for (let i = period; i < trs.length; i++) {
     smTR = smTR - smTR / period + trs[i];
@@ -463,7 +463,7 @@ export function calculateADX(
  * OBV += Vol si C > PrevC, sinon -= Vol (inchangé si égal)
  */
 export function calculateOBV(
-  data: { time: string; close: number; volume: number }[]
+  data: { time: string | number; close: number; volume: number }[]
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
   if (data.length === 0) return result;
@@ -484,7 +484,7 @@ export function calculateOBV(
  * VWAP = Σ(TP × Vol) / ΣVol depuis le début du jeu de données
  */
 export function calculateVWAP(
-  data: { time: string; high: number; low: number; close: number; volume: number }[]
+  data: { time: string | number; high: number; low: number; close: number; volume: number }[]
 ): IndicatorData[] {
   const result: IndicatorData[] = [];
   let cumTPV = 0;
@@ -508,7 +508,7 @@ export function calculateVWAP(
  * Chikou      : clôture actuelle décalée -26 barres en arrière
  */
 export function calculateIchimoku(
-  data: { time: string; high: number; low: number; close: number }[]
+  data: { time: string | number; high: number; low: number; close: number }[]
 ): {
   tenkan: IndicatorData[];
   kijun: IndicatorData[];
@@ -556,7 +556,7 @@ export function calculateIchimoku(
  * R2 = P + (H - L),  S2 = P - (H - L)
  */
 export function calculatePivotPoints(
-  data: { time: string; high: number; low: number; close: number }[]
+  data: { time: string | number; high: number; low: number; close: number }[]
 ): {
   p:  IndicatorData[];
   r1: IndicatorData[];

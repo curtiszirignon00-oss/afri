@@ -53,7 +53,7 @@ export async function getStock(req: Request, res: Response, next: NextFunction) 
 export async function getStockHistory(req: Request, res: Response, next: NextFunction) {
   try {
     const symbol = req.params.symbol.toUpperCase();
-    const period = (req.query.period as '1M' | '3M' | '6M' | '1Y' | 'ALL') || '1Y';
+    const period = (req.query.period as '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL') || '1Y';
 
     const history = await stockService.getStockHistory(symbol, period);
 
@@ -62,6 +62,20 @@ export async function getStockHistory(req: Request, res: Response, next: NextFun
       period,
       data: history
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// Pour la route: GET /api/stocks/:symbol/intraday?days=5
+export async function getStockIntraday(req: Request, res: Response, next: NextFunction) {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const days = Math.min(30, Math.max(1, parseInt(req.query.days as string) || 5));
+
+    const data = await stockService.getIntradayHourly(symbol, days);
+
+    return res.status(200).json({ symbol, days, data });
   } catch (error) {
     return next(error);
   }

@@ -111,6 +111,41 @@ export async function fetchStockHistory(
   return response.json();
 }
 
+export type IntradayCandle = {
+  time: number; // timestamp Unix (secondes) du début d'heure UTC
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
+
+export type IntradayHistoryResponse = {
+  symbol: string;
+  days: number;
+  data: IntradayCandle[];
+};
+
+/**
+ * Récupère les bougies horaires intraday d'une action (agrégées côté backend
+ * à partir des snapshots du scraper — vide tant que la collecte n'a pas commencé)
+ */
+export async function fetchIntradayHistory(
+  symbol: string,
+  days: number = 5
+): Promise<IntradayHistoryResponse> {
+  const response = await authFetch(
+    `${API_BASE_URL}/stocks/${symbol}/intraday?days=${days}`,
+    { credentials: 'include' }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Erreur lors de la récupération de l'intraday: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
 export type Stock52WeekData = {
   symbol: string;
   high52w: number | null;

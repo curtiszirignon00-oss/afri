@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { scrapeStock, scrapeIndex } from '../services/scraping.service';
 import { saveIndices, saveCurrentDayIndexHistory } from '../services/index.service.prisma';
 import { saveStocks } from '../services/stock.service.prisma';
-import { saveCurrentDayHistory } from '../services/stockHistory.service';
+import { saveCurrentDayHistory, saveIntradaySnapshots, purgeOldIntradaySnapshots } from '../services/stockHistory.service';
 import {
     getActiveAlerts,
     shouldTriggerAlert,
@@ -28,6 +28,13 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
         // Sauvegarder les données actuelles
         await saveStocks(stocks);
         await saveIndices(indices);
+
+        // Snapshot intraday (prix + volume cumulé) — no-op hors heures de cotation BRVM
+        try {
+            await saveIntradaySnapshots(stocks);
+        } catch (err) {
+            console.error('❌ Erreur snapshots intraday:', err);
+        }
 
         // Sauvegarder dans l'historique (une fois par jour seulement, à 18h00 après clôture BRVM)
         const now = new Date();
@@ -55,6 +62,16 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
 
     } catch (error) {
         console.error('❌ Erreur lors du scraping:', error);
+    }
+});
+
+// Purge quotidienne des snapshots intraday de plus de 30 jours (3h00 du matin)
+cron.schedule('0 3 * * *', async () => {
+    try {
+        const deleted = await purgeOldIntradaySnapshots(30);
+        console.log(`🧹 Purge snapshots intraday: ${deleted} supprimés`);
+    } catch (error) {
+        console.error('❌ Erreur purge snapshots intraday:', error);
     }
 });
 

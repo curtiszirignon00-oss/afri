@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
+import { useIntradayHistory } from '../../hooks/useStockDetails';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
 import type { CandleResolution } from '../../utils/chartDataAdapter';
@@ -114,17 +115,42 @@ export default function StockChartNew({
 
   const activeConfig = DISPLAY_INTERVALS.find(i => i.value === selectedDisplay)!;
 
+  // Bougies horaires intraday — fetch uniquement quand le timeframe 1H est actif
+  const { data: intradayResp } = useIntradayHistory(symbol, selectedDisplay === '1H');
+  const hasIntraday = selectedDisplay === '1H' && (intradayResp?.data?.length ?? 0) > 0;
+
   // Données agrégées selon la résolution de bougie sélectionnée
   const displayData = useMemo(() => {
+    // 1H avec données intraday réelles : bougies horaires (time = timestamp Unix)
+    if (hasIntraday && intradayResp) {
+      return intradayResp.data.map((c): OHLCVData => ({
+        date: new Date(c.time * 1000).toISOString(),
+        time: c.time,
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+        volume: c.volume,
+      }));
+    }
     if (!data || data.length === 0) return data;
     return applyResolution(data, activeConfig.resolution);
-  }, [data, activeConfig.resolution]);
+  }, [data, activeConfig.resolution, hasIntraday, intradayResp]);
+
+  // Zoom par défaut : ~65 bougies (3 mois en daily) pour des mèches lisibles ;
+  // undefined = fitContent (résolutions agrégées, peu de bougies)
+  const defaultVisibleBars =
+    activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily' ? 65
+    : activeConfig.resolution === 'weekly' ? 104
+    : undefined;
 
   const { chartContainerRef, oscillatorContainerRef, hasOscillator, isReady, takeScreenshot, cancelActiveDrawing, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
     chartType: selectedChartType,
     theme,
     data: displayData,
     indicators: activeIndicators,
+    defaultVisibleBars,
+    isIntraday: hasIntraday,
   });
 
   // Synchroniser l'état isFullscreen avec le vrai état du navigateur
@@ -200,7 +226,11 @@ export default function StockChartNew({
     onVariationChangeRef.current?.(periodChange);
   }, [periodChange]); // Ne dépend PAS de onVariationChange pour briser la boucle
 
-  const resolutionLabel = RESOLUTION_LABEL[activeConfig.resolution];
+  // En 1H sans données intraday collectées : fallback sur des bougies journalières
+  // (5 derniers jours) → le label doit rester honnête
+  const resolutionLabel = activeConfig.resolution === 'hourly' && !hasIntraday
+    ? RESOLUTION_LABEL['daily']
+    : RESOLUTION_LABEL[activeConfig.resolution];
 
   const handleDisplayIntervalChange = (display: DisplayInterval) => {
     // Sortir du mode dessin avant de changer de timeframe
@@ -365,7 +395,7 @@ export default function StockChartNew({
           {/* Badge résolution — visible uniquement en mode chandelier ou barre */}
           {(selectedChartType === 'candlestick' || selectedChartType === 'bar') && (
             <div className="flex items-center gap-2">
-              {activeConfig.resolution === 'hourly' && (
+              {activeConfig.resolution === 'hourly' && !hasIntraday && (
                 <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-200">
                   <Info className="w-3 h-3" />
                   <span className="hidden sm:inline">Données journalières</span>

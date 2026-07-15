@@ -296,7 +296,7 @@ export async function getTopStocks(limit: number = 6) {
  */
 export async function getStockHistory(
   symbol: string,
-  period: '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1Y'
+  period: '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1Y'
 ) {
   try {
     // Calculer la date de début selon la période
@@ -304,6 +304,14 @@ export async function getStockHistory(
     let startDate: Date;
 
     switch (period) {
+      case '1D':
+        // J-7 calendaires pour garantir au moins 2 séances (weekends/fériés)
+        startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 7));
+        break;
+      case '5D':
+        // J-14 calendaires ≈ 5-10 séances de cotation
+        startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 14));
+        break;
       case '1M':
         startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, now.getUTCDate()));
         break;
@@ -369,6 +377,74 @@ export async function getStockHistory(
       }));
   } catch (error) {
     log.error(`❌ Erreur lors de la récupération de l'historique de ${symbol}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Agrège les snapshots intraday en bougies horaires.
+ * @param symbol - Symbole de l'action (ex: SLBC)
+ * @param days - Nombre de jours calendaires à couvrir (défaut 5)
+ * @returns Bougies { time: Unix s (début d'heure UTC), open, high, low, close, volume }
+ *
+ * Le volume des snapshots est le volume CUMULÉ du jour : le volume horaire est
+ * donc la différence entre le dernier cumul de l'heure et celui de l'heure
+ * précédente du même jour (première heure du jour = cumul tel quel).
+ */
+export async function getIntradayHourly(symbol: string, days: number = 5) {
+  try {
+    const startDate = new Date();
+    startDate.setUTCDate(startDate.getUTCDate() - days);
+
+    const snapshots = await prisma.intradaySnapshot.findMany({
+      where: {
+        stock_ticker: symbol,
+        timestamp: { gte: startDate },
+      },
+      orderBy: { timestamp: 'asc' },
+    });
+
+    if (snapshots.length === 0) return [];
+
+    // Grouper par heure (clé = timestamp Unix du début d'heure UTC)
+    const hours = new Map<number, typeof snapshots>();
+    for (const snap of snapshots) {
+      const t = snap.timestamp;
+      const hourStart = Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate(), t.getUTCHours()) / 1000;
+      if (!hours.has(hourStart)) hours.set(hourStart, []);
+      hours.get(hourStart)!.push(snap);
+    }
+
+    const candles: { time: number; open: number; high: number; low: number; close: number; volume: number }[] = [];
+    // Dernier volume cumulé vu, par jour (clé YYYY-MM-DD)
+    let prevDayKey = '';
+    let prevCumulVolume = 0;
+
+    for (const [time, snaps] of Array.from(hours.entries()).sort(([a], [b]) => a - b)) {
+      const prices = snaps.map(s => s.price);
+      const lastCumul = snaps[snaps.length - 1].volume;
+      const dayKey = new Date(time * 1000).toISOString().slice(0, 10);
+
+      const volume = dayKey === prevDayKey
+        ? Math.max(0, lastCumul - prevCumulVolume)
+        : lastCumul;
+
+      candles.push({
+        time,
+        open: prices[0],
+        high: Math.max(...prices),
+        low: Math.min(...prices),
+        close: prices[prices.length - 1],
+        volume,
+      });
+
+      prevDayKey = dayKey;
+      prevCumulVolume = lastCumul;
+    }
+
+    return candles;
+  } catch (error) {
+    log.error(`❌ Erreur lors de l'agrégation intraday de ${symbol}:`, error);
     throw error;
   }
 }

@@ -40,7 +40,7 @@ export const convertToOHLCVData = (rawData: RawStockData[]): OHLCVData[] => {
       close: item.close,
       volume: item.volume,
     }))
-    .sort((a, b) => a.time.localeCompare(b.time));
+    .sort((a, b) => String(a.time).localeCompare(String(b.time)));
 };
 
 /**
@@ -151,7 +151,7 @@ export const aggregateToWeekly = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(weeks.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
+    const sorted = bars.sort((a, b) => String(a.time).localeCompare(String(b.time)));
     result.push({
       date: key,
       time: key,
@@ -183,7 +183,7 @@ export const aggregateToMonthly = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(months.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
+    const sorted = bars.sort((a, b) => String(a.time).localeCompare(String(b.time)));
     const firstDay = key + '-01';
     result.push({
       date: firstDay,
@@ -218,7 +218,7 @@ export const aggregateToQuarterly = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(quarters.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
+    const sorted = bars.sort((a, b) => String(a.time).localeCompare(String(b.time)));
     const [yearStr, qStr] = key.split('-Q');
     const startMonth = (parseInt(qStr) - 1) * 3 + 1;
     const firstDay = `${yearStr}-${String(startMonth).padStart(2, '0')}-01`;
@@ -255,7 +255,7 @@ export const aggregateToSemiAnnual = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(halves.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
+    const sorted = bars.sort((a, b) => String(a.time).localeCompare(String(b.time)));
     const [yearStr, hStr] = key.split('-H');
     const startMonth = hStr === '1' ? '01' : '07';
     const firstDay = `${yearStr}-${startMonth}-01`;
@@ -289,7 +289,7 @@ export const aggregateToAnnual = (data: OHLCVData[]): OHLCVData[] => {
 
   const result: OHLCVData[] = [];
   for (const [key, bars] of Array.from(years.entries()).sort()) {
-    const sorted = bars.sort((a, b) => a.time.localeCompare(b.time));
+    const sorted = bars.sort((a, b) => String(a.time).localeCompare(String(b.time)));
     const firstDay = `${key}-01-01`;
     result.push({
       date: firstDay,

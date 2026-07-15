@@ -690,6 +690,18 @@ model StockHistory {
   @@map("stock_history")
 }
 
+model IntradaySnapshot {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  timestamp    DateTime // heure du snapshot (UTC)
+  price        Float // lastPrice au moment du snapshot
+  volume       Int // volume cumulé du jour à ce moment
+
+  @@index([stock_ticker, timestamp])
+  @@index([timestamp])
+  @@map("intraday_snapshots")
+}
+
 model StockFundamental {
   id                 String    @id @default(auto()) @map("_id") @db.ObjectId
   stock_ticker       String    @unique

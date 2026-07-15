@@ -3,9 +3,11 @@ export type ChartType = 'candlestick' | 'line' | 'area' | 'bar';
 
 export type TimeInterval = '1D' | '5D' | '1W' | '1M' | '3M' | '6M' | '1Y' | '5Y' | 'ALL';
 
+// time : string YYYY-MM-DD (BusinessDay, ignore sam/dim) pour le journalier+,
+// ou number (timestamp Unix en secondes) pour les bougies intraday
 export interface OHLCVData {
   date: string;
-  time: string; // date YYYY-MM-DD — lightweight-charts l'interprète comme BusinessDay (ignore sam/dim)
+  time: string | number;
   open: number;
   high: number;
   low: number;
@@ -14,7 +16,7 @@ export interface OHLCVData {
 }
 
 export interface CandlestickData {
-  time: string; // date YYYY-MM-DD
+  time: string | number;
   open: number;
   high: number;
   low: number;
@@ -22,17 +24,17 @@ export interface CandlestickData {
 }
 
 export interface LineData {
-  time: string; // date YYYY-MM-DD
+  time: string | number;
   value: number;
 }
 
 export interface AreaData {
-  time: string; // date YYYY-MM-DD
+  time: string | number;
   value: number;
 }
 
 export interface HistogramData {
-  time: string; // date YYYY-MM-DD
+  time: string | number;
   value: number;
   color?: string;
 }

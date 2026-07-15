@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   fetchStockHistory,
+  fetchIntradayHistory,
   fetchStock52Week,
   fetchStockFundamentals,
   fetchCompanyInfo,
@@ -20,6 +21,20 @@ export function useStockHistory(symbol: string, period: Period = '1Y') {
     enabled: !!symbol, // Ne lance la requête que si le symbole existe
     staleTime: 5 * 60 * 1000, // Considère les données comme fraîches pendant 5 minutes
     gcTime: 10 * 60 * 1000 // Garde en cache pendant 10 minutes
+  });
+}
+
+/**
+ * Hook pour récupérer les bougies horaires intraday d'une action.
+ * `enabled` permet de ne fetcher que lorsque le timeframe 1H est sélectionné.
+ */
+export function useIntradayHistory(symbol: string, enabled: boolean = true, days: number = 5) {
+  return useQuery({
+    queryKey: ['stock-intraday', symbol, days],
+    queryFn: () => fetchIntradayHistory(symbol, days),
+    enabled: !!symbol && enabled,
+    staleTime: 5 * 60 * 1000, // le scraper alimente toutes les 15 min
+    gcTime: 10 * 60 * 1000
   });
 }
 
