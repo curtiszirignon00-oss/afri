@@ -91,7 +91,9 @@ async function initiateInstallment(
   if (plan.status !== 'active') {
     return { ok: false, status: 409, error: 'Ce plan de paiement est déjà clôturé.' };
   }
-  if (!/^\d{8,15}$/.test(phone)) {
+  // Wave : le numéro est saisi sur la page hébergée Wave → non requis ici
+  const isWave = String(correspondent).toUpperCase().startsWith('WAVE');
+  if (!isWave && !/^\d{8,15}$/.test(phone)) {
     return { ok: false, status: 400, error: 'Numéro de téléphone invalide' };
   }
 
@@ -118,7 +120,7 @@ async function initiateInstallment(
       amount: String(next.amount),
       currency,
       correspondent,
-      phone,
+      phone: phone ?? '',
       status: 'PENDING',
       metadata: {
         registrationEmail: plan.email,
@@ -195,7 +197,8 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
   const { name, firstName, lastName, email, phone, correspondent, payPhone, currency = 'XOF' } = req.body;
   const resolvedEmail = (email ?? req.user?.email ?? '').trim().toLowerCase();
   if (!resolvedEmail) return res.status(400).json({ error: 'Email requis.' });
-  if (!correspondent || !payPhone) return res.status(400).json({ error: 'Opérateur et numéro Mobile Money requis.' });
+  const isWaveStart = String(correspondent ?? '').toUpperCase().startsWith('WAVE');
+  if (!correspondent || (!payPhone && !isWaveStart)) return res.status(400).json({ error: 'Opérateur et numéro Mobile Money requis.' });
 
   const tier = resolveTier(req.body.pack);
   const tierAmounts = PACK_TIER_INSTALLMENTS[tier];
@@ -267,7 +270,8 @@ export async function payNextInstallment(req: AuthenticatedRequest, res: Respons
   if (!userId) return res.status(401).json({ error: 'Connexion requise.' });
 
   const { installmentPlanId, correspondent, phone } = req.body;
-  if (!installmentPlanId || !correspondent || !phone) {
+  const isWaveNext = String(correspondent ?? '').toUpperCase().startsWith('WAVE');
+  if (!installmentPlanId || !correspondent || (!phone && !isWaveNext)) {
     return res.status(400).json({ error: 'installmentPlanId, correspondent et phone requis.' });
   }
 
@@ -320,7 +324,8 @@ export async function getPlanByToken(req: Request, res: Response) {
 export async function payByToken(req: Request, res: Response) {
   const { token } = req.params;
   const { correspondent, phone, currency } = req.body;
-  if (!correspondent || !phone) return res.status(400).json({ error: 'correspondent et phone requis.' });
+  const isWaveToken = String(correspondent ?? '').toUpperCase().startsWith('WAVE');
+  if (!correspondent || (!phone && !isWaveToken)) return res.status(400).json({ error: 'correspondent et phone requis.' });
 
   try {
     const plan = await prisma.installmentPlan.findUnique({ where: { payToken: token } });

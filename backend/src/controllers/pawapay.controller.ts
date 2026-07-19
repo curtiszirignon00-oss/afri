@@ -464,12 +464,16 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
 
   const { planId, planName, currency, correspondent, phone, registrationEmail, referralCode } = req.body;
 
-  if (!planId || !planName || !currency || !correspondent || !phone) {
+  // Wave passe par la Payment Page hébergée : le numéro y est saisi par le client,
+  // il n'est donc pas requis côté API.
+  const isWavePayment = String(correspondent ?? '').toUpperCase().startsWith('WAVE');
+
+  if (!planId || !planName || !currency || !correspondent || (!phone && !isWavePayment)) {
     return res.status(400).json({ error: 'Champs manquants' });
   }
 
-  // Vérifier que le numéro est numérique et > 8 chiffres
-  if (!/^\d{8,15}$/.test(phone)) {
+  // Vérifier que le numéro est numérique et > 8 chiffres (sauf Wave : numéro saisi sur la page Wave)
+  if (!isWavePayment && !/^\d{8,15}$/.test(phone)) {
     return res.status(400).json({ error: 'Numéro de téléphone invalide' });
   }
 
@@ -531,7 +535,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         amount: String(finalAmount),
         currency,
         correspondent,
-        phone,
+        phone: phone ?? '',
         status: 'PENDING',
         userPromoId: activePromoId ?? undefined,
         metadata: (registrationEmail || referralCode) ? {
@@ -556,9 +560,10 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         });
         return res.status(201).json({ success: true, depositId, paymentPage: true, redirectUrl: session.redirectUrl });
       } catch (err) {
+        const detail = err instanceof Error ? err.message : String(err);
         await prisma.payment.update({ where: { depositId }, data: { status: 'FAILED', failureReason: 'WAVE_SESSION_ERROR' } }).catch(() => {});
-        log.error('[PawaPay] Échec session Wave', { err, depositId });
-        return res.status(502).json({ success: false, error: "Impossible d'initier le paiement Wave. Réessayez." });
+        log.error('[PawaPay] Échec session Wave', { err: detail, depositId });
+        return res.status(502).json({ success: false, error: "Impossible d'initier le paiement Wave. Réessayez.", detail });
       }
     }
 

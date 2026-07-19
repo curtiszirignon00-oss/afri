@@ -259,6 +259,11 @@ export default function WebinarPage() {
           <p className="mt-2 text-xs text-blue-400 flex items-center gap-1.5">
             <span className="text-emerald-400">✓</span> Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
           </p>
+
+          <div className="mt-5 inline-flex items-start gap-2 bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-blue-100">
+            <span>📍</span>
+            <p><strong className="text-white">Sessions en présentiel</strong> en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳 · <span className="text-blue-300">en ligne (visio) pour les autres pays</span></p>
+          </div>
         </div>
       </section>
 

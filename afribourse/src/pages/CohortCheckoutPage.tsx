@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Loader2, AlertCircle, ArrowLeft, MapPin } from 'lucide-react';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
@@ -167,7 +167,9 @@ export default function CohortCheckoutPage() {
     if (!payOperator) return;
     const correspondent = getCorrespondent(payOperator, payDialCode);
     if (!correspondent) { toast.error('Opérateur non disponible dans ce pays'); return; }
-    const msisdn = payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
+    // Wave : numéro saisi sur la page hébergée Wave → pas de msisdn requis ici
+    const isWave = payOperator === 'wave';
+    const msisdn = isWave ? '' : payDialCode.replace('+', '') + payPhone.replace(/\D/g, '');
     analytics.trackAction('cohort_payment_initiated', PACK_NAME, { amount: price, operator: payOperator });
     initiate({
       planId: PACK_ID,
@@ -242,6 +244,11 @@ export default function CohortCheckoutPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
               <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
               <p className="text-xs mt-0.5">1ère session le samedi 8 août.</p>
+            </div>
+
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 flex items-start gap-2">
+              <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <p><strong>Sessions en présentiel</strong> en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳. <span className="text-emerald-700">En ligne (visio) pour les autres pays.</span></p>
             </div>
 
             {/* Avantages clés du pack sélectionné */}
@@ -341,20 +348,26 @@ export default function CohortCheckoutPage() {
                       );
                     })()}
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro Mobile Money</label>
-                    <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                      <span className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 flex items-center">{payDialCode}</span>
-                      <input type="tel" value={payPhone} onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
-                        placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
+                  {payOperator === 'wave' ? (
+                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-800 leading-relaxed">
+                      🌊 Vous allez être redirigé vers <strong>Wave</strong> pour finaliser le paiement en toute sécurité. Aucun numéro à saisir ici.
                     </div>
-                  </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro Mobile Money</label>
+                      <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                        <span className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 flex items-center">{payDialCode}</span>
+                        <input type="tel" value={payPhone} onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                          placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
+                      </div>
+                    </div>
+                  )}
 
                   {payError && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{payError}</p>}
 
-                  <button onClick={handlePay} disabled={!payOperator || !payPhone.trim() || payStatus === 'initiating'}
+                  <button onClick={handlePay} disabled={!payOperator || (payOperator !== 'wave' && !payPhone.trim()) || payStatus === 'initiating'}
                     className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    {payStatus === 'initiating' ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : `Payer ${formatPrice(price)}`}
+                    {payStatus === 'initiating' ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : payOperator === 'wave' ? `Payer avec Wave · ${formatPrice(price)}` : `Payer ${formatPrice(price)}`}
                   </button>
                   </>
                   )}
