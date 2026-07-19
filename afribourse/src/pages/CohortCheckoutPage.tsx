@@ -13,7 +13,7 @@ const PACK_ID = 'pack-parcours-investisseur';
 // +2 sessions et +6h par palier (Starter 5/15h · Parcours 7/21h · Investisseur 9/27h)
 const PACK_TIERS: Record<string, { name: string; full: number; sessions: number; hours: number; perks: string[] }> = {
   starter: {
-    name: 'Pack Starter', full: 35000, sessions: 5, hours: 15,
+    name: 'Pack Starter', full: 70000, sessions: 5, hours: 15,
     perks: [
       '5 webinaires live (W1 → W5)',
       "5 plans d'action personnalisés",
@@ -23,7 +23,7 @@ const PACK_TIERS: Record<string, { name: string; full: number; sessions: number;
     ],
   },
   parcours: {
-    name: 'Pack Parcours', full: 50000, sessions: 7, hours: 21,
+    name: 'Pack Parcours', full: 100000, sessions: 7, hours: 21,
     perks: [
       'Tout le Starter, plus :',
       'W6 — Constitution de portefeuille',
@@ -33,7 +33,7 @@ const PACK_TIERS: Record<string, { name: string; full: number; sessions: number;
     ],
   },
   investisseur: {
-    name: 'Pack Investisseur', full: 75000, sessions: 9, hours: 27,
+    name: 'Pack Investisseur', full: 150000, sessions: 9, hours: 27,
     perks: [
       'Tout le Parcours, plus :',
       "W8 — Psychologie de l'investisseur",
@@ -191,7 +191,7 @@ export default function CohortCheckoutPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Paiement confirmé 🎉</h1>
           <p className="text-sm text-gray-600 mb-5">
-            Votre place au Parcours Investisseur (cohorte juillet) est confirmée. Vous recevrez tous les détails par email et WhatsApp.
+            Votre place au Parcours Investisseur (cohorte août) est confirmée. Vous recevrez tous les détails par email et WhatsApp.
           </p>
           <button onClick={() => navigate('/webinaires')} className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
             Retour aux webinaires
@@ -211,7 +211,7 @@ export default function CohortCheckoutPage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
-            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Cohorte Juillet 2026</p>
+            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Cohorte Août 2026</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
@@ -241,7 +241,7 @@ export default function CohortCheckoutPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
               <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
-              <p className="text-xs mt-0.5">1ère session le samedi 18 juillet.</p>
+              <p className="text-xs mt-0.5">1ère session le samedi 8 août.</p>
             </div>
 
             {/* Avantages clés du pack sélectionné */}

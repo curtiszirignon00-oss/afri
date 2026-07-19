@@ -4242,37 +4242,37 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
     heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 40%,#7C3AED 100%)',
     heroLabel: `${packName} · ${det.sessions} sessions · Communauté · Certificat`,
     heroTitle: '🎓 Bienvenue dans le Parcours !',
-    heroSub: `D'ici fin août, vous aurez suivi ${det.sessions} sessions live (${det.hours}h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.`,
+    heroSub: `D'ici mi-septembre, vous aurez suivi ${det.sessions} sessions live (${det.hours}h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.`,
     accentColor: '#1D4ED8',
     accentLight: '#EFF6FF',
     accentBorder: '#BFDBFE',
     intro: 'Vous avez pris une décision importante aujourd\'hui.',
     recap: `
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Pack</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${packName} · ${det.sessions} sessions · ${det.hours}h</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 18 juillet 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">1-2 août 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">15-16 août 2026 · 09h00-12h00 GMT</td></tr>`,
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 8 août 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">22-23 août 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">5-6 septembre 2026 · 09h00-12h00 GMT</td></tr>`,
     prep: `
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>${det.sessions} sessions live · ${det.hours}h de formation</strong> (base : 18 juillet + 1-2 août + 15-16 août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>${det.sessions} sessions live · ${det.hours}h de formation</strong> (base : 8 août + 22-23 août + 5-6 septembre)</p>
       ${extrasHtml}
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif mi-août)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif mi-septembre)</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Deal Flow hebdomadaire</strong> — 12 éditions exclusives</p>
-      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible fin août si quiz complété</p>`,
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible fin septembre si quiz complété</p>`,
     after: `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
         <tr style="background-color:#F8FAFC;">
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Date</td>
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Livrable</td>
         </tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 18 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 19 juillet</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">1-2 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 3 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">15-16 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 17 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 18 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Fin août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 8 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 9 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">22-23 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 24 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">5-6 septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 7 septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 8 septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Fin septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
       </table>`,
     learning: [
       'S1 : Comprendre la BRVM, ses acteurs et ses mécanismes',
@@ -4450,7 +4450,7 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
   'w3-technique-juin':           { title: 'Analyse technique',                       date: '15–16 août 2026',     accentColor: '#EA580C' },
   'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '15 août 2026',        accentColor: '#EA580C' },
   'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '16 août 2026',        accentColor: '#EA580C' },
-  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '18 juillet → 16 août', accentColor: '#1D4ED8' },
+  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '8 août → 6 septembre', accentColor: '#1D4ED8' },
 };
 
 export async function sendWebinarPaymentConfirmEmail({
@@ -4692,9 +4692,9 @@ interface CohortPreregistrationParams {
 
 // Prix par pack (good-better-best) — partagé par les emails
 const PACK_TIER_PRICES: Record<string, { name: string; full: number; cohort: number }> = {
-  starter:      { name: 'Pack Starter',      full: 35000, cohort: 31500 },
-  parcours:     { name: 'Pack Parcours',     full: 50000, cohort: 45000 },
-  investisseur: { name: 'Pack Investisseur', full: 75000, cohort: 67500 },
+  starter:      { name: 'Pack Starter',      full: 70000,  cohort: 70000 },
+  parcours:     { name: 'Pack Parcours',     full: 100000, cohort: 100000 },
+  investisseur: { name: 'Pack Investisseur', full: 150000, cohort: 150000 },
 };
 function fmtXof(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
@@ -4705,72 +4705,67 @@ export async function sendCohortPreregistrationEmail({
   const base = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
   const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}`;
   const tier = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
-  // Bloc tarif : pack précis si choisi, sinon fourchette générique
-  const priceLine = tier
-    ? `<span style="text-decoration:line-through;color:#9CA3AF;">${fmtXof(tier.full)}</span>&nbsp;<strong style="color:#059669;font-size:18px;">${fmtXof(tier.cohort)}</strong>`
-    : `<strong style="color:#059669;font-size:16px;">-10% sur votre pack</strong> (Starter, Parcours ou Investisseur)`;
-  const ctaLabel = tier ? `💳 Payer maintenant -10% (${fmtXof(tier.cohort)}) →` : '💳 Payer maintenant -10% →';
   const packTitle = tier ? tier.name : 'Parcours Investisseur BRVM';
+  const priceLine = tier ? `<strong style="color:#0F172A;font-size:20px;">${fmtXof(tier.full)}</strong>` : '';
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Pré-inscription reçue — Cohorte Juillet 2026</title>
+  <title>Pré-inscription reçue — Cohorte Août 2026</title>
 </head>
 <body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
-  <span style="display:none;max-height:0;overflow:hidden;">Vous êtes sur la liste de la cohorte de juillet — on vous recontacte sur WhatsApp &#847;&zwnj;&nbsp;</span>
+  <span style="display:none;max-height:0;overflow:hidden;">Pré-inscription reçue — finalisez votre paiement pour confirmer votre place &#847;&zwnj;&nbsp;</span>
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
     <tr><td align="center" style="padding:32px 16px;">
       <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
         <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
           <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
-          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Parcours Investisseur · Cohorte Juillet 2026</p>
+          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Parcours Investisseur · Cohorte Août 2026</p>
         </td></tr>
 
         <tr><td style="background:linear-gradient(135deg,#1E3A8A 0%,#3730A3 100%);padding:40px;text-align:center;">
           <div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;line-height:64px;">
-            <span style="font-size:32px;">✅</span>
+            <span style="font-size:32px;">📝</span>
           </div>
           <h1 style="margin:0 0 8px;font-size:26px;font-weight:900;color:#fff;">Pré-inscription reçue !</h1>
-          <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);">Vous êtes sur la liste de la cohorte de juillet 2026.</p>
+          <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);">Dernière étape : finalisez votre paiement pour confirmer votre place.</p>
         </td></tr>
 
         <tr><td style="background:#fff;padding:36px 40px;">
           <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
           <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
-            Merci pour votre intérêt ! Votre pré-inscription au <strong>${packTitle}</strong> (cohorte de juillet) est bien enregistrée.
-            <strong>Notre équipe vous recontacte très vite sur WhatsApp</strong> pour finaliser votre inscription et vous transmettre toutes les informations.
+            Votre pré-inscription au <strong>${packTitle}</strong> (cohorte d'août) est bien enregistrée.
+            <strong>Votre place n'est pas encore confirmée</strong> — il ne reste plus qu'à régler votre paiement.
+            Vous recevrez ensuite votre email de confirmation d'inscription avec tous les détails.
           </p>
 
-          <!-- Avantage préinscrit : -10% + date limite -->
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;margin-bottom:24px;">
+          ${tier ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:18px 22px;text-align:center;">
-              <p style="margin:0 0 6px;font-size:16px;font-weight:900;color:#92400E;">🎁 -10% réservé aux préinscrits${tier ? ` · ${tier.name}` : ''}</p>
-              <p style="margin:0 0 4px;font-size:15px;color:#374151;">${priceLine}</p>
-              <p style="margin:0;font-size:13px;color:#92400E;font-weight:700;">⏳ Offre valable jusqu'au 3 juillet — finalisez votre paiement avant cette date.</p>
+              <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;">${tier.name}</p>
+              <p style="margin:0;font-size:15px;color:#374151;">${priceLine}</p>
             </td></tr>
-          </table>
+          </table>` : ''}
 
-          <!-- CTA Payer maintenant -->
+          <!-- CTA Finaliser le paiement -->
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
             <tr><td align="center">
-              <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#F59E0B 0%,#EA580C 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
-                ${ctaLabel}
+              <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#2563EB 0%,#4F46E5 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
+                💳 Finaliser mon paiement →
               </a>
-              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Ou payer en 3 fois — choix proposé sur la page.</p>
+              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Paiement en 1 fois ou en 3 fois — Mobile Money sécurisé.</p>
             </td></tr>
           </table>
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:20px 24px;">
-              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Programme — cohorte juillet</p>
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Programme — cohorte août</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>4 juillet</strong> — S1 · Fondamentaux de la bourse</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>18–19 juillet</strong> — S2 & S3 · Analyse fondamentale</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>1–2 août</strong> — S4 & S5 · Analyse technique</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>8 août</strong> — S1 · Fondamentaux de la bourse</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>22–23 août</strong> — S2 & S3 · Analyse fondamentale</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>5–6 septembre</strong> — S4 & S5 · Analyse technique</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>
               </table>
             </td></tr>
@@ -4794,9 +4789,9 @@ export async function sendCohortPreregistrationEmail({
 
   await sendEmail({
     to: email,
-    subject: '🎁 Pré-inscription reçue : -10% pour la Cohorte Juillet (avant le 3 juillet)',
+    subject: `📝 Pré-inscription reçue — finalisez votre paiement (${packTitle})`,
     html,
-    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte juillet) est enregistrée. Avantage préinscrit : -10%${tier ? ` (${fmtXof(tier.cohort)} au lieu de ${fmtXof(tier.full)})` : ''}, à finaliser avant le 3 juillet. Payez ici : ${payUrl}. Programme : 4 juillet (Fondamentaux), 18-19 juillet (Analyse fondamentale), 1-2 août (Analyse technique).`,
+    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte août) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. Vous recevrez ensuite votre confirmation d'inscription. Programme : 8 août (Fondamentaux), 22-23 août (Analyse fondamentale), 5-6 septembre (Analyse technique).`,
   });
 }
 

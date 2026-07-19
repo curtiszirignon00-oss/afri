@@ -15,9 +15,9 @@ const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
 
 // Échéancier 3× par pack (échelonné = plein tarif, sans réduction)
 const PACK_TIER_INSTALLMENTS: Record<string, number[]> = {
-  starter:      [15000, 10000, 10000], // 35 000
-  parcours:     [20000, 15000, 15000], // 50 000
-  investisseur: [25000, 25000, 25000], // 75 000
+  starter:      [24000, 23000, 23000], // 70 000
+  parcours:     [34000, 33000, 33000], // 100 000
+  investisseur: [50000, 50000, 50000], // 150 000
 };
 const PACK_TIER_NAME: Record<string, string> = {
   starter:      'Pack Starter BRVM',

@@ -11,7 +11,7 @@ import {
 } from '../services/pawapay.service';
 
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
-import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail } from '../services/email.service';
+import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail, sendWebinarConfirmationEmail } from '../services/email.service';
 import { buildInstallmentPayUrl } from './installment.controller';
 import { buildUserData, sendMetaEvent } from '../services/meta-capi.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
@@ -41,7 +41,7 @@ const COHORT_REG_ID = 'cohorte-juillet-2026';
 const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 
 // Prix par pack (good-better-best) — comptant
-const PACK_TIER_FULL: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
+const PACK_TIER_FULL: Record<string, number> = { starter: 70000, parcours: 100000, investisseur: 150000 };
 const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 45000, investisseur: 67500 }; // -10%
 
 // Réconcilie la pré-inscription cohorte (liste d'attente) en "paid" quand le pack est réglé
@@ -179,14 +179,15 @@ async function handleInstallmentCompleted(payment: any, depositId: string, paylo
         data: { paymentStatus: 'paid', depositId, paidAt: now },
       });
     }
-    sendWebinarPaymentConfirmEmail({
+    // Pack entièrement réglé → confirmation d'inscription (bienvenue + programme)
+    sendWebinarConfirmationEmail({
       email: plan.email,
       firstName,
       webinarId: plan.planId,
-      amount: String(plan.totalAmount),
-      currency: plan.currency,
-      title: plan.planName,
-    }).catch((err) => log.error('[Installment] Échec email confirmation finale', { err, planId }));
+      earlyBird: false,
+      registrationId: reg?.id ?? plan.id,
+      pack: reg?.pack ?? undefined,
+    }).catch((err) => log.error('[Installment] Échec email confirmation inscription finale', { err, planId }));
     await reconcileCohortPreregistration(plan.email, depositId);
     log.info('[Installment] Plan complété', { planId, totalAmount: plan.totalAmount });
   } else {
@@ -302,17 +303,25 @@ export async function handleDepositCallback(req: Request, res: Response) {
               data: { paymentStatus: 'paid', depositId, paidAt: new Date() },
             });
 
-            // Email de confirmation de paiement (titre = nom du pack si pack)
-            sendWebinarPaymentConfirmEmail({
-              email: reg.email,
-              firstName: reg.firstName ?? '',
-              webinarId: reg.webinarId,
-              amount: payment.amount,
-              currency: payment.currency,
-              title: payment.planId === PACK_ID ? payment.planName : undefined,
-            }).catch((err) =>
-              log.error('[PawaPay] Échec email confirmation paiement', { err, depositId })
-            );
+            // Après paiement → email de CONFIRMATION D'INSCRIPTION (bienvenue + programme complet)
+            if (payment.planId === PACK_ID) {
+              sendWebinarConfirmationEmail({
+                email: reg.email,
+                firstName: reg.firstName ?? '',
+                webinarId: reg.webinarId,
+                earlyBird: false,
+                registrationId: reg.id,
+                pack: reg.pack ?? undefined,
+              }).catch((err) => log.error('[PawaPay] Échec email confirmation inscription', { err, depositId }));
+            } else {
+              sendWebinarPaymentConfirmEmail({
+                email: reg.email,
+                firstName: reg.firstName ?? '',
+                webinarId: reg.webinarId,
+                amount: payment.amount,
+                currency: payment.currency,
+              }).catch((err) => log.error('[PawaPay] Échec email confirmation paiement', { err, depositId }));
+            }
 
             // Réconcilier la pré-inscription cohorte (si la personne s'était pré-inscrite)
             if (payment.planId === PACK_ID) {

@@ -12,9 +12,9 @@ const PACK_ID = 'pack-parcours-investisseur';
 
 // Échéancier 3× par pack (plein tarif, sans réduction)
 const PACK_TIERS: Record<string, { name: string; installments: number[] }> = {
-  starter:      { name: 'Pack Starter',      installments: [15000, 10000, 10000] },
-  parcours:     { name: 'Pack Parcours',     installments: [20000, 15000, 15000] },
-  investisseur: { name: 'Pack Investisseur', installments: [25000, 25000, 25000] },
+  starter:      { name: 'Pack Starter',      installments: [24000, 23000, 23000] },
+  parcours:     { name: 'Pack Parcours',     installments: [34000, 33000, 33000] },
+  investisseur: { name: 'Pack Investisseur', installments: [50000, 50000, 50000] },
 };
 function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';

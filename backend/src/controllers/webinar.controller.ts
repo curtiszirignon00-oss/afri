@@ -57,15 +57,13 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
 
     logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');
 
-    // Confirmation email — fire-and-forget (ne bloque pas la réponse)
-    sendWebinarConfirmationEmail({
+    // Email de PRÉ-INSCRIPTION (avant paiement) — la confirmation d'inscription
+    // sera envoyée seulement après le paiement (webhook). Fire-and-forget.
+    sendCohortPreregistrationEmail({
       email,
       firstName: resolvedFirstName || '',
-      webinarId,
-      earlyBird: earlyBird ?? false,
-      registrationId: registration.id,
       pack: resolvedPack,
-    }).catch((err) => logger.error({ err, email, webinarId }, '[WEBINAR] Échec envoi email confirmation'));
+    }).catch((err) => logger.error({ err, email, webinarId }, '[WEBINAR] Échec envoi email pré-inscription'));
 
     return res.status(201).json({
       message: 'Préinscription enregistrée avec succès !',
