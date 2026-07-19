@@ -260,9 +260,14 @@ export default function WebinarPage() {
             <span className="text-emerald-400">✓</span> Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
           </p>
 
-          <div className="mt-5 inline-flex items-start gap-2 bg-white/10 border border-white/15 rounded-xl px-4 py-2.5 text-xs text-blue-100">
-            <span>📍</span>
-            <p><strong className="text-white">Sessions en présentiel</strong> en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳 · <span className="text-blue-300">en ligne (visio) pour les autres pays</span></p>
+          <div className="mt-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 p-[2px] shadow-lg shadow-emerald-500/20">
+            <div className="rounded-2xl bg-[#0D2B4E] px-5 py-4 flex items-center gap-3">
+              <span className="text-2xl">📍</span>
+              <p className="text-sm sm:text-base font-bold text-white leading-snug">
+                Sessions <span className="text-emerald-400">EN PRÉSENTIEL</span> en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳
+                <span className="block text-xs font-medium text-blue-200 mt-0.5">En ligne (visio) pour les autres pays</span>
+              </p>
+            </div>
           </div>
         </div>
       </section>

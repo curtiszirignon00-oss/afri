@@ -246,9 +246,11 @@ export default function CohortCheckoutPage() {
               <p className="text-xs mt-0.5">1ère session le samedi 8 août.</p>
             </div>
 
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800 flex items-start gap-2">
-              <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <p><strong>Sessions en présentiel</strong> en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳. <span className="text-emerald-700">En ligne (visio) pour les autres pays.</span></p>
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3.5 text-white flex items-start gap-2.5 shadow-md shadow-emerald-500/20">
+              <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <p className="text-sm font-bold leading-snug">Sessions EN PRÉSENTIEL en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳
+                <span className="block text-xs font-medium text-emerald-50 mt-0.5">En ligne (visio) pour les autres pays</span>
+              </p>
             </div>
 
             {/* Avantages clés du pack sélectionné */}
