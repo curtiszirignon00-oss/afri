@@ -56,6 +56,8 @@ process.on('SIGINT', () => {
   interrupted = true;
 });
 
+const MONTHLY_CAP = 6;
+
 async function alreadySent(userId: string, ticker: string): Promise<boolean> {
   const existing = await prisma.performanceEmailLog.findUnique({
     where: { userId_ticker: { userId, ticker } },
@@ -104,9 +106,17 @@ async function run() {
   console.log(`🏦  Positions chargées : ${positions.length}`);
   console.log(`📈  Tickers actifs     : ${tickers.length}\n`);
 
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  // Cache comptage mensuel — évite N requêtes DB pour le même user
+  const monthlySentCache = new Map<string, number>();
+
   let totalSent    = 0;
   let totalSkipped = 0;
   let totalErrors  = 0;
+  let totalCapped  = 0;
   let idx          = 0;
 
   for (const pos of positions) {
@@ -114,7 +124,7 @@ async function run() {
     idx++;
 
     const user = pos.portfolio.user;
-    if (!user.email_verified_at) { totalSkipped++; continue; } // email non vérifié
+    if (!user.email_verified_at) { totalSkipped++; continue; }
 
     const currentPrice = priceMap.get(pos.stock_ticker);
     if (!currentPrice || !pos.average_buy_price || pos.average_buy_price === 0) {
@@ -122,12 +132,24 @@ async function run() {
       continue;
     }
 
-    const rendement = (currentPrice - pos.average_buy_price) / pos.average_buy_price * 100;
-    const ticker    = pos.stock_ticker;
+    const rendement   = (currentPrice - pos.average_buy_price) / pos.average_buy_price * 100;
+    const ticker      = pos.stock_ticker;
     const companyName = companyMap.get(ticker) ?? ticker;
-    const userId    = user.id;
+    const userId      = user.id;
 
-    // ── Un seul email par user+ticker (tous paliers confondus) ──────────────
+    // ── Plafond mensuel : max 6 emails de performance par user par mois ──────
+    if (!monthlySentCache.has(userId)) {
+      const count = await prisma.performanceEmailLog.count({
+        where: { userId, sentAt: { gte: monthStart } },
+      });
+      monthlySentCache.set(userId, count);
+    }
+    if ((monthlySentCache.get(userId) ?? 0) >= MONTHLY_CAP) {
+      totalCapped++;
+      continue;
+    }
+
+    // ── Un seul email par user+ticker (tous paliers confondus) ───────────────
     if (await alreadySent(userId, ticker)) { totalSkipped++; continue; }
 
     // Palier le plus significatif applicable au rendement actuel
@@ -161,6 +183,7 @@ async function run() {
           palier:      targetPalier,
         });
         await markSent(userId, ticker, targetPalier);
+        monthlySentCache.set(userId, (monthlySentCache.get(userId) ?? 0) + 1);
       }
       totalSent++;
       console.log(DRY_RUN ? '✅ (dry-run)' : '✅');
@@ -173,9 +196,10 @@ async function run() {
   }
 
   console.log('\n' + '='.repeat(65));
-  console.log(`✅  Envoyés  : ${totalSent}`);
-  console.log(`⏭️  Ignorés  : ${totalSkipped}`);
-  console.log(`❌  Échoués  : ${totalErrors}`);
+  console.log(`✅  Envoyés           : ${totalSent}`);
+  console.log(`⏭️  Ignorés (déjà OK) : ${totalSkipped}`);
+  console.log(`🚫  Plafonnés (6/mois): ${totalCapped}`);
+  console.log(`❌  Échoués           : ${totalErrors}`);
   console.log('='.repeat(65) + '\n');
 
   await prisma.$disconnect();

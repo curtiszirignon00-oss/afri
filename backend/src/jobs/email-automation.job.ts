@@ -190,8 +190,17 @@ async function runPerformanceEmails(): Promise<void> {
     const priceMap   = new Map(stocks.map(s => [s.symbol, s.current_price]));
     const companyMap = new Map(stocks.map(s => [s.symbol, s.company_name]));
 
+    const MONTHLY_CAP = 6;
+    const monthStart  = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    // Cache comptage mensuel par userId pour éviter N requêtes DB par user
+    const monthlySentCache = new Map<string, number>();
+
     let totalSent = 0;
     let totalSkipped = 0;
+    let totalCapped = 0;
 
     for (const pos of positions) {
       const user = pos.portfolio.user;
@@ -203,18 +212,30 @@ async function runPerformanceEmails(): Promise<void> {
         continue;
       }
 
-      const rendement = (currentPrice - pos.average_buy_price) / pos.average_buy_price * 100;
-      const ticker    = pos.stock_ticker;
+      const rendement   = (currentPrice - pos.average_buy_price) / pos.average_buy_price * 100;
+      const ticker      = pos.stock_ticker;
       const companyName = companyMap.get(ticker) ?? ticker;
-      const userId    = user.id;
+      const userId      = user.id;
 
-      // Un seul email par user+ticker (toute palier confondu)
+      // ── Plafond mensuel : max 6 emails de performance par user par mois ──────
+      if (!monthlySentCache.has(userId)) {
+        const count = await prisma.performanceEmailLog.count({
+          where: { userId, sentAt: { gte: monthStart } },
+        });
+        monthlySentCache.set(userId, count);
+      }
+      if ((monthlySentCache.get(userId) ?? 0) >= MONTHLY_CAP) {
+        totalCapped++;
+        continue;
+      }
+
+      // ── Un seul email par user+ticker (tous paliers confondus) ───────────────
       const alreadySent = await prisma.performanceEmailLog.findUnique({
         where: { userId_ticker: { userId, ticker } },
       });
       if (alreadySent) { totalSkipped++; continue; }
 
-      // Déterminer le palier le plus significatif actuellement applicable
+      // Palier le plus significatif applicable au rendement actuel
       let targetPalier: PalierPerf | null = null;
 
       if (rendement >= 25) {
@@ -241,6 +262,8 @@ async function runPerformanceEmails(): Promise<void> {
         await prisma.performanceEmailLog.create({
           data: { userId, ticker, palier: targetPalier },
         });
+        // Incrémenter le cache mensuel
+        monthlySentCache.set(userId, (monthlySentCache.get(userId) ?? 0) + 1);
         totalSent++;
         log.info(`[EMAIL-AUTO][Performance] ${user.email} · ${ticker} ${rendement >= 0 ? '+' : ''}${rendement.toFixed(1)}% → ${targetPalier} ✅`);
       } catch (e: any) {
@@ -250,7 +273,7 @@ async function runPerformanceEmails(): Promise<void> {
       await sleep(DELAY_MS);
     }
 
-    log.info(`[EMAIL-AUTO][Performance] Terminé — envoyés: ${totalSent}, ignorés: ${totalSkipped}`);
+    log.info(`[EMAIL-AUTO][Performance] Terminé — envoyés: ${totalSent}, ignorés: ${totalSkipped}, plafonnés: ${totalCapped}`);
   } catch (err: any) {
     log.error('[EMAIL-AUTO][Performance] Erreur critique:', err.message);
   }
