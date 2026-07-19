@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { CheckCircle, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -96,28 +96,29 @@ export default function CohortCheckoutPage() {
   const price = tierCfg.full;
 
   const lead = readLead();
-  const [step, setStep] = useState<'form' | 'payment'>('form');
+  const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
+  const initEmail = lead?.email || (userProfile as any)?.email || '';
+  const initDial = lead?.dialCode || '+225';
+  const initPhone = lead?.phone || '';
+  // On a déjà toutes les infos → on saute l'étape 1 (contact) et on va direct au paiement
+  const infoComplete = !!(initName.trim() && initEmail.trim() && initPhone.trim());
+
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    name: lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '',
-    email: lead?.email || (userProfile as any)?.email || '',
-  });
-  const [waDialCode, setWaDialCode] = useState(lead?.dialCode || '+225');
-  const [waPhone, setWaPhone] = useState(lead?.phone || '');
+  const [form, setForm] = useState({ name: initName, email: initEmail });
+  const [waDialCode, setWaDialCode] = useState(initDial);
+  const [waPhone, setWaPhone] = useState(initPhone);
+  const [step, setStep] = useState<'form' | 'payment'>(infoComplete ? 'payment' : 'form');
   const [payOperator, setPayOperator] = useState<string | null>(null);
-  const [payDialCode, setPayDialCode] = useState('+225');
-  const [payPhone, setPayPhone] = useState('');
+  const [payDialCode, setPayDialCode] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initDial : '+225');
+  const [payPhone, setPayPhone] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initPhone : '');
 
   const { status: payStatus, errorMessage: payError, initiate, reset } = usePawaPayment(() => {
     analytics.trackAction('cohort_payment_success', PACK_NAME, { amount: price });
   });
 
-  const handleContinue = async () => {
-    if (!form.name.trim() || !form.email.trim()) { toast.error('Renseignez votre nom et votre email'); return; }
-    if (!waPhone.trim()) { toast.error('Votre numéro WhatsApp est requis'); return; }
-    setLoading(true);
+  // Enregistre le lead (pré-inscription pack) — le webhook la marquera payée + accès
+  const registerLead = async () => {
     try {
-      // Pré-inscription pack (le webhook la marquera payée + accès)
       await authFetch(`${API_BASE_URL}/webinars/preregister`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -131,6 +132,25 @@ export default function CohortCheckoutPage() {
         }),
       });
       try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
+    } catch { /* non bloquant */ }
+  };
+
+  // Si on a déjà les infos → on enregistre le lead une fois au montage (l'étape 1 est sautée)
+  const autoRegistered = useRef(false);
+  useEffect(() => {
+    if (infoComplete && !autoRegistered.current) {
+      autoRegistered.current = true;
+      registerLead();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleContinue = async () => {
+    if (!form.name.trim() || !form.email.trim()) { toast.error('Renseignez votre nom et votre email'); return; }
+    if (!waPhone.trim()) { toast.error('Votre numéro WhatsApp est requis'); return; }
+    setLoading(true);
+    try {
+      await registerLead();
       if (PAYMENT_DIAL_CODES.some((c) => c.code === waDialCode)) {
         setPayDialCode(waDialCode);
         setPayPhone(waPhone);
@@ -199,44 +219,48 @@ export default function CohortCheckoutPage() {
             <p className="text-blue-200 text-xs mt-1">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation</p>
           </div>
 
-          {/* Étape contact */}
+          {/* Pack + résumé — toujours visibles (changement de pack possible à tout moment) */}
+          <div className="p-6 pb-0 space-y-4">
+            {/* Sélecteur de pack */}
+            <div>
+              <p className="text-xs font-semibold text-gray-700 mb-2">Votre pack</p>
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(PACK_TIERS) as Array<keyof typeof PACK_TIERS>).map((k) => {
+                  const c = PACK_TIERS[k];
+                  const active = tier === k;
+                  return (
+                    <button key={k} onClick={() => setTier(k)} type="button"
+                      className={`rounded-xl border-2 p-2 text-center transition-all ${active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                      <span className={`block text-xs font-extrabold ${active ? 'text-blue-800' : 'text-gray-700'}`}>{c.name.replace('Pack ', '')}</span>
+                      <span className="block text-[11px] font-bold text-gray-900 mt-0.5">{c.full.toLocaleString('fr-FR')}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
+              <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
+              <p className="text-xs mt-0.5">1ère session le samedi 18 juillet.</p>
+            </div>
+
+            {/* Avantages clés du pack sélectionné */}
+            <div className="border border-gray-100 rounded-xl p-3 bg-gray-50">
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Inclus dans le {tierCfg.name}</p>
+              <ul className="space-y-1.5">
+                {tierCfg.perks.map((perk) => (
+                  <li key={perk} className="flex items-start gap-2 text-xs text-gray-700">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                    <span className={perk.endsWith('plus :') ? 'font-bold text-gray-900' : ''}>{perk}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Étape 1 — Contact (affichée seulement si on n'a pas déjà les infos) */}
           {step === 'form' && (
             <div className="p-6 space-y-4">
-              {/* Sélecteur de pack */}
-              <div>
-                <p className="text-xs font-semibold text-gray-700 mb-2">Votre pack</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {(Object.keys(PACK_TIERS) as Array<keyof typeof PACK_TIERS>).map((k) => {
-                    const c = PACK_TIERS[k];
-                    const active = tier === k;
-                    return (
-                      <button key={k} onClick={() => setTier(k)} type="button"
-                        className={`rounded-xl border-2 p-2 text-center transition-all ${active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
-                        <span className={`block text-xs font-extrabold ${active ? 'text-blue-800' : 'text-gray-700'}`}>{c.name.replace('Pack ', '')}</span>
-                        <span className="block text-[11px] font-bold text-gray-900 mt-0.5">{c.full.toLocaleString('fr-FR')}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
-                <p className="text-xs mt-0.5">1ère session le samedi 18 juillet.</p>
-              </div>
-
-              {/* Avantages clés du pack sélectionné */}
-              <div className="border border-gray-100 rounded-xl p-3 bg-gray-50">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Inclus dans le {tierCfg.name}</p>
-                <ul className="space-y-1.5">
-                  {tierCfg.perks.map((perk) => (
-                    <li key={perk} className="flex items-start gap-2 text-xs text-gray-700">
-                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      <span className={perk.endsWith('plus :') ? 'font-bold text-gray-900' : ''}>{perk}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Nom complet *</label>
@@ -268,7 +292,7 @@ export default function CohortCheckoutPage() {
 
               <div className="text-center pt-1">
                 <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
-                  Ou payer en 3 fois (15 000 + 2× 10 000)
+                  Ou payer en 3 fois
                 </button>
               </div>
             </div>
@@ -335,6 +359,17 @@ export default function CohortCheckoutPage() {
                   </>
                   )}
                 </>
+              )}
+
+              {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
+                <div className="text-center pt-1 space-y-2">
+                  <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
+                    Ou payer en 3 fois
+                  </button>
+                  <button onClick={() => setStep('form')} className="block w-full text-[11px] text-gray-400 hover:text-gray-600">
+                    Modifier mes coordonnées
+                  </button>
+                </div>
               )}
 
               {payStatus === 'pending' && (
