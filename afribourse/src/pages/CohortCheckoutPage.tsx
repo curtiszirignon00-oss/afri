@@ -379,7 +379,7 @@ export default function CohortCheckoutPage() {
               {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
                 <div className="text-center pt-1 space-y-2">
                   <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
-                    Ou payer en 3 fois
+                    Ou payer en 3 fois <span className="text-gray-400 font-normal">(léger surcoût)</span>
                   </button>
                   <button onClick={() => setStep('form')} className="block w-full text-[11px] text-gray-400 hover:text-gray-600">
                     Modifier mes coordonnées

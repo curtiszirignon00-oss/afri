@@ -11,10 +11,10 @@ import { metaPixel } from '../utils/metaPixel';
 const PACK_ID = 'pack-parcours-investisseur';
 
 // Échéancier 3× par pack (plein tarif, sans réduction)
-const PACK_TIERS: Record<string, { name: string; installments: number[] }> = {
-  starter:      { name: 'Pack Starter',      installments: [24000, 23000, 23000] },
-  parcours:     { name: 'Pack Parcours',     installments: [34000, 33000, 33000] },
-  investisseur: { name: 'Pack Investisseur', installments: [50000, 50000, 50000] },
+const PACK_TIERS: Record<string, { name: string; single: number; installments: number[] }> = {
+  starter:      { name: 'Pack Starter',      single: 70000,  installments: [25000, 25000, 25000] },
+  parcours:     { name: 'Pack Parcours',     single: 100000, installments: [35000, 35000, 35000] },
+  investisseur: { name: 'Pack Investisseur', single: 150000, installments: [53000, 53000, 53000] },
 };
 function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';
@@ -85,6 +85,7 @@ export default function InstallmentStartPage() {
   const PLAN_NAME = tierCfg.name;
   const INSTALLMENTS = tierCfg.installments;
   const TOTAL = INSTALLMENTS.reduce((a, b) => a + b, 0);
+  const SINGLE = tierCfg.single;
 
   const lead = readLead();
   const [step, setStep] = useState<'conditions' | 'contact' | 'payment' | 'success'>('conditions');
@@ -270,9 +271,9 @@ export default function InstallmentStartPage() {
               {/* Conditions */}
               <div className="space-y-2.5">
                 {[
-                  { icon: ShieldCheck, text: 'Accès complet au parcours activé dès le 1er paiement (15 000 XOF).' },
+                  { icon: ShieldCheck, text: `Accès complet au parcours activé dès le 1er paiement (${formatPrice(INSTALLMENTS[0])}).` },
                   { icon: CalendarClock, text: "Rappels par email et WhatsApp avant chaque échéance pour régler les mensualités suivantes." },
-                  { icon: CheckCircle, text: `Engagement à régler les 3 mensualités (total ${formatPrice(TOTAL)}, le tarif normal du ${PLAN_NAME}). Vous pouvez aussi payer en 1 fois.` },
+                  { icon: CheckCircle, text: `Engagement à régler les 3 mensualités (total ${formatPrice(TOTAL)}). Le paiement en 1 fois revient moins cher : ${formatPrice(SINGLE)}.` },
                   { icon: Lock, text: 'Paiement Mobile Money 100% sécurisé via PawaPay.' },
                 ].map((c, i) => (
                   <div key={i} className="flex items-start gap-2.5">
