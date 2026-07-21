@@ -147,6 +147,17 @@ interface FormationLead {
   } | null;
 }
 
+interface InstallmentInfo {
+  paid: number;
+  total: number;
+  remaining: number;
+  amountPaid: number;
+  totalAmount: number;
+  currency: string | null;
+  nextDueAt: string | null;
+  status: string | null;
+}
+
 interface WebinarRegistrationRecord {
   id: string;
   webinarId: string;
@@ -155,10 +166,12 @@ interface WebinarRegistrationRecord {
   email: string;
   phone: string | null;
   userId: string | null;
+  pack: string | null;
   paymentStatus: string | null;
   paidAt: string | null;
   earlyBird: boolean | null;
   created_at: string;
+  installment: InstallmentInfo | null;
 }
 
 interface TrialRecord {
@@ -463,14 +476,24 @@ export default function AdminDashboard() {
       'w2-fondamentale': 'Analyse fondamentale (30-31 mai)',
       'w3-technique': 'Analyse technique (6-7 juin)',
     };
-    const header = ['Webinaire', 'Prénom/Nom', 'Email', 'Téléphone', 'Date inscription'];
-    const lines = rows.map((r) => [
-      WEBINAR_LABELS[r.webinarId] ?? r.webinarId,
-      [r.firstName, r.lastName].filter(Boolean).join(' ') || '—',
-      r.email,
-      r.phone ?? '—',
-      new Date(r.created_at).toLocaleString('fr-FR'),
-    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const header = ['Webinaire', 'Prénom/Nom', 'Email', 'Téléphone', 'Pack', 'Statut paiement', 'Versements payés', 'Versements restants', 'Montant payé', 'Montant total', 'Date inscription'];
+    const lines = rows.map((r) => {
+      const inst = r.installment;
+      const statut = r.paymentStatus === 'paid' ? 'Payé' : inst && inst.paid > 0 && inst.remaining > 0 ? 'Échelonné en cours' : 'En attente';
+      return [
+        WEBINAR_LABELS[r.webinarId] ?? r.webinarId,
+        [r.firstName, r.lastName].filter(Boolean).join(' ') || '—',
+        r.email,
+        r.phone ?? '—',
+        r.pack ?? '—',
+        statut,
+        inst ? String(inst.paid) : '—',
+        inst ? String(inst.remaining) : '—',
+        inst ? String(inst.amountPaid) : '—',
+        inst ? String(inst.totalAmount) : '—',
+        new Date(r.created_at).toLocaleString('fr-FR'),
+      ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',');
+    });
     const csv = [header.join(','), ...lines].join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1479,7 +1502,8 @@ export default function AdminDashboard() {
           };
 
           const paidCount = webinarRegistrations.filter(r => r.paymentStatus === 'paid').length;
-          const pendingCount = webinarRegistrations.length - paidCount;
+          const partialCount = webinarRegistrations.filter(r => r.paymentStatus !== 'paid' && (r.paymentStatus === 'partial' || (r.installment != null && r.installment.paid > 0 && r.installment.remaining > 0))).length;
+          const pendingCount = webinarRegistrations.length - paidCount - partialCount;
 
           return (
             <div className="mt-10">
@@ -1491,7 +1515,7 @@ export default function AdminDashboard() {
                       Webinaires — Inscriptions & Paiements
                     </h2>
                     <p className="text-blue-100 text-sm">
-                      {webinarRegistrations.length} total · <span className="text-green-300 font-bold">{paidCount} payés</span> · {pendingCount} en attente
+                      {webinarRegistrations.length} total · <span className="text-green-300 font-bold">{paidCount} payés</span> · <span className="text-blue-200 font-bold">{partialCount} échelonné en cours</span> · {pendingCount} en attente
                     </p>
                   </div>
                   <button onClick={exportWebinarCSV} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors">
@@ -1550,6 +1574,9 @@ export default function AdminDashboard() {
                           const w = WEBINARS_LIST.find(x => x.id === r.webinarId);
                           const badge = w ? BADGE[w.color] : 'bg-gray-100 text-gray-700';
                           const paid = r.paymentStatus === 'paid';
+                          const inst = r.installment;
+                          const isPartial = !paid && (r.paymentStatus === 'partial' || (inst != null && inst.paid > 0 && inst.remaining > 0));
+                          const fmtXof = (n: number) => `${n.toLocaleString('fr-FR')} ${inst?.currency ?? 'XOF'}`;
                           return (
                             <tr key={r.id} className="hover:bg-gray-50 transition-colors">
                               <td className="px-5 py-3">
@@ -1562,10 +1589,16 @@ export default function AdminDashboard() {
                               <td className="px-5 py-3 text-sm text-gray-600">{r.email}</td>
                               <td className="px-5 py-3 text-sm text-gray-500">{r.phone ?? '—'}</td>
                               <td className="px-5 py-3">
-                                {paid
-                                  ? <span className="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle2 className="w-3 h-3" /> Payé</span>
-                                  : <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"><Clock className="w-3 h-3" /> En attente</span>
-                                }
+                                {paid ? (
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle2 className="w-3 h-3" /> Payé{inst ? ` (3×)` : ''}</span>
+                                ) : isPartial && inst ? (
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full w-fit"><Clock className="w-3 h-3" /> Échelonné {inst.paid}/{inst.total} · reste {inst.remaining}</span>
+                                    <span className="text-[10px] text-gray-500">{fmtXof(inst.amountPaid)} payés / {fmtXof(inst.totalAmount)}{inst.nextDueAt ? ` · éch. ${new Date(inst.nextDueAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}` : ''}</span>
+                                  </div>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"><Clock className="w-3 h-3" /> En attente</span>
+                                )}
                               </td>
                               <td className="px-5 py-3 text-xs text-gray-400">
                                 {new Date(r.created_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}

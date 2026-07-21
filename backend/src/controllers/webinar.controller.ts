@@ -149,7 +149,36 @@ export async function getWebinarRegistrations(req: Request, res: Response, next:
       orderBy: { created_at: 'desc' },
     });
 
-    return res.status(200).json({ data: registrations, total: registrations.length });
+    // Enrichir avec l'état des plans de paiement échelonné (nb payé / restant)
+    const emails = Array.from(new Set(registrations.map((r) => r.email).filter(Boolean)));
+    const plans = emails.length
+      ? await prisma.installmentPlan.findMany({ where: { email: { in: emails } } })
+      : [];
+    // Un plan par email (le plus récent en priorité)
+    const planByEmail = new Map<string, (typeof plans)[number]>();
+    for (const p of plans) {
+      const prev = planByEmail.get(p.email);
+      if (!prev || new Date(p.created_at) > new Date(prev.created_at)) planByEmail.set(p.email, p);
+    }
+
+    const data = registrations.map((r) => {
+      const plan = planByEmail.get(r.email);
+      const installment = plan
+        ? {
+            paid: plan.installmentsPaid,
+            total: plan.installmentsTotal,
+            remaining: Math.max(0, plan.installmentsTotal - plan.installmentsPaid),
+            amountPaid: plan.amountPaid,
+            totalAmount: plan.totalAmount,
+            currency: plan.currency,
+            nextDueAt: plan.nextDueAt,
+            status: plan.status,
+          }
+        : null;
+      return { ...r, installment };
+    });
+
+    return res.status(200).json({ data, total: data.length });
   } catch (error) {
     return next(error);
   }
