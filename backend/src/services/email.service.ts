@@ -4254,7 +4254,6 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">5-6 septembre 2026 · 09h00-12h00 GMT</td></tr>`,
     prep: `
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>${det.sessions} sessions live · ${det.hours}h de formation</strong> (base : 8 août + 22-23 août + 5-6 septembre)</p>
-      <p style="margin:0 0 10px;font-size:14px;color:#065F46;line-height:1.7;">📍 <strong>Sessions en présentiel</strong> en Côte d'Ivoire, au Bénin et au Sénégal — en ligne (visio) pour les autres pays.</p>
       ${extrasHtml}
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif mi-septembre)</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
@@ -4768,7 +4767,6 @@ export async function sendCohortPreregistrationEmail({
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>22–23 août</strong> — S2 & S3 · Analyse fondamentale</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>5–6 septembre</strong> — S4 & S5 · Analyse technique</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#065F46;">📍 <strong>Présentiel</strong> en Côte d'Ivoire, au Bénin et au Sénégal — en ligne ailleurs</td></tr>
               </table>
             </td></tr>
           </table>
@@ -4793,7 +4791,7 @@ export async function sendCohortPreregistrationEmail({
     to: email,
     subject: `📝 Pré-inscription reçue — finalisez votre paiement (${packTitle})`,
     html,
-    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte août) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. Vous recevrez ensuite votre confirmation d'inscription. Programme : 8 août (Fondamentaux), 22-23 août (Analyse fondamentale), 5-6 septembre (Analyse technique). Sessions en présentiel en Côte d'Ivoire, au Bénin et au Sénégal — en ligne (visio) pour les autres pays.`,
+    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte août) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. Vous recevrez ensuite votre confirmation d'inscription. Programme : 8 août (Fondamentaux), 22-23 août (Analyse fondamentale), 5-6 septembre (Analyse technique).`,
   });
 }
 

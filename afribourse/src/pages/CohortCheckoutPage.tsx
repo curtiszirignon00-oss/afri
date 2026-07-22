@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, ArrowLeft, MapPin } from 'lucide-react';
+import { CheckCircle, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
@@ -246,12 +246,6 @@ export default function CohortCheckoutPage() {
               <p className="text-xs mt-0.5">1ère session le samedi 8 août.</p>
             </div>
 
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-3.5 text-white flex items-start gap-2.5 shadow-md shadow-emerald-500/20">
-              <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <p className="text-sm font-bold leading-snug">Sessions EN PRÉSENTIEL en Côte d'Ivoire 🇨🇮, au Bénin 🇧🇯 et au Sénégal 🇸🇳
-                <span className="block text-xs font-medium text-emerald-50 mt-0.5">En ligne (visio) pour les autres pays</span>
-              </p>
-            </div>
 
             {/* Avantages clés du pack sélectionné */}
             <div className="border border-gray-100 rounded-xl p-3 bg-gray-50">
