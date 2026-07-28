@@ -268,7 +268,7 @@ const PACKS: Pack[] = [
     inclusions: [
       'Tout le Parcours — W1→W7 + tout le reste',
       'Webinaire W8 — Psychologie de l\'investisseur',
-      'Appel 1:1 de 30 min avec Curtis (revue personnelle)',
+      'Appel 1:1 de 30 min avec votre coach (revue personnelle)',
       'Investment Policy Statement personnalisé (tes règles)',
       'Accès à vie aux replays, y compris cohortes futures',
       'Ouverture de compte SGI — Main dans la main',
@@ -280,7 +280,7 @@ const PACKS: Pack[] = [
       { when: 'Avant le 4 juillet', what: 'Email de confirmation + lien Zoom' },
       { when: 'W1→W7', what: 'Toutes les sessions Parcours (cf. ci-dessus)' },
       { when: 'Semaine 8', what: 'W8 — Psychologie de l\'investisseur' },
-      { when: 'Semaines 2–3', what: 'Appel 1:1 de 30 min avec Curtis' },
+      { when: 'Semaines 2–3', what: 'Appel 1:1 de 30 min avec votre coach' },
       { when: 'Sous 48h', what: 'Investment Policy Statement livré' },
       { when: '18 août*', what: 'Certificat Investisseur BRVM Niveau 1' },
     ],

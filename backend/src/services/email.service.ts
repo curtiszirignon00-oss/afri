@@ -4225,7 +4225,7 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
       'Webinaire W7 — Gestion du risque',
       "Webinaire W8 — Psychologie de l'investisseur",
       'Webinaire W9 — IA et Finance',
-      'Appel 1:1 de 30 min avec Curtis (revue personnelle)',
+      'Appel 1:1 de 30 min avec votre coach (revue personnelle)',
       'Investment Policy Statement personnalisé + accès à vie',
       'Ouverture compte SGI — accompagnement main dans la main',
     ] },
