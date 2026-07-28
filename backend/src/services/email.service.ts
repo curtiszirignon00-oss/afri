@@ -4089,8 +4089,7 @@ type WebinarCfg = {
   amount: string;
 };
 
-function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | null): WebinarCfg {
-  const eb = earlyBird;
+function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | null): WebinarCfg {
 
   if (webinarId === 'w1-fondamentaux' || webinarId === 'w1-fondamentaux-juin') {
     return {
@@ -4210,7 +4209,7 @@ function getWebinarCfg(webinarId: string, earlyBird: boolean, pack?: string | nu
 
   // Pack Parcours Investisseur — Cohorte Juillet 2026 (contenu selon le pack)
   const tierCfg = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
-  const packAmount = tierCfg ? `${tierCfg.full.toLocaleString('fr-FR')} XOF` : (eb ? '25 000 XOF (Tarif préférentiel)' : '35 000 XOF');
+  const packAmount = tierCfg ? `${tierCfg.full.toLocaleString('fr-FR')} XOF` : '70 000 XOF';
   const packName = tierCfg ? tierCfg.name : 'Pack Parcours Investisseur';
   // Sessions / heures / webinaires & avantages en plus selon le pack (+2 sessions, +6h par palier)
   const tierDetails: Record<string, { sessions: number; hours: number; extras: string[] }> = {
@@ -6723,7 +6722,7 @@ export async function sendInvitationNouveauxInscritsEmail({
         </table>
 
         <div style="margin-top:18px;padding-top:16px;border-top:1px solid #E2E8F0;text-align:center;">
-          <span style="font-size:13px;color:#64748B;">À partir de </span><span style="font-family:monospace;font-size:20px;font-weight:700;color:#0A1628;">35 000 XOF</span>
+          <span style="font-size:13px;color:#64748B;">À partir de </span><span style="font-family:monospace;font-size:20px;font-weight:700;color:#0A1628;">70 000 XOF</span>
           <div style="font-size:12px;color:#94A3B8;margin-top:4px;">Un investissement dans une compétence qui vous servira toute votre vie.</div>
         </div>
       </div>
@@ -6798,7 +6797,7 @@ export async function sendInvitationNouveauxInscritsEmail({
     to: email,
     subject: '📈 Le marché BRVM explose — et vous n\'êtes pas encore positionné',
     html,
-    text: `Bonjour ${firstName},\n\nVous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment.\n\nLa BRVM a progressé de près de 99% sur les 5 dernières années. Pendant que la plupart des épargnants laissaient leur argent dormir.\n\nC'est exactement le moment où il faut se positionner : quand le marché monte, mais avant que tout le monde s'y intéresse.\n\nNous avons créé le Parcours Investisseur BRVM — un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée.\n\nCe que vous obtenez :\n• 5 webinaires live avec des analystes BRVM\n• Un plan d'action personnalisé après chaque session\n• Le Deal Flow chaque semaine\n• Une communauté d'investisseurs\n• L'accompagnement pour ouvrir votre compte\n• Votre Certificat Investisseur BRVM Niveau 1\n\nÀ partir de 35 000 XOF.\n\n→ Réservez votre place (préinscription gratuite) : https://www.africbourse.com/webinaires\n\nLa prochaine cohorte démarre bientôt. Places limitées à 20 personnes.\n\nCurtis Zirignon\nFondateur — Afribourse\n\nP.S. — Le chiffre de 99% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé. Ceux qui se forment maintenant prennent une longueur d'avance.`,
+    text: `Bonjour ${firstName},\n\nVous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment.\n\nLa BRVM a progressé de près de 99% sur les 5 dernières années. Pendant que la plupart des épargnants laissaient leur argent dormir.\n\nC'est exactement le moment où il faut se positionner : quand le marché monte, mais avant que tout le monde s'y intéresse.\n\nNous avons créé le Parcours Investisseur BRVM — un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée.\n\nCe que vous obtenez :\n• 5 webinaires live avec des analystes BRVM\n• Un plan d'action personnalisé après chaque session\n• Le Deal Flow chaque semaine\n• Une communauté d'investisseurs\n• L'accompagnement pour ouvrir votre compte\n• Votre Certificat Investisseur BRVM Niveau 1\n\nÀ partir de 70 000 XOF.\n\n→ Réservez votre place (préinscription gratuite) : https://www.africbourse.com/webinaires\n\nLa prochaine cohorte démarre bientôt. Places limitées à 20 personnes.\n\nCurtis Zirignon\nFondateur — Afribourse\n\nP.S. — Le chiffre de 99% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé. Ceux qui se forment maintenant prennent une longueur d'avance.`,
   });
 }
 
@@ -6978,7 +6977,7 @@ export async function sendSegmentCEmail({
       <a href="${learnUrl}" style="display:inline-block;padding:14px 28px;background:linear-gradient(135deg,#7C3AED,#6D28D9);color:#ffffff;text-decoration:none;border-radius:10px;font-weight:800;font-size:14px;margin-bottom:10px;">Démarrer ma formation →</a>
       <br>
       <a href="${webinairesUrl}" style="display:inline-block;padding:12px 28px;background:#F5F3FF;color:#5B21B6;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;border:1px solid #DDD6FE;">Voir les webinaires →</a>
-      <p style="margin:16px 0 0;font-size:12px;color:#8898AA;">Formation en accès libre · Webinaires à partir de 35 000 XOF</p>
+      <p style="margin:16px 0 0;font-size:12px;color:#8898AA;">Formation en accès libre · Webinaires à partir de 70 000 XOF</p>
     </td>
   </tr>
 
@@ -6999,7 +6998,7 @@ export async function sendSegmentCEmail({
     to: email,
     subject: `${firstName}, tes trades sont bons — voici comment les rendre redoutables`,
     html,
-    text: `${firstName},\n\nTu as déjà passé un ordre sur AfriBourse. C'est plus que 90% des inscrits.\n\nMais sans méthode, un bon trade est souvent de la chance. Avec la méthode, c'est un système reproductible.\n\nDémarre ta formation (accès libre) :\n${learnUrl}\n\nVoir les prochains webinaires (à partir de 35 000 XOF) :\n${webinairesUrl}\n\n— Curtis Zirignon\nFondateur AfriBourse · africbourse.com`,
+    text: `${firstName},\n\nTu as déjà passé un ordre sur AfriBourse. C'est plus que 90% des inscrits.\n\nMais sans méthode, un bon trade est souvent de la chance. Avec la méthode, c'est un système reproductible.\n\nDémarre ta formation (accès libre) :\n${learnUrl}\n\nVoir les prochains webinaires (à partir de 70 000 XOF) :\n${webinairesUrl}\n\n— Curtis Zirignon\nFondateur AfriBourse · africbourse.com`,
   });
 }
 

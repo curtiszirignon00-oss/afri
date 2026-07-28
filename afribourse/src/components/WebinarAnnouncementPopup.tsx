@@ -4,15 +4,15 @@ import { X, ShieldCheck, Users, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 // Versionné — incrémenter pour forcer le re-affichage sur tous les comptes
-const POPUP_KEY = 'afb_webinar_announcement_v4';
+const POPUP_KEY = 'afb_webinar_announcement_v5';
 
 const PACKS = [
   {
     id: 'starter',
     label: 'Starter',
     emoji: '🌱',
-    price: 35000,
-    installmentAmount: 12000,
+    price: 70000,
+    installmentAmount: 25000,
     gradient: 'from-blue-600 to-indigo-700',
     popular: false,
     summary: '5 webinaires live W1→W5 · Certificat · Communauté',
@@ -21,8 +21,8 @@ const PACKS = [
     id: 'parcours',
     label: 'Parcours',
     emoji: '⭐',
-    price: 50000,
-    installmentAmount: 17000,
+    price: 100000,
+    installmentAmount: 35000,
     gradient: 'from-violet-600 to-purple-700',
     popular: true,
     summary: 'Starter + W6 (portefeuille) · W7 (risque) · Q&A live mensuel',
@@ -31,8 +31,8 @@ const PACKS = [
     id: 'investisseur',
     label: 'Investisseur',
     emoji: '🏆',
-    price: 75000,
-    installmentAmount: 26000,
+    price: 150000,
+    installmentAmount: 53000,
     gradient: 'from-amber-500 to-orange-600',
     popular: false,
     summary: 'Parcours + W8, W9 (IA & Finance) · Appel 1:1 Curtis · IPS',
