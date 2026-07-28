@@ -35,7 +35,7 @@ const PACKS = [
     installmentAmount: 26000,
     gradient: 'from-amber-500 to-orange-600',
     popular: false,
-    summary: 'Parcours + W8 · Appel 1:1 Curtis · IPS personnalisé',
+    summary: 'Parcours + W8, W9 (IA & Finance) · Appel 1:1 Curtis · IPS',
   },
 ];
 

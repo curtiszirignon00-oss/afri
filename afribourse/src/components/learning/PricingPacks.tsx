@@ -73,6 +73,7 @@ const PACKS: Pack[] = [
     includesTitle: 'Tout le Parcours, plus',
     features: [
       "Webinaire W8 — Psychologie de l'investisseur",
+      'Webinaire W9 — IA et Finance',
       'Appel 1:1 de 30 min avec Curtis (revue personnelle)',
       'Investment Policy Statement personnalisé (tes règles)',
       'Accès à vie aux replays, y compris cohortes futures',

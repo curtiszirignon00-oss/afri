@@ -37,6 +37,7 @@ const PACK_TIERS: Record<string, { name: string; full: number; sessions: number;
     perks: [
       'Tout le Parcours, plus :',
       "W8 — Psychologie de l'investisseur",
+      'W9 — IA et Finance',
       'Appel 1:1 de 30 min avec Curtis',
       'Investment Policy Statement + accès à vie',
       'Ouverture SGI — accompagnement main dans la main',
