@@ -67,7 +67,7 @@ const PACKS: Pack[] = [
   {
     id: 'investisseur',
     name: 'Investisseur',
-    tagline: "De la simulation à l'achat réel — accompagnement premium",
+    tagline: "J'investis comme un pro — je maximise mes profits",
     price: 150000,
     monthly: 53000,
     badge: '🏆 Expérience complète',
