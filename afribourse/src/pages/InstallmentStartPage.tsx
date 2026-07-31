@@ -232,6 +232,29 @@ export default function InstallmentStartPage() {
     );
   }
 
+  // Pendant l'offre flash, le paiement en 3× est désactivé — on redirige vers le paiement unique remisé
+  if (promo.active) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-r from-red-600 to-orange-500 text-white flex items-center justify-center mx-auto mb-4">
+            <Flame className="w-7 h-7" />
+          </div>
+          <h1 className="text-xl font-extrabold text-gray-900 mb-2">Offre flash en cours 🔥</h1>
+          <p className="text-sm text-gray-600 mb-1">Pendant l'offre flash, seul le <strong>paiement en une fois</strong> est disponible — au tarif remisé (jusqu'à -50%).</p>
+          <p className="text-xs text-gray-400 mb-6">Se termine dans <span className="font-mono font-bold text-gray-600">{promo.label}</span></p>
+          <button onClick={() => navigate(`/parcours/cohorte-juillet?pack=${tier}`)}
+            className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity">
+            Profiter de l'offre →
+          </button>
+          <button onClick={() => navigate('/webinaires')} className="mt-3 block w-full text-xs text-gray-400 hover:text-gray-600">
+            Retour aux webinaires
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-10 px-4">
       <div className="max-w-lg mx-auto">

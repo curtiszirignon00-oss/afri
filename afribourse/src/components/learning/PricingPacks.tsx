@@ -167,7 +167,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
                           )}
                         </div>
                         <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
-                          ou dès {fmt(monthly)} XOF/mois (paiement en 3×)
+                          {promo ? 'Offre flash — paiement en une fois' : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×)`}
                         </p>
                       </>
                     );

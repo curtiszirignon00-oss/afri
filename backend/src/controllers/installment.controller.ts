@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import { initiateDeposit, initiatePaymentPageSession } from '../services/pawapay.service';
-import { applyPromo } from '../config/promo';
+import { applyPromo, isPromoActive } from '../config/promo';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // ── Paramètres du paiement échelonné (Pack Parcours) ──────────────────────────
@@ -194,6 +194,11 @@ async function initiateInstallment(
 export async function startInstallmentPlan(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Connexion requise pour payer en plusieurs fois.' });
+
+  // Pendant l'offre flash, le paiement en 3 fois est désactivé (seul le paiement unique remisé est proposé)
+  if (isPromoActive()) {
+    return res.status(403).json({ error: "Le paiement en 3 fois n'est pas disponible pendant l'offre flash. Profitez du tarif remisé en un seul paiement." });
+  }
 
   const { name, firstName, lastName, email, phone, correspondent, payPhone, currency = 'XOF' } = req.body;
   const resolvedEmail = (email ?? req.user?.email ?? '').trim().toLowerCase();
