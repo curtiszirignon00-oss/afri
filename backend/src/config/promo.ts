@@ -1,8 +1,8 @@
 // ── Promotion à durée limitée (packs cohorte) ────────────────────────────────
 // Starter -50%, Parcours/Investisseur -30%. Fenêtre de 24h.
 // Pour arrêter/prolonger la promo : changer PROMO_END_ISO (ou le mettre dans le passé).
-// Lancée le 31 juillet 2026 — se termine 24h plus tard.
-export const PROMO_END_ISO = '2026-08-01T23:59:00Z';
+// Lancée le 31 juillet 2026 — se termine le 1er août à 12h00 (UTC/Abidjan).
+export const PROMO_END_ISO = '2026-08-01T12:00:00Z';
 
 export const PROMO_RATES: Record<string, number> = {
   starter: 0.5,
