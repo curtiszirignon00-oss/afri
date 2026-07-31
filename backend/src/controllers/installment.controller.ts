@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import { initiateDeposit, initiatePaymentPageSession } from '../services/pawapay.service';
+import { applyPromo } from '../config/promo';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // ── Paramètres du paiement échelonné (Pack Parcours) ──────────────────────────
@@ -201,7 +202,8 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
   if (!correspondent || (!payPhone && !isWaveStart)) return res.status(400).json({ error: 'Opérateur et numéro Mobile Money requis.' });
 
   const tier = resolveTier(req.body.pack);
-  const tierAmounts = PACK_TIER_INSTALLMENTS[tier];
+  // Promo 24h éventuelle appliquée à chaque mensualité (verrouillée à la création du plan)
+  const tierAmounts = PACK_TIER_INSTALLMENTS[tier].map((a) => applyPromo(tier, a));
   const tierName = PACK_TIER_NAME[tier];
 
   try {

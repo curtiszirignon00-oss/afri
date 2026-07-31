@@ -1,5 +1,7 @@
 import React from 'react';
-import { CheckCircle, Landmark, Gift, Star, Trophy } from 'lucide-react';
+import { CheckCircle, Landmark, Gift, Star, Trophy, Flame } from 'lucide-react';
+import { applyPromo, promoPercent, isPromoActive } from '../../utils/promo';
+import { usePromoCountdown } from '../../hooks/usePromoCountdown';
 
 export type PackId = 'starter' | 'parcours' | 'investisseur';
 
@@ -88,9 +90,20 @@ const PACKS: Pack[] = [
 function fmt(n: number) { return n.toLocaleString('fr-FR'); }
 
 const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }) => {
+  const promo = usePromoCountdown();
   return (
     <section id="packs" className="px-4 sm:px-6 py-14 bg-gray-50 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
+        {/* Bandeau promo 24h */}
+        {promo.active && (
+          <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
+            <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
+              <Flame className="w-5 h-5" /> OFFRE FLASH 24H — Starter <span className="underline">-50%</span> · Parcours & Investisseur <span className="underline">-30%</span>
+            </p>
+            <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">Se termine dans <span className="font-mono font-extrabold text-white">{promo.label}</span></p>
+          </div>
+        )}
+
         {/* En-tête */}
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Choisis ton parcours</p>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3" style={{ letterSpacing: '-0.01em' }}>
@@ -136,13 +149,29 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
                   <p className={`text-sm mb-4 leading-snug ${dark ? 'text-blue-100' : 'text-gray-500'}`}>« {p.tagline} »</p>
 
                   {/* Prix */}
-                  <div className="mb-1">
-                    <span className={`text-3xl font-extrabold ${dark ? 'text-white' : 'text-gray-900'}`}>{fmt(p.price)}</span>
-                    <span className={`text-sm font-semibold ${dark ? 'text-blue-200' : 'text-gray-500'}`}> XOF</span>
-                  </div>
-                  <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
-                    ou dès {fmt(p.monthly)} XOF/mois (paiement en 3×)
-                  </p>
+                  {(() => {
+                    const promo = isPromoActive();
+                    const pct = promoPercent(p.id);
+                    const price = applyPromo(p.id, p.price);
+                    const monthly = applyPromo(p.id, p.monthly);
+                    return (
+                      <>
+                        <div className="mb-1 flex items-baseline gap-2 flex-wrap">
+                          <span className={`text-3xl font-extrabold ${dark ? 'text-white' : 'text-gray-900'}`}>{fmt(price)}</span>
+                          <span className={`text-sm font-semibold ${dark ? 'text-blue-200' : 'text-gray-500'}`}>XOF</span>
+                          {promo && pct > 0 && (
+                            <>
+                              <span className={`text-base line-through font-semibold ${dark ? 'text-blue-300/70' : 'text-gray-400'}`}>{fmt(p.price)}</span>
+                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
+                            </>
+                          )}
+                        </div>
+                        <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
+                          ou dès {fmt(monthly)} XOF/mois (paiement en 3×)
+                        </p>
+                      </>
+                    );
+                  })()}
 
                   {/* CTA */}
                   <button

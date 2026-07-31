@@ -178,7 +178,7 @@ const TESTIMONIALS: { name: string; location: string; quote: string; initials: s
 const FAQ = [
   {
     q: 'Comment ça marche après ma pré-inscription ?',
-    a: "La pré-inscription est gratuite et sans engagement. Vous laissez votre nom, email et numéro WhatsApp — notre équipe vous recontacte sur WhatsApp pour finaliser votre place. Vous recevez aussi un lien de paiement avec votre réduction préinscrit de -10% (31 500 XOF au lieu de 35 000).",
+    a: "La pré-inscription est gratuite et sans engagement. Vous laissez votre nom, email et numéro WhatsApp — notre équipe vous recontacte sur WhatsApp pour finaliser votre place, et vous recevez un lien de paiement sécurisé (Mobile Money ou Wave).",
     highlight: true,
   },
   {
@@ -391,7 +391,7 @@ export default function WebinarPage() {
           >
             🎟️ Je réserve ma place gratuitement →
           </button>
-          <p className="mt-4 text-xs text-blue-400">Pré-inscription gratuite · -10% réservé aux préinscrits · sans engagement</p>
+          <p className="mt-4 text-xs text-blue-400">Pré-inscription gratuite · Mobile Money & Wave · sans engagement</p>
         </div>
       </section>
 

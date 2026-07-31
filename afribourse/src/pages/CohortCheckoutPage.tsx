@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Loader2, AlertCircle, ArrowLeft, Flame } from 'lucide-react';
+import { applyPromo, promoPercent } from '../utils/promo';
+import { usePromoCountdown } from '../hooks/usePromoCountdown';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
@@ -94,7 +96,9 @@ export default function CohortCheckoutPage() {
   const [tier, setTier] = useState(resolveTier(searchParams.get('pack')));
   const tierCfg = PACK_TIERS[tier];
   const PACK_NAME = tierCfg.name;
-  const price = tierCfg.full;
+  const promo = usePromoCountdown();
+  const price = applyPromo(tier, tierCfg.full);
+  const pct = promoPercent(tier);
 
   const lead = readLead();
   const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
@@ -216,10 +220,21 @@ export default function CohortCheckoutPage() {
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
             <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Cohorte Août 2026</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
-            <div className="mt-2 flex items-baseline gap-2">
+            <div className="mt-2 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
+              {promo.active && pct > 0 && (
+                <>
+                  <span className="text-lg line-through text-blue-300/80 font-semibold">{formatPrice(tierCfg.full)}</span>
+                  <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
+                </>
+              )}
             </div>
             <p className="text-blue-200 text-xs mt-1">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation</p>
+            {promo.active && pct > 0 && (
+              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5" /> Offre -{pct}% — se termine dans <span className="font-mono">{promo.label}</span>
+              </p>
+            )}
           </div>
 
           {/* Pack + résumé — toujours visibles (changement de pack possible à tout moment) */}

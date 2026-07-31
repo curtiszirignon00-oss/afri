@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
+import { applyPromo } from '../config/promo';
 import {
   initiateDeposit,
   initiateRefund,
@@ -505,8 +506,11 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
       if (isValidCode) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
+    } else if (tier) {
+      // Promo 24h éventuelle (Starter -50%, Parcours/Investisseur -30%)
+      finalAmount = applyPromo(tier, PACK_TIER_FULL[tier]);
     } else {
-      finalAmount = tier ? PACK_TIER_FULL[tier] : PACK_PRICE_FULL;
+      finalAmount = PACK_PRICE_FULL;
     }
   } else {
     // Plan non référencé (webinaire individuel, etc.) : on accepte le montant du frontend

@@ -1,6 +1,7 @@
 import { log } from '../config/logger';
 import transporter, { smtpReady } from '../config/mailer';
 import config from '../config/environnement';
+import { applyPromo } from '../config/promo';
 
 interface SendEmailConfirmationParams {
   email: string;
@@ -4209,7 +4210,8 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
 
   // Pack Parcours Investisseur — Cohorte Juillet 2026 (contenu selon le pack)
   const tierCfg = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
-  const packAmount = tierCfg ? `${tierCfg.full.toLocaleString('fr-FR')} XOF` : '70 000 XOF';
+  // Promo 24h éventuelle : afficher le montant réellement payé
+  const packAmount = tierCfg ? `${applyPromo(pack as string, tierCfg.full).toLocaleString('fr-FR')} XOF` : '70 000 XOF';
   const packName = tierCfg ? tierCfg.name : 'Pack Parcours Investisseur';
   // Sessions / heures / webinaires & avantages en plus selon le pack (+2 sessions, +6h par palier)
   const tierDetails: Record<string, { sessions: number; hours: number; extras: string[] }> = {

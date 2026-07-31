@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, Lock, ShieldCheck, CalendarClock, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Loader2, AlertCircle, Lock, ShieldCheck, CalendarClock, ArrowLeft, Flame } from 'lucide-react';
+import { applyPromo, promoPercent } from '../utils/promo';
+import { usePromoCountdown } from '../hooks/usePromoCountdown';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
@@ -83,9 +85,11 @@ export default function InstallmentStartPage() {
   const tier = resolveTier(searchParams.get('pack'));
   const tierCfg = PACK_TIERS[tier];
   const PLAN_NAME = tierCfg.name;
-  const INSTALLMENTS = tierCfg.installments;
+  const promo = usePromoCountdown();
+  const pct = promoPercent(tier);
+  const INSTALLMENTS = tierCfg.installments.map((a) => applyPromo(tier, a));
   const TOTAL = INSTALLMENTS.reduce((a, b) => a + b, 0);
-  const SINGLE = tierCfg.single;
+  const SINGLE = applyPromo(tier, tierCfg.single);
 
   const lead = readLead();
   const [step, setStep] = useState<'conditions' | 'contact' | 'payment' | 'success'>('conditions');
@@ -241,6 +245,11 @@ export default function InstallmentStartPage() {
             <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Payer en 3 fois</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PLAN_NAME}</h1>
             <p className="text-blue-200 text-sm mt-1">{formatPrice(TOTAL)} répartis en 3 mensualités</p>
+            {promo.active && pct > 0 && (
+              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5" /> Offre -{pct}% appliquée — se termine dans <span className="font-mono">{promo.label}</span>
+              </p>
+            )}
           </div>
 
           {/* ── Conditions ── */}
