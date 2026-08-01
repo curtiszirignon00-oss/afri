@@ -260,6 +260,11 @@ export default function WebinarPage() {
             <span className="text-emerald-400">✓</span> Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
           </p>
 
+          <button onClick={() => navigate('/webinaires/individuels')}
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-4 py-2 transition-colors">
+            🎓 Ou choisir un webinaire à l'unité (dès 5 000 XOF) →
+          </button>
+
         </div>
       </section>
 

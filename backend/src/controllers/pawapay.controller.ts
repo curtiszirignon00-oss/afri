@@ -45,6 +45,13 @@ const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 const PACK_TIER_FULL: Record<string, number> = { starter: 70000, parcours: 100000, investisseur: 150000 };
 const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 45000, investisseur: 67500 }; // -10%
 
+// Webinaires à l'unité — prix officiels (source de vérité côté serveur)
+export const INDIVIDUAL_WEBINAR_PRICES: Record<string, number> = {
+  'webinaire-introduction-bourse': 5000,
+  'webinaire-fondamentaux-analyse': 30000,
+  'webinaire-analyse-technique': 40000,
+};
+
 // Réconcilie la pré-inscription cohorte (liste d'attente) en "paid" quand le pack est réglé
 async function reconcileCohortPreregistration(email: string | undefined | null, depositId: string) {
   if (!email) return;
@@ -300,20 +307,21 @@ export async function handleDepositCallback(req: Request, res: Response) {
           let reg = await prisma.webinarRegistration.findFirst({ where });
           // Filet de sécurité : aucun inscrit trouvé mais paiement pack reçu (ex: acheteur sans compte
           // dont la pré-inscription a échoué) → on crée l'inscription à partir des métadonnées du paiement.
-          if (!reg && registrationEmail && payment.planId === PACK_ID) {
+          if (!reg && registrationEmail && (payment.planId === PACK_ID || INDIVIDUAL_WEBINAR_PRICES[payment.planId])) {
+            const isPackReg = payment.planId === PACK_ID;
             reg = await prisma.webinarRegistration.create({
               data: {
-                webinarId: PACK_ID,
-                type: 'pack',
+                webinarId: payment.planId,
+                type: isPackReg ? 'pack' : 'webinar',
                 firstName: meta?.registrationName ?? null,
                 email: registrationEmail,
                 phone: payment.phone || null,
                 userId: payment.userId ?? null,
                 paymentStatus: 'pending',
-                pack: ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string) ? (meta?.pack as string) : null,
+                pack: isPackReg && ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string) ? (meta?.pack as string) : null,
               },
             });
-            log.info('[PawaPay] Inscription pack créée depuis le paiement (filet de sécurité)', { depositId, email: registrationEmail });
+            log.info('[PawaPay] Inscription créée depuis le paiement (filet de sécurité)', { depositId, planId: payment.planId, email: registrationEmail });
           }
           if (reg) {
             await prisma.webinarRegistration.update({
@@ -529,6 +537,9 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     } else {
       finalAmount = PACK_PRICE_FULL;
     }
+  } else if (INDIVIDUAL_WEBINAR_PRICES[planId]) {
+    // Webinaire à l'unité : prix fixé côté serveur
+    finalAmount = INDIVIDUAL_WEBINAR_PRICES[planId];
   } else {
     // Plan non référencé (webinaire individuel, etc.) : on accepte le montant du frontend
     const raw = req.body.amount;
@@ -537,19 +548,20 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     if (isNaN(finalAmount) || finalAmount <= 0) return res.status(400).json({ error: 'amount invalide' });
   }
 
-  // Pack cohorte : enregistrer/compléter l'inscrit dès la tentative de paiement
-  // (garantit que TOUTE tentative apparaît au dashboard, avec nom/email/tel même sans compte).
-  if (planId === PACK_ID && registrationEmail) {
+  // Pack cohorte OU webinaire à l'unité : enregistrer/compléter l'inscrit dès la tentative de
+  // paiement (garantit que TOUTE tentative apparaît au dashboard, avec nom/email/tel même sans compte).
+  if ((planId === PACK_ID || INDIVIDUAL_WEBINAR_PRICES[planId]) && registrationEmail) {
     try {
+      const isPack = planId === PACK_ID;
       const regEmail = String(registrationEmail).trim().toLowerCase();
-      const regTier = ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? String(req.body.pack) : null;
+      const regTier = isPack && ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? String(req.body.pack) : null;
       const regName = registrationName ? String(registrationName).trim() : null;
-      const existingReg = await prisma.webinarRegistration.findFirst({ where: { webinarId: PACK_ID, email: regEmail } });
+      const existingReg = await prisma.webinarRegistration.findFirst({ where: { webinarId: planId, email: regEmail } });
       if (!existingReg) {
         await prisma.webinarRegistration.create({
           data: {
-            webinarId: PACK_ID,
-            type: 'pack',
+            webinarId: planId,
+            type: isPack ? 'pack' : 'webinar',
             firstName: regName,
             email: regEmail,
             phone: phone ?? null,

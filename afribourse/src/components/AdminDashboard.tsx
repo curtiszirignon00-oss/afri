@@ -1491,6 +1491,9 @@ export default function AdminDashboard() {
             { id: 'w2-fondamentale',            label: 'Fondamentale',      date: '30-31 mai', color: 'emerald' },
             { id: 'w3-technique',               label: 'Technique',         date: '6-7 juin',  color: 'orange' },
             { id: 'pack-parcours-investisseur', label: 'Pack Parcours',     date: 'Parcours',  color: 'indigo' },
+            { id: 'webinaire-introduction-bourse',  label: 'Intro Bourse',     date: 'À l\'unité', color: 'blue' },
+            { id: 'webinaire-fondamentaux-analyse', label: 'Fondamentaux (unité)', date: 'À l\'unité', color: 'emerald' },
+            { id: 'webinaire-analyse-technique',    label: 'Technique (unité)',    date: 'À l\'unité', color: 'orange' },
           ];
           const BADGE: Record<string, string> = {
             blue: 'bg-blue-100 text-blue-700', emerald: 'bg-emerald-100 text-emerald-700',

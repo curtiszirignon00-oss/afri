@@ -74,6 +74,7 @@ const SurveyPage = lazy(() => import('./pages/SurveyPage'));
 const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow'));
 const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
 const WebinarPage = lazy(() => import('./pages/WebinarPage'));
+const WebinairesUnitairesPage = lazy(() => import('./pages/WebinairesUnitairesPage'));
 const PaymentLinkPage = lazy(() => import('./pages/PaymentLinkPage'));
 const InstallmentStartPage = lazy(() => import('./pages/InstallmentStartPage'));
 const InstallmentPayPage = lazy(() => import('./pages/InstallmentPayPage'));
@@ -216,6 +217,7 @@ function Layout() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />
+          <Route path="/webinaires/individuels" element={<WebinairesUnitairesPage />} />
           <Route path="/parcours" element={<ParcoursPage />} />
           <Route path="/pay/:token" element={<PaymentLinkPage />} />
           <Route path="/parcours/paiement-3-fois" element={<InstallmentStartPage />} />
