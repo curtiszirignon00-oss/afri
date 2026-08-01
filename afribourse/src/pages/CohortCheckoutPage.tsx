@@ -184,6 +184,7 @@ export default function CohortCheckoutPage() {
       correspondent,
       phone: msisdn,
       registrationEmail: form.email.trim(),
+      registrationName: form.name.trim(),
       pack: tier,
     });
   };

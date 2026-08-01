@@ -11,6 +11,7 @@ export interface PaymentParams {
   correspondent: string; // "WAVE_CIV", "ORANGE_CIV", etc.
   phone: string;        // MSISDN sans "+" ex: "2250700000000"
   registrationEmail?: string; // email pour lier paiement ↔ inscription webinaire
+  registrationName?: string;  // nom complet de l'acheteur (pour enregistrer l'inscrit, même sans compte)
   referralCode?: string;      // code ambassadeur Pack Parcours (parrainage)
   cohortDiscount?: boolean;   // -10% préinscrits cohorte juillet (validé côté serveur)
   pack?: string;              // tier choisi : "starter" | "parcours" | "investisseur"
@@ -85,6 +86,7 @@ export function usePawaPayment(onSuccess?: () => void): UsePawaPaymentReturn {
           correspondent: params.correspondent,
           phone: params.phone,
           ...(params.registrationEmail ? { registrationEmail: params.registrationEmail } : {}),
+          ...(params.registrationName ? { registrationName: params.registrationName } : {}),
           ...(params.referralCode ? { referralCode: params.referralCode } : {}),
           ...(params.cohortDiscount ? { cohortDiscount: true } : {}),
           ...(params.pack ? { pack: params.pack } : {}),

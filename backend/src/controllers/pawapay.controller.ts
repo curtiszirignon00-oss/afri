@@ -297,7 +297,24 @@ export async function handleDepositCallback(req: Request, res: Response) {
             : null;
 
         if (where) {
-          const reg = await prisma.webinarRegistration.findFirst({ where });
+          let reg = await prisma.webinarRegistration.findFirst({ where });
+          // Filet de sécurité : aucun inscrit trouvé mais paiement pack reçu (ex: acheteur sans compte
+          // dont la pré-inscription a échoué) → on crée l'inscription à partir des métadonnées du paiement.
+          if (!reg && registrationEmail && payment.planId === PACK_ID) {
+            reg = await prisma.webinarRegistration.create({
+              data: {
+                webinarId: PACK_ID,
+                type: 'pack',
+                firstName: meta?.registrationName ?? null,
+                email: registrationEmail,
+                phone: payment.phone || null,
+                userId: payment.userId ?? null,
+                paymentStatus: 'pending',
+                pack: ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string) ? (meta?.pack as string) : null,
+              },
+            });
+            log.info('[PawaPay] Inscription pack créée depuis le paiement (filet de sécurité)', { depositId, email: registrationEmail });
+          }
           if (reg) {
             await prisma.webinarRegistration.update({
               where: { id: reg.id },
@@ -463,7 +480,7 @@ export async function handleRefundCallback(req: Request, res: Response) {
 export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id ?? null;
 
-  const { planId, planName, currency, correspondent, phone, registrationEmail, referralCode } = req.body;
+  const { planId, planName, currency, correspondent, phone, registrationEmail, registrationName, referralCode } = req.body;
 
   // Wave passe par la Payment Page hébergée : le numéro y est saisi par le client,
   // il n'est donc pas requis côté API.
@@ -520,6 +537,44 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     if (isNaN(finalAmount) || finalAmount <= 0) return res.status(400).json({ error: 'amount invalide' });
   }
 
+  // Pack cohorte : enregistrer/compléter l'inscrit dès la tentative de paiement
+  // (garantit que TOUTE tentative apparaît au dashboard, avec nom/email/tel même sans compte).
+  if (planId === PACK_ID && registrationEmail) {
+    try {
+      const regEmail = String(registrationEmail).trim().toLowerCase();
+      const regTier = ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? String(req.body.pack) : null;
+      const regName = registrationName ? String(registrationName).trim() : null;
+      const existingReg = await prisma.webinarRegistration.findFirst({ where: { webinarId: PACK_ID, email: regEmail } });
+      if (!existingReg) {
+        await prisma.webinarRegistration.create({
+          data: {
+            webinarId: PACK_ID,
+            type: 'pack',
+            firstName: regName,
+            email: regEmail,
+            phone: phone ?? null,
+            userId,
+            paymentStatus: 'pending',
+            pack: regTier,
+          },
+        });
+      } else {
+        // Compléter les infos manquantes sans écraser un statut déjà payé
+        await prisma.webinarRegistration.update({
+          where: { id: existingReg.id },
+          data: {
+            firstName: existingReg.firstName ?? regName,
+            phone: existingReg.phone ?? phone ?? null,
+            pack: existingReg.pack ?? regTier,
+            userId: existingReg.userId ?? userId,
+          },
+        });
+      }
+    } catch (e) {
+      log.warn('[PawaPay] Échec enregistrement inscrit pack (non bloquant)', { err: e instanceof Error ? e.message : String(e) });
+    }
+  }
+
   // Description max 22 caractères (limite PawaPay)
   const description = `AfriBourse ${planName}`.slice(0, 22);
 
@@ -542,9 +597,11 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         phone: phone ?? '',
         status: 'PENDING',
         userPromoId: activePromoId ?? undefined,
-        metadata: (registrationEmail || referralCode) ? {
+        metadata: (registrationEmail || registrationName || referralCode || (planId === PACK_ID && req.body.pack)) ? {
           ...(registrationEmail ? { registrationEmail } : {}),
+          ...(registrationName ? { registrationName: String(registrationName).trim() } : {}),
           ...(referralCode ? { referralCode: String(referralCode).toUpperCase() } : {}),
+          ...(planId === PACK_ID && ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? { pack: String(req.body.pack) } : {}),
         } : undefined,
       },
     });
