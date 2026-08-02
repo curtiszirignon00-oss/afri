@@ -21,7 +21,7 @@ export default function SparklineChart({ data, isUp, height = 120 }: Props) {
       layout: {
         background: { type: ColorType.Solid, color: '#ffffff' },
         textColor: 'transparent',
-        fontFamily: 'Inter, system-ui, sans-serif',
+        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
       },
       grid: {
         vertLines: { visible: false },

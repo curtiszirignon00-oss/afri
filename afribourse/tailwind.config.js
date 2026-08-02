@@ -26,9 +26,33 @@ export default {
   ],
   theme: {
     extend: {
+      // Couleurs reprises du logo : silhouette orange, barres et fleche bleu nuit.
+      // Servent de base a la charte graphique.
+      colors: {
+        brand: {
+          navy:   '#12395E',
+          orange: '#EE7B23',
+          // Etats de survol des boutons pleins : le navy s'eclaircit, l'orange
+          // se fonce. Evite les hover:bg-blue-700 / orange-600 de Tailwind, qui
+          // renvoyaient vers des teintes etrangeres au logo.
+          'navy-hover':   '#1B4E7D',
+          'orange-hover': '#D66A18',
+          // Nuance foncee de l'orange de marque (meme teinte 26deg, meme saturation 86%,
+          // luminosite 54% -> 35%). Indispensable pour du texte orange : #EE7B23 ne
+          // tient que 2.5:1 sur fond clair, tres en dessous des 4.5:1 requis.
+          'orange-dark': '#A64F0D',
+          // Variante eclaircie de l'orange de marque, pour les fonds sombres :
+          // #EE7B23 ne tient que 2.4:1 sur le bleu clair du degrade du hero,
+          // sous le seuil de 3:1 exige pour les grands textes.
+          'orange-light': '#FCA04D',
+        },
+      },
       fontFamily: {
+        // Logotype uniquement. Space Grotesk a des formes legerement decalees
+        // (le 'r', le 'a') qui rendent le nom memorable sans nuire a la lisibilite.
+        display: ['"Space Grotesk"', '"IBM Plex Sans"', 'sans-serif'],
         sans: [
-          'Inter',
+          '"IBM Plex Sans"',
           '-apple-system',
           'BlinkMacSystemFont',
           '"Segoe UI"',
@@ -37,6 +61,24 @@ export default {
           'Arial',
           'sans-serif',
         ],
+        // Chiffres, tickers et graphiques. Etait absent du theme : les 53 `font-mono`
+        // du code retombaient sur la pile par defaut, donc un rendu different
+        // sous Windows, macOS et Linux.
+        mono: [
+          '"IBM Plex Mono"',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Consolas',
+          '"Courier New"',
+          'monospace',
+        ],
+      },
+      // IBM Plex Sans plafonne a 700 (Bold). Sans ce remappage, les 112 `font-extrabold`
+      // et 4 `font-black` du code declencheraient un faux-gras synthetique baveux.
+      fontWeight: {
+        extrabold: '700',
+        black: '700',
       },
       keyframes: {
         fadeIn: {

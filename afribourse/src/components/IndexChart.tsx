@@ -61,7 +61,7 @@ export default function IndexChart({ indexName }: { indexName: string }) {
         layout: {
           background: { type: ColorType.Solid, color: '#ffffff' },
           textColor: '#6b7280',
-          fontFamily: 'Inter, system-ui, sans-serif',
+          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
         },
         grid: {
           vertLines: { color: '#f3f4f6', style: LineStyle.Dotted },

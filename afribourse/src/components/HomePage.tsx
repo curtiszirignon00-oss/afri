@@ -538,10 +538,14 @@ export default function HomePage() {
                 </div>
                 */}
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight mb-4">
-                  Formez-vous à la Bourse et investissez sur la{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400">
-                    BRVM
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.5] tracking-tight mb-4">
+                  <span className="block">Formez-vous à la bourse</span>
+                  <span className="block mt-1 sm:mt-2">et investissez sur</span>
+                  <span className="block mt-1 sm:mt-2">
+                    la{' '}
+                    <span className="text-brand-orange-light">
+                      BRVM
+                    </span>
                   </span>
                 </h1>
 
@@ -552,7 +556,7 @@ export default function HomePage() {
                 {/* CTA — toujours sur une seule ligne : libellés courts sous sm */}
                 <div className="flex flex-row gap-3 items-center justify-center lg:justify-start">
                   <Button
-                    variant="primary"
+                    variant="orange"
                     size="md"
                     className="flex-1 sm:flex-none h-12 sm:h-14 whitespace-nowrap"
                     onClick={() => navigate('/markets')}

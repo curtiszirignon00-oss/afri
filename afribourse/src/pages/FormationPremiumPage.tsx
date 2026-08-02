@@ -179,7 +179,7 @@ export default function FormationPremiumPage() {
   const scrollToPricing = () => { pricingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
   return (
-    <div style={{ background: C.bg, color: C.text, fontFamily: "'Inter', system-ui, sans-serif", minHeight: '100vh' }}>
+    <div style={{ background: C.bg, color: C.text, fontFamily: "'IBM Plex Sans', system-ui, sans-serif", minHeight: '100vh' }}>
       <Helmet>
         <title>Formation Premium BRVM — Modules Avancés d'Investissement | AfriBourse</title>
         <meta name="description" content="Accédez aux modules avancés de la formation AfriBourse : analyse technique, analyse fondamentale, stratégies de portefeuille sur la BRVM. Formation complète pour investir sur les marchés africains." />

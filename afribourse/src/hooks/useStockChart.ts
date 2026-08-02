@@ -204,7 +204,7 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
       layout: {
         background: { type: ColorType.Solid, color: isDark ? '#1f2937' : '#ffffff' },
         textColor: isDark ? '#9ca3af' : '#6b7280',
-        fontFamily: 'Inter, system-ui, sans-serif',
+        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
       },
       grid: {
         vertLines: {
@@ -1064,7 +1064,7 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
       // Nom du symbole à gauche
       if (symbol) {
         ctx.fillStyle = '#111827';
-        ctx.font = 'bold 15px Inter, system-ui, sans-serif';
+        ctx.font = 'bold 15px "IBM Plex Sans", system-ui, sans-serif';
         ctx.fillText(symbol, 16, chartCanvas.height + 30);
       }
 
@@ -1082,7 +1082,7 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
         logo.onerror = () => {
           // Fallback texte si le logo ne charge pas
           ctx.fillStyle = '#1d4ed8';
-          ctx.font = 'bold 14px Inter, system-ui, sans-serif';
+          ctx.font = 'bold 14px "IBM Plex Sans", system-ui, sans-serif';
           const text = 'AfriBourse';
           const tw = ctx.measureText(text).width;
           ctx.fillText(text, composited.width - tw - 16, chartCanvas.height + 30);

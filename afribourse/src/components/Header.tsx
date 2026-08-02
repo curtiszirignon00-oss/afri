@@ -23,6 +23,25 @@ function Badge({ count }: { count: number }) {
   );
 }
 
+// Boutons d'action du header. Une seule source pour la boite (hauteur, padding,
+// rayon, corps de texte) : les variantes ne portent plus que la couleur.
+const HEADER_BTN =
+  'inline-flex items-center justify-center gap-2 h-10 px-5 rounded-lg text-sm font-semibold ' +
+  'transition-all duration-200 cursor-pointer';
+
+// Webinaires : bouton secondaire en aplat translucide, qui se remplit au survol.
+const HEADER_BTN_SOFT =
+  'bg-brand-orange/10 text-brand-orange-dark ring-1 ring-inset ring-brand-orange/30 ' +
+  // Le survol se remplit avec la nuance foncee, pas l'orange vif : blanc sur
+  // #EE7B23 ne donne que 2.8:1, contre 5.6:1 sur #A64F0D.
+  'hover:bg-brand-orange-dark hover:text-white hover:ring-brand-orange-dark ' +
+  'hover:shadow-md hover:shadow-brand-orange/30';
+
+// Connexion / Mon Compte : action principale, seul aplat plein du header.
+const HEADER_BTN_SOLID =
+  'bg-brand-navy text-white shadow-sm hover:bg-brand-navy-hover ' +
+  'hover:shadow-md hover:shadow-brand-navy/30';
+
 // --- MegaMenu Mapping ---
 const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
   learn: LearnMegaMenu,
@@ -101,17 +120,19 @@ export default function Header() {
             <div className="flex items-center">
               <button
                 onClick={() => { navigate('/'); setActiveMegaMenu(null); }}
-                className="flex flex-col items-start"
+                className="flex items-center gap-0.5 cursor-pointer"
+                aria-label="AfriBourse — accueil"
               >
-                <div className="flex items-center space-x-2">
-                  <img
-                    src="/images/logo_afribourse.png"
-                    alt="AfriBourse Logo"
-                    className="w-12 h-12 object-contain"
-                  />
-                  <span className="text-2xl font-bold text-gray-900">AfriBourse</span>
-                </div>
-                <span className="text-xs text-blue-600 font-semibold ml-10">INVESTIR MIEUX</span>
+                <img
+                  src="/images/logo_afribourse.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="w-11 h-11 object-contain"
+                />
+                {/* Logotype : bicolore d'apres le logo (silhouette orange / barres bleu nuit) */}
+                <span className="font-display text-2xl font-bold tracking-tight leading-none">
+                  <span className="text-brand-navy">Afri</span><span className="text-brand-orange">Bourse</span>
+                </span>
               </button>
             </div>
 
@@ -142,7 +163,7 @@ export default function Header() {
                       }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
                         currentPage === item.id || activeMegaMenu === item.id
-                          ? 'bg-blue-50 text-blue-700'
+                          ? 'bg-brand-navy/10 text-brand-navy'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                       aria-haspopup={item.hasMegaMenu ? "true" : "false"}
@@ -168,7 +189,7 @@ export default function Header() {
               {/* Bouton Webinaire - Desktop */}
               <Link
                 to="/webinaires"
-                className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all font-semibold shadow-sm hover:shadow-md text-sm"
+                className={`${HEADER_BTN} ${HEADER_BTN_SOFT} hidden lg:inline-flex`}
               >
                 <Video className="w-4 h-4" />
                 <span>Webinaires</span>
@@ -189,21 +210,21 @@ export default function Header() {
                       {/* Bouton Profil */}
                       <button
                         onClick={() => navigate('/profile')}
-                        className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 hover:border-blue-500 transition-all shadow-sm"
+                        className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-brand-navy/25 hover:border-brand-navy transition-all shadow-sm cursor-pointer"
                         title="Mon Profil"
                       >
                         {userProfile?.avatar_url ? (
                           <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-                            <User className="w-5 h-5 text-blue-600" />
+                          <div className="w-full h-full bg-brand-navy/10 flex items-center justify-center">
+                            <User className="w-5 h-5 text-brand-navy" />
                           </div>
                         )}
                       </button>
                       {/* Bouton Mon Compte */}
                       <button
                         onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                        className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
+                        className={`${HEADER_BTN} ${HEADER_BTN_SOLID}`}
                       >
                         <span>Mon Compte</span>
                       </button>
@@ -211,9 +232,9 @@ export default function Header() {
                   ) : (
                     <button
                       onClick={() => navigate('/login')}
-                      className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
+                      className={`${HEADER_BTN} ${HEADER_BTN_SOLID}`}
                     >
-                      <User className="w-5 h-5" />
+                      <User className="w-4 h-4 text-brand-orange-light" />
                       <span>Connexion</span>
                     </button>
                   )}
@@ -341,7 +362,7 @@ export default function Header() {
                   ) : (
                     <button
                       onClick={() => navigate('/login')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 text-slate-700 bg-transparent rounded-lg text-sm font-semibold hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 text-slate-700 bg-transparent rounded-lg text-sm font-semibold hover:border-brand-navy hover:text-brand-navy transition-colors cursor-pointer"
                     >
                       <User className="w-4 h-4" />
                       Connexion
