@@ -109,6 +109,104 @@ function CountryBadge({ code, name }: { code: string; name: string }) {
   );
 }
 
+/**
+ * Cluster circulaire du hero : une grande image au centre, 5 valeurs BRVM en orbite.
+ * Les positions sont calculées sur un cercle (72° d'écart) en % du conteneur carré,
+ * ce qui garde la composition intacte à toutes les tailles.
+ */
+const ORBIT_STOCKS = [
+  { src: '/logos/logo-SNTS.jfif', ticker: 'SNTS', alt: 'Logo Sonatel, action cotée à la BRVM' },
+  { src: '/logos/logo-SLBC.png',  ticker: 'SLBC', alt: 'Logo Solibra, action cotée à la BRVM' },
+  { src: '/logos/logo-SGBC.jpg',  ticker: 'SGBC', alt: 'Logo Société Générale Côte d’Ivoire, action cotée à la BRVM' },
+  { src: '/logos/logo-ORAC.jpg',  ticker: 'ORAC', alt: 'Logo Orange Côte d’Ivoire, action cotée à la BRVM' },
+  { src: '/logos/logo-BOAC.png',  ticker: 'BOAC', alt: 'Logo Bank of Africa Côte d’Ivoire, action cotée à la BRVM' },
+];
+
+const ORBIT_RADIUS = 37; // rayon de l'orbite, en % de la largeur du conteneur
+
+function HeroImageOrbit() {
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[280px] sm:max-w-[360px] lg:max-w-[440px]">
+      {/* Halo diffus derrière le cluster */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-full blur-3xl"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(45,212,191,0.12) 45%, transparent 70%)',
+        }}
+      />
+
+      {/* Anneau d'orbite — rotation lente des pointillés */}
+      <svg
+        viewBox="0 0 100 100"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden="true"
+        data-orb
+        style={{ animation: 'orbitSpin 70s linear infinite' }}
+      >
+        <circle
+          cx="50"
+          cy="50"
+          r={ORBIT_RADIUS}
+          fill="none"
+          stroke="rgba(255,255,255,0.22)"
+          strokeWidth="0.35"
+          strokeDasharray="1.6 2.8"
+        />
+      </svg>
+
+      {/* Image centrale — volontairement plus petite que l'orbite pour laisser
+          un espace clair entre elle et les logos satellites */}
+      <div className="absolute left-1/2 top-1/2 h-[38%] w-[38%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full shadow-2xl shadow-blue-950/50 ring-[6px] ring-white/15">
+        <img
+          src="/images/brvm-growth.webp"
+          alt="Skyline d’Abidjan et courbe de croissance de la BRVM"
+          className="h-full w-full object-cover"
+          width={440}
+          height={440}
+          loading="eager"
+          decoding="async"
+        />
+      </div>
+
+      {/* Satellites */}
+      {ORBIT_STOCKS.map((stock, i) => {
+        const angle = ((-90 + i * 72) * Math.PI) / 180;
+        return (
+          <div
+            key={stock.ticker}
+            className="absolute h-[24%] w-[24%] -translate-x-1/2 -translate-y-1/2"
+            style={{
+              left: `${50 + ORBIT_RADIUS * Math.cos(angle)}%`,
+              top: `${50 + ORBIT_RADIUS * Math.sin(angle)}%`,
+            }}
+          >
+            {/* Wrapper séparé : l'animation pilote le transform sans écraser le centrage */}
+            <div
+              data-orb
+              className="h-full w-full"
+              style={{ animation: `orbitFloat 5.5s ease-in-out ${i * 0.55}s infinite alternate` }}
+            >
+              {/* Fond blanc + object-contain : les logos s'affichent en entier, sans rognage */}
+              <div className="relative h-full w-full overflow-hidden rounded-full bg-white p-2 shadow-lg shadow-blue-950/50 ring-2 ring-white/60">
+                <img
+                  src={stock.src}
+                  alt={stock.alt}
+                  className="h-full w-full object-contain"
+                  width={120}
+                  height={120}
+                  loading="eager"
+                  decoding="async"
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // HomePage
 // ---------------------------------------------------------------------------
@@ -381,6 +479,13 @@ export default function HomePage() {
           from { transform: translate(0, 0) scale(1); }
           to   { transform: translate(-18px, 20px) scale(1.04); }
         }
+        @keyframes orbitSpin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes orbitFloat {
+          from { transform: translateY(-6px); }
+          to   { transform: translateY(6px); }
+        }
         @media (prefers-reduced-motion: reduce) {
           [data-orb] { animation: none !important; }
         }
@@ -389,7 +494,7 @@ export default function HomePage() {
       <div className="pb-16 md:pb-24">
 
         {/* === Hero === */}
-        <section className="relative bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+        <section className="relative bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-10 pb-12 md:pt-14 md:pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
           {/* Rotating background images */}
           {backgroundImages.map((img, index) => (
             <img
@@ -422,53 +527,60 @@ export default function HomePage() {
           />
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-            <div className="max-w-4xl text-center mx-auto">
-              <div className="inline-flex items-center space-x-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-200 px-6 py-2 rounded-full text-sm font-semibold mb-6 animate-pulse">
-                <Award className="w-4 h-4" />
-                <span>Plateforme #1 pour maîtriser la Bourse en Afrique de l'Ouest.</span>
-              </div>
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
 
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
-                Prenez des décisions éclairées pour votre{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400">
-                  avenir financier
-                </span>
-              </h1>
-
-              <p className="text-lg md:text-2xl text-indigo-100 mb-10 max-w-3xl mx-auto leading-relaxed">
-                Formations gratuites, 1M de cash virtuel pour créer votre premier portefeuille, données en temps réel et analyses d'experts pour vous aider à investir intelligemment sur la BRVM
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => navigate('/markets')}
-                >
-                  <BarChart3 className="w-5 h-5 mr-2" />
-                  {isLoggedIn ? 'Explorer les marchés' : 'Commencer gratuitement'}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-
-                <Button variant="secondary" size="lg" onClick={() => navigate('/learn')}>
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Apprendre à investir
-                </Button>
-
-              </div>
-
-              {/* Stats — ancrées dans le hero */}
-              <div className="mt-14 pt-8 border-t border-white/10 flex justify-center gap-10 sm:gap-20">
-                <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">47</p>
-                  <p className="text-xs text-blue-200 mt-1 uppercase tracking-widest font-medium">actions BRVM</p>
+              {/* --- Accroche (gauche) --- */}
+              <div className="text-center lg:text-left">
+                {/* Badge d'accroche — masqué
+                <div className="inline-flex items-center gap-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-100 px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold mb-5">
+                  <Award className="w-4 h-4 shrink-0" />
+                  <span>N°1 pour maîtriser la Bourse en Afrique de l'Ouest</span>
                 </div>
-                <div className="w-px bg-white/15" />
-                <div className="text-center">
-                  <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">3 000+</p>
-                  <p className="text-xs text-blue-200 mt-1 uppercase tracking-widest font-medium">investisseurs</p>
+                */}
+
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.1] tracking-tight mb-4">
+                  Formez-vous à la Bourse et investissez sur la{' '}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400">
+                    BRVM
+                  </span>
+                </h1>
+
+                <p className="text-base sm:text-lg text-indigo-100/90 mb-7 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                  Formations gratuites et 1 000 000 FCFA de capital virtuel pour vous lancer sans risque.
+                </p>
+
+                {/* CTA — toujours sur une seule ligne : libellés courts sous sm */}
+                <div className="flex flex-row gap-3 items-center justify-center lg:justify-start">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    className="flex-1 sm:flex-none h-12 sm:h-14 whitespace-nowrap"
+                    onClick={() => navigate('/markets')}
+                  >
+                    <BarChart3 className="w-5 h-5 mr-2 shrink-0" />
+                    <span className="sm:hidden">{isLoggedIn ? 'Marchés' : 'Commencer'}</span>
+                    <span className="hidden sm:inline">
+                      {isLoggedIn ? 'Explorer les marchés' : 'Commencer gratuitement'}
+                    </span>
+                    <ArrowRight className="w-5 h-5 ml-2 shrink-0 hidden sm:block" />
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    className="flex-1 sm:flex-none h-12 sm:h-14 whitespace-nowrap"
+                    onClick={() => navigate('/learn')}
+                  >
+                    <BookOpen className="w-5 h-5 mr-2 shrink-0" />
+                    <span className="sm:hidden">Apprendre</span>
+                    <span className="hidden sm:inline">Apprendre à investir</span>
+                  </Button>
+
                 </div>
               </div>
+
+              {/* --- Cluster d'images (droite) --- */}
+              <HeroImageOrbit />
 
             </div>
           </div>
