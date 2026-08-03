@@ -109,15 +109,8 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
   return (
     <section id="packs" className="px-4 sm:px-6 py-14 bg-gray-50 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
-        {/* Bandeau offre budget (permanent, prospects ciblés) */}
-        {isBudget ? (
-          <div className="mb-8 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-4 text-white text-center shadow-lg">
-            <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
-              <Flame className="w-5 h-5" /> TARIF SPÉCIAL — tous les packs à <span className="underline">-50%</span>
-            </p>
-            <p className="text-xs sm:text-sm font-semibold mt-1 text-emerald-100">Offre réservée · accessible via ce lien uniquement</p>
-          </div>
-        ) : promo.active && (
+        {/* Bandeau promo flash (page standard uniquement) */}
+        {!isBudget && promo.active && (
           <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
             <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
               <Flame className="w-5 h-5" /> OFFRE FLASH 24H — Starter <span className="underline">-50%</span> · Parcours & Investisseur <span className="underline">-30%</span>
