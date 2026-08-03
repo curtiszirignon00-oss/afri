@@ -167,7 +167,7 @@ export default function Header() {
 
               {/* Bouton Webinaire - Desktop */}
               <Link
-                to="/webinaires"
+                to="/webinaires-eco"
                 className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all font-semibold shadow-sm hover:shadow-md text-sm"
               >
                 <Video className="w-4 h-4" />
@@ -320,7 +320,7 @@ export default function Header() {
                               Mon profil
                             </button>
                             <button
-                              onClick={() => { navigate('/webinaires'); setMobileAccountOpen(false); }}
+                              onClick={() => { navigate('/webinaires-eco'); setMobileAccountOpen(false); }}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
                             >
                               <Video className="w-4 h-4 text-orange-500" />
