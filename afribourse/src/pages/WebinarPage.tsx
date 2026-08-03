@@ -217,9 +217,10 @@ const FAQ = [
 
 // ─── Composant principal ───────────────────────────────────────────────────────
 
-export default function WebinarPage() {
+export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
   const registrationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const isBudget = variant === 'budget';
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -232,7 +233,7 @@ export default function WebinarPage() {
 
   // Choix d'un pack → page de paiement (le lead est capturé à l'étape contact du paiement)
   const handleChoosePack = (id: PackId) => {
-    navigate(`/parcours/cohorte-juillet?pack=${id}`);
+    navigate(`/parcours/cohorte-juillet?pack=${id}${isBudget ? '&variant=budget' : ''}`);
   };
 
   return (
@@ -264,7 +265,7 @@ export default function WebinarPage() {
       </section>
 
       {/* ── Les 3 packs (good-better-best) ───────────────────────────────── */}
-      <PricingPacks onChoose={handleChoosePack} />
+      <PricingPacks onChoose={handleChoosePack} variant={variant} />
 
 
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}

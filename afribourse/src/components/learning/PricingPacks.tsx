@@ -89,13 +89,21 @@ const PACKS: Pack[] = [
 
 function fmt(n: number) { return n.toLocaleString('fr-FR'); }
 
-const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }) => {
+const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget' }> = ({ onChoose, variant }) => {
   const promo = usePromoCountdown();
+  const isBudget = variant === 'budget';
   return (
     <section id="packs" className="px-4 sm:px-6 py-14 bg-gray-50 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
-        {/* Bandeau promo 24h */}
-        {promo.active && (
+        {/* Bandeau offre budget (permanent, prospects ciblés) */}
+        {isBudget ? (
+          <div className="mb-8 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-5 py-4 text-white text-center shadow-lg">
+            <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
+              <Flame className="w-5 h-5" /> TARIF SPÉCIAL — tous les packs à <span className="underline">-50%</span>
+            </p>
+            <p className="text-xs sm:text-sm font-semibold mt-1 text-emerald-100">Offre réservée · accessible via ce lien uniquement</p>
+          </div>
+        ) : promo.active && (
           <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
             <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
               <Flame className="w-5 h-5" /> OFFRE FLASH 24H — Starter <span className="underline">-50%</span> · Parcours & Investisseur <span className="underline">-30%</span>
@@ -150,16 +158,17 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
 
                   {/* Prix */}
                   {(() => {
-                    const promo = isPromoActive();
-                    const pct = promoPercent(p.id);
-                    const price = applyPromo(p.id, p.price);
-                    const monthly = applyPromo(p.id, p.monthly);
+                    const flashActive = isPromoActive();
+                    const discounted = isBudget || flashActive;
+                    const pct = isBudget ? 50 : promoPercent(p.id);
+                    const price = isBudget ? Math.round(p.price / 2) : applyPromo(p.id, p.price);
+                    const monthly = isBudget ? Math.round(p.monthly / 2) : applyPromo(p.id, p.monthly);
                     return (
                       <>
                         <div className="mb-1 flex items-baseline gap-2 flex-wrap">
                           <span className={`text-3xl font-extrabold ${dark ? 'text-white' : 'text-gray-900'}`}>{fmt(price)}</span>
                           <span className={`text-sm font-semibold ${dark ? 'text-blue-200' : 'text-gray-500'}`}>XOF</span>
-                          {promo && pct > 0 && (
+                          {discounted && pct > 0 && (
                             <>
                               <span className={`text-base line-through font-semibold ${dark ? 'text-blue-300/70' : 'text-gray-400'}`}>{fmt(p.price)}</span>
                               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
@@ -167,7 +176,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
                           )}
                         </div>
                         <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
-                          {promo ? 'Offre flash — paiement en une fois' : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×)`}
+                          {flashActive && !isBudget ? 'Offre flash — paiement en une fois' : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×)`}
                         </p>
                       </>
                     );

@@ -217,6 +217,7 @@ function Layout() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
           <Route path="/webinaires" element={<WebinarPage />} />
+          <Route path="/webinaires-eco" element={<WebinarPage variant="budget" />} />
           <Route path="/webinaires/individuels" element={<WebinairesUnitairesPage />} />
           <Route path="/parcours" element={<ParcoursPage />} />
           <Route path="/pay/:token" element={<PaymentLinkPage />} />

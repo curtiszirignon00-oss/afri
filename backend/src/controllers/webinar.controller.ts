@@ -12,7 +12,7 @@ const COHORT_ID = 'cohorte-juillet-2026';
 
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
-    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode, pack } = req.body;
+    const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode, pack, variant } = req.body;
     const userId = (req as any).user?.id ?? null;
     const resolvedPack = ['starter', 'parcours', 'investisseur'].includes(pack) ? pack : null;
 
@@ -65,6 +65,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
         email,
         firstName: resolvedFirstName || '',
         pack: resolvedPack,
+        variant: variant === 'budget' ? 'budget' : null,
       }).catch((err) => logger.error({ err, email, webinarId }, '[WEBINAR] Échec envoi email pré-inscription'));
     }
 

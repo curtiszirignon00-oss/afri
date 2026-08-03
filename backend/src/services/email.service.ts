@@ -4068,6 +4068,7 @@ interface WebinarConfirmationParams {
   earlyBird: boolean;
   registrationId: string;
   pack?: string | null;
+  amount?: number; // montant réellement payé (full/promo/budget) — sinon calculé par défaut
 }
 
 type WebinarCfg = {
@@ -4090,7 +4091,7 @@ type WebinarCfg = {
   amount: string;
 };
 
-function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | null): WebinarCfg {
+function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | null, amountOverride?: number): WebinarCfg {
 
   if (webinarId === 'w1-fondamentaux' || webinarId === 'w1-fondamentaux-juin') {
     return {
@@ -4211,7 +4212,9 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
   // Pack Parcours Investisseur — Cohorte Juillet 2026 (contenu selon le pack)
   const tierCfg = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
   // Promo 24h éventuelle : afficher le montant réellement payé
-  const packAmount = tierCfg ? `${applyPromo(pack as string, tierCfg.full).toLocaleString('fr-FR')} XOF` : '70 000 XOF';
+  const packAmount = amountOverride != null
+    ? `${amountOverride.toLocaleString('fr-FR')} XOF`
+    : tierCfg ? `${applyPromo(pack as string, tierCfg.full).toLocaleString('fr-FR')} XOF` : '70 000 XOF';
   const packName = tierCfg ? tierCfg.name : 'Pack Parcours Investisseur';
   // Sessions / heures / webinaires & avantages en plus selon le pack (+2 sessions, +6h par palier)
   const tierDetails: Record<string, { sessions: number; hours: number; extras: string[] }> = {
@@ -4295,9 +4298,10 @@ export async function sendWebinarConfirmationEmail({
   earlyBird,
   registrationId,
   pack,
+  amount,
 }: WebinarConfirmationParams): Promise<void> {
   const name = firstName || 'Investisseur';
-  const cfg = getWebinarCfg(webinarId, earlyBird, pack);
+  const cfg = getWebinarCfg(webinarId, earlyBird, pack, amount);
   const ref = `AFB-WEB-${registrationId.slice(-8).toUpperCase()}`;
 
   const learningRows = cfg.learning
@@ -4693,6 +4697,7 @@ interface CohortPreregistrationParams {
   email: string;
   firstName: string;
   pack?: string | null;
+  variant?: string | null; // 'budget' → prix -50%
 }
 
 // Prix par pack (good-better-best) — partagé par les emails
@@ -4704,14 +4709,16 @@ const PACK_TIER_PRICES: Record<string, { name: string; full: number; cohort: num
 function fmtXof(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
 export async function sendCohortPreregistrationEmail({
-  email, firstName, pack,
+  email, firstName, pack, variant,
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
+  const isBudget = variant === 'budget';
   const base = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
-  const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}`;
+  const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}${isBudget ? `${pack ? '&' : '?'}variant=budget` : ''}`;
   const tier = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
   const packTitle = tier ? tier.name : 'Parcours Investisseur BRVM';
-  const priceLine = tier ? `<strong style="color:#0F172A;font-size:20px;">${fmtXof(tier.full)}</strong>` : '';
+  const displayPrice = tier ? (isBudget ? Math.round(tier.full / 2) : tier.full) : null;
+  const priceLine = displayPrice != null ? `<strong style="color:#0F172A;font-size:20px;">${fmtXof(displayPrice)}</strong>` : '';
 
   const html = `<!DOCTYPE html>
 <html lang="fr">

@@ -195,8 +195,10 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Connexion requise pour payer en plusieurs fois.' });
 
-  // Pendant l'offre flash, le paiement en 3 fois est désactivé (seul le paiement unique remisé est proposé)
-  if (isPromoActive()) {
+  const isBudgetVariant = req.body.variant === 'budget';
+
+  // Pendant l'offre flash, le paiement en 3 fois est désactivé (sauf variante budget)
+  if (isPromoActive() && !isBudgetVariant) {
     return res.status(403).json({ error: "Le paiement en 3 fois n'est pas disponible pendant l'offre flash. Profitez du tarif remisé en un seul paiement." });
   }
 
@@ -207,8 +209,8 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
   if (!correspondent || (!payPhone && !isWaveStart)) return res.status(400).json({ error: 'Opérateur et numéro Mobile Money requis.' });
 
   const tier = resolveTier(req.body.pack);
-  // Promo 24h éventuelle appliquée à chaque mensualité (verrouillée à la création du plan)
-  const tierAmounts = PACK_TIER_INSTALLMENTS[tier].map((a) => applyPromo(tier, a));
+  // Variante budget (-50%) OU promo 24h éventuelle — verrouillée à la création du plan
+  const tierAmounts = PACK_TIER_INSTALLMENTS[tier].map((a) => isBudgetVariant ? Math.round(a / 2) : applyPromo(tier, a));
   const tierName = PACK_TIER_NAME[tier];
 
   try {

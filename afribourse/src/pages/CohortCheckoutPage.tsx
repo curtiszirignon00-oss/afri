@@ -97,8 +97,10 @@ export default function CohortCheckoutPage() {
   const tierCfg = PACK_TIERS[tier];
   const PACK_NAME = tierCfg.name;
   const promo = usePromoCountdown();
-  const price = applyPromo(tier, tierCfg.full);
-  const pct = promoPercent(tier);
+  const isBudget = searchParams.get('variant') === 'budget';
+  const price = isBudget ? Math.round(tierCfg.full / 2) : applyPromo(tier, tierCfg.full);
+  const pct = isBudget ? 50 : promoPercent(tier);
+  const showDiscount = isBudget || (promo.active && pct > 0);
 
   const lead = readLead();
   const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
@@ -134,6 +136,7 @@ export default function CohortCheckoutPage() {
           phone: `${waDialCode} ${waPhone.trim()}`,
           type: 'pack',
           pack: tier,
+          ...(isBudget ? { variant: 'budget' } : {}),
         }),
       });
       try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
@@ -186,6 +189,7 @@ export default function CohortCheckoutPage() {
       registrationEmail: form.email.trim(),
       registrationName: form.name.trim(),
       pack: tier,
+      ...(isBudget ? { variant: 'budget' } : {}),
     });
   };
 
@@ -223,7 +227,7 @@ export default function CohortCheckoutPage() {
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
-              {promo.active && pct > 0 && (
+              {showDiscount && (
                 <>
                   <span className="text-lg line-through text-blue-300/80 font-semibold">{formatPrice(tierCfg.full)}</span>
                   <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
@@ -231,7 +235,11 @@ export default function CohortCheckoutPage() {
               )}
             </div>
             <p className="text-blue-200 text-xs mt-1">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation</p>
-            {promo.active && pct > 0 && (
+            {isBudget ? (
+              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5" /> Tarif spécial -50% réservé
+              </p>
+            ) : promo.active && pct > 0 && (
               <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
                 <Flame className="w-3.5 h-3.5" /> Offre -{pct}% — se termine dans <span className="font-mono">{promo.label}</span>
               </p>
@@ -389,8 +397,8 @@ export default function CohortCheckoutPage() {
 
               {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
                 <div className="text-center pt-1 space-y-2">
-                  {!promo.active && (
-                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
+                  {(!promo.active || isBudget) && (
+                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}${isBudget ? '&variant=budget' : ''}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
                       Ou payer en 3 fois <span className="text-gray-400 font-normal">(léger surcoût)</span>
                     </button>
                   )}

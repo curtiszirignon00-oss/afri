@@ -86,10 +86,11 @@ export default function InstallmentStartPage() {
   const tierCfg = PACK_TIERS[tier];
   const PLAN_NAME = tierCfg.name;
   const promo = usePromoCountdown();
-  const pct = promoPercent(tier);
-  const INSTALLMENTS = tierCfg.installments.map((a) => applyPromo(tier, a));
+  const isBudget = searchParams.get('variant') === 'budget';
+  const pct = isBudget ? 50 : promoPercent(tier);
+  const INSTALLMENTS = tierCfg.installments.map((a) => isBudget ? Math.round(a / 2) : applyPromo(tier, a));
   const TOTAL = INSTALLMENTS.reduce((a, b) => a + b, 0);
-  const SINGLE = applyPromo(tier, tierCfg.single);
+  const SINGLE = isBudget ? Math.round(tierCfg.single / 2) : applyPromo(tier, tierCfg.single);
 
   const lead = readLead();
   const [step, setStep] = useState<'conditions' | 'contact' | 'payment' | 'success'>('conditions');
@@ -179,6 +180,7 @@ export default function InstallmentStartPage() {
           payPhone: msisdn,                          // Mobile Money
           currency: getCurrency(payDialCode),
           pack: tier,
+          ...(isBudget ? { variant: 'budget' } : {}),
           returnUrl: `${window.location.origin}/paiement/retour`,
         }),
       });
@@ -233,7 +235,8 @@ export default function InstallmentStartPage() {
   }
 
   // Pendant l'offre flash, le paiement en 3× est désactivé — on redirige vers le paiement unique remisé
-  if (promo.active) {
+  // (sauf variante budget : offre permanente pour prospects ciblés)
+  if (promo.active && !isBudget) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
@@ -268,7 +271,11 @@ export default function InstallmentStartPage() {
             <p className="text-blue-200 text-xs font-bold uppercase tracking-widest mb-1">Payer en 3 fois</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PLAN_NAME}</h1>
             <p className="text-blue-200 text-sm mt-1">{formatPrice(TOTAL)} répartis en 3 mensualités</p>
-            {promo.active && pct > 0 && (
+            {isBudget ? (
+              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
+                <Flame className="w-3.5 h-3.5" /> Tarif spécial -50% appliqué
+              </p>
+            ) : promo.active && pct > 0 && (
               <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
                 <Flame className="w-3.5 h-3.5" /> Offre -{pct}% appliquée — se termine dans <span className="font-mono">{promo.label}</span>
               </p>

@@ -338,6 +338,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
                 earlyBird: false,
                 registrationId: reg.id,
                 pack: reg.pack ?? undefined,
+                amount: Number(payment.amount) || undefined, // montant réellement payé (full/promo/budget)
               }).catch((err) => log.error('[PawaPay] Échec email confirmation inscription', { err, depositId }));
             } else {
               sendWebinarPaymentConfirmEmail({
@@ -489,6 +490,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id ?? null;
 
   const { planId, planName, currency, correspondent, phone, registrationEmail, registrationName, referralCode } = req.body;
+  const isBudgetVariant = req.body.variant === 'budget';
 
   // Wave passe par la Payment Page hébergée : le numéro y est saisi par le client,
   // il n'est donc pas requis côté API.
@@ -532,8 +534,10 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
     } else if (tier) {
-      // Promo 24h éventuelle (Starter -50%, Parcours/Investisseur -30%)
-      finalAmount = applyPromo(tier, PACK_TIER_FULL[tier]);
+      // Variante "budget" (prix -50%, prospects ciblés) OU promo 24h éventuelle
+      finalAmount = isBudgetVariant
+        ? Math.round(PACK_TIER_FULL[tier] / 2)
+        : applyPromo(tier, PACK_TIER_FULL[tier]);
     } else {
       finalAmount = PACK_PRICE_FULL;
     }
@@ -609,11 +613,12 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         phone: phone ?? '',
         status: 'PENDING',
         userPromoId: activePromoId ?? undefined,
-        metadata: (registrationEmail || registrationName || referralCode || (planId === PACK_ID && req.body.pack)) ? {
+        metadata: (registrationEmail || registrationName || referralCode || isBudgetVariant || (planId === PACK_ID && req.body.pack)) ? {
           ...(registrationEmail ? { registrationEmail } : {}),
           ...(registrationName ? { registrationName: String(registrationName).trim() } : {}),
           ...(referralCode ? { referralCode: String(referralCode).toUpperCase() } : {}),
           ...(planId === PACK_ID && ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? { pack: String(req.body.pack) } : {}),
+          ...(isBudgetVariant ? { variant: 'budget' } : {}),
         } : undefined,
       },
     });
