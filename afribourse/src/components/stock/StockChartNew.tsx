@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid, X } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import { useIntradayHistory } from '../../hooks/useStockDetails';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,6 +9,10 @@ import { applyResolution, RESOLUTION_LABEL, filterDataByInterval } from '../../u
 import ChartShareModal from './ChartShareModal';
 import ChartDrawingToolbar from './ChartDrawingToolbar';
 import MultiTimeframePanel from './MultiTimeframePanel';
+import {
+  getToolLabel, getPlacementHint, isTextTool,
+  LINE_STYLE_OPTIONS, DEFAULT_DRAWING_STYLE, type DrawingStyle,
+} from '../../utils/drawingTools';
 
 interface StockChartProps {
   symbol: string;
@@ -104,7 +108,8 @@ export default function StockChartNew({
   const [chartScreenshot, setChartScreenshot] = useState<string | null>(null);
   const [showDrawingToolbar, setShowDrawingToolbar] = useState(false);
   const [showMultiTF, setShowMultiTF] = useState(false);
-  const [activeDrawingTool, setActiveDrawingTool] = useState<string | null>(null);
+  /** Outil en attente de saisie dans une modale (Texte, Bulle, Fibonacci) */
+  const [pendingModalTool, setPendingModalTool] = useState<string | null>(null);
   const [showTextModal, setShowTextModal] = useState(false);
   const [textInput, setTextInput] = useState('');
   const [showFibModal, setShowFibModal] = useState(false);
@@ -144,13 +149,22 @@ export default function StockChartNew({
     : activeConfig.resolution === 'weekly' ? 104
     : undefined;
 
-  const { chartContainerRef, oscillatorContainerRef, hasOscillator, isReady, takeScreenshot, cancelActiveDrawing, startDrawing, deleteSelectedTools, clearAllDrawings } = useStockChart({
+  const {
+    chartContainerRef, oscillatorContainerRef, hasOscillator, isReady, takeScreenshot,
+    drawings, activeTool, continuousMode, setContinuousMode, canUndo,
+    selectedDrawing, setSelectedDrawing,
+    cancelActiveDrawing, startDrawing, deleteSelectedTools, removeDrawingById,
+    clearAllDrawings, undoLastDrawing, getDrawingStyle, applyDrawingStyle,
+  } = useStockChart({
     chartType: selectedChartType,
     theme,
     data: displayData,
     indicators: activeIndicators,
     defaultVisibleBars,
     isIntraday: hasIntraday,
+    symbol,
+    // Les raccourcis ne doivent pas se déclencher quand une modale a le focus
+    disableShortcuts: showTextModal || showFibModal,
   });
 
   // Synchroniser l'état isFullscreen avec le vrai état du navigateur
@@ -235,7 +249,7 @@ export default function StockChartNew({
   const handleDisplayIntervalChange = (display: DisplayInterval) => {
     // Sortir du mode dessin avant de changer de timeframe
     cancelActiveDrawing();
-    setActiveDrawingTool(null);
+    setPendingModalTool(null);
     const config = DISPLAY_INTERVALS.find(i => i.value === display)!;
     setSelectedDisplay(display);
     // Notifier le parent du backend period à fetcher
@@ -247,7 +261,7 @@ export default function StockChartNew({
   const handleChartTypeChange = (chartType: ChartType) => {
     // Sortir du mode dessin avant de changer de type (évite le blocage)
     cancelActiveDrawing();
-    setActiveDrawingTool(null);
+    setPendingModalTool(null);
     setSelectedChartType(chartType);
   };
 
@@ -260,35 +274,53 @@ export default function StockChartNew({
   const handleDrawingToolSelect = (toolType: string) => {
     if (toolType === 'cursor') {
       cancelActiveDrawing();
-      setActiveDrawingTool(null);
+      setPendingModalTool(null);
       return;
     }
     if (toolType === 'Text' || toolType === 'Callout') {
-      setActiveDrawingTool(toolType);
+      setPendingModalTool(toolType);
       setTextInput('');
       setShowTextModal(true);
       return;
     }
     if (toolType === 'FibRetracement') {
-      setActiveDrawingTool('FibRetracement');
+      setPendingModalTool('FibRetracement');
       setShowFibModal(true);
       return;
     }
-    setActiveDrawingTool(toolType);
+    setPendingModalTool(null);
     startDrawing(toolType);
   };
 
   const handleTextConfirm = () => {
     if (!textInput.trim()) return;
-    // activeDrawingTool peut être 'Text' ou 'Callout' (même flux de saisie)
-    startDrawing(activeDrawingTool ?? 'Text', textInput.trim());
+    // pendingModalTool peut être 'Text' ou 'Callout' (même flux de saisie)
+    startDrawing(pendingModalTool ?? 'Text', textInput.trim());
+    setPendingModalTool(null);
     setShowTextModal(false);
   };
 
   const handleFibConfirm = () => {
     const activeLevels = fibLevels.filter(l => l.enabled);
     startDrawing('FibRetracement', undefined, activeLevels);
+    setPendingModalTool(null);
     setShowFibModal(false);
+  };
+
+  // ── Panneau de propriétés (ouvert au double-clic sur un tracé) ────────────
+  const [drawingStyle, setDrawingStyle] = useState<DrawingStyle>(DEFAULT_DRAWING_STYLE);
+
+  useEffect(() => {
+    if (!selectedDrawing) return;
+    const current = getDrawingStyle(selectedDrawing.id);
+    if (current) setDrawingStyle(current);
+  }, [selectedDrawing]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const updateDrawingStyle = (patch: Partial<DrawingStyle>) => {
+    if (!selectedDrawing) return;
+    const next = { ...drawingStyle, ...patch };
+    setDrawingStyle(next);
+    applyDrawingStyle(selectedDrawing.id, next);
   };
 
   const addFibLevel = () => {
@@ -468,7 +500,12 @@ export default function StockChartNew({
             <button
               onClick={() => {
                 setShowDrawingToolbar(!showDrawingToolbar);
-                if (showDrawingToolbar) setActiveDrawingTool(null);
+                // Fermer la boîte à outils désarme l'outil en cours et ses panneaux
+                if (showDrawingToolbar) {
+                  cancelActiveDrawing();
+                  setPendingModalTool(null);
+                  setSelectedDrawing(null);
+                }
               }}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
                 showDrawingToolbar
@@ -628,9 +665,94 @@ export default function StockChartNew({
               onToolSelect={handleDrawingToolSelect}
               onDeleteSelected={deleteSelectedTools}
               onClearAll={clearAllDrawings}
-              activeTool={activeDrawingTool}
+              onUndo={undoLastDrawing}
+              canUndo={canUndo}
+              drawings={drawings}
+              onRemoveDrawing={removeDrawingById}
+              continuousMode={continuousMode}
+              onToggleContinuous={() => setContinuousMode(v => !v)}
+              activeTool={activeTool ?? pendingModalTool}
               theme={theme}
             />
+          </div>
+        )}
+
+        {/* Consigne de placement pendant qu'un outil est armé */}
+        {showDrawingToolbar && activeTool && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs shadow-lg">
+              <span className="font-semibold">{getToolLabel(activeTool)}</span>
+              <span className="opacity-90 hidden sm:inline">{getPlacementHint(activeTool)}</span>
+              <span className="opacity-70 border-l border-white/30 pl-2">Échap pour annuler</span>
+            </div>
+          </div>
+        )}
+
+        {/* Propriétés du tracé double-cliqué */}
+        {selectedDrawing && (
+          <div className="absolute right-2 top-2 z-20 w-56 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+              <span className="text-xs font-semibold text-gray-800 truncate">
+                {getToolLabel(selectedDrawing.toolType)}
+              </span>
+              <button
+                onClick={() => setSelectedDrawing(null)}
+                className="p-0.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+                title="Fermer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="p-3 space-y-3">
+              <label className="flex items-center justify-between gap-2">
+                <span className="text-xs text-gray-600">Couleur</span>
+                <input
+                  type="color"
+                  value={drawingStyle.color}
+                  onChange={(e) => updateDrawingStyle({ color: e.target.value })}
+                  className="w-8 h-7 rounded cursor-pointer border border-gray-200 p-0.5"
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                  <span>{isTextTool(selectedDrawing.toolType) ? 'Taille du texte' : 'Épaisseur'}</span>
+                  <span className="font-mono text-gray-400">{drawingStyle.width}</span>
+                </span>
+                <input
+                  type="range"
+                  min={isTextTool(selectedDrawing.toolType) ? 8 : 1}
+                  max={isTextTool(selectedDrawing.toolType) ? 32 : 6}
+                  step={1}
+                  value={drawingStyle.width}
+                  onChange={(e) => updateDrawingStyle({ width: parseInt(e.target.value, 10) })}
+                  className="w-full accent-blue-600"
+                />
+              </label>
+
+              {!isTextTool(selectedDrawing.toolType) && (
+                <label className="block">
+                  <span className="block text-xs text-gray-600 mb-1">Style de trait</span>
+                  <select
+                    value={drawingStyle.lineStyle}
+                    onChange={(e) => updateDrawingStyle({ lineStyle: parseInt(e.target.value, 10) })}
+                    className="w-full border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    {LINE_STYLE_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              <button
+                onClick={() => removeDrawingById(selectedDrawing.id)}
+                className="w-full px-2 py-1.5 text-xs font-medium rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+              >
+                Supprimer ce tracé
+              </button>
+            </div>
           </div>
         )}
 
@@ -685,7 +807,7 @@ export default function StockChartNew({
       {showTextModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => { setShowTextModal(false); setActiveDrawingTool(null); }}
+          onClick={() => { setShowTextModal(false); setPendingModalTool(null); }}
         >
           <div
             className="bg-white rounded-xl shadow-xl p-5 w-80 max-w-[90vw]"
@@ -699,7 +821,7 @@ export default function StockChartNew({
               onChange={(e) => setTextInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleTextConfirm();
-                else if (e.key === 'Escape') { setShowTextModal(false); setActiveDrawingTool(null); }
+                else if (e.key === 'Escape') { setShowTextModal(false); setPendingModalTool(null); }
               }}
               placeholder="Votre texte..."
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 mb-3"
@@ -707,7 +829,7 @@ export default function StockChartNew({
             <p className="text-xs text-gray-400 mb-3">Cliquez sur le graphique pour placer l'annotation.</p>
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => { setShowTextModal(false); setActiveDrawingTool(null); }}
+                onClick={() => { setShowTextModal(false); setPendingModalTool(null); }}
                 className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Annuler
@@ -728,7 +850,7 @@ export default function StockChartNew({
       {showFibModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => { setShowFibModal(false); setActiveDrawingTool(null); }}
+          onClick={() => { setShowFibModal(false); setPendingModalTool(null); }}
         >
           <div
             className="bg-white rounded-xl shadow-xl p-5 w-96 max-w-[95vw] max-h-[90vh] flex flex-col"
@@ -819,7 +941,7 @@ export default function StockChartNew({
             {/* Actions */}
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => { setShowFibModal(false); setActiveDrawingTool(null); }}
+                onClick={() => { setShowFibModal(false); setPendingModalTool(null); }}
                 className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Annuler

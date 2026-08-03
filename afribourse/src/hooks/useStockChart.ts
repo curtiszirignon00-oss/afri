@@ -20,6 +20,10 @@ import type {
   ChartColors,
 } from '../types/chart.types';
 import {
+  loadSavedDrawings, saveDrawings, buildStyleOptions, readDrawingStyle,
+  type DrawingStyle,
+} from '../utils/drawingTools';
+import {
   calculateSMA, calculateEMA, calculateBollingerBands,
   calculateRSI,
   calculateStochastic, calculateWilliamsR, calculateCCI,
@@ -39,6 +43,16 @@ interface UseStockChartProps {
   /** Vrai quand les données sont intraday (time = timestamp Unix en secondes) :
    *  affiche l'heure sur l'axe du temps. */
   isIntraday?: boolean;
+  /** Symbole affiché : isole et persiste les tracés par action */
+  symbol?: string;
+  /** Désactive les raccourcis clavier (quand une modale a le focus) */
+  disableShortcuts?: boolean;
+}
+
+/** Tracé finalisé présent sur le graphique */
+export interface DrawingInfo {
+  id: string;
+  toolType: string;
 }
 
 // Couleurs AfriBourse (constante hors du hook)
@@ -51,7 +65,9 @@ const CHART_COLORS: ChartColors = {
   borderDownColor: '#ef4444',
 };
 
-export const useStockChart = ({ chartType, theme, data, indicators, defaultVisibleBars, isIntraday }: UseStockChartProps) => {
+export const useStockChart = ({
+  chartType, theme, data, indicators, defaultVisibleBars, isIntraday, symbol, disableShortcuts,
+}: UseStockChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const oscillatorContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -130,15 +146,24 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
   const applyDefaultZoomRef = useRef(applyDefaultZoom);
   applyDefaultZoomRef.current = applyDefaultZoom;
 
-  // ── Suivi de session de dessin (API publique uniquement) ──────────────────
-  /** IDs des outils présents AVANT de commencer la session de dessin */
-  const preSessionIdsRef = useRef<Set<string>>(new Set());
-  /** IDs des outils COMPLÉTÉS pendant la session (via subscribeLineToolsAfterEdit) */
-  const completedDrawingIdsRef = useRef<Set<string>>(new Set());
-  /** Fonction de désabonnement à subscribeLineToolsAfterEdit */
-  const drawingSubscriptionRef = useRef<(() => void) | null>(null);
-  /** Vrai si une session de dessin est active */
-  const inDrawingSessionRef = useRef<boolean>(false);
+  // ── Suivi des tracés (API publique uniquement) ────────────────────────────
+  /** IDs des tracés terminés : tout ce qui n'y figure pas est un tracé interrompu */
+  const finishedIdsRef = useRef<Set<string>>(new Set());
+  /** Tracés finalisés, pour la liste et le compteur affichés dans la barre d'outils */
+  const [drawings, setDrawings] = useState<DrawingInfo[]>([]);
+  /** Outil actuellement armé (en attente de clics), null = curseur */
+  const [activeTool, setActiveTool] = useState<string | null>(null);
+  /** Mode continu : réarme le même outil après chaque tracé terminé */
+  const [continuousMode, setContinuousMode] = useState(false);
+  const continuousModeRef = useRef(continuousMode);
+  continuousModeRef.current = continuousMode;
+  /** Dernier tracé double-cliqué → ouvre le panneau de propriétés */
+  const [selectedDrawing, setSelectedDrawing] = useState<DrawingInfo | null>(null);
+  /** Options du dernier outil armé, pour pouvoir le réarmer en mode continu */
+  const lastToolRef = useRef<{ toolType: string; textValue?: string; fibLevels?: unknown } | null>(null);
+  /** Pile d'états (JSON exportLineTools) pour l'annulation */
+  const historyRef = useRef<string[]>(['[]']);
+  const [canUndo, setCanUndo] = useState(false);
 
   // Utiliser une clé pour détecter les vrais changements de données
   const dataKey = data.length > 0
@@ -536,6 +561,9 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
         // ── Réimporter les line tools une fois la nouvelle série en place ──
         if (hasLineTools) {
           chartApi.importLineTools?.(savedLineTools);
+          // Les ids sont conservés à l'import : resynchroniser la liste affichée
+          markAllFinished();
+          refreshDrawings();
         }
 
       } else {
@@ -1098,48 +1126,109 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
   };
 
   // ── Outils de dessin (ligne-outils) ──────────────────────────────────────
+  // N'utilise que l'API publique de la librairie (exportLineTools,
+  // importLineTools, removeLineToolsById, subscribeLineToolsAfterEdit…),
+  // compatible avec le build de production minifié.
+
+  interface ExportedTool { id?: string; toolType?: string; options?: any; points?: unknown[] }
+
+  /** Tous les tracés présents sur le graphique, terminés ou non */
+  const readTools = (): ExportedTool[] => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return [];
+    try {
+      return JSON.parse(chartApi.exportLineTools?.() || '[]') as ExportedTool[];
+    } catch {
+      return [];
+    }
+  };
+
+  /** JSON des seuls tracés terminés — base de l'historique et de la sauvegarde */
+  const serializeFinished = (): string => {
+    const tools = readTools().filter(t => t.id && finishedIdsRef.current.has(t.id));
+    return JSON.stringify(tools);
+  };
+
+  /** Marque tous les tracés présents comme terminés (après un import) */
+  const markAllFinished = () => {
+    readTools().forEach(t => { if (t.id) finishedIdsRef.current.add(t.id); });
+  };
+
+  /** Supprime les tracés commencés mais jamais finalisés */
+  const pruneUnfinished = () => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return;
+    const toRemove = readTools()
+      .map(t => t.id)
+      .filter((id): id is string => !!id && !finishedIdsRef.current.has(id));
+    if (toRemove.length > 0) chartApi.removeLineToolsById?.(toRemove);
+  };
+
+  const symbolRef = useRef(symbol);
+  symbolRef.current = symbol;
+  /** Symbole dont les tracés sont actuellement chargés (évite les fuites entre actions) */
+  const loadedSymbolRef = useRef<string | null>(null);
+
+  const persistDrawings = () => {
+    const sym = symbolRef.current;
+    if (!sym || loadedSymbolRef.current !== sym) return;
+    saveDrawings(sym, serializeFinished());
+  };
+
+  const refreshDrawings = () => {
+    const list = readTools()
+      .filter(t => t.id && finishedIdsRef.current.has(t.id))
+      .map(t => ({ id: t.id as string, toolType: t.toolType || 'TrendLine' }));
+    setDrawings(list);
+  };
+
+  /** Empile l'état courant pour permettre l'annulation */
+  const pushHistory = () => {
+    const snapshot = serializeFinished();
+    const stack = historyRef.current;
+    if (stack[stack.length - 1] === snapshot) return;
+    stack.push(snapshot);
+    if (stack.length > 50) stack.shift();
+    setCanUndo(stack.length > 1);
+  };
 
   /**
-   * Annule un tracé en cours (non finalisé) sans supprimer les tracés finalisés.
-   * Utilise uniquement l'API publique : exportLineTools / removeLineToolsById /
-   * subscribeLineToolsAfterEdit — compatibles avec le build de production minifié.
+   * À appeler après toute modification des tracés.
+   * skipHistory : pour les changements de style (un glissement de curseur émet
+   * des dizaines d'événements — ils satureraient la pile d'annulation).
+   */
+  const commitChange = (options?: { skipHistory?: boolean }) => {
+    if (!options?.skipHistory) pushHistory();
+    refreshDrawings();
+    persistDrawings();
+  };
+
+  /** Remplace tous les tracés du graphique par ceux d'un JSON exporté */
+  const restoreFrom = (json: string) => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return;
+    chartApi.removeAllLineTools?.();
+    finishedIdsRef.current = new Set();
+    if (json && json !== '[]') {
+      chartApi.importLineTools?.(json);
+      markAllFinished();
+    }
+    refreshDrawings();
+  };
+
+  /**
+   * Sort du mode dessin : désarme l'outil et supprime le tracé interrompu.
+   * Les tracés déjà finalisés sont conservés.
    */
   const cancelActiveDrawing = () => {
-    if (!chartRef.current || !inDrawingSessionRef.current) return;
+    if (!chartRef.current) return;
     try {
       const chartApi = chartRef.current as any;
-
-      // 1. Sortir du mode dessin (efface _activeType côté bibliothèque)
-      chartApi.setActiveLineTool?.(null, {});
-
-      // 2. Supprimer les outils interrompus (commencés mais jamais finalisés)
-      const exported: string | undefined = chartApi.exportLineTools?.();
-      if (exported) {
-        try {
-          const tools = JSON.parse(exported) as Array<{ id?: string }>;
-          const toRemove = tools
-            .map(t => t.id)
-            .filter((id): id is string => typeof id === 'string' && id.length > 0)
-            .filter(id =>
-              // Garder les outils pré-session ET les outils complétés durant la session
-              !preSessionIdsRef.current.has(id) &&
-              !completedDrawingIdsRef.current.has(id)
-            );
-
-          if (toRemove.length > 0) {
-            chartApi.removeLineToolsById?.(toRemove);
-          }
-        } catch (e) {
-          console.warn('[cancelActiveDrawing] parse error', e);
-        }
-      }
-
-      // Fin de session : nettoyer l'abonnement et remettre les refs à zéro
-      drawingSubscriptionRef.current?.();
-      drawingSubscriptionRef.current = null;
-      inDrawingSessionRef.current = false;
-      preSessionIdsRef.current = new Set();
-      completedDrawingIdsRef.current = new Set();
+      chartApi.setActiveLineTool?.(null, {}); // efface _activeType côté librairie
+      pruneUnfinished();
+      lastToolRef.current = null;
+      setActiveTool(null);
+      setSelectedDrawing(null); // Échap ferme aussi le panneau de propriétés
     } catch (e) {
       console.warn('[cancelActiveDrawing]', e);
     }
@@ -1156,37 +1245,9 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
     try {
       const chartApi = chartRef.current as any;
 
-      // Démarrer une nouvelle session de dessin si ce n'est pas déjà fait
-      if (!inDrawingSessionRef.current) {
-        // Snapshot des IDs existants AVANT de commencer à dessiner
-        const exported: string | undefined = chartApi.exportLineTools?.();
-        preSessionIdsRef.current = new Set();
-        if (exported) {
-          try {
-            const tools = JSON.parse(exported) as Array<{ id?: string }>;
-            tools.forEach(t => { if (t.id) preSessionIdsRef.current.add(t.id); });
-          } catch { /* ignore */ }
-        }
-        completedDrawingIdsRef.current = new Set();
+      // Un seul tracé en attente à la fois : jeter celui qui n'a pas été posé
+      pruneUnfinished();
 
-        // S'abonner pour capturer les IDs des outils finalisés
-        // L'événement reçu : { selectedLineTool: { id, toolType, options, points }, stage }
-        // stage = 'lineToolFinished' | 'pathFinished' | 'lineToolEdited'
-        const handler = (event: { selectedLineTool?: { id?: string }; stage?: string }) => {
-          const stage = event?.stage;
-          const id = event?.selectedLineTool?.id;
-          // Capturer uniquement les nouvelles créations (pas les éditions d'anciens outils)
-          if (id && (stage === 'lineToolFinished' || stage === 'pathFinished')) {
-            completedDrawingIdsRef.current.add(id);
-          }
-        };
-
-        chartApi.subscribeLineToolsAfterEdit?.(handler);
-        drawingSubscriptionRef.current = () => chartApi.unsubscribeLineToolsAfterEdit?.(handler);
-        inDrawingSessionRef.current = true;
-      }
-
-      // Options de base
       const options: Record<string, unknown> = {};
       // Text et Callout partagent la même option text.value
       if ((toolType === 'Text' || toolType === 'Callout') && textValue) {
@@ -1205,22 +1266,176 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
         }));
       }
 
+      lastToolRef.current = { toolType, textValue, fibLevels };
       // Créer l'outil en mode placement (points vides = attend les clics de l'utilisateur)
       chartApi.addLineTool?.(toolType, [], options);
+      setActiveTool(toolType);
     } catch (e) {
       console.warn('[startDrawing]', e);
     }
   };
+  const startDrawingRef = useRef(startDrawing);
+  startDrawingRef.current = startDrawing;
 
-  const deleteSelectedTools = () => {
-    if (!chartRef.current) return;
-    (chartRef.current as any).removeSelectedLineTools();
+  /** Supprime les tracés sélectionnés. Retourne vrai si quelque chose a été supprimé. */
+  const deleteSelectedTools = (): boolean => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return false;
+    let selection: unknown[] = [];
+    try {
+      selection = JSON.parse(chartApi.getSelectedLineTools?.() || '[]');
+    } catch { /* pas de sélection exploitable */ }
+    if (!Array.isArray(selection) || selection.length === 0) return false;
+
+    chartApi.removeSelectedLineTools?.();
+    (selection as ExportedTool[]).forEach(t => { if (t.id) finishedIdsRef.current.delete(t.id); });
+    commitChange();
+    return true;
+  };
+
+  const removeDrawingById = (id: string) => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi || !id) return;
+    chartApi.removeLineToolsById?.([id]);
+    finishedIdsRef.current.delete(id);
+    setSelectedDrawing(prev => (prev?.id === id ? null : prev));
+    commitChange();
   };
 
   const clearAllDrawings = () => {
-    if (!chartRef.current) return;
-    (chartRef.current as any).removeAllLineTools();
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return;
+    chartApi.removeAllLineTools?.();
+    finishedIdsRef.current = new Set();
+    lastToolRef.current = null;
+    setActiveTool(null);
+    setSelectedDrawing(null);
+    commitChange();
   };
+
+  /** Annule la dernière modification (création, déplacement, suppression) */
+  const undoLastDrawing = () => {
+    const stack = historyRef.current;
+    if (stack.length < 2) return;
+    stack.pop();
+    restoreFrom(stack[stack.length - 1]);
+    setCanUndo(stack.length > 1);
+    setSelectedDrawing(null);
+    persistDrawings();
+  };
+
+  /** Style courant d'un tracé, pour initialiser le panneau de propriétés */
+  const getDrawingStyle = (id: string): DrawingStyle | null => {
+    const tool = readTools().find(t => t.id === id);
+    if (!tool?.toolType) return null;
+    return readDrawingStyle(tool.toolType, tool.options);
+  };
+
+  /** Applique couleur / épaisseur / style de trait à un tracé existant */
+  const applyDrawingStyle = (id: string, style: DrawingStyle) => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return;
+    // Relire les points à jour : applyLineToolOptions les réapplique tels quels
+    const tool = readTools().find(t => t.id === id);
+    if (!tool?.toolType) return;
+    chartApi.applyLineToolOptions?.({
+      id,
+      toolType: tool.toolType,
+      points: tool.points || [],
+      options: buildStyleOptions(tool.toolType, style),
+    });
+    commitChange({ skipHistory: true });
+  };
+
+  // ── Abonnements au cycle de vie des tracés ────────────────────────────────
+  // Un handler « frais » est appelé via ref pour ne s'abonner qu'une seule fois.
+  const afterEditRef = useRef<(event: any) => void>(() => {});
+  afterEditRef.current = (event: { selectedLineTool?: ExportedTool; stage?: string }) => {
+    const id = event?.selectedLineTool?.id;
+    const stage = event?.stage;
+    if (!id) return;
+
+    if (stage === 'lineToolFinished' || stage === 'pathFinished') {
+      finishedIdsRef.current.add(id);
+      // Le mode placement de la librairie s'arrête ici : réarmer ou revenir au curseur
+      const repeat = continuousModeRef.current ? lastToolRef.current : null;
+      if (repeat) {
+        // Différé : ne pas créer un outil pendant le traitement de l'événement courant
+        setTimeout(() => startDrawingRef.current(repeat.toolType, repeat.textValue, repeat.fibLevels as FibLevelInput[]), 0);
+      } else {
+        lastToolRef.current = null;
+        setActiveTool(null);
+      }
+    }
+    // Création comme édition (déplacement d'un point) modifient l'état à sauvegarder
+    commitChange();
+  };
+
+  useEffect(() => {
+    if (!isReady || !chartRef.current) return;
+    const chartApi = chartRef.current as any;
+
+    const onAfterEdit = (event: any) => afterEditRef.current(event);
+    const onDoubleClick = (event: { selectedLineTool?: ExportedTool }) => {
+      const tool = event?.selectedLineTool;
+      if (tool?.id) setSelectedDrawing({ id: tool.id, toolType: tool.toolType || 'TrendLine' });
+    };
+
+    chartApi.subscribeLineToolsAfterEdit?.(onAfterEdit);
+    chartApi.subscribeLineToolsDoubleClick?.(onDoubleClick);
+    return () => {
+      chartApi.unsubscribeLineToolsAfterEdit?.(onAfterEdit);
+      chartApi.unsubscribeLineToolsDoubleClick?.(onDoubleClick);
+    };
+  }, [isReady]);
+
+  // ── Isolation + restauration des tracés par symbole ───────────────────────
+  // Sans cela, les tracés d'une action resteraient affichés sur la suivante :
+  // StockChartNew n'est pas démonté quand on navigue vers un autre titre.
+  useEffect(() => {
+    if (!isReady || !chartRef.current || !symbol) return;
+    if (!seriesRef.current) return;       // l'import exige une série présente
+    if (loadedSymbolRef.current === symbol) return;
+
+    try {
+      restoreFrom(loadSavedDrawings(symbol) || '[]');
+      historyRef.current = [serializeFinished()];
+      setCanUndo(false);
+      setActiveTool(null);
+      setSelectedDrawing(null);
+      lastToolRef.current = null;
+      loadedSymbolRef.current = symbol;
+    } catch (e) {
+      console.warn('[drawings] restauration impossible', e);
+      loadedSymbolRef.current = symbol;
+    }
+  }, [symbol, isReady, dataKey]);
+
+  // ── Raccourcis clavier ────────────────────────────────────────────────────
+  const shortcutsRef = useRef({ cancelActiveDrawing, deleteSelectedTools, undoLastDrawing });
+  shortcutsRef.current = { cancelActiveDrawing, deleteSelectedTools, undoLastDrawing };
+
+  useEffect(() => {
+    if (!isReady || disableShortcuts) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.isContentEditable ||
+          ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) return;
+
+      if (e.key === 'Escape') {
+        shortcutsRef.current.cancelActiveDrawing();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (shortcutsRef.current.deleteSelectedTools()) e.preventDefault();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        shortcutsRef.current.undoLastDrawing();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isReady, disableShortcuts]);
 
   return {
     chartContainerRef,
@@ -1231,9 +1446,21 @@ export const useStockChart = ({ chartType, theme, data, indicators, defaultVisib
     volumeSeries: volumeSeriesRef.current,
     isReady,
     takeScreenshot,
+    // Dessins
+    drawings,
+    activeTool,
+    continuousMode,
+    setContinuousMode,
+    canUndo,
+    selectedDrawing,
+    setSelectedDrawing,
     cancelActiveDrawing,
     startDrawing,
     deleteSelectedTools,
+    removeDrawingById,
     clearAllDrawings,
+    undoLastDrawing,
+    getDrawingStyle,
+    applyDrawingStyle,
   };
 };
