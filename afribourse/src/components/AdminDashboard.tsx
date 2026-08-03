@@ -167,6 +167,7 @@ interface WebinarRegistrationRecord {
   phone: string | null;
   userId: string | null;
   pack: string | null;
+  variant: string | null;
   paymentStatus: string | null;
   paidAt: string | null;
   earlyBird: boolean | null;
@@ -476,7 +477,7 @@ export default function AdminDashboard() {
       'w2-fondamentale': 'Analyse fondamentale (30-31 mai)',
       'w3-technique': 'Analyse technique (6-7 juin)',
     };
-    const header = ['Webinaire', 'Prénom/Nom', 'Email', 'Téléphone', 'Pack', 'Statut paiement', 'Versements payés', 'Versements restants', 'Montant payé', 'Montant total', 'Date inscription'];
+    const header = ['Webinaire', 'Prénom/Nom', 'Email', 'Téléphone', 'Pack', 'Variante', 'Statut paiement', 'Versements payés', 'Versements restants', 'Montant payé', 'Montant total', 'Date inscription'];
     const lines = rows.map((r) => {
       const inst = r.installment;
       const statut = r.paymentStatus === 'paid' ? 'Payé' : inst && inst.paid > 0 && inst.remaining > 0 ? 'Échelonné en cours' : 'En attente';
@@ -486,6 +487,7 @@ export default function AdminDashboard() {
         r.email,
         r.phone ?? '—',
         r.pack ?? '—',
+        r.variant ?? 'standard',
         statut,
         inst ? String(inst.paid) : '—',
         inst ? String(inst.remaining) : '—',
@@ -1584,6 +1586,8 @@ export default function AdminDashboard() {
                             <tr key={r.id} className="hover:bg-gray-50 transition-colors">
                               <td className="px-5 py-3">
                                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${badge}`}>{w?.label ?? r.webinarId}</span>
+                                {r.pack && <span className="ml-1 text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full capitalize">{r.pack}</span>}
+                                {r.variant === 'budget' && <span className="ml-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">budget</span>}
                                 {r.earlyBird && <span className="ml-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full">EB</span>}
                               </td>
                               <td className="px-5 py-3 text-sm text-gray-800 font-medium">

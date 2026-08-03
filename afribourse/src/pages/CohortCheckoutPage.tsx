@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import { CheckCircle, Loader2, AlertCircle, ArrowLeft, Flame } from 'lucide-react';
 import { applyPromo, promoPercent } from '../utils/promo';
 import { usePromoCountdown } from '../hooks/usePromoCountdown';
+import { budgetPrice, budgetDiscountPct } from '../config/budgetPricing';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
@@ -98,9 +99,10 @@ export default function CohortCheckoutPage() {
   const PACK_NAME = tierCfg.name;
   const promo = usePromoCountdown();
   const isBudget = searchParams.get('variant') === 'budget';
-  const price = isBudget ? Math.round(tierCfg.full / 2) : applyPromo(tier, tierCfg.full);
-  const pct = isBudget ? 50 : promoPercent(tier);
+  const price = isBudget ? budgetPrice(tier) : applyPromo(tier, tierCfg.full);
+  const pct = isBudget ? budgetDiscountPct(tier) : promoPercent(tier);
   const showDiscount = isBudget || (promo.active && pct > 0);
+  const [laterDone, setLaterDone] = useState(false);
 
   const lead = readLead();
   const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
@@ -213,6 +215,32 @@ export default function CohortCheckoutPage() {
     );
   }
 
+  // Réservation gardée (budget — paiement plus tard)
+  if (laterDone) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-9 h-9 text-emerald-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Place réservée ✓</h1>
+          <p className="text-sm text-gray-600 mb-2">
+            Votre place au <strong>{PACK_NAME}</strong> est réservée. Le parcours démarre le <strong>8 août</strong>.
+          </p>
+          <p className="text-sm text-gray-600 mb-5">
+            Nous vous envoyons un email avec votre lien de paiement — réglez quand vous voulez pour confirmer définitivement votre place (dans la limite des places disponibles).
+          </p>
+          <button onClick={() => setLaterDone(false)} className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors mb-2">
+            Payer maintenant
+          </button>
+          <button onClick={() => navigate('/webinaires')} className="w-full py-2.5 rounded-xl font-semibold text-gray-500 hover:text-gray-700 text-sm">
+            Plus tard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-10 px-4">
       <div className="max-w-lg mx-auto">
@@ -315,23 +343,25 @@ export default function CohortCheckoutPage() {
 
               <button onClick={handleContinue} disabled={loading}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 hover:opacity-90 active:scale-95 disabled:opacity-60 transition-all">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> Continuer vers le paiement</>}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> {isBudget ? 'Réserver ma place' : 'Continuer vers le paiement'}</>}
               </button>
 
-              <div className="text-center pt-1">
-                <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
-                  Ou payer en 3 fois
-                </button>
-              </div>
+              {!isBudget && (
+                <div className="text-center pt-1">
+                  <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
+                    Ou payer en 3 fois
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
           {/* Étape paiement */}
           {step === 'payment' && (
             <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                ✅ Inscription enregistrée · Payez pour confirmer votre place
-                <span className="block font-bold mt-0.5">{formatPrice(price)}</span>
+              <div className={`${isBudget ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'} border rounded-xl p-3 text-sm`}>
+                {isBudget ? '✅ Place réservée · Payez maintenant ou plus tard pour la confirmer' : '✅ Inscription enregistrée · Payez pour confirmer votre place'}
+                <span className="block font-bold mt-0.5">{formatPrice(price)}{isBudget ? ' · démarrage le 8 août' : ''}</span>
               </div>
 
               {(payStatus === 'idle' || payStatus === 'initiating') && (
@@ -397,9 +427,14 @@ export default function CohortCheckoutPage() {
 
               {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
                 <div className="text-center pt-1 space-y-2">
-                  {(!promo.active || isBudget) && (
-                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}${isBudget ? '&variant=budget' : ''}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
+                  {!promo.active && !isBudget && (
+                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
                       Ou payer en 3 fois <span className="text-gray-400 font-normal">(léger surcoût)</span>
+                    </button>
+                  )}
+                  {isBudget && (
+                    <button onClick={() => setLaterDone(true)} className="block w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:underline">
+                      Je paierai plus tard — garder ma réservation
                     </button>
                   )}
                   <button onClick={() => setStep('form')} className="block w-full text-[11px] text-gray-400 hover:text-gray-600">

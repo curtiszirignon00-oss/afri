@@ -2247,6 +2247,7 @@ model WebinarRegistration {
   paidAt        DateTime?
   referralCode  String?  // Code ambassadeur utilisé lors de l'inscription (programme parrainage)
   pack          String?  // Pack choisi lors d'une pré-inscription : "starter" | "parcours" | "investisseur"
+  variant       String?  // Variante tarifaire : "budget" (cohorte prospects -) | null (standard)
   created_at    DateTime @default(now())
 
   @@index([webinarId])

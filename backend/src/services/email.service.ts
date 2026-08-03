@@ -4706,6 +4706,8 @@ const PACK_TIER_PRICES: Record<string, { name: string; full: number; cohort: num
   parcours:     { name: 'Pack Parcours',     full: 100000, cohort: 100000 },
   investisseur: { name: 'Pack Investisseur', full: 150000, cohort: 150000 },
 };
+// Prix cohorte "budget" (page /webinaires-eco) — sync avec pawapay.controller PACK_TIER_BUDGET
+const PACK_TIER_BUDGET_PRICES: Record<string, number> = { starter: 35000, parcours: 70000, investisseur: 100000 };
 function fmtXof(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
 export async function sendCohortPreregistrationEmail({
@@ -4717,7 +4719,7 @@ export async function sendCohortPreregistrationEmail({
   const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}${isBudget ? `${pack ? '&' : '?'}variant=budget` : ''}`;
   const tier = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
   const packTitle = tier ? tier.name : 'Parcours Investisseur BRVM';
-  const displayPrice = tier ? (isBudget ? Math.round(tier.full / 2) : tier.full) : null;
+  const displayPrice = tier ? (isBudget ? (PACK_TIER_BUDGET_PRICES[pack as string] ?? Math.round(tier.full / 2)) : tier.full) : null;
   const priceLine = displayPrice != null ? `<strong style="color:#0F172A;font-size:20px;">${fmtXof(displayPrice)}</strong>` : '';
 
   const html = `<!DOCTYPE html>

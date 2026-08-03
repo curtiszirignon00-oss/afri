@@ -10,11 +10,41 @@ import {
 // Identifiant de la cohorte courante (pré-inscriptions liste d'attente)
 const COHORT_ID = 'cohorte-juillet-2026';
 
+const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
+
+// Cohorte "budget" (page /webinaires-eco) : 20 places par pack, compteurs initiaux
+const BUDGET_SEAT_LIMIT = 20;
+const BUDGET_SEAT_OFFSET: Record<string, number> = { starter: 16, parcours: 18, investisseur: 9 };
+
+/** Nombre de places réservées (offset initial + inscriptions budget réelles), plafonné à la limite. */
+async function getBudgetReserved(tier: string): Promise<number> {
+  const count = await prisma.webinarRegistration.count({
+    where: { webinarId: PACK_WEBINAR_ID, pack: tier, variant: 'budget' },
+  });
+  return Math.min(BUDGET_SEAT_LIMIT, (BUDGET_SEAT_OFFSET[tier] ?? 0) + count);
+}
+
+// GET /api/webinars/cohort-seats — places restantes par pack (cohorte budget)
+export async function getCohortSeats(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const tiers = ['starter', 'parcours', 'investisseur'];
+    const data: Record<string, { reserved: number; limit: number; soldOut: boolean }> = {};
+    for (const t of tiers) {
+      const reserved = await getBudgetReserved(t);
+      data[t] = { reserved, limit: BUDGET_SEAT_LIMIT, soldOut: reserved >= BUDGET_SEAT_LIMIT };
+    }
+    return res.status(200).json({ data });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export async function preregisterWebinar(req: Request, res: Response, next: NextFunction) {
   try {
     const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode, pack, variant } = req.body;
     const userId = (req as any).user?.id ?? null;
     const resolvedPack = ['starter', 'parcours', 'investisseur'].includes(pack) ? pack : null;
+    const isBudget = variant === 'budget';
 
     if (!webinarId || !email) {
       return res.status(400).json({ message: 'webinarId et email sont requis.' });
@@ -40,6 +70,14 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
       });
     }
 
+    // Cohorte budget : refuser si le pack est complet (20 places)
+    if (isBudget && resolvedPack) {
+      const reserved = await getBudgetReserved(resolvedPack);
+      if (reserved >= BUDGET_SEAT_LIMIT) {
+        return res.status(409).json({ message: 'Cohorte complète pour ce pack — plus de place disponible.' });
+      }
+    }
+
     const registration = await prisma.webinarRegistration.create({
       data: {
         webinarId,
@@ -52,6 +90,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
         userId,
         referralCode: referralCode ?? null,
         pack: resolvedPack,
+        variant: isBudget ? 'budget' : null,
       },
     });
 

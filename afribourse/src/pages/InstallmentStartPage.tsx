@@ -234,9 +234,30 @@ export default function InstallmentStartPage() {
     );
   }
 
+  // Cohorte budget : pas de 3× → réservation + paiement unique
+  if (isBudget) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-7 h-7" />
+          </div>
+          <h1 className="text-xl font-extrabold text-gray-900 mb-2">Réservez votre place</h1>
+          <p className="text-sm text-gray-600 mb-6">Pour cette offre, réservez votre place et réglez en <strong>une fois</strong> — maintenant ou plus tard. Le parcours démarre le <strong>8 août</strong>.</p>
+          <button onClick={() => navigate(`/parcours/cohorte-juillet?pack=${tier}&variant=budget`)}
+            className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity">
+            Réserver ma place →
+          </button>
+          <button onClick={() => navigate('/webinaires')} className="mt-3 block w-full text-xs text-gray-400 hover:text-gray-600">
+            Retour
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Pendant l'offre flash, le paiement en 3× est désactivé — on redirige vers le paiement unique remisé
-  // (sauf variante budget : offre permanente pour prospects ciblés)
-  if (promo.active && !isBudget) {
+  if (promo.active) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">

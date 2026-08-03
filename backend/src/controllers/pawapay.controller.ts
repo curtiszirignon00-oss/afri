@@ -45,6 +45,9 @@ const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 const PACK_TIER_FULL: Record<string, number> = { starter: 70000, parcours: 100000, investisseur: 150000 };
 const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 45000, investisseur: 67500 }; // -10%
 
+// Variante "budget" — cohorte prospects (page /webinaires-eco), prix dédiés
+export const PACK_TIER_BUDGET: Record<string, number> = { starter: 35000, parcours: 70000, investisseur: 100000 };
+
 // Webinaires à l'unité — prix officiels (source de vérité côté serveur)
 export const INDIVIDUAL_WEBINAR_PRICES: Record<string, number> = {
   'webinaire-introduction-bourse': 5000,
@@ -319,6 +322,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
                 userId: payment.userId ?? null,
                 paymentStatus: 'pending',
                 pack: isPackReg && ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string) ? (meta?.pack as string) : null,
+                variant: meta?.variant === 'budget' ? 'budget' : null,
               },
             });
             log.info('[PawaPay] Inscription créée depuis le paiement (filet de sécurité)', { depositId, planId: payment.planId, email: registrationEmail });
@@ -534,9 +538,9 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
     } else if (tier) {
-      // Variante "budget" (prix -50%, prospects ciblés) OU promo 24h éventuelle
+      // Variante "budget" (cohorte prospects, prix dédiés) OU promo 24h éventuelle
       finalAmount = isBudgetVariant
-        ? Math.round(PACK_TIER_FULL[tier] / 2)
+        ? PACK_TIER_BUDGET[tier]
         : applyPromo(tier, PACK_TIER_FULL[tier]);
     } else {
       finalAmount = PACK_PRICE_FULL;
@@ -572,6 +576,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
             userId,
             paymentStatus: 'pending',
             pack: regTier,
+            variant: isBudgetVariant ? 'budget' : null,
           },
         });
       } else {
@@ -583,6 +588,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
             phone: existingReg.phone ?? phone ?? null,
             pack: existingReg.pack ?? regTier,
             userId: existingReg.userId ?? userId,
+            variant: existingReg.variant ?? (isBudgetVariant ? 'budget' : null),
           },
         });
       }

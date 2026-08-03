@@ -1,7 +1,11 @@
-import React from 'react';
-import { CheckCircle, Landmark, Gift, Star, Trophy, Flame } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { CheckCircle, Landmark, Gift, Star, Trophy, Flame, Users } from 'lucide-react';
 import { applyPromo, promoPercent, isPromoActive } from '../../utils/promo';
 import { usePromoCountdown } from '../../hooks/usePromoCountdown';
+import { budgetPrice, budgetDiscountPct, BUDGET_SEAT_LIMIT, PACK_TIER_FULL as BUDGET_FULL } from '../../config/budgetPricing';
+import { API_BASE_URL } from '../../config/api';
+
+type SeatInfo = { reserved: number; limit: number; soldOut: boolean };
 
 export type PackId = 'starter' | 'parcours' | 'investisseur';
 
@@ -92,6 +96,16 @@ function fmt(n: number) { return n.toLocaleString('fr-FR'); }
 const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget' }> = ({ onChoose, variant }) => {
   const promo = usePromoCountdown();
   const isBudget = variant === 'budget';
+  const [seats, setSeats] = useState<Record<string, SeatInfo> | null>(null);
+
+  useEffect(() => {
+    if (!isBudget) return;
+    fetch(`${API_BASE_URL}/webinars/cohort-seats`)
+      .then((r) => r.json())
+      .then((d) => setSeats(d.data ?? null))
+      .catch(() => { /* silencieux */ });
+  }, [isBudget]);
+
   return (
     <section id="packs" className="px-4 sm:px-6 py-14 bg-gray-50 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
@@ -160,9 +174,10 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                   {(() => {
                     const flashActive = isPromoActive();
                     const discounted = isBudget || flashActive;
-                    const pct = isBudget ? 50 : promoPercent(p.id);
-                    const price = isBudget ? Math.round(p.price / 2) : applyPromo(p.id, p.price);
-                    const monthly = isBudget ? Math.round(p.monthly / 2) : applyPromo(p.id, p.monthly);
+                    const pct = isBudget ? budgetDiscountPct(p.id) : promoPercent(p.id);
+                    const fullRef = isBudget ? BUDGET_FULL[p.id] : p.price;
+                    const price = isBudget ? budgetPrice(p.id) : applyPromo(p.id, p.price);
+                    const monthly = applyPromo(p.id, p.monthly);
                     return (
                       <>
                         <div className="mb-1 flex items-baseline gap-2 flex-wrap">
@@ -170,22 +185,45 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                           <span className={`text-sm font-semibold ${dark ? 'text-blue-200' : 'text-gray-500'}`}>XOF</span>
                           {discounted && pct > 0 && (
                             <>
-                              <span className={`text-base line-through font-semibold ${dark ? 'text-blue-300/70' : 'text-gray-400'}`}>{fmt(p.price)}</span>
+                              <span className={`text-base line-through font-semibold ${dark ? 'text-blue-300/70' : 'text-gray-400'}`}>{fmt(fullRef)}</span>
                               <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
                             </>
                           )}
                         </div>
                         <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
-                          {flashActive && !isBudget ? 'Offre flash — paiement en une fois' : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×)`}
+                          {isBudget
+                            ? 'Réservation gratuite · payez maintenant ou plus tard'
+                            : flashActive
+                              ? 'Offre flash — paiement en une fois'
+                              : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×)`}
                         </p>
                       </>
+                    );
+                  })()}
+
+                  {/* Places restantes (cohorte budget) */}
+                  {isBudget && seats?.[p.id] && (() => {
+                    const s = seats[p.id];
+                    const remaining = Math.max(0, s.limit - s.reserved);
+                    const ratio = Math.min(100, Math.round((s.reserved / s.limit) * 100));
+                    return (
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
+                          <span className={`flex items-center gap-1 ${dark ? 'text-blue-200' : 'text-gray-500'}`}><Users className="w-3 h-3" /> {s.reserved}/{s.limit} places réservées</span>
+                          <span className={s.soldOut ? 'text-red-500' : (dark ? 'text-emerald-300' : 'text-emerald-600')}>{s.soldOut ? 'Complet' : `${remaining} restante${remaining > 1 ? 's' : ''}`}</span>
+                        </div>
+                        <div className={`h-1.5 rounded-full overflow-hidden ${dark ? 'bg-white/15' : 'bg-gray-100'}`}>
+                          <div className={`h-full rounded-full ${s.soldOut ? 'bg-red-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`} style={{ width: `${ratio}%` }} />
+                        </div>
+                      </div>
                     );
                   })()}
 
                   {/* CTA */}
                   <button
                     onClick={() => onChoose(p.id)}
-                    className={`w-full py-3 rounded-xl font-extrabold text-sm transition-all active:scale-95 mb-5 ${
+                    disabled={isBudget && seats?.[p.id]?.soldOut}
+                    className={`w-full py-3 rounded-xl font-extrabold text-sm transition-all active:scale-95 mb-5 disabled:opacity-50 disabled:cursor-not-allowed ${
                       dark
                         ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 hover:from-amber-300 hover:to-orange-300 shadow-lg'
                         : p.id === 'investisseur'
@@ -193,7 +231,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                           : 'border-2 border-gray-300 text-gray-700 hover:border-blue-400 hover:text-blue-700'
                     }`}
                   >
-                    {p.cta} →
+                    {isBudget ? (seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →') : `${p.cta} →`}
                   </button>
 
                   {/* Inclusions */}
