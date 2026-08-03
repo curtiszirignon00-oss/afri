@@ -209,7 +209,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                     return (
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
-                          <span className={`flex items-center gap-1 ${dark ? 'text-blue-200' : 'text-gray-500'}`}><Users className="w-3 h-3" /> {s.reserved}/{s.limit} places réservées</span>
+                          <span className={`flex items-center gap-1 ${dark ? 'text-blue-200' : 'text-gray-500'}`}><Users className="w-3 h-3" /> {s.reserved}/{s.limit} places confirmées</span>
                           <span className={s.soldOut ? 'text-red-500' : (dark ? 'text-emerald-300' : 'text-emerald-600')}>{s.soldOut ? 'Complet' : `${remaining} restante${remaining > 1 ? 's' : ''}`}</span>
                         </div>
                         <div className={`h-1.5 rounded-full overflow-hidden ${dark ? 'bg-white/15' : 'bg-gray-100'}`}>

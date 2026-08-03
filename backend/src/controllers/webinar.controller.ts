@@ -16,10 +16,10 @@ const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
 const BUDGET_SEAT_LIMIT = 20;
 const BUDGET_SEAT_OFFSET: Record<string, number> = { starter: 16, parcours: 18, investisseur: 9 };
 
-/** Nombre de places réservées (offset initial + inscriptions budget réelles), plafonné à la limite. */
+/** Places occupées = offset initial + PAIEMENTS effectifs (les pré-inscriptions non payées ne comptent pas). */
 async function getBudgetReserved(tier: string): Promise<number> {
   const count = await prisma.webinarRegistration.count({
-    where: { webinarId: PACK_WEBINAR_ID, pack: tier, variant: 'budget' },
+    where: { webinarId: PACK_WEBINAR_ID, pack: tier, variant: 'budget', paymentStatus: 'paid' },
   });
   return Math.min(BUDGET_SEAT_LIMIT, (BUDGET_SEAT_OFFSET[tier] ?? 0) + count);
 }
