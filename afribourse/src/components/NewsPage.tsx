@@ -296,7 +296,7 @@ export default function NewsPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 animate-in fade-in duration-500">
+    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 animate-in fade-in duration-500">
       <Helmet>
         <title>Actualités Financières BRVM et UEMOA | AfriBourse</title>
         <meta name="description" content="Toute l'actualité boursière de la BRVM et de l'UEMOA : résultats d'entreprises, dividendes, analyses sectorielles et nouvelles macroéconomiques d'Afrique de l'Ouest." />
@@ -406,7 +406,7 @@ export default function NewsPage() {
 
       {/* Dividendes tab — static BRVM articles only */}
       {selectedCategory === 'dividendes' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {brvmFiltered.map(a => (
             <BRVMArticleCard key={a.id} article={a} onOpen={() => openArticle(a)} />
           ))}
@@ -465,7 +465,7 @@ export default function NewsPage() {
 
           {/* Grille uniforme — toutes les actualités, même style de card */}
           {listArticles.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {(gated ? listArticles.slice(0, FREE_PREVIEW_LIMIT) : listArticles).map(article => (
                 <NewsArticleCard
                   key={article.id}
@@ -497,7 +497,7 @@ export default function NewsPage() {
               {brvmFiltered.length} article{brvmFiltered.length > 1 ? 's' : ''}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {brvmFiltered.map(a => (
               <BRVMArticleCard key={a.id} article={a} onOpen={() => openArticle(a)} />
             ))}
