@@ -6,6 +6,7 @@ import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from 
 import NotificationDropdown from './notifications/NotificationDropdown';
 import EmailVerificationBanner from './EmailVerificationBanner';
 import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
+import { BTN_BASE, BTN_VARIANTS } from './ui/buttonStyles';
 import {
   useUnseenNewsCount,
   markNewsVisited,
@@ -23,24 +24,11 @@ function Badge({ count }: { count: number }) {
   );
 }
 
-// Boutons d'action du header. Une seule source pour la boite (hauteur, padding,
-// rayon, corps de texte) : les variantes ne portent plus que la couleur.
-const HEADER_BTN =
-  'inline-flex items-center justify-center gap-2 h-10 px-5 rounded-lg text-sm font-semibold ' +
-  'transition-all duration-200 cursor-pointer';
-
-// Webinaires : bouton secondaire en aplat translucide, qui se remplit au survol.
-const HEADER_BTN_SOFT =
-  'bg-brand-orange/10 text-brand-orange-dark ring-1 ring-inset ring-brand-orange/30 ' +
-  // Le survol se remplit avec la nuance foncee, pas l'orange vif : blanc sur
-  // #EE7B23 ne donne que 2.8:1, contre 5.6:1 sur #A64F0D.
-  'hover:bg-brand-orange-dark hover:text-white hover:ring-brand-orange-dark ' +
-  'hover:shadow-md hover:shadow-brand-orange/30';
-
-// Connexion / Mon Compte : action principale, seul aplat plein du header.
-const HEADER_BTN_SOLID =
-  'bg-brand-navy text-white shadow-sm hover:bg-brand-navy-hover ' +
-  'hover:shadow-md hover:shadow-brand-navy/30';
+// Boutons d'action du header. La forme et les couleurs viennent de
+// ui/buttonStyles, partage avec <Button> : le header et les CTA du hero
+// forment ainsi une seule paire orange + aplat contrastant. Ne reste ici que
+// la taille, plus compacte que celle du hero.
+const HEADER_BTN = `${BTN_BASE} gap-2 h-10 px-5 text-sm cursor-pointer`;
 
 // --- MegaMenu Mapping ---
 const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
@@ -113,7 +101,7 @@ export default function Header() {
       {/* Bandeau vérification email — dans le bloc fixe, au-dessus du header (retourne null si email vérifié) */}
       {isLoggedIn && <EmailVerificationBanner />}
 
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white border-b border-ink-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 lg:h-20">
             {/* Logo */}
@@ -161,10 +149,12 @@ export default function Header() {
                         if (item.id === 'news')      markNewsVisited();
                         if (item.id === 'community') markCommunityVisited();
                       }}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
-                        currentPage === item.id || activeMegaMenu === item.id
-                          ? 'bg-brand-navy/10 text-brand-navy'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      className={`relative px-4 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2 cursor-pointer hover:bg-brand-navy/10 hover:text-brand-navy ${
+                        currentPage === item.id
+                          ? 'text-ink-900 font-semibold'
+                          : activeMegaMenu === item.id
+                            ? 'bg-brand-navy/10 text-brand-navy font-medium'
+                            : 'text-ink-600 font-medium'
                       }`}
                       aria-haspopup={item.hasMegaMenu ? "true" : "false"}
                       aria-expanded={activeMegaMenu === item.id}
@@ -176,6 +166,15 @@ export default function Header() {
                       )}
                       {item.id === 'community' && communityBadge > 0 && (
                         <Badge count={communityBadge} />
+                      )}
+                      {/* Seul accent orange du header : il dit ou l'on se trouve.
+                          Absent au survol d'un mega menu, qui est une exploration
+                          et non une position. */}
+                      {currentPage === item.id && (
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-x-4 bottom-0 h-[2px] rounded-full bg-brand-orange-dark"
+                        />
                       )}
                     </button>
                   </div>
@@ -189,7 +188,7 @@ export default function Header() {
               {/* Bouton Webinaire - Desktop */}
               <Link
                 to="/webinaires"
-                className={`${HEADER_BTN} ${HEADER_BTN_SOFT} hidden lg:inline-flex`}
+                className={`${HEADER_BTN} ${BTN_VARIANTS.orange} hidden lg:inline-flex`}
               >
                 <Video className="w-4 h-4" />
                 <span>Webinaires</span>
@@ -224,7 +223,7 @@ export default function Header() {
                       {/* Bouton Mon Compte */}
                       <button
                         onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                        className={`${HEADER_BTN} ${HEADER_BTN_SOLID}`}
+                        className={`${HEADER_BTN} ${BTN_VARIANTS.navyOutline}`}
                       >
                         <span>Mon Compte</span>
                       </button>
@@ -232,22 +231,22 @@ export default function Header() {
                   ) : (
                     <button
                       onClick={() => navigate('/login')}
-                      className={`${HEADER_BTN} ${HEADER_BTN_SOLID}`}
+                      className={`${HEADER_BTN} ${BTN_VARIANTS.navy}`}
                     >
-                      <User className="w-4 h-4 text-brand-orange-light" />
-                      <span>Connexion</span>
+                      <User className="w-4 h-4 opacity-70" />
+                      <span>Se connecter</span>
                     </button>
                   )}
                   
                   {/* Dropdown Menu (Desktop) */}
                   {isLoggedIn && accountMenuOpen && (
                     <div 
-                      className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1"
+                      className="absolute right-0 top-full mt-2 w-48 bg-white border border-ink-100 rounded-lg shadow-lg py-1"
                       onMouseLeave={() => setAccountMenuOpen(false)}
                     >
                       <button
                         onClick={() => { navigate('/dashboard'); setAccountMenuOpen(false); }}
-                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-ink-700 hover:bg-ink-50"
                       >
                         <LayoutDashboard className="w-4 h-4" />
                         <span>Tableau de bord</span>
@@ -255,7 +254,7 @@ export default function Header() {
 
                       <button
                         onClick={() => { navigate('/watchlist'); setAccountMenuOpen(false); }}
-                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-ink-700 hover:bg-ink-50"
                       >
                         <Star className="w-4 h-4 text-amber-400" />
                         <span>Ma Watchlist</span>
@@ -264,7 +263,7 @@ export default function Header() {
                       {/* Admin Links - Only visible for admin users */}
                       {userProfile?.role === 'admin' && (
                         <>
-                          <div className="border-t border-gray-100 my-1"></div>
+                          <div className="border-t border-ink-100 my-1"></div>
 
                           <button
                             onClick={() => { navigate('/admin/dashboard'); setAccountMenuOpen(false); }}
@@ -284,7 +283,7 @@ export default function Header() {
                         </>
                       )}
 
-                      <div className="border-t border-gray-100 my-1"></div>
+                      <div className="border-t border-ink-100 my-1"></div>
 
                       <button
                         onClick={handleLogout}
@@ -305,21 +304,21 @@ export default function Header() {
                 </div>
               )}
 
-              {/* Mobile — bouton Connexion / avatar profil */}
+              {/* Mobile — bouton Se connecter / avatar profil */}
               {!loading && (
                 <div className="lg:hidden relative">
                   {isLoggedIn ? (
                     <>
                       <button
                         onClick={() => setMobileAccountOpen(o => !o)}
-                        className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 active:border-blue-400 transition-all cursor-pointer"
+                        className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-ink-200 active:border-brand-navy transition-all cursor-pointer"
                         aria-label="Mon compte"
                       >
                         {userProfile?.avatar_url ? (
                           <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full bg-blue-50 flex items-center justify-center">
-                            <User className="w-4 h-4 text-blue-600" />
+                          <div className="w-full h-full bg-ink-100 flex items-center justify-center">
+                            <User className="w-4 h-4 text-brand-navy" />
                           </div>
                         )}
                       </button>
@@ -332,22 +331,22 @@ export default function Header() {
                             className="fixed inset-0 z-40"
                             onClick={() => setMobileAccountOpen(false)}
                           />
-                          <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-50">
+                          <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-ink-100 rounded-xl shadow-xl py-1 z-50">
                             <button
                               onClick={() => { navigate('/profile'); setMobileAccountOpen(false); }}
-                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
+                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-ink-700 hover:bg-ink-50 cursor-pointer"
                             >
-                              <User className="w-4 h-4 text-slate-400" />
+                              <User className="w-4 h-4 text-ink-400" />
                               Mon profil
                             </button>
                             <button
                               onClick={() => { navigate('/webinaires'); setMobileAccountOpen(false); }}
-                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
+                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-ink-700 hover:bg-ink-50 cursor-pointer"
                             >
-                              <Video className="w-4 h-4 text-orange-500" />
+                              <Video className="w-4 h-4 text-ink-400" />
                               Webinaires
                             </button>
-                            <div className="border-t border-slate-100 my-1" />
+                            <div className="border-t border-ink-100 my-1" />
                             <button
                               onClick={() => { handleLogout(); setMobileAccountOpen(false); }}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
@@ -362,10 +361,10 @@ export default function Header() {
                   ) : (
                     <button
                       onClick={() => navigate('/login')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 text-slate-700 bg-transparent rounded-lg text-sm font-semibold hover:border-brand-navy hover:text-brand-navy transition-colors cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 border border-ink-300 text-ink-700 bg-transparent rounded-lg text-sm font-semibold hover:border-brand-navy hover:text-brand-navy transition-colors cursor-pointer"
                     >
                       <User className="w-4 h-4" />
-                      Connexion
+                      Se connecter
                     </button>
                   )}
                 </div>

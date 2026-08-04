@@ -19,8 +19,12 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     },
     ref
   ) => {
-    // Classes de base
-    const baseClasses = 'bg-white rounded-xl';
+    // Tailwind trie ses regles alphabetiquement : `.bg-white` est emise apres
+    // `.bg-blue-50`, `.bg-brand-navy`, etc. Une couleur de fond passee via
+    // className etait donc toujours ecrasee, quel que soit l'ordre des classes
+    // dans l'attribut. On n'applique le blanc que si l'appelant n'impose rien.
+    const hasCustomBg = /(^|\s)bg-/.test(className);
+    const baseClasses = `${hasCustomBg ? '' : 'bg-white'} rounded-xl`;
 
     // Variantes
     const variantClasses = {

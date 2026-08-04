@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-route
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { TrendingUp } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { lazyWithRetry as lazy } from './lib/lazyWithRetry';
 
@@ -25,6 +24,7 @@ import SilentErrorBoundary from './components/SilentErrorBoundary';
 
 // Composants chemin critique (eager) — visibles dès le premier paint
 import Header from './components/Header';
+import Footer from './components/Footer';
 import MobileBottomNav from './components/MobileBottomNav';
 import HomePage from './components/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -394,88 +394,7 @@ function Layout() {
         </Suspense>
       </main>
 
-      {showLayout && (
-        <footer className="bg-gray-900 text-white mt-auto">
-          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-              {/* Section AfriBourse */}
-              <div>
-                <div className="flex items-center space-x-2 mb-4">
-                  <TrendingUp className="w-8 h-8 text-blue-500" />
-                  <h3 className="text-xl font-bold">AfriBourse</h3>
-                </div>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  Apprenez, simulez et investissez en toute confiance.
-                </p>
-              </div>
-
-              {/* Section Navigation */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Navigation</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <a href="/learn" className="text-gray-400 hover:text-white transition-colors">
-                      Apprendre
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/webinaires" className="text-gray-400 hover:text-white transition-colors">
-                      Webinaires
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/markets" className="text-gray-400 hover:text-white transition-colors">
-                      Marchés
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/news" className="text-gray-400 hover:text-white transition-colors">
-                      Actualités
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/glossary" className="text-gray-400 hover:text-white transition-colors">
-                      Glossaire
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Section Informations */}
-              <div>
-                <h4 className="text-lg font-semibold mb-4">Informations</h4>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <a href="/about" className="text-gray-400 hover:text-white transition-colors">
-                      À propos
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
-                      Contact
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                      Confidentialité
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Section Copyright et Avertissement */}
-            <div className="border-t border-gray-800 pt-8 space-y-4">
-              <p className="text-center text-sm text-gray-400">
-                &copy; {new Date().getFullYear()} AfriBourse. Tous droits réservés.
-              </p>
-              <p className="text-center text-xs text-gray-500 italic">
-                Avertissement : AfriBourse est une plateforme d'éducation financière indépendante et n'est pas une Société de Gestion et d'Intermédiation (SGI). Les investissements simulés ne constituent pas des transactions réelles.
-              </p>
-            </div>
-          </div>
-        </footer>
-      )}
+      {showLayout && <Footer />}
 
     </div>
   );

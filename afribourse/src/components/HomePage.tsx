@@ -19,7 +19,6 @@ import {
   Clock,
   Star,
   Quote,
-  CheckCircle,
   Award,
   Heart,
   MessageCircle,
@@ -86,6 +85,73 @@ function AnimatedSection({
       {children}
     </div>
   );
+}
+
+// Amplitude de l'effet coverflow : taille et opacite de la carte la plus
+// eloignee du centre. 1 = taille pleine, atteinte au centre du conteneur.
+const COVERFLOW_MIN_SCALE = 0.82;
+const COVERFLOW_MIN_OPACITY = 0.6;
+
+/**
+ * Carrousel "coverflow" : la carte au centre du conteneur est a taille pleine,
+ * les autres retrecissent et s'estompent a mesure qu'elles s'en eloignent.
+ *
+ * Deux points de conception :
+ * - les styles sont ecrits directement sur les noeuds, sans state React. Le
+ *   scroll emet jusqu'a une mesure par frame ; un re-render a chacune ferait
+ *   saccader le defilement ;
+ * - la distance est mesuree sur le conteneur de la carte, jamais sur la carte
+ *   elle-meme, qui porte la transformation. La mesurer reinjecterait le
+ *   resultat dans le calcul suivant.
+ *
+ * Les cartes ciblees sont celles marquees [data-coverflow-card], une par
+ * enfant direct : le reste du contenu (l'apercu au survol) garde sa taille.
+ */
+function useCoverflow(containerRef: React.RefObject<HTMLDivElement>, count: number) {
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const rect = container.getBoundingClientRect();
+      if (!rect.width) return;
+      const center = rect.left + rect.width / 2;
+      // Distance au-dela de laquelle la carte a atteint sa taille minimale.
+      const falloff = rect.width / 2;
+
+      for (const slide of Array.from(container.children) as HTMLElement[]) {
+        const card = slide.querySelector<HTMLElement>('[data-coverflow-card]');
+        if (!card) continue;
+
+        const slideRect = slide.getBoundingClientRect();
+        const distance = Math.abs(slideRect.left + slideRect.width / 2 - center);
+        const t = Math.min(distance / falloff, 1); // 0 au centre, 1 aux bords
+
+        card.style.transform = `scale(${(1 - (1 - COVERFLOW_MIN_SCALE) * t).toFixed(3)})`;
+        card.style.opacity = (1 - (1 - COVERFLOW_MIN_OPACITY) * t).toFixed(3);
+        // La carte la plus grande passe devant ses voisines.
+        slide.style.zIndex = String(100 - Math.round(t * 100));
+      }
+    };
+
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    container.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      container.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+    };
+  }, [containerRef, count]);
 }
 
 /** Styled country badge – replaces emoji flags */
@@ -247,6 +313,8 @@ export default function HomePage() {
   const recentNewsItems = [...BRVM_NEWS]
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 8);
+
+  useCoverflow(newsContainerRef, recentNewsItems.length);
 
   const { data: communityData } = useQuery({
     queryKey: ['home-community-preview'],
@@ -558,24 +626,26 @@ export default function HomePage() {
                   <Button
                     variant="orange"
                     size="md"
-                    className="flex-1 sm:flex-none h-12 sm:h-14 whitespace-nowrap"
+                    className="flex-1 sm:flex-none h-12 sm:h-14 gap-2 whitespace-nowrap"
                     onClick={() => navigate('/markets')}
                   >
-                    <BarChart3 className="w-5 h-5 mr-2 shrink-0" />
+                    <BarChart3 className="w-5 h-5 shrink-0" />
                     <span className="sm:hidden">{isLoggedIn ? 'Marchés' : 'Commencer'}</span>
                     <span className="hidden sm:inline">
                       {isLoggedIn ? 'Explorer les marchés' : 'Commencer gratuitement'}
                     </span>
-                    <ArrowRight className="w-5 h-5 ml-2 shrink-0 hidden sm:block" />
+                    <ArrowRight className="w-5 h-5 shrink-0 hidden sm:block" />
                   </Button>
 
+                  {/* Contour : le pendant du navyOutline du header, inverse en
+                      blanc parce que le hero est sur fond sombre. */}
                   <Button
-                    variant="secondary"
+                    variant="inverseOutline"
                     size="md"
-                    className="flex-1 sm:flex-none h-12 sm:h-14 whitespace-nowrap"
+                    className="flex-1 sm:flex-none h-12 sm:h-14 gap-2 whitespace-nowrap"
                     onClick={() => navigate('/learn')}
                   >
-                    <BookOpen className="w-5 h-5 mr-2 shrink-0" />
+                    <BookOpen className="w-5 h-5 shrink-0" />
                     <span className="sm:hidden">Apprendre</span>
                     <span className="hidden sm:inline">Apprendre à investir</span>
                   </Button>
@@ -896,9 +966,13 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* snap-proximity et non snap-mandatory : les cartes s'alignent sur
+              le centre, or la premiere et la derniere ne peuvent pas l'atteindre
+              (le scroll bute a 0 et au maximum). En mandatory le navigateur les
+              rendrait partiellement inaccessibles. */}
           <div
             ref={newsContainerRef}
-            className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+            className="flex gap-5 overflow-x-auto snap-x snap-proximity scrollbar-hide pb-4"
             style={{ scrollPadding: '1rem' }}
           >
             {recentNewsItems.map((article) => {
@@ -926,7 +1000,7 @@ export default function HomePage() {
               };
 
               return (
-                <div key={article.id} className="snap-start flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%] relative group/card">
+                <div key={article.id} className="snap-center flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%] relative group/card">
 
                   {/* Aperçu étendu au survol */}
                   <div className="absolute bottom-full left-0 right-0 mb-2 z-50 pointer-events-none opacity-0 translate-y-1 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-200">
@@ -956,8 +1030,12 @@ export default function HomePage() {
                     <div className="w-3 h-3 bg-white border-r border-b border-slate-100 rotate-45 mx-auto -mt-1.5 shadow-sm" />
                   </div>
 
+                  {/* transition limitee a la bordure et a l'ombre : le
+                      transform est reecrit a chaque frame par useCoverflow,
+                      l'animer le ferait trainer derriere le defilement. */}
                   <article
-                    className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden flex flex-col"
+                    data-coverflow-card
+                    className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-[border-color,box-shadow] duration-200 cursor-pointer overflow-hidden flex flex-col"
                     onClick={() => navigate('/news')}
                   >
                     <div className="h-1 rounded-t-xl" style={{ background: style.bar }} />
@@ -1007,7 +1085,7 @@ export default function HomePage() {
           <p className="text-center text-xs text-slate-400 mt-3 sm:hidden">← Faites glisser pour voir plus →</p>
         </AnimatedSection>
 
-        {/* === Témoignages === */}
+        {/* === Témoignages — bloc masqué ===
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">
@@ -1068,13 +1146,16 @@ export default function HomePage() {
             ))}
           </div>
         </AnimatedSection>
+        */}
 
         {/* === FAQ === */}
         <AnimatedSection className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Questions Fréquentes</h2>
             <p className="text-gray-600">
-              Tout ce que vous devez savoir pour commencer à investir sur la BRVM
+              Tout ce que vous devez savoir pour commencer à investir sur la BRVM : le montant
+              minimum pour se lancer, le coût réel de nos formations, l'accès depuis l'étranger
+              et le suivi de votre portefeuille au quotidien.
             </p>
           </div>
 
@@ -1084,12 +1165,11 @@ export default function HomePage() {
               return (
                 <div
                   key={faq.id}
-                  className={`bg-white border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isOpen ? 'border-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}`}
+                  className={`bg-white border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isOpen ? 'border-brand-navy/40 shadow-md shadow-brand-navy/10' : 'border-gray-200 hover:border-brand-navy/25 hover:shadow-sm'}`}
                   onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
                 >
-                  <div className="flex justify-between items-center px-5 py-4">
-                    <h3 className="font-bold text-gray-900 flex items-center gap-2 pr-4">
-                      <CheckCircle className={`w-5 h-5 flex-shrink-0 transition-colors duration-200 ${isOpen ? 'text-blue-500' : 'text-green-500'}`} />
+                  <div className="flex justify-between items-center px-6 py-5">
+                    <h3 className="font-bold text-gray-900 pr-4">
                       {faq.question}
                     </h3>
                     <ChevronRight
@@ -1102,7 +1182,7 @@ export default function HomePage() {
                     className="overflow-hidden transition-all duration-300 ease-in-out"
                     style={{ maxHeight: isOpen ? '240px' : '0px' }}
                   >
-                    <p className="text-gray-600 leading-relaxed px-5 pb-4 ml-7">
+                    <p className="text-gray-600 leading-relaxed px-6 pb-5">
                       {faq.answer}
                     </p>
                   </div>
@@ -1112,31 +1192,48 @@ export default function HomePage() {
           </div>
 
           <div className="text-center mt-8">
-            <p className="text-gray-600 mb-4">Vous avez d'autres questions ?</p>
-            <Button variant="outline" onClick={() => navigate('/help')}>
+            {/* Meme gabarit que les CTA du hero : size md + hauteur fixe h-12/h-14.
+                L'espacement vient de gap-2, plus de marge sur l'icone. */}
+            <Button
+              variant="navy"
+              size="md"
+              className="h-12 sm:h-14 gap-2"
+              onClick={() => navigate('/help')}
+            >
               Consulter notre centre d'aide
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-5 h-5 shrink-0" />
             </Button>
           </div>
         </AnimatedSection>
 
         {/* === CTA Final === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white text-center">
+          <Card variant="elevated" className="bg-brand-navy text-white text-center">
             <div className="py-12 px-6">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              <h2 className="text-2xl font-bold mb-4">
                 Prêt à commencer votre voyage d'investissement ?
               </h2>
-              <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+              {/* Pyramide descendante : 103 / 71 / 42 caracteres. Les coupures
+                  sont explicites et tombent sur des articulations de la phrase
+                  (fin de proposition, puis avant le complement de but).
+                  Elles ne s'activent qu'a partir de lg : en dessous, la largeur
+                  disponible est insuffisante pour la premiere ligne, qui se
+                  renverrait d'elle-meme et casserait la forme. */}
+              <p className="text-white/80 mb-8 max-w-4xl mx-auto">
                 Rejoignez des milliers d'investisseurs qui font confiance à AfriBourse pour développer leur patrimoine.
+                <br className="hidden lg:inline" />
+                Profitez de l'ensemble de nos formations de base et d'un tableau de bord
+                <br className="hidden lg:inline" />
+                pour suivre vos performances en temps réel.
               </p>
               <Button
-                variant="secondary"
-                size="lg"
+                variant="inverse"
+                size="md"
+                className="h-12 sm:h-14 gap-2"
                 onClick={() => navigate(isLoggedIn ? '/markets' : '/signup')}
               >
                 {isLoggedIn ? 'Commencer à investir' : 'Créer un compte gratuit'}
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-5 h-5 shrink-0" />
               </Button>
             </div>
           </Card>

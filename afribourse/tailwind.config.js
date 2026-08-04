@@ -29,6 +29,22 @@ export default {
       // Couleurs reprises du logo : silhouette orange, barres et fleche bleu nuit.
       // Servent de base a la charte graphique.
       colors: {
+        // Echelle gris-bleu, teinte 208deg (celle du navy du logo), saturation
+        // decroissante vers les tons clairs. Remplace les gray-* / blue-* de
+        // Tailwind, etrangers a la marque.
+        ink: {
+          50:  '#F7F7F8',
+          100: '#E9EBED',
+          200: '#D1D7DB',
+          300: '#ACB8C3',
+          400: '#7C95AB',
+          500: '#537593',
+          600: '#395974',
+          700: '#253F56',
+          800: '#182D3E',
+          900: '#0F1D2A',
+          950: '#09121B',
+        },
         brand: {
           navy:   '#12395E',
           orange: '#EE7B23',
