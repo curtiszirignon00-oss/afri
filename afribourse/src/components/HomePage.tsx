@@ -690,25 +690,21 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* === Bannière annonce === */}
-        <div
+        {/* === Bannière annonce ===
+            <button> et non <div> : la bannière entière est cliquable, elle doit
+            donc être atteignable au clavier. Le libellé est un <span>, un
+            <button> n'accepte pas de contenu de type bloc. */}
+        <button
+          type="button"
           onClick={() => navigate('/webinaires')}
-          className="bg-indigo-50 border-b border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors duration-150"
+          className="block w-full bg-[#eef2ff] border-y border-brand-navy/10 cursor-pointer hover:bg-[#e0e7ff] transition-colors duration-150"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-3 text-sm">
-            <span className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-              Nouveau
-            </span>
-            <p className="text-indigo-800 font-medium text-center">
-              Parcours certifiant BRVM — obtenez votre badge d'investisseur confirmé
-            </p>
-            <span className="hidden sm:flex items-center gap-1 text-indigo-500 font-semibold shrink-0 text-xs">
-              Découvrir
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-sm">
+            <span className="text-indigo-800 font-medium text-center">
+              Investir, ça s'apprend : formez-vous avant d'engager votre argent
             </span>
           </div>
-        </div>
+        </button>
 
         {/* === Simulateur === */}
         <SimulatorCarousel />

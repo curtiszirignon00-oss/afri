@@ -1,6 +1,6 @@
 import { TrendingUp, BookOpen, User, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
@@ -29,6 +29,12 @@ function Badge({ count }: { count: number }) {
 // forment ainsi une seule paire orange + aplat contrastant. Ne reste ici que
 // la taille, plus compacte que celle du hero.
 const HEADER_BTN = `${BTN_BASE} gap-2 h-10 px-5 text-sm cursor-pointer`;
+
+// Sursis avant fermeture d'un mega menu, en millisecondes.
+// Le panneau est rendu sous le header, hors de l'onglet qui l'ouvre : en
+// descendant vers lui, le curseur quitte forcement l'onglet. Sans ce delai le
+// menu se refermait avant d'avoir pu etre atteint.
+const MEGA_MENU_CLOSE_DELAY = 500;
 
 // --- MegaMenu Mapping ---
 const MEGA_MENU_COMPONENTS: { [key: string]: React.FC<any> } = {
@@ -75,6 +81,41 @@ export default function Header() {
 
   const ActiveMegaMenuComponent = activeMegaMenu ? MEGA_MENU_COMPONENTS[activeMegaMenu] : null;
 
+  // Ouverture / fermeture des mega menus. La fermeture passe par un minuteur
+  // que toute entrée du curseur annule — sur l'onglet comme sur le panneau.
+  // Le trajet de l'un à l'autre est ainsi couvert, même s'il traverse un point
+  // qui n'appartient ni à l'un ni à l'autre.
+  const closeTimer = useRef<number | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  const openMegaMenu = (id: string) => {
+    cancelClose();
+    setActiveMegaMenu(id);
+  };
+
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = window.setTimeout(() => {
+      closeTimer.current = null;
+      setActiveMegaMenu(null);
+    }, MEGA_MENU_CLOSE_DELAY);
+  };
+
+  // Clic ou sortie au clavier : fermeture immédiate, l'intention est explicite.
+  const closeMegaMenuNow = () => {
+    cancelClose();
+    setActiveMegaMenu(null);
+  };
+
+  // Empêche un minuteur en attente de déclencher un setState après démontage.
+  useEffect(() => cancelClose, []);
+
   // Mesure la hauteur réelle du bloc fixe (bannière + header) et l'expose en variable CSS.
   // Le <main> l'utilise comme padding-top → pas de chevauchement ni de saut quand la bannière
   // apparaît/disparaît. useLayoutEffect + ResizeObserver garantissent une mesure avant paint.
@@ -107,7 +148,7 @@ export default function Header() {
             {/* Logo */}
             <div className="flex items-center">
               <button
-                onClick={() => { navigate('/'); setActiveMegaMenu(null); }}
+                onClick={() => { navigate('/'); closeMegaMenuNow(); }}
                 className="flex items-center gap-0.5 cursor-pointer"
                 aria-label="AfriBourse — accueil"
               >
@@ -132,12 +173,12 @@ export default function Header() {
                   <div
                     key={item.id}
                     className="relative"
-                    onMouseEnter={() => item.hasMegaMenu && setActiveMegaMenu(item.id)}
-                    onMouseLeave={() => setActiveMegaMenu(null)}
-                    onFocus={() => item.hasMegaMenu && setActiveMegaMenu(item.id)}
-                    onBlur={(e) => { 
+                    onMouseEnter={() => item.hasMegaMenu && openMegaMenu(item.id)}
+                    onMouseLeave={scheduleClose}
+                    onFocus={() => item.hasMegaMenu && openMegaMenu(item.id)}
+                    onBlur={(e) => {
                       if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                        setActiveMegaMenu(null);
+                        closeMegaMenuNow();
                       }
                     }}
                     tabIndex={-1}
@@ -145,15 +186,15 @@ export default function Header() {
                     <button
                       onClick={() => {
                         navigate(`/${item.id}`);
-                        setActiveMegaMenu(null);
+                        closeMegaMenuNow();
                         if (item.id === 'news')      markNewsVisited();
                         if (item.id === 'community') markCommunityVisited();
                       }}
-                      className={`relative px-4 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2 cursor-pointer hover:bg-brand-navy/10 hover:text-brand-navy ${
+                      className={`group relative px-4 py-2 text-sm transition-colors flex items-center gap-2 cursor-pointer hover:text-brand-navy ${
                         currentPage === item.id
                           ? 'text-ink-900 font-semibold'
                           : activeMegaMenu === item.id
-                            ? 'bg-brand-navy/10 text-brand-navy font-medium'
+                            ? 'text-brand-navy font-medium'
                             : 'text-ink-600 font-medium'
                       }`}
                       aria-haspopup={item.hasMegaMenu ? "true" : "false"}
@@ -167,15 +208,19 @@ export default function Header() {
                       {item.id === 'community' && communityBadge > 0 && (
                         <Badge count={communityBadge} />
                       )}
-                      {/* Seul accent orange du header : il dit ou l'on se trouve.
-                          Absent au survol d'un mega menu, qui est une exploration
-                          et non une position. */}
-                      {currentPage === item.id && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute inset-x-4 bottom-0 h-[2px] rounded-full bg-brand-orange-dark"
-                        />
-                      )}
+                      {/* Trait unique, en bleu du logo. Acquis sur la page
+                          courante, il se deploie depuis la gauche au survol ou
+                          a l'ouverture du mega menu. C'est la graisse du
+                          libelle, pas la couleur, qui distingue "je suis ici"
+                          de "j'explore". */}
+                      <span
+                        aria-hidden="true"
+                        className={`absolute inset-x-4 bottom-0 h-[2px] rounded-full bg-brand-navy origin-left transition-transform duration-200 ${
+                          currentPage === item.id || activeMegaMenu === item.id
+                            ? 'scale-x-100'
+                            : 'scale-x-0 group-hover:scale-x-100'
+                        }`}
+                      />
                     </button>
                   </div>
                 );
@@ -378,7 +423,9 @@ export default function Header() {
 
       {/* Mega Menus - rendered inside the sticky wrapper so they attach to the header */}
       {ActiveMegaMenuComponent && (
-        <div className="relative" onMouseLeave={() => setActiveMegaMenu(null)}>
+        // onMouseEnter annule la fermeture programmee par l'onglet : c'est ce
+        // qui rend le panneau atteignable.
+        <div className="relative" onMouseEnter={cancelClose} onMouseLeave={scheduleClose}>
           <ActiveMegaMenuComponent />
         </div>
       )}
