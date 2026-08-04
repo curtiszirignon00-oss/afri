@@ -130,6 +130,42 @@ function DBArticlePage({ article }: { article: DBArticle }) {
     : null;
   const readTime = calcReadTime(article.content ?? article.rich_content);
 
+  // Les analyses HTML autonomes (article.content) sont conçues pleine largeur :
+  // on les rend sans la sidebar pour qu'elles respirent au lieu d'être étirées
+  // dans la colonne 1fr. Ne s'applique pas au contenu par blocs ni au mur d'inscription.
+  const isHtmlArticle = !gated && !blocks && !!article.content;
+
+  const headerBlock = (
+    <>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {article.category && (
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${catColor(article.category)}`}>{catLabel(article.category)}</span>
+        )}
+        {article.is_featured && (
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-100">À la une</span>
+        )}
+      </div>
+
+      <h1 className="text-3xl sm:text-4xl lg:text-[2.6rem] font-black text-slate-900 leading-tight mb-5">{article.title}</h1>
+
+      <div className="flex items-center gap-4 text-sm text-slate-400 mb-8 flex-wrap border-b border-slate-100 pb-6">
+        <span className="font-semibold text-slate-700">{article.author ?? 'AfriBourse'}</span>
+        {formattedDate && <span className="flex items-center gap-1.5"><Calendar size={13} />{formattedDate}</span>}
+        <span className="flex items-center gap-1.5"><Clock size={13} />{readTime} min de lecture</span>
+      </div>
+
+      {article.summary && (
+        <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">{article.summary}</p>
+      )}
+    </>
+  );
+
+  const footerNote = (
+    <p className="text-[11px] text-slate-400 italic border-t border-slate-100 pt-6 mt-8">
+      {article.author ?? 'AfriBourse'} · {article.source ?? 'AfriBourse Research'} · Informations éducatives uniquement.
+    </p>
+  );
+
   return (
     <>
       <Helmet>
@@ -172,28 +208,25 @@ function DBArticlePage({ article }: { article: DBArticle }) {
           </Link>
         </div>
 
+        {isHtmlArticle ? (
+          /* ── Analyse HTML — pleine largeur, sans sidebar ── */
+          <div className="min-w-0">
+            <div className="max-w-4xl mx-auto">{headerBlock}</div>
+
+            <div className="mt-2">
+              <HtmlArticleRenderer html={article.content!} />
+            </div>
+
+            <div className="max-w-4xl mx-auto">
+              <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
+              <RelatedArticles articleId={article.id} tickers={article.tickers} category={article.category} />
+              {footerNote}
+            </div>
+          </div>
+        ) : (
         <div className="lg:grid lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px] lg:gap-12">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {article.category && (
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${catColor(article.category)}`}>{catLabel(article.category)}</span>
-              )}
-              {article.is_featured && (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-600 border border-yellow-100">À la une</span>
-              )}
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-[2.6rem] font-black text-slate-900 leading-tight mb-5">{article.title}</h1>
-
-            <div className="flex items-center gap-4 text-sm text-slate-400 mb-8 flex-wrap border-b border-slate-100 pb-6">
-              <span className="font-semibold text-slate-700">{article.author ?? 'AfriBourse'}</span>
-              {formattedDate && <span className="flex items-center gap-1.5"><Calendar size={13} />{formattedDate}</span>}
-              <span className="flex items-center gap-1.5"><Clock size={13} />{readTime} min de lecture</span>
-            </div>
-
-            {article.summary && (
-              <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium">{article.summary}</p>
-            )}
+            {headerBlock}
 
             {gated ? (
               <NewsAuthGate variant="article" />
@@ -213,9 +246,7 @@ function DBArticlePage({ article }: { article: DBArticle }) {
               </>
             )}
 
-            <p className="text-[11px] text-slate-400 italic border-t border-slate-100 pt-6 mt-8">
-              {article.author ?? 'AfriBourse'} · {article.source ?? 'AfriBourse Research'} · Informations éducatives uniquement.
-            </p>
+            {footerNote}
           </div>
 
           <aside className="hidden lg:block">
@@ -255,6 +286,7 @@ function DBArticlePage({ article }: { article: DBArticle }) {
             </div>
           </aside>
         </div>
+        )}
 
         {article.tickers?.length > 0 && (
           <div className="lg:hidden mt-8 pt-6 border-t border-slate-100">
