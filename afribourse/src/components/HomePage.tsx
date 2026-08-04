@@ -221,13 +221,18 @@ function HeroImageOrbit() {
         />
       </svg>
 
-      {/* Image centrale — volontairement plus petite que l'orbite pour laisser
-          un espace clair entre elle et les logos satellites */}
-      <div className="absolute left-1/2 top-1/2 h-[38%] w-[38%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full shadow-2xl shadow-blue-950/50 ring-[6px] ring-white/15">
+      {/* Centre de l'orbite : le logo AfriBourse, autour duquel gravitent les
+          valeurs BRVM. Volontairement plus petit que l'orbite pour laisser un
+          espace clair entre lui et les satellites.
+          Fond blanc + object-contain, comme les satellites : le logo est
+          detoure et cadre carre, object-cover le rognerait.
+          Padding progressif : le disque grandit avec l'ecran, un padding fixe
+          y laisserait le logo occuper une part croissante de la surface. */}
+      <div className="absolute left-1/2 top-1/2 h-[32%] w-[32%] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full bg-white p-4 sm:p-5 lg:p-6 shadow-2xl shadow-blue-950/50 ring-[6px] ring-white/25">
         <img
-          src="/images/brvm-growth.webp"
-          alt="Skyline d’Abidjan et courbe de croissance de la BRVM"
-          className="h-full w-full object-cover"
+          src="/images/logo_afribourse.png"
+          alt="Logo AfriBourse"
+          className="h-full w-full object-contain"
           width={440}
           height={440}
           loading="eager"
@@ -235,13 +240,22 @@ function HeroImageOrbit() {
         />
       </div>
 
+      {/* Groupe en rotation : carré calé sur le conteneur, il pivote donc
+          autour du centre exact de l'orbite. Il emporte les cinq satellites
+          d'un bloc, à la même vitesse que l'anneau pointillé — les logos
+          restent alignés sur les tirets. */}
+      <div
+        data-orb
+        className="absolute inset-0"
+        style={{ animation: 'orbitSpin 70s linear infinite' }}
+      >
       {/* Satellites */}
       {ORBIT_STOCKS.map((stock, i) => {
         const angle = ((-90 + i * 72) * Math.PI) / 180;
         return (
           <div
             key={stock.ticker}
-            className="absolute h-[24%] w-[24%] -translate-x-1/2 -translate-y-1/2"
+            className="absolute h-[20%] w-[20%] -translate-x-1/2 -translate-y-1/2"
             style={{
               left: `${50 + ORBIT_RADIUS * Math.cos(angle)}%`,
               top: `${50 + ORBIT_RADIUS * Math.sin(angle)}%`,
@@ -253,22 +267,32 @@ function HeroImageOrbit() {
               className="h-full w-full"
               style={{ animation: `orbitFloat 5.5s ease-in-out ${i * 0.55}s infinite alternate` }}
             >
-              {/* Fond blanc + object-contain : les logos s'affichent en entier, sans rognage */}
-              <div className="relative h-full w-full overflow-hidden rounded-full bg-white p-2 shadow-lg shadow-blue-950/50 ring-2 ring-white/60">
-                <img
-                  src={stock.src}
-                  alt={stock.alt}
-                  className="h-full w-full object-contain"
-                  width={120}
-                  height={120}
-                  loading="eager"
-                  decoding="async"
-                />
+              {/* Contre-rotation : annule exactement celle du groupe, donc le
+                  logo reste droit sur tout le tour. Sans elle il basculerait
+                  la tête en bas à mi-parcours. */}
+              <div
+                data-orb
+                className="h-full w-full"
+                style={{ animation: 'orbitSpinReverse 70s linear infinite' }}
+              >
+                {/* Fond blanc + object-contain : les logos s'affichent en entier, sans rognage */}
+                <div className="relative h-full w-full overflow-hidden rounded-full bg-white p-2 shadow-lg shadow-blue-950/50 ring-2 ring-white/60">
+                  <img
+                    src={stock.src}
+                    alt={stock.alt}
+                    className="h-full w-full object-contain"
+                    width={120}
+                    height={120}
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
               </div>
             </div>
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
@@ -549,6 +573,12 @@ export default function HomePage() {
         }
         @keyframes orbitSpin {
           to { transform: rotate(360deg); }
+        }
+        /* Contre-rotation des satellites : meme duree et meme courbe que
+           orbitSpin, donc parfaitement synchrone. Sans elle les logos
+           basculeraient la tete en bas a mi-parcours. */
+        @keyframes orbitSpinReverse {
+          to { transform: rotate(-360deg); }
         }
         @keyframes orbitFloat {
           from { transform: translateY(-6px); }
