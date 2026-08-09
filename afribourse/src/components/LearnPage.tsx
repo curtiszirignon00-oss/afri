@@ -1583,7 +1583,7 @@ export default function LearnPage() {
                         Apprenez à investir intelligemment avec nos modules interactifs. Quiz, contenu progressif et audio pour une expérience d'apprentissage complète.
                     </p>
                     <a
-                        href="/webinaires"
+                        href="/webinaires-eco"
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md transition-all"
                     >
                         <span>🎥</span>
@@ -2071,7 +2071,7 @@ export default function LearnPage() {
                     <p className="text-blue-200 text-sm mt-1">3 sessions avec nos experts — tarif early bird disponible</p>
                 </div>
                 <a
-                    href="/webinaires"
+                    href="/webinaires-eco"
                     className="flex-shrink-0 bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm px-6 py-3 rounded-xl transition-colors shadow-sm whitespace-nowrap"
                 >
                     Voir les webinaires →

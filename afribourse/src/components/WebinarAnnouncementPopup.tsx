@@ -67,7 +67,7 @@ export default function WebinarAnnouncementPopup() {
 
   const goToWebinars = () => {
     dismiss();
-    navigate('/webinaires');
+    navigate('/webinaires-eco');
   };
 
   if (!visible) return null;

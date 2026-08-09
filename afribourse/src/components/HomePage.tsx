@@ -476,7 +476,7 @@ export default function HomePage() {
 
         {/* === Bannière annonce === */}
         <div
-          onClick={() => navigate('/webinaires')}
+          onClick={() => navigate('/webinaires-eco')}
           className="bg-indigo-50 border-b border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors duration-150"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-3 text-sm">

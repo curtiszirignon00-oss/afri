@@ -303,7 +303,7 @@ const DashboardWebinarWidget: React.FC = () => {
               Je m'inscris
             </button>
             <button
-              onClick={() => navigate('/webinaires')}
+              onClick={() => navigate('/webinaires-eco')}
               className="px-3 py-2.5 border border-gray-200 hover:border-blue-300 text-gray-600 hover:text-blue-600 rounded-xl transition-all flex items-center gap-1"
               title="Voir tous les webinaires"
             >
@@ -312,7 +312,7 @@ const DashboardWebinarWidget: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigate('/webinaires')}
+            onClick={() => navigate('/webinaires-eco')}
             className="w-full text-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
           >
             Voir les 3 webinaires →
