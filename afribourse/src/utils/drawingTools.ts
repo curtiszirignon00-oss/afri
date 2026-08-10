@@ -195,3 +195,33 @@ export function saveDrawings(symbol: string, json: string): void {
     /* quota dépassé ou stockage indisponible : les tracés restent en mémoire */
   }
 }
+
+// ─── Position de la barre d'outils (déplaçable) ──────────────────────────────
+
+export interface ToolbarPosition { x: number; y: number }
+
+/** Coin haut-gauche de la zone graphique, avec une petite marge */
+export const DEFAULT_TOOLBAR_POSITION: ToolbarPosition = { x: 8, y: 8 };
+
+const TOOLBAR_POS_KEY = 'afribourse:drawings:toolbar-position';
+
+export function loadToolbarPosition(): ToolbarPosition | null {
+  try {
+    const raw = window.localStorage.getItem(TOOLBAR_POS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ToolbarPosition>;
+    if (typeof parsed?.x !== 'number' || typeof parsed?.y !== 'number') return null;
+    if (!Number.isFinite(parsed.x) || !Number.isFinite(parsed.y)) return null;
+    return { x: parsed.x, y: parsed.y };
+  } catch {
+    return null;
+  }
+}
+
+export function saveToolbarPosition(pos: ToolbarPosition): void {
+  try {
+    window.localStorage.setItem(TOOLBAR_POS_KEY, JSON.stringify(pos));
+  } catch {
+    /* stockage indisponible : la position vaut pour la session */
+  }
+}

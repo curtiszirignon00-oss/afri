@@ -1,4 +1,4 @@
-import { useState, type ComponentType } from 'react';
+import { useState, useRef, useEffect, useCallback, type ComponentType, type RefObject, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   MousePointer2,
   TrendingUp,
@@ -26,8 +26,12 @@ import {
   Repeat,
   List,
   X,
+  GripHorizontal,
 } from 'lucide-react';
-import { getToolLabel } from '../../utils/drawingTools';
+import {
+  getToolLabel, loadToolbarPosition, saveToolbarPosition,
+  DEFAULT_TOOLBAR_POSITION, type ToolbarPosition,
+} from '../../utils/drawingTools';
 import type { DrawingInfo } from '../../hooks/useStockChart';
 
 interface DrawingTool {
@@ -48,6 +52,8 @@ interface ChartDrawingToolbarProps {
   onToggleContinuous: () => void;
   activeTool?: string | null;
   theme?: 'light' | 'dark';
+  /** Zone dans laquelle la barre peut être déplacée (conteneur du graphique) */
+  boundsRef: RefObject<HTMLElement | null>;
 }
 
 const LINE_TOOLS: DrawingTool[] = [
@@ -90,10 +96,123 @@ export default function ChartDrawingToolbar({
   onToggleContinuous,
   activeTool,
   theme = 'light',
+  boundsRef,
 }: ChartDrawingToolbarProps) {
   const isDark = theme === 'dark';
   const [showList, setShowList] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+
+  // ── Barre déplaçable ──────────────────────────────────────────────────────
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<ToolbarPosition>(
+    () => loadToolbarPosition() ?? DEFAULT_TOOLBAR_POSITION
+  );
+  const [isDragging, setIsDragging] = useState(false);
+  /** Écart entre le pointeur et le coin de la barre au début du glissement */
+  const grabOffsetRef = useRef<{ dx: number; dy: number } | null>(null);
+  /** Hauteur de la zone graphique : la barre (≈850px) doit y tenir pour rester déplaçable */
+  const [boundsHeight, setBoundsHeight] = useState(0);
+
+  /** Garde la barre entièrement visible dans la zone du graphique */
+  const clampToBounds = useCallback((x: number, y: number): ToolbarPosition => {
+    const bounds = boundsRef.current?.getBoundingClientRect();
+    const el = rootRef.current?.getBoundingClientRect();
+    if (!bounds || !el) return { x, y };
+    const maxX = Math.max(0, bounds.width - el.width);
+    const maxY = Math.max(0, bounds.height - el.height);
+    return {
+      x: Math.min(Math.max(0, x), maxX),
+      y: Math.min(Math.max(0, y), maxY),
+    };
+  }, [boundsRef]);
+
+  const handleDragStart = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = rootRef.current;
+    const bounds = boundsRef.current;
+    if (!el || !bounds) return;
+    const rect = el.getBoundingClientRect();
+    grabOffsetRef.current = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+    e.preventDefault(); // pas de sélection de texte pendant le glissement
+  };
+
+  const handleDragMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const grab = grabOffsetRef.current;
+    const bounds = boundsRef.current?.getBoundingClientRect();
+    if (!grab || !bounds) return;
+    setPosition(clampToBounds(
+      e.clientX - bounds.left - grab.dx,
+      e.clientY - bounds.top - grab.dy,
+    ));
+  };
+
+  const handleDragEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!grabOffsetRef.current) return;
+    grabOffsetRef.current = null;
+    setIsDragging(false);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    setPosition(prev => {
+      saveToolbarPosition(prev);
+      return prev;
+    });
+  };
+
+  /** Double-clic sur la poignée : remet la barre à sa place d'origine */
+  const resetPosition = () => {
+    setPosition(DEFAULT_TOOLBAR_POSITION);
+    saveToolbarPosition(DEFAULT_TOOLBAR_POSITION);
+  };
+
+  /** Déplacement au clavier quand la poignée a le focus */
+  const handleHandleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = e.shiftKey ? 20 : 5;
+    const deltas: Record<string, [number, number]> = {
+      ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step],
+    };
+    const delta = deltas[e.key];
+    if (!delta) return;
+    e.preventDefault();
+    setPosition(prev => {
+      const next = clampToBounds(prev.x + delta[0], prev.y + delta[1]);
+      saveToolbarPosition(next);
+      return next;
+    });
+  };
+
+  // Replacer la barre si la zone rétrécit (redimensionnement, plein écran)
+  // ou si le panneau de gestion change la largeur totale.
+  // Suivre la hauteur de la zone graphique (redimensionnement, plein écran)
+  useEffect(() => {
+    const bounds = boundsRef.current;
+    if (!bounds) return;
+    const measure = () => setBoundsHeight(bounds.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(bounds);
+    return () => observer.disconnect();
+  }, [boundsRef]);
+
+  /**
+   * La colonne d'outils défile si elle dépasse la place disponible.
+   * On réserve ~120px pour que la barre garde une vraie latitude de déplacement
+   * vertical : sans cela elle occupe toute la hauteur et ne peut plus bouger.
+   */
+  const toolsMaxHeight = boundsHeight > 0 ? Math.max(160, boundsHeight - 160) : undefined;
+
+  // Recaler la barre APRÈS que la nouvelle hauteur max soit appliquée au DOM
+  // (sinon on mesure encore la barre à pleine hauteur et elle est collée en haut).
+  useEffect(() => {
+    // Tant que la zone n'est pas mesurée, la barre est à pleine hauteur :
+    // caler maintenant écraserait la position enregistrée en la collant en haut.
+    if (boundsHeight === 0) return;
+    setPosition(prev => {
+      const next = clampToBounds(prev.x, prev.y);
+      return next.x === prev.x && next.y === prev.y ? prev : next;
+    });
+  }, [boundsHeight, showList, clampToBounds]);
 
   const bgClass    = isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200';
   const btnClass   = isDark
@@ -129,11 +248,44 @@ export default function ChartDrawingToolbar({
   };
 
   return (
-    <div className="flex items-start gap-1.5">
+    <div
+      ref={rootRef}
+      className={`absolute z-10 flex items-start gap-1.5 ${isDragging ? 'select-none' : ''}`}
+      style={{ left: position.x, top: position.y }}
+    >
       <div
-        className={`flex flex-col items-center gap-0.5 p-1 rounded-lg border shadow-md ${bgClass}`}
+        className={`rounded-lg border shadow-md ${bgClass} ${
+          isDragging ? 'shadow-xl ring-2 ring-blue-400' : ''
+        }`}
         style={{ width: '38px' }}
       >
+        {/* Poignée de déplacement — toujours visible, hors de la zone défilante */}
+        <div
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+          onDoubleClick={resetPosition}
+          onKeyDown={handleHandleKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-label="Déplacer la barre d'outils"
+          title="Glissez pour déplacer · double-clic pour replacer · flèches du clavier"
+          className={`h-6 mx-1 mt-1 flex items-center justify-center rounded ${btnClass} ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          style={{ touchAction: 'none' }}
+        >
+          <GripHorizontal className="w-[15px] h-[15px]" />
+        </div>
+
+        <div className={`w-5 h-px ${divClass} mx-auto my-1`} />
+
+        {/* Outils — défilent si la zone du graphique est trop courte */}
+        <div
+          className="flex flex-col items-center gap-0.5 px-1 pb-1"
+          style={{ maxHeight: toolsMaxHeight, overflowY: 'auto', scrollbarWidth: 'none' }}
+        >
         {/* Curseur / sélection */}
         <button
           onClick={() => onToolSelect('cursor')}
@@ -219,6 +371,7 @@ export default function ChartDrawingToolbar({
         >
           <Eraser className="w-[15px] h-[15px]" />
         </button>
+        </div>
       </div>
 
       {/* Panneau de gestion des tracés */}

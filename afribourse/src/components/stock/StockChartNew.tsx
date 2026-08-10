@@ -117,6 +117,8 @@ export default function StockChartNew({
   const [newFibCoeff, setNewFibCoeff] = useState('');
   const [newFibColor, setNewFibColor] = useState('#ff0000');
   const containerRef = useRef<HTMLDivElement>(null);
+  /** Zone du graphique : borne le déplacement de la barre de dessin */
+  const chartAreaRef = useRef<HTMLDivElement>(null);
 
   const activeConfig = DISPLAY_INTERVALS.find(i => i.value === selectedDisplay)!;
 
@@ -633,8 +635,9 @@ export default function StockChartNew({
       )}
 
       {/* Graphique — chartContainerRef TOUJOURS dans le DOM pour que le chart
-          soit initialisé une seule fois et que ses listeners restent valides. */}
-      <div className="relative">
+          soit initialisé une seule fois et que ses listeners restent valides.
+          Ce conteneur borne aussi le déplacement de la barre de dessin. */}
+      <div className="relative" ref={chartAreaRef}>
         <div
           ref={chartContainerRef}
           className="w-full"
@@ -658,23 +661,22 @@ export default function StockChartNew({
           />
         </div>
 
-        {/* Barre d'outils de dessin flottante (gauche) */}
+        {/* Barre d'outils de dessin flottante — déplaçable par sa poignée */}
         {showDrawingToolbar && isReady && data.length > 0 && (
-          <div className="absolute left-2 top-2 z-10">
-            <ChartDrawingToolbar
-              onToolSelect={handleDrawingToolSelect}
-              onDeleteSelected={deleteSelectedTools}
-              onClearAll={clearAllDrawings}
-              onUndo={undoLastDrawing}
-              canUndo={canUndo}
-              drawings={drawings}
-              onRemoveDrawing={removeDrawingById}
-              continuousMode={continuousMode}
-              onToggleContinuous={() => setContinuousMode(v => !v)}
-              activeTool={activeTool ?? pendingModalTool}
-              theme={theme}
-            />
-          </div>
+          <ChartDrawingToolbar
+            onToolSelect={handleDrawingToolSelect}
+            onDeleteSelected={deleteSelectedTools}
+            onClearAll={clearAllDrawings}
+            onUndo={undoLastDrawing}
+            canUndo={canUndo}
+            drawings={drawings}
+            onRemoveDrawing={removeDrawingById}
+            continuousMode={continuousMode}
+            onToggleContinuous={() => setContinuousMode(v => !v)}
+            activeTool={activeTool ?? pendingModalTool}
+            theme={theme}
+            boundsRef={chartAreaRef}
+          />
         )}
 
         {/* Consigne de placement pendant qu'un outil est armé */}
