@@ -12,19 +12,18 @@ const COHORT_ID = 'cohorte-juillet-2026';
 
 const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
 
-// Cohorte "budget" (page /webinaires-eco) : 20 places par pack, compteurs initiaux
-const BUDGET_SEAT_LIMIT = 20;
-const BUDGET_SEAT_OFFSET: Record<string, number> = { starter: 16, parcours: 18, investisseur: 9 };
+// Cohorte "budget" septembre (page /webinaires-eco) : 50 pré-inscriptions max par pack
+const BUDGET_SEAT_LIMIT = 50;
 
-/** Places occupées = offset initial + PAIEMENTS effectifs (les pré-inscriptions non payées ne comptent pas). */
+/** Nombre de pré-inscriptions budget pour un pack (payées ou non), plafonné à la limite. */
 async function getBudgetReserved(tier: string): Promise<number> {
   const count = await prisma.webinarRegistration.count({
-    where: { webinarId: PACK_WEBINAR_ID, pack: tier, variant: 'budget', paymentStatus: 'paid' },
+    where: { webinarId: PACK_WEBINAR_ID, pack: tier, variant: 'budget' },
   });
-  return Math.min(BUDGET_SEAT_LIMIT, (BUDGET_SEAT_OFFSET[tier] ?? 0) + count);
+  return Math.min(BUDGET_SEAT_LIMIT, count);
 }
 
-// GET /api/webinars/cohort-seats — places restantes par pack (cohorte budget)
+// GET /api/webinars/cohort-seats — pré-inscriptions restantes par pack (cohorte budget)
 export async function getCohortSeats(_req: Request, res: Response, next: NextFunction) {
   try {
     const tiers = ['starter', 'parcours', 'investisseur'];

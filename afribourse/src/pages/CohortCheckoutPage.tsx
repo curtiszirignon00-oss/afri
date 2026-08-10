@@ -102,7 +102,6 @@ export default function CohortCheckoutPage() {
   const price = isBudget ? budgetPrice(tier) : applyPromo(tier, tierCfg.full);
   const pct = isBudget ? budgetDiscountPct(tier) : promoPercent(tier);
   const showDiscount = isBudget || (promo.active && pct > 0);
-  const [laterDone, setLaterDone] = useState(false);
 
   const lead = readLead();
   const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
@@ -116,7 +115,7 @@ export default function CohortCheckoutPage() {
   const [form, setForm] = useState({ name: initName, email: initEmail });
   const [waDialCode, setWaDialCode] = useState(initDial);
   const [waPhone, setWaPhone] = useState(initPhone);
-  const [step, setStep] = useState<'form' | 'payment'>(infoComplete ? 'payment' : 'form');
+  const [step, setStep] = useState<'form' | 'reserved' | 'payment'>(infoComplete ? (isBudget ? 'reserved' : 'payment') : 'form');
   const [payOperator, setPayOperator] = useState<string | null>(null);
   const [payDialCode, setPayDialCode] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initDial : '+225');
   const [payPhone, setPayPhone] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initPhone : '');
@@ -165,7 +164,8 @@ export default function CohortCheckoutPage() {
         setPayDialCode(waDialCode);
         setPayPhone(waPhone);
       }
-      setStep('payment');
+      // Budget : après la pré-inscription → écran de choix (payer maintenant ou continuer)
+      setStep(isBudget ? 'reserved' : 'payment');
     } catch {
       toast.error("Erreur lors de l'enregistrement. Réessayez.");
     } finally {
@@ -215,26 +215,26 @@ export default function CohortCheckoutPage() {
     );
   }
 
-  // Réservation gardée (budget — paiement plus tard)
-  if (laterDone) {
+  // Budget : écran de choix après la pré-inscription (payer maintenant ou continuer)
+  if (step === 'reserved') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-9 h-9 text-emerald-500" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Place réservée ✓</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Pré-inscription enregistrée ✓</h1>
           <p className="text-sm text-gray-600 mb-2">
-            Votre place au <strong>{PACK_NAME}</strong> est réservée. Le parcours démarre le <strong>8 août</strong>.
+            Votre place au <strong>{PACK_NAME}</strong> est réservée pour la <strong>cohorte de septembre</strong> (démarrage le <strong>12 septembre</strong>).
           </p>
-          <p className="text-sm text-gray-600 mb-5">
-            Nous vous envoyons un email avec votre lien de paiement — réglez quand vous voulez pour confirmer définitivement votre place (dans la limite des places disponibles).
+          <p className="text-sm text-gray-600 mb-6">
+            Confirmez dès maintenant en réglant votre paiement, ou continuez à explorer — vous recevez aussi un email avec votre lien de paiement (à régler avant le 11 septembre pour garder votre place).
           </p>
-          <button onClick={() => setLaterDone(false)} className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors mb-2">
-            Payer maintenant
+          <button onClick={() => setStep('payment')} className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity mb-2 flex items-center justify-center gap-2">
+            💳 Payer maintenant — {formatPrice(price)}
           </button>
-          <button onClick={() => navigate('/webinaires')} className="w-full py-2.5 rounded-xl font-semibold text-gray-500 hover:text-gray-700 text-sm">
-            Plus tard
+          <button onClick={() => navigate('/webinaires-eco')} className="w-full py-2.5 rounded-xl font-semibold text-gray-500 hover:text-gray-700 text-sm">
+            Continuer sur la page webinaire
           </button>
         </div>
       </div>
@@ -251,7 +251,7 @@ export default function CohortCheckoutPage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
-            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Cohorte Août 2026</p>
+            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">{isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026'}</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
@@ -296,7 +296,7 @@ export default function CohortCheckoutPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
               <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
-              <p className="text-xs mt-0.5">1ère session le samedi 8 août.</p>
+              <p className="text-xs mt-0.5">1ère session le {isBudget ? 'samedi 12 septembre' : 'samedi 8 août'}.</p>
             </div>
 
 
@@ -361,7 +361,7 @@ export default function CohortCheckoutPage() {
             <div className="p-6 space-y-4">
               <div className={`${isBudget ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'} border rounded-xl p-3 text-sm`}>
                 {isBudget ? '✅ Place réservée · Payez maintenant ou plus tard pour la confirmer' : '✅ Inscription enregistrée · Payez pour confirmer votre place'}
-                <span className="block font-bold mt-0.5">{formatPrice(price)}{isBudget ? ' · démarrage le 8 août' : ''}</span>
+                <span className="block font-bold mt-0.5">{formatPrice(price)}{isBudget ? ' · démarrage le 12 septembre' : ''}</span>
               </div>
 
               {(payStatus === 'idle' || payStatus === 'initiating') && (
@@ -433,12 +433,12 @@ export default function CohortCheckoutPage() {
                     </button>
                   )}
                   {isBudget && (
-                    <button onClick={() => setLaterDone(true)} className="block w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:underline">
-                      Je paierai plus tard — garder ma réservation
+                    <button onClick={() => navigate('/webinaires-eco')} className="block w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:underline">
+                      Payer plus tard — continuer sur la page webinaire
                     </button>
                   )}
-                  <button onClick={() => setStep('form')} className="block w-full text-[11px] text-gray-400 hover:text-gray-600">
-                    Modifier mes coordonnées
+                  <button onClick={() => setStep(isBudget ? 'reserved' : 'form')} className="block w-full text-[11px] text-gray-400 hover:text-gray-600">
+                    {isBudget ? 'Retour' : 'Modifier mes coordonnées'}
                   </button>
                 </div>
               )}

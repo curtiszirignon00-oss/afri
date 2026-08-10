@@ -1,12 +1,13 @@
 // Cohorte "budget" (page /webinaires-eco) — prix dédiés + places limitées.
 // Doit rester synchronisé avec backend (PACK_TIER_BUDGET + BUDGET_SEAT_*).
 export const PACK_TIER_BUDGET: Record<string, number> = {
-  starter: 35000,
-  parcours: 70000,
-  investisseur: 100000,
+  starter: 35000,      // -50% (70 000)
+  parcours: 50000,     // -50% (100 000)
+  investisseur: 75000, // -50% (150 000)
 };
 
-export const BUDGET_SEAT_LIMIT = 20;
+// Cohorte septembre : 50 pré-inscriptions max par pack
+export const BUDGET_SEAT_LIMIT = 50;
 
 /** Prix comptant "normal" (pour l'affichage barré). */
 export const PACK_TIER_FULL: Record<string, number> = {

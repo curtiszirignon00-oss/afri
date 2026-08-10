@@ -45,8 +45,8 @@ const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 const PACK_TIER_FULL: Record<string, number> = { starter: 70000, parcours: 100000, investisseur: 150000 };
 const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 45000, investisseur: 67500 }; // -10%
 
-// Variante "budget" — cohorte prospects (page /webinaires-eco), prix dédiés
-export const PACK_TIER_BUDGET: Record<string, number> = { starter: 35000, parcours: 70000, investisseur: 100000 };
+// Variante "budget" — cohorte septembre (page /webinaires-eco), -50% sur tous les packs
+export const PACK_TIER_BUDGET: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
 
 // Webinaires à l'unité — prix officiels (source de vérité côté serveur)
 export const INDIVIDUAL_WEBINAR_PRICES: Record<string, number> = {

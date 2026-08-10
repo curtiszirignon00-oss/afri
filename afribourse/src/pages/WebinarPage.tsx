@@ -247,9 +247,9 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-2 mb-6">
             <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              Cohorte Août 2026
+              {isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026'}
             </span>
-            <span className="text-blue-400 text-xs">· Places limitées à 50 par session</span>
+            <span className="text-blue-400 text-xs">· Places limitées à 50 par pack</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ letterSpacing: '-0.02em' }}>
@@ -384,7 +384,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
           <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
           <p className="text-blue-200 mb-8 text-base leading-relaxed">
-            La prochaine cohorte démarre le 8 août. Les places sont limitées à 50 par session.
+            La prochaine cohorte démarre le {isBudget ? '12 septembre' : '8 août'}. Les places sont limitées à 50 par pack.
           </p>
           <button
             onClick={scrollToRegistration}
@@ -402,7 +402,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
           onClick={scrollToRegistration}
           className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-95 transition-transform"
         >
-          🎟️ Choisir mon pack — Cohorte 8 août →
+          🎟️ Réserver ma place — Cohorte {isBudget ? '12 sept' : '8 août'} →
         </button>
       </div>
 

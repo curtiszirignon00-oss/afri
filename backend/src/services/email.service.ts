@@ -4707,7 +4707,7 @@ const PACK_TIER_PRICES: Record<string, { name: string; full: number; cohort: num
   investisseur: { name: 'Pack Investisseur', full: 150000, cohort: 150000 },
 };
 // Prix cohorte "budget" (page /webinaires-eco) — sync avec pawapay.controller PACK_TIER_BUDGET
-const PACK_TIER_BUDGET_PRICES: Record<string, number> = { starter: 35000, parcours: 70000, investisseur: 100000 };
+const PACK_TIER_BUDGET_PRICES: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
 function fmtXof(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
 export async function sendCohortPreregistrationEmail({
@@ -4715,6 +4715,20 @@ export async function sendCohortPreregistrationEmail({
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
   const isBudget = variant === 'budget';
+  // Cohorte septembre pour la variante budget, cohorte août pour le standard
+  const cohortLabel = isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026';
+  const cohortMonth = isBudget ? 'de septembre' : "d'août";
+  const startDate = isBudget ? '12 septembre' : '8 août';
+  const payDeadline = isBudget ? '11 septembre' : '7 août';
+  const progRows = isBudget
+    ? `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>12 septembre</strong> — S1 · Fondamentaux de la bourse</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>26–27 septembre</strong> — S2 & S3 · Analyse fondamentale</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>10–11 octobre</strong> — S4 & S5 · Analyse technique</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>`
+    : `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>8 août</strong> — S1 · Fondamentaux de la bourse</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>22–23 août</strong> — S2 & S3 · Analyse fondamentale</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>5–6 septembre</strong> — S4 & S5 · Analyse technique</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>`;
   const base = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
   const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}${isBudget ? `${pack ? '&' : '?'}variant=budget` : ''}`;
   const tier = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
@@ -4727,7 +4741,7 @@ export async function sendCohortPreregistrationEmail({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Pré-inscription reçue — Cohorte Août 2026</title>
+  <title>Pré-inscription reçue — ${cohortLabel}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
   <span style="display:none;max-height:0;overflow:hidden;">Pré-inscription reçue — finalisez votre paiement pour confirmer votre place &#847;&zwnj;&nbsp;</span>
@@ -4737,7 +4751,7 @@ export async function sendCohortPreregistrationEmail({
 
         <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
           <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
-          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Parcours Investisseur · Cohorte Août 2026</p>
+          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">Parcours Investisseur · ${cohortLabel}</p>
         </td></tr>
 
         <tr><td style="background:linear-gradient(135deg,#1E3A8A 0%,#3730A3 100%);padding:40px;text-align:center;">
@@ -4751,14 +4765,14 @@ export async function sendCohortPreregistrationEmail({
         <tr><td style="background:#fff;padding:36px 40px;">
           <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
           <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
-            Votre pré-inscription au <strong>${packTitle}</strong> (cohorte d'août) est bien enregistrée.
+            Votre pré-inscription au <strong>${packTitle}</strong> (cohorte ${cohortMonth}) est bien enregistrée.
             <strong>Votre place n'est pas encore confirmée</strong> — il ne reste plus qu'à régler votre paiement.
             Vous recevrez ensuite votre email de confirmation d'inscription avec tous les détails.
           </p>
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:16px 20px;">
-              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Important :</strong> pour participer à la cohorte qui démarre le <strong>8 août</strong>, votre paiement doit être effectué <strong>avant le 7 août</strong>. Passé ce délai, votre place n'est plus garantie.</p>
+              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Important :</strong> pour participer à la cohorte qui démarre le <strong>${startDate}</strong>, votre paiement doit être effectué <strong>avant le ${payDeadline}</strong>. Passé ce délai, votre place n'est plus garantie.</p>
             </td></tr>
           </table>
 
@@ -4781,12 +4795,9 @@ export async function sendCohortPreregistrationEmail({
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:20px 24px;">
-              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Programme — cohorte août</p>
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:1px;">Programme — cohorte ${cohortMonth}</p>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>8 août</strong> — S1 · Fondamentaux de la bourse</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>22–23 août</strong> — S2 & S3 · Analyse fondamentale</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>5–6 septembre</strong> — S4 & S5 · Analyse technique</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>
+                ${progRows}
               </table>
             </td></tr>
           </table>
@@ -4811,7 +4822,7 @@ export async function sendCohortPreregistrationEmail({
     to: email,
     subject: `📝 Pré-inscription reçue — finalisez votre paiement (${packTitle})`,
     html,
-    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte août) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. IMPORTANT : pour participer à la cohorte qui démarre le 8 août, payez avant le 7 août (au-delà, votre place n'est plus garantie). Vous recevrez ensuite votre confirmation d'inscription. Programme : 8 août (Fondamentaux), 22-23 août (Analyse fondamentale), 5-6 septembre (Analyse technique).`,
+    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte ${cohortMonth}) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. IMPORTANT : pour participer à la cohorte qui démarre le ${startDate}, payez avant le ${payDeadline} (au-delà, votre place n'est plus garantie). Vous recevrez ensuite votre confirmation d'inscription.`,
   });
 }
 
