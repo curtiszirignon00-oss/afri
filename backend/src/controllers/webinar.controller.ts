@@ -62,43 +62,58 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
       where: { webinarId, email },
     });
 
-    if (existing) {
-      return res.status(200).json({
-        message: 'Vous êtes déjà préinscrit(e) à ce webinaire.',
-        data: existing,
-      });
-    }
-
-    // Cohorte budget : refuser si le pack est complet (20 places)
+    // Cohorte budget : refuser si le pack est complet (50 pré-inscriptions) — sauf si cette
+    // personne est déjà comptée dans ce pack budget (mise à jour de sa propre pré-inscription).
     if (isBudget && resolvedPack) {
-      const reserved = await getBudgetReserved(resolvedPack);
-      if (reserved >= BUDGET_SEAT_LIMIT) {
-        return res.status(409).json({ message: 'Cohorte complète pour ce pack — plus de place disponible.' });
+      const alreadyCounted = existing?.variant === 'budget' && existing?.pack === resolvedPack;
+      if (!alreadyCounted) {
+        const reserved = await getBudgetReserved(resolvedPack);
+        if (reserved >= BUDGET_SEAT_LIMIT) {
+          return res.status(409).json({ message: 'Cohorte complète pour ce pack — plus de place disponible.' });
+        }
       }
     }
 
-    const registration = await prisma.webinarRegistration.create({
-      data: {
-        webinarId,
-        type: type ?? 'webinar',
-        firstName: resolvedFirstName,
-        lastName: resolvedLastName,
-        email,
-        phone: phone ?? null,
-        earlyBird: earlyBird ?? false,
-        userId,
-        referralCode: referralCode ?? null,
-        pack: resolvedPack,
-        variant: isBudget ? 'budget' : null,
-      },
-    });
-
-    logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');
+    let registration;
+    if (existing) {
+      // Toujours conserver la personne au dashboard : on met à jour sa pré-inscription
+      // (pack/variant/coordonnées) sans écraser un paiement déjà effectué.
+      registration = await prisma.webinarRegistration.update({
+        where: { id: existing.id },
+        data: {
+          firstName: resolvedFirstName ?? existing.firstName,
+          lastName: resolvedLastName ?? existing.lastName,
+          phone: phone ?? existing.phone,
+          userId: userId ?? existing.userId,
+          pack: resolvedPack ?? existing.pack,
+          variant: isBudget ? 'budget' : existing.variant,
+        },
+      });
+      logger.info({ webinarId, email, userId }, '[WEBINAR] Préinscription mise à jour (déjà existante)');
+    } else {
+      registration = await prisma.webinarRegistration.create({
+        data: {
+          webinarId,
+          type: type ?? 'webinar',
+          firstName: resolvedFirstName,
+          lastName: resolvedLastName,
+          email,
+          phone: phone ?? null,
+          earlyBird: earlyBird ?? false,
+          userId,
+          referralCode: referralCode ?? null,
+          pack: resolvedPack,
+          variant: isBudget ? 'budget' : null,
+        },
+      });
+      logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');
+    }
 
     // Email de PRÉ-INSCRIPTION (avant paiement) — uniquement pour le Pack cohorte.
     // Pour les webinaires à l'unité, l'email de confirmation est envoyé après paiement (webhook).
+    // On ne renvoie pas ce mail à quelqu'un ayant déjà payé.
     const isPackPreregistration = webinarId === 'pack-parcours-investisseur' || resolvedPack !== null;
-    if (isPackPreregistration) {
+    if (isPackPreregistration && existing?.paymentStatus !== 'paid') {
       sendCohortPreregistrationEmail({
         email,
         firstName: resolvedFirstName || '',
