@@ -115,7 +115,8 @@ export default function CohortCheckoutPage() {
   const [form, setForm] = useState({ name: initName, email: initEmail });
   const [waDialCode, setWaDialCode] = useState(initDial);
   const [waPhone, setWaPhone] = useState(initPhone);
-  const [step, setStep] = useState<'form' | 'reserved' | 'payment'>(infoComplete ? (isBudget ? 'reserved' : 'payment') : 'form');
+  // Budget : on affiche TOUJOURS le formulaire de pré-inscription d'abord (pré-rempli si infos connues).
+  const [step, setStep] = useState<'form' | 'reserved' | 'payment'>(isBudget ? 'form' : (infoComplete ? 'payment' : 'form'));
   const [payOperator, setPayOperator] = useState<string | null>(null);
   const [payDialCode, setPayDialCode] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initDial : '+225');
   const [payPhone, setPayPhone] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initPhone : '');
@@ -147,7 +148,8 @@ export default function CohortCheckoutPage() {
   // Si on a déjà les infos → on enregistre le lead une fois au montage (l'étape 1 est sautée)
   const autoRegistered = useRef(false);
   useEffect(() => {
-    if (infoComplete && !autoRegistered.current) {
+    // Budget : pas d'auto-enregistrement — l'utilisateur valide le formulaire lui-même.
+    if (!isBudget && infoComplete && !autoRegistered.current) {
       autoRegistered.current = true;
       registerLead();
     }
