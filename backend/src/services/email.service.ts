@@ -7509,3 +7509,126 @@ export async function sendBadgeNudgeEmail(params: BadgeNudgeParams): Promise<voi
     text: `${firstName},\n\nTu es à ${xpNeeded} XP du niveau ${nextLevel} (actuellement niveau ${currentLevel} · ${Math.round(progressPercent)}% accompli).\n\nActions disponibles :\n${actionsText}\n\n— L'équipe AfriBourse · africbourse.com`,
   });
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Nouvel article publié — email de notification (titre + entête + bouton)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SITE_URL = 'https://www.africbourse.com';
+
+/** Rend une URL d'image absolue (les image_url en base sont souvent relatives : /images/x.jpg). */
+function absoluteImageUrl(src?: string | null): string | null {
+  if (!src) return null;
+  const s = src.trim();
+  if (!s) return null;
+  if (/^https?:\/\//i.test(s)) return s;
+  return `${SITE_URL}${s.startsWith('/') ? '' : '/'}${s}`;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  marches: 'Marchés', analyse: 'Analyse', economie: 'Économie',
+  interview: 'Interview', resultats: 'Résultats', dividendes: 'Dividendes',
+  startup: 'Startup',
+};
+
+interface SendNewArticleEmailParams {
+  email: string;
+  name?: string | null;
+  title: string;
+  summary?: string | null;
+  slug: string | null;
+  category?: string | null;
+  imageUrl?: string | null;
+}
+
+/**
+ * Envoie l'email « nouvel article » à un utilisateur : bandeau de catégorie,
+ * titre, image de couverture, entête (résumé) et bouton vers l'article.
+ */
+export async function sendNewArticleEmail({
+  email, name, title, summary, slug, category, imageUrl,
+}: SendNewArticleEmailParams): Promise<void> {
+  const displayName = (name && name.trim()) || 'Investisseur';
+  const articleUrl = slug ? `${SITE_URL}/news/${slug}` : `${SITE_URL}/news`;
+  const cover = absoluteImageUrl(imageUrl);
+  const catLabel = category ? (CATEGORY_LABELS[category.toLowerCase()] ?? category) : 'Actualité';
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeTitle = esc(title);
+  const safeSummary = summary ? esc(summary) : '';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${safeTitle}</title>
+    </head>
+    <body style="margin:0;padding:0;background-color:#f4f4f4;">
+      <div style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;">
+        <div style="background-color:#ffffff;border-radius:12px;padding:0;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.08);">
+
+          <!-- En-tête marque -->
+          <div style="text-align:center;padding:28px 40px 8px;">
+            <span style="font-size:26px;font-weight:bold;color:#f97316;">AfriBourse</span>
+            <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;margin:6px 0 0;">Nouvel article publié</p>
+          </div>
+
+          ${cover ? `
+          <!-- Couverture -->
+          <a href="${articleUrl}" style="display:block;">
+            <img src="${cover}" alt="${safeTitle}" width="600" style="width:100%;max-width:600px;height:auto;display:block;border:0;" />
+          </a>` : ''}
+
+          <div style="padding:28px 40px 8px;">
+            <!-- Badge catégorie -->
+            <span style="display:inline-block;background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:4px 10px;border-radius:999px;">${esc(catLabel)}</span>
+
+            <!-- Titre -->
+            <h1 style="font-size:23px;font-weight:bold;color:#0f172a;line-height:1.3;margin:14px 0 12px;">${safeTitle}</h1>
+
+            <p style="font-size:15px;color:#475569;margin:0 0 4px;">Bonjour ${esc(displayName)},</p>
+
+            ${safeSummary ? `
+            <!-- Entête / résumé -->
+            <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #f97316;border-radius:0 10px 10px 0;padding:16px 20px;margin:16px 0 8px;font-size:14px;color:#334155;line-height:1.6;">
+              ${safeSummary}
+            </div>` : `<p style="font-size:15px;color:#475569;margin:12px 0;">Un nouvel article vient d'être publié sur AfriBourse.</p>`}
+          </div>
+
+          <!-- Bouton -->
+          <div style="text-align:center;margin:22px 0 30px;">
+            <a href="${articleUrl}" style="display:inline-block;background:linear-gradient(135deg,#f97316,#ea580c);color:#ffffff !important;text-decoration:none;padding:14px 40px;border-radius:10px;font-weight:bold;font-size:16px;">Lire l'article →</a>
+          </div>
+
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:0 40px;" />
+
+          <!-- Pied -->
+          <div style="padding:20px 40px 30px;text-align:center;">
+            <p style="font-size:12px;color:#94a3b8;margin:0 0 4px;">Vous recevez cet email car vous êtes membre d'AfriBourse.</p>
+            <p style="font-size:12px;color:#94a3b8;margin:0;"><a href="${SITE_URL}/news" style="color:#f97316;text-decoration:none;">Toutes les actualités</a> · AfriBourse — Investir mieux</p>
+          </div>
+
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `AfriBourse — Nouvel article publié
+
+${title}
+
+Bonjour ${displayName},
+${summary ? '\n' + summary + '\n' : ''}
+Lire l'article : ${articleUrl}
+
+— AfriBourse · africbourse.com`;
+
+  await sendEmail({
+    to: email,
+    subject: `📰 Nouvel article : ${title}`,
+    html,
+    text,
+  });
+}

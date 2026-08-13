@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import { notifyAllUsersOfNewArticle } from '../services/notification.service';
+import { broadcastNewArticleEmail } from '../services/article-email.service';
 import { persistFile } from '../config/upload.config';
 
 interface AuthRequest extends Request {
@@ -67,7 +68,7 @@ export async function createAdminArticle(req: AuthRequest, res: Response, next: 
     const {
       title, summary, content, rich_content, tickers,
       category, author, source, country, sector,
-      image_url, is_featured, published_at,
+      image_url, is_featured, published_at, send_email,
     } = req.body;
 
     if (!title?.trim()) {
@@ -97,10 +98,17 @@ export async function createAdminArticle(req: AuthRequest, res: Response, next: 
 
     log.info(`[Admin] Article créé: ${article.id} "${article.title}"`);
 
-    // Notifier tous les utilisateurs (non bloquant pour la réponse)
+    // Notifier tous les utilisateurs (in-app, non bloquant pour la réponse)
     notifyAllUsersOfNewArticle(article.id, article.title, article.slug, article.category)
       .then(n => log.info(`[Admin] ${n} notifications envoyées pour l'article ${article.id}`))
-      .catch(err => log.warn({ err }, `[Admin] Échec notifications article ${article.id}`));
+      .catch(err => log.warn(`[Admin] Échec notifications article ${article.id}: ${err?.message ?? err}`));
+
+    // Diffusion email « nouvel article » à tous les membres (opt-out via send_email:false)
+    if (send_email !== false) {
+      broadcastNewArticleEmail(article.id)
+        .then(r => log.info(`[Admin] Emails article ${article.id} — envoyés: ${r.sent}, échecs: ${r.failed}`))
+        .catch(err => log.warn(`[Admin] Échec diffusion email article ${article.id}: ${err?.message ?? err}`));
+    }
 
     return res.status(201).json(article);
   } catch (err) {
