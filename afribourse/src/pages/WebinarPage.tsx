@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  CheckCircle, ChevronDown, TrendingUp, BookOpen,
-  Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
+  CheckCircle, ChevronRight, TrendingUp, BookOpen,
+  Users, BarChart3, Award, Zap, MessageSquare, Linkedin,
 } from 'lucide-react';
+import { Button } from '../components/ui';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
@@ -17,6 +18,9 @@ const OUTCOMES = [
   'Décrocher votre certificat "Investisseur BRVM Niveau 1"',
 ];
 
+// ATTENTION — PROGRAMME et INCLUSIONS ne sont rendus nulle part dans ce fichier.
+// Ce sont des donnees mortes, conservees telles quelles (couleurs comprises) :
+// les recolorer serait sans effet tant qu'aucune section ne les affiche.
 const PROGRAMME = [
   {
     phase: 'Avant le 4 juillet',
@@ -147,7 +151,6 @@ const SPEAKERS = [
     name: 'Curtis Zirignon',
     title: 'Fondateur · Afribourse',
     desc: 'Entrepreneur tech et finance, spécialiste des marchés UEMOA. Accompagne les investisseurs africains depuis 2022.',
-    color: '#1D4ED8',
     linkedin: 'https://www.linkedin.com/in/curtis-zirignon-097424202/',
   },
   {
@@ -155,7 +158,6 @@ const SPEAKERS = [
     name: 'Ibrahima Bayo',
     title: 'Analyste Financier · Fondateur IB Formation',
     desc: 'Analyste financier certifié, investisseur BRVM, comptable expérimenté. Forme des investisseurs particuliers depuis plusieurs années.',
-    color: '#059669',
     linkedin: 'https://www.linkedin.com/in/ibrahima-bayo-0b8628161/',
   },
   {
@@ -163,16 +165,15 @@ const SPEAKERS = [
     name: 'Emmanuel Coulibaly',
     title: 'Expert Consultant · Banque & Microfinance',
     desc: 'Consultant international en management bancaire et institutions de microfinance. Expertise pointue sur les marchés financiers africains.',
-    color: '#EA580C',
     linkedin: 'https://www.linkedin.com/in/emmanuel-coulibaly-49554a20a/',
   },
 ];
 
 // Témoignages — remplir avec de vrais verbatims clients (prénom, ville, phrase courte).
 // La section ne s'affiche que si ce tableau contient au moins une entrée.
-const TESTIMONIALS: { name: string; location: string; quote: string; initials: string; color: string }[] = [
+const TESTIMONIALS: { name: string; location: string; quote: string; initials: string }[] = [
   // Exemple de format (à remplacer par de vrais avis) :
-  // { name: 'Awa K.', location: 'Abidjan', quote: "J'ai enfin compris comment lire un bilan BRVM.", initials: 'AK', color: '#1D4ED8' },
+  // { name: 'Awa K.', location: 'Abidjan', quote: "J'ai enfin compris comment lire un bilan BRVM.", initials: 'AK' },
 ];
 
 const FAQ = [
@@ -215,6 +216,25 @@ const FAQ = [
   },
 ];
 
+// ─── Gabarits repris de la page d'accueil ─────────────────────────────────────
+// Memes conteneurs, meme rythme vertical, memes corps de texte : les deux pages
+// doivent se lire comme un seul site.
+
+/** Conteneur de section — identique aux AnimatedSection de HomePage. */
+const SECTION = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+
+/** Rythme vertical — l'equivalent plein-cadre du mt-16 md:mt-24 de l'accueil. */
+const SECTION_PAD = 'py-16 md:py-24';
+
+/** Surtitre de section. */
+const EYEBROW = 'text-xs font-bold uppercase tracking-widest text-brand-navy text-center mb-3';
+
+/** Titre de section — text-3xl font-bold, comme tous les h2 de l'accueil. */
+const H2 = 'text-3xl font-bold text-gray-900 text-center mb-3';
+
+/** Sous-titre de section — corps de texte par defaut, comme a l'accueil. */
+const LEAD = 'text-gray-600 text-center max-w-2xl mx-auto';
+
 // ─── Composant principal ───────────────────────────────────────────────────────
 
 export default function WebinarPage() {
@@ -238,51 +258,71 @@ export default function WebinarPage() {
   return (
     <div className="min-h-screen bg-white pb-20 sm:pb-0">
 
-      {/* ── Section 1 — Hero ─────────────────────────────────────────────── */}
-      <section
-        style={{ background: 'linear-gradient(135deg, #0D2B4E 0%, #1a3a6b 50%, #0f1f3d 100%)' }}
-        className="text-white px-4 pt-10 pb-20 sm:px-6"
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              Cohorte Août 2026
-            </span>
-            <span className="text-blue-400 text-xs">· Places limitées à 50 par session</span>
+      {/* ── Section 1 — Hero ─────────────────────────────────────────────────
+          Meme degrade et meme accent que le hero de l'accueil, pour que le
+          passage de l'une a l'autre ne donne pas l'impression de changer de
+          site. */}
+      <section className="relative overflow-hidden bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-10 pb-16 md:pt-14 md:pb-20">
+        <div className={SECTION}>
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <span className="bg-white/10 border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                Cohorte Août 2026
+              </span>
+              <span className="text-indigo-100/80 text-xs">· Places limitées à 50 par session</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.3] tracking-tight mb-4">
+              <span className="block">Investissez sur la BRVM</span>
+              <span className="block mt-2 sm:mt-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400">
+                avec méthode et confiance.
+              </span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-indigo-100/90 mb-7 max-w-xl leading-relaxed">
+              Cinq sessions live pour passer de l'intuition à la méthode, sur les entreprises
+              réellement cotées à la BRVM.
+            </p>
+
+            <div className="flex flex-row gap-3 items-center">
+              <Button
+                variant="orange"
+                size="md"
+                className="flex-1 sm:flex-none h-12 sm:h-14 gap-2 whitespace-nowrap"
+                onClick={scrollToRegistration}
+              >
+                <BarChart3 className="w-5 h-5 shrink-0" />
+                Choisir mon pack
+              </Button>
+            </div>
+
+            <p className="mt-5 text-xs text-indigo-100/70">
+              Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
+            </p>
           </div>
-
-          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ letterSpacing: '-0.02em' }}>
-            Investissez sur la BRVM<br />
-            <span className="text-blue-400">avec méthode et confiance.</span>
-          </h1>
-
-          <p className="mt-2 text-xs text-blue-400 flex items-center gap-1.5">
-            <span className="text-emerald-400">✓</span> Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
-          </p>
-
         </div>
       </section>
 
       {/* ── Les 3 packs (good-better-best) ───────────────────────────────── */}
       <PricingPacks onChoose={handleChoosePack} />
 
-
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}
       {TESTIMONIALS.length > 0 && (
-        <section className="bg-white px-4 py-12 sm:px-6">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Ils ont suivi le parcours</p>
-            <div className="grid sm:grid-cols-3 gap-4">
+        <section className={`bg-white ${SECTION_PAD}`}>
+          <div className={SECTION}>
+            <p className={EYEBROW}>Ils ont suivi le parcours</p>
+            <h2 className={`${H2} mb-12`}>Ce qu'en disent les participants</h2>
+            <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {TESTIMONIALS.map((t) => (
-                <div key={t.name} className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
-                  <p className="text-sm text-gray-700 leading-relaxed mb-4">“{t.quote}”</p>
+                <div key={t.name} className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                  <p className="text-gray-600 leading-relaxed mb-4">“{t.quote}”</p>
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-extrabold" style={{ background: t.color }}>
+                    <div className="w-10 h-10 rounded-full bg-brand-navy flex items-center justify-center text-white text-xs font-bold">
                       {t.initials}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900 leading-none">{t.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{t.location}</p>
+                      <p className="font-bold text-gray-900 leading-none">{t.name}</p>
+                      <p className="text-sm text-gray-500 mt-1">{t.location}</p>
                     </div>
                   </div>
                 </div>
@@ -293,33 +333,37 @@ export default function WebinarPage() {
       )}
 
       {/* ── Section 2 — Le problème ──────────────────────────────────────── */}
-      <section className="bg-gray-50 px-4 py-16 sm:px-6">
-        <div className="max-w-2xl mx-auto text-center space-y-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-4">Pourquoi ce programme existe</p>
-          <p className="text-gray-700 text-lg leading-relaxed">
-            La plupart des investisseurs africains perdent de l'argent non pas par manque d'ambition, mais par manque de méthode. Ils regardent les cours sans savoir pourquoi ils bougent.
-          </p>
-          <p className="text-gray-600 text-base leading-relaxed">
-            L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter. Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.
-          </p>
-          <p className="text-gray-700 text-base leading-relaxed font-medium">
-            Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout. Ce programme existe pour changer ça — concrètement, en 5 sessions.
-          </p>
+      <section className={`bg-gray-50 ${SECTION_PAD}`}>
+        <div className={SECTION}>
+          <p className={EYEBROW}>Pourquoi ce programme existe</p>
+          <h2 className={`${H2} mb-8`}>Le problème n'est pas l'ambition, c'est la méthode</h2>
+          <div className="max-w-2xl mx-auto space-y-4 text-center">
+            <p className="text-gray-600 leading-relaxed">
+              La plupart des investisseurs africains perdent de l'argent non pas par manque d'ambition, mais par manque de méthode. Ils regardent les cours sans savoir pourquoi ils bougent.
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter. Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.
+            </p>
+            <p className="text-gray-900 font-medium leading-relaxed">
+              Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout. Ce programme existe pour changer ça — concrètement, en 5 sessions.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* ── Section 3 — Outcomes ─────────────────────────────────────────── */}
-      <section className="bg-white px-4 py-16 sm:px-6">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Ce que vous allez accomplir</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10" style={{ letterSpacing: '-0.01em' }}>
-            À la fin de ce parcours, vous aurez...
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-4">
+      <section className={`bg-white ${SECTION_PAD}`}>
+        <div className={SECTION}>
+          <p className={EYEBROW}>Ce que vous allez accomplir</p>
+          <h2 className={`${H2} mb-12`}>À la fin de ce parcours, vous aurez...</h2>
+          <div className="grid sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {OUTCOMES.map((o) => (
-              <div key={o} className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-                <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-800 text-sm font-medium leading-snug">{o}</p>
+              <div
+                key={o}
+                className="flex items-start gap-3 bg-white border border-gray-200 rounded-xl px-6 py-5 transition-all duration-300 hover:border-brand-navy/25 hover:shadow-sm"
+              >
+                <CheckCircle className="w-5 h-5 text-brand-navy flex-shrink-0 mt-0.5" />
+                <p className="text-gray-700 leading-snug">{o}</p>
               </div>
             ))}
           </div>
@@ -327,29 +371,24 @@ export default function WebinarPage() {
       </section>
 
       {/* ── Section 7 — Speakers ─────────────────────────────────────────── */}
-      <section className="bg-gray-50 px-4 py-16 sm:px-6">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Vos formateurs</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-10" style={{ letterSpacing: '-0.01em' }}>
-            Qui anime le programme
-          </h2>
-          <div className="grid sm:grid-cols-3 gap-6">
+      <section className={`bg-gray-50 ${SECTION_PAD}`}>
+        <div className={SECTION}>
+          <p className={EYEBROW}>Vos formateurs</p>
+          <h2 className={`${H2} mb-12`}>Qui anime le programme</h2>
+          <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {SPEAKERS.map((s) => (
-              <div key={s.name} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
-                <div
-                  className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-xl font-extrabold"
-                  style={{ background: s.color }}
-                >
+              <div key={s.name} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center">
+                <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-brand-navy text-white text-xl font-bold">
                   {s.initials}
                 </div>
-                <p className="font-bold text-gray-900 text-base mb-0.5">{s.name}</p>
-                <p className="text-xs font-semibold text-blue-600 mb-3">{s.title}</p>
-                <p className="text-xs text-gray-500 leading-relaxed mb-4">{s.desc}</p>
+                <p className="font-bold text-gray-900 mb-1">{s.name}</p>
+                <p className="text-sm font-semibold text-brand-navy mb-3">{s.title}</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">{s.desc}</p>
                 <a
                   href={s.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A66C2] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:underline"
                 >
                   <Linkedin className="w-4 h-4" /> Voir le profil LinkedIn
                 </a>
@@ -360,12 +399,15 @@ export default function WebinarPage() {
       </section>
 
       {/* ── Section 8 — FAQ ──────────────────────────────────────────────── */}
-      <section className="bg-white px-4 py-16 sm:px-6">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">FAQ</p>
-          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-8">
-            Vos questions — nos réponses directes
-          </h2>
+      <section className={`bg-white ${SECTION_PAD}`}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Questions Fréquentes</h2>
+            <p className="text-gray-600">
+              Ce qu'il faut savoir avant de réserver votre place : déroulé des sessions,
+              modalités de paiement, replays et conditions de remboursement.
+            </p>
+          </div>
           <div className="space-y-3">
             {FAQ.map((item, i) => (
               <FaqItem key={i} item={item} />
@@ -375,34 +417,39 @@ export default function WebinarPage() {
       </section>
 
       {/* ── CTA final ────────────────────────────────────────────────────── */}
-      <section
-        style={{ background: 'linear-gradient(135deg, #0D2B4E 0%, #1a3a6b 100%)' }}
-        className="px-4 py-16 sm:px-6 text-white text-center"
-      >
-        <div className="max-w-xl mx-auto">
-          <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
-          <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
-          <p className="text-blue-200 mb-8 text-base leading-relaxed">
-            La prochaine cohorte démarre le 8 août. Les places sont limitées à 50 par session.
-          </p>
-          <button
-            onClick={scrollToRegistration}
-            className="bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-base px-10 py-4 rounded-xl transition-all active:scale-95 shadow-lg"
-          >
-            🎟️ Je réserve ma place gratuitement →
-          </button>
-          <p className="mt-4 text-xs text-blue-400">Pré-inscription gratuite · Mobile Money & Wave · sans engagement</p>
+      <section className={`${SECTION} ${SECTION_PAD}`}>
+        <div className="bg-brand-navy text-white text-center rounded-xl shadow-sm">
+          <div className="py-12 px-6">
+            <h2 className="text-2xl font-bold mb-4">Prêt à investir avec méthode ?</h2>
+            <p className="text-white/80 mb-8 max-w-2xl mx-auto">
+              La prochaine cohorte démarre le 8 août et les places sont limitées à 50 par session.
+              Réservez la vôtre — pré-inscription gratuite, paiement Mobile Money ou Wave,
+              et remboursement sous 7 jours si le parcours ne vous convient pas.
+            </p>
+            <Button
+              variant="inverse"
+              size="md"
+              className="h-12 sm:h-14 gap-2"
+              onClick={scrollToRegistration}
+            >
+              Je réserve ma place
+              <ChevronRight className="w-5 h-5 shrink-0" />
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* ── Sticky CTA mobile ────────────────────────────────────────────── */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 px-4 py-3" style={{ boxShadow: '0 -4px 12px rgba(0,0,0,0.08)' }}>
-        <button
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+        <Button
+          variant="orange"
+          size="md"
+          className="w-full h-12 gap-2"
           onClick={scrollToRegistration}
-          className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-95 transition-transform"
         >
-          🎟️ Choisir mon pack — Cohorte 8 août →
-        </button>
+          Choisir mon pack — Cohorte 8 août
+          <ChevronRight className="w-4 h-4 shrink-0" />
+        </Button>
       </div>
 
     </div>
@@ -410,26 +457,36 @@ export default function WebinarPage() {
 }
 
 // ─── FAQ accordion ────────────────────────────────────────────────────────────
+// Repris a l'identique de la FAQ d'accueil : meme carte, meme bordure navy a
+// l'ouverture, meme chevron qui pivote d'un quart de tour.
+//
+// Seule difference, le depliement passe par grid-rows plutot que par un
+// max-height fixe : les reponses sont ici bien plus longues qu'a l'accueil et
+// un plafond en dur les aurait tronquees.
 
 function FaqItem({ item }: { item: { q: string; a: string; highlight?: boolean } }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-xl border overflow-hidden transition-colors ${item.highlight ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
-      >
-        <span className="font-semibold text-gray-800 text-sm flex items-center gap-2">
-          {item.highlight && <span className="text-emerald-500">✓</span>}
-          {item.q}
-        </span>
-        <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-200">
-          <p className="pt-3">{item.a}</p>
+    <div
+      className={`bg-white border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${
+        open
+          ? 'border-brand-navy/40 shadow-md shadow-brand-navy/10'
+          : 'border-gray-200 hover:border-brand-navy/25 hover:shadow-sm'
+      }`}
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex justify-between items-center px-6 py-5">
+        <h3 className="font-bold text-gray-900 pr-4">{item.q}</h3>
+        <ChevronRight
+          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-300 ${open ? 'rotate-90' : ''}`}
+        />
+      </div>
+
+      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+        <div className="overflow-hidden">
+          <p className="text-gray-600 leading-relaxed px-6 pb-5">{item.a}</p>
         </div>
-      )}
+      </div>
     </div>
   );
 }
