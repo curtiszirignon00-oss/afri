@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Newspaper, Globe, DollarSign, Eye, MessageCircle, Trophy, Award, Calendar, Users, ChevronRight, Clock } from 'lucide-react';
+import { GraduationCap, TrendingUp, TrendingDown, BarChart3, Newspaper, DollarSign, Eye, MessageCircle, Trophy, Award, Calendar, Users, ChevronRight, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useEffect, useState } from 'react';
@@ -33,13 +33,13 @@ type MegaMenuProps = {};
 // ---------------------------------------------------------------------------
 
 /**
- * Ligne de liste. Compacte et sur un seul niveau : c'est ce qui empeche
- * l'aplat de survol de s'etaler. Le fond reste neutre, seul le texte prend
- * l'accent — le bleu tenait lieu de surlignage, trop appuye pour une liste.
+ * Ligne de liste : bande pleine largeur separee de la suivante par un filet,
+ * sans coin arrondi. L'aplat de survol occupe toute la ligne, jusqu'au filet.
+ * Le fond reste neutre, seul le texte prend l'accent.
  */
 const MENU_ROW =
-  'group flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm ' +
-  'text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-navy';
+  'group flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm ' +
+  'border-b border-ink-100 text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-navy';
 
 /** Icone de ligne : discrete au repos, elle suit l'accent au survol. */
 const MENU_ICON =
@@ -48,8 +48,18 @@ const MENU_ICON =
 /** Intitule de colonne. */
 const MENU_HEADING = 'text-[11px] font-semibold text-ink-400 uppercase tracking-wider mb-2';
 
-/** Conteneur exterieur d'un mega menu. */
-const MENU_SHELL = 'w-full bg-white shadow-lg border-t border-ink-100 z-40';
+/**
+ * Conteneur exterieur d'un mega menu : carte centree, pas un bandeau pleine
+ * largeur. Le panneau se detache donc du header au lieu de barrer l'ecran.
+ * `border-t-0` + `rounded-b-xl` : il reste accole au header, seuls ses trois
+ * autres cotes sont dessines.
+ */
+const MENU_SHELL =
+  'mx-auto w-full max-w-5xl bg-white border border-t-0 border-ink-100 ' +
+  'rounded-b-xl shadow-xl z-40 overflow-hidden';
+
+/** Interieur d'un mega menu. La largeur est deja bornee par MENU_SHELL. */
+const MENU_INNER = 'px-6 py-6';
 
 /** Encart des colonnes de droite. */
 const MENU_PANEL = 'bg-ink-50 border border-ink-100 rounded-lg p-5';
@@ -58,66 +68,49 @@ const MENU_PANEL = 'bg-ink-50 border border-ink-100 rounded-lg p-5';
 const MENU_BTN =
   'bg-brand-navy text-white rounded-md hover:bg-brand-navy-hover transition-colors font-semibold';
 
-/** Pastille "NOUVEAU" et autres marqueurs discrets. */
-const MENU_CHIP = 'text-[9px] font-bold bg-brand-navy/10 text-brand-navy px-1.5 py-0.5 rounded-full';
-
 /** Grille commune : colonnes espacees, lignes serrees. */
 const MENU_GRID = 'grid md:grid-cols-3 gap-x-10 gap-y-6';
 
-/** Pile de lignes : quasi jointives, c'est ce qui fait lire une liste. */
-const MENU_LIST = 'space-y-0.5';
+/** Pile de lignes jointives — les filets de MENU_ROW font la separation. */
+const MENU_LIST = 'border-t border-ink-100';
+
+/**
+ * Liste repartie en deux colonnes. `columns-2` (multi-colonnes CSS) et non
+ * `grid-cols-2` : le flux y est colonne par colonne, on descend la premiere
+ * avant de reprendre en haut de la seconde — l'ordre de lecture de l'image de
+ * reference. Une grille, elle, remplirait ligne par ligne.
+ */
+const MENU_LIST_2COL = `${MENU_LIST} sm:columns-2 sm:gap-x-8`;
+
+/** Empeche une ligne d'etre coupee entre deux colonnes. */
+const MENU_ROW_NOBREAK = 'break-inside-avoid';
 
 // --- LearnMegaMenu ---
 export function LearnMegaMenu() {
   const navigate = useNavigate();
 
-  const PARCOURS: { label: string; icon: React.ElementType; onClick: () => void; isNew?: boolean }[] = [
+  const PARCOURS: { label: string; icon: React.ElementType; onClick: () => void }[] = [
     { label: 'Débutant',      icon: GraduationCap, onClick: () => navigate('/learn', { state: { difficulty: 'debutant' } }) },
     { label: 'Intermédiaire', icon: BarChart3,     onClick: () => navigate('/learn', { state: { difficulty: 'intermediaire' } }) },
     { label: 'Avancé',        icon: TrendingUp,    onClick: () => navigate('/learn', { state: { difficulty: 'avance' } }) },
-    { label: 'Time Machine',  icon: Clock,         onClick: () => navigate('/time-machine'), isNew: true },
+    { label: 'Time Machine',  icon: Clock,         onClick: () => navigate('/time-machine') },
   ];
 
   return (
     <div className={MENU_SHELL}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className={MENU_GRID}>
-
-          {/* Colonne 1 : parcours */}
-          <div>
-            <h3 className={MENU_HEADING}>Parcours</h3>
-            <div className={MENU_LIST}>
-              {PARCOURS.map(({ label, icon: Icon, onClick, isNew }) => (
-                <button key={label} onClick={onClick} className={MENU_ROW}>
-                  <Icon className={MENU_ICON} />
-                  <span className="flex-1 font-medium">{label}</span>
-                  {isNew && <span className={MENU_CHIP}>NOUVEAU</span>}
-                </button>
-              ))}
-            </div>
+      <div className={MENU_INNER}>
+        {/* L'encart promotionnel ayant été retiré, les parcours occupent toute
+            la largeur du panneau — plus de grille à trois colonnes ici. */}
+        <div>
+          <h3 className={MENU_HEADING}>Parcours</h3>
+          <div className={MENU_LIST_2COL}>
+            {PARCOURS.map(({ label, icon: Icon, onClick }) => (
+              <button key={label} onClick={onClick} className={`${MENU_ROW} ${MENU_ROW_NOBREAK}`}>
+                <Icon className={MENU_ICON} />
+                <span className="flex-1 font-medium">{label}</span>
+              </button>
+            ))}
           </div>
-
-          {/* Colonnes 2-3 : promotion */}
-          <div className="md:col-span-2">
-            <div className={`${MENU_PANEL} h-full flex flex-col justify-between`}>
-              <div>
-                <div className="inline-block px-2.5 py-0.5 bg-brand-navy text-white rounded-full text-xs font-medium mb-3">
-                  Populaire
-                </div>
-                <h3 className="text-xl font-bold text-ink-900 mb-2">Commencez votre voyage</h3>
-                <p className="text-sm text-ink-600 mb-5">Rejoignez des milliers d'investisseurs...</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <button onClick={() => navigate('/learn')} className={`px-5 py-2 text-sm ${MENU_BTN}`}>
-                  Démarrer
-                </button>
-                <span className="flex items-center gap-2 text-sm text-ink-500">
-                  <BookOpen className="w-4 h-4" />15+ modules gratuits
-                </span>
-              </div>
-            </div>
-          </div>
-
         </div>
       </div>
     </div>
@@ -141,29 +134,25 @@ export function NewsMegaMenu() {
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 3);
 
-  const NAV_CATS: { label: string; icon: React.ElementType; isNew?: boolean }[] = [
-    { label: 'Tout',           icon: Newspaper  },
-    { label: 'Marchés',        icon: TrendingUp },
-    { label: 'Analyse',        icon: BarChart3  },
-    { label: 'Économie',       icon: Globe      },
-    { label: 'Dividendes',     icon: DollarSign, isNew: true },
-    { label: 'Résultats 2025', icon: BarChart3  },
+  const NAV_CATS: { label: string; icon: React.ElementType }[] = [
+    { label: 'Tout',       icon: Newspaper  },
+    { label: 'Marchés',    icon: TrendingUp },
+    { label: 'Dividendes', icon: DollarSign },
   ];
 
   return (
     <div className={MENU_SHELL}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className={MENU_INNER}>
         <div className={MENU_GRID}>
 
           {/* Colonne 1 : navigation catégories */}
           <div>
             <h3 className={MENU_HEADING}>Catégories</h3>
             <div className={MENU_LIST}>
-              {NAV_CATS.map(({ label, icon: Icon, isNew }) => (
+              {NAV_CATS.map(({ label, icon: Icon }) => (
                 <button key={label} onClick={() => navigate('/news')} className={MENU_ROW}>
                   <Icon className={MENU_ICON} />
                   <span className="flex-1 font-medium">{label}</span>
-                  {isNew && <span className={MENU_CHIP}>NOUVEAU</span>}
                 </button>
               ))}
             </div>
@@ -276,7 +265,7 @@ export function MarketsMegaMenu() {
 
   return (
     <div className={MENU_SHELL}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className={MENU_INNER}>
         <div className={MENU_GRID}>
 
           {/* Colonne 1 : navigation */}
@@ -347,7 +336,7 @@ export function PortfolioMegaMenu() {
 
   return (
     <div className={MENU_SHELL}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className={MENU_INNER}>
         <div className={MENU_GRID}>
 
           <div>
@@ -402,7 +391,7 @@ export function CommunityMegaMenu() {
 
   return (
     <div className={MENU_SHELL}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className={MENU_INNER}>
         <div className={MENU_GRID}>
 
           <div>
