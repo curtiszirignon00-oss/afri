@@ -175,6 +175,91 @@ function CountryBadge({ code, name }: { code: string; name: string }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Langage de carte de la page d'accueil
+//
+// Fond blanc, filet gris clair, ombre discrète qui se lève au survol, icônes et
+// liens en navy. Il remplace les traitements que chaque section s'était donnés
+// au fil du temps — dégradés vert/émeraude, ambre/orange, bleu/indigo, cartes
+// rounded-2xl à ombre XL, translation verticale au survol.
+//
+// Une seule source : modifier une carte ici les modifie toutes.
+// ---------------------------------------------------------------------------
+
+/** Carte de base. Compléter par le padding. */
+const CARD = 'rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300';
+
+/** À ajouter quand la carte est cliquable. Porte `group` pour CardLink. */
+const CARD_CLICKABLE = 'group text-left hover:border-brand-navy/25 hover:shadow-md cursor-pointer';
+
+/** Titre de carte. */
+const CARD_TITLE = 'font-bold text-gray-900';
+
+/** Corps de carte. */
+const CARD_BODY = 'text-sm text-gray-600 leading-relaxed';
+
+/** Icône de carte. */
+const CARD_ICON = 'w-5 h-5 text-brand-navy shrink-0';
+
+/**
+ * Lien de fin de carte. Le trait se déploie depuis la gauche au survol de la
+ * carte entière — d'où le group-hover, qui suppose un ancêtre portant `group`
+ * (CARD_CLICKABLE le fournit). Même geste que les onglets du header.
+ */
+function CardLink({ label = 'En savoir plus' }: { label?: string }) {
+  return (
+    <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-navy">
+      <span className="relative">
+        {label}
+        <span className="absolute inset-x-0 -bottom-0.5 h-[2px] origin-left scale-x-0 rounded-full bg-brand-navy transition-transform duration-200 group-hover:scale-x-100" />
+      </span>
+      <ArrowRight className="w-4 h-4 shrink-0" />
+    </span>
+  );
+}
+
+/** Lien « voir tout » en en-tête de section — même geste que CardLink. */
+function SectionLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group inline-flex items-center gap-1 text-sm font-semibold text-brand-navy shrink-0 cursor-pointer"
+    >
+      <span className="relative">
+        {label}
+        <span className="absolute inset-x-0 -bottom-0.5 h-[2px] origin-left scale-x-0 rounded-full bg-brand-navy transition-transform duration-200 group-hover:scale-x-100" />
+      </span>
+      <ArrowRight className="w-4 h-4 shrink-0" />
+    </button>
+  );
+}
+
+/**
+ * Les trois portes d'entrée, sous le hero. Elles reprennent des promesses déjà
+ * faites ailleurs sur la page — modules gratuits, capital virtuel, données
+ * BRVM — plutôt que d'en introduire de nouvelles.
+ */
+const HERO_CARDS: { to: string; icon: React.ElementType; title: string; desc: string }[] = [
+  {
+    to: '/learn',
+    icon: BookOpen,
+    title: 'Se former',
+    desc: '15+ modules gratuits pour comprendre la BRVM, lire un bilan et bâtir une stratégie.',
+  },
+  {
+    to: '/markets',
+    icon: BarChart3,
+    title: 'Simuler sans risque',
+    desc: "1 000 000 FCFA de capital virtuel pour passer vos premiers ordres sans engager d'argent.",
+  },
+  {
+    to: '/news',
+    icon: TrendingUp,
+    title: 'Suivre le marché',
+    desc: 'Cours, indices et analyses des sociétés cotées, mis à jour au fil des séances.',
+  },
+];
+
 /**
  * Cluster circulaire du hero : une grande image au centre, 5 valeurs BRVM en orbite.
  * Les positions sont calculées sur un cercle (72° d'écart) en % du conteneur carré,
@@ -706,56 +791,71 @@ export default function HomePage() {
           </div>
         </button>
 
+        {/* === Trois portes d'entrée ===
+            Marge réduite (mt-10) : elles prolongent le hero plutôt que d'ouvrir
+            une nouvelle section, d'où l'écart plus court que le mt-16 md:mt-24
+            qui sépare les sections entre elles. */}
+        <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 md:mt-12">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {HERO_CARDS.map(({ to, icon: Icon, title, desc }) => (
+              <button
+                key={to}
+                onClick={() => navigate(to)}
+                className={`${CARD} ${CARD_CLICKABLE} px-6 py-5`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon className={CARD_ICON} />
+                  <h2 className={CARD_TITLE}>{title}</h2>
+                </div>
+                <p className={CARD_BODY}>{desc}</p>
+                <CardLink />
+              </button>
+            ))}
+          </div>
+        </AnimatedSection>
+
         {/* === Simulateur === */}
         <SimulatorCarousel />
 
         {/* === Time Machine === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-xl shadow-slate-200/60 px-8 py-12 md:px-14 md:py-16">
-            {/* Orbs décoratifs */}
-            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-100/60 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-amber-100/60 blur-3xl" />
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 md:gap-16">
+          <div className={`${CARD} px-8 py-10 md:px-12 md:py-12`}>
+            <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
               {/* Icône horloge + timeline */}
               <div className="shrink-0 flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <circle cx="12" cy="12" r="9" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
-                  </svg>
+                <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center">
+                  <Clock className="w-8 h-8 text-brand-navy" strokeWidth={1.5} />
                 </div>
                 <div className="flex flex-col items-center gap-1 text-center">
-                  <span className="text-amber-600 font-bold text-lg font-mono tracking-wider">2010</span>
-                  <div className="w-px h-6 bg-amber-300" />
-                  <span className="text-amber-600 font-bold text-lg font-mono tracking-wider">2025</span>
+                  <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">2010</span>
+                  <div className="w-px h-6 bg-gray-300" />
+                  <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">2025</span>
                 </div>
               </div>
 
               {/* Texte */}
               <div className="flex-1 text-center md:text-left">
-                <span className="inline-flex items-center gap-2 bg-amber-50 text-amber-600 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-200 mb-5">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
+                <span className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy text-xs font-bold px-3 py-1.5 rounded-full mb-5">
+                  <Clock className="w-3.5 h-3.5" />
                   Machine à remonter le temps
                 </span>
-                <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-4">
-                  Investis en 2010.<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-400">
-                    Vois ce que ça vaut en 2025.
-                  </span>
+                <h2 className="text-3xl font-bold text-gray-900 mb-3">
+                  Investis en 2010, vois ce que ça vaut en 2025
                 </h2>
-                <p className="text-slate-500 text-sm md:text-base leading-relaxed mb-8 max-w-xl">
+                <p className="text-gray-600 leading-relaxed mb-7 max-w-xl">
                   Rejoue les grands moments de la BRVM avec de l'argent virtuel.
                   Comprends tes erreurs avant de les faire pour de vrai.
                 </p>
-                <button
+                <Button
+                  variant="orange"
+                  size="md"
+                  className="h-12 gap-2"
                   onClick={() => navigate('/time-machine')}
-                  className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-bold px-6 py-3 rounded-xl transition-colors duration-150 cursor-pointer text-sm shadow-sm"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
+                  <Clock className="w-5 h-5 shrink-0" />
                   Remonter le temps
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                </button>
+                  <ArrowRight className="w-5 h-5 shrink-0" />
+                </Button>
               </div>
             </div>
           </div>
@@ -763,50 +863,47 @@ export default function HomePage() {
 
         {/* === Académie === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+          <div className={CARD}>
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-8">
               <div className="flex-1 text-center md:text-left">
-                <div className="inline-flex items-center space-x-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <div className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy px-3 py-1.5 rounded-full text-xs font-bold mb-4">
                   <BookOpen className="w-4 h-4" />
                   <span>Académie AfriBourse</span>
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-3">
                   Apprenez à investir intelligemment
                 </h2>
-                <p className="text-gray-700 mb-6 max-w-xl">
+                <p className="text-gray-600 mb-7 max-w-xl leading-relaxed">
                   Des guides complets, des tutoriels vidéo et des analyses pour maîtriser l'investissement boursier.
                   Apprenez à votre rythme.
                 </p>
                 <Button
-                  variant="success"
-                  size="lg"
+                  variant="orange"
+                  size="md"
+                  className="h-12 gap-2"
                   onClick={() => navigate(isLoggedIn ? '/learn' : '/signup')}
                 >
-                  <FileText className="w-5 h-5 mr-2" />
+                  <FileText className="w-5 h-5 shrink-0" />
                   {isLoggedIn ? "Accéder à l'Académie" : 'Créer un Compte Gratuit'}
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-5 h-5 shrink-0" />
                 </Button>
               </div>
 
+              {/* Les cinq thèmes portaient cinq couleurs différentes. Ce sont des
+                  filtres équivalents, rien ne justifiait de les hiérarchiser. */}
               <div className="flex flex-wrap gap-2.5 justify-center md:justify-end w-full md:w-auto md:max-w-xs">
-                {[
-                  { label: 'Psychologie', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
-                  { label: 'Analyse fondamentale', color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-                  { label: 'Analyse technique', color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' },
-                  { label: 'Connaissance BRVM', color: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' },
-                  { label: 'Portefeuille', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-                ].map(item => (
+                {['Psychologie', 'Analyse fondamentale', 'Analyse technique', 'Connaissance BRVM', 'Portefeuille'].map(label => (
                   <button
-                    key={item.label}
+                    key={label}
                     onClick={() => navigate('/learn')}
-                    className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors duration-150 cursor-pointer ${item.color}`}
+                    className="text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 text-gray-700 bg-white transition-colors duration-150 cursor-pointer hover:border-brand-navy/25 hover:text-brand-navy"
                   >
-                    {item.label}
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
-          </Card>
+          </div>
         </AnimatedSection>
 
         {/* === Top Performances === */}
