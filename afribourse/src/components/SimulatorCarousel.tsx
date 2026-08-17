@@ -90,7 +90,7 @@ export default function SimulatorCarousel() {
           <div className="flex flex-col justify-center p-8 md:p-10 lg:p-12 order-2 md:order-1 border-t md:border-t-0 md:border-r border-gray-100">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-4">
               De la théorie à la pratique.<br />
-              <span className="text-brand-orange-dark">Sans risque.</span>
+              <span className="text-brand-orange">Sans risque.</span>
             </h2>
 
             <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-8">
@@ -122,10 +122,10 @@ export default function SimulatorCarousel() {
 
           {/* — Scene telephone — */}
           <div className="relative order-1 md:order-2 flex items-center justify-center py-12 px-8 overflow-hidden bg-gradient-to-br from-ink-50 via-white to-ink-100">
-            {/* Halos de fond, aux couleurs du logo. */}
+            {/* Halos de fond, deux nuances du bleu du logo. */}
             <div
               className="absolute inset-0 pointer-events-none"
-              style={{ backgroundImage: 'radial-gradient(circle at 72% 18%, rgba(238,123,35,0.16) 0%, transparent 55%), radial-gradient(circle at 20% 85%, rgba(18,57,94,0.14) 0%, transparent 55%)' }}
+              style={{ backgroundImage: 'radial-gradient(circle at 72% 18%, rgba(27,78,125,0.16) 0%, transparent 55%), radial-gradient(circle at 20% 85%, rgba(18,57,94,0.14) 0%, transparent 55%)' }}
             />
             {/* Trame, reprise du hero et du bloc simulateur sombre. */}
             <div

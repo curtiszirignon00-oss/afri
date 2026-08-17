@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle, ChevronRight, TrendingUp, BookOpen,
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
+import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -226,8 +227,18 @@ const SECTION = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 /** Rythme vertical — l'equivalent plein-cadre du mt-16 md:mt-24 de l'accueil. */
 const SECTION_PAD = 'py-16 md:py-24';
 
-/** Surtitre de section. */
-const EYEBROW = 'text-xs font-bold uppercase tracking-widest text-brand-navy text-center mb-3';
+/**
+ * Pastille de surtitre — le point qui bat devant le libelle, comme en tete des
+ * sections « En direct » et « Séance du jour » de l'accueil.
+ */
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-center gap-2 mb-3">
+      <span className="w-2 h-2 rounded-full bg-brand-navy animate-pulse" />
+      <span className="text-xs font-bold uppercase tracking-widest text-brand-navy">{children}</span>
+    </div>
+  );
+}
 
 /** Titre de section — text-3xl font-bold, comme tous les h2 de l'accueil. */
 const H2 = 'text-3xl font-bold text-gray-900 text-center mb-3';
@@ -240,6 +251,13 @@ const LEAD = 'text-gray-600 text-center max-w-2xl mx-auto';
 export default function WebinarPage() {
   const registrationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  // Meme fond tournant que le hero de l'accueil, meme cadence.
+  const [bgIndex, setBgIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setBgIndex(i => (i + 1) % HERO_BACKGROUNDS.length), 6000);
+    return () => clearInterval(id);
+  }, []);
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -262,24 +280,41 @@ export default function WebinarPage() {
           Meme degrade et meme accent que le hero de l'accueil, pour que le
           passage de l'une a l'autre ne donne pas l'impression de changer de
           site. */}
-      <section className="relative overflow-hidden bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-10 pb-16 md:pt-14 md:pb-20">
-        <div className={SECTION}>
+      <section className="relative overflow-hidden bg-brand-navy text-white pt-10 pb-16 md:pt-14 md:pb-20">
+        {/* Variantes en fondu croise : toutes montees en permanence, seule
+            l'opacite change. Reconstruire le degrade a chaque rotation ferait
+            clignoter le fond. */}
+        {HERO_BACKGROUNDS.map((bg, i) => (
+          <div
+            key={i}
+            aria-hidden="true"
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${i === bgIndex ? 'opacity-100' : 'opacity-0'}`}
+            style={{ backgroundImage: `${bg.halo}, ${bg.gradient}` }}
+          />
+        ))}
+        <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] pointer-events-none" style={HERO_GRID_STYLE} />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/25 to-transparent pointer-events-none" />
+
+        <div className={`${SECTION} relative`}>
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="bg-white/10 border border-white/25 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+              <span className="bg-white/10 ring-1 ring-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">
                 Cohorte Août 2026
               </span>
-              <span className="text-indigo-100/80 text-xs">· Places limitées à 50 par session</span>
+              <span className="text-ink-200 text-xs">· Places limitées à 50 par session</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.3] tracking-tight mb-4">
               <span className="block">Investissez sur la BRVM</span>
-              <span className="block mt-2 sm:mt-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-400">
+              {/* Accent en orange clair, comme les mots mis en avant sur les
+                  fonds sombres de l'accueil. Le degrade bleu-cyan-turquoise
+                  d'avant n'appartenait pas a la charte. */}
+              <span className="block mt-2 sm:mt-3 text-brand-orange-light">
                 avec méthode et confiance.
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-indigo-100/90 mb-7 max-w-xl leading-relaxed">
+            <p className="text-base sm:text-lg text-ink-200 mb-7 max-w-xl leading-relaxed">
               Cinq sessions live pour passer de l'intuition à la méthode, sur les entreprises
               réellement cotées à la BRVM.
             </p>
@@ -296,7 +331,7 @@ export default function WebinarPage() {
               </Button>
             </div>
 
-            <p className="mt-5 text-xs text-indigo-100/70">
+            <p className="mt-5 text-xs text-ink-300">
               Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
             </p>
           </div>
@@ -310,7 +345,7 @@ export default function WebinarPage() {
       {TESTIMONIALS.length > 0 && (
         <section className={`bg-white ${SECTION_PAD}`}>
           <div className={SECTION}>
-            <p className={EYEBROW}>Ils ont suivi le parcours</p>
+            <Eyebrow>Ils ont suivi le parcours</Eyebrow>
             <h2 className={`${H2} mb-12`}>Ce qu'en disent les participants</h2>
             <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {TESTIMONIALS.map((t) => (
@@ -335,7 +370,7 @@ export default function WebinarPage() {
       {/* ── Section 2 — Le problème ──────────────────────────────────────── */}
       <section className={`bg-gray-50 ${SECTION_PAD}`}>
         <div className={SECTION}>
-          <p className={EYEBROW}>Pourquoi ce programme existe</p>
+          <Eyebrow>Pourquoi ce programme existe</Eyebrow>
           <h2 className={`${H2} mb-8`}>Le problème n'est pas l'ambition, c'est la méthode</h2>
           <div className="max-w-2xl mx-auto space-y-4 text-center">
             <p className="text-gray-600 leading-relaxed">
@@ -354,7 +389,7 @@ export default function WebinarPage() {
       {/* ── Section 3 — Outcomes ─────────────────────────────────────────── */}
       <section className={`bg-white ${SECTION_PAD}`}>
         <div className={SECTION}>
-          <p className={EYEBROW}>Ce que vous allez accomplir</p>
+          <Eyebrow>Ce que vous allez accomplir</Eyebrow>
           <h2 className={`${H2} mb-12`}>À la fin de ce parcours, vous aurez...</h2>
           <div className="grid sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
             {OUTCOMES.map((o) => (
@@ -373,7 +408,7 @@ export default function WebinarPage() {
       {/* ── Section 7 — Speakers ─────────────────────────────────────────── */}
       <section className={`bg-gray-50 ${SECTION_PAD}`}>
         <div className={SECTION}>
-          <p className={EYEBROW}>Vos formateurs</p>
+          <Eyebrow>Vos formateurs</Eyebrow>
           <h2 className={`${H2} mb-12`}>Qui anime le programme</h2>
           <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {SPEAKERS.map((s) => (
@@ -418,16 +453,29 @@ export default function WebinarPage() {
 
       {/* ── CTA final ────────────────────────────────────────────────────── */}
       <section className={`${SECTION} ${SECTION_PAD}`}>
-        <div className="bg-brand-navy text-white text-center rounded-xl shadow-sm">
-          <div className="py-12 px-6">
-            <h2 className="text-2xl font-bold mb-4">Prêt à investir avec méthode ?</h2>
-            <p className="text-white/80 mb-8 max-w-2xl mx-auto">
+        {/* Meme bandeau que l'appel a l'action de l'accueil : degrade navy,
+            halo, trame. L'aplat navy uni d'avant etait le seul de tout le site. */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 text-white text-center px-6 py-12 md:px-12 md:py-14">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-[0.18] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 88% 15%, #7C95AB 0%, transparent 55%)' }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] pointer-events-none" style={HERO_GRID_STYLE} />
+
+          <div className="relative">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3 py-1.5 text-xs font-bold backdrop-blur-sm mb-5">
+              <Users className="w-3.5 h-3.5" />
+              50 places par session
+            </span>
+            <h2 className="text-3xl font-bold mb-3">Prêt à investir avec méthode ?</h2>
+            <p className="text-ink-200 mb-8 max-w-2xl mx-auto leading-relaxed">
               La prochaine cohorte démarre le 8 août et les places sont limitées à 50 par session.
               Réservez la vôtre — pré-inscription gratuite, paiement Mobile Money ou Wave,
               et remboursement sous 7 jours si le parcours ne vous convient pas.
             </p>
             <Button
-              variant="inverse"
+              variant="orange"
               size="md"
               className="h-12 sm:h-14 gap-2"
               onClick={scrollToRegistration}

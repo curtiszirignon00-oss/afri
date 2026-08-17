@@ -36,6 +36,8 @@ import { InstallInstructions } from './pwa/InstallPrompt';
 import { BRVM_NEWS } from '../data/brvm2026News';
 import SimulatorCarousel from './SimulatorCarousel';
 import SparklineChart from './SparklineChart';
+import { getStockLogo } from '../utils/stockLogos';
+import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -346,7 +348,7 @@ function HeroImageOrbit() {
         className="pointer-events-none absolute inset-0 rounded-full blur-3xl"
         style={{
           background:
-            'radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(45,212,191,0.12) 45%, transparent 70%)',
+            'radial-gradient(circle, rgba(124,149,171,0.38) 0%, rgba(27,78,125,0.16) 45%, transparent 70%)',
         }}
       />
 
@@ -456,30 +458,9 @@ export default function HomePage() {
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
-  // Fonds du hero : la charte du bloc simulateur (degrade navy + halo orange),
-  // declinee en quatre variantes qui se succedent. Seuls l'angle du degrade et
-  // la position du halo changent — les teintes restent celles du logo, pour que
-  // la rotation se lise comme une respiration et non comme un changement de
-  // page. Les images photographiques precedentes imposaient un voile sombre
-  // supplementaire pour rester lisibles.
-  const heroBackgrounds = [
-    {
-      gradient: 'linear-gradient(135deg, #12395E 0%, #173F66 45%, #09121B 100%)',
-      halo: 'radial-gradient(circle at 85% 12%, rgba(238,123,35,0.30) 0%, transparent 55%)',
-    },
-    {
-      gradient: 'linear-gradient(115deg, #09121B 0%, #12395E 55%, #1B4E7D 100%)',
-      halo: 'radial-gradient(circle at 15% 85%, rgba(238,123,35,0.28) 0%, transparent 55%)',
-    },
-    {
-      gradient: 'linear-gradient(160deg, #1B4E7D 0%, #12395E 45%, #09121B 100%)',
-      halo: 'radial-gradient(circle at 92% 78%, rgba(238,123,35,0.26) 0%, transparent 52%)',
-    },
-    {
-      gradient: 'linear-gradient(200deg, #12395E 0%, #09121B 60%, #173F66 100%)',
-      halo: 'radial-gradient(circle at 30% 18%, rgba(238,123,35,0.26) 0%, transparent 55%)',
-    },
-  ];
+  // Les quatre variantes vivent dans utils/heroBackgrounds : la page
+  // webinaire monte le meme fond.
+  const heroBackgrounds = HERO_BACKGROUNDS;
 
   const { data, isLoading, error, refetch } = useHomePageData();
   const topStocks = (data?.topStocks || []).slice(0, 2);
@@ -753,10 +734,7 @@ export default function HomePage() {
           <div
             aria-hidden="true"
             className="absolute inset-0 opacity-[0.07] pointer-events-none"
-            style={{
-              backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-              backgroundSize: '44px 44px',
-            }}
+            style={HERO_GRID_STYLE}
           />
 
           {/* Voile bas : garde le contraste du texte sur les variantes les plus
@@ -768,7 +746,7 @@ export default function HomePage() {
             data-orb
             className="absolute -top-32 -right-32 w-[640px] h-[640px] rounded-full pointer-events-none"
             style={{
-              background: 'radial-gradient(circle, rgba(238,123,35,0.18) 0%, rgba(27,78,125,0.14) 50%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(124,149,171,0.22) 0%, rgba(27,78,125,0.16) 50%, transparent 70%)',
               animation: 'floatOrb 9s ease-in-out infinite alternate',
             }}
           />
@@ -898,7 +876,7 @@ export default function HomePage() {
             {/* Halo et trame : decoratifs, sous le contenu et non cliquables. */}
             <div
               className="absolute inset-0 opacity-[0.18] pointer-events-none"
-              style={{ backgroundImage: 'radial-gradient(circle at 88% 15%, #EE7B23 0%, transparent 55%)' }}
+              style={{ backgroundImage: 'radial-gradient(circle at 88% 15%, #7C95AB 0%, transparent 55%)' }}
             />
             <div
               className="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -1086,8 +1064,12 @@ export default function HomePage() {
         {/* === Top Performances === */}
         {topStocks.length > 0 && (
           <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-end justify-between gap-4 mb-8">
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-brand-navy animate-pulse" />
+                  <span className="text-xs font-semibold text-brand-navy uppercase tracking-widest">Séance du jour</span>
+                </div>
                 <h2 className="text-3xl font-bold text-gray-900">Top Performances</h2>
                 <p className="text-gray-600 mt-1">Les actions qui se démarquent aujourd'hui</p>
               </div>
@@ -1101,52 +1083,108 @@ export default function HomePage() {
               {topStocks.map((stock, idx) => {
                 const isUp = stock.daily_change_percent >= 0;
                 const pts = sparklines[stock.symbol] ?? [];
+                const logo = getStockLogo(stock.symbol, stock.logo_url);
+                const delta = stock.current_price - stock.previous_close;
+
+                // Bornes de la periode affichee, lues sur la serie qui alimente
+                // la courbe : elles donnent l'echelle du mouvement, que le
+                // pourcentage du jour ne dit pas.
+                const values = pts.map(p => p.value);
+                const low = values.length ? Math.min(...values) : null;
+                const high = values.length ? Math.max(...values) : null;
+
+                const tone = isUp
+                  ? { text: 'text-emerald-700', bg: 'bg-emerald-50', ring: 'ring-emerald-100' }
+                  : { text: 'text-red-600',     bg: 'bg-red-50',     ring: 'ring-red-100'     };
 
                 return (
                   <AnimatedSection key={stock.id} delay={idx * 60}>
-                    <div
+                    <article
                       onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      className="bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col"
+                      className="group h-full flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-lg"
                     >
-                      {/* Infos stock */}
-                      <div className="p-6 pb-4">
-                        <div className="flex justify-between items-start mb-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center font-bold text-gray-700 text-sm overflow-hidden shadow-sm shrink-0 border border-slate-100">
-                              {stock.logo_url
-                                ? <OptimizedImage src={stock.logo_url} alt={stock.symbol} className="w-full h-full object-cover" />
-                                : stock.symbol.substring(0, 2)
-                              }
-                            </div>
-                            <div>
-                              <p className="font-extrabold text-slate-900 text-lg leading-none">{stock.symbol}</p>
-                              <p className="text-sm text-slate-400 mt-1 truncate max-w-[200px]">{stock.company_name}</p>
-                              {stock.sector && <p className="text-xs text-blue-500 mt-0.5 font-medium">{stock.sector}</p>}
-                            </div>
-                          </div>
-                          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold ${isUp ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
-                            {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                            {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
-                          </div>
+                      {/* En-tete : identite de la societe. Fond legerement
+                          teinte pour le detacher de la zone chiffree. */}
+                      <div className="flex items-center gap-4 px-6 py-5 bg-gray-50/60 border-b border-gray-100">
+                        {/* getStockLogo sert d'abord le fichier local du ticker :
+                            la carte n'interrogeait que stock.logo_url, vide pour
+                            la plupart des societes. */}
+                        <div className="w-14 h-14 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center font-bold text-gray-400 text-sm overflow-hidden shrink-0 p-1.5">
+                          {logo
+                            ? <OptimizedImage
+                                src={logo}
+                                alt={`Logo ${stock.company_name ?? stock.symbol}`}
+                                className="w-full h-full object-contain"
+                              />
+                            : stock.symbol.substring(0, 2)
+                          }
                         </div>
-
-                        <p className="text-4xl font-extrabold text-slate-900 tabular-nums tracking-tight">
-                          {formatNumber(stock.current_price)}
-                          <span className="text-base font-semibold text-slate-400 ml-2">FCFA</span>
-                        </p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-900 font-mono tracking-tight leading-none">{stock.symbol}</span>
+                            {stock.sector && (
+                              <span className="text-[10px] font-semibold text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full truncate">
+                                {stock.sector}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1.5 truncate">{stock.company_name}</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-300 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-navy" />
                       </div>
 
-                      {/* Graphique */}
-                      <div className="border-t border-slate-50">
+                      {/* Cours du jour. Le prix porte la carte, la variation
+                          l'accompagne — vert et rouge sont des couleurs d'etat,
+                          doublees d'une fleche et du signe. */}
+                      <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-4">
+                        <div>
+                          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Cours</p>
+                          <p className="text-[34px] leading-none font-bold text-gray-900 font-mono tabular-nums tracking-tight">
+                            {formatNumber(stock.current_price)}
+                            <span className="text-sm font-semibold text-gray-400 ml-2">FCFA</span>
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-mono ring-1 ${tone.bg} ${tone.text} ${tone.ring}`}>
+                            {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                            {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                          </span>
+                          <p className={`text-xs font-mono mt-1.5 ${tone.text}`}>
+                            {isUp ? '+' : '−'}{formatNumber(Math.abs(delta))} FCFA
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Courbe avec ses reperes : prix a droite, dates en bas. */}
+                      <div className="border-t border-gray-100 mt-auto">
+                        <div className="flex items-center justify-between px-6 pt-3 pb-1">
+                          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">3 derniers mois</span>
+                          <span className="text-[11px] font-mono text-gray-400">clôture, FCFA</span>
+                        </div>
                         {pts.length >= 2 ? (
-                          <SparklineChart data={pts} isUp={isUp} height={200} />
+                          <SparklineChart data={pts} isUp={isUp} height={160} showAxes />
                         ) : (
-                          <div className="h-[200px] flex items-center justify-center">
-                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-slate-400 animate-spin" />
+                          <div className="h-[160px] flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-gray-400 animate-spin" />
                           </div>
                         )}
                       </div>
-                    </div>
+
+                      {/* Pied de carte : les chiffres que la courbe ne dit pas. */}
+                      <div className="grid grid-cols-4 divide-x divide-gray-100 border-t border-gray-100 bg-gray-50/60">
+                        {[
+                          { label: 'Clôture préc.', value: formatNumber(stock.previous_close) },
+                          { label: '+ bas 3M', value: low != null ? formatNumber(low) : '—' },
+                          { label: '+ haut 3M', value: high != null ? formatNumber(high) : '—' },
+                          { label: 'Volume', value: formatCurrency(stock.volume) },
+                        ].map(({ label, value }) => (
+                          <div key={label} className="px-3 py-3 text-center">
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate">{label}</p>
+                            <p className="text-sm font-bold text-gray-800 font-mono tabular-nums mt-0.5">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </article>
                   </AnimatedSection>
                 );
               })}
@@ -1154,7 +1192,7 @@ export default function HomePage() {
           </AnimatedSection>
         )}
 
-        {/* === Communauté === */}
+        {/* === Communauté — bloc masqué ===
         {topCommunityPosts.length > 0 && (
           <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
             <div className="flex items-center justify-between mb-8">
@@ -1201,7 +1239,7 @@ export default function HomePage() {
                       className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl flex flex-col"
                     >
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shrink-0">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-ink-200 to-ink-100 flex items-center justify-center font-bold text-gray-700 text-xs overflow-hidden shrink-0">
                           {avatar
                             ? <OptimizedImage src={avatar} alt={authorName} className="w-full h-full object-cover" />
                             : authorName.charAt(0).toUpperCase()}
@@ -1241,6 +1279,7 @@ export default function HomePage() {
             </div>
           </AnimatedSection>
         )}
+        */}
 
         {/* === Actualités du Jour — BRVM_NEWS triées par date === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
@@ -1358,7 +1397,7 @@ export default function HomePage() {
                     </p>
 
                     <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-ink-400 to-brand-navy flex items-center justify-center text-white font-bold text-lg shadow-md overflow-hidden shrink-0">
                         {testimonial.avatar ? (
                           <OptimizedImage src={testimonial.avatar} alt={testimonial.name} className="w-full h-full object-cover" />
                         ) : (
@@ -1441,9 +1480,21 @@ export default function HomePage() {
 
         {/* === CTA Final === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <Card variant="elevated" className="bg-brand-navy text-white text-center">
-            <div className="py-12 px-6">
-              <h2 className="text-2xl font-bold mb-4">
+          {/* Meme fond que le bandeau « Ton premier ordre de bourse » :
+              degrade navy, halo en haut a droite, trame quadrillee. */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 text-white text-center">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.18] pointer-events-none"
+              style={{ backgroundImage: 'radial-gradient(circle at 88% 15%, #7C95AB 0%, transparent 55%)' }}
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.07] pointer-events-none"
+              style={HERO_GRID_STYLE}
+            />
+            <div className="relative py-16 md:py-20 px-6">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
                 Prêt à commencer votre voyage d'investissement ?
               </h2>
               {/* Pyramide descendante : 103 / 71 / 42 caracteres. Les coupures
@@ -1460,7 +1511,7 @@ export default function HomePage() {
                 pour suivre vos performances en temps réel.
               </p>
               <Button
-                variant="inverse"
+                variant="orange"
                 size="md"
                 className="h-12 sm:h-14 gap-2"
                 onClick={() => navigate(isLoggedIn ? '/markets' : '/signup')}
@@ -1469,7 +1520,7 @@ export default function HomePage() {
                 <ArrowRight className="w-5 h-5 shrink-0" />
               </Button>
             </div>
-          </Card>
+          </div>
         </AnimatedSection>
 
         {/* === Modal Avis === */}
@@ -1492,7 +1543,7 @@ export default function HomePage() {
               </button>
 
               <div className="text-center mb-6">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-ink-400 to-brand-navy rounded-full mb-4">
                   <Star className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Partagez votre expérience</h3>
