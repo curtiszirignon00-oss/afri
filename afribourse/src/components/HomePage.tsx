@@ -328,10 +328,29 @@ export default function HomePage() {
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
-  const backgroundImages = [
-    '/images/brvm-growth.webp',
-    '/images/financial-ratios.webp',
-    '/images/sonatel-dividend.webp',
+  // Fonds du hero : la charte du bloc simulateur (degrade navy + halo orange),
+  // declinee en quatre variantes qui se succedent. Seuls l'angle du degrade et
+  // la position du halo changent — les teintes restent celles du logo, pour que
+  // la rotation se lise comme une respiration et non comme un changement de
+  // page. Les images photographiques precedentes imposaient un voile sombre
+  // supplementaire pour rester lisibles.
+  const heroBackgrounds = [
+    {
+      gradient: 'linear-gradient(135deg, #12395E 0%, #173F66 45%, #09121B 100%)',
+      halo: 'radial-gradient(circle at 85% 12%, rgba(238,123,35,0.30) 0%, transparent 55%)',
+    },
+    {
+      gradient: 'linear-gradient(115deg, #09121B 0%, #12395E 55%, #1B4E7D 100%)',
+      halo: 'radial-gradient(circle at 15% 85%, rgba(238,123,35,0.28) 0%, transparent 55%)',
+    },
+    {
+      gradient: 'linear-gradient(160deg, #1B4E7D 0%, #12395E 45%, #09121B 100%)',
+      halo: 'radial-gradient(circle at 92% 78%, rgba(238,123,35,0.26) 0%, transparent 52%)',
+    },
+    {
+      gradient: 'linear-gradient(200deg, #12395E 0%, #09121B 60%, #173F66 100%)',
+      halo: 'radial-gradient(circle at 30% 18%, rgba(238,123,35,0.26) 0%, transparent 55%)',
+    },
   ];
 
   const { data, isLoading, error, refetch } = useHomePageData();
@@ -372,7 +391,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
+      setCurrentBgIndex((prev) => (prev + 1) % heroBackgrounds.length);
     }, 6000);
     return () => clearInterval(interval);
   }, []);
@@ -588,26 +607,40 @@ export default function HomePage() {
       <div className="pb-16 md:pb-24">
 
         {/* === Hero === */}
-        <section className="relative bg-gradient-to-tr from-blue-700 via-indigo-900 to-gray-900 text-white pt-10 pb-12 md:pt-14 md:pb-16 lg:pt-16 lg:pb-20 overflow-hidden">
-          {/* Rotating background images */}
-          {backgroundImages.map((img, index) => (
-            <img
+        <section className="relative bg-brand-navy text-white pt-7 pb-9 md:pt-10 md:pb-12 lg:pt-12 lg:pb-14 overflow-hidden">
+          {/* Variantes de fond en fondu croise. Toutes sont montees en
+              permanence et seule l'opacite change : reconstruire le degrade a
+              chaque rotation ferait clignoter le fond. */}
+          {heroBackgrounds.map((bg, index) => (
+            <div
               key={index}
-              src={img}
-              alt={`Marché financier africain ${index + 1}`}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentBgIndex ? 'opacity-20' : 'opacity-0'}`}
+              aria-hidden="true"
+              className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${index === currentBgIndex ? 'opacity-100' : 'opacity-0'}`}
+              style={{ backgroundImage: `${bg.halo}, ${bg.gradient}` }}
             />
           ))}
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent" />
+          {/* Trame quadrillee, commune a toutes les variantes — comme sur le
+              bloc simulateur. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-[0.07] pointer-events-none"
+            style={{
+              backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+              backgroundSize: '44px 44px',
+            }}
+          />
 
-          {/* Animated gradient orbs */}
+          {/* Voile bas : garde le contraste du texte sur les variantes les plus
+              claires. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/25 to-transparent pointer-events-none" />
+
+          {/* Halos animes, repris de la palette du logo. */}
           <div
             data-orb
             className="absolute -top-32 -right-32 w-[640px] h-[640px] rounded-full pointer-events-none"
             style={{
-              background: 'radial-gradient(circle, rgba(96,165,250,0.22) 0%, rgba(129,140,248,0.12) 50%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(238,123,35,0.18) 0%, rgba(27,78,125,0.14) 50%, transparent 70%)',
               animation: 'floatOrb 9s ease-in-out infinite alternate',
             }}
           />
@@ -615,7 +648,7 @@ export default function HomePage() {
             data-orb
             className="absolute bottom-0 -left-24 w-[480px] h-[480px] rounded-full pointer-events-none"
             style={{
-              background: 'radial-gradient(circle, rgba(52,211,153,0.14) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(124,149,171,0.16) 0%, transparent 70%)',
               animation: 'floatOrb2 13s ease-in-out infinite alternate',
             }}
           />
@@ -802,6 +835,144 @@ export default function HomePage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </AnimatedSection>
+
+        {/* === Comment ça marche — simulateur ===
+            Reprend la charte du bandeau ci-dessus (degrade navy, halo orange,
+            trame) mais developpe le parcours en trois etapes et montre un
+            portefeuille en exemple : le lecteur voit ce qu'il obtient avant de
+            cliquer. */}
+        <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 px-7 py-10 md:px-12 md:py-14">
+            <div
+              className="absolute inset-0 opacity-[0.18] pointer-events-none"
+              style={{ backgroundImage: 'radial-gradient(circle at 12% 90%, #EE7B23 0%, transparent 55%)' }}
+            />
+            <div
+              className="absolute inset-0 opacity-[0.07] pointer-events-none"
+              style={{
+                backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+                backgroundSize: '44px 44px',
+              }}
+            />
+
+            <div className="relative">
+              <div className="max-w-2xl">
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm mb-5">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  Comment ça marche
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-3">
+                  Trois étapes pour <span className="text-brand-orange-light">investir pour de faux</span>,
+                  et apprendre pour de vrai
+                </h2>
+                <p className="text-ink-200 leading-relaxed">
+                  Aucun versement, aucune carte bancaire. Tu repars avec un historique
+                  de tes décisions et les chiffres qui vont avec.
+                </p>
+              </div>
+
+              <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start mt-10">
+                {/* Parcours en trois etapes. Le trait vertical relie les puces
+                    et s'arrete a la derniere (dernier:h-0). */}
+                <ol className="space-y-6">
+                  {[
+                    {
+                      icon: Wallet,
+                      title: 'Ouvre ton portefeuille',
+                      desc: "Un compte gratuit, 1 000 000 FCFA virtuels crédités immédiatement. Moins d'une minute.",
+                    },
+                    {
+                      icon: BarChart3,
+                      title: 'Passe tes premiers ordres',
+                      desc: 'Achète et vends les 47 sociétés cotées aux cours réels de la BRVM, séance après séance.',
+                    },
+                    {
+                      icon: TrendingUp,
+                      title: 'Mesure et corrige',
+                      desc: 'Performance, répartition sectorielle, historique complet : tu vois ce qui a marché et ce qui a coûté.',
+                    },
+                  ].map(({ icon: Icon, title, desc }, i, arr) => (
+                    <li key={title} className="flex gap-4">
+                      <div className="flex flex-col items-center shrink-0">
+                        <span className="w-11 h-11 rounded-xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center backdrop-blur-sm">
+                          <Icon className="w-5 h-5 text-brand-orange-light" strokeWidth={1.75} />
+                        </span>
+                        <span className={`w-px flex-1 bg-white/15 mt-2 ${i === arr.length - 1 ? 'h-0' : 'min-h-[28px]'}`} />
+                      </div>
+                      <div className="pb-1">
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-brand-orange-light mb-1">
+                          Étape {i + 1}
+                        </p>
+                        <h3 className="text-lg font-bold text-white mb-1.5">{title}</h3>
+                        <p className="text-sm text-ink-200 leading-relaxed max-w-md">{desc}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+
+                {/* Portefeuille d'exemple. Chiffres illustratifs, volontairement
+                    modestes : une performance flatteuse promettrait un resultat
+                    que le simulateur ne garantit pas. */}
+                <div className="rounded-2xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur-sm p-6 md:p-7">
+                  <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10">
+                    <div>
+                      <p className="text-xs text-ink-300 mb-1">Valeur du portefeuille</p>
+                      <p className="text-3xl font-bold text-white font-mono tracking-tight">1 124 500 <span className="text-base font-semibold text-ink-300">FCFA</span></p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/15 ring-1 ring-emerald-400/30 px-2.5 py-1 text-xs font-bold text-emerald-300 font-mono shrink-0">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      +12,45 %
+                    </span>
+                  </div>
+
+                  <div className="space-y-4 pt-5">
+                    {[
+                      { name: 'Sonatel', ticker: 'SNTS', weight: 42, change: '+8,2 %', up: true },
+                      { name: 'Ecobank CI', ticker: 'ECOC', weight: 31, change: '+3,7 %', up: true },
+                      { name: 'Palm CI', ticker: 'PALC', weight: 27, change: '−1,4 %', up: false },
+                    ].map(({ name, ticker, weight, change, up }) => (
+                      <div key={ticker}>
+                        <div className="flex items-baseline justify-between gap-3 mb-1.5">
+                          <span className="text-sm font-semibold text-white truncate">
+                            {name} <span className="text-ink-300 font-mono text-xs">{ticker}</span>
+                          </span>
+                          <span className={`text-xs font-bold font-mono shrink-0 ${up ? 'text-emerald-300' : 'text-rose-300'}`}>
+                            {change}
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <div className="h-full rounded-full bg-brand-orange-light/80" style={{ width: `${weight}%` }} />
+                        </div>
+                        <p className="text-[11px] text-ink-300 mt-1 font-mono">{weight} % du portefeuille</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[11px] text-ink-400 mt-6 leading-snug">
+                    Exemple illustratif. Les performances passées ne préjugent pas des performances futures.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-10 pt-8 border-t border-white/10">
+                <Button
+                  variant="orange"
+                  size="md"
+                  className="h-12 gap-2"
+                  onClick={() => navigate(isLoggedIn ? '/dashboard' : '/signup')}
+                >
+                  <Wallet className="w-5 h-5 shrink-0" />
+                  {isLoggedIn ? 'Reprendre ma simulation' : 'Créer mon portefeuille virtuel'}
+                  <ArrowRight className="w-5 h-5 shrink-0" />
+                </Button>
+                <span className="inline-flex items-center gap-2 text-sm text-ink-200 sm:ml-2">
+                  <ShieldCheck className="w-4 h-4 text-brand-orange-light shrink-0" />
+                  Gratuit, sans carte bancaire — tu peux arrêter quand tu veux.
+                </span>
               </div>
             </div>
           </div>
