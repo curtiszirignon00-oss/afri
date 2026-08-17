@@ -14,15 +14,17 @@ import {
   BookOpen,
   BarChart3,
   FileText,
-  ChevronLeft,
   ChevronRight,
   Clock,
+  Calendar,
   Star,
   Quote,
   Award,
   Heart,
   MessageCircle,
-  Flame
+  Flame,
+  Wallet,
+  ShieldCheck
 } from 'lucide-react';
 import { useHomePageData } from '../hooks/useApi';
 import { Button, Card, LoadingSpinner, ErrorMessage } from './ui';
@@ -85,73 +87,6 @@ function AnimatedSection({
       {children}
     </div>
   );
-}
-
-// Amplitude de l'effet coverflow : taille et opacite de la carte la plus
-// eloignee du centre. 1 = taille pleine, atteinte au centre du conteneur.
-const COVERFLOW_MIN_SCALE = 0.82;
-const COVERFLOW_MIN_OPACITY = 0.6;
-
-/**
- * Carrousel "coverflow" : la carte au centre du conteneur est a taille pleine,
- * les autres retrecissent et s'estompent a mesure qu'elles s'en eloignent.
- *
- * Deux points de conception :
- * - les styles sont ecrits directement sur les noeuds, sans state React. Le
- *   scroll emet jusqu'a une mesure par frame ; un re-render a chacune ferait
- *   saccader le defilement ;
- * - la distance est mesuree sur le conteneur de la carte, jamais sur la carte
- *   elle-meme, qui porte la transformation. La mesurer reinjecterait le
- *   resultat dans le calcul suivant.
- *
- * Les cartes ciblees sont celles marquees [data-coverflow-card], une par
- * enfant direct : le reste du contenu (l'apercu au survol) garde sa taille.
- */
-function useCoverflow(containerRef: React.RefObject<HTMLDivElement>, count: number) {
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    let frame = 0;
-
-    const update = () => {
-      frame = 0;
-      const rect = container.getBoundingClientRect();
-      if (!rect.width) return;
-      const center = rect.left + rect.width / 2;
-      // Distance au-dela de laquelle la carte a atteint sa taille minimale.
-      const falloff = rect.width / 2;
-
-      for (const slide of Array.from(container.children) as HTMLElement[]) {
-        const card = slide.querySelector<HTMLElement>('[data-coverflow-card]');
-        if (!card) continue;
-
-        const slideRect = slide.getBoundingClientRect();
-        const distance = Math.abs(slideRect.left + slideRect.width / 2 - center);
-        const t = Math.min(distance / falloff, 1); // 0 au centre, 1 aux bords
-
-        card.style.transform = `scale(${(1 - (1 - COVERFLOW_MIN_SCALE) * t).toFixed(3)})`;
-        card.style.opacity = (1 - (1 - COVERFLOW_MIN_OPACITY) * t).toFixed(3);
-        // La carte la plus grande passe devant ses voisines.
-        slide.style.zIndex = String(100 - Math.round(t * 100));
-      }
-    };
-
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-
-    update();
-    container.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-
-    return () => {
-      if (frame) cancelAnimationFrame(frame);
-      container.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-    };
-  }, [containerRef, count]);
 }
 
 /** Styled country badge – replaces emoji flags */
@@ -390,7 +325,6 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const { showInstructions, closeInstructions, platform } = useInstallPrompt();
-  const newsContainerRef = useRef<HTMLDivElement>(null);
 
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
@@ -418,12 +352,10 @@ export default function HomePage() {
     });
   }, [topStocks.map(s => s.symbol).join(',')]);  // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Actualités — BRVM_NEWS triées par date décroissante (les 8 plus récentes)
+  // Actualités — BRVM_NEWS triées par date décroissante (les 4 plus récentes)
   const recentNewsItems = [...BRVM_NEWS]
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-    .slice(0, 8);
-
-  useCoverflow(newsContainerRef, recentNewsItems.length);
+    .slice(0, 4);
 
   const { data: communityData } = useQuery({
     queryKey: ['home-community-preview'],
@@ -539,15 +471,6 @@ export default function HomePage() {
     return value.toString();
   }
 
-  const scrollNews = (direction: 'left' | 'right') => {
-    if (!newsContainerRef.current) return;
-    const scrollAmount = newsContainerRef.current.offsetWidth * 0.8;
-    newsContainerRef.current.scrollBy({
-      left: direction === 'right' ? scrollAmount : -scrollAmount,
-      behavior: 'smooth',
-    });
-  };
-
   const handleSubmitReview = async () => {
     if (reviewRating === 0) { setReviewError('Veuillez sélectionner une note'); return; }
     if (reviewText.trim().length === 0) { setReviewError('Veuillez saisir votre avis'); return; }
@@ -579,18 +502,6 @@ export default function HomePage() {
     setReviewText('');
     setHoveredStar(0);
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const container = newsContainerRef.current;
-      if (container && !container.matches(':hover')) {
-        const isAtEnd = container.scrollLeft + container.offsetWidth >= container.scrollWidth - 20;
-        if (isAtEnd) container.scrollTo({ left: 0, behavior: 'smooth' });
-        else scrollNews('right');
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   if (isLoading) return <LoadingSpinner fullScreen text="Chargement de la page d'accueil..." />;
   if (error) {
@@ -817,6 +728,85 @@ export default function HomePage() {
         {/* === Simulateur === */}
         <SimulatorCarousel />
 
+        {/* === Appel à l'action — simulateur ===
+            Le carrousel ci-dessus montre le produit mais n'offre aucune sortie :
+            ce bandeau porte le clic. Marge courte (mt-6) pour qu'il se lise comme
+            le pied du bloc precedent et non comme une section autonome. */}
+        <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 px-7 py-9 md:px-12 md:py-11">
+            {/* Halo et trame : decoratifs, sous le contenu et non cliquables. */}
+            <div
+              className="absolute inset-0 opacity-[0.18] pointer-events-none"
+              style={{ backgroundImage: 'radial-gradient(circle at 88% 15%, #EE7B23 0%, transparent 55%)' }}
+            />
+            <div
+              className="absolute inset-0 opacity-[0.07] pointer-events-none"
+              style={{
+                backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+                backgroundSize: '44px 44px',
+              }}
+            />
+
+            <div className="relative flex flex-col lg:flex-row lg:items-center gap-9 lg:gap-14">
+              <div className="flex-1">
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm mb-5">
+                  <Wallet className="w-3.5 h-3.5" />
+                  Portefeuille virtuel
+                </span>
+
+                <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-3">
+                  Ton premier ordre de bourse,{' '}
+                  <span className="text-brand-orange-light">sans risquer un franc</span>
+                </h2>
+
+                <p className="text-ink-200 leading-relaxed max-w-xl mb-7">
+                  Ouvre ton portefeuille simulé en moins d'une minute, achète tes premières
+                  actions aux cours réels de la BRVM et suis tes performances jour après jour.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="orange"
+                    size="md"
+                    className="h-12 gap-2"
+                    onClick={() => navigate(isLoggedIn ? '/dashboard' : '/signup')}
+                  >
+                    <BarChart3 className="w-5 h-5 shrink-0" />
+                    {isLoggedIn ? 'Ouvrir mon simulateur' : 'Lancer ma simulation gratuite'}
+                    <ArrowRight className="w-5 h-5 shrink-0" />
+                  </Button>
+                  <button
+                    onClick={() => navigate('/markets')}
+                    className="h-12 inline-flex items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold text-white ring-1 ring-white/25 transition-colors duration-200 cursor-pointer hover:bg-white/10"
+                  >
+                    Explorer les 47 actions
+                  </button>
+                </div>
+              </div>
+
+              {/* Trois preuves, en colonne sur mobile, en ligne des sm. */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:w-72 shrink-0">
+                {[
+                  { icon: Wallet,      value: '1 000 000 FCFA', label: 'de capital virtuel offert' },
+                  { icon: TrendingUp,  value: '47 actions',     label: 'aux cours réels de la BRVM' },
+                  { icon: ShieldCheck, value: '0 FCFA',         label: 'engagé, aucune carte requise' },
+                ].map(({ icon: Icon, value, label }) => (
+                  <div
+                    key={value}
+                    className="flex items-center gap-3 rounded-xl bg-white/[0.07] ring-1 ring-white/15 px-4 py-3.5 backdrop-blur-sm"
+                  >
+                    <Icon className="w-5 h-5 text-brand-orange-light shrink-0" strokeWidth={1.75} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white font-mono tracking-tight">{value}</p>
+                      <p className="text-xs text-ink-300 leading-snug">{label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </AnimatedSection>
+
         {/* === Time Machine === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className={`${CARD} px-8 py-10 md:px-12 md:py-12`}>
@@ -840,7 +830,7 @@ export default function HomePage() {
                   Machine à remonter le temps
                 </span>
                 <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                  Investis en 2010, vois ce que ça vaut en 2025
+                  Investis en 2010, vois ce que ça vaut en 2026
                 </h2>
                 <p className="text-gray-600 leading-relaxed mb-7 max-w-xl">
                   Rejoue les grands moments de la BRVM avec de l'argent virtuel.
@@ -1070,142 +1060,75 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="w-2 h-2 rounded-full bg-[#00D4A8] animate-pulse" />
-                <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-widest">En direct</span>
+                <span className="w-2 h-2 rounded-full bg-brand-navy animate-pulse" />
+                <span className="text-xs font-semibold text-brand-navy uppercase tracking-widest">En direct</span>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">Actualités du Jour</h2>
+              <h2 className="text-3xl font-bold text-brand-navy">Actualités du Jour</h2>
               <p className="text-gray-600 mt-1">Les dernières actualités des marchés financiers africains</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => scrollNews('left')}>
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => scrollNews('right')}>
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" onClick={() => navigate('/news')} className="ml-2">
-                Voir tout <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
+            <Button variant="ghost" onClick={() => navigate('/news')}>
+              Voir tout <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
 
-          {/* snap-proximity et non snap-mandatory : les cartes s'alignent sur
-              le centre, or la premiere et la derniere ne peuvent pas l'atteindre
-              (le scroll bute a 0 et au maximum). En mandatory le navigateur les
-              rendrait partiellement inaccessibles. */}
-          <div
-            ref={newsContainerRef}
-            className="flex gap-5 overflow-x-auto snap-x snap-proximity scrollbar-hide pb-4"
-            style={{ scrollPadding: '1rem' }}
-          >
-            {recentNewsItems.map((article) => {
-              const catKey = article.category.toUpperCase();
-              const catStyles: Record<string, { bar: string; badge: string; text: string }> = {
-                'MARCHÉ':         { bar: '#3b82f6', badge: 'bg-blue-50 border-blue-200',       text: 'text-blue-700'    },
-                'MACROÉCONOMIE':  { bar: '#f59e0b', badge: 'bg-amber-50 border-amber-200',     text: 'text-amber-700'   },
-                'DIVIDENDES':     { bar: '#00D4A8', badge: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' },
-                'TÉLÉCOMS':       { bar: '#8b5cf6', badge: 'bg-purple-50 border-purple-200',   text: 'text-purple-700'  },
-                'SECTEUR BANCAIRE': { bar: '#6366f1', badge: 'bg-indigo-50 border-indigo-200', text: 'text-indigo-700'  },
-                'ANALYSE':        { bar: '#6366f1', badge: 'bg-indigo-50 border-indigo-200',   text: 'text-indigo-700'  },
-                'RÉGLEMENTATION': { bar: '#0ea5e9', badge: 'bg-sky-50 border-sky-200',         text: 'text-sky-700'     },
-                'AGRO-INDUSTRIE': { bar: '#22c55e', badge: 'bg-green-50 border-green-200',     text: 'text-green-700'   },
-                'MATIÈRES PREMIÈRES': { bar: '#f97316', badge: 'bg-orange-50 border-orange-200', text: 'text-orange-700' },
-              };
-              const style = catStyles[catKey] ?? { bar: '#94a3b8', badge: 'bg-slate-50 border-slate-200', text: 'text-slate-600' };
+          {/* Bento : 2 grandes cartes a gauche, 2 cartes empilees a droite.
+              Hauteur fixe en desktop pour que la colonne de droite se partage
+              exactement en deux rangees. */}
+          <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-5 md:h-[470px]">
+            {recentNewsItems.map((article, idx) => {
+              const isTall = idx < 2;
 
-              const timeAgo = (dateStr: string) => {
-                const diffH = Math.floor((Date.now() - new Date(dateStr).getTime()) / 3_600_000);
-                if (diffH < 1)  return "moins d'1h";
-                if (diffH < 24) return `il y a ${diffH}h`;
-                const diffD = Math.floor(diffH / 24);
-                if (diffD < 7)  return `il y a ${diffD}j`;
-                return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+              const formatDate = (dateStr: string) => {
+                const d = new Date(dateStr).toLocaleDateString('fr-FR', {
+                  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+                });
+                return d.charAt(0).toUpperCase() + d.slice(1);
               };
 
               return (
-                <div key={article.id} className="snap-center flex-shrink-0 w-[85%] sm:w-[46%] md:w-[31%] lg:w-[23%] relative group/card">
-
-                  {/* Aperçu étendu au survol */}
-                  <div className="absolute bottom-full left-0 right-0 mb-2 z-50 pointer-events-none opacity-0 translate-y-1 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-200">
-                    <div className="bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden">
-                      {article.image_url && (
-                        <div className="h-40 overflow-hidden">
-                          <img src={article.image_url} alt={article.title} className="w-full h-full object-cover" />
-                        </div>
-                      )}
-                      <div className="p-4">
-                        <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${style.badge} ${style.text} mb-2 inline-block`}>
-                          {article.category}
-                        </span>
-                        <h3 className="text-sm font-bold text-slate-900 leading-snug mb-2">
-                          {article.title}
-                        </h3>
-                        <p className="text-xs text-slate-500 leading-relaxed">
-                          {article.summary}
-                        </p>
-                        <div className="flex items-center gap-1 mt-3 text-[10px] text-slate-400">
-                          <Clock size={10} />
-                          {timeAgo(article.publishedAt)}
-                        </div>
-                      </div>
+                <article
+                  key={article.id}
+                  onClick={() => navigate('/news')}
+                  className={`group relative overflow-hidden rounded-2xl cursor-pointer bg-brand-navy ring-1 ring-ink-200/60 shadow-sm hover:shadow-xl transition-shadow duration-300 h-56 md:h-auto ${isTall ? 'md:row-span-2' : ''}`}
+                >
+                  {article.image_url ? (
+                    <img
+                      src={article.image_url}
+                      alt={article.title}
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-brand-navy to-ink-950">
+                      <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(circle at 70% 40%, #1B4E7D 0%, transparent 60%)' }} />
                     </div>
-                    {/* Flèche */}
-                    <div className="w-3 h-3 bg-white border-r border-b border-slate-100 rotate-45 mx-auto -mt-1.5 shadow-sm" />
-                  </div>
+                  )}
 
-                  {/* transition limitee a la bordure et a l'ombre : le
-                      transform est reecrit a chaque frame par useCoverflow,
-                      l'animer le ferait trainer derriere le defilement. */}
-                  <article
-                    data-coverflow-card
-                    className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-[border-color,box-shadow] duration-200 cursor-pointer overflow-hidden flex flex-col"
-                    onClick={() => navigate('/news')}
-                  >
-                    <div className="h-1 rounded-t-xl" style={{ background: style.bar }} />
+                  {/* Voile sombre : garantit le contraste du texte quelle que
+                      soit la luminosite de l'image. */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
-                    {/* Visual header */}
-                    <div className="relative h-28 overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                      {article.image_url ? (
-                        <img src={article.image_url} alt={article.title} className="w-full h-full object-cover opacity-70" loading="lazy" />
-                      ) : (
-                        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 70% 50%, #00D4A8 0%, transparent 60%)' }} />
-                      )}
-                      {article.isFeatured && (
-                        <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#00D4A8]/20 border border-[#00D4A8]/40 text-[#00D4A8]">
-                          À la une
-                        </span>
-                      )}
-                      <span className={`absolute bottom-2 left-2 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${style.badge} ${style.text}`}>
-                        {article.category}
-                      </span>
-                    </div>
-
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-3 mb-2 group-hover:text-[#00D4A8] transition-colors duration-200 flex-1">
-                        {article.title}
-                      </h3>
-
-                      <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed">
+                  <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                    <span className="inline-block text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-brand-navy text-white shadow-sm mb-2">
+                      {article.category}
+                    </span>
+                    <h3 className={`font-bold text-white leading-snug line-clamp-2 group-hover:text-ink-300 transition-colors duration-200 ${isTall ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+                      {article.title}
+                    </h3>
+                    {isTall && (
+                      <p className="text-xs text-white/70 line-clamp-2 mt-1.5 leading-relaxed">
                         {article.summary}
                       </p>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="flex items-center gap-1 text-[10px] text-slate-400">
-                          <Clock size={10} />
-                          {timeAgo(article.publishedAt)}
-                        </span>
-                        <span className="text-[10px] text-[#00D4A8] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                          Lire <ChevronRight size={11} />
-                        </span>
-                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 mt-2 text-xs text-white/80">
+                      <Calendar size={13} />
+                      {formatDate(article.publishedAt)}
                     </div>
-                  </article>
-                </div>
+                  </div>
+                </article>
               );
             })}
           </div>
-
-          <p className="text-center text-xs text-slate-400 mt-3 sm:hidden">← Faites glisser pour voir plus →</p>
         </AnimatedSection>
 
         {/* === Témoignages — bloc masqué ===
