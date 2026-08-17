@@ -153,6 +153,134 @@ function CardLink({ label = 'En savoir plus' }: { label?: string }) {
   );
 }
 
+/**
+ * Courbe d'illustration du bloc Time Machine : une trajectoire qui monte, avec
+ * ses creux. Volontairement sans axe de valeurs — le simulateur rejoue les cours
+ * reels de la BRVM, afficher un montant precis ici promettrait un rendement que
+ * la page n'est pas en mesure de garantir.
+ */
+function TimeMachineCurve() {
+  const points = [18, 24, 20, 33, 41, 36, 52, 61, 55, 70, 82, 95];
+  const W = 260, H = 132, PAD = 10;
+  const step = (W - PAD * 2) / (points.length - 1);
+  const coords = points.map((v, i) => [PAD + i * step, H - PAD - (v / 100) * (H - PAD * 2 - 6)] as const);
+  const line = coords.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const area = `${line} L${(W - PAD).toFixed(1)},${H - PAD} L${PAD},${H - PAD} Z`;
+  const [lastX, lastY] = coords[coords.length - 1];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Trajectoire illustrative d'un portefeuille entre 2010 et 2026">
+      <defs>
+        <linearGradient id="tm-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#12395E" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#12395E" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Ligne de base, seul repere : la grille complete surchargerait une
+          courbe de cette taille. */}
+      <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="#E9EBED" strokeWidth="1" />
+      <path d={area} fill="url(#tm-area)" />
+      <path d={line} fill="none" stroke="#12395E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Anneau blanc de 2px : detache le point de fin de la courbe. */}
+      <circle cx={lastX} cy={lastY} r="5" fill="#EE7B23" stroke="#fff" strokeWidth="2" />
+    </svg>
+  );
+}
+
+/** Point d'un cercle, en degres, 0° a droite et angles croissants vers le bas. */
+function polar(cx: number, cy: number, r: number, deg: number) {
+  const rad = (deg * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+/**
+ * Anneau du bloc Académie : un arc epais par theme, le nom du theme ecrit
+ * DANS l'arc en suivant sa courbure (textPath).
+ *
+ * Deux points de conception :
+ * - les arcs dont le milieu tombe dans la moitie basse sont traces a l'envers,
+ *   sinon leur libelle s'afficherait tete en bas ;
+ * - tous les arcs portent la meme teinte. Cinq nuances de navy echouent au
+ *   test de separation (ΔE 5 en vision normale) : c'est le libelle, pas la
+ *   couleur, qui identifie la part.
+ */
+function AcademyRing({ themes, onSelect }: { themes: string[]; onSelect: (theme: string) => void }) {
+  const SIZE = 300;
+  const C = SIZE / 2;
+  const R = 112;          // rayon de la ligne mediane du trait
+  const STROKE = 34;
+  const PAD_DEG = 1.8;    // demi-espace entre deux arcs
+  const stepDeg = 360 / themes.length;
+
+  return (
+    <div className="relative w-full max-w-[300px] mx-auto">
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full h-auto overflow-visible">
+        <defs>
+          {/* Ombre douce sous l'anneau, pour le decoller du fond blanc. */}
+          <filter id="ring-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="3" stdDeviation="5" floodColor="#12395E" floodOpacity="0.18" />
+          </filter>
+          {themes.map((theme, i) => {
+            const start = -90 + stepDeg * i + PAD_DEG;
+            const end = -90 + stepDeg * (i + 1) - PAD_DEG;
+            const mid = (start + end) / 2;
+            // Milieu dans la moitie basse (0°..180°) : on inverse le sens du
+            // trace pour que le texte reste lisible.
+            const flip = mid > 0 && mid < 180;
+            const a = polar(C, C, R, flip ? end : start);
+            const b = polar(C, C, R, flip ? start : end);
+            return (
+              <path
+                key={theme}
+                id={`ring-arc-${i}`}
+                d={`M${a.x.toFixed(2)},${a.y.toFixed(2)} A${R},${R} 0 0 ${flip ? 0 : 1} ${b.x.toFixed(2)},${b.y.toFixed(2)}`}
+                fill="none"
+              />
+            );
+          })}
+        </defs>
+
+        {/* Piste : rappelle le cercle complet la ou les arcs sont interrompus. */}
+        <circle cx={C} cy={C} r={R} fill="none" stroke="#F7F7F8" strokeWidth={STROKE} />
+
+        <g filter="url(#ring-shadow)">
+          {themes.map((theme, i) => (
+            <g key={theme} onClick={() => onSelect(theme)} className="cursor-pointer group/arc">
+              <use
+                href={`#ring-arc-${i}`}
+                stroke="#12395E"
+                strokeWidth={STROKE}
+                fill="none"
+                className="transition-[stroke] duration-200 group-hover/arc:stroke-[#1B4E7D]"
+              />
+              <text
+                className="pointer-events-none select-none"
+                fill="#fff"
+                fontSize="11.5"
+                fontWeight="600"
+                letterSpacing="0.02em"
+              >
+                <textPath href={`#ring-arc-${i}`} startOffset="50%" textAnchor="middle" dominantBaseline="central">
+                  {theme}
+                </textPath>
+              </text>
+            </g>
+          ))}
+        </g>
+      </svg>
+
+      {/* Coeur de l'anneau. Hors du SVG : le texte reste selectionnable et
+          herite des polices du site. */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+        <BookOpen className="w-5 h-5 text-brand-orange mb-2" strokeWidth={1.75} />
+        <span className="text-4xl font-bold text-brand-navy font-mono leading-none">15+</span>
+        <span className="text-xs font-semibold text-gray-500 mt-1.5 leading-tight">modules gratuits</span>
+        <span className="text-[11px] text-gray-400 mt-0.5">5 thèmes</span>
+      </div>
+    </div>
+  );
+}
+
 /** Lien « voir tout » en en-tête de section — même geste que CardLink. */
 function SectionLink({ label, onClick }: { label: string; onClick: () => void }) {
   return (
@@ -840,144 +968,6 @@ export default function HomePage() {
           </div>
         </AnimatedSection>
 
-        {/* === Comment ça marche — simulateur ===
-            Reprend la charte du bandeau ci-dessus (degrade navy, halo orange,
-            trame) mais developpe le parcours en trois etapes et montre un
-            portefeuille en exemple : le lecteur voit ce qu'il obtient avant de
-            cliquer. */}
-        <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 px-7 py-10 md:px-12 md:py-14">
-            <div
-              className="absolute inset-0 opacity-[0.18] pointer-events-none"
-              style={{ backgroundImage: 'radial-gradient(circle at 12% 90%, #EE7B23 0%, transparent 55%)' }}
-            />
-            <div
-              className="absolute inset-0 opacity-[0.07] pointer-events-none"
-              style={{
-                backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-                backgroundSize: '44px 44px',
-              }}
-            />
-
-            <div className="relative">
-              <div className="max-w-2xl">
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-sm mb-5">
-                  <BarChart3 className="w-3.5 h-3.5" />
-                  Comment ça marche
-                </span>
-                <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-3">
-                  Trois étapes pour <span className="text-brand-orange-light">investir pour de faux</span>,
-                  et apprendre pour de vrai
-                </h2>
-                <p className="text-ink-200 leading-relaxed">
-                  Aucun versement, aucune carte bancaire. Tu repars avec un historique
-                  de tes décisions et les chiffres qui vont avec.
-                </p>
-              </div>
-
-              <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-start mt-10">
-                {/* Parcours en trois etapes. Le trait vertical relie les puces
-                    et s'arrete a la derniere (dernier:h-0). */}
-                <ol className="space-y-6">
-                  {[
-                    {
-                      icon: Wallet,
-                      title: 'Ouvre ton portefeuille',
-                      desc: "Un compte gratuit, 1 000 000 FCFA virtuels crédités immédiatement. Moins d'une minute.",
-                    },
-                    {
-                      icon: BarChart3,
-                      title: 'Passe tes premiers ordres',
-                      desc: 'Achète et vends les 47 sociétés cotées aux cours réels de la BRVM, séance après séance.',
-                    },
-                    {
-                      icon: TrendingUp,
-                      title: 'Mesure et corrige',
-                      desc: 'Performance, répartition sectorielle, historique complet : tu vois ce qui a marché et ce qui a coûté.',
-                    },
-                  ].map(({ icon: Icon, title, desc }, i, arr) => (
-                    <li key={title} className="flex gap-4">
-                      <div className="flex flex-col items-center shrink-0">
-                        <span className="w-11 h-11 rounded-xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center backdrop-blur-sm">
-                          <Icon className="w-5 h-5 text-brand-orange-light" strokeWidth={1.75} />
-                        </span>
-                        <span className={`w-px flex-1 bg-white/15 mt-2 ${i === arr.length - 1 ? 'h-0' : 'min-h-[28px]'}`} />
-                      </div>
-                      <div className="pb-1">
-                        <p className="text-[11px] font-bold uppercase tracking-widest text-brand-orange-light mb-1">
-                          Étape {i + 1}
-                        </p>
-                        <h3 className="text-lg font-bold text-white mb-1.5">{title}</h3>
-                        <p className="text-sm text-ink-200 leading-relaxed max-w-md">{desc}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-
-                {/* Portefeuille d'exemple. Chiffres illustratifs, volontairement
-                    modestes : une performance flatteuse promettrait un resultat
-                    que le simulateur ne garantit pas. */}
-                <div className="rounded-2xl bg-white/[0.07] ring-1 ring-white/15 backdrop-blur-sm p-6 md:p-7">
-                  <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10">
-                    <div>
-                      <p className="text-xs text-ink-300 mb-1">Valeur du portefeuille</p>
-                      <p className="text-3xl font-bold text-white font-mono tracking-tight">1 124 500 <span className="text-base font-semibold text-ink-300">FCFA</span></p>
-                    </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/15 ring-1 ring-emerald-400/30 px-2.5 py-1 text-xs font-bold text-emerald-300 font-mono shrink-0">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      +12,45 %
-                    </span>
-                  </div>
-
-                  <div className="space-y-4 pt-5">
-                    {[
-                      { name: 'Sonatel', ticker: 'SNTS', weight: 42, change: '+8,2 %', up: true },
-                      { name: 'Ecobank CI', ticker: 'ECOC', weight: 31, change: '+3,7 %', up: true },
-                      { name: 'Palm CI', ticker: 'PALC', weight: 27, change: '−1,4 %', up: false },
-                    ].map(({ name, ticker, weight, change, up }) => (
-                      <div key={ticker}>
-                        <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                          <span className="text-sm font-semibold text-white truncate">
-                            {name} <span className="text-ink-300 font-mono text-xs">{ticker}</span>
-                          </span>
-                          <span className={`text-xs font-bold font-mono shrink-0 ${up ? 'text-emerald-300' : 'text-rose-300'}`}>
-                            {change}
-                          </span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                          <div className="h-full rounded-full bg-brand-orange-light/80" style={{ width: `${weight}%` }} />
-                        </div>
-                        <p className="text-[11px] text-ink-300 mt-1 font-mono">{weight} % du portefeuille</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <p className="text-[11px] text-ink-400 mt-6 leading-snug">
-                    Exemple illustratif. Les performances passées ne préjugent pas des performances futures.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-10 pt-8 border-t border-white/10">
-                <Button
-                  variant="orange"
-                  size="md"
-                  className="h-12 gap-2"
-                  onClick={() => navigate(isLoggedIn ? '/dashboard' : '/signup')}
-                >
-                  <Wallet className="w-5 h-5 shrink-0" />
-                  {isLoggedIn ? 'Reprendre ma simulation' : 'Créer mon portefeuille virtuel'}
-                  <ArrowRight className="w-5 h-5 shrink-0" />
-                </Button>
-                <span className="inline-flex items-center gap-2 text-sm text-ink-200 sm:ml-2">
-                  <ShieldCheck className="w-4 h-4 text-brand-orange-light shrink-0" />
-                  Gratuit, sans carte bancaire — tu peux arrêter quand tu veux.
-                </span>
-              </div>
-            </div>
-          </div>
-        </AnimatedSection>
-
         {/* === Time Machine === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className={`${CARD} px-8 py-10 md:px-12 md:py-12`}>
@@ -990,12 +980,12 @@ export default function HomePage() {
                 <div className="flex flex-col items-center gap-1 text-center">
                   <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">2010</span>
                   <div className="w-px h-6 bg-gray-300" />
-                  <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">2025</span>
+                  <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">2026</span>
                 </div>
               </div>
 
               {/* Texte */}
-              <div className="flex-1 text-center md:text-left">
+              <div className="flex-1 text-center md:text-left lg:max-w-xl">
                 <span className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy text-xs font-bold px-3 py-1.5 rounded-full mb-5">
                   <Clock className="w-3.5 h-3.5" />
                   Machine à remonter le temps
@@ -1018,21 +1008,50 @@ export default function HomePage() {
                   <ArrowRight className="w-5 h-5 shrink-0" />
                 </Button>
               </div>
+
+              {/* Courbe, a droite : le bloc s'arretait au texte et laissait la
+                  moitie droite de la carte vide. */}
+              <div className="w-full md:w-auto md:min-w-[280px] lg:min-w-[320px] shrink-0">
+                <div className="rounded-xl border border-gray-200 bg-gray-50/70 px-5 py-4">
+                  <div className="flex items-baseline justify-between mb-2">
+                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ton portefeuille rejoué</span>
+                    <span className="text-xs font-mono text-gray-400">2010 → 2026</span>
+                  </div>
+                  <TimeMachineCurve />
+                  <p className="text-[11px] text-gray-400 mt-2 leading-snug">
+                    Illustration. Le simulateur rejoue les cours réels de la BRVM.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </AnimatedSection>
 
         {/* === Académie === */}
         <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-          <div className={CARD}>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-8">
+          <div className={`${CARD} px-8 py-10 md:px-12 md:py-12`}>
+            <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+              {/* Colonne de gauche, symetrique de la timeline 2010 → 2026 du
+                  bloc Time Machine : meme gabarit d'icone, meme progression
+                  verticale, ici du niveau de depart au niveau vise. */}
+              <div className="shrink-0 flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center">
+                  <BookOpen className="w-8 h-8 text-brand-navy" strokeWidth={1.5} />
+                </div>
+                <div className="flex flex-col items-center gap-1 text-center">
+                  <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">Novice</span>
+                  <div className="w-px h-6 bg-gray-300" />
+                  <span className="text-brand-navy font-bold text-lg font-mono tracking-wider">Expert</span>
+                </div>
+              </div>
+
               <div className="flex-1 text-center md:text-left">
                 <div className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy px-3 py-1.5 rounded-full text-xs font-bold mb-4">
                   <BookOpen className="w-4 h-4" />
                   <span>Académie AfriBourse</span>
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                  Apprenez à investir intelligemment
+                <h2 className="text-3xl font-bold text-gray-900 mb-3 max-w-xl">
+                  Apprenez à investir intelligemment sur la BRVM
                 </h2>
                 <p className="text-gray-600 mb-7 max-w-xl leading-relaxed">
                   Des guides complets, des tutoriels vidéo et des analyses pour maîtriser l'investissement boursier.
@@ -1050,18 +1069,15 @@ export default function HomePage() {
                 </Button>
               </div>
 
-              {/* Les cinq thèmes portaient cinq couleurs différentes. Ce sont des
-                  filtres équivalents, rien ne justifiait de les hiérarchiser. */}
-              <div className="flex flex-wrap gap-2.5 justify-center md:justify-end w-full md:w-auto md:max-w-xs">
-                {['Psychologie', 'Analyse fondamentale', 'Analyse technique', 'Connaissance BRVM', 'Portefeuille'].map(label => (
-                  <button
-                    key={label}
-                    onClick={() => navigate('/learn')}
-                    className="text-sm font-semibold px-4 py-2 rounded-full border border-gray-200 text-gray-700 bg-white transition-colors duration-150 cursor-pointer hover:border-brand-navy/25 hover:text-brand-navy"
-                  >
-                    {label}
-                  </button>
-                ))}
+              {/* Anneau des thèmes. Ordre choisi pour la mise en page : les
+                  libellés les plus larges tombent en bas et à gauche, où la
+                  couronne offre le plus de place. Ce sont des filtres
+                  équivalents, rien ne justifiait de les hiérarchiser. */}
+              <div className="w-full md:w-auto md:max-w-sm shrink-0">
+                <AcademyRing
+                  themes={['Psychologie', 'Analyse technique', 'Analyse fondamentale', 'Connaissance BRVM', 'Portefeuille']}
+                  onSelect={() => navigate('/learn')}
+                />
               </div>
             </div>
           </div>
