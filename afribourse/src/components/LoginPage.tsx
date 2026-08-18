@@ -8,6 +8,7 @@ import { apiClient } from '../lib/api-client';
 import { fetchCsrfToken, setAuthToken } from '../config/api';
 import OAuthButtons from './auth/OAuthButtons';
 import { trackLogin } from '../lib/amplitude';
+import { HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -80,63 +81,77 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* --- Header --- */}
-        <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <button onClick={() => navigate('/')} className="flex items-center space-x-2">
-              <img
-                src="/images/logo_afribourse.png"
-                alt="AfriBourse Logo"
-                className="w-16 h-16 object-contain"
-              />
-              <span className="text-3xl font-bold text-gray-900">AfriBourse</span>
-            </button>
-          </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Bon retour parmi nous
-          </h2>
-          <p className="text-gray-600">
-            Connectez-vous pour accéder à votre compte
-          </p>
+    // Hauteur bornee a la fenetre moins la barre applicative : la page tenait
+    // sur toute la hauteur d'ecran PLUS le padding haut du layout, ce qui
+    // forcait un defilement pour atteindre le bouton de connexion.
+    <div
+      className="bg-ink-50 flex items-center justify-center p-4 sm:p-6"
+      style={{ minHeight: 'calc(100vh - var(--app-top-h, 4rem))' }}
+    >
+      <div className="w-full max-w-4xl bg-white rounded-3xl border border-gray-200 shadow-2xl shadow-ink-900/10 overflow-hidden grid md:grid-cols-2">
+
+        {/* --- Panneau d'accueil ---
+            Coins arrondis sur les quatre angles : l'overflow de la carte masque
+            les deux exterieurs, seuls les deux interieurs se voient, comme sur
+            le modele. */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 text-white flex flex-col items-center justify-center text-center px-8 py-12 md:py-16 order-1">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 opacity-[0.18] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 85% 12%, rgba(124,149,171,0.34) 0%, transparent 55%)' }}
+          />
+          <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] pointer-events-none" style={HERO_GRID_STYLE} />
+
+          {/* Le volet ne porte que le logo, cliquable vers l'accueil. */}
+          <button
+            onClick={() => navigate('/')}
+            aria-label="Retour à l'accueil"
+            className="relative inline-flex cursor-pointer"
+          >
+            <img src="/images/logo_afribourse.png" alt="AfriBourse" className="w-44 h-44 md:w-56 md:h-56 object-contain" />
+          </button>
         </div>
 
-        {/* --- Login Form --- */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <form onSubmit={handleLogin} className="space-y-6" translate="no">
-            {/* Email Input */}
+        {/* --- Formulaire --- */}
+        <div className="px-6 py-10 sm:px-10 flex flex-col justify-center order-2">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-6">Se connecter</h2>
+
+          <OAuthButtons mode="login" compact />
+
+          <p className="text-center text-sm text-gray-500 my-5">Ou avec votre e-mail</p>
+
+          <form onSubmit={handleLogin} className="space-y-4" translate="no">
             <Input
               id="email"
               name="email"
               type="email"
-              label="Adresse e-mail"
+              aria-label="Adresse e-mail"
               autoComplete="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="votre@email.com"
+              className="h-12"
+              placeholder="Adresse e-mail"
               icon={<Mail className="h-5 w-5 text-gray-400" />}
               disabled={loading}
             />
 
-            {/* Password Input */}
             <Input
               id="password"
               name="password"
               type="password"
-              label="Mot de passe"
+              aria-label="Mot de passe"
               autoComplete="current-password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              className="h-12"
+              placeholder="Mot de passe"
               icon={<Lock className="h-5 w-5 text-gray-400" />}
               disabled={loading}
             />
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -144,69 +159,51 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 accent-brand-navy border-gray-300 rounded cursor-pointer"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 cursor-pointer">
                   Se souvenir de moi
                 </label>
               </div>
               <button
                 type="button"
                 onClick={() => navigate('/mot-de-passe-oublie')}
-                className="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors"
+                className="text-sm font-semibold text-brand-navy hover:underline transition-colors cursor-pointer"
               >
                 Mot de passe oublié ?
               </button>
             </div>
 
-            {/* Error Display */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             )}
 
-            {/* Submit Button */}
             <Button
               type="submit"
-              variant="primary"
+              variant="orange"
               size="lg"
               isLoading={loading}
               disabled={loading}
-              className="w-full"
+              className="w-full uppercase tracking-widest"
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </form>
 
-          {/* OAuth Social Login */}
-          <div className="mt-6">
-            <OAuthButtons mode="login" />
-          </div>
-
-          {/* Link to Signup */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Vous n'avez pas de compte?{' '}
-              <button
-                onClick={() => navigate('/signup')}
-                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                Créer un compte
-              </button>
-            </p>
-          </div>
-        </div>
-
-        {/* Link back to Home */}
-        <div className="text-center mt-8">
-          <button
-            onClick={() => navigate('/')}
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            ← Retour à l'accueil
-          </button>
+          {/* Seule sortie vers l'inscription depuis cette page — le logo du
+              volet gauche reste le chemin vers l'accueil. */}
+          <p className="mt-6 text-center text-sm text-gray-600">
+            Pas encore de compte ?{' '}
+            <button
+              onClick={() => navigate('/signup')}
+              className="font-semibold text-brand-navy hover:underline transition-colors cursor-pointer"
+            >
+              Créer un compte
+            </button>
+          </p>
         </div>
       </div>
     </div>

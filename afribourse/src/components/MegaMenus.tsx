@@ -1,19 +1,8 @@
 import { GraduationCap, TrendingUp, TrendingDown, BarChart3, Newspaper, DollarSign, Eye, MessageCircle, Trophy, Award, Calendar, Users, ChevronRight, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../config/api';
+import React from 'react';
 import { BRVM_NEWS } from '../data/brvm2026News';
-
-// --- Type Definitions ---
-type MarketIndex = {
-  id: string;
-  index_name: string;
-  index_value: number;
-  daily_change_percent: number;
-  // Add other fields if needed
-};
-// --- End Types ---
 
 type MegaMenuProps = {};
 
@@ -231,37 +220,6 @@ export function NewsMegaMenu() {
 // --- MarketsMegaMenu ---
 export function MarketsMegaMenu() {
   const navigate = useNavigate();
-  const [indices, setIndices] = useState<MarketIndex[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch latest indices from backend API
-  useEffect(() => {
-    async function loadIndices() {
-        setLoading(true);
-      try {
-        const response = await fetch(`${API_BASE_URL}/indices/latest?limit=2`); // Fetch latest 2
-        if (response.ok) {
-          const data: MarketIndex[] = await response.json();
-          setIndices(data);
-        } else {
-           console.error("Failed to load latest indices");
-           setIndices([]);
-        }
-      } catch (error) {
-          console.error("Error fetching latest indices:", error);
-          setIndices([]);
-      } finally {
-          setLoading(false);
-      }
-    }
-    loadIndices();
-  }, []); // Run once on mount
-
-  // Helper function
-  function formatIndexValue(num: number | null | undefined): string {
-      if (num === null || num === undefined) return 'N/A';
-      return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
-  }
 
   return (
     <div className={MENU_SHELL}>
@@ -283,33 +241,16 @@ export function MarketsMegaMenu() {
             </div>
           </div>
 
-          {/* Colonnes 2-3 : indices */}
+          {/* Colonnes 2-3 : acces aux cotations. Le bloc « Indices BRVM » qui
+              occupait cette place a ete retire, avec l'appel reseau qui
+              l'alimentait. */}
           <div className="md:col-span-2">
             <div className={MENU_PANEL}>
-              <h3 className={MENU_HEADING}>Indices BRVM</h3>
-              {loading ? (
-                <div className="grid md:grid-cols-2 gap-3 min-h-[80px] items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-navy" />
-                </div>
-              ) : indices.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-3">
-                  {indices.map((index) => (
-                    <div key={index.id} className="bg-white rounded-md p-3 shadow-sm">
-                      <p className="text-xs text-ink-500 mb-1 truncate">{index.index_name}</p>
-                      <div className="flex items-end justify-between">
-                        <p className="text-lg font-bold text-ink-900">{formatIndexValue(index.index_value)}</p>
-                        {/* Vert / rouge conserves : variation de l'indice, couleur porteuse de sens. */}
-                        <div className={`flex items-center space-x-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${ index.daily_change_percent >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }`}>
-                          {index.daily_change_percent >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          <span>{index.daily_change_percent >= 0 ? '+' : ''}{index.daily_change_percent?.toFixed(2) ?? '0.00'}%</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-ink-500 text-center py-3">Impossible de charger les indices.</p>
-              )}
+              <h3 className={MENU_HEADING}>Cotations</h3>
+              <p className="text-sm text-ink-500">
+                Cours, volumes et variations des 47 sociétés cotées à la BRVM, mis à jour
+                au fil des séances.
+              </p>
               <button onClick={() => navigate('/markets')} className={`mt-4 w-full px-5 py-2 text-sm ${MENU_BTN}`}>
                 Voir toutes les cotations
               </button>

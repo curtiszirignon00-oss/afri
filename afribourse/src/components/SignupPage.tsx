@@ -1,12 +1,13 @@
 // src/components/SignupPage.tsx - VERSION MIGRÉE
 import { useState, useRef, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, CheckCircle, User as UserIcon, Phone, ChevronDown, ChevronLeft, ChevronRight, GraduationCap, TrendingUp, Bot, Unlock, Globe } from 'lucide-react';
-import { Button, Input, Card } from './ui';
+import { Button, Input } from './ui';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import OAuthButtons from './auth/OAuthButtons';
 import { trackSignUp } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
+import { HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 interface Country {
   code: string;
@@ -116,9 +117,6 @@ function PhoneInput({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        Numéro de téléphone <span className="text-gray-400 font-normal">(optionnel)</span>
-      </label>
       <div className="flex gap-2">
         {/* Sélecteur indicatif */}
         <div className="relative" ref={dropdownRef}>
@@ -126,7 +124,7 @@ function PhoneInput({
             type="button"
             disabled={disabled}
             onClick={() => setOpen(o => !o)}
-            className="flex items-center gap-1.5 h-10 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-colors"
+            className="flex items-center gap-1.5 h-12 px-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-brand-navy disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap transition-colors"
           >
             <span className="text-base leading-none">{selected.flag}</span>
             <span className="text-gray-600">{selected.dial}</span>
@@ -142,7 +140,7 @@ function PhoneInput({
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher un pays..."
-                  className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy"
                 />
               </div>
               <ul className="max-h-52 overflow-y-auto py-1">
@@ -154,7 +152,7 @@ function PhoneInput({
                     <button
                       type="button"
                       onClick={() => { onDialChange(c.dial); setOpen(false); setSearch(''); }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-indigo-50 text-left transition-colors ${c.dial === dialCode ? 'bg-indigo-50 font-semibold text-indigo-700' : 'text-gray-700'}`}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-ink-50 text-left transition-colors ${c.dial === dialCode ? 'bg-ink-50 font-semibold text-brand-navy' : 'text-gray-700'}`}
                     >
                       <span className="text-base">{c.flag}</span>
                       <span className="flex-1">{c.name}</span>
@@ -174,9 +172,10 @@ function PhoneInput({
             type="tel"
             value={value}
             onChange={e => onChange(e.target.value.replace(/[^\d\s\-()]/g, ''))}
-            placeholder="07 00 00 00 00"
+            placeholder="Téléphone (optionnel)"
+            aria-label="Numéro de téléphone (optionnel)"
             disabled={disabled}
-            className="w-full h-10 pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-brand-navy disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
       </div>
@@ -212,29 +211,21 @@ const BENEFITS = [
     icon: <GraduationCap className="w-5 h-5" />,
     title: 'Apprends à ton rythme',
     desc: 'Des modules clairs, sans jargon, pour maîtriser la BRVM.',
-    color: 'text-blue-300',
-    bg: 'bg-blue-500/20',
   },
   {
     icon: <TrendingUp className="w-5 h-5" />,
     title: 'Pratique sans risquer un franc',
     desc: '10 000 000 FCFA virtuels pour tester tes stratégies.',
-    color: 'text-emerald-300',
-    bg: 'bg-emerald-500/20',
   },
   {
     icon: <Bot className="w-5 h-5" />,
     title: 'SIMBA t\'accompagne à chaque étape',
     desc: 'Ton coach IA disponible 24h/24 pour répondre à tes questions.',
-    color: 'text-purple-300',
-    bg: 'bg-purple-500/20',
   },
   {
     icon: <Unlock className="w-5 h-5" />,
     title: '100% gratuit. Aucune carte requise.',
     desc: 'L\'accès complet ne coûte rien. Investis en connaissance, pas en abonnement.',
-    color: 'text-amber-300',
-    bg: 'bg-amber-500/20',
   },
 ];
 
@@ -325,10 +316,11 @@ export default function SignupPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="text"
-                label="Prénom"
+                aria-label="Prénom"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Jean"
+                className="h-12"
+                placeholder="Prénom"
                 icon={<UserIcon className="w-5 h-5 text-gray-400" />}
                 disabled={loading}
                 required
@@ -336,42 +328,50 @@ export default function SignupPage() {
 
               <Input
                 type="text"
-                label="Nom"
+                aria-label="Nom"
                 value={lastname}
                 onChange={(e) => setLastname(e.target.value)}
-                placeholder="Dupont"
+                className="h-12"
+                placeholder="Nom"
                 icon={<UserIcon className="w-5 h-5 text-gray-400" />}
                 disabled={loading}
                 required
               />
             </div>
 
-            <Input
-              type="email"
-              label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="votre@email.com"
-              icon={<Mail className="w-5 h-5 text-gray-400" />}
-              disabled={loading}
-              required
-            />
+            {/* E-mail et telephone sur la meme ligne des md, comme prenom et
+                nom au-dessus : deux champs courts qui n'ont pas besoin de toute
+                la largeur. */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                type="email"
+                aria-label="Adresse e-mail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12"
+                placeholder="Adresse e-mail"
+                icon={<Mail className="w-5 h-5 text-gray-400" />}
+                disabled={loading}
+                required
+              />
 
-            <PhoneInput
-              value={phoneNumber}
-              dialCode={phoneDialCode}
-              onChange={setPhoneNumber}
-              onDialChange={setPhoneDialCode}
-              disabled={loading}
-            />
+              <PhoneInput
+                value={phoneNumber}
+                dialCode={phoneDialCode}
+                onChange={setPhoneNumber}
+                onDialChange={setPhoneDialCode}
+                disabled={loading}
+              />
+            </div>
 
             <div>
               <Input
                 type="password"
-                label="Mot de passe"
+                aria-label="Mot de passe"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                className="h-12"
+                placeholder="Mot de passe"
                 icon={<Lock className="w-5 h-5 text-gray-400" />}
                 disabled={loading}
                 required
@@ -381,12 +381,12 @@ export default function SignupPage() {
 
             <Input
               type="password"
-              label="Confirmer le mot de passe"
+              aria-label="Confirmer le mot de passe"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
+              className="h-12"
+              placeholder="Confirmer le mot de passe"
               icon={<Lock className="w-5 h-5 text-gray-400" />}
-              helperText="Saisissez à nouveau votre mot de passe"
               disabled={loading}
               required
             />
@@ -408,7 +408,7 @@ export default function SignupPage() {
 
             <Button
               type="submit"
-              variant="primary"
+              variant="orange"
               size="lg"
               isLoading={loading}
               disabled={loading || !passwordValid}
@@ -424,7 +424,7 @@ export default function SignupPage() {
       <div className="mt-2"><OAuthButtons mode="register" /></div>
       <div className="mt-6 text-center text-sm text-gray-600">
         Déjà un compte ?{' '}
-        <button onClick={() => navigate('/login')} className="text-indigo-600 font-semibold hover:underline" disabled={loading}>
+        <button onClick={() => navigate('/login')} className="font-semibold text-brand-navy hover:underline cursor-pointer" disabled={loading}>
           Se connecter
         </button>
       </div>
@@ -448,7 +448,7 @@ export default function SignupPage() {
 
           {/* ── Slide 1 : Bénéfices ── */}
           <div
-            className="flex flex-col bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900"
+            className="flex flex-col bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950"
             style={{ width: '100vw', height: '100%' }}
           >
             {/* Logo — cliquable → accueil */}
@@ -471,12 +471,12 @@ export default function SignupPage() {
             <div className="flex-1 flex flex-col justify-evenly px-5">
               {BENEFITS.map((b, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className={`shrink-0 w-8 h-8 rounded-xl flex items-center justify-center ${b.bg} ${b.color}`}>
+                  <div className="shrink-0 w-8 h-8 rounded-xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center text-brand-orange-light">
                     {b.icon}
                   </div>
                   <div>
                     <p className="text-white font-semibold text-sm leading-none">{b.title}</p>
-                    <p className="text-white/55 text-xs mt-0.5 leading-snug">{b.desc}</p>
+                    <p className="text-ink-200 text-xs mt-0.5 leading-snug">{b.desc}</p>
                   </div>
                 </div>
               ))}
@@ -485,21 +485,21 @@ export default function SignupPage() {
             {/* Social proof + CTA */}
             <div className="px-5 pb-8 flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5 text-blue-300 shrink-0" />
-                <p className="text-blue-200 text-xs font-medium">+3 000 investisseurs de 8 pays UEMOA</p>
+                <Globe className="w-3.5 h-3.5 text-brand-orange-light shrink-0" />
+                <p className="text-ink-200 text-xs font-medium">+3 000 investisseurs de 8 pays UEMOA</p>
               </div>
 
               {/* Bouton CTA principal */}
               <button
                 onClick={() => setSlide(1)}
-                className="w-full bg-white text-indigo-900 font-extrabold text-base py-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-transform shadow-lg shadow-indigo-950/40"
+                className="w-full bg-brand-orange text-white font-bold text-base py-4 rounded-2xl flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-transform shadow-lg shadow-ink-950/30"
               >
                 S'inscrire maintenant
                 <ChevronRight className="w-5 h-5" />
               </button>
 
               {/* Hint swipe discret */}
-              <p className="text-center text-white/40 text-xs">ou glissez vers la droite</p>
+              <p className="text-center text-ink-300 text-xs">ou glissez vers la droite</p>
 
               {/* Dots */}
               <div className="flex justify-center gap-2">
@@ -511,22 +511,22 @@ export default function SignupPage() {
 
           {/* ── Slide 2 : Formulaire ── */}
           <div
-            className="flex flex-col bg-slate-50"
+            className="flex flex-col bg-ink-50"
             style={{ width: '100vw', height: '100%' }}
           >
             {/* Header */}
-            <div className="flex items-center px-4 pt-4 pb-2 shrink-0 bg-white border-b border-slate-100">
+            <div className="flex items-center px-4 pt-4 pb-2 shrink-0 bg-white border-b border-gray-100">
               <button
                 onClick={() => setSlide(0)}
-                className="flex items-center gap-1 text-slate-500 text-sm font-medium cursor-pointer"
+                className="flex items-center gap-1 text-gray-500 text-sm font-medium cursor-pointer"
                 aria-label="Retour aux bénéfices"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Retour
               </button>
               <div className="flex gap-2 mx-auto">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                <span className="w-5 h-1.5 rounded-full bg-indigo-600" />
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                <span className="w-5 h-1.5 rounded-full bg-brand-navy" />
               </div>
               <div className="w-14" />
             </div>
@@ -535,12 +535,12 @@ export default function SignupPage() {
             <div className="flex-1 overflow-y-auto px-4 py-5">
               <h2 className="text-xl font-bold text-gray-900 mb-0.5">Créer un compte</h2>
               <p className="text-gray-500 text-sm mb-5">Commencez votre aventure d'investissement</p>
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 {formContent}
                 {oauthAndLinks}
               </div>
               <div className="mt-4 pb-6 text-center">
-                <button onClick={() => navigate('/')} className="text-slate-400 text-xs underline cursor-pointer">
+                <button onClick={() => navigate('/')} className="text-gray-400 text-xs underline cursor-pointer">
                   Retour à l'accueil
                 </button>
               </div>
@@ -550,22 +550,51 @@ export default function SignupPage() {
         </div>
       </div>
 
-      {/* ── DESKTOP : layout existant inchangé ─────────────────────── */}
-      <div className="hidden lg:flex min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl mb-4 shadow-md">
-              <img src="/images/logo_afribourse.png" alt="AfriBourse Logo" className="w-16 h-16 object-contain" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Créer un compte</h1>
-            <p className="text-gray-600">Commencez votre aventure d'investissement</p>
+      {/* ── DESKTOP : carte scindee, meme modele que la page de connexion ── */}
+      <div
+        className="hidden lg:flex bg-ink-50 items-center justify-center p-6"
+        style={{ minHeight: 'calc(100vh - var(--app-top-h, 4rem))' }}
+      >
+        <div className="w-full max-w-5xl bg-white rounded-3xl border border-gray-200 shadow-2xl shadow-ink-900/10 overflow-hidden grid lg:grid-cols-[0.8fr_1.2fr]">
+
+          {/* --- Panneau d'accueil --- */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 text-white flex flex-col items-center justify-center text-center px-8 py-12">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 opacity-[0.18] pointer-events-none"
+              style={{ backgroundImage: 'radial-gradient(circle at 85% 12%, rgba(124,149,171,0.34) 0%, transparent 55%)' }}
+            />
+            <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] pointer-events-none" style={HERO_GRID_STYLE} />
+
+            <button
+              onClick={() => navigate('/')}
+              aria-label="Retour à l'accueil"
+              className="relative inline-flex cursor-pointer"
+            >
+              <img src="/images/logo_afribourse.png" alt="AfriBourse" className="w-44 h-44 md:w-56 md:h-56 object-contain" />
+            </button>
           </div>
-          <Card>
+
+          {/* --- Formulaire --- */}
+          <div className="px-8 py-10 xl:px-12 flex flex-col justify-center">
+            <h1 className="text-3xl font-bold text-gray-900 text-center mb-6">Créer un compte</h1>
+
+            <OAuthButtons mode="register" compact />
+
+            <p className="text-center text-sm text-gray-500 my-5">Ou avec votre e-mail</p>
+
             {formContent}
-            {oauthAndLinks}
-          </Card>
-          <div className="mt-6 text-center">
-            <Button variant="ghost" onClick={() => navigate('/')} disabled={loading}>Retour à l'accueil</Button>
+
+            <p className="mt-6 text-center text-sm text-gray-600">
+              Déjà un compte ?{' '}
+              <button
+                onClick={() => navigate('/login')}
+                disabled={loading}
+                className="font-semibold text-brand-navy hover:underline cursor-pointer"
+              >
+                Se connecter
+              </button>
+            </p>
           </div>
         </div>
       </div>

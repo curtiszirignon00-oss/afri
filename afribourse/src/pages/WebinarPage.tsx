@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  CheckCircle, ChevronRight, TrendingUp, BookOpen,
-  Users, BarChart3, Award, Zap, MessageSquare, Linkedin,
+  ChevronRight, TrendingUp, BookOpen,
+  Users, Award, Zap, MessageSquare, Linkedin,
 } from 'lucide-react';
 import { Button } from '../components/ui';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
-import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../utils/heroBackgrounds';
+import { HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -224,18 +224,28 @@ const FAQ = [
 /** Conteneur de section — identique aux AnimatedSection de HomePage. */
 const SECTION = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 
-/** Rythme vertical — l'equivalent plein-cadre du mt-16 md:mt-24 de l'accueil. */
-const SECTION_PAD = 'py-16 md:py-24';
+/**
+ * Rythme vertical. Chaque section porte ce padding en haut ET en bas :
+ * l'ecart entre deux sections vaut donc le double, soit exactement le
+ * mt-16 md:mt-24 qui separe les sections de l'accueil.
+ */
+const SECTION_PAD = 'py-10 md:py-16';
 
 /**
- * Pastille de surtitre — le point qui bat devant le libelle, comme en tete des
- * sections « En direct » et « Séance du jour » de l'accueil.
+ * Surtitre de section : la meme pastille que « Académie AfriBourse » sur
+ * l'accueil — aplat navy a 10 %, coins pleins, une icone devant le libelle.
  */
-function Eyebrow({ children }: { children: React.ReactNode }) {
+function Eyebrow({ icon: Icon, children, align = 'center' }: {
+  icon: React.ElementType;
+  children: React.ReactNode;
+  align?: 'center' | 'left';
+}) {
   return (
-    <div className="flex items-center justify-center gap-2 mb-3">
-      <span className="w-2 h-2 rounded-full bg-brand-navy animate-pulse" />
-      <span className="text-xs font-bold uppercase tracking-widest text-brand-navy">{children}</span>
+    <div className={`flex mb-4 ${align === 'center' ? 'justify-center' : ''}`}>
+      <span className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy px-3 py-1.5 rounded-full text-xs font-bold">
+        <Icon className="w-4 h-4 shrink-0" />
+        {children}
+      </span>
     </div>
   );
 }
@@ -251,13 +261,6 @@ const LEAD = 'text-gray-600 text-center max-w-2xl mx-auto';
 export default function WebinarPage() {
   const registrationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-
-  // Meme fond tournant que le hero de l'accueil, meme cadence.
-  const [bgIndex, setBgIndex] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setBgIndex(i => (i + 1) % HERO_BACKGROUNDS.length), 6000);
-    return () => clearInterval(id);
-  }, []);
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -276,68 +279,6 @@ export default function WebinarPage() {
   return (
     <div className="min-h-screen bg-white pb-20 sm:pb-0">
 
-      {/* ── Section 1 — Hero ─────────────────────────────────────────────────
-          Meme degrade et meme accent que le hero de l'accueil, pour que le
-          passage de l'une a l'autre ne donne pas l'impression de changer de
-          site. */}
-      <section className="relative overflow-hidden bg-brand-navy text-white pt-10 pb-16 md:pt-14 md:pb-20">
-        {/* Variantes en fondu croise : toutes montees en permanence, seule
-            l'opacite change. Reconstruire le degrade a chaque rotation ferait
-            clignoter le fond. */}
-        {HERO_BACKGROUNDS.map((bg, i) => (
-          <div
-            key={i}
-            aria-hidden="true"
-            className={`absolute inset-0 pointer-events-none transition-opacity duration-1000 ${i === bgIndex ? 'opacity-100' : 'opacity-0'}`}
-            style={{ backgroundImage: `${bg.halo}, ${bg.gradient}` }}
-          />
-        ))}
-        <div aria-hidden="true" className="absolute inset-0 opacity-[0.07] pointer-events-none" style={HERO_GRID_STYLE} />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/25 to-transparent pointer-events-none" />
-
-        <div className={`${SECTION} relative`}>
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              <span className="bg-white/10 ring-1 ring-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">
-                Cohorte Août 2026
-              </span>
-              <span className="text-ink-200 text-xs">· Places limitées à 50 par session</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.3] tracking-tight mb-4">
-              <span className="block">Investissez sur la BRVM</span>
-              {/* Accent en orange clair, comme les mots mis en avant sur les
-                  fonds sombres de l'accueil. Le degrade bleu-cyan-turquoise
-                  d'avant n'appartenait pas a la charte. */}
-              <span className="block mt-2 sm:mt-3 text-brand-orange-light">
-                avec méthode et confiance.
-              </span>
-            </h1>
-
-            <p className="text-base sm:text-lg text-ink-200 mb-7 max-w-xl leading-relaxed">
-              Cinq sessions live pour passer de l'intuition à la méthode, sur les entreprises
-              réellement cotées à la BRVM.
-            </p>
-
-            <div className="flex flex-row gap-3 items-center">
-              <Button
-                variant="orange"
-                size="md"
-                className="flex-1 sm:flex-none h-12 sm:h-14 gap-2 whitespace-nowrap"
-                onClick={scrollToRegistration}
-              >
-                <BarChart3 className="w-5 h-5 shrink-0" />
-                Choisir mon pack
-              </Button>
-            </div>
-
-            <p className="mt-5 text-xs text-ink-300">
-              Satisfait ou remboursé · 7 jours · Paiement Mobile Money sécurisé
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* ── Les 3 packs (good-better-best) ───────────────────────────────── */}
       <PricingPacks onChoose={handleChoosePack} />
 
@@ -345,7 +286,7 @@ export default function WebinarPage() {
       {TESTIMONIALS.length > 0 && (
         <section className={`bg-white ${SECTION_PAD}`}>
           <div className={SECTION}>
-            <Eyebrow>Ils ont suivi le parcours</Eyebrow>
+            <Eyebrow icon={MessageSquare}>Ils ont suivi le parcours</Eyebrow>
             <h2 className={`${H2} mb-12`}>Ce qu'en disent les participants</h2>
             <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {TESTIMONIALS.map((t) => (
@@ -367,86 +308,118 @@ export default function WebinarPage() {
         </section>
       )}
 
-      {/* ── Section 2 — Le problème ──────────────────────────────────────── */}
+      {/* ── Section 2 — Le problème ──────────────────────────────────────────
+          Trois constats numerotes face au titre, plutot que trois paragraphes
+          centres : le lecteur retrouve chaque idee separement au lieu d'un bloc
+          de texte a lire d'un trait. */}
       <section className={`bg-gray-50 ${SECTION_PAD}`}>
         <div className={SECTION}>
-          <Eyebrow>Pourquoi ce programme existe</Eyebrow>
-          <h2 className={`${H2} mb-8`}>Le problème n'est pas l'ambition, c'est la méthode</h2>
-          <div className="max-w-2xl mx-auto space-y-4 text-center">
-            <p className="text-gray-600 leading-relaxed">
-              La plupart des investisseurs africains perdent de l'argent non pas par manque d'ambition, mais par manque de méthode. Ils regardent les cours sans savoir pourquoi ils bougent.
-            </p>
-            <p className="text-gray-600 leading-relaxed">
-              L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter. Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.
-            </p>
-            <p className="text-gray-900 font-medium leading-relaxed">
-              Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout. Ce programme existe pour changer ça — concrètement, en 5 sessions.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 3 — Outcomes ─────────────────────────────────────────── */}
-      <section className={`bg-white ${SECTION_PAD}`}>
-        <div className={SECTION}>
-          <Eyebrow>Ce que vous allez accomplir</Eyebrow>
-          <h2 className={`${H2} mb-12`}>À la fin de ce parcours, vous aurez...</h2>
-          <div className="grid sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            {OUTCOMES.map((o) => (
-              <div
-                key={o}
-                className="flex items-start gap-3 bg-white border border-gray-200 rounded-xl px-6 py-5 transition-all duration-300 hover:border-brand-navy/25 hover:shadow-sm"
-              >
-                <CheckCircle className="w-5 h-5 text-brand-navy flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700 leading-snug">{o}</p>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            <div>
+              <Eyebrow icon={BookOpen} align="left">Pourquoi ce programme existe</Eyebrow>
+              <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-6">
+                Le problème n'est pas l'ambition, c'est la méthode
+              </h2>
+              <div className="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
+                <p className="text-gray-900 font-medium leading-relaxed">
+                  Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout.
+                  Ce programme existe pour changer ça, concrètement, en 5 sessions.
+                </p>
               </div>
-            ))}
+            </div>
+
+            <ol className="space-y-6">
+              {[
+                "La plupart des investisseurs africains perdent de l'argent non pas par manque d'ambition, mais par manque de méthode. Ils regardent les cours sans savoir pourquoi ils bougent.",
+                "L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter.",
+                'Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.',
+              ].map((text, i) => (
+                <li key={i} className="flex gap-5">
+                  <span className="shrink-0 text-2xl font-bold text-brand-navy/25 font-mono tabular-nums leading-none pt-0.5">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <p className="text-gray-600 leading-relaxed border-l border-gray-200 pl-5">{text}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </section>
-
-      {/* ── Section 7 — Speakers ─────────────────────────────────────────── */}
+      {/* ── Section 7 — Speakers ─────────────────────────────────────────────
+          Trois fiches a bandeau : le monogramme chevauche un aplat navy, et le
+          lien LinkedIn est ancre en pied de carte (mt-auto) pour que les trois
+          boutons s'alignent quelle que soit la longueur des biographies. */}
       <section className={`bg-gray-50 ${SECTION_PAD}`}>
         <div className={SECTION}>
-          <Eyebrow>Vos formateurs</Eyebrow>
-          <h2 className={`${H2} mb-12`}>Qui anime le programme</h2>
-          <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <Eyebrow icon={Users}>Vos formateurs</Eyebrow>
+          <h2 className={`${H2} mb-3`}>Qui anime le programme</h2>
+          <p className={`${LEAD} mb-12`}>
+            Trois praticiens des marchés UEMOA, chacun sur son terrain.
+          </p>
+
+          <div className="grid sm:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
             {SPEAKERS.map((s) => (
-              <div key={s.name} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 text-center">
-                <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-brand-navy text-white text-xl font-bold">
-                  {s.initials}
+              <div
+                key={s.name}
+                className="group flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-md"
+              >
+                {/* Bandeau : reprend le degrade des encarts sombres du site. */}
+                <div className="h-20 bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950" />
+
+                <div className="flex flex-col flex-1 px-6 pb-6 -mt-9">
+                  {/* Monogramme a cheval sur le bandeau, cercle blanc autour
+                      pour le detacher du degrade. */}
+                  <div className="w-[72px] h-[72px] rounded-full bg-white p-1 shadow-sm">
+                    <div className="w-full h-full rounded-full bg-brand-navy text-white flex items-center justify-center text-xl font-bold tracking-wide">
+                      {s.initials}
+                    </div>
+                  </div>
+
+                  <p className="font-bold text-gray-900 text-lg leading-tight mt-4">{s.name}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-brand-navy mt-1.5">{s.title}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed mt-3">{s.desc}</p>
+
+                  <a
+                    href={s.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Profil LinkedIn de ${s.name}`}
+                    className="mt-auto pt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-navy transition-colors duration-150 hover:text-brand-navy-hover"
+                  >
+                    <Linkedin className="w-4 h-4" />
+                    Profil LinkedIn
+                  </a>
                 </div>
-                <p className="font-bold text-gray-900 mb-1">{s.name}</p>
-                <p className="text-sm font-semibold text-brand-navy mb-3">{s.title}</p>
-                <p className="text-sm text-gray-600 leading-relaxed mb-4">{s.desc}</p>
-                <a
-                  href={s.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:underline"
-                >
-                  <Linkedin className="w-4 h-4" /> Voir le profil LinkedIn
-                </a>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Section 8 — FAQ ──────────────────────────────────────────────── */}
+      {/* ── Section 8 — FAQ ──────────────────────────────────────────────────
+          Deux questions par ligne, comme sur l'accueil. Chaque colonne se
+          replie independamment : ouvrir une reponse ne decale pas l'autre. */}
       <section className={`bg-white ${SECTION_PAD}`}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Questions Fréquentes</h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 max-w-2xl mx-auto">
               Ce qu'il faut savoir avant de réserver votre place : déroulé des sessions,
               modalités de paiement, replays et conditions de remboursement.
             </p>
           </div>
-          <div className="space-y-3">
-            {FAQ.map((item, i) => (
-              <FaqItem key={i} item={item} />
-            ))}
+
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+            <div className="space-y-3">
+              {FAQ.slice(0, Math.ceil(FAQ.length / 2)).map((item, i) => (
+                <FaqItem key={i} item={item} />
+              ))}
+            </div>
+            <div className="space-y-3">
+              {FAQ.slice(Math.ceil(FAQ.length / 2)).map((item, i) => (
+                <FaqItem key={i} item={item} />
+              ))}
+            </div>
           </div>
         </div>
       </section>

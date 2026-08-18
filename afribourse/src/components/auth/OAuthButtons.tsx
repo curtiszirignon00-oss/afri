@@ -3,6 +3,13 @@
 
 interface OAuthButtonsProps {
   mode?: 'login' | 'register';
+  /**
+   * Rangee de boutons carres a icone seule, sans separateur. Le nom du
+   * fournisseur passe alors en aria-label et en title : la variante pleine
+   * largeur porte trois lignes, trop hautes pour un formulaire qui doit tenir
+   * dans la fenetre.
+   */
+  compact?: boolean;
 }
 
 // URL de base du backend (sans /api — les routes OAuth sont à /auth/...)
@@ -59,11 +66,29 @@ const providers = [
   },
 ];
 
-export default function OAuthButtons({ mode = 'login' }: OAuthButtonsProps) {
+export default function OAuthButtons({ mode = 'login', compact = false }: OAuthButtonsProps) {
   const handleOAuth = (providerId: string) => {
     // Redirection directe — le flow OAuth se passe entièrement côté backend
     window.location.href = `${BACKEND_BASE_URL}/auth/${providerId}`;
   };
+
+  if (compact) {
+    return (
+      <div className="flex items-center justify-center gap-3">
+        {providers.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => handleOAuth(p.id)}
+            aria-label={`${mode === 'login' ? 'Se connecter' : "S'inscrire"} avec ${p.name}`}
+            title={p.name}
+            className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${p.style}`}
+          >
+            {p.logo}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

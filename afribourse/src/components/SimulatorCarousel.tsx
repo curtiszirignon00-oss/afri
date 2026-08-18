@@ -68,8 +68,10 @@ export default function SimulatorCarousel() {
   };
   const manualNav = (dir: 1 | -1) => { go(dir); resetAuto(); };
 
-  // Ecran suivant, affiche en arriere-plan derriere le telephone : il annonce
-  // ou va le carrousel et donne de la profondeur a la scene.
+  // Ecrans precedent et suivant, ouverts en eventail de part et d'autre du
+  // telephone comme des cartes tenues en main : ils montrent d'ou vient et ou
+  // va le carrousel, et donnent de la profondeur a la scene.
+  const prevImage = IMAGES[(current - 1 + IMAGES.length) % IMAGES.length];
   const nextImage = IMAGES[(current + 1) % IMAGES.length];
 
   return (
@@ -137,14 +139,26 @@ export default function SimulatorCarousel() {
             />
 
             <div className="relative">
-              {/* Ecran suivant, en retrait et incline : donne de la profondeur
-                  sans detourner l'oeil du telephone. */}
+              {/* Eventail : une carte penchee a gauche, une a droite, pivotant
+                  depuis le bas comme des cartes tenues en main. Le point de
+                  rotation en bas evite qu'elles s'ecartent du telephone en
+                  s'inclinant. Purement decoratif — aria-hidden, non cliquable. */}
               <div
                 aria-hidden="true"
-                className="absolute top-6 -right-16 w-[150px] rounded-[26px] overflow-hidden border-4 border-white shadow-xl opacity-60 hidden lg:block pointer-events-none"
-                style={{ aspectRatio: '9 / 19', transform: 'rotate(8deg)' }}
+                className="absolute bottom-12 -left-20 w-[150px] rounded-[26px] overflow-hidden border-4 border-white shadow-2xl shadow-ink-900/25 opacity-80 hidden lg:block pointer-events-none z-0 transition-transform duration-500"
+                style={{ aspectRatio: '9 / 19', transform: 'rotate(-14deg)', transformOrigin: 'bottom center' }}
+              >
+                <img src={prevImage} alt="" className="w-full h-full object-cover" />
+                {/* Voile : les cartes laterales restent en retrait du telephone. */}
+                <div className="absolute inset-0 bg-ink-950/15" />
+              </div>
+              <div
+                aria-hidden="true"
+                className="absolute bottom-12 -right-20 w-[150px] rounded-[26px] overflow-hidden border-4 border-white shadow-2xl shadow-ink-900/25 opacity-80 hidden lg:block pointer-events-none z-0 transition-transform duration-500"
+                style={{ aspectRatio: '9 / 19', transform: 'rotate(14deg)', transformOrigin: 'bottom center' }}
               >
                 <img src={nextImage} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-ink-950/15" />
               </div>
 
               {/* Cadre téléphone */}
@@ -192,18 +206,6 @@ export default function SimulatorCarousel() {
 
                 {/* Indicateur home */}
                 <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-16 h-1 bg-ink-600 rounded-full" />
-              </div>
-
-              {/* Etiquette en verre, a cheval sur le telephone. Chiffre factuel :
-                  le capital credite a l'ouverture du compte. */}
-              <div className="absolute -left-6 bottom-16 z-20 hidden sm:flex items-center gap-2.5 rounded-xl bg-white/80 backdrop-blur-md ring-1 ring-white/60 shadow-lg px-3.5 py-2.5">
-                <span className="w-8 h-8 rounded-lg bg-brand-navy/10 flex items-center justify-center shrink-0">
-                  <Shield className="w-4 h-4 text-brand-navy" />
-                </span>
-                <div className="leading-tight">
-                  <p className="text-[13px] font-bold text-gray-900 font-mono">1 000 000 F</p>
-                  <p className="text-[10px] text-gray-500">capital virtuel offert</p>
-                </div>
               </div>
 
               {/* Flèches sous le téléphone */}

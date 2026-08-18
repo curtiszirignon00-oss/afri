@@ -462,23 +462,27 @@ export default function HomePage() {
   // webinaire monte le meme fond.
   const heroBackgrounds = HERO_BACKGROUNDS;
 
+  // La premiere valeur est mise en avant avec sa courbe ; les six suivantes
+  // tiennent dans un classement compact. Seule la vedette declenche un appel
+  // d'historique : une courbe par ligne du classement multiplierait les requetes
+  // au chargement de l'accueil pour un gain de lecture nul a cette taille.
   const { data, isLoading, error, refetch } = useHomePageData();
-  const topStocks = (data?.topStocks || []).slice(0, 2);
+  const topStocks = (data?.topStocks || []).slice(0, 7);
+  const featuredStock = topStocks[0];
+  const rankedStocks = topStocks.slice(1);
   const [sparklines, setSparklines] = useState<Record<string, { time: string; value: number }[]>>({});
 
   useEffect(() => {
-    if (topStocks.length === 0) return;
-    topStocks.forEach(stock => {
-      fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(stock.symbol)}/history?period=3M`, { credentials: 'include' })
-        .then(r => r.ok ? r.json() : null)
-        .then(res => {
-          if (!res?.data?.length) return;
-          const pts = res.data.map((d: { date: string; close: number }) => ({ time: d.date, value: d.close }));
-          setSparklines(prev => ({ ...prev, [stock.symbol]: pts }));
-        })
-        .catch(() => {});
-    });
-  }, [topStocks.map(s => s.symbol).join(',')]);  // eslint-disable-line react-hooks/exhaustive-deps
+    if (!featuredStock) return;
+    fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(featuredStock.symbol)}/history?period=3M`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(res => {
+        if (!res?.data?.length) return;
+        const pts = res.data.map((d: { date: string; close: number }) => ({ time: d.date, value: d.close }));
+        setSparklines(prev => ({ ...prev, [featuredStock.symbol]: pts }));
+      })
+      .catch(() => {});
+  }, [featuredStock?.symbol]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Actualités — BRVM_NEWS triées par date décroissante (les 4 plus récentes)
   const recentNewsItems = [...BRVM_NEWS]
@@ -571,6 +575,24 @@ export default function HomePage() {
       question: "Est-ce que je peux investir depuis n'importe quel pays ?",
       answer:
         "Oui, AfriBourse est accessible depuis n'importe où dans le monde. Vous avez besoin d'un compte SGI (Société de Gestion et d'Intermédiation) local pour exécuter vos ordres.",
+    },
+    {
+      id: 6,
+      question: 'À quoi sert le simulateur de portefeuille ?',
+      answer:
+        "Le simulateur vous crédite 1 000 000 FCFA virtuels et reproduit les cours réels de la BRVM. Vous passez vos ordres, suivez vos performances et testez une stratégie sans engager le moindre franc.",
+    },
+    {
+      id: 7,
+      question: "Qu'est-ce qu'une SGI et pourquoi en ai-je besoin ?",
+      answer:
+        "Une SGI (Société de Gestion et d'Intermédiation) est un intermédiaire agréé par le marché : elle seule peut transmettre vos ordres à la BRVM. AfriBourse vous forme et vous outille, mais l'exécution de vos ordres réels passe par votre SGI.",
+    },
+    {
+      id: 8,
+      question: 'Combien de temps faut-il pour être à l’aise ?',
+      answer:
+        "Les modules de base se suivent en quelques heures, à votre rythme. La plupart des utilisateurs passent leurs premiers ordres simulés dès la première session, puis affinent leur méthode sur plusieurs semaines.",
     },
   ];
 
@@ -1061,8 +1083,11 @@ export default function HomePage() {
           </div>
         </AnimatedSection>
 
-        {/* === Top Performances === */}
-        {topStocks.length > 0 && (
+        {/* === Top Performances ===
+            Une vedette avec sa courbe, puis un classement compact : afficher
+            sept cartes identiques diluait le regard, et deux seules laissaient
+            la section maigre. */}
+        {featuredStock && (
           <AnimatedSection className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
             <div className="flex items-end justify-between gap-4 mb-8">
               <div>
@@ -1079,115 +1104,156 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {topStocks.map((stock, idx) => {
+            <div className="grid lg:grid-cols-5 gap-6 items-start">
+
+              {/* — Vedette — */}
+              {(() => {
+                const stock = featuredStock;
                 const isUp = stock.daily_change_percent >= 0;
                 const pts = sparklines[stock.symbol] ?? [];
                 const logo = getStockLogo(stock.symbol, stock.logo_url);
                 const delta = stock.current_price - stock.previous_close;
-
-                // Bornes de la periode affichee, lues sur la serie qui alimente
-                // la courbe : elles donnent l'echelle du mouvement, que le
-                // pourcentage du jour ne dit pas.
                 const values = pts.map(p => p.value);
                 const low = values.length ? Math.min(...values) : null;
                 const high = values.length ? Math.max(...values) : null;
-
                 const tone = isUp
                   ? { text: 'text-emerald-700', bg: 'bg-emerald-50', ring: 'ring-emerald-100' }
                   : { text: 'text-red-600',     bg: 'bg-red-50',     ring: 'ring-red-100'     };
 
                 return (
-                  <AnimatedSection key={stock.id} delay={idx * 60}>
-                    <article
-                      onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      className="group h-full flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-lg"
-                    >
-                      {/* En-tete : identite de la societe. Fond legerement
-                          teinte pour le detacher de la zone chiffree. */}
-                      <div className="flex items-center gap-4 px-6 py-5 bg-gray-50/60 border-b border-gray-100">
-                        {/* getStockLogo sert d'abord le fichier local du ticker :
-                            la carte n'interrogeait que stock.logo_url, vide pour
-                            la plupart des societes. */}
-                        <div className="w-14 h-14 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center font-bold text-gray-400 text-sm overflow-hidden shrink-0 p-1.5">
-                          {logo
-                            ? <OptimizedImage
-                                src={logo}
-                                alt={`Logo ${stock.company_name ?? stock.symbol}`}
-                                className="w-full h-full object-contain"
-                              />
-                            : stock.symbol.substring(0, 2)
-                          }
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-900 font-mono tracking-tight leading-none">{stock.symbol}</span>
-                            {stock.sector && (
-                              <span className="text-[10px] font-semibold text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded-full truncate">
-                                {stock.sector}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500 mt-1.5 truncate">{stock.company_name}</p>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-gray-300 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-navy" />
+                  <article
+                    onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                    className="lg:col-span-3 group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-lg"
+                  >
+                    <div className="flex items-center gap-4 px-6 py-5 bg-gray-50/60 border-b border-gray-100">
+                      <div className="w-14 h-14 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center font-bold text-gray-400 text-sm overflow-hidden shrink-0 p-1.5">
+                        {logo
+                          ? <OptimizedImage src={logo} alt={`Logo ${stock.company_name ?? stock.symbol}`} className="w-full h-full object-contain" />
+                          : stock.symbol.substring(0, 2)
+                        }
                       </div>
-
-                      {/* Cours du jour. Le prix porte la carte, la variation
-                          l'accompagne — vert et rouge sont des couleurs d'etat,
-                          doublees d'une fleche et du signe. */}
-                      <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-4">
-                        <div>
-                          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Cours</p>
-                          <p className="text-[34px] leading-none font-bold text-gray-900 font-mono tabular-nums tracking-tight">
-                            {formatNumber(stock.current_price)}
-                            <span className="text-sm font-semibold text-gray-400 ml-2">FCFA</span>
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-mono ring-1 ${tone.bg} ${tone.text} ${tone.ring}`}>
-                            {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                            {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-gray-900 font-mono tracking-tight leading-none">{stock.symbol}</span>
+                          <span className="text-[10px] font-bold text-white bg-brand-navy px-2 py-0.5 rounded-full uppercase tracking-wide">
+                            1<sup>re</sup> hausse
                           </span>
-                          <p className={`text-xs font-mono mt-1.5 ${tone.text}`}>
-                            {isUp ? '+' : '−'}{formatNumber(Math.abs(delta))} FCFA
-                          </p>
                         </div>
+                        <p className="text-sm text-gray-500 mt-1.5 truncate">{stock.company_name}</p>
                       </div>
+                      <ChevronRight className="w-5 h-5 text-gray-300 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-navy" />
+                    </div>
 
-                      {/* Courbe avec ses reperes : prix a droite, dates en bas. */}
-                      <div className="border-t border-gray-100 mt-auto">
-                        <div className="flex items-center justify-between px-6 pt-3 pb-1">
-                          <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">3 derniers mois</span>
-                          <span className="text-[11px] font-mono text-gray-400">clôture, FCFA</span>
+                    <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-4">
+                      <div>
+                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Cours</p>
+                        <p className="text-[34px] leading-none font-bold text-gray-900 font-mono tabular-nums tracking-tight">
+                          {formatNumber(stock.current_price)}
+                          <span className="text-sm font-semibold text-gray-400 ml-2">FCFA</span>
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-mono ring-1 ${tone.bg} ${tone.text} ${tone.ring}`}>
+                          {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                          {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                        </span>
+                        <p className={`text-xs font-mono mt-1.5 ${tone.text}`}>
+                          {isUp ? '+' : '−'}{formatNumber(Math.abs(delta))} FCFA
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100">
+                      <div className="flex items-center justify-between px-6 pt-3 pb-1">
+                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">3 derniers mois</span>
+                        <span className="text-[11px] font-mono text-gray-400">clôture, FCFA</span>
+                      </div>
+                      {pts.length >= 2 ? (
+                        <SparklineChart data={pts} isUp={isUp} height={160} showAxes />
+                      ) : (
+                        <div className="h-[160px] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-gray-400 animate-spin" />
                         </div>
-                        {pts.length >= 2 ? (
-                          <SparklineChart data={pts} isUp={isUp} height={160} showAxes />
-                        ) : (
-                          <div className="h-[160px] flex items-center justify-center">
-                            <div className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-gray-400 animate-spin" />
-                          </div>
-                        )}
-                      </div>
+                      )}
+                    </div>
 
-                      {/* Pied de carte : les chiffres que la courbe ne dit pas. */}
-                      <div className="grid grid-cols-4 divide-x divide-gray-100 border-t border-gray-100 bg-gray-50/60">
-                        {[
-                          { label: 'Clôture préc.', value: formatNumber(stock.previous_close) },
-                          { label: '+ bas 3M', value: low != null ? formatNumber(low) : '—' },
-                          { label: '+ haut 3M', value: high != null ? formatNumber(high) : '—' },
-                          { label: 'Volume', value: formatCurrency(stock.volume) },
-                        ].map(({ label, value }) => (
-                          <div key={label} className="px-3 py-3 text-center">
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate">{label}</p>
-                            <p className="text-sm font-bold text-gray-800 font-mono tabular-nums mt-0.5">{value}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </article>
-                  </AnimatedSection>
+                    <div className="grid grid-cols-4 divide-x divide-gray-100 border-t border-gray-100 bg-gray-50/60">
+                      {[
+                        { label: 'Clôture préc.', value: formatNumber(stock.previous_close) },
+                        { label: '+ bas 3M', value: low != null ? formatNumber(low) : '—' },
+                        { label: '+ haut 3M', value: high != null ? formatNumber(high) : '—' },
+                        { label: 'Volume', value: formatCurrency(stock.volume) },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="px-3 py-3 text-center">
+                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate">{label}</p>
+                          <p className="text-sm font-bold text-gray-800 font-mono tabular-nums mt-0.5">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
                 );
-              })}
+              })()}
+
+              {/* — Classement — */}
+              {rankedStocks.length > 0 && (
+                <div className="lg:col-span-2 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-4 bg-gray-50/60 border-b border-gray-100">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Suivent au classement</span>
+                    <span className="text-[11px] font-mono text-gray-400">Var. jour</span>
+                  </div>
+
+                  <ul className="divide-y divide-gray-100">
+                    {rankedStocks.map((stock, i) => {
+                      const isUp = stock.daily_change_percent >= 0;
+                      const logo = getStockLogo(stock.symbol, stock.logo_url);
+
+                      return (
+                        <li key={stock.id}>
+                          <button
+                            onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                            className="group w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors duration-150 cursor-pointer hover:bg-gray-50"
+                          >
+                            {/* Rang : la vedette occupe la place 1, le
+                                classement reprend donc a 2. */}
+                            <span className="w-5 text-xs font-mono text-gray-300 shrink-0 tabular-nums">{i + 2}</span>
+
+                            <span className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-400 overflow-hidden shrink-0 p-1">
+                              {logo
+                                ? <OptimizedImage src={logo} alt={`Logo ${stock.company_name ?? stock.symbol}`} className="w-full h-full object-contain" />
+                                : stock.symbol.substring(0, 2)
+                              }
+                            </span>
+
+                            <span className="min-w-0 flex-1">
+                              <span className="block font-bold text-sm text-gray-900 font-mono tracking-tight leading-none group-hover:text-brand-navy transition-colors duration-150">
+                                {stock.symbol}
+                              </span>
+                              <span className="block text-xs text-gray-500 truncate mt-1">{stock.company_name}</span>
+                            </span>
+
+                            <span className="text-right shrink-0">
+                              <span className="block text-sm font-bold text-gray-900 font-mono tabular-nums leading-none">
+                                {formatNumber(stock.current_price)}
+                              </span>
+                              <span className={`block text-xs font-mono font-bold mt-1 ${isUp ? 'text-emerald-700' : 'text-red-600'}`}>
+                                {isUp ? '▲' : '▼'} {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                              </span>
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  <button
+                    onClick={() => navigate('/markets')}
+                    className="w-full flex items-center justify-center gap-1.5 px-5 py-3.5 text-sm font-semibold text-brand-navy border-t border-gray-100 bg-gray-50/60 transition-colors duration-150 cursor-pointer hover:bg-gray-100"
+                  >
+                    Les 47 actions de la BRVM
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </AnimatedSection>
         )}
@@ -1420,47 +1486,53 @@ export default function HomePage() {
         </AnimatedSection>
         */}
 
-        {/* === FAQ === */}
-        <AnimatedSection className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+        {/* === FAQ ===
+            Deux questions par ligne. Chaque colonne se replie
+            independamment : ouvrir une reponse ne decale pas l'autre colonne. */}
+        <AnimatedSection className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Questions Fréquentes</h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 max-w-2xl mx-auto">
               Tout ce que vous devez savoir pour commencer à investir sur la BRVM : le montant
               minimum pour se lancer, le coût réel de nos formations, l'accès depuis l'étranger
               et le suivi de votre portefeuille au quotidien.
             </p>
           </div>
 
-          <div className="space-y-3">
-            {faqData.map((faq) => {
-              const isOpen = openFaqId === faq.id;
-              return (
-                <div
-                  key={faq.id}
-                  className={`bg-white border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isOpen ? 'border-brand-navy/40 shadow-md shadow-brand-navy/10' : 'border-gray-200 hover:border-brand-navy/25 hover:shadow-sm'}`}
-                  onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
-                >
-                  <div className="flex justify-between items-center px-6 py-5">
-                    <h3 className="font-bold text-gray-900 pr-4">
-                      {faq.question}
-                    </h3>
-                    <ChevronRight
-                      className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}
-                    />
-                  </div>
+          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+            {[faqData.slice(0, Math.ceil(faqData.length / 2)), faqData.slice(Math.ceil(faqData.length / 2))].map((column, ci) => (
+              <div key={ci} className="space-y-3">
+                {column.map((faq) => {
+                  const isOpen = openFaqId === faq.id;
+                  return (
+                    <div
+                      key={faq.id}
+                      className={`bg-white border rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isOpen ? 'border-brand-navy/40 shadow-md shadow-brand-navy/10' : 'border-gray-200 hover:border-brand-navy/25 hover:shadow-sm'}`}
+                      onClick={() => setOpenFaqId(isOpen ? null : faq.id)}
+                    >
+                      <div className="flex justify-between items-center px-6 py-5">
+                        <h3 className="font-bold text-gray-900 pr-4">
+                          {faq.question}
+                        </h3>
+                        <ChevronRight
+                          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}
+                        />
+                      </div>
 
-                  {/* Smooth height accordion */}
-                  <div
-                    className="overflow-hidden transition-all duration-300 ease-in-out"
-                    style={{ maxHeight: isOpen ? '240px' : '0px' }}
-                  >
-                    <p className="text-gray-600 leading-relaxed px-6 pb-5">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                      {/* Depliement par grid-rows : un max-height fixe tronquait
+                          les reponses les plus longues. */}
+                      <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                        <div className="overflow-hidden">
+                          <p className="text-gray-600 leading-relaxed px-6 pb-5">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
           <div className="text-center mt-8">
