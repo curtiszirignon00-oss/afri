@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid, CandlestickChart, AreaChart, LineChart, BarChart3 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import { useIntradayHistory } from '../../hooks/useStockDetails';
 import { useAuth } from '../../contexts/AuthContext';
@@ -57,11 +58,11 @@ const PERIOD_WINDOW: Record<DisplayInterval, '1D' | '5D' | '1M' | '3M' | '6M' | 
   '1Y': '1Y',
 };
 
-const CHART_TYPES: { value: ChartType; label: string; icon: string }[] = [
-  { value: 'candlestick', label: 'Chandeliers', icon: '📊' },
-  { value: 'area', label: 'Aires', icon: '📈' },
-  { value: 'line', label: 'Ligne', icon: '📉' },
-  { value: 'bar', label: 'Barres', icon: '📊' },
+const CHART_TYPES: { value: ChartType; label: string; icon: LucideIcon }[] = [
+  { value: 'candlestick', label: 'Chandeliers', icon: CandlestickChart },
+  { value: 'area', label: 'Aires', icon: AreaChart },
+  { value: 'line', label: 'Ligne', icon: LineChart },
+  { value: 'bar', label: 'Barres', icon: BarChart3 },
 ];
 
 interface FibLevel {
@@ -420,7 +421,9 @@ export default function StockChartNew({
         <div className="flex items-center justify-between flex-wrap gap-2">
           {/* Type selector */}
           <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
-            {CHART_TYPES.map((type) => (
+            {CHART_TYPES.map((type) => {
+              const TypeIcon = type.icon;
+              return (
               <button
                 key={type.value}
                 onClick={() => handleChartTypeChange(type.value)}
@@ -431,10 +434,11 @@ export default function StockChartNew({
                 }`}
                 title={type.label}
               >
-                <span>{type.icon}</span>
+                <TypeIcon className="w-4 h-4" />
                 <span className="hidden sm:inline">{type.label}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
 
           {/* Boutons d'action */}
@@ -665,7 +669,7 @@ export default function StockChartNew({
           <span>Baisse</span>
         </div>
         <div className="flex items-center space-x-1">
-          <span>📊</span>
+          <Indicator className="w-3 h-3" />
           <span>Indicateurs</span>
         </div>
       </div>

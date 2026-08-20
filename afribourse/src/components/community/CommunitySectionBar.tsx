@@ -13,6 +13,7 @@ export default function CommunitySectionBar({ active, onChange }: Props) {
                 {SECTION_ORDER.map((key) => {
                     const cfg = SECTION_CONFIG[key];
                     const isActive = active === key;
+                    const Icon = cfg.icon;
                     return (
                         <button
                             key={key}
@@ -23,7 +24,7 @@ export default function CommunitySectionBar({ active, onChange }: Props) {
                                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                             }`}
                         >
-                            <span>{cfg.emoji}</span>
+                            <Icon className="w-4 h-4" />
                             {cfg.label}
                         </button>
                     );

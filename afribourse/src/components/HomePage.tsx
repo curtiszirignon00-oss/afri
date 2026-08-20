@@ -1,5 +1,5 @@
 // src/components/HomePage.tsx - VERSION REFONTE COMPLÈTE
-import { useRef, useEffect, useLayoutEffect, useState } from 'react';
+import { useRef, useEffect, useLayoutEffect, useState, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
@@ -9,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import OptimizedImage from './ui/OptimizedImage';
 import {
   TrendingUp,
-  TrendingDown,
   ArrowRight,
   BookOpen,
   BarChart3,
@@ -35,9 +34,13 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { InstallInstructions } from './pwa/InstallPrompt';
 import { BRVM_NEWS } from '../data/brvm2026News';
 import SimulatorCarousel from './SimulatorCarousel';
-import SparklineChart from './SparklineChart';
+import { convertToLightweightData } from '../utils/simpleLightweightAdapter';
 import { getStockLogo } from '../utils/stockLogos';
 import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../utils/heroBackgrounds';
+
+// Le graphique de la fiche valeur embarque la librairie lightweight-charts :
+// il est charge a la demande pour ne pas alourdir le bundle d'entree.
+const StockChartNew = lazy(() => import('./stock/StockChartNew'));
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -470,18 +473,20 @@ export default function HomePage() {
   const topStocks = (data?.topStocks || []).slice(0, 7);
   const featuredStock = topStocks[0];
   const rankedStocks = topStocks.slice(1);
-  const [sparklines, setSparklines] = useState<Record<string, { time: string; value: number }[]>>({});
+  const [featuredCandles, setFeaturedCandles] = useState<ReturnType<typeof convertToLightweightData>>([]);
 
   useEffect(() => {
     if (!featuredStock) return;
-    fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(featuredStock.symbol)}/history?period=3M`, { credentials: 'include' })
+    let cancelled = false;
+    setFeaturedCandles([]);
+    fetch(`${API_BASE_URL}/stocks/${encodeURIComponent(featuredStock.symbol)}/history?period=1Y`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(res => {
-        if (!res?.data?.length) return;
-        const pts = res.data.map((d: { date: string; close: number }) => ({ time: d.date, value: d.close }));
-        setSparklines(prev => ({ ...prev, [featuredStock.symbol]: pts }));
+        if (cancelled || !res?.data?.length) return;
+        setFeaturedCandles(convertToLightweightData(res.data));
       })
       .catch(() => {});
+    return () => { cancelled = true; };
   }, [featuredStock?.symbol]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   // Actualités — BRVM_NEWS triées par date décroissante (les 4 plus récentes)
@@ -611,14 +616,6 @@ export default function HomePage() {
       maximumFractionDigits: 0,
       ...options,
     }).format(num);
-  }
-
-  function formatCurrency(value: number | null | undefined): string {
-    if (value == null) return 'N/A';
-    if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}Md`;
-    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(0)}M`;
-    if (value >= 1_000) return `${(value / 1_000).toFixed(0)}k`;
-    return value.toString();
   }
 
   const handleSubmitReview = async () => {
@@ -1106,91 +1103,67 @@ export default function HomePage() {
 
             <div className="grid lg:grid-cols-5 gap-6 items-start">
 
-              {/* — Vedette — */}
+              {/* — Vedette : l'entete d'identite, puis le graphique de la
+                  fiche valeur (chandeliers, periodes, indicateurs). Le
+                  composant est charge a la demande pour que la librairie de
+                  graphiques ne pese pas sur le premier rendu de l'accueil. */}
               {(() => {
                 const stock = featuredStock;
                 const isUp = stock.daily_change_percent >= 0;
-                const pts = sparklines[stock.symbol] ?? [];
                 const logo = getStockLogo(stock.symbol, stock.logo_url);
-                const delta = stock.current_price - stock.previous_close;
-                const values = pts.map(p => p.value);
-                const low = values.length ? Math.min(...values) : null;
-                const high = values.length ? Math.max(...values) : null;
-                const tone = isUp
-                  ? { text: 'text-emerald-700', bg: 'bg-emerald-50', ring: 'ring-emerald-100' }
-                  : { text: 'text-red-600',     bg: 'bg-red-50',     ring: 'ring-red-100'     };
 
                 return (
-                  <article
-                    onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                    className="lg:col-span-3 group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden cursor-pointer transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-lg"
-                  >
-                    <div className="flex items-center gap-4 px-6 py-5 bg-gray-50/60 border-b border-gray-100">
-                      <div className="w-14 h-14 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center font-bold text-gray-400 text-sm overflow-hidden shrink-0 p-1.5">
+                  <div className="lg:col-span-3 space-y-3">
+                    <button
+                      onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                      className="group w-full flex items-center gap-4 rounded-xl border border-gray-200 bg-white shadow-sm px-5 py-4 text-left transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-md"
+                    >
+                      <span className="w-12 h-12 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center font-bold text-gray-400 text-sm overflow-hidden shrink-0 p-1.5">
                         {logo
                           ? <OptimizedImage src={logo} alt={`Logo ${stock.company_name ?? stock.symbol}`} className="w-full h-full object-contain" />
                           : stock.symbol.substring(0, 2)
                         }
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
                           <span className="font-bold text-gray-900 font-mono tracking-tight leading-none">{stock.symbol}</span>
                           <span className="text-[10px] font-bold text-white bg-brand-navy px-2 py-0.5 rounded-full uppercase tracking-wide">
                             1<sup>re</sup> hausse
                           </span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1.5 truncate">{stock.company_name}</p>
-                      </div>
-                      <ChevronRight className="w-5 h-5 text-gray-300 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-navy" />
-                    </div>
-
-                    <div className="flex items-end justify-between gap-4 px-6 pt-5 pb-4">
-                      <div>
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Cours</p>
-                        <p className="text-[34px] leading-none font-bold text-gray-900 font-mono tabular-nums tracking-tight">
-                          {formatNumber(stock.current_price)}
-                          <span className="text-sm font-semibold text-gray-400 ml-2">FCFA</span>
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-mono ring-1 ${tone.bg} ${tone.text} ${tone.ring}`}>
-                          {isUp ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                          {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
                         </span>
-                        <p className={`text-xs font-mono mt-1.5 ${tone.text}`}>
-                          {isUp ? '+' : '−'}{formatNumber(Math.abs(delta))} FCFA
-                        </p>
-                      </div>
-                    </div>
+                        <span className="block text-sm text-gray-500 mt-1.5 truncate">{stock.company_name}</span>
+                      </span>
 
-                    <div className="border-t border-gray-100">
-                      <div className="flex items-center justify-between px-6 pt-3 pb-1">
-                        <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">3 derniers mois</span>
-                        <span className="text-[11px] font-mono text-gray-400">clôture, FCFA</span>
-                      </div>
-                      {pts.length >= 2 ? (
-                        <SparklineChart data={pts} isUp={isUp} height={160} showAxes />
-                      ) : (
-                        <div className="h-[160px] flex items-center justify-center">
-                          <div className="w-5 h-5 rounded-full border-2 border-gray-200 border-t-gray-400 animate-spin" />
-                        </div>
-                      )}
-                    </div>
+                      <span className="text-right shrink-0">
+                        <span className="block text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">
+                          {formatNumber(stock.current_price)}
+                          <span className="text-xs font-semibold text-gray-400 ml-1.5">FCFA</span>
+                        </span>
+                        <span className={`block text-xs font-mono font-bold mt-1.5 ${isUp ? 'text-green-600' : 'text-red-600'}`}>
+                          {isUp ? '▲' : '▼'} {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
+                        </span>
+                      </span>
 
-                    <div className="grid grid-cols-4 divide-x divide-gray-100 border-t border-gray-100 bg-gray-50/60">
-                      {[
-                        { label: 'Clôture préc.', value: formatNumber(stock.previous_close) },
-                        { label: '+ bas 3M', value: low != null ? formatNumber(low) : '—' },
-                        { label: '+ haut 3M', value: high != null ? formatNumber(high) : '—' },
-                        { label: 'Volume', value: formatCurrency(stock.volume) },
-                      ].map(({ label, value }) => (
-                        <div key={label} className="px-3 py-3 text-center">
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide truncate">{label}</p>
-                          <p className="text-sm font-bold text-gray-800 font-mono tabular-nums mt-0.5">{value}</p>
+                      <ChevronRight className="w-5 h-5 text-gray-300 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-navy" />
+                    </button>
+
+                    <Suspense
+                      fallback={
+                        <div className="rounded-xl border border-gray-200 bg-white shadow-sm h-[640px] flex items-center justify-center">
+                          <div className="w-6 h-6 rounded-full border-2 border-gray-200 border-t-gray-400 animate-spin" />
                         </div>
-                      ))}
-                    </div>
-                  </article>
+                      }
+                    >
+                      <StockChartNew
+                        symbol={stock.symbol}
+                        data={featuredCandles}
+                        dailyChangePercent={stock.daily_change_percent}
+                        isLoading={featuredCandles.length === 0}
+                        theme="light"
+                      />
+                    </Suspense>
+                  </div>
                 );
               })()}
 
@@ -1234,8 +1207,9 @@ export default function HomePage() {
                             <span className="text-right shrink-0">
                               <span className="block text-sm font-bold text-gray-900 font-mono tabular-nums leading-none">
                                 {formatNumber(stock.current_price)}
+                                <span className="text-[11px] font-semibold text-gray-400 ml-1">FCFA</span>
                               </span>
-                              <span className={`block text-xs font-mono font-bold mt-1 ${isUp ? 'text-emerald-700' : 'text-red-600'}`}>
+                              <span className={`block text-xs font-mono font-bold mt-1 ${isUp ? 'text-green-600' : 'text-red-600'}`}>
                                 {isUp ? '▲' : '▼'} {isUp ? '+' : ''}{stock.daily_change_percent?.toFixed(2) ?? '0.00'}%
                               </span>
                             </span>

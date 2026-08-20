@@ -1347,7 +1347,7 @@ export default function DashboardPage() {
                           >
                             {/* En-tête : avatar + nom + type */}
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
                                 {avatarUrl
                                   ? <img src={avatarUrl} alt={authorName} className="w-full h-full object-cover" />
                                   : authorName.charAt(0).toUpperCase()

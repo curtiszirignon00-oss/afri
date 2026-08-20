@@ -28,6 +28,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function CommunitySectionComposer({ communityId, section, isAdmin }: Props) {
     const cfg = SECTION_CONFIG[section];
+    const SectionIcon = cfg.icon;
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -142,7 +143,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
     return (
         <div className="bg-white rounded-xl shadow-sm p-4">
             <div className="flex items-center gap-2 mb-3 text-sm font-medium text-gray-700">
-                <span>{cfg.emoji}</span>
+                <SectionIcon className="w-4 h-4 text-brand-navy" />
                 <span>Publier dans {cfg.label}</span>
             </div>
 

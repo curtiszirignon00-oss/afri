@@ -18,6 +18,7 @@ import {
 import { useCommunities, useUserCommunities, COMMUNITY_CATEGORIES, type Community } from '../hooks/useCommunity';
 import { useAuth } from '../contexts/AuthContext';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
+import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 const SITE_URL = 'https://africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/communities';
@@ -92,8 +93,10 @@ export default function CommunitiesPage() {
                 <meta name="twitter:image" content={OG_IMAGE} />
             </Helmet>
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-brand-navy to-brand-navy text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="relative overflow-hidden text-white" style={{ backgroundImage: HERO_BACKGROUNDS[0].gradient }}>
+                <div className="absolute inset-0" style={{ backgroundImage: HERO_BACKGROUNDS[0].halo }} />
+                <div className="absolute inset-0 opacity-[0.07]" style={HERO_GRID_STYLE} />
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -219,7 +222,7 @@ export default function CommunitiesPage() {
                                 className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                             >
                                 {/* Banner */}
-                                <div className="h-24 bg-gradient-to-r from-brand-navy to-brand-navy relative">
+                                <div className="h-24 bg-gradient-to-r from-brand-navy to-[#173F66] relative">
                                     {community.banner_url && (
                                         <img
                                             src={community.banner_url}

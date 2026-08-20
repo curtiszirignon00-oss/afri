@@ -67,7 +67,7 @@ export default function SimilarProfiles({ enabled = true, dnaType }: { enabled?:
                                 {u.avatar_url ? (
                                     <img src={u.avatar_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
                                 ) : (
-                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${u.avatar_color || 'from-blue-500 to-purple-600'} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
+                                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${u.avatar_color || 'from-brand-navy to-[#173F66]'} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
                                         {initials}
                                     </div>
                                 )}

@@ -1,7 +1,14 @@
-import { Search, Book } from 'lucide-react';
+// src/components/GlossaryPage.tsx
+//
+// Glossaire : meme sequence d'ouverture que les pages Learn, Marches et
+// Actualites (titre centre, chapeau, bouton navy), puis une grille de fiches
+// blanches au format unique. La charte tient sur le navy et l'orange du logo,
+// l'orange n'intervenant que sur l'exemple chiffre et l'action principale.
+import { Search, X, BookOpen } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../utils/heroBackgrounds';
 
 const SITE_URL = 'https://africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/glossary';
@@ -85,6 +92,7 @@ const glossaryTerms = [
 ];
 
 export default function GlossaryPage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredTerms = searchTerm
@@ -95,7 +103,7 @@ export default function GlossaryPage() {
     : glossaryTerms;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-gray-50">
       <Helmet>
         <title>Glossaire de l'Investisseur BRVM — Termes Boursiers Expliqués | AfriBourse</title>
         <meta name="description" content="Le dictionnaire complet des termes financiers de la BRVM expliqués en français : action, dividende, SGI, indice, P/E ratio, volatilité et 15 autres concepts essentiels pour investir." />
@@ -123,67 +131,114 @@ export default function GlossaryPage() {
           ]
         })}</script>
       </Helmet>
-      <div className="text-center mb-12">
-        <div className="flex items-center justify-center space-x-3 mb-4">
-          <Book className="w-12 h-12 text-orange-600" />
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Glossaire de l'Investisseur</h1>
-        </div>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Le dictionnaire complet des termes financiers expliqués simplement. Plus de jargon incompréhensible !
-        </p>
-      </div>
 
-      <div className="max-w-2xl mx-auto mb-12">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Rechercher un terme (ex: action, dividende...)"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          />
-        </div>
-      </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {filteredTerms.map((item) => (
-          <div
-            key={item.term}
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-          >
-            <h3 className="text-2xl font-bold text-orange-600 mb-3">{item.term}</h3>
-            <p className="text-gray-700 mb-4 leading-relaxed">{item.definition}</p>
-            <div className="bg-orange-50 rounded-lg p-4 border-l-4 border-orange-500">
-              <p className="text-sm font-semibold text-orange-700 mb-1">Exemple pratique :</p>
-              <p className="text-sm text-gray-700">{item.example}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredTerms.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">Aucun terme trouvé. Essayez un autre mot-clé.</p>
-        </div>
-      )}
-
-      <div className="mt-16 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-200">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Vous ne trouvez pas un terme ?</h2>
-          <p className="text-gray-700 mb-6">
-            Nous enrichissons constamment notre glossaire. Si un terme vous échappe, n'hésitez pas à nous le signaler !
+        {/* En-tete : titre, chapeau, bouton, comme Learn et Actualites */}
+        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
+            Glossaire de l'Investisseur
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed mb-5">
+            Le dictionnaire des termes financiers de la BRVM, expliqués simplement et
+            accompagnés d'un exemple chiffré. Plus de jargon incompréhensible.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button className="px-8 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold">
-              Suggérer un terme
-            </button>
-            <Link to="/learn" className="px-8 py-3 bg-white text-orange-600 border border-orange-600 rounded-lg hover:bg-orange-50 transition-colors font-semibold">
-              Voir les modules de formation
-            </Link>
-            <Link to="/markets" className="px-8 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold">
-              Explorer les marchés BRVM
-            </Link>
+          <button
+            onClick={() => navigate('/learn')}
+            className="inline-flex items-center gap-2 h-14 bg-gradient-to-r from-brand-navy to-[#173F66] hover:from-brand-navy-hover hover:to-brand-navy-hover text-white font-bold text-sm px-7 rounded-xl shadow-md transition-all cursor-pointer"
+          >
+            <BookOpen className="w-4 h-4 shrink-0" />
+            Voir les modules de formation
+          </button>
+        </div>
+
+        {/* Recherche : meme champ que la page Actualites */}
+        <div className="max-w-2xl mx-auto mb-8 sm:mb-10">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Rechercher un terme (ex : action, dividende...)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-14 pl-12 pr-11 text-base bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy placeholder:text-gray-400"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                aria-label="Effacer la recherche"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Compteur */}
+        <p className="text-sm text-gray-500 mb-4">
+          <span className="font-mono font-semibold text-gray-900 tabular-nums">{filteredTerms.length}</span>{' '}
+          terme{filteredTerms.length > 1 ? 's' : ''}
+          {searchTerm && ` pour « ${searchTerm} »`}
+        </p>
+
+        {/* Fiches : un seul gabarit, meme retrait et meme rythme partout */}
+        {filteredTerms.length > 0 ? (
+          <div className="grid md:grid-cols-2 gap-5">
+            {filteredTerms.map((item) => (
+              <div
+                key={item.term}
+                className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 transition-[border-color,box-shadow] duration-300 hover:border-brand-navy/25 hover:shadow-md"
+              >
+                <h2 className="text-lg sm:text-xl font-bold text-brand-navy mb-2">{item.term}</h2>
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-4">{item.definition}</p>
+                <div className="bg-ink-50 rounded-xl p-4">
+                  <p className="text-xs font-bold text-brand-orange-dark uppercase tracking-wide mb-1.5">
+                    Exemple pratique
+                  </p>
+                  <p className="text-sm text-gray-600 leading-relaxed">{item.example}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
+            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Aucun terme trouvé</h2>
+            <p className="text-sm text-gray-500">Essayez un autre mot-clé, par exemple « dividende » ou « SGI ».</p>
+          </div>
+        )}
+
+        {/* Appel final : le bandeau navy signature du site */}
+        <div
+          className="relative overflow-hidden rounded-2xl mt-12 sm:mt-16"
+          style={{ backgroundImage: HERO_BACKGROUNDS[0].gradient }}
+        >
+          <div className="absolute inset-0" style={{ backgroundImage: HERO_BACKGROUNDS[0].halo }} />
+          <div className="absolute inset-0 opacity-[0.07]" style={HERO_GRID_STYLE} />
+
+          <div className="relative px-6 py-10 sm:px-10 sm:py-12 text-center max-w-2xl mx-auto">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white mb-3">
+              Vous ne trouvez pas un terme ?
+            </h2>
+            <p className="text-white/70 text-sm sm:text-base leading-relaxed mb-6">
+              Le glossaire s'enrichit à mesure que de nouveaux instruments arrivent sur la BRVM.
+              Signalez-nous le mot qui vous manque, nous l'ajoutons.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                to="/contact"
+                className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-6 rounded-lg bg-brand-orange text-white text-sm font-semibold shadow-sm hover:bg-brand-orange-hover transition-colors"
+              >
+                Suggérer un terme
+              </Link>
+              <Link
+                to="/markets"
+                className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-6 rounded-lg border-2 border-white/80 text-white text-sm font-semibold hover:bg-white hover:text-brand-navy transition-colors"
+              >
+                Explorer les marchés BRVM
+              </Link>
+            </div>
           </div>
         </div>
       </div>

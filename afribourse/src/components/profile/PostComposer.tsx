@@ -63,7 +63,7 @@ export default function PostComposer() {
     return (
         <Card className="p-6">
             <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                     {userProfile?.name?.[0]?.toUpperCase() ?? ''}{userProfile?.lastname?.[0]?.toUpperCase() ?? ''}
                 </div>
 

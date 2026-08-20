@@ -174,7 +174,7 @@ export default function PostCard({ post }: PostCardProps) {
 
             {/* Header */}
             <div className="flex items-start gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white font-bold overflow-hidden">
                     {post.author.profile?.avatar_url ? (
                         <img src={post.author.profile.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (

@@ -1,6 +1,8 @@
 // src/config/communitySections.ts
 // Catalogue des rubriques de communauté (UI + permissions côté client).
 import type { PostType } from '../hooks/useCommunity';
+import type { LucideIcon } from 'lucide-react';
+import { BarChart3, GraduationCap, TrendingUp, Target, MessageCircle, Megaphone } from 'lucide-react';
 
 export type CommunitySection =
     | 'DEAL_FLOW'
@@ -15,7 +17,7 @@ export type SectionWrite = 'admin' | 'members' | 'everyone';
 export interface SectionConfig {
     key: CommunitySection;
     label: string;
-    emoji: string;
+    icon: LucideIcon;
     description: string;
     write: SectionWrite;
     /** L'admin peut publier du contenu riche (HTML). */
@@ -33,8 +35,8 @@ export const SECTION_CONFIG: Record<CommunitySection, SectionConfig> = {
     DEAL_FLOW: {
         key: 'DEAL_FLOW',
         label: 'Deal Flow',
-        emoji: '📊',
-        description: 'Opportunités et flux de deals — publié par l\'équipe AfriBourse.',
+        icon: BarChart3,
+        description: 'Opportunités et flux de deals, publiés par l\'équipe AfriBourse.',
         write: 'admin',
         adminHtml: true,
         memberPostTypes: [],
@@ -47,8 +49,8 @@ export const SECTION_CONFIG: Record<CommunitySection, SectionConfig> = {
     RECAPS_REPLAYS: {
         key: 'RECAPS_REPLAYS',
         label: 'Récaps & Replays',
-        emoji: '🎓',
-        description: 'Récapitulatifs et rediffusions — vidéos et PDF déblocables selon votre niveau.',
+        icon: GraduationCap,
+        description: 'Récapitulatifs et rediffusions : vidéos et PDF déblocables selon votre niveau.',
         write: 'admin',
         adminHtml: true,
         memberPostTypes: [],
@@ -61,7 +63,7 @@ export const SECTION_CONFIG: Record<CommunitySection, SectionConfig> = {
     MES_ANALYSES: {
         key: 'MES_ANALYSES',
         label: 'Mes analyses',
-        emoji: '📈',
+        icon: TrendingUp,
         description: 'Partagez vos analyses, opinions et questions. L\'apprentissage par la pratique.',
         write: 'members',
         adminHtml: true,
@@ -75,8 +77,8 @@ export const SECTION_CONFIG: Record<CommunitySection, SectionConfig> = {
     EXERCICES_CHALLENGES: {
         key: 'EXERCICES_CHALLENGES',
         label: 'Exercices & Challenges',
-        emoji: '🎯',
-        description: 'Exercices pratiques et défis — à lire et résoudre directement dans le fil.',
+        icon: Target,
+        description: 'Exercices pratiques et défis à lire et résoudre directement dans le fil.',
         write: 'admin',
         adminHtml: true,
         memberPostTypes: [],
@@ -89,8 +91,8 @@ export const SECTION_CONFIG: Record<CommunitySection, SectionConfig> = {
     GENERAL: {
         key: 'GENERAL',
         label: 'Général',
-        emoji: '💬',
-        description: 'Espace libre — discussions, liens, partages. Aucune contrainte de format.',
+        icon: MessageCircle,
+        description: 'Espace libre : discussions, liens, partages. Aucune contrainte de format.',
         write: 'everyone',
         adminHtml: false,
         memberPostTypes: ['OPINION'],
@@ -103,8 +105,8 @@ export const SECTION_CONFIG: Record<CommunitySection, SectionConfig> = {
     ANNONCES: {
         key: 'ANNONCES',
         label: 'Annonces',
-        emoji: '📢',
-        description: 'Communications officielles — lecture seule pour les membres.',
+        icon: Megaphone,
+        description: 'Communications officielles, en lecture seule pour les membres.',
         write: 'admin',
         adminHtml: true,
         memberPostTypes: [],

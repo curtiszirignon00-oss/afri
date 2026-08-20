@@ -63,7 +63,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         <div className="space-y-4">
             {/* Comment Input */}
             <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white font-bold text-sm">
                     {userInitials}
                 </div>
                 <div className="flex-1">
@@ -133,7 +133,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                                 <div className="ml-4 mt-3 space-y-3">
                                     {comment.replies.map((reply: any) => (
                                         <div key={reply.id} className="flex gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center text-white font-bold text-xs">
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white font-bold text-xs">
                                                 {reply.author.name?.[0]}{reply.author.lastname?.[0]}
                                             </div>
                                             <div className="flex-1 bg-gray-50 rounded-lg p-2">

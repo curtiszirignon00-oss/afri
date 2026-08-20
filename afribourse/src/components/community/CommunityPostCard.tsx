@@ -18,6 +18,7 @@ import {
     Lock,
     Flame,
     Trophy,
+    Play,
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { formatDistanceToNow } from 'date-fns';
@@ -45,9 +46,9 @@ interface Props {
 
 const POST_TYPE_LABELS: Record<string, { label: string; color: string }> = {
     ANALYSIS: { label: 'Analyse', color: 'bg-ink-100 text-brand-navy-hover' },
-    TRANSACTION: { label: 'Transaction', color: 'bg-green-100 text-green-700' },
-    OPINION: { label: 'Opinion', color: 'bg-ink-100 text-brand-navy-hover' },
-    QUESTION: { label: 'Question', color: 'bg-orange-100 text-brand-orange-dark' },
+    TRANSACTION: { label: 'Transaction', color: 'bg-brand-orange/10 text-brand-orange-dark' },
+    OPINION: { label: 'Opinion', color: 'bg-brand-orange/10 text-brand-orange-dark' },
+    QUESTION: { label: 'Question', color: 'bg-brand-orange/10 text-brand-orange-dark' },
     ACHIEVEMENT: { label: 'Succes', color: 'bg-orange-100 text-orange-700' },
     ARTICLE: { label: 'Article', color: 'bg-gray-100 text-gray-700' },
     TASK_LIST: { label: 'Tâches', color: 'bg-green-100 text-green-700' },
@@ -94,7 +95,8 @@ function renderVideoEmbed(url: string) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-brand-navy hover:underline text-sm"
         >
-            ▶ Regarder la vidéo
+            <Play className="w-4 h-4" />
+            Regarder la vidéo
         </a>
     );
 }
