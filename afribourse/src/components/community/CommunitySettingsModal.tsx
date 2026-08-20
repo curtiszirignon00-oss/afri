@@ -70,7 +70,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
 
     const visibilityOptions: { value: CommunityVisibility; label: string; icon: JSX.Element }[] = [
         { value: 'PUBLIC', label: 'Publique', icon: <Globe className="w-4 h-4 text-green-500" /> },
-        { value: 'PRIVATE', label: 'Privee', icon: <Lock className="w-4 h-4 text-yellow-500" /> },
+        { value: 'PRIVATE', label: 'Privee', icon: <Lock className="w-4 h-4 text-brand-orange" /> },
         { value: 'SECRET', label: 'Secrete', icon: <Shield className="w-4 h-4 text-red-500" /> },
     ];
 
@@ -91,7 +91,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                         onClick={() => setActiveTab('general')}
                         className={`flex-1 py-3 font-medium text-sm ${
                             activeTab === 'general'
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                ? 'text-brand-navy border-b-2 border-brand-navy'
                                 : 'text-gray-500'
                         }`}
                     >
@@ -123,7 +123,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                             </div>
 
@@ -138,7 +138,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                                         setFormData({ ...formData, description: e.target.value })
                                     }
                                     rows={3}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                                 />
                             </div>
 
@@ -157,7 +157,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                                             }
                                             className={`p-3 border rounded-lg text-center transition-colors ${
                                                 formData.visibility === option.value
-                                                    ? 'border-indigo-500 bg-indigo-50'
+                                                    ? 'border-brand-navy bg-ink-50'
                                                     : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                         >
@@ -178,7 +178,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                                     onChange={(e) =>
                                         setFormData({ ...formData, category: e.target.value })
                                     }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 >
                                     <option value="">Selectionner</option>
                                     {COMMUNITY_CATEGORIES.map((cat) => (
@@ -208,7 +208,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                                                     },
                                                 })
                                             }
-                                            className="w-4 h-4 text-indigo-600 rounded"
+                                            className="w-4 h-4 text-brand-navy rounded"
                                         />
                                         <div>
                                             <p className="font-medium text-gray-900 text-sm">
@@ -233,7 +233,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                                                     },
                                                 })
                                             }
-                                            className="w-4 h-4 text-indigo-600 rounded"
+                                            className="w-4 h-4 text-brand-navy rounded"
                                         />
                                         <div>
                                             <p className="font-medium text-gray-900 text-sm">
@@ -303,7 +303,7 @@ export default function CommunitySettingsModal({ community, onClose }: Props) {
                         <button
                             onClick={handleSave}
                             disabled={updateCommunity.isPending}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover disabled:opacity-50"
                         >
                             {updateCommunity.isPending && (
                                 <Loader2 className="w-4 h-4 animate-spin" />

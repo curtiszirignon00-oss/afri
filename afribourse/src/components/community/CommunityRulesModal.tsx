@@ -46,12 +46,12 @@ const COMMUNITY_RULES = [
 ];
 
 const COLOR_CLASSES: Record<string, { bg: string; text: string; icon: string }> = {
-    blue: { bg: 'bg-blue-100', text: 'text-blue-900', icon: 'text-blue-600' },
+    blue: { bg: 'bg-ink-100', text: 'text-ink-950', icon: 'text-brand-navy' },
     orange: { bg: 'bg-orange-100', text: 'text-orange-900', icon: 'text-orange-600' },
     red: { bg: 'bg-red-100', text: 'text-red-900', icon: 'text-red-600' },
     green: { bg: 'bg-green-100', text: 'text-green-900', icon: 'text-green-600' },
-    purple: { bg: 'bg-purple-100', text: 'text-purple-900', icon: 'text-purple-600' },
-    pink: { bg: 'bg-pink-100', text: 'text-pink-900', icon: 'text-pink-600' }
+    purple: { bg: 'bg-ink-100', text: 'text-ink-950', icon: 'text-brand-navy' },
+    pink: { bg: 'bg-ink-100', text: 'text-ink-950', icon: 'text-brand-navy' }
 };
 
 export default function CommunityRulesModal({ onAccept }: Props) {
@@ -67,14 +67,14 @@ export default function CommunityRulesModal({ onAccept }: Props) {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-8 rounded-t-2xl">
+                <div className="bg-gradient-to-r from-brand-navy to-brand-navy text-white p-8 rounded-t-2xl">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
                             <Shield className="w-8 h-8" />
                         </div>
                         <div>
                             <h2 className="text-3xl font-bold mb-1">Bienvenue dans la Communauté !</h2>
-                            <p className="text-indigo-100">Ensemble, construisons une communauté d'investisseurs responsables</p>
+                            <p className="text-ink-100">Ensemble, construisons une communauté d'investisseurs responsables</p>
                         </div>
                     </div>
                 </div>
@@ -82,8 +82,8 @@ export default function CommunityRulesModal({ onAccept }: Props) {
                 {/* Content */}
                 <div className="p-8">
                     {/* Introduction */}
-                    <div className="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-                        <p className="text-indigo-900 leading-relaxed">
+                    <div className="mb-8 p-4 bg-ink-50 border border-ink-200 rounded-xl">
+                        <p className="text-ink-950 leading-relaxed">
                             Pour garantir une expérience enrichissante et professionnelle pour tous, veuillez prendre connaissance de nos règles communautaires. Le respect de ces règles est essentiel.
                         </p>
                     </div>
@@ -104,7 +104,7 @@ export default function CommunityRulesModal({ onAccept }: Props) {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                                            <span className="w-6 h-6 bg-brand-navy text-white rounded-full flex items-center justify-center text-sm font-bold">
                                                 {index + 1}
                                             </span>
                                             <h3 className="font-bold text-gray-900">{rule.title}</h3>
@@ -117,12 +117,12 @@ export default function CommunityRulesModal({ onAccept }: Props) {
                     </div>
 
                     {/* Consequences */}
-                    <div className="mb-8 p-5 bg-amber-50 border border-amber-200 rounded-xl">
+                    <div className="mb-8 p-5 bg-orange-50 border border-orange-200 rounded-xl">
                         <div className="flex gap-3">
-                            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <AlertCircle className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="font-semibold text-amber-900 mb-2">Conséquences en cas de non-respect</p>
-                                <ul className="text-sm text-amber-800 space-y-1">
+                                <p className="font-semibold text-brand-orange-dark mb-2">Conséquences en cas de non-respect</p>
+                                <ul className="text-sm text-brand-orange-dark space-y-1">
                                     <li>• Avertissement pour première infraction mineure</li>
                                     <li>• Suspension temporaire pour infractions répétées</li>
                                     <li>• Bannissement permanent pour infractions graves</li>
@@ -137,7 +137,7 @@ export default function CommunityRulesModal({ onAccept }: Props) {
                             type="checkbox"
                             checked={hasRead}
                             onChange={(e) => setHasRead(e.target.checked)}
-                            className="w-5 h-5 mt-0.5 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+                            className="w-5 h-5 mt-0.5 text-brand-navy border-gray-300 rounded focus:ring-2 focus:ring-brand-navy"
                         />
                         <span className="text-sm text-gray-700 leading-relaxed">
                             J'ai lu et je comprends les règles de la communauté. Je m'engage à les respecter et je comprends que leur non-respect peut entraîner des sanctions.
@@ -149,7 +149,7 @@ export default function CommunityRulesModal({ onAccept }: Props) {
                         onClick={handleAccept}
                         disabled={!hasRead}
                         className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold text-lg transition-all ${hasRead
-                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg hover:scale-105'
+                                ? 'bg-gradient-to-r from-brand-navy to-brand-navy text-white hover:shadow-lg hover:scale-105'
                                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                             }`}
                     >

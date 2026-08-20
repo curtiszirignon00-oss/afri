@@ -77,12 +77,12 @@ export default function CommunityCommentSection({ postId }: Props) {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder={replyTo ? 'Ecrire une reponse...' : 'Ajouter un commentaire...'}
-                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                         />
                         <button
                             type="submit"
                             disabled={commentPost.isPending || !content.trim()}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {commentPost.isPending ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -97,7 +97,7 @@ export default function CommunityCommentSection({ postId }: Props) {
             {/* Loading */}
             {isLoading && (
                 <div className="flex justify-center py-6">
-                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+                    <Loader2 className="w-5 h-5 animate-spin text-brand-navy" />
                 </div>
             )}
 
@@ -161,7 +161,7 @@ export default function CommunityCommentSection({ postId }: Props) {
                                                         name: `${comment.author.name} ${comment.author.lastname}`,
                                                     })
                                                 }
-                                                className="flex items-center gap-1 hover:text-indigo-600"
+                                                className="flex items-center gap-1 hover:text-brand-navy"
                                             >
                                                 <Reply className="w-3 h-3" />
                                                 Repondre
@@ -174,7 +174,7 @@ export default function CommunityCommentSection({ postId }: Props) {
                                         <div className="mt-3">
                                             <button
                                                 onClick={() => toggleReplies(comment.id)}
-                                                className="flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700"
+                                                className="flex items-center gap-1 text-sm text-brand-navy hover:text-brand-navy-hover"
                                             >
                                                 {expandedReplies.has(comment.id) ? (
                                                     <ChevronUp className="w-4 h-4" />

@@ -131,7 +131,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                             onClick={() => setType(postType.value)}
                             className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                                 type === postType.value
-                                    ? 'bg-indigo-100 text-indigo-700'
+                                    ? 'bg-ink-100 text-brand-navy-hover'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                         >
@@ -158,7 +158,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                                 onClick={() => setType('SURVEY')}
                                 className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                                     type === 'SURVEY'
-                                        ? 'bg-purple-100 text-purple-700'
+                                        ? 'bg-ink-100 text-brand-navy-hover'
                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                             >
@@ -175,7 +175,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="Titre (optionnel)"
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                     />
                 )}
 
@@ -191,7 +191,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                             : 'Partagez quelque chose avec la communauté…'
                     }
                     rows={type === 'TASK_LIST' || type === 'SURVEY' ? 2 : 3}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                 />
 
                 {/* === TASK LIST BUILDER === */}
@@ -232,17 +232,17 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
 
                 {/* === SURVEY BUILDER === */}
                 {type === 'SURVEY' && (
-                    <div className="mt-3 border border-purple-100 rounded-xl overflow-hidden">
-                        <div className="bg-purple-50 px-3 py-2 flex items-center gap-3 border-b border-purple-100">
-                            <BarChart2 className="w-4 h-4 text-purple-600" />
+                    <div className="mt-3 border border-ink-100 rounded-xl overflow-hidden">
+                        <div className="bg-ink-50 px-3 py-2 flex items-center gap-3 border-b border-ink-100">
+                            <BarChart2 className="w-4 h-4 text-brand-navy" />
                             <div className="flex gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setSurveyType('multiple_choice')}
                                     className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${
                                         surveyType === 'multiple_choice'
-                                            ? 'bg-purple-200 text-purple-800'
-                                            : 'text-purple-500 hover:bg-purple-100'
+                                            ? 'bg-ink-200 text-brand-navy'
+                                            : 'text-brand-navy hover:bg-ink-100'
                                     }`}
                                 >
                                     <BarChart2 className="w-3 h-3" /> Choix multiple
@@ -252,8 +252,8 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                                     onClick={() => setSurveyType('open')}
                                     className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${
                                         surveyType === 'open'
-                                            ? 'bg-purple-200 text-purple-800'
-                                            : 'text-purple-500 hover:bg-purple-100'
+                                            ? 'bg-ink-200 text-brand-navy'
+                                            : 'text-brand-navy hover:bg-ink-100'
                                     }`}
                                 >
                                     <MessageSquare className="w-3 h-3" /> Réponse libre
@@ -267,7 +267,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                                 value={surveyQuestion}
                                 onChange={(e) => setSurveyQuestion(e.target.value)}
                                 placeholder="Votre question…"
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent mb-2"
+                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-ink-400 focus:border-transparent mb-2"
                             />
 
                             {surveyType === 'multiple_choice' && (
@@ -282,7 +282,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                                                 value={opt}
                                                 onChange={(e) => updateOption(i, e.target.value)}
                                                 placeholder={`Option ${i + 1}…`}
-                                                className="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                                                className="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1 focus:ring-2 focus:ring-ink-400 focus:border-transparent"
                                             />
                                             {surveyOptions.length > 2 && (
                                                 <button type="button" onClick={() => removeOption(i)}>
@@ -295,7 +295,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                                         <button
                                             type="button"
                                             onClick={addOption}
-                                            className="flex items-center gap-1 text-xs text-purple-500 hover:text-purple-700 transition-colors mt-1"
+                                            className="flex items-center gap-1 text-xs text-brand-navy hover:text-brand-navy-hover transition-colors mt-1"
                                         >
                                             <Plus className="w-3 h-3" /> Ajouter une option
                                         </button>
@@ -329,7 +329,7 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                     <button
                         type="submit"
                         disabled={createPost.isPending}
-                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex items-center gap-2 px-6 py-2 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         {createPost.isPending ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

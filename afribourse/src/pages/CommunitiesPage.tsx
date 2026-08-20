@@ -49,7 +49,7 @@ export default function CommunitiesPage() {
             case 'PUBLIC':
                 return <Globe className="w-4 h-4 text-green-500" />;
             case 'PRIVATE':
-                return <Lock className="w-4 h-4 text-yellow-500" />;
+                return <Lock className="w-4 h-4 text-brand-orange" />;
             case 'SECRET':
                 return <Shield className="w-4 h-4 text-red-500" />;
             default:
@@ -92,7 +92,7 @@ export default function CommunitiesPage() {
                 <meta name="twitter:image" content={OG_IMAGE} />
             </Helmet>
             {/* Hero Section */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+            <div className="bg-gradient-to-r from-brand-navy to-brand-navy text-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ export default function CommunitiesPage() {
                             </div>
                             <div>
                                 <h1 className="text-3xl font-bold">Communautes</h1>
-                                <p className="text-indigo-100">
+                                <p className="text-ink-100">
                                     Rejoignez des groupes d'investisseurs et partagez vos connaissances
                                 </p>
                             </div>
@@ -109,7 +109,7 @@ export default function CommunitiesPage() {
                         {isLoggedIn && (
                             <button
                                 onClick={() => setShowCreateModal(true)}
-                                className="flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-colors"
+                                className="flex items-center gap-2 px-6 py-3 bg-white text-brand-navy rounded-xl font-semibold hover:bg-ink-50 transition-colors"
                             >
                                 <Plus className="w-5 h-5" />
                                 Creer une communaute
@@ -127,7 +127,7 @@ export default function CommunitiesPage() {
                         onClick={() => { setActiveTab('discover'); setPage(1); }}
                         className={`px-6 py-3 rounded-xl font-medium transition-colors ${
                             activeTab === 'discover'
-                                ? 'bg-indigo-600 text-white'
+                                ? 'bg-brand-navy text-white'
                                 : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
                     >
@@ -138,7 +138,7 @@ export default function CommunitiesPage() {
                             onClick={() => { setActiveTab('my'); setPage(1); }}
                             className={`px-6 py-3 rounded-xl font-medium transition-colors ${
                                 activeTab === 'my'
-                                    ? 'bg-indigo-600 text-white'
+                                    ? 'bg-brand-navy text-white'
                                     : 'bg-white text-gray-600 hover:bg-gray-50'
                             }`}
                         >
@@ -157,13 +157,13 @@ export default function CommunitiesPage() {
                                 placeholder="Rechercher une communaute..."
                                 value={search}
                                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                             />
                         </div>
                         <select
                             value={category}
                             onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-                            className="px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                         >
                             <option value="">Toutes les categories</option>
                             {COMMUNITY_CATEGORIES.map((cat) => (
@@ -178,7 +178,7 @@ export default function CommunitiesPage() {
                 {/* Loading */}
                 {isLoading && (
                     <div className="flex justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                        <Loader2 className="w-8 h-8 animate-spin text-brand-navy" />
                     </div>
                 )}
 
@@ -201,7 +201,7 @@ export default function CommunitiesPage() {
                         {activeTab === 'my' && (
                             <button
                                 onClick={() => setActiveTab('discover')}
-                                className="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700"
+                                className="px-6 py-3 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover"
                             >
                                 Decouvrir des communautes
                             </button>
@@ -219,7 +219,7 @@ export default function CommunitiesPage() {
                                 className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                             >
                                 {/* Banner */}
-                                <div className="h-24 bg-gradient-to-r from-indigo-500 to-purple-500 relative">
+                                <div className="h-24 bg-gradient-to-r from-brand-navy to-brand-navy relative">
                                     {community.banner_url && (
                                         <img
                                             src={community.banner_url}
@@ -228,13 +228,13 @@ export default function CommunitiesPage() {
                                         />
                                     )}
                                     {community.is_verified && (
-                                        <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                                        <div className="absolute top-2 right-2 bg-brand-navy text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
                                             <CheckCircle className="w-3 h-3" />
                                             Officielle
                                         </div>
                                     )}
                                     {community.is_featured && (
-                                        <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                                        <div className="absolute top-2 left-2 bg-brand-orange text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
                                             <TrendingUp className="w-3 h-3" />
                                             En vedette
                                         </div>
@@ -251,7 +251,7 @@ export default function CommunitiesPage() {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <Users className="w-8 h-8 text-indigo-600" />
+                                            <Users className="w-8 h-8 text-brand-navy" />
                                         )}
                                     </div>
                                 </div>
@@ -275,7 +275,7 @@ export default function CommunitiesPage() {
                                     )}
 
                                     {community.category && (
-                                        <span className="inline-block px-2 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full mb-3">
+                                        <span className="inline-block px-2 py-1 bg-ink-50 text-brand-navy text-xs rounded-full mb-3">
                                             {COMMUNITY_CATEGORIES.find(c => c.value === community.category)?.label || community.category}
                                         </span>
                                     )}
@@ -295,19 +295,19 @@ export default function CommunitiesPage() {
                                     {community.isMember && (
                                         <div className="mt-3 flex items-center gap-2 text-sm">
                                             {community.memberRole === 'OWNER' && (
-                                                <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full">
+                                                <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-brand-orange-dark rounded-full">
                                                     <Crown className="w-3 h-3" />
                                                     Proprietaire
                                                 </span>
                                             )}
                                             {community.memberRole === 'ADMIN' && (
-                                                <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                                                <span className="flex items-center gap-1 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full">
                                                     <Shield className="w-3 h-3" />
                                                     Admin
                                                 </span>
                                             )}
                                             {community.memberRole === 'MODERATOR' && (
-                                                <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                                                <span className="flex items-center gap-1 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full">
                                                     <Shield className="w-3 h-3" />
                                                     Moderateur
                                                 </span>

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   Calendar, Clock, ArrowLeft, Tag, Share2,
-  ExternalLink, TrendingUp, TrendingDown, BarChart2,
+  ExternalLink, TrendingUp, TrendingDown, BarChart2, Newspaper,
 } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
@@ -45,11 +45,11 @@ const CAT_LABELS: Record<string, string> = {
 
 const CAT_COLORS: Record<string, string> = {
   marches:    'bg-blue-50 text-blue-600 border-blue-100',
-  analyse:    'bg-green-50 text-green-600 border-green-100',
+  analyse:    'bg-ink-50 text-brand-navy border-ink-200',
   startup:    'bg-purple-50 text-purple-600 border-purple-100',
   economie:   'bg-orange-50 text-orange-600 border-orange-100',
   interview:  'bg-pink-50 text-pink-600 border-pink-100',
-  dividendes: 'bg-teal-50 text-teal-700 border-teal-200',
+  dividendes: 'bg-ink-50 text-brand-navy border-ink-200',
 };
 
 const IMPACT_STYLES: Record<ImpactType, string> = {
@@ -239,15 +239,7 @@ function DBArticlePage({ article }: { article: DBArticle }) {
                 </div>
               )}
 
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">À propos</p>
-                <dl className="space-y-3 text-sm">
-                  {article.author && <div><dt className="text-xs text-slate-400 mb-0.5">Auteur</dt><dd className="font-semibold text-slate-800">{article.author}</dd></div>}
-                  {formattedDate && <div><dt className="text-xs text-slate-400 mb-0.5">Publié le</dt><dd className="font-semibold text-slate-800">{formattedDate}</dd></div>}
-                  {article.category && <div><dt className="text-xs text-slate-400 mb-0.5">Catégorie</dt><dd><span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${catColor(article.category)}`}>{catLabel(article.category)}</span></dd></div>}
-                  <div><dt className="text-xs text-slate-400 mb-0.5">Temps de lecture</dt><dd className="font-semibold text-slate-800">{readTime} min</dd></div>
-                </dl>
-              </div>
+              <RecentArticles currentId={article.slug ?? article.id} />
 
               <Link to="/news" className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors">
                 <ArrowLeft size={14} /> Toutes les actualités
@@ -273,6 +265,49 @@ function DBArticlePage({ article }: { article: DBArticle }) {
   );
 }
 
+/**
+ * Articles récents, en remplacement de l'encart « À propos » : auteur, date et
+ * catégorie sont déjà affichés en tête de l'article, l'encart les répétait.
+ * Une porte de sortie vers d'autres lectures est plus utile à cet endroit.
+ */
+function RecentArticles({ currentId }: { currentId: string }) {
+  const recent = [...BRVM_NEWS]
+    .filter(a => a.id !== currentId)
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+    .slice(0, 4);
+
+  if (recent.length === 0) return null;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Articles récents</p>
+      <ul className="divide-y divide-gray-100 -my-3">
+        {recent.map(a => (
+          <li key={a.id}>
+            <Link to={`/news/${a.id}`} className="group flex gap-3 py-3">
+              <span className="w-14 h-14 rounded-lg bg-ink-100 overflow-hidden shrink-0">
+                {a.image_url
+                  ? <img src={a.image_url} alt="" className="w-full h-full object-cover" />
+                  : <span className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-navy to-ink-950">
+                      <Newspaper size={16} className="text-white/40" />
+                    </span>}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[10px] font-bold uppercase tracking-wide text-brand-navy mb-1">
+                  {a.category}
+                </span>
+                <span className="block text-sm font-semibold text-gray-800 leading-snug line-clamp-2 group-hover:text-brand-navy transition-colors">
+                  {a.title}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // ── Page article BRVM statique ─────────────────────────────────────────────────
 
 function BRVMArticlePage({ article }: { article: BRVMArticle }) {
@@ -285,12 +320,12 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
 
   const catCls = (cat: string) => {
     const map: Record<string, string> = {
-      'Secteur bancaire': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      'Secteur bancaire': 'bg-ink-50 text-brand-navy border-ink-200',
       'Analyse Fondamentale': 'bg-indigo-50 text-indigo-700 border-indigo-200',
       'Marché': 'bg-blue-50 text-blue-700 border-blue-200',
       'Macroéconomie': 'bg-violet-50 text-violet-700 border-violet-200',
       'Télécoms': 'bg-cyan-50 text-cyan-700 border-cyan-200',
-      'Dividendes': 'bg-teal-50 text-teal-700 border-teal-200',
+      'Dividendes': 'bg-ink-50 text-brand-navy border-ink-200',
       'Agro-industrie': 'bg-lime-50 text-lime-700 border-lime-200',
     };
     return map[cat] ?? 'bg-slate-100 text-slate-600 border-slate-300';
@@ -344,7 +379,7 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${catCls(article.category)}`}>{article.category}</span>
               {article.isFeatured && (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#00D4A8]/10 text-[#007A72] border border-[#00D4A8]/30">À la une</span>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-brand-navy/10 text-brand-navy border border-brand-navy/25">À la une</span>
               )}
             </div>
 
@@ -358,7 +393,7 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
             </div>
 
             {/* Lead */}
-            <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium border-l-4 border-[#00D4A8] pl-5 py-1">
+            <p className="text-lg text-slate-600 leading-relaxed mb-8 font-medium border-l-4 border-brand-navy pl-5 py-1">
               {article.summary}
             </p>
 
@@ -377,7 +412,7 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
             {article.tickers.length > 0 && (
               <div className="mt-10">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide mb-4">
-                  <BarChart2 size={16} className="text-[#00D4A8]" /> Actions concernées
+                  <BarChart2 size={16} className="text-brand-navy" /> Actions concernées
                 </h2>
                 <div className="overflow-x-auto rounded-xl border border-slate-200">
                   <table className="w-full text-sm">
@@ -442,15 +477,8 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
                 </div>
               )}
 
-              {/* Infos */}
-              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">À propos</p>
-                <dl className="space-y-3 text-sm">
-                  <div><dt className="text-xs text-slate-400 mb-0.5">Source</dt><dd className="font-semibold text-slate-800">AfriBourse Research</dd></div>
-                  <div><dt className="text-xs text-slate-400 mb-0.5">Publié le</dt><dd className="font-semibold text-slate-800">{formattedDate}</dd></div>
-                  <div><dt className="text-xs text-slate-400 mb-0.5">Catégorie</dt><dd><span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${catCls(article.category)}`}>{article.category}</span></dd></div>
-                </dl>
-              </div>
+              {/* Articles récents */}
+              <RecentArticles currentId={article.id} />
 
               {/* Sources */}
               {article.sources.length > 0 && (
@@ -459,7 +487,7 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
                   <ul className="space-y-2">
                     {article.sources.map((s, i) => (
                       <li key={i} className="text-xs text-slate-500 flex items-start gap-2">
-                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#00D4A8] shrink-0" />
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-navy shrink-0" />
                         {s}
                       </li>
                     ))}

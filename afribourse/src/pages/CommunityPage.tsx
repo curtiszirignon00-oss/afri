@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/community';
-import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound, PenSquare } from 'lucide-react';
+import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Compass, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound, PenSquare } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
 import PostComposer from '../components/profile/PostComposer';
@@ -159,7 +159,7 @@ export default function CommunityPage() {
             case 'PUBLIC':
                 return <Globe className="w-3 h-3 text-green-500" />;
             case 'PRIVATE':
-                return <Lock className="w-3 h-3 text-yellow-500" />;
+                return <Lock className="w-3 h-3 text-brand-orange" />;
             case 'SECRET':
                 return <Shield className="w-3 h-3 text-red-500" />;
             default:
@@ -188,44 +188,45 @@ export default function CommunityPage() {
                 <meta name="twitter:description" content="Rejoignez des investisseurs passionnés par la BRVM." />
                 <meta name="twitter:image" content={OG_IMAGE} />
             </Helmet>
-            {/* Hero Section */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-                            <Users className="w-8 h-8" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold">Communaute</h1>
-                            <p className="text-blue-100">
-                                Decouvrez les analyses et opinions des investisseurs
-                            </p>
-                        </div>
-                    </div>
-                    <div className="flex gap-6 mt-6">
-                        <div className="flex items-center gap-2 text-blue-100">
-                            <MessageCircle className="w-5 h-5" />
-                            <span>{total} publications</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-blue-100">
-                            <Globe className="w-5 h-5" />
-                            <span>Posts publics et partages</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
 
                     {/* Left Sidebar - Communities to Discover */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto scrollbar-hide">
+                        {/* Identite de la page — reprend le contenu du hero
+                            pleine largeur, dans la colonne. */}
+                        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-11 h-11 rounded-xl bg-brand-navy flex items-center justify-center shrink-0">
+                                    <Users className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h1 className="text-lg font-bold text-gray-900 leading-none">Communauté</h1>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Analyses et opinions des investisseurs
+                                    </p>
+                                </div>
+                            </div>
+                            <dl className="space-y-2.5 text-sm border-t border-gray-100 pt-4">
+                                <div className="flex items-center gap-2 text-gray-600">
+                                    <MessageCircle className="w-4 h-4 text-brand-navy shrink-0" />
+                                    <dt className="sr-only">Publications</dt>
+                                    <dd><span className="font-semibold text-gray-900 font-mono">{total}</span> publication{total > 1 ? 's' : ''}</dd>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-600">
+                                    <Globe className="w-4 h-4 text-brand-navy shrink-0" />
+                                    <dt className="sr-only">Visibilité</dt>
+                                    <dd>Posts publics et partagés</dd>
+                                </div>
+                            </dl>
+                        </div>
+
                         {/* Create Community Card */}
                         {isLoggedIn && (
                             <div className="bg-white rounded-2xl shadow-sm p-5">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-brand-navy to-brand-navy rounded-xl flex items-center justify-center">
                                         <Plus className="w-5 h-5 text-white" />
                                     </div>
                                     <div>
@@ -235,7 +236,7 @@ export default function CommunityPage() {
                                 </div>
                                 <button
                                     onClick={() => setShowCreateModal(true)}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-medium"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover transition-colors text-sm font-medium"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Creer une communaute
@@ -246,13 +247,15 @@ export default function CommunityPage() {
                         {/* Communities to Discover */}
                         <div className="bg-white rounded-2xl shadow-sm p-5">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-amber-500" />
-                                    <h3 className="font-semibold text-gray-900">A decouvrir</h3>
+                                <div className="flex items-center gap-2.5">
+                                    <span className="w-8 h-8 rounded-lg bg-ink-50 flex items-center justify-center shrink-0">
+                                        <Compass className="w-4 h-4 text-brand-navy" />
+                                    </span>
+                                    <h3 className="font-semibold text-gray-900">À découvrir</h3>
                                 </div>
                                 <Link
                                     to="/communities"
-                                    className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                                    className="text-sm text-brand-navy hover:text-brand-navy-hover font-medium"
                                 >
                                     Voir tout
                                 </Link>
@@ -260,7 +263,7 @@ export default function CommunityPage() {
 
                             {communitiesLoading && (
                                 <div className="flex justify-center py-6">
-                                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+                                    <Loader2 className="w-5 h-5 animate-spin text-brand-navy" />
                                 </div>
                             )}
 
@@ -278,7 +281,7 @@ export default function CommunityPage() {
                                             to={`/communities/${community.slug}`}
                                             className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors group"
                                         >
-                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-ink-100 to-ink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
                                                 {community.avatar_url ? (
                                                     <img
                                                         src={community.avatar_url}
@@ -286,7 +289,7 @@ export default function CommunityPage() {
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <Users className="w-5 h-5 text-indigo-600" />
+                                                    <Users className="w-5 h-5 text-brand-navy" />
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -300,7 +303,7 @@ export default function CommunityPage() {
                                                     {community.members_count} membre{community.members_count > 1 ? 's' : ''}
                                                 </p>
                                             </div>
-                                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                                            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-brand-navy transition-colors" />
                                         </Link>
                                     ))}
                                 </div>
@@ -308,7 +311,7 @@ export default function CommunityPage() {
 
                             <Link
                                 to="/communities"
-                                className="flex items-center justify-center gap-2 w-full mt-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors font-medium"
+                                className="flex items-center justify-center gap-2 w-full mt-4 py-2 text-sm text-brand-navy hover:bg-ink-50 rounded-xl transition-colors font-medium"
                             >
                                 Explorer les communautes
                                 <ChevronRight className="w-4 h-4" />
@@ -319,13 +322,13 @@ export default function CommunityPage() {
                         {isLoggedIn && (
                             <div className="bg-white rounded-2xl shadow-sm p-5">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <UserPlus className="w-5 h-5 text-purple-500" />
+                                    <UserPlus className="w-5 h-5 text-brand-navy" />
                                     <h3 className="font-semibold text-gray-900">Suggestions</h3>
                                 </div>
 
                                 {suggestionsLoading && (
                                     <div className="flex justify-center py-6">
-                                        <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
+                                        <Loader2 className="w-5 h-5 animate-spin text-brand-navy" />
                                     </div>
                                 )}
 
@@ -370,7 +373,7 @@ export default function CommunityPage() {
                                                             {user.name} {user.lastname}
                                                         </span>
                                                         {user.verified_investor && (
-                                                            <CheckCircle className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                                                            <CheckCircle className="w-3.5 h-3.5 text-brand-navy flex-shrink-0" />
                                                         )}
                                                     </Link>
                                                     <p className="text-xs text-gray-500">
@@ -388,7 +391,7 @@ export default function CommunityPage() {
                                                     className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-full font-medium transition-colors flex-shrink-0 ${
                                                         followedIds.has(user.id)
                                                             ? 'bg-gray-100 text-gray-500'
-                                                            : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                                                            : 'bg-ink-100 text-brand-navy-hover hover:bg-ink-200'
                                                     }`}
                                                 >
                                                     {followedIds.has(user.id) ? (
@@ -424,7 +427,7 @@ export default function CommunityPage() {
                             </div>
                         ) : (
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <div className="w-12 h-12 bg-gradient-to-br from-brand-navy to-brand-navy rounded-full flex items-center justify-center flex-shrink-0">
                                     <PenSquare className="w-6 h-6 text-white" />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -433,7 +436,7 @@ export default function CommunityPage() {
                                 </div>
                                 <Link
                                     to="/login"
-                                    className="flex-shrink-0 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors"
+                                    className="flex-shrink-0 px-5 py-2.5 bg-brand-navy text-white text-sm font-medium rounded-xl hover:bg-brand-navy-hover transition-colors"
                                 >
                                     Se connecter
                                 </Link>
@@ -448,7 +451,7 @@ export default function CommunityPage() {
                             <button
                                 onClick={() => refetch()}
                                 disabled={isFetching}
-                                className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                                className="flex items-center gap-2 px-4 py-2 text-brand-navy hover:bg-ink-50 rounded-lg transition-colors disabled:opacity-50"
                             >
                                 <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
                                 Actualiser
@@ -464,7 +467,7 @@ export default function CommunityPage() {
                                     <select
                                         value={filterType}
                                         onChange={(e) => setFilterType(e.target.value)}
-                                        className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                     >
                                         {POST_TYPES.map(t => (
                                             <option key={t.value} value={t.value}>{t.label}</option>
@@ -478,7 +481,7 @@ export default function CommunityPage() {
                                     <select
                                         value={filterDate}
                                         onChange={(e) => setFilterDate(e.target.value)}
-                                        className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                     >
                                         {DATE_RANGES.map(d => (
                                             <option key={d.value} value={d.value}>{d.label}</option>
@@ -492,7 +495,7 @@ export default function CommunityPage() {
                                         onClick={() => setFilterFollowing(!filterFollowing)}
                                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                             filterFollowing
-                                                ? 'bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                                ? 'bg-ink-100 text-brand-navy-hover border border-ink-200'
                                                 : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
                                         }`}
                                     >
@@ -517,7 +520,7 @@ export default function CommunityPage() {
                         {/* Loading State */}
                         {isLoading && (
                             <div className="flex justify-center py-12">
-                                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                                <Loader2 className="w-8 h-8 animate-spin text-brand-navy" />
                             </div>
                         )}
 
@@ -553,13 +556,13 @@ export default function CommunityPage() {
                         {highlightedPost && (
                             <div ref={highlightedRef} className="scroll-mt-4">
                                 <div className="flex items-center gap-2 mb-2 px-1">
-                                    <span className="flex-1 h-px bg-violet-200" />
-                                    <span className="text-xs font-semibold text-violet-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-200">
+                                    <span className="flex-1 h-px bg-ink-200" />
+                                    <span className="text-xs font-semibold text-brand-navy bg-ink-50 px-3 py-1 rounded-full border border-ink-200">
                                         Publication mise en avant
                                     </span>
-                                    <span className="flex-1 h-px bg-violet-200" />
+                                    <span className="flex-1 h-px bg-ink-200" />
                                 </div>
-                                <div className="ring-2 ring-violet-400 ring-offset-2 rounded-xl">
+                                <div className="ring-2 ring-ink-400 ring-offset-2 rounded-xl">
                                     <PostCard post={highlightedPost} />
                                 </div>
                                 <button

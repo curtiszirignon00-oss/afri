@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
-    Trophy, TrendingUp, Crown, Medal,
+    Crown, Medal,
     Loader2, ArrowLeft, Users, Flame
 } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
@@ -30,10 +30,10 @@ interface LeaderboardResponse {
     updated_at: string;
 }
 
-const RANK_DECORATIONS: Record<number, { icon: () => React.ReactNode; bg: string; ring: string }> = {
-    1: { icon: () => <Crown className="w-5 h-5 text-amber-500" />, bg: 'bg-gradient-to-br from-amber-50 to-yellow-50', ring: 'ring-2 ring-amber-300' },
-    2: { icon: () => <Medal className="w-5 h-5 text-gray-400" />, bg: 'bg-gradient-to-br from-gray-50 to-slate-50', ring: 'ring-2 ring-gray-300' },
-    3: { icon: () => <Medal className="w-5 h-5 text-orange-400" />, bg: 'bg-gradient-to-br from-orange-50 to-amber-50', ring: 'ring-2 ring-orange-300' },
+const RANK_DECORATIONS: Record<number, { icon: () => React.ReactNode }> = {
+    1: { icon: () => <Crown className="w-5 h-5 text-brand-orange" /> },
+    2: { icon: () => <Medal className="w-5 h-5 text-gray-400" /> },
+    3: { icon: () => <Medal className="w-5 h-5 text-brand-orange-dark" /> },
 };
 
 export default function LeaderboardPage() {
@@ -70,110 +70,109 @@ export default function LeaderboardPage() {
                 <meta name="twitter:description" content="Les meilleurs investisseurs BRVM de la semaine." />
                 <meta name="twitter:image" content={OG_IMAGE} />
             </Helmet>
-            <div className="max-w-2xl mx-auto px-4 py-6">
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-6">
-                    <Link
-                        to="/community"
-                        className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-gray-600" />
-                    </Link>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                            <Trophy className="w-6 h-6 text-amber-500" />
-                            Top 10 des meilleurs portfolios
-                        </h1>
-                        <p className="text-sm text-gray-500">
-                            Simulateur de portefeuille
-                        </p>
-                    </div>
+            <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8">
+                {/* Retour */}
+                <Link
+                    to="/community"
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-6"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Retour à la communauté
+                </Link>
+
+                {/* En-tete — meme composition que les autres pages */}
+                <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
+                        Classement
+                    </h1>
+                    <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed">
+                        Les dix meilleures performances du simulateur de portefeuille, mesurées
+                        sur le rendement du capital virtuel.
+                    </p>
                 </div>
 
                 {/* Loading */}
                 {isLoading && (
                     <div className="flex justify-center py-16">
-                        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-brand-navy" />
                     </div>
                 )}
 
                 {/* Empty state */}
                 {!isLoading && entries.length === 0 && (
-                    <div className="text-center py-16">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
                         <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-500 font-medium">Aucun participant pour le moment</p>
                         <p className="text-sm text-gray-400 mt-1">Le classement sera disponible bientôt</p>
                     </div>
                 )}
 
-                {/* Leaderboard list */}
+                {/* Classement — meme anatomie que la liste des actions de la page
+                    Marchés : une carte unique, une ligne par participant separee
+                    par un filet, identite a gauche et chiffres a droite. */}
                 {!isLoading && entries.length > 0 && (
-                    <div className="space-y-2">
-                        {entries.map((entry) => {
-                            const roi = entry.total_xp / 100;
-                            const isPositive = roi >= 0;
-                            const decoration = RANK_DECORATIONS[entry.rank];
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <ul className="divide-y divide-gray-100">
+                            {entries.map((entry) => {
+                                const roi = entry.total_xp / 100;
+                                const isPositive = roi >= 0;
+                                const decoration = RANK_DECORATIONS[entry.rank];
 
-                            return (
-                                <Link
-                                    key={entry.userId}
-                                    to={`/profile/${entry.userId}`}
-                                    className={`flex items-center gap-3 p-3 rounded-2xl transition-all hover:shadow-md ${
-                                        decoration
-                                            ? `${decoration.bg} ${decoration.ring}`
-                                            : 'bg-white border border-gray-100 hover:border-gray-200'
-                                    }`}
-                                >
-                                    {/* Rank */}
-                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                        !decoration ? 'bg-gray-100' : ''
-                                    }`}>
-                                        {decoration?.icon?.() || (
-                                            <span className="text-sm font-bold text-gray-400">{entry.rank}</span>
-                                        )}
-                                    </div>
-
-                                    {/* Avatar */}
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                                        {entry.avatar_url ? (
-                                            <img src={entry.avatar_url} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span className="text-sm font-bold text-indigo-600">
-                                                {entry.username.charAt(0).toUpperCase()}
+                                return (
+                                    <li key={entry.userId}>
+                                        <Link
+                                            to={`/profile/${entry.userId}`}
+                                            className="group flex items-center gap-4 sm:gap-5 px-4 sm:px-6 py-4 sm:py-5 transition-colors duration-150 hover:bg-gray-50"
+                                        >
+                                            {/* Rang — les trois premiers gardent leur insigne */}
+                                            <span className="w-8 text-center shrink-0">
+                                                {decoration
+                                                    ? decoration.icon()
+                                                    : <span className="text-sm font-mono text-gray-300 tabular-nums">{entry.rank}</span>}
                                             </span>
-                                        )}
-                                    </div>
 
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-semibold text-gray-900 truncate text-sm">
-                                            {entry.username}
-                                        </p>
-                                        <div className="flex items-center gap-1.5">
-                                            <p className="text-xs text-gray-400">
-                                                {entry.title_emoji} Niv. {entry.level} · {entry.title}
-                                            </p>
-                                            {decoration && entry.rank_streak_days !== undefined && (
-                                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-50 text-orange-500 text-xs font-semibold">
-                                                    <Flame className="w-3 h-3" />
-                                                    {entry.rank_streak_days}j
+                                            {/* Avatar, a la place du logo d'une action */}
+                                            <span className="w-12 h-12 rounded-xl bg-ink-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                                                {entry.avatar_url
+                                                    ? <img src={entry.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                    : <span className="text-sm font-bold text-brand-navy">
+                                                          {entry.username.charAt(0).toUpperCase()}
+                                                      </span>}
+                                            </span>
+
+                                            {/* Identite */}
+                                            <span className="min-w-0 flex-1">
+                                                <span className="flex items-center gap-2">
+                                                    <span className="text-lg font-bold text-gray-900 truncate group-hover:text-brand-navy transition-colors">
+                                                        {entry.username}
+                                                    </span>
+                                                    {entry.rank_streak_days !== undefined && entry.rank_streak_days > 0 && (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 text-brand-orange-dark text-xs font-semibold shrink-0">
+                                                            <Flame className="w-3 h-3" />
+                                                            {entry.rank_streak_days}j
+                                                        </span>
+                                                    )}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </div>
+                                                <span className="block text-xs text-gray-400 mt-1 truncate">
+                                                    Niveau {entry.level} · {entry.title}
+                                                </span>
+                                            </span>
 
-                                    {/* ROI */}
-                                    <div className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-bold flex-shrink-0 ${
-                                        isPositive
-                                            ? 'bg-emerald-50 text-emerald-600'
-                                            : 'bg-red-50 text-red-600'
-                                    }`}>
-                                        <TrendingUp className={`w-3.5 h-3.5 ${!isPositive ? 'rotate-180' : ''}`} />
-                                        {isPositive ? '+' : ''}{roi.toFixed(1)}%
-                                    </div>
-                                </Link>
-                            );
-                        })}
+                                            {/* Performance */}
+                                            <span className="text-right shrink-0">
+                                                <span className="block text-xl font-bold text-gray-900 font-mono tabular-nums leading-none">
+                                                    {entry.total_xp.toLocaleString('fr-FR')}
+                                                    <span className="text-xs font-semibold text-gray-400 ml-1.5">XP</span>
+                                                </span>
+                                                <span className={`block text-sm font-bold font-mono mt-1.5 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {isPositive ? '▲' : '▼'} {isPositive ? '+' : ''}{roi.toFixed(1)}%
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
                     </div>
                 )}
             </div>

@@ -1,7 +1,7 @@
 // src/components/community/CommunityTaskListBlock.tsx
 import { useTaskChecks, useToggleTaskCheck, type TaskItem, type TaskCheckMap } from '../../hooks/useCommunity';
 import { useAuth } from '../../contexts/AuthContext';
-import { CheckSquare, Square, Loader2 } from 'lucide-react';
+import { CheckSquare, Square, Loader2, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -42,7 +42,7 @@ export default function CommunityTaskListBlock({ postId, tasks }: Props) {
                 </div>
                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-indigo-500 rounded-full transition-all duration-300"
+                        className="h-full bg-brand-navy rounded-full transition-all duration-300"
                         style={{ width: sorted.length ? `${(totalChecked / sorted.length) * 100}%` : '0%' }}
                     />
                 </div>
@@ -64,9 +64,9 @@ export default function CommunityTaskListBlock({ postId, tasks }: Props) {
                                 aria-label={checkedByMe ? 'Décocher' : 'Cocher'}
                             >
                                 {checkedByMe ? (
-                                    <CheckSquare className="w-5 h-5 text-indigo-600" />
+                                    <CheckSquare className="w-5 h-5 text-brand-navy" />
                                 ) : (
-                                    <Square className="w-5 h-5 text-gray-300 hover:text-indigo-400" />
+                                    <Square className="w-5 h-5 text-gray-300 hover:text-ink-400" />
                                 )}
                             </button>
 
@@ -75,8 +75,9 @@ export default function CommunityTaskListBlock({ postId, tasks }: Props) {
                             </span>
 
                             {count > 0 && (
-                                <span className="text-xs text-gray-400 flex-shrink-0">
-                                    {count} ✓
+                                <span className="inline-flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
+                                    {count}
+                                    <Check className="w-3 h-3" />
                                 </span>
                             )}
                         </li>

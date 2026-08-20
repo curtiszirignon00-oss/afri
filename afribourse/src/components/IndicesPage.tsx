@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Activity, ChevronDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, Activity, ChevronDown, Loader2 } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
 import { lazyWithRetry } from '../lib/lazyWithRetry';
@@ -68,7 +68,7 @@ export default function IndicesPage() {
           ]
         })}</script>
       </Helmet>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Retour */}
         <button
           onClick={() => navigate('/markets')}
@@ -82,7 +82,7 @@ export default function IndicesPage() {
             une colonne etroite, chapeau en dessous. */}
         <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
-            Indices BRVM
+            Les indices boursiers
           </h1>
           <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed">
             Les principaux baromètres de la Bourse Régionale des Valeurs Mobilières,
@@ -90,78 +90,73 @@ export default function IndicesPage() {
           </p>
         </div>
 
-        {/* Liste des indices — une carte sobre par indice, le graphique se
-            deplie au clic. La bande de couleur verte ou rouge en tete de carte
-            a disparu : la variation est deja lisible dans sa pastille. */}
+        {/* Liste des indices — meme presentation que la liste des actions de la
+            page Marchés : une carte unique, une ligne par indice separee par un
+            filet, identite a gauche et chiffres a droite. Le graphique se
+            deplie sous la ligne au clic. */}
         {indices.length > 0 ? (
-          <div className="space-y-4">
-            {indices.map((index) => {
-              const isPositive = index.daily_change_percent >= 0;
-              const isSelected = selectedIndex === index.index_name;
-              return (
-                <div
-                  key={index.id}
-                  className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-[border-color,box-shadow] duration-200 ${
-                    isSelected ? 'border-brand-navy/40 shadow-md' : 'border-gray-200 hover:border-brand-navy/25'
-                  }`}
-                >
-                  <button
-                    onClick={() => setSelectedIndex(isSelected ? null : index.index_name)}
-                    className="w-full text-left px-6 py-5 cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="min-w-0">
-                        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide truncate">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <ul className="divide-y divide-gray-100">
+              {indices.map((index) => {
+                const isPositive = index.daily_change_percent >= 0;
+                const isSelected = selectedIndex === index.index_name;
+                return (
+                  <li key={index.id}>
+                    <button
+                      onClick={() => setSelectedIndex(isSelected ? null : index.index_name)}
+                      className="group w-full flex items-center gap-4 sm:gap-5 px-4 sm:px-6 py-4 sm:py-5 text-left transition-colors duration-150 cursor-pointer hover:bg-gray-50"
+                    >
+                      {/* Pastille d'indice, a la place du logo d'une action */}
+                      <span className="w-12 h-12 rounded-xl bg-ink-50 border border-gray-200 flex items-center justify-center shrink-0">
+                        <Activity className="w-5 h-5 text-brand-navy" />
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-lg font-bold text-gray-900 font-mono tracking-tight group-hover:text-brand-navy transition-colors truncate">
                           {index.index_name}
-                        </h2>
-                        <p className="text-3xl font-bold text-gray-900 font-mono tabular-nums tracking-tight mt-2">
-                          {formatNumber(index.index_value)}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">
+                        </span>
+                        <span className="block text-xs text-gray-400 mt-1">
                           Mis à jour le{' '}
                           {new Date(index.date).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
                           })}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-4 shrink-0">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-mono ring-1 ${
-                            isPositive
-                              ? 'bg-emerald-50 text-emerald-700 ring-emerald-100'
-                              : 'bg-red-50 text-red-600 ring-red-100'
-                          }`}
-                        >
-                          {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                          {isPositive ? '+' : ''}{index.daily_change_percent.toFixed(2)}%
                         </span>
-                        <ChevronDown
-                          className={`w-5 h-5 text-gray-300 transition-transform duration-300 ${isSelected ? 'rotate-180 text-brand-navy' : ''}`}
-                        />
-                      </div>
-                    </div>
-                  </button>
+                      </span>
 
-                  {/* Graphique — lazy : lightweight-charts chargé au clic */}
-                  {isSelected && (
-                    <div className="border-t border-gray-100 px-6 pb-6 pt-4">
-                      <Suspense
-                        fallback={
-                          <div className="flex items-center justify-center h-[350px]">
-                            <Loader2 className="w-8 h-8 text-brand-navy animate-spin" />
-                          </div>
-                        }
-                      >
-                        <IndexChart indexName={index.index_name} />
-                      </Suspense>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                      <span className="text-right shrink-0">
+                        <span className="block text-xl font-bold text-gray-900 font-mono tabular-nums leading-none">
+                          {formatNumber(index.index_value)}
+                        </span>
+                        <span className={`block text-sm font-bold font-mono mt-1.5 ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                          {isPositive ? '▲' : '▼'} {isPositive ? '+' : ''}{index.daily_change_percent.toFixed(2)}%
+                        </span>
+                      </span>
+
+                      <ChevronDown
+                        className={`w-5 h-5 text-gray-300 shrink-0 transition-transform duration-300 ${isSelected ? 'rotate-180 text-brand-navy' : ''}`}
+                      />
+                    </button>
+
+                    {/* Graphique — lazy : lightweight-charts chargé au clic */}
+                    {isSelected && (
+                      <div className="border-t border-gray-100 px-4 sm:px-6 pb-6 pt-4 bg-gray-50/50">
+                        <Suspense
+                          fallback={
+                            <div className="flex items-center justify-center h-[350px]">
+                              <Loader2 className="w-8 h-8 text-brand-navy animate-spin" />
+                            </div>
+                          }
+                        >
+                          <IndexChart indexName={index.index_name} />
+                        </Suspense>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">

@@ -8,7 +8,7 @@ import {
     type SurveyResponse,
 } from '../../hooks/useCommunity';
 import { useAuth } from '../../contexts/AuthContext';
-import { Loader2, Send, Eye, EyeOff, BarChart2, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Send, Eye, EyeOff, BarChart2, MessageSquare, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Props {
@@ -80,15 +80,15 @@ export default function CommunitySurveyBlock({ postId, survey, canModerate, auth
     const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
 
     return (
-        <div className="mt-3 border border-indigo-100 rounded-xl overflow-hidden bg-indigo-50/30">
-            <div className="px-4 py-3 bg-indigo-50 border-b border-indigo-100 flex items-center justify-between">
+        <div className="mt-3 border border-ink-100 rounded-xl overflow-hidden bg-ink-50/30">
+            <div className="px-4 py-3 bg-ink-50 border-b border-ink-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     {survey.survey_type === 'multiple_choice' ? (
-                        <BarChart2 className="w-4 h-4 text-indigo-600" />
+                        <BarChart2 className="w-4 h-4 text-brand-navy" />
                     ) : (
-                        <MessageSquare className="w-4 h-4 text-indigo-600" />
+                        <MessageSquare className="w-4 h-4 text-brand-navy" />
                     )}
-                    <span className="text-sm font-semibold text-indigo-800">
+                    <span className="text-sm font-semibold text-brand-navy">
                         {survey.survey_type === 'multiple_choice' ? 'Sondage' : 'Question ouverte'}
                     </span>
                 </div>
@@ -96,7 +96,7 @@ export default function CommunitySurveyBlock({ postId, survey, canModerate, auth
                     <button
                         onClick={handleTogglePublic}
                         disabled={togglePublic.isPending}
-                        className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 transition-colors"
+                        className="flex items-center gap-1 text-xs text-brand-navy hover:text-brand-navy transition-colors"
                         title={isPublic ? 'Masquer les réponses' : 'Rendre les réponses publiques'}
                     >
                         {togglePublic.isPending ? (
@@ -125,8 +125,8 @@ export default function CommunitySurveyBlock({ postId, survey, canModerate, auth
                                         onClick={() => setSelectedOption(i)}
                                         className={`w-full text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
                                             selectedOption === i
-                                                ? 'border-indigo-500 bg-indigo-50 text-indigo-800'
-                                                : 'border-gray-200 bg-white hover:border-indigo-300 text-gray-700'
+                                                ? 'border-brand-navy bg-ink-50 text-brand-navy'
+                                                : 'border-gray-200 bg-white hover:border-ink-300 text-gray-700'
                                         }`}
                                     >
                                         {opt}
@@ -139,22 +139,23 @@ export default function CommunitySurveyBlock({ postId, survey, canModerate, auth
                                 onChange={(e) => setOpenAnswer(e.target.value)}
                                 placeholder="Écrivez votre réponse…"
                                 rows={3}
-                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none mb-3"
+                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none mb-3"
                             />
                         )}
 
                         <button
                             onClick={handleSubmit}
                             disabled={submitResponse.isPending}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-brand-navy text-white rounded-lg text-sm hover:bg-brand-navy-hover disabled:opacity-50 transition-colors"
                         >
                             {submitResponse.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
                             Répondre
                         </button>
                     </>
                 ) : (
-                    <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-2">
-                        ✓ Vous avez répondu à ce sondage
+                    <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mb-2">
+                        <Check className="w-4 h-4 shrink-0" />
+                        Vous avez répondu à ce sondage
                     </div>
                 )}
 
@@ -174,7 +175,7 @@ export default function CommunitySurveyBlock({ postId, survey, canModerate, auth
                             <div className="mt-3 space-y-2">
                                 {loadingResponses ? (
                                     <div className="flex justify-center py-3">
-                                        <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                                        <Loader2 className="w-4 h-4 animate-spin text-brand-navy" />
                                     </div>
                                 ) : survey.survey_type === 'multiple_choice' && survey.options ? (
                                     // Affichage QCM : barres de progression
@@ -190,7 +191,7 @@ export default function CommunitySurveyBlock({ postId, survey, canModerate, auth
                                                     </div>
                                                     <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                                                            className="h-full bg-brand-navy rounded-full transition-all duration-500"
                                                             style={{ width: `${pct}%` }}
                                                         />
                                                     </div>

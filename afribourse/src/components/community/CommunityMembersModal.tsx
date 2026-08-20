@@ -78,21 +78,21 @@ export default function CommunityMembersModal({ communityId, canManage, onClose 
         switch (role) {
             case 'OWNER':
                 return (
-                    <span className="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                    <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-brand-orange-dark rounded-full text-xs">
                         <Crown className="w-3 h-3" />
                         Proprietaire
                     </span>
                 );
             case 'ADMIN':
                 return (
-                    <span className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">
+                    <span className="flex items-center gap-1 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-xs">
                         <Shield className="w-3 h-3" />
                         Admin
                     </span>
                 );
             case 'MODERATOR':
                 return (
-                    <span className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                    <span className="flex items-center gap-1 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-xs">
                         <Shield className="w-3 h-3" />
                         Modo
                     </span>
@@ -120,7 +120,7 @@ export default function CommunityMembersModal({ communityId, canManage, onClose 
                             onClick={() => setActiveTab('members')}
                             className={`flex-1 py-3 font-medium text-sm ${
                                 activeTab === 'members'
-                                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                    ? 'text-brand-navy border-b-2 border-brand-navy'
                                     : 'text-gray-500'
                             }`}
                         >
@@ -130,7 +130,7 @@ export default function CommunityMembersModal({ communityId, canManage, onClose 
                             onClick={() => setActiveTab('requests')}
                             className={`flex-1 py-3 font-medium text-sm relative ${
                                 activeTab === 'requests'
-                                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                    ? 'text-brand-navy border-b-2 border-brand-navy'
                                     : 'text-gray-500'
                             }`}
                         >
@@ -151,7 +151,7 @@ export default function CommunityMembersModal({ communityId, canManage, onClose 
                         <>
                             {membersLoading && (
                                 <div className="flex justify-center py-8">
-                                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-brand-navy" />
                                 </div>
                             )}
 
@@ -294,7 +294,7 @@ export default function CommunityMembersModal({ communityId, canManage, onClose 
                         <>
                             {requestsLoading && (
                                 <div className="flex justify-center py-8">
-                                    <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-brand-navy" />
                                 </div>
                             )}
 

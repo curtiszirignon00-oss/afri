@@ -92,7 +92,7 @@ function DBArticlePanel({ article, onClose }: { article: NewsArticle; onClose: (
           <div className="flex items-start justify-between">
             <div className="flex-1 pr-4">
               {article.category && (
-                <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-wide">{article.category}</span>
+                <span className="text-xs font-semibold text-brand-navy uppercase tracking-wide">{article.category}</span>
               )}
               <h2 className="font-bold text-slate-900 text-base leading-snug mt-0.5">{article.title}</h2>
               <div className="flex items-center gap-3 mt-1 flex-wrap">
@@ -421,18 +421,18 @@ export default function NewsPage() {
 
       {/* Barre de recherche */}
       <div className="relative mb-6">
-        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher un article, un ticker (BICC, BOABF…), un thème…"
-          className="w-full pl-10 pr-9 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D4A8]/30 focus:border-[#00D4A8] placeholder:text-slate-400"
+          className="w-full h-14 pl-12 pr-11 text-base bg-white border border-gray-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy placeholder:text-gray-400"
         />
         {search && (
           <button
             onClick={() => setSearch('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
             aria-label="Effacer la recherche"
           >
             <X size={15} />
@@ -444,7 +444,7 @@ export default function NewsPage() {
       {selectedCategory === 'resultats' && (
         <div className="mt-2">
           <div className="flex items-center gap-2 mb-5">
-            <BarChart2 size={18} className="text-[#00D4A8]" />
+            <BarChart2 size={18} className="text-brand-navy" />
             <h2 className="text-lg font-bold text-slate-900">Résultats annuels 2025</h2>
             <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Fondamentaux BRVM</span>
           </div>
@@ -539,7 +539,7 @@ export default function NewsPage() {
       {!isStaticOnly && !loading && !gated && brvmFiltered.length > 0 && (
         <div className="mt-10">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart2 size={15} className="text-[#00D4A8]" />
+            <BarChart2 size={15} className="text-brand-navy" />
             <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wide">Intelligence de marché BRVM 2026</h3>
             <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
               {brvmFiltered.length} article{brvmFiltered.length > 1 ? 's' : ''}

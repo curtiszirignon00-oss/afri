@@ -100,7 +100,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
             value: 'PRIVATE',
             label: 'Privee',
             description: 'Visible mais necessite une approbation',
-            icon: <Lock className="w-5 h-5 text-yellow-500" />,
+            icon: <Lock className="w-5 h-5 text-brand-orange" />,
         },
         {
             value: 'SECRET',
@@ -116,8 +116,8 @@ export default function CreateCommunityModal({ onClose }: Props) {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                            <Users className="w-5 h-5 text-indigo-600" />
+                        <div className="w-10 h-10 bg-ink-100 rounded-xl flex items-center justify-center">
+                            <Users className="w-5 h-5 text-brand-navy" />
                         </div>
                         <h2 className="text-xl font-bold text-gray-900">Creer une communaute</h2>
                     </div>
@@ -142,7 +142,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="Ex: Investisseurs BRVM"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 required
                             />
                         </div>
@@ -157,7 +157,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder="Decrivez votre communaute..."
                                 rows={3}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                             />
                         </div>
 
@@ -174,7 +174,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                         onClick={() => setFormData({ ...formData, visibility: option.value })}
                                         className={`p-4 border rounded-xl text-left transition-colors ${
                                             formData.visibility === option.value
-                                                ? 'border-indigo-500 bg-indigo-50'
+                                                ? 'border-brand-navy bg-ink-50'
                                                 : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                     >
@@ -196,7 +196,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                             <select
                                 value={formData.category}
                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                             >
                                 <option value="">Selectionner une categorie</option>
                                 {COMMUNITY_CATEGORIES.map((cat) => (
@@ -224,7 +224,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                         }
                                     }}
                                     placeholder="Ajouter un tag"
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                                 <button
                                     type="button"
@@ -239,13 +239,13 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                     {formData.tags.map((tag) => (
                                         <span
                                             key={tag}
-                                            className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm"
+                                            className="inline-flex items-center gap-1 px-3 py-1 bg-ink-50 text-brand-navy rounded-full text-sm"
                                         >
                                             {tag}
                                             <button
                                                 type="button"
                                                 onClick={() => removeTag(tag)}
-                                                className="hover:text-indigo-800"
+                                                className="hover:text-brand-navy"
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>
@@ -269,7 +269,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                             key={index}
                                             className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl"
                                         >
-                                            <span className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium">
+                                            <span className="w-6 h-6 bg-ink-100 text-brand-navy rounded-full flex items-center justify-center text-sm font-medium">
                                                 {index + 1}
                                             </span>
                                             <div className="flex-1">
@@ -295,14 +295,14 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                     value={newRule.title}
                                     onChange={(e) => setNewRule({ ...newRule, title: e.target.value })}
                                     placeholder="Titre de la regle"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                                 <textarea
                                     value={newRule.description}
                                     onChange={(e) => setNewRule({ ...newRule, description: e.target.value })}
                                     placeholder="Description de la regle"
                                     rows={2}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                                 />
                                 <button
                                     type="button"
@@ -335,7 +335,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                                 },
                                             })
                                         }
-                                        className="w-5 h-5 text-indigo-600 rounded"
+                                        className="w-5 h-5 text-brand-navy rounded"
                                     />
                                     <div>
                                         <p className="font-medium text-gray-900">Moderation des posts</p>
@@ -358,7 +358,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                                                 },
                                             })
                                         }
-                                        className="w-5 h-5 text-indigo-600 rounded"
+                                        className="w-5 h-5 text-brand-navy rounded"
                                     />
                                     <div>
                                         <p className="font-medium text-gray-900">Autoriser les invitations</p>
@@ -383,7 +383,7 @@ export default function CreateCommunityModal({ onClose }: Props) {
                         <button
                             type="submit"
                             disabled={createCommunity.isPending || !formData.name.trim()}
-                            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="flex items-center gap-2 px-6 py-3 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             {createCommunity.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                             Creer la communaute

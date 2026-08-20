@@ -16,6 +16,8 @@ import {
     FileText,
     Download,
     Lock,
+    Flame,
+    Trophy,
 } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { formatDistanceToNow } from 'date-fns';
@@ -42,14 +44,14 @@ interface Props {
 }
 
 const POST_TYPE_LABELS: Record<string, { label: string; color: string }> = {
-    ANALYSIS: { label: 'Analyse', color: 'bg-blue-100 text-blue-700' },
+    ANALYSIS: { label: 'Analyse', color: 'bg-ink-100 text-brand-navy-hover' },
     TRANSACTION: { label: 'Transaction', color: 'bg-green-100 text-green-700' },
-    OPINION: { label: 'Opinion', color: 'bg-purple-100 text-purple-700' },
-    QUESTION: { label: 'Question', color: 'bg-yellow-100 text-yellow-700' },
+    OPINION: { label: 'Opinion', color: 'bg-ink-100 text-brand-navy-hover' },
+    QUESTION: { label: 'Question', color: 'bg-orange-100 text-brand-orange-dark' },
     ACHIEVEMENT: { label: 'Succes', color: 'bg-orange-100 text-orange-700' },
     ARTICLE: { label: 'Article', color: 'bg-gray-100 text-gray-700' },
     TASK_LIST: { label: 'Tâches', color: 'bg-green-100 text-green-700' },
-    SURVEY: { label: 'Sondage', color: 'bg-purple-100 text-purple-700' },
+    SURVEY: { label: 'Sondage', color: 'bg-ink-100 text-brand-navy-hover' },
 };
 
 /** Sanitise du HTML admin avant rendu (anti-XSS). */
@@ -90,7 +92,7 @@ function renderVideoEmbed(url: string) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-indigo-600 hover:underline text-sm"
+            className="inline-flex items-center gap-2 text-brand-navy hover:underline text-sm"
         >
             ▶ Regarder la vidéo
         </a>
@@ -161,7 +163,7 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             {/* Pinned indicator */}
             {post.is_pinned && (
-                <div className="px-4 py-2 bg-indigo-50 border-b flex items-center gap-2 text-sm text-indigo-600">
+                <div className="px-4 py-2 bg-ink-50 border-b flex items-center gap-2 text-sm text-brand-navy">
                     <Pin className="w-4 h-4" />
                     Post epingle
                 </div>
@@ -190,15 +192,16 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                                     {post.author.name} {post.author.lastname}
                                 </span>
                                 {post.author.profile?.verified_investor && (
-                                    <CheckCircle className="w-4 h-4 text-blue-500" />
+                                    <CheckCircle className="w-4 h-4 text-brand-navy" />
                                 )}
                                 <RareBadgeIcon badge={post.author.profile?.rare_badge as any} />
                                 {(post.author.profile?.current_streak ?? 0) >= 3 && (
                                     <span
-                                        className="text-xs font-semibold text-orange-500 flex items-center gap-0.5"
+                                        className="text-xs font-semibold text-brand-orange flex items-center gap-1"
                                         title={`${post.author.profile!.current_streak} jours consécutifs`}
                                     >
-                                        🔥 {post.author.profile!.current_streak}j
+                                        <Flame className="w-3 h-3 shrink-0" />
+                                        {post.author.profile!.current_streak}j
                                     </span>
                                 )}
                             </div>
@@ -295,7 +298,7 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                         <p className="text-gray-800 mt-2 whitespace-pre-wrap">{post.content}</p>
                         <Link
                             to={`/communities/post/${post.id}`}
-                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                            className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-brand-navy text-white rounded-lg text-sm font-medium hover:bg-brand-navy-hover transition-colors"
                         >
                             <FileText className="w-4 h-4" />
                             Lire le contenu
@@ -343,9 +346,9 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
 
                 {/* Contenu verrouillé par niveau (Récaps) */}
                 {post.metadata?.locked && (
-                    <div className="mt-3 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-                        <Lock className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                        <p className="text-sm text-amber-800">
+                    <div className="mt-3 flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+                        <Lock className="w-5 h-5 text-brand-orange flex-shrink-0" />
+                        <p className="text-sm text-brand-orange-dark">
                             Fichiers réservés aux membres de niveau {post.metadata.unlock_level}+.
                             Continuez à progresser pour les débloquer.
                         </p>
@@ -387,7 +390,8 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                     >
                         <div className="flex items-center gap-4">
                             <div className="text-5xl flex-shrink-0">
-                                {(post as any).metadata.achievement.icon || '🏆'}
+                                {(post as any).metadata.achievement.icon
+                                  ?? <Trophy className="w-10 h-10 text-brand-orange" />}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
@@ -395,9 +399,9 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                                         {(post as any).metadata.achievement.name}
                                     </h4>
                                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                        (post as any).metadata.achievement.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' :
-                                        (post as any).metadata.achievement.rarity === 'epic' ? 'bg-purple-100 text-purple-700' :
-                                        (post as any).metadata.achievement.rarity === 'rare' ? 'bg-blue-100 text-blue-700' :
+                                        (post as any).metadata.achievement.rarity === 'legendary' ? 'bg-orange-100 text-brand-orange-dark' :
+                                        (post as any).metadata.achievement.rarity === 'epic' ? 'bg-ink-100 text-brand-navy-hover' :
+                                        (post as any).metadata.achievement.rarity === 'rare' ? 'bg-ink-100 text-brand-navy-hover' :
                                         'bg-gray-100 text-gray-700'
                                     }`}>
                                         {(post as any).metadata.achievement.rarity === 'legendary' ? 'Legendaire' :
@@ -409,7 +413,7 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
                                     {(post as any).metadata.achievement.description}
                                 </p>
                                 {(post as any).metadata.achievement.xp_reward > 0 && (
-                                    <div className="flex items-center gap-1 text-amber-600">
+                                    <div className="flex items-center gap-1 text-brand-orange">
                                         <Zap className="w-4 h-4" />
                                         <span className="text-sm font-semibold">+{(post as any).metadata.achievement.xp_reward} XP</span>
                                     </div>
@@ -497,7 +501,7 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
 
                 <button
                     onClick={() => setShowComments(!showComments)}
-                    className="flex items-center gap-2 text-gray-500 hover:text-indigo-500 transition-colors"
+                    className="flex items-center gap-2 text-gray-500 hover:text-brand-navy transition-colors"
                 >
                     <MessageCircle className="w-5 h-5" />
                     <span>{post.comments_count}</span>

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useWeeklyLeaderboard } from '../../hooks/useWeeklyLeaderboard';
 
 const RANK_STYLES: Record<number, { icon: () => React.ReactNode; bg: string; text: string }> = {
-    1: { icon: () => <Crown className="w-4 h-4 text-amber-500" />, bg: 'bg-amber-50', text: 'text-amber-700' },
+    1: { icon: () => <Crown className="w-4 h-4 text-brand-orange" />, bg: 'bg-orange-50', text: 'text-brand-orange-dark' },
     2: { icon: () => <Medal className="w-4 h-4 text-gray-400" />, bg: 'bg-gray-50', text: 'text-gray-600' },
     3: { icon: () => <Medal className="w-4 h-4 text-orange-400" />, bg: 'bg-orange-50', text: 'text-orange-600' },
 };
@@ -15,8 +15,10 @@ export default function WeeklyLeaderboard() {
     if (isLoading) {
         return (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <div className="flex items-center gap-2 mb-4">
-                    <Trophy className="w-5 h-5 text-amber-500" />
+                <div className="flex items-center gap-2.5 mb-4">
+                    <span className="w-8 h-8 rounded-lg bg-ink-50 flex items-center justify-center shrink-0">
+                        <Trophy className="w-4 h-4 text-brand-navy" />
+                    </span>
                     <h3 className="font-bold text-gray-900">Top 5 Portfolios</h3>
                 </div>
                 <div className="flex justify-center py-6">
@@ -36,8 +38,10 @@ export default function WeeklyLeaderboard() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-500" />
+                <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-lg bg-ink-50 flex items-center justify-center shrink-0">
+                        <Trophy className="w-4 h-4 text-brand-navy" />
+                    </span>
                     <h3 className="font-bold text-gray-900 text-sm">Top 5 Portfolios</h3>
                 </div>
                 <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">
@@ -66,7 +70,7 @@ export default function WeeklyLeaderboard() {
                             </div>
 
                             {/* Avatar */}
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ink-100 to-ink-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                 {entry.avatar_url ? (
                                     <img
                                         src={entry.avatar_url}
@@ -74,7 +78,7 @@ export default function WeeklyLeaderboard() {
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <span className="text-xs font-bold text-indigo-600">
+                                    <span className="text-xs font-bold text-brand-navy">
                                         {entry.username.charAt(0).toUpperCase()}
                                     </span>
                                 )}
@@ -82,7 +86,7 @@ export default function WeeklyLeaderboard() {
 
                             {/* Name + Level */}
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+                                <p className="text-sm font-medium text-gray-900 truncate group-hover:text-brand-navy transition-colors">
                                     {entry.username}
                                 </p>
                                 <p className="text-[10px] text-gray-400">
@@ -109,7 +113,7 @@ export default function WeeklyLeaderboard() {
                 <div className="mt-3 pt-3 border-t border-gray-100 text-center">
                     <Link
                         to="/classement"
-                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                        className="text-xs text-brand-navy hover:text-brand-navy-hover font-medium"
                     >
                         Voir le classement complet →
                     </Link>

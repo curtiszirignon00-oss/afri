@@ -19,7 +19,7 @@ export default function CommunitySectionBar({ active, onChange }: Props) {
                             onClick={() => onChange(key)}
                             className={`flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors flex-shrink-0 ${
                                 isActive
-                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                    ? 'bg-brand-navy text-white shadow-sm'
                                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                             }`}
                         >

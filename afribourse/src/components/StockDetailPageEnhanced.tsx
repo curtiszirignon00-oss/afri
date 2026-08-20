@@ -4,7 +4,7 @@ import { lazyWithRetry as lazy } from '../lib/lazyWithRetry';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2, BarChart3, Trophy } from 'lucide-react';
 import { apiFetch, useStocks, type Stock as ApiStock } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -86,7 +86,8 @@ export default function StockDetailPageEnhanced() {
     OPEN_WATCHLIST: () => {
       flashButton('nudge-watchlist-btn');
       void handleToggleWatchlist();
-      toast('⭐ Action ajoutée à ta Watchlist !', {
+      toast('Action ajoutée à ta Watchlist !', {
+        icon: <Star className="w-5 h-5 text-brand-orange" />,
         duration: 4000,
         style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
       });
@@ -94,7 +95,8 @@ export default function StockDetailPageEnhanced() {
     OPEN_ALERT_MODAL: () => {
       flashButton('nudge-alert-btn');
       setIsAlertModalOpen(true);
-      toast('🔔 Crée ton alerte de prix dans le formulaire ci-dessous', {
+      toast('Crée ton alerte de prix dans le formulaire ci-dessous', {
+        icon: <Bell className="w-5 h-5 text-brand-navy" />,
         duration: 4000,
         style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
       });
@@ -106,7 +108,8 @@ export default function StockDetailPageEnhanced() {
       setTimeout(() => {
         highlightSection('nudge-comparison-panel', true);
         focusInput('nudge-compare-search');
-        toast('🔍 Comparateur ouvert — tape une action à comparer ↓', {
+        toast('Comparateur ouvert : tape une action à comparer', {
+        icon: <Scale className="w-5 h-5 text-brand-navy" />,
           duration: 5000,
           style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
         });
@@ -296,7 +299,7 @@ export default function StockDetailPageEnhanced() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy"></div>
       </div>
     );
   }
@@ -310,7 +313,7 @@ export default function StockDetailPageEnhanced() {
           <p className="text-red-600">Impossible de charger les informations de l'action {symbol}</p>
           <button
             onClick={() => window.history.back()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover"
           >
             Retour
           </button>
@@ -605,7 +608,7 @@ export default function StockDetailPageEnhanced() {
                 })()}
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{stock.symbol}</h1>
                 {stock.sector && (
-                  <span className="hidden sm:inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                  <span className="hidden sm:inline-block px-3 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-sm font-medium">
                     {stock.sector}
                   </span>
                 )}
@@ -617,15 +620,15 @@ export default function StockDetailPageEnhanced() {
                     id="nudge-watchlist-btn"
                     onClick={handleToggleWatchlist}
                     disabled={isTogglingWatchlist}
-                    className={`p-2 rounded-full hover:bg-yellow-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
+                    className={`p-2 rounded-full hover:bg-orange-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                     title={isInWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
                   >
                     {isTogglingWatchlist ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-500"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-orange"></div>
                     ) : (
                       <Star
-                        className={`w-5 h-5 ${isInWatchlist ? 'text-yellow-500 fill-yellow-400' : 'text-gray-400 hover:text-yellow-500'
+                        className={`w-5 h-5 ${isInWatchlist ? 'text-brand-orange fill-brand-orange' : 'text-gray-400 hover:text-brand-orange'
                           }`}
                       />
                     )}
@@ -655,8 +658,8 @@ export default function StockDetailPageEnhanced() {
                     onClick={showComparison ? closeComparison : openComparison}
                     className={`p-2 rounded-full transition-colors ${
                       showComparison
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'hover:bg-blue-100 text-gray-400 hover:text-blue-600'
+                        ? 'bg-ink-100 text-brand-navy'
+                        : 'hover:bg-ink-100 text-gray-400 hover:text-brand-navy'
                     }`}
                     title={showComparison ? 'Fermer la comparaison' : 'Comparer avec un autre titre'}
                   >
@@ -673,14 +676,14 @@ export default function StockDetailPageEnhanced() {
             <div>
               <h2 className="text-lg sm:text-xl text-gray-700">{stock.company_name}</h2>
               {stock.sector && (
-                <span className="sm:hidden inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                <span className="sm:hidden inline-block mt-2 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-xs font-medium">
                   {stock.sector}
                 </span>
               )}
             </div>
 
             {/* Ligne 3: Prix actuel - Format mobile optimisé */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6">
+            <div className="bg-gradient-to-br from-ink-50 to-ink-50 rounded-xl p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs sm:text-sm text-gray-600 mb-1">Prix actuel</p>
@@ -719,7 +722,7 @@ export default function StockDetailPageEnhanced() {
                       onChange={e => { setCompareQuery(e.target.value); setShowCompareDropdown(true); }}
                       onFocus={() => setShowCompareDropdown(true)}
                       placeholder="Ajouter un titre à comparer..."
-                      className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                      className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy bg-white shadow-sm"
                     />
                     {compareQuery && (
                       <button
@@ -754,7 +757,7 @@ export default function StockDetailPageEnhanced() {
                           <button
                             key={s.id}
                             onClick={() => addToComparison(s)}
-                            className={`w-full flex items-center space-x-3 px-4 py-2.5 text-left hover:bg-blue-50 transition-colors ${idx > 0 ? 'border-t border-gray-100' : ''}`}
+                            className={`w-full flex items-center space-x-3 px-4 py-2.5 text-left hover:bg-ink-50 transition-colors ${idx > 0 ? 'border-t border-gray-100' : ''}`}
                           >
                             {logo ? (
                               <img
@@ -764,8 +767,8 @@ export default function StockDetailPageEnhanced() {
                                 onError={e => (e.target as HTMLImageElement).style.display = 'none'}
                               />
                             ) : (
-                              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-bold text-blue-600">{s.symbol.slice(0, 2)}</span>
+                              <div className="w-8 h-8 rounded-lg bg-ink-100 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-bold text-brand-navy">{s.symbol.slice(0, 2)}</span>
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
@@ -870,7 +873,7 @@ export default function StockDetailPageEnhanced() {
                       : sentiment.color === 'lime'
                         ? 'bg-lime-100 text-lime-800'
                         : sentiment.color === 'yellow'
-                          ? 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-orange-100 text-brand-orange-dark'
                           : sentiment.color === 'orange'
                             ? 'bg-orange-100 text-orange-800'
                             : 'bg-red-100 text-red-800'
@@ -887,7 +890,7 @@ export default function StockDetailPageEnhanced() {
                       : technicalSignal.color === 'lime'
                         ? 'bg-lime-100 text-lime-800'
                         : technicalSignal.color === 'yellow'
-                          ? 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-orange-100 text-brand-orange-dark'
                           : technicalSignal.color === 'orange'
                             ? 'bg-orange-100 text-orange-800'
                             : 'bg-red-100 text-red-800'
@@ -908,7 +911,7 @@ export default function StockDetailPageEnhanced() {
             <Suspense
               fallback={
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-brand-navy animate-spin" />
                 </div>
               }
             >
@@ -941,21 +944,23 @@ export default function StockDetailPageEnhanced() {
               <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50">
                 <button
                   onClick={() => setWalletMode('SANDBOX')}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'SANDBOX'
-                    ? 'bg-white text-blue-600 shadow-sm'
+                  className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'SANDBOX'
+                    ? 'bg-white text-brand-navy shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                     }`}
                 >
-                  📊 Simulation
+                  <BarChart3 className="w-4 h-4 shrink-0" />
+                  Simulation
                 </button>
                 <button
                   onClick={() => setWalletMode('CONCOURS')}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'CONCOURS'
-                    ? 'bg-orange-500 text-white shadow-sm'
+                  className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'CONCOURS'
+                    ? 'bg-brand-orange text-white shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
                     }`}
                 >
-                  🏆 Challenge
+                  <Trophy className="w-4 h-4 shrink-0" />
+                  Challenge
                 </button>
               </div>
 
@@ -970,7 +975,7 @@ export default function StockDetailPageEnhanced() {
                 </div>
               ) : (
                 <div className="text-center text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                  <button onClick={() => navigate('/login')} className="text-blue-600 font-semibold hover:underline">
+                  <button onClick={() => navigate('/login')} className="text-brand-navy font-semibold hover:underline">
                     Connectez-vous
                   </button>{' '}
                   pour simuler.
@@ -989,7 +994,7 @@ export default function StockDetailPageEnhanced() {
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
                   min="1"
                   step="1"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                   disabled={!portfolio}
                 />
               </div>
@@ -1003,7 +1008,7 @@ export default function StockDetailPageEnhanced() {
               {/* Coût total */}
               <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-3 mt-2">
                 <span className="text-gray-900">Coût Total</span>
-                <span className="text-blue-600">{formatNumber(totalCost)} FCFA</span>
+                <span className="text-brand-navy">{formatNumber(totalCost)} FCFA</span>
               </div>
 
               {/* Avertissement fonds insuffisants */}
@@ -1081,21 +1086,23 @@ export default function StockDetailPageEnhanced() {
             <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50 mb-4">
               <button
                 onClick={() => setWalletMode('SANDBOX')}
-                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'SANDBOX'
-                  ? 'bg-white text-blue-600 shadow-sm'
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'SANDBOX'
+                  ? 'bg-white text-brand-navy shadow-sm'
                   : 'text-gray-500'
                   }`}
               >
-                📊 Simulation
+                <BarChart3 className="w-4 h-4 shrink-0" />
+                Simulation
               </button>
               <button
                 onClick={() => setWalletMode('CONCOURS')}
-                className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'CONCOURS'
-                  ? 'bg-orange-500 text-white shadow-sm'
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 text-sm font-medium rounded-md transition-all ${walletMode === 'CONCOURS'
+                  ? 'bg-brand-orange text-white shadow-sm'
                   : 'text-gray-500'
                   }`}
               >
-                🏆 Challenge
+                <Trophy className="w-4 h-4 shrink-0" />
+                Challenge
               </button>
             </div>
 
@@ -1115,7 +1122,7 @@ export default function StockDetailPageEnhanced() {
                     setShowMobileOrder(false);
                     navigate('/login');
                   }}
-                  className="text-blue-600 font-semibold hover:underline"
+                  className="text-brand-navy font-semibold hover:underline"
                 >
                   Connectez-vous
                 </button>{' '}
@@ -1144,7 +1151,7 @@ export default function StockDetailPageEnhanced() {
                       onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
                       min="1"
                       step="1"
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg font-semibold"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent text-center text-lg font-semibold"
                     />
                     <button
                       onClick={() => setQuantity(quantity + 1)}
@@ -1167,14 +1174,15 @@ export default function StockDetailPageEnhanced() {
                   </div>
                   <div className="flex justify-between items-center text-lg font-bold border-t border-gray-200 pt-2 mt-2">
                     <span className="text-gray-900">Total</span>
-                    <span className="text-blue-600">{formatNumber(totalCost)} FCFA</span>
+                    <span className="text-brand-navy">{formatNumber(totalCost)} FCFA</span>
                   </div>
                 </div>
 
                 {/* Avertissement fonds insuffisants */}
                 {totalCost > portfolio.cash_balance && (
-                  <p className="text-red-600 text-sm text-center mb-4 bg-red-50 p-2 rounded-lg">
-                    ⚠️ Fonds insuffisants pour cet ordre.
+                  <p className="flex items-center justify-center gap-1.5 text-red-600 text-sm mb-4 bg-red-50 p-2 rounded-lg">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    Fonds insuffisants pour cet ordre.
                   </p>
                 )}
 

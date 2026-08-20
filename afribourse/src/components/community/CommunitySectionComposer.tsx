@@ -157,7 +157,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                                 onClick={() => setType(t)}
                                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                                     type === t
-                                        ? 'bg-indigo-100 text-indigo-700'
+                                        ? 'bg-ink-100 text-brand-navy-hover'
                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                             >
@@ -173,7 +173,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder={htmlImportAvailable ? 'Titre' : 'Titre (optionnel)'}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-3 focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                 />
 
                 {/* Contenu / description */}
@@ -184,17 +184,17 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                         ? 'Description / aperçu affiché dans le fil (le contenu complet s\'ouvre sur une page dédiée)…'
                         : cfg.placeholder}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                 />
 
                 {/* Import fichier HTML (admin) */}
                 {htmlImportAvailable && (
                     <div className="mt-3">
                         {htmlUrl ? (
-                            <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
-                                <FileCode className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-                                <span className="flex-1 text-sm text-indigo-800 truncate">{htmlName}</span>
-                                <span className="text-xs text-indigo-400">page dédiée</span>
+                            <div className="flex items-center gap-2 bg-ink-50 border border-ink-100 rounded-lg px-3 py-2">
+                                <FileCode className="w-4 h-4 text-brand-navy flex-shrink-0" />
+                                <span className="flex-1 text-sm text-brand-navy truncate">{htmlName}</span>
+                                <span className="text-xs text-ink-400">page dédiée</span>
                                 <button type="button" onClick={() => { setHtmlUrl(null); setHtmlName(null); }}>
                                     <X className="w-4 h-4 text-gray-400 hover:text-red-500" />
                                 </button>
@@ -204,7 +204,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                                 type="button"
                                 onClick={() => htmlInputRef.current?.click()}
                                 disabled={uploadHtml.isPending}
-                                className="flex items-center gap-2 px-3 py-2 text-sm text-indigo-600 border border-dashed border-indigo-300 rounded-lg hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                                className="flex items-center gap-2 px-3 py-2 text-sm text-brand-navy border border-dashed border-ink-300 rounded-lg hover:bg-ink-50 transition-colors disabled:opacity-50"
                             >
                                 {uploadHtml.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileCode className="w-4 h-4" />}
                                 Importer un fichier HTML (contenu riche)
@@ -223,7 +223,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                             value={videoUrl}
                             onChange={(e) => setVideoUrl(e.target.value)}
                             placeholder="Lien vidéo (YouTube, Loom, Vimeo…)"
-                            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                         />
                     </div>
                 )}
@@ -238,7 +238,7 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                             min={0}
                             value={unlockLevel}
                             onChange={(e) => setUnlockLevel(Math.max(0, parseInt(e.target.value) || 0))}
-                            className="w-20 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-20 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                         />
                         <span className="text-xs text-gray-400">(0 = accès libre)</span>
                     </div>
@@ -309,13 +309,13 @@ export default function CommunitySectionComposer({ communityId, section, isAdmin
                                 <input ref={pdfInputRef} type="file" accept="application/pdf" hidden onChange={handlePdfPick} />
                             </>
                         )}
-                        {uploading && <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />}
+                        {uploading && <Loader2 className="w-4 h-4 animate-spin text-brand-navy" />}
                     </div>
 
                     <button
                         type="submit"
                         disabled={createPost.isPending || uploading || !content.trim()}
-                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex items-center gap-2 px-6 py-2 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         {createPost.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         Publier

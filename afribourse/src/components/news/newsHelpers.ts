@@ -15,17 +15,14 @@ export function getCategoryLabel(cat: string | null): string {
   return map[k] ?? cat.charAt(0).toUpperCase() + cat.slice(1);
 }
 
-export function getCategoryColor(cat: string | null): string {
-  if (!cat) return 'bg-slate-100 text-slate-700';
-  const map: Record<string, string> = {
-    marches:    'bg-blue-50 text-blue-600 border-blue-100',
-    analyse:    'bg-green-50 text-green-600 border-green-100',
-    startup:    'bg-purple-50 text-purple-600 border-purple-100',
-    economie:   'bg-orange-50 text-orange-600 border-orange-100',
-    interview:  'bg-pink-50 text-pink-600 border-pink-100',
-    dividendes: 'bg-teal-50 text-teal-700 border-teal-200',
-  };
-  return map[cat.toLowerCase()] ?? 'bg-slate-50 text-slate-600 border-slate-100';
+/**
+ * Pastille de categorie. Une seule teinte, celle du logo, comme dans le bloc
+ * « Actualités du Jour » de l'accueil : les six couleurs pastel d'avant (bleu,
+ * vert, violet, orange, rose, turquoise) n'appartenaient a aucune palette du
+ * site et laissaient croire a une hierarchie entre les rubriques.
+ */
+export function getCategoryColor(_cat: string | null): string {
+  return 'bg-brand-navy text-white';
 }
 
 export function formatTimeAgo(dateString: string | null): string {
