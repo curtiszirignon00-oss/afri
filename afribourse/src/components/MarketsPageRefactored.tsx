@@ -6,12 +6,11 @@ const SITE_URL = 'https://africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/markets';
 import { trackStockSearch } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
-import { Search, Filter, Star, Info, PlusCircle, CheckCircle, LayoutGrid, List, Scale } from 'lucide-react';
-import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
+import { Search, Filter, Star, PlusCircle, CheckCircle, LayoutGrid, List, Scale, ArrowRight, Wallet, AlertTriangle, TrendingUp, TrendingDown, Map, Activity } from 'lucide-react';
+import { useStocks, useWatchlist, useAddToWatchlist, useRemoveFromWatchlist, usePortfolio, apiFetch, type StockFilters, type Stock } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import { Button, Card, Input, LoadingSpinner, ErrorMessage } from './ui';
-import PillTabs from './ui/PillTabs';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import StockComparison from './markets/StockComparison';
 import BRVMMarketMap from './markets/BRVMMarketMap';
@@ -20,7 +19,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 import { useNavigate } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
-import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import { useMarketsPageNudge, markScreenerUsed } from '../hooks/useNudgeTriggers';
 import { flashButton, highlightSection } from '../utils/nudgeUtils';
 
@@ -33,6 +31,29 @@ const COMPARISON_LIMITS: Record<string, number> = {
   max: Infinity,
 };
 type MarketsPageRefactoredProps = {};
+
+// Filtres de la liste : les trois vues d'abord, puis les sept secteurs BRVM.
+// Chaque entree porte soit un onglet (tab), soit un secteur, jamais les deux.
+// Cellules de la barre : trois vues de la liste, la carte du marche, puis deux
+// raccourcis vers d'autres pages. Les secteurs ont quitte cette barre — ils
+// restent filtrables par le selecteur de la carte de recherche, et dix cellules
+// noyaient les trois vues qui comptent.
+const MARKET_FILTERS: {
+  key: string;
+  label: string;
+  icon: React.ElementType;
+  tab?: 'all' | 'gainers' | 'losers';
+  view?: 'list' | 'map';
+  href?: string;
+}[] = [
+  { key: 'all',       label: 'Toutes actions',  icon: LayoutGrid,   tab: 'all' },
+  { key: 'gainers',   label: 'Gagnants',        icon: TrendingUp,   tab: 'gainers' },
+  { key: 'losers',    label: 'Perdants',        icon: TrendingDown, tab: 'losers' },
+  { key: 'map',       label: 'Carte du marché', icon: Map,          view: 'map' },
+  { key: 'indices',   label: 'Voir les indices', icon: Activity,    href: '/indices' },
+  { key: 'watchlist', label: 'Ma watchlist',    icon: Star,         href: '/watchlist' },
+];
+
 
 export default function MarketsPageRefactored() {
   const navigate = useNavigate();
@@ -69,7 +90,8 @@ export default function MarketsPageRefactored() {
       flashButton('heatmap-tab-btn');
       setTimeout(() => {
         highlightSection('heatmap-section', true);
-        toast('🗺️ Carte de marché activée — visualisez les performances BRVM', {
+        toast('Carte de marché activée : visualisez les performances BRVM', {
+        icon: <LayoutGrid className="w-5 h-5 text-brand-navy" />,
           duration: 4000,
           style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
         });
@@ -80,17 +102,14 @@ export default function MarketsPageRefactored() {
       flashButton('screener-section');
       setTimeout(() => {
         highlightSection('nudge-screener-panel', true);
-        toast('🔎 Filtres avancés ouverts — affinez votre recherche ↓', {
+        toast('Filtres avancés ouverts : affinez votre recherche', {
+        icon: <Filter className="w-5 h-5 text-brand-navy" />,
           duration: 4000,
           style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
         });
       }, 150);
     },
   });
-
-  // Onboarding guidé nouveaux utilisateurs
-  const { isActive: isOnboardingActive, steps: onboardingSteps } = useOnboardingGuideContext();
-  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   // Stock comparison
   const [comparisonStocks, setComparisonStocks] = useState<Stock[]>([]);
@@ -125,7 +144,7 @@ export default function MarketsPageRefactored() {
   // Indices du marché
   const [marketIndices, setMarketIndices] = useState<MarketIndex[]>([]);
   useEffect(() => {
-    apiFetch<MarketIndex[]>('/indices/latest?limit=2').then(setMarketIndices).catch(() => {});
+    apiFetch<MarketIndex[]>('/indices/latest?limit=5').then(setMarketIndices).catch(() => {});
   }, []);
 
   // Hooks React Query
@@ -138,6 +157,7 @@ export default function MarketsPageRefactored() {
     return rawStocks;
   }, [rawStocks, activeTab]);
   const { data: watchlist = [] } = useWatchlist(isLoggedIn);
+  const { data: portfolio } = usePortfolio(isLoggedIn);
   const addToWatchlist = useAddToWatchlist();
   const removeFromWatchlist = useRemoveFromWatchlist();
 
@@ -247,23 +267,6 @@ export default function MarketsPageRefactored() {
     return comparisonStocks.some(s => s.id === stock.id);
   };
 
-  // <-- AJOUT : Fonction pour obtenir la couleur du badge selon le secteur
-  const getSectorColor = (sector: string | null) => {
-    if (!sector) return 'bg-gray-100 text-gray-700';
-
-    const colors: Record<string, string> = {
-      'Consommation de Base': 'bg-green-100 text-green-700',
-      'Consommation Discrétionnaire': 'bg-purple-100 text-purple-700',
-      'Energie': 'bg-orange-100 text-orange-700',
-      'Industriels': 'bg-blue-100 text-blue-700',
-      'Services Financiers': 'bg-indigo-100 text-indigo-700',
-      'Services Publics': 'bg-teal-100 text-teal-700',
-      'Télécommunications': 'bg-pink-100 text-pink-700',
-    };
-
-    return colors[sector] || 'bg-gray-100 text-gray-700';
-  };
-
   // Load comparison from URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -349,112 +352,135 @@ export default function MarketsPageRefactored() {
       </Helmet>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-        {/* Bannière onboarding — simulateur sans risque */}
-        {isOnboardingActive && !onboardingSteps.achat && !bannerDismissed && (
-          <div className="flex items-start gap-3 p-4 mb-5 rounded-xl border text-sm"
-            style={{ backgroundColor: '#f0fdfb', borderColor: '#00D4A8' }}>
-            <span className="text-lg flex-shrink-0">ℹ️</span>
-            <p className="flex-1" style={{ color: '#065f46' }}>
-              C'est un simulateur — tu peux acheter et vendre sans aucun risque financier.
-              Observe comment ton portefeuille évolue en temps réel !
-            </p>
-            <button
-              onClick={() => setBannerDismissed(true)}
-              className="flex-shrink-0 text-lg leading-none opacity-60 hover:opacity-100 transition-opacity"
-              aria-label="Fermer"
-              style={{ color: '#065f46' }}
-            >
-              ×
-            </button>
+        {/* En-tete — meme sequence que la page Learn : titre, chapeau, bouton,
+            puis l'encart d'avertissement, puis la barre de categories. */}
+        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
+            Marchés BRVM
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed mb-5">
+            Cours, volumes et ratios des {stocks.length} société{stocks.length > 1 ? 's' : ''} cotée{stocks.length > 1 ? 's' : ''} à la Bourse Régionale des Valeurs Mobilières, mis à jour au fil des séances.
+          </p>
+          <button
+            onClick={() => navigate(isLoggedIn ? '/dashboard' : '/signup')}
+            className="inline-flex items-center gap-2 h-14 bg-gradient-to-r from-brand-navy to-[#173F66] hover:from-brand-navy-hover hover:to-brand-navy-hover text-white font-bold text-sm px-7 rounded-xl shadow-md transition-all cursor-pointer"
+          >
+            <Wallet className="w-4 h-4 shrink-0" />
+            {isLoggedIn ? 'Ouvrir mon portefeuille' : 'Ouvrir un portefeuille virtuel'}
+          </button>
+        </div>
+
+        {/* Encart orange — meme carte que celle de la page Learn. Deux etats :
+            invitation a se connecter, ou solde du portefeuille virtuel. */}
+        {!isLoggedIn ? (
+          <div className="max-w-2xl mx-auto bg-white border-2 border-brand-orange rounded-2xl p-6 mb-8 shadow-sm">
+            <div className="flex items-start space-x-4">
+              <AlertTriangle className="w-6 h-6 text-brand-orange flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-gray-900 mb-1">
+                  Connectez-vous pour investir
+                </p>
+                <p className="text-gray-600 text-sm">
+                  Créez un compte gratuit pour suivre vos actions, comparer les valeurs et
+                  passer vos premiers ordres avec un capital virtuel.
+                </p>
+              </div>
+            </div>
           </div>
+        ) : portfolio && (
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full max-w-2xl mx-auto flex items-center gap-4 text-left bg-white border-2 border-brand-orange rounded-2xl p-6 mb-8 shadow-sm transition-shadow duration-200 hover:shadow-md cursor-pointer"
+          >
+            <Wallet className="w-6 h-6 text-brand-orange flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Solde disponible — portefeuille virtuel
+              </p>
+              <p className="text-2xl font-bold text-gray-900 font-mono tabular-nums leading-none">
+                {formatNumber(portfolio.cash_balance)}
+                <span className="text-sm font-semibold text-gray-400 ml-1.5">FCFA</span>
+              </p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-gray-300 shrink-0" />
+          </button>
         )}
 
-        {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Marchés BRVM</h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            {stocks.length} action{stocks.length > 1 ? 's' : ''} disponible{stocks.length > 1 ? 's' : ''}
-          </p>
-        </div>
+        {/* Filtres — memes cellules que les themes de la page Learn : icone au
+            dessus, libelle en dessous, largeur egale sur une grille. Les trois
+            vues (toutes / gagnants / perdants) et les sept secteurs y sont sur
+            le meme plan : ce sont tous des filtres de la meme liste, l'onglet
+            « Secteurs » qui les cachait derriere un second niveau n'avait pas
+            lieu d'etre. */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-8 sticky top-20 z-30">
+          <div className="flex md:grid md:grid-cols-6 gap-2 sm:gap-3 overflow-x-auto md:overflow-visible scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
+            {MARKET_FILTERS.map((f) => {
+              // Les raccourcis vers une autre page ne s'allument jamais : ils
+              // quittent la page au lieu de filtrer la liste.
+              const active = f.href
+                ? false
+                : f.view
+                  ? viewMode === 'map'
+                  : activeTab === f.tab && viewMode === 'list';
 
-        {/* Pill tabs — sticky sous le header sur mobile */}
-        <div className="sticky top-14 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pt-3 bg-gray-50/95 backdrop-blur-sm border-b border-slate-100 mb-6">
-          <PillTabs
-            tabs={[
-              { key: 'all',     label: 'Toutes actions', badge: rawStocks.length },
-              { key: 'gainers', label: 'Gainers',        badge: rawStocks.filter(s => s.daily_change_percent > 0).length },
-              { key: 'losers',  label: 'Losers',         badge: rawStocks.filter(s => s.daily_change_percent < 0).length },
-              { key: 'sectors', label: 'Secteurs' },
-            ]}
-            active={activeTab}
-            onChange={(key) => {
-              setActiveTab(key as typeof activeTab);
-              if (key !== 'sectors') setSelectedSector('all');
-            }}
-          />
-
-          {/* Sous-pills secteurs — visibles uniquement sur l'onglet Secteurs */}
-          {activeTab === 'sectors' && (
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide py-2.5" style={{ scrollbarWidth: 'none' }}>
-              {sectors.map(s => (
+              return (
                 <button
-                  key={s}
-                  onClick={() => setSelectedSector(s)}
-                  className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-semibold transition-all duration-150 cursor-pointer shrink-0 border ${
-                    selectedSector === s
-                      ? 'bg-slate-800 text-white border-slate-800'
-                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
-                  }`}
+                  key={f.key}
+                  onClick={() => {
+                    if (f.href) {
+                      navigate(f.href);
+                    } else if (f.view) {
+                      setViewMode(f.view);
+                    } else {
+                      setActiveTab(f.tab!);
+                      setViewMode('list');
+                    }
+                  }}
+                  className={`flex flex-col items-center justify-center gap-1.5 px-3 py-3 rounded-xl font-semibold text-xs text-center transition-colors duration-200 flex-shrink-0 md:flex-shrink snap-start min-w-[92px] md:min-w-0 ${active
+                    ? 'bg-gradient-to-r from-brand-navy to-[#173F66] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
-                  {s === 'all' ? 'Tous' : s}
+                  <f.icon className="w-5 h-5 shrink-0" />
+                  <span className="leading-tight">{f.label}</span>
                 </button>
-              ))}
-            </div>
-          )}
-
-          {activeTab !== 'sectors' && <div className="pb-0.5" />}
+              );
+            })}
+          </div>
         </div>
 
-        {/* Indices du marché */}
+        {/* Indices — bande compacte plutot que deux grandes cartes : ce sont
+            des reperes de contexte, pas le sujet de la page. */}
         {marketIndices.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Indices BRVM</h2>
-              <button
-                onClick={() => navigate('/indices')}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Voir tous les indices &rarr;
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {marketIndices.map((index) => (
-                <div
+          <div className="flex items-stretch gap-2 mb-6 overflow-x-auto scrollbar-hide">
+            {marketIndices.map((index) => {
+              const isUp = index.daily_change_percent >= 0;
+              return (
+                <button
                   key={index.id}
                   onClick={() => navigate('/indices')}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
+                  className="group flex flex-1 min-w-[190px] items-center justify-between gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2.5 transition-colors duration-150 cursor-pointer hover:border-brand-navy/25"
                 >
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">{index.index_name}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {formatNumber(index.index_value, 2)}
-                    </p>
-                  </div>
-                  <div
-                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-semibold ${
-                      index.daily_change_percent >= 0
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    <span>
-                      {index.daily_change_percent >= 0 ? '+' : ''}
-                      {index.daily_change_percent.toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  <span className="text-xs font-semibold text-gray-500 group-hover:text-brand-navy transition-colors">
+                    {index.index_name}
+                  </span>
+                  <span className="text-sm font-bold text-gray-900 font-mono tabular-nums">
+                    {formatNumber(index.index_value, 2)}
+                  </span>
+                  <span className={`text-xs font-bold font-mono ${isUp ? 'text-green-600' : 'text-red-600'}`}>
+                    {isUp ? '▲' : '▼'} {isUp ? '+' : ''}{index.daily_change_percent.toFixed(2)}%
+                  </span>
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => navigate('/indices')}
+              className="shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-navy hover:underline cursor-pointer px-3 whitespace-nowrap"
+            >
+              Tous les indices
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         )}
 
@@ -480,7 +506,7 @@ export default function MarketsPageRefactored() {
               <select
                 value={selectedSector}
                 onChange={(e) => setSelectedSector(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer appearance-none"
+                className="w-full h-11 pl-10 pr-4 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent cursor-pointer appearance-none"
               >
                 <option value="all">Tous les secteurs</option>
                 {sectors.slice(1).map((sector) => (
@@ -495,7 +521,7 @@ export default function MarketsPageRefactored() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full md:w-48 px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+              className="w-full md:w-48 h-11 px-4 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent cursor-pointer"
             >
               <option value="name">Nom (A-Z)</option>
               <option value="change">Variation (%)</option>
@@ -507,17 +533,18 @@ export default function MarketsPageRefactored() {
           </div>
 
           {/* Advanced Filters Toggle + Compare button */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap mt-6">
             <Button
               id="screener-section"
               onClick={() => { setShowAdvancedFilters(!showAdvancedFilters); markScreenerUsed(); }}
-              variant="outline"
-              className="relative"
+              variant={showAdvancedFilters ? 'navy' : 'navyOutline'}
+              size="md"
+              className="h-12 gap-2"
             >
-              <Filter className="w-4 h-4 mr-2" />
+              <Filter className="w-4 h-4 shrink-0" />
               Filtres avancés
               {activeFiltersCount > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500 text-white rounded-full">
+                <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${showAdvancedFilters ? 'bg-white text-brand-navy' : 'bg-brand-navy text-white'}`}>
                   {activeFiltersCount}
                 </span>
               )}
@@ -526,20 +553,22 @@ export default function MarketsPageRefactored() {
               <Button
                 onClick={resetFilters}
                 variant="ghost"
-                className="text-gray-500 hover:text-gray-700"
+                size="md"
+                className="h-12"
               >
                 Réinitialiser
               </Button>
             )}
             <Button
               onClick={toggleComparison}
-              variant={showComparison ? 'primary' : 'outline'}
-              className="relative"
+              variant={showComparison ? 'orange' : 'navyOutline'}
+              size="md"
+              className="h-12 gap-2"
             >
-              <Scale className="w-4 h-4 mr-2" />
+              <Scale className="w-4 h-4 shrink-0" />
               Comparer
               {comparisonStocks.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 text-xs bg-white text-blue-600 rounded-full font-bold">
+                <span className={`px-2 py-0.5 text-xs rounded-full font-bold ${showComparison ? 'bg-white text-brand-orange-dark' : 'bg-brand-navy text-white'}`}>
                   {comparisonStocks.length}
                 </span>
               )}
@@ -649,7 +678,7 @@ export default function MarketsPageRefactored() {
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'list'
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-brand-navy text-white shadow-sm'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
@@ -661,7 +690,7 @@ export default function MarketsPageRefactored() {
               onClick={() => setViewMode('map')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'map'
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-brand-navy text-white shadow-sm'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
@@ -689,225 +718,97 @@ export default function MarketsPageRefactored() {
         )}
 
         {/* Tableau des actions (vue liste) */}
-        {viewMode === 'list' && <Card padding="none">
-          {stocks.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                {debouncedSearchTerm || selectedSector !== 'all'
-                  ? 'Aucune action trouvée avec ces critères.'
-                  : 'Aucune action disponible.'}
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto scrollbar-hide">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10 min-w-[120px] after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-200 md:after:hidden">
-                      Action
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Prix
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Variation
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Volume
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      Cap. Bours.
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 group relative">
-                        <span>P/E</span>
-                        <div className="relative hidden sm:block">
-                          <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                          <div className="invisible group-hover:visible absolute right-0 top-6 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
-                            <div className="font-semibold mb-1">Price to Earnings Ratio</div>
-                            <div className="text-gray-300">Ratio cours/bénéfice. Un P/E bas peut indiquer une action sous-évaluée. Typiquement entre 10-20.</div>
-                            <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </th>
-                    <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1 group relative">
-                        <span>Div. (%)</span>
-                        <div className="relative hidden sm:block">
-                          <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                          <div className="invisible group-hover:visible absolute right-0 top-6 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-lg z-50">
-                            <div className="font-semibold mb-1">Rendement du Dividende</div>
-                            <div className="text-gray-300">Pourcentage du prix de l'action versé en dividendes annuels. Un rendement élevé (5-10%) est attractif pour les investisseurs.</div>
-                            <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {stocks.map((stock) => (
-                    <tr
+        {/* Liste des actions — une ligne par societe, deux niveaux de lecture :
+            l'identite et le cours en premier, les ratios en second, en gris.
+            Le tableau a huit colonnes qu'elle remplace obligeait a faire defiler
+            la page horizontalement pour atteindre le P/E et le dividende. */}
+        {viewMode === 'list' && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            {stocks.length === 0 ? (
+              <div className="text-center py-16 px-4">
+                <p className="text-gray-500">
+                  {debouncedSearchTerm || selectedSector !== 'all'
+                    ? 'Aucune action trouvée avec ces critères.'
+                    : 'Aucune action disponible.'}
+                </p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {stocks.map((stock) => {
+                  const logo = getStockLogo(stock.symbol, stock.logo_url);
+                  const isUp = stock.daily_change_percent >= 0;
+
+                  return (
+                    <li
                       key={stock.id}
-                      className="cursor-pointer hover:bg-gray-50 transition-colors group/row"
+                      onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                      className="group flex items-center gap-4 sm:gap-5 px-4 sm:px-6 py-4 sm:py-5 cursor-pointer transition-colors duration-150 hover:bg-gray-50"
                     >
-                      {/* Compare + Watchlist buttons */}
-                      <td className="px-2 sm:px-4 py-3 sm:py-4">
-                        <div className="flex items-center gap-1 sm:gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isInComparison(stock)) {
-                                removeFromComparison(stock.id);
-                              } else {
-                                addToComparison(stock);
-                              }
-                            }}
-                            className="text-gray-400 hover:text-blue-600 transition-colors p-0.5"
-                            title={isInComparison(stock) ? "Retirer de la comparaison" : "Ajouter à la comparaison"}
-                          >
-                            {isInComparison(stock) ? (
-                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                            ) : (
-                              <PlusCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                            )}
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleWatchlist(stock.symbol);
-                            }}
-                            className="p-0.5 hover:scale-110 transition-transform"
-                          >
-                            <Star
-                              className={`w-4 h-4 sm:w-5 sm:h-5 ${watchlistTickers.has(stock.symbol)
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                                }`}
-                            />
-                          </button>
-                        </div>
-                      </td>
-
-                      {/* Info action - Sticky column */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 bg-white group-hover/row:bg-gray-50 z-10 min-w-[120px] after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-200 md:after:hidden"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        <div className="flex items-center gap-2">
-                          {/* Logo */}
-                          {(() => {
-                            const logo = getStockLogo(stock.symbol, stock.logo_url);
-                            return logo ? (
-                              <img src={logo} alt={stock.symbol} className="w-8 h-8 rounded object-contain bg-gray-50 border border-gray-100 flex-shrink-0" onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
-                            ) : (
-                              <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-400 flex-shrink-0">
-                                {stock.symbol.slice(0, 2)}
-                              </div>
-                            );
-                          })()}
-                          <div>
-                          <div className="font-bold text-gray-900 text-sm sm:text-base">{stock.symbol}</div>
-                          <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[100px] sm:max-w-xs">
-                            {stock.company_name}
-                          </div>
-                          {stock.sector && (
-                            <span className={`hidden sm:inline-block mt-1 px-2 py-0.5 text-xs rounded font-medium ${getSectorColor(stock.sector)}`}>
-                              {stock.sector}
-                            </span>
-                          )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Prix */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 text-right font-semibold text-sm sm:text-base whitespace-nowrap"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        {formatNumber(stock.current_price)} F
-                      </td>
-
-                      {/* Variation */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 text-right whitespace-nowrap"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        <span
-                          className={`font-semibold text-sm sm:text-base ${stock.daily_change_percent >= 0
-                            ? 'text-green-600'
-                            : 'text-red-600'
-                            }`}
+                      {/* Comparaison et watchlist — actions secondaires, donc
+                          discretes tant que la ligne n'est pas survolee. */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            isInComparison(stock) ? removeFromComparison(stock.id) : addToComparison(stock);
+                          }}
+                          className="p-1.5 text-gray-300 hover:text-brand-navy transition-colors cursor-pointer"
+                          title={isInComparison(stock) ? 'Retirer de la comparaison' : 'Ajouter à la comparaison'}
                         >
-                          {stock.daily_change_percent >= 0 ? '+' : ''}
-                          {stock.daily_change_percent.toFixed(2)}%
-                        </span>
-                      </td>
+                          {isInComparison(stock)
+                            ? <CheckCircle className="w-5 h-5 text-brand-navy" />
+                            : <PlusCircle className="w-5 h-5" />}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleToggleWatchlist(stock.symbol); }}
+                          className="p-1.5 cursor-pointer"
+                          title="Suivre cette action"
+                        >
+                          <Star
+                            className={`w-5 h-5 transition-colors ${watchlistTickers.has(stock.symbol)
+                              ? 'fill-brand-orange text-brand-orange'
+                              : 'text-gray-300 hover:text-brand-orange'}`}
+                          />
+                        </button>
+                      </div>
 
-                      {/* Volume */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        {formatNumber(stock.volume)}
-                      </td>
+                      {/* Logo */}
+                      <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shrink-0 p-1.5">
+                        {logo
+                          ? <img src={logo} alt="" className="w-full h-full object-contain" onError={e => ((e.target as HTMLImageElement).style.display = 'none')} />
+                          : <span className="text-xs font-bold text-gray-400">{stock.symbol.slice(0, 2)}</span>}
+                      </div>
 
-                      {/* Cap. Boursière */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        {formatNumber(stock.market_cap / 1000000)} M
-                      </td>
+                      {/* Identite + ratios */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-lg font-bold text-gray-900 font-mono tracking-tight group-hover:text-brand-navy transition-colors">
+                            {stock.symbol}
+                          </span>
+                          <span className="text-sm text-gray-500 truncate">{stock.company_name}</span>
+                        </div>
+                        {stock.sector && (
+                          <p className="text-xs text-gray-400 mt-1 truncate">{stock.sector}</p>
+                        )}
+                      </div>
 
-                      {/* P/E Ratio */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        {stock.fundamentals?.[0]?.pe_ratio ? formatNumber(stock.fundamentals[0].pe_ratio!, 2) : '-'}
-                      </td>
-
-                      {/* Dividend Yield */}
-                      <td
-                        className="px-3 sm:px-6 py-3 sm:py-4 text-right text-gray-600 text-sm whitespace-nowrap"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                      >
-                        {stock.fundamentals?.[0]?.dividend_yield ? `${formatNumber(stock.fundamentals[0].dividend_yield!, 2)}%` : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>}
-
-        {/* Stats rapides */}
-        <div className="mt-6 sm:mt-8 grid grid-cols-3 gap-3 sm:gap-6">
-          <Card>
-            <div className="text-center">
-              <p className="text-gray-600 text-xs sm:text-sm mb-1">Actions</p>
-              <p className="text-xl sm:text-3xl font-bold text-gray-900">{stocks.length}</p>
-            </div>
-          </Card>
-          <Card>
-            <div className="text-center">
-              <p className="text-gray-600 text-xs sm:text-sm mb-1">Secteurs</p>
-              <p className="text-xl sm:text-3xl font-bold text-gray-900">{sectors.length - 1}</p>
-            </div>
-          </Card>
-          <Card>
-            <div className="text-center">
-              <p className="text-gray-600 text-xs sm:text-sm mb-1">Watchlist</p>
-              <p className="text-xl sm:text-3xl font-bold text-gray-900">{watchlist.length}</p>
-            </div>
-          </Card>
-        </div>
+                      {/* Cours et variation */}
+                      <div className="text-right shrink-0">
+                        <p className="text-xl font-bold text-gray-900 font-mono tabular-nums leading-none">
+                          {formatNumber(stock.current_price)}
+                          <span className="text-sm font-semibold text-gray-400 ml-1.5">FCFA</span>
+                        </p>
+                        <p className={`text-sm font-bold font-mono mt-1.5 ${isUp ? 'text-green-600' : 'text-red-600'}`}>
+                          {isUp ? '▲' : '▼'} {isUp ? '+' : ''}{stock.daily_change_percent.toFixed(2)}%
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

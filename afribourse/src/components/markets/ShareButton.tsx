@@ -33,7 +33,7 @@ export default function ShareButton({ stockIds }: ShareButtonProps) {
         <button
             onClick={copyToClipboard}
             disabled={stockIds.length === 0}
-            className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors ${copied
+            className={`flex items-center gap-1.5 px-3 h-9 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${copied
                     ? 'bg-green-100 text-green-700'
                     : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}

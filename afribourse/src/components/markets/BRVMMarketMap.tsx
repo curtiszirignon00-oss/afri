@@ -147,13 +147,13 @@ function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
         top: mouseY - 20,
         zIndex: 9999,
         pointerEvents: 'none',
-        background: 'rgba(10,14,23,0.97)',
+        background: '#fff',
         border: `1px solid ${sectorColor}55`,
         borderRadius: 12,
         padding: '14px 18px',
         minWidth: 230,
         backdropFilter: 'blur(12px)',
-        boxShadow: `0 0 30px ${sectorColor}33, 0 8px 32px rgba(0,0,0,0.6)`,
+        boxShadow: `0 8px 24px rgba(15,29,42,0.12)`,
         fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
       }}
     >
@@ -164,7 +164,7 @@ function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
             <img
               src={logo}
               alt={stock.symbol}
-              style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'contain', background: 'rgba(255,255,255,0.08)' }}
+              style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'contain', background: '#F7F7F8', border: '1px solid #E9EBED' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           ) : (
@@ -180,21 +180,21 @@ function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
           );
         })()}
         <div>
-          <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 14 }}>{stock.symbol}</div>
-          <div style={{ color: '#64748b', fontSize: 10 }}>{stock.company_name}</div>
+          <div style={{ color: '#182D3E', fontWeight: 700, fontSize: 14 }}>{stock.symbol}</div>
+          <div style={{ color: '#7C95AB', fontSize: 10 }}>{stock.company_name}</div>
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
-        <TooltipStat label="Prix"        value={formatPrice(stock.current_price)}        color="#f1f5f9" />
+        <TooltipStat label="Prix"        value={formatPrice(stock.current_price)}        color="#182D3E" />
         <TooltipStat
           label={`Var. ${periodLabel}`}
           value={formatChange(displayChange)}
           color={displayChange >= 0 ? '#22c55e' : '#ef4444'}
         />
         {stock.market_cap ? (
-          <TooltipStat label="Cap. Boursière" value={formatMarketCap(stock.market_cap)} color="#94a3b8" />
+          <TooltipStat label="Cap. Boursière" value={formatMarketCap(stock.market_cap)} color="#537593" />
         ) : null}
-        <TooltipStat label="Volume" value={(stock.volume || 0).toLocaleString('fr-FR')} color="#94a3b8" />
+        <TooltipStat label="Volume" value={(stock.volume || 0).toLocaleString('fr-FR')} color="#537593" />
         {stock.sector && (
           <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
             <span style={{
@@ -369,7 +369,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
       if (!ctx) { URL.revokeObjectURL(svgUrl); resolve(null); return; }
 
       // Fond global
-      ctx.fillStyle = '#070b14';
+      ctx.fillStyle = '#F7F7F8';
       ctx.fillRect(0, 0, CW, CH);
 
       const img = new Image();
@@ -379,26 +379,26 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
         URL.revokeObjectURL(svgUrl);
 
         // ─ Footer branding ─
-        ctx.fillStyle = '#0d1220';
+        ctx.fillStyle = '#fff';
         ctx.fillRect(0, CH - 70, CW, 70);
 
         // Séparateur
-        ctx.fillStyle = 'rgba(255,255,255,0.07)';
+        ctx.fillStyle = 'rgba(15,29,42,0.06)';
         ctx.fillRect(0, CH - 70, CW, 1);
 
         // Logo AfriBourse (point vert + texte)
         ctx.beginPath();
         ctx.arc(24, CH - 35, 5, 0, Math.PI * 2);
-        ctx.fillStyle = '#22c55e';
+        ctx.fillStyle = '#EE7B23';
         ctx.fill();
 
         ctx.font      = 'bold 14px monospace';
-        ctx.fillStyle = '#f1f5f9';
+        ctx.fillStyle = '#12395E';
         ctx.textAlign = 'left';
         ctx.fillText('AfriBourse', 36, CH - 29);
 
         ctx.font      = '11px monospace';
-        ctx.fillStyle = '#475569';
+        ctx.fillStyle = '#7C95AB';
         ctx.fillText('BRVM Market Map • afribourse.com', 36, CH - 13);
 
         // Badge variation à droite
@@ -409,7 +409,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
         ctx.fillText(badge, CW - 20, CH - 29);
 
         ctx.font      = '10px monospace';
-        ctx.fillStyle = '#334155';
+        ctx.fillStyle = '#537593';
         ctx.fillText(
           new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
           CW - 20, CH - 13
@@ -490,7 +490,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   if (loading || periodLoading) {
     return (
       <div style={{
-        background: '#070b14', borderRadius: 12, padding: 40,
+        background: '#fff', border: '1px solid #E9EBED', borderRadius: 16, padding: 40,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
         color: '#475569', fontFamily: "'IBM Plex Mono', monospace", minHeight: 400,
       }}>
@@ -504,7 +504,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   if (!filteredStocks.length) {
     return (
       <div style={{
-        background: '#070b14', borderRadius: 12, padding: 40,
+        background: '#fff', border: '1px solid #E9EBED', borderRadius: 16, padding: 40,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#475569', fontFamily: "'IBM Plex Mono', monospace", minHeight: 300, fontSize: 13,
       }}>
@@ -515,39 +515,40 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ background: '#070b14', borderRadius: 12, fontFamily: "'IBM Plex Mono','Courier New',monospace", color: '#f1f5f9', padding: '20px 16px' }}>
+    <div style={{ background: '#fff', border: '1px solid #E9EBED', borderRadius: 16, boxShadow: '0 1px 2px rgba(15,29,42,0.05)', fontFamily: "'IBM Plex Mono','Courier New',monospace", color: '#182D3E', padding: '20px 16px' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap');
         .mm-cell { cursor: pointer; }
         .mm-cell:hover { filter: brightness(1.28); }
         .mm-filter-btn {
-          background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-          color: #94a3b8; padding: 4px 12px; border-radius: 6px; cursor: pointer;
+          background: #fff; border: 1px solid #E9EBED;
+          color: #537593; padding: 4px 12px; border-radius: 6px; cursor: pointer;
           font-size: 11px; font-family: inherit; transition: all 0.2s; white-space: nowrap;
         }
-        .mm-filter-btn:hover { border-color: rgba(255,255,255,0.25); color: #f1f5f9; }
-        .mm-filter-btn.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); color: #f1f5f9; }
+        .mm-filter-btn:hover { border-color: #ACB8C3; color: #12395E; }
+        .mm-filter-btn.active { background: #12395E; border-color: #12395E; color: #fff; }
         .mm-mode-btn {
-          background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #64748b;
+          background: #fff; border: 1px solid #E9EBED; color: #537593;
           padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 10px;
           font-family: inherit; transition: all 0.2s;
         }
-        .mm-mode-btn.active { border-color: #0ea5e9; color: #0ea5e9; background: rgba(14,165,233,0.08); }
+        .mm-mode-btn:hover { border-color: #ACB8C3; color: #12395E; }
+        .mm-mode-btn.active { border-color: #12395E; color: #12395E; background: rgba(18,57,94,0.06); }
         .mm-action-btn {
           display: flex; align-items: center; gap: 5px;
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-          color: #94a3b8; padding: 4px 11px; border-radius: 5px; cursor: pointer;
+          background: #fff; border: 1px solid #E9EBED;
+          color: #537593; padding: 4px 11px; border-radius: 5px; cursor: pointer;
           font-size: 10px; font-family: inherit; transition: all 0.2s; white-space: nowrap;
         }
-        .mm-action-btn:hover { border-color: rgba(255,255,255,0.22); color: #e2e8f0; background: rgba(255,255,255,0.08); }
+        .mm-action-btn:hover { border-color: #ACB8C3; color: #12395E; background: #F7F7F8; }
         .mm-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .mm-share-item {
           display: flex; align-items: center; gap: 10px; width: 100%;
-          padding: 9px 14px; background: transparent; border: none; color: #cbd5e1;
+          padding: 9px 14px; background: transparent; border: none; color: #253F56;
           font-size: 12px; font-family: inherit; cursor: pointer; transition: background 0.15s;
           text-align: left; border-radius: 6px;
         }
-        .mm-share-item:hover { background: rgba(255,255,255,0.06); color: #f1f5f9; }
+        .mm-share-item:hover { background: #F7F7F8; color: #12395E; }
         .mm-share-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
       `}</style>
 
@@ -556,11 +557,10 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <span style={{
-              fontFamily: "'Bebas Neue','Impact',sans-serif", fontSize: 26, letterSpacing: 3,
-              background: 'linear-gradient(135deg,#22c55e,#0ea5e9)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              fontFamily: "'IBM Plex Sans',system-ui,sans-serif", fontSize: 20, fontWeight: 700,
+              letterSpacing: 0, color: '#12395E',
             }}>
-              BRVM MARKET MAP
+              Carte du marché
             </span>
             <span style={{
               background: marketChange >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
@@ -571,7 +571,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
               {formatChange(marketChange)}
             </span>
           </div>
-          <div style={{ color: '#475569', fontSize: 10, marginTop: 4, letterSpacing: 1 }}>
+          <div style={{ color: '#7C95AB', fontSize: 10, marginTop: 4, letterSpacing: 1 }}>
             BRVM • {filteredStocks.length} TITRES •{' '}
             {period === '1D'
               ? new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
@@ -595,7 +595,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           </div>
 
           {/* Séparateur */}
-          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
+          <div style={{ width: 1, height: 20, background: '#E9EBED' }} />
 
           {/* Mode couleur */}
           <div style={{ display: 'flex', gap: 5 }}>
@@ -608,7 +608,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           </div>
 
           {/* Séparateur */}
-          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
+          <div style={{ width: 1, height: 20, background: '#E9EBED' }} />
 
           {/* Télécharger */}
           <button
@@ -637,14 +637,14 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             {showShare && (
               <div style={{
                 position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                background: '#0d1220', border: '1px solid rgba(255,255,255,0.1)',
+                background: '#fff', border: '1px solid #E9EBED',
                 borderRadius: 10, padding: 6, minWidth: 210, zIndex: 1000,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
               }}>
                 {/* Flèche */}
                 <div style={{
                   position: 'absolute', top: -5, right: 14, width: 10, height: 10,
-                  background: '#0d1220', border: '1px solid rgba(255,255,255,0.1)',
+                  background: '#fff', border: '1px solid #E9EBED',
                   borderRight: 'none', borderBottom: 'none',
                   transform: 'rotate(45deg)',
                 }} />
@@ -652,14 +652,16 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
                 {/* Web Share API (mobile/navigateur compatible) */}
                 {(typeof navigator.share === 'function' || typeof navigator.canShare === 'function') && (
                   <button className="mm-share-item" onClick={handleNativeShare}>
-                    <span className="mm-share-icon" style={{ background: 'rgba(14,165,233,0.15)' }}>📤</span>
+                    <span className="mm-share-icon" style={{ background: '#F7F7F8' }}>
+                      <Share2 style={{ width: 13, height: 13, color: '#537593' }} />
+                    </span>
                     <span>Partager via…</span>
                   </button>
                 )}
 
                 {/* Twitter / X */}
                 <button className="mm-share-item" onClick={handleTwitter}>
-                  <span className="mm-share-icon" style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span className="mm-share-icon" style={{ background: '#182D3E' }}>
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="white">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
                     </svg>
@@ -688,12 +690,12 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
                 </button>
 
                 {/* Séparateur */}
-                <div style={{ height: 1, background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
+                <div style={{ height: 1, background: '#E9EBED', margin: '4px 0' }} />
 
                 {/* Copier le lien */}
                 <button className="mm-share-item" onClick={handleCopyLink}>
-                  <span className="mm-share-icon" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <Copy style={{ width: 13, height: 13, color: '#94a3b8' }} />
+                  <span className="mm-share-icon" style={{ background: '#F7F7F8' }}>
+                    <Copy style={{ width: 13, height: 13, color: '#537593' }} />
                   </span>
                   <span>Copier le lien</span>
                 </button>
@@ -724,14 +726,14 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
 
       {/* ── Treemap SVG ── */}
       <div
-        style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #E9EBED' }}
         onMouseMove={handleMouseMove}
       >
         <svg
           ref={svgRef}
           viewBox={`0 0 ${W} ${H}`}
           width="100%"
-          style={{ display: 'block', background: '#0a0e17' }}
+          style={{ display: 'block', background: '#F7F7F8' }}
         >
           {cells.map((cell) => {
             const { stock, x, y, width: cw, height: ch } = cell;

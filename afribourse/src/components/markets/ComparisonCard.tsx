@@ -155,10 +155,10 @@ export default function ComparisonCard({ stock, onRemove, isBest = {}, isWorst =
             {/* Action Button */}
             <Button
                 onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                variant="outline"
-                className="w-full text-sm hover:bg-blue-50 hover:border-blue-400 transition-colors"
+                variant="navyOutline"
+                className="w-full h-10 text-sm gap-1.5"
             >
-                <ExternalLink className="w-3 h-3 mr-1" />
+                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 Voir détails
             </Button>
         </div>

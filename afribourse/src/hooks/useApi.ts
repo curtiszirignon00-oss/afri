@@ -177,12 +177,14 @@ export interface Transaction {
 }
 
 // Hook pour récupérer le portfolio de l'utilisateur
-export function usePortfolio() {
+export function usePortfolio(enabled = true) {
   return useQuery({
     queryKey: ['portfolio'],
     queryFn: () => apiFetch<Portfolio>('/portfolios/my'),
     retry: false,
     staleTime: 2 * 60 * 1000,
+    // Sans compte connecte la route repond 401 : inutile de l'appeler.
+    enabled,
   });
 }
 

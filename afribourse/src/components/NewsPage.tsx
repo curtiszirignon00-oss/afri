@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X, Search } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X, Search, LineChart, Globe, Mic, FileText, Coins } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
@@ -22,6 +22,18 @@ import { useAuth } from '../contexts/AuthContext';
 
 // Nombre d'articles visibles pour un visiteur non connecté avant le mur d'inscription
 const FREE_PREVIEW_LIMIT = 6;
+
+// Icone de chaque categorie, pour la barre de filtres.
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  all:        Newspaper,
+  marches:    LineChart,
+  analyse:    BarChart2,
+  economie:   Globe,
+  interview:  Mic,
+  resultats:  FileText,
+  dividendes: Coins,
+};
+
 
 // Marque une vue (dédup par session via localStorage)
 function trackArticleView(articleId: string) {
@@ -324,50 +336,86 @@ export default function NewsPage() {
           ]
         })}</script>
       </Helmet>
+      {/* En-tete — meme sequence que la page Learn : titre, chapeau, bouton,
+          encart d'avertissement, puis la barre de categories. */}
+      <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
+          Actualités Financières
+        </h1>
+        <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed mb-5">
+          L'essentiel de l'information boursière de l'UEMOA : résultats d'entreprises,
+          dividendes, analyses sectorielles et actualités macroéconomiques.
+        </p>
+        <button
+          onClick={() => navigate('/markets')}
+          className="inline-flex items-center gap-2 h-14 bg-gradient-to-r from-brand-navy to-[#173F66] hover:from-brand-navy-hover hover:to-brand-navy-hover text-white font-bold text-sm px-7 rounded-xl shadow-md transition-all cursor-pointer"
+        >
+          <BarChart2 className="w-4 h-4 shrink-0" />
+          Voir les cours de la BRVM
+        </button>
+      </div>
 
-      {/* Banner nouvelles analyses */}
-      {bannerVisible && newBrvmCount > 0 && (
-        <div className="flex items-center justify-between bg-[#00D4A8]/10 border border-[#00D4A8]/40 rounded-xl px-4 py-3 mb-5">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D4A8] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00D4A8]" />
-            </span>
-            <span className="text-sm font-semibold text-[#007A72]">
-              {newBrvmCount} nouvelle{newBrvmCount > 1 ? 's' : ''} analyse{newBrvmCount > 1 ? 's' : ''} publiée{newBrvmCount > 1 ? 's' : ''}
-            </span>
-            <span className="text-xs text-slate-400 hidden sm:inline">— défiler vers les analyses BRVM</span>
+      {/* Encart orange — meme carte que celle de Learn. Deux etats : nouvelles
+          analyses publiees, ou invitation a se connecter. */}
+      {bannerVisible && newBrvmCount > 0 ? (
+        <div className="max-w-2xl mx-auto bg-white border-2 border-brand-orange rounded-2xl p-6 mb-8 shadow-sm">
+          <div className="flex items-start space-x-4">
+            <Newspaper className="w-6 h-6 text-brand-orange flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900 mb-1">
+                {newBrvmCount} nouvelle{newBrvmCount > 1 ? 's' : ''} analyse{newBrvmCount > 1 ? 's' : ''} publiée{newBrvmCount > 1 ? 's' : ''}
+              </p>
+              <p className="text-gray-600 text-sm">
+                Faites défiler jusqu'aux analyses BRVM pour les découvrir.
+              </p>
+            </div>
+            <button
+              onClick={() => setBannerVisible(false)}
+              className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
+              aria-label="Fermer"
+            >
+              <X size={16} />
+            </button>
           </div>
-          <button
-            onClick={() => setBannerVisible(false)}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors"
-            aria-label="Fermer"
-          >
-            <X size={14} />
-          </button>
+        </div>
+      ) : gated && (
+        <div className="max-w-2xl mx-auto bg-white border-2 border-brand-orange rounded-2xl p-6 mb-8 shadow-sm">
+          <div className="flex items-start space-x-4">
+            <Newspaper className="w-6 h-6 text-brand-orange flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-gray-900 mb-1">
+                Connectez-vous pour tout lire
+              </p>
+              <p className="text-gray-600 text-sm">
+                Créez un compte gratuit pour accéder à l'ensemble des articles, aux analyses
+                BRVM et aux résultats d'entreprises.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Header + category tabs */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Actualités Financières</h1>
-          <p className="text-slate-500 mt-1">L'essentiel de l'information boursière de l'UEMOA.</p>
-        </div>
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide whitespace-nowrap transition-colors ${
-                selectedCategory === cat
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              {cat === 'all' ? 'TOUT' : getCategoryLabel(cat).toUpperCase()}
-            </button>
-          ))}
+      {/* Categories — memes cellules que les themes de la page Learn : icone au
+          dessus, libelle en dessous, largeur egale sur une grille. */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-8">
+        <div className="flex md:grid md:grid-cols-7 gap-2 sm:gap-3 overflow-x-auto md:overflow-visible scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
+          {categories.map(cat => {
+            const Icon = CATEGORY_ICONS[cat] ?? Newspaper;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`flex flex-col items-center justify-center gap-1.5 px-3 py-3 rounded-xl font-semibold text-xs text-center transition-colors duration-200 flex-shrink-0 md:flex-shrink snap-start min-w-[92px] md:min-w-0 ${
+                  selectedCategory === cat
+                    ? 'bg-gradient-to-r from-brand-navy to-[#173F66] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                <span className="leading-tight">{cat === 'all' ? 'Tout' : getCategoryLabel(cat)}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

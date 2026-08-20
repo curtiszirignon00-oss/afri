@@ -27,7 +27,12 @@ import {
     Share2,
     Crown,
     FileText,
-    ExternalLink
+    ExternalLink,
+    ArrowRight,
+    Briefcase,
+    Flame,
+    Lightbulb,
+    Video
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -103,19 +108,19 @@ function ModuleContent({ module, onComplete }: {
 
     return (
         <div className="text-center py-12 px-6">
-            <BookOpen className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-            <p className="text-slate-500 text-lg">Contenu du module en préparation...</p>
+            <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500 text-lg">Contenu du module en préparation...</p>
         </div>
     );
 }
 
 const CATEGORIES = [
-    { id: 'all',          label: '📚 Tous' },
-    { id: 'psychologie',  label: '🧠 Psychologie' },
-    { id: 'fondamentale', label: '📊 Analyse Fondamentale' },
-    { id: 'technique',    label: '📈 Analyse Technique' },
-    { id: 'portefeuille', label: '🏗️ Portefeuille' },
-    { id: 'brvm',         label: '🎯 Connaissance BRVM' },
+    { id: 'all',          label: 'Tous',                 icon: BookOpen },
+    { id: 'psychologie',  label: 'Psychologie',          icon: Brain },
+    { id: 'fondamentale', label: 'Analyse Fondamentale', icon: BarChart3 },
+    { id: 'technique',    label: 'Analyse Technique',    icon: TrendingUp },
+    { id: 'portefeuille', label: 'Portefeuille',         icon: Briefcase },
+    { id: 'brvm',         label: 'Connaissance BRVM',    icon: Target },
 ] as const;
 
 const CATEGORY_FILTERS: Record<string, number[]> = {
@@ -243,11 +248,15 @@ export default function LearnPage() {
     }, []);
 
     // --- Fonctions Helper ---
+    // Les trois niveaux forment une progression, pas trois categories : ils sont
+    // donc rendus dans une seule teinte, celle du logo, du bleu le plus clair au
+    // navy plein. Le vert / orange / rouge d'avant se lisait comme un code
+    // d'alerte, et deux de ces trois teintes n'appartiennent pas a la charte.
     const getDifficultyColor = (level: string): string => {
         switch (level) {
-            case 'debutant': return 'bg-green-100 text-green-700 border-green-200';
-            case 'intermediaire': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-            case 'avance': return 'bg-red-100 text-red-700 border-red-200';
+            case 'debutant': return 'bg-ink-50 text-brand-navy border-ink-200';
+            case 'intermediaire': return 'bg-ink-200 text-brand-navy border-ink-300';
+            case 'avance': return 'bg-brand-navy text-white border-brand-navy';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
@@ -524,7 +533,7 @@ export default function LearnPage() {
             );
 
             if (result.passed) {
-                toast.success(`🎉 Quiz réussi ! Score: ${result.score}%`, { id: toastId });
+                toast.success(`Quiz réussi ! Score: ${result.score}%`, { id: toastId, icon: <Award className="w-5 h-5 text-brand-orange" /> });
                 confetti({
                     particleCount: 150,
                     spread: 70,
@@ -580,7 +589,7 @@ export default function LearnPage() {
                         <div style={{ opacity: t.visible ? 1 : 0, transition: 'opacity 0.3s', pointerEvents: 'all' }}
                             className="bg-white rounded-2xl shadow-2xl border border-teal-100 p-4 max-w-xs w-full">
                             <div className="flex items-start gap-3">
-                                <span className="text-2xl flex-shrink-0">🔥</span>
+                                <Flame className="w-6 h-6 shrink-0 text-brand-orange" />
                                 <div className="flex-1 min-w-0">
                                     <p className="font-bold text-gray-900 text-sm leading-snug">Tu as la finance dans le sang !</p>
                                     <p className="text-xs text-gray-500 mt-1 leading-relaxed">Le savoir c'est bien, le terrain c'est mieux. Place ton premier ordre simulé et regarde ton portefeuille prendre vie.</p>
@@ -702,7 +711,7 @@ export default function LearnPage() {
         });
 
         // 2. Feedbacks visuels immédiats (avant l'appel réseau)
-        toast.success('Module terminé avec succès ! 🎉');
+        toast.success('Module terminé avec succès !', { icon: <CheckCircle className="w-5 h-5 text-green-600" /> });
         showXPGainToast({ xpGained: 200, bonusXP: undefined, newAchievements: [], levelUp: undefined });
 
         const completedModules = previousProgress.filter(p => p.is_completed).length;
@@ -714,7 +723,7 @@ export default function LearnPage() {
         if (onboardingRef.current.isActive && !onboardingRef.current.steps.cours) {
             onboardingRef.current.completeStep('cours');
             setTimeout(() => {
-                toast('🎯 Bien joué ! Teste maintenant tes connaissances avec le quiz.', { duration: 5000 });
+                toast('Bien joué ! Teste maintenant tes connaissances avec le quiz.', { duration: 5000, icon: <Target className="w-5 h-5 text-brand-navy" /> });
             }, 800);
         }
 
@@ -801,11 +810,11 @@ export default function LearnPage() {
         const hasProfileQuiz = PROFILE_QUIZ_SLUGS.includes(selectedModule.slug);
 
         return (
-            <div className="min-h-screen bg-slate-50 overflow-x-hidden">
+            <div className="min-h-screen bg-gray-50 overflow-x-hidden">
                 {/* Header immersif */}
-                <div className="bg-slate-900 text-white pt-6 sm:pt-8 pb-12 sm:pb-16 px-4 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2" />
+                <div className="bg-gray-900 text-white pt-6 sm:pt-8 pb-12 sm:pb-16 px-4 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-brand-navy rounded-full mix-blend-multiply filter blur-3xl opacity-25 -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-gray-600 rounded-full mix-blend-multiply filter blur-3xl opacity-25 translate-y-1/2 -translate-x-1/2" />
 
                     <div className="max-w-4xl mx-auto relative z-10">
                         <button
@@ -824,30 +833,30 @@ export default function LearnPage() {
                                     setIsAudioPlaying(false);
                                 }
                             }}
-                            className="flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors text-sm font-medium group"
+                            className="flex items-center gap-2 text-gray-300 hover:text-white mb-6 transition-colors text-sm font-medium group"
                         >
                             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                             Retour aux modules
                         </button>
 
                         <div className="flex flex-wrap items-center gap-3 mb-4">
-                            <span className="bg-blue-500/20 text-blue-200 border border-blue-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                            <span className="bg-brand-navy/20 text-ink-200 border border-brand-navy/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
                                 Module {selectedModule.order_index ?? 0}
                             </span>
-                            <span className="text-slate-400 text-sm">•</span>
-                            <span className="text-slate-400 text-sm flex items-center gap-1">
+                            <span className="text-gray-400 text-sm">•</span>
+                            <span className="text-gray-400 text-sm flex items-center gap-1">
                                 <Clock className="w-4 h-4" />
                                 {selectedModule.duration_minutes || '15'} min
                             </span>
-                            <span className="text-slate-400 text-sm">•</span>
-                            <span className="text-slate-400 text-sm flex items-center gap-1">
+                            <span className="text-gray-400 text-sm">•</span>
+                            <span className="text-gray-400 text-sm flex items-center gap-1">
                                 <BarChart3 className="w-4 h-4" />
                                 {getDifficultyLabel(selectedModule.difficulty_level)}
                             </span>
                             {hasQuiz && (
                                 <>
-                                    <span className="text-slate-400 text-sm">•</span>
-                                    <span className="text-slate-400 text-sm flex items-center gap-1">
+                                    <span className="text-gray-400 text-sm">•</span>
+                                    <span className="text-gray-400 text-sm flex items-center gap-1">
                                         <Brain className="w-4 h-4" />
                                         Quiz inclus
                                     </span>
@@ -855,8 +864,8 @@ export default function LearnPage() {
                             )}
                             {isCompleted && (
                                 <>
-                                    <span className="text-slate-400 text-sm">•</span>
-                                    <span className="text-green-400 text-sm flex items-center gap-1">
+                                    <span className="text-gray-400 text-sm">•</span>
+                                    <span className="text-ink-200 text-sm flex items-center gap-1">
                                         <CheckCircle className="w-4 h-4" />
                                         Terminé
                                     </span>
@@ -867,7 +876,7 @@ export default function LearnPage() {
                         <h1 className="text-xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
                             {selectedModule.title}
                         </h1>
-                        <p className="text-slate-300 text-sm sm:text-lg leading-relaxed max-w-2xl">
+                        <p className="text-gray-300 text-sm sm:text-lg leading-relaxed max-w-2xl">
                             {selectedModule.description}
                         </p>
                     </div>
@@ -875,13 +884,13 @@ export default function LearnPage() {
 
                 {/* Contenu principal */}
                 <div className="max-w-4xl mx-auto px-2 sm:px-6 lg:px-8 -mt-8 relative z-20 pb-24">
-                    <article className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden max-w-full">
+                    <article className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden max-w-full">
 
                         {/* Progress bar de lecture */}
                         <div className="sticky top-0 z-30 bg-white">
-                            <div className="h-1.5 w-full bg-slate-100">
+                            <div className="h-1.5 w-full bg-gray-100">
                                 <div
-                                    className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-300 ease-out"
+                                    className="h-full bg-gradient-to-r from-gray-900 to-brand-navy transition-all duration-300 ease-out"
                                     style={{ width: `${readingProgress}%` }}
                                 />
                             </div>
@@ -889,14 +898,14 @@ export default function LearnPage() {
 
                         {/* Barre de progression quiz */}
                         {moduleProgress?.quiz_score !== null && moduleProgress?.quiz_score !== undefined && (
-                            <div className="bg-slate-50 px-4 sm:px-8 py-3 sm:py-4 border-b border-slate-100">
+                            <div className="bg-gray-50 px-4 sm:px-8 py-3 sm:py-4 border-b border-gray-100">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-slate-700">Meilleur score au quiz</span>
+                                    <span className="text-sm font-medium text-gray-700">Meilleur score au quiz</span>
                                     <span className={`text-lg font-bold ${moduleProgress.quiz_score >= 70 ? 'text-green-600' : 'text-red-600'}`}>
                                         {moduleProgress.quiz_score}%
                                     </span>
                                 </div>
-                                <div className="w-full bg-slate-200 rounded-full h-2">
+                                <div className="w-full bg-gray-200 rounded-full h-2">
                                     <div
                                         className={`h-2 rounded-full transition-all duration-500 ${moduleProgress.quiz_score >= 70 ? 'bg-green-500' : 'bg-red-500'
                                             }`}
@@ -920,9 +929,9 @@ export default function LearnPage() {
                                 {(selectedModule.attachment_url || selectedModule.dashboard_url) && (() => {
                                     const backendBase = API_BASE_URL.replace(/\/api$/, '');
                                     return (
-                                        <div className="mt-8 mx-4 sm:mx-8 mb-4 p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl">
-                                            <h3 className="text-base font-semibold text-amber-900 mb-4 flex items-center gap-2">
-                                                <Star className="w-5 h-5 text-amber-500" />
+                                        <div className="mt-8 mx-4 sm:mx-8 mb-4 p-6 bg-gradient-to-br from-orange-50 to-orange-50 border border-orange-200 rounded-2xl">
+                                            <h3 className="text-base font-semibold text-brand-orange-dark mb-4 flex items-center gap-2">
+                                                <Star className="w-5 h-5 text-brand-orange" />
                                                 Ressources exclusives – Étude de cas
                                             </h3>
                                             <div className="flex flex-col sm:flex-row gap-3">
@@ -931,9 +940,9 @@ export default function LearnPage() {
                                                         href={`${backendBase}${selectedModule.attachment_url}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-2 px-5 py-3 bg-white border border-amber-300 text-amber-800 rounded-xl font-medium hover:bg-amber-50 transition-all shadow-sm hover:shadow-md"
+                                                        className="inline-flex items-center gap-2 px-5 py-3 bg-white border border-orange-300 text-brand-orange-dark rounded-xl font-medium hover:bg-orange-50 transition-all shadow-sm hover:shadow-md"
                                                     >
-                                                        <FileText className="w-5 h-5 text-amber-600" />
+                                                        <FileText className="w-5 h-5 text-brand-orange" />
                                                         Rapport d'analyse UNIWAX 2026
                                                     </a>
                                                 )}
@@ -942,7 +951,7 @@ export default function LearnPage() {
                                                         href={selectedModule.dashboard_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-2 px-5 py-3 bg-amber-600 text-white rounded-xl font-medium hover:bg-amber-700 transition-all shadow-sm hover:shadow-md"
+                                                        className="inline-flex items-center gap-2 px-5 py-3 bg-brand-orange text-white rounded-xl font-medium hover:bg-brand-orange-dark transition-all shadow-sm hover:shadow-md"
                                                     >
                                                         <ExternalLink className="w-5 h-5" />
                                                         Dashboard Analytique
@@ -957,13 +966,13 @@ export default function LearnPage() {
 
                         {/* Navigation Slides - Cachée pendant le quiz */}
                         {totalSlides > 1 && !quizState.isActive && !quizState.showResults && (
-                            <div className="sticky bottom-0 bg-white border-t border-slate-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-lg">
+                            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-lg">
                                 <button
                                     onClick={() => setCurrentSlide(prev => Math.max(1, prev - 1))}
                                     disabled={currentSlide === 1}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${currentSlide === 1
-                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
                                 >
                                     <ChevronLeft className="w-5 h-5" />
@@ -971,7 +980,7 @@ export default function LearnPage() {
                                 </button>
 
                                 <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium text-slate-600">
+                                    <span className="text-sm font-medium text-gray-600">
                                         {currentSlide} / {totalSlides}
                                     </span>
                                     <div className="hidden sm:flex items-center gap-1">
@@ -980,8 +989,8 @@ export default function LearnPage() {
                                                 key={i}
                                                 onClick={() => setCurrentSlide(i + 1)}
                                                 className={`w-2.5 h-2.5 rounded-full transition-all ${currentSlide === i + 1
-                                                    ? 'bg-blue-600 w-6'
-                                                    : 'bg-slate-300 hover:bg-slate-400'
+                                                    ? 'bg-brand-navy w-6'
+                                                    : 'bg-gray-300 hover:bg-gray-400'
                                                     }`}
                                             />
                                         ))}
@@ -992,8 +1001,8 @@ export default function LearnPage() {
                                     onClick={() => setCurrentSlide(prev => Math.min(totalSlides, prev + 1))}
                                     disabled={currentSlide === totalSlides}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${currentSlide === totalSlides
-                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-gray-900 text-white hover:bg-black'
                                         }`}
                                 >
                                     <span className="hidden sm:inline">Suivant</span>
@@ -1004,18 +1013,18 @@ export default function LearnPage() {
 
                         {/* Section Quiz */}
                         {hasQuiz && (!isCompleted || quizState.showResults) && (
-                            <div className="px-4 sm:px-8 py-6 sm:py-10 bg-gradient-to-br from-indigo-50 to-purple-50 border-t-4 border-indigo-500">
+                            <div className="px-4 sm:px-8 py-6 sm:py-10 bg-gray-50 border-t-2 border-brand-navy">
                                 <div className="max-w-3xl mx-auto">
                                     {!quizState.isActive && !quizState.showResults && (
                                         <div className="text-center">
                                             {quizLoading ? (
                                                 <div className="py-12">
-                                                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
+                                                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-brand-navy border-t-transparent mx-auto mb-4"></div>
                                                     <p className="text-gray-600">Chargement du quiz...</p>
                                                 </div>
                                             ) : quizQuestions.length > 0 ? (
                                                 <>
-                                                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mb-6 shadow-lg">
+                                                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-900 rounded-full mb-6 shadow-lg">
                                                         <Brain className="w-10 h-10 text-white" />
                                                     </div>
                                                     <h3 className="text-2xl font-bold text-gray-900 mb-3">
@@ -1026,7 +1035,7 @@ export default function LearnPage() {
                                                     </p>
                                                     <button
                                                         onClick={startQuiz}
-                                                        className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                                        className="inline-flex items-center space-x-3 px-8 py-4 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-semibold text-lg shadow-lg hover:shadow-xl"
                                                     >
                                                         <Brain className="w-6 h-6" />
                                                         <span>Commencer le quiz</span>
@@ -1045,19 +1054,19 @@ export default function LearnPage() {
                                     {(() => {
                                         const currentIndex = Object.keys(quizState.answers).length;
                                         return quizState.isActive && currentIndex < quizQuestions.length && (
-                                            <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border-2 border-indigo-200">
+                                            <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border-2 border-ink-200">
                                                 <div className="mb-6">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <span className="text-sm font-medium text-gray-600">
                                                             Question {currentIndex + 1} sur {quizQuestions.length}
                                                         </span>
-                                                        <span className="text-sm font-medium text-indigo-600">
+                                                        <span className="text-sm font-medium text-brand-navy">
                                                             {Math.round((currentIndex / quizQuestions.length) * 100)}% complété
                                                         </span>
                                                     </div>
                                                     <div className="w-full bg-gray-200 rounded-full h-2">
                                                         <div
-                                                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                                                            className="bg-brand-navy h-2 rounded-full transition-all duration-300"
                                                             style={{ width: `${(currentIndex / quizQuestions.length) * 100}%` }}
                                                         />
                                                     </div>
@@ -1072,10 +1081,10 @@ export default function LearnPage() {
                                                         <button
                                                             key={index}
                                                             onClick={() => answerQuestion(index)}
-                                                            className="w-full text-left p-5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
+                                                            className="w-full text-left p-5 rounded-xl border-2 border-gray-200 hover:border-brand-navy hover:bg-ink-50 transition-all group"
                                                         >
                                                             <div className="flex items-center space-x-4">
-                                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 group-hover:bg-indigo-100 flex items-center justify-center font-bold text-gray-600 group-hover:text-indigo-600 transition-colors">
+                                                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 group-hover:bg-ink-100 flex items-center justify-center font-bold text-gray-600 group-hover:text-brand-navy transition-colors">
                                                                     {String.fromCharCode(65 + index)}
                                                                 </div>
                                                                 <span className="text-gray-700 group-hover:text-gray-900 font-medium">
@@ -1091,8 +1100,8 @@ export default function LearnPage() {
 
                                     {/* Bouton soumettre */}
                                     {quizState.isActive && Object.keys(quizState.answers).length === quizQuestions.length && (
-                                        <div className="bg-white rounded-2xl shadow-xl p-8 text-center border-2 border-green-200">
-                                            <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
+                                        <div className="bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-200">
+                                            <CheckCircle className="w-16 h-16 mx-auto text-brand-navy mb-4" />
                                             <h4 className="text-2xl font-bold text-gray-900 mb-3">
                                                 Quiz terminé !
                                             </h4>
@@ -1101,7 +1110,7 @@ export default function LearnPage() {
                                             </p>
                                             <button
                                                 onClick={submitQuiz}
-                                                className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold text-lg shadow-lg"
+                                                className="inline-flex items-center space-x-3 px-8 py-4 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-semibold text-lg shadow-lg"
                                             >
                                                 <Target className="w-6 h-6" />
                                                 <span>Voir mon score</span>
@@ -1119,7 +1128,7 @@ export default function LearnPage() {
                                                             <Star className="w-12 h-12 text-white" />
                                                         </div>
                                                         <h3 className="text-3xl font-bold text-green-600 mb-3">
-                                                            Félicitations ! 🎉
+                                                            Félicitations !
                                                         </h3>
                                                         <p className="text-gray-700 text-lg mb-4">
                                                             Vous avez réussi le quiz avec un score de
@@ -1130,7 +1139,7 @@ export default function LearnPage() {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-red-400 to-pink-500 rounded-full mb-6 shadow-xl">
+                                                        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-red-400 to-red-600 rounded-full mb-6 shadow-xl">
                                                             <XCircle className="w-12 h-12 text-white" />
                                                         </div>
                                                         <h3 className="text-3xl font-bold text-red-600 mb-3">
@@ -1151,22 +1160,25 @@ export default function LearnPage() {
 
                                             {/* Détails des réponses */}
                                             <div className="mb-6">
-                                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                                                <div className="bg-ink-50 border-l-4 border-brand-navy p-4 mb-6 rounded-r-lg">
                                                     <div className="flex items-center">
                                                         <div className="flex-shrink-0">
-                                                            <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <svg className="h-6 w-6 text-brand-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                             </svg>
                                                         </div>
                                                         <div className="ml-3">
-                                                            <p className="text-sm font-medium text-blue-800">
-                                                                📚 Consultez vos réponses ci-dessous pour apprendre de vos erreurs !
+                                                            <p className="text-sm font-medium text-brand-navy">
+                                                                Consultez vos réponses ci-dessous pour apprendre de vos erreurs !
                                                             </p>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <h4 className="text-xl font-bold text-gray-900 mb-4">📝 Détails de vos réponses</h4>
+                                                <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <FileText className="w-5 h-5 text-brand-navy shrink-0" />
+                                        Détails de vos réponses
+                                    </h4>
 
                                                 {quizState.detailedResults && quizState.detailedResults.length > 0 ? (
                                                     <div className="space-y-4">
@@ -1187,7 +1199,9 @@ export default function LearnPage() {
                                                                                     Question {index + 1}
                                                                                 </p>
                                                                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                                                                                    {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                                                                    {isCorrect
+                                                        ? <><CheckCircle className="w-3.5 h-3.5 shrink-0" /> Correct</>
+                                                        : <><XCircle className="w-3.5 h-3.5 shrink-0" /> Incorrect</>}
                                                                                 </span>
                                                                             </div>
                                                                             <p className="text-gray-900 mb-3">
@@ -1195,7 +1209,10 @@ export default function LearnPage() {
                                                                             </p>
                                                                             {result.explanation && (
                                                                                 <div className="mt-3 pt-3 border-t border-gray-300">
-                                                                                    <p className="text-sm font-semibold text-gray-700 mb-1">💡 Explication :</p>
+                                                                                    <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                                                            <Lightbulb className="w-4 h-4 text-brand-orange shrink-0" />
+                                                            Explication :
+                                                        </p>
                                                                                     <p className="text-sm text-gray-600">
                                                                                         {result.explanation}
                                                                                     </p>
@@ -1218,9 +1235,9 @@ export default function LearnPage() {
 
                                             {/* Partager dans la communauté */}
                                             {isLoggedIn && (
-                                                <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200">
+                                                <div className="mb-6 p-4 bg-gradient-to-r from-ink-50 to-ink-50 rounded-xl border border-ink-200">
                                                     <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-                                                        <div className="flex items-center gap-2 text-indigo-700">
+                                                        <div className="flex items-center gap-2 text-brand-navy-hover">
                                                             <Share2 className="w-5 h-5" />
                                                             <span className="font-medium text-sm">Partagez votre score avec la communauté !</span>
                                                         </div>
@@ -1259,7 +1276,7 @@ export default function LearnPage() {
                                                                 });
                                                             }}
                                                             disabled={isSharing}
-                                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg disabled:opacity-50 whitespace-nowrap"
+                                                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover transition-all font-semibold text-sm shadow-md hover:shadow-lg disabled:opacity-50 whitespace-nowrap"
                                                         >
                                                             <Share2 className="w-4 h-4" />
                                                             {isSharing ? 'Partage...' : 'Partager mon score'}
@@ -1273,7 +1290,7 @@ export default function LearnPage() {
                                                 {!quizState.passed && (
                                                     <button
                                                         onClick={retryQuiz}
-                                                        className="inline-flex items-center space-x-2 px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl"
+                                                        className="inline-flex items-center space-x-2 px-8 py-4 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover transition-all font-semibold shadow-lg hover:shadow-xl"
                                                     >
                                                         <Brain className="w-5 h-5" />
                                                         <span>Réessayer le quiz</span>
@@ -1302,7 +1319,7 @@ export default function LearnPage() {
                                                                 });
                                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                                             }}
-                                                            className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                                                            className="inline-flex items-center space-x-2 px-8 py-4 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-semibold shadow-lg hover:shadow-xl"
                                                         >
                                                             <span>Passer au Module suivant</span>
                                                             <ArrowLeft className="w-5 h-5 rotate-180" />
@@ -1336,10 +1353,10 @@ export default function LearnPage() {
 
                         {/* Bouton d'aide IA - Caché pendant le quiz et les résultats */}
                         {!quizState.isActive && !quizState.showResults && (
-                        <div className="px-4 sm:px-8 py-3 sm:py-4 bg-blue-50 border-t border-blue-100">
+                        <div className="px-4 sm:px-8 py-3 sm:py-4 bg-ink-50 border-t border-ink-100">
                             <button
                                 onClick={() => setShowPremiumPaywall(true)}
-                                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
+                                className="flex items-center gap-2 text-brand-navy hover:text-brand-navy-hover transition-colors text-sm font-medium"
                             >
                                 <HelpCircle className="w-5 h-5" />
                                 Je ne comprends pas quelque chose - Demander au tuteur IA
@@ -1361,7 +1378,7 @@ export default function LearnPage() {
                                 {!hasQuiz && !hasProfileQuiz && !isCompleted && (
                                     <button
                                         onClick={() => handleMarkAsCompleted(selectedModule.slug)}
-                                        className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-medium w-full sm:w-auto flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+                                        className="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-black transition-colors font-medium w-full sm:w-auto flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
                                     >
                                         <Award className="w-5 h-5" />
                                         <span>Marquer comme complété</span>
@@ -1382,7 +1399,7 @@ export default function LearnPage() {
                                 )}
 
                                 {isCompleted && (
-                                    <div className="flex items-center space-x-2 text-green-600">
+                                    <div className="flex items-center space-x-2 text-brand-navy">
                                         <CheckCircle className="w-5 h-5" />
                                         <span className="font-medium">Module validé !</span>
                                     </div>
@@ -1414,7 +1431,7 @@ export default function LearnPage() {
                                             setSelectedModule(null);
                                         }
                                     }}
-                                    className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium w-full sm:w-auto shadow-md hover:shadow-lg"
+                                    className="px-6 py-3 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover transition-colors font-medium w-full sm:w-auto shadow-md hover:shadow-lg"
                                 >
                                     Continuer l'apprentissage
                                 </button>
@@ -1427,10 +1444,10 @@ export default function LearnPage() {
                     {!showAITutor && !quizState.isActive && !quizState.showResults && (
                         <button
                             onClick={() => setShowAITutor(true)}
-                            className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-white p-3 sm:p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
+                            className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-white p-3 sm:p-4 rounded-full shadow-xl border border-gray-100 text-brand-navy hover:text-brand-navy-hover transition-transform hover:scale-110 z-40 group"
                         >
                             <MessageSquarePlus className="w-6 h-6" />
-                            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                                 Tuteur IA
                             </span>
                         </button>
@@ -1584,10 +1601,10 @@ export default function LearnPage() {
                     </p>
                     <a
                         href="/webinaires"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md transition-all"
+                        className="inline-flex items-center gap-2 h-14 bg-gradient-to-r from-brand-navy to-[#173F66] hover:from-brand-navy-hover hover:to-brand-navy-hover text-white font-bold text-sm px-7 rounded-xl shadow-md transition-all"
                     >
-                        <span>🎥</span>
-                        Voir nos webinaires de formation
+                        <Video className="w-4 h-4 shrink-0" />
+                        Voir nos webinaires
                     </a>
                 </div>
 
@@ -1622,10 +1639,10 @@ export default function LearnPage() {
                                 </div>
 
                                 {/* Total XP */}
-                                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl shadow-lg border-2 border-amber-200 p-4 flex flex-col items-center justify-center min-w-[160px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
-                                    <Zap className="w-8 h-8 text-amber-600 mb-2" />
-                                    <p className="text-2xl font-bold text-amber-700">{gamificationSummary.xp.total_xp.toLocaleString()}</p>
-                                    <p className="text-sm text-amber-600">XP Total</p>
+                                <div className="bg-gradient-to-br from-orange-50 to-orange-50 rounded-2xl shadow-lg border-2 border-orange-200 p-4 flex flex-col items-center justify-center min-w-[160px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
+                                    <Zap className="w-8 h-8 text-brand-orange mb-2" />
+                                    <p className="text-2xl font-bold text-brand-orange-dark">{gamificationSummary.xp.total_xp.toLocaleString()}</p>
+                                    <p className="text-sm text-brand-orange">XP Total</p>
                                 </div>
                             </div>
                         )}
@@ -1634,7 +1651,7 @@ export default function LearnPage() {
                         <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 sm:p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center space-x-2 sm:space-x-3">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-navy to-[#173F66] rounded-full flex items-center justify-center shadow-md flex-shrink-0">
                                         <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                     </div>
                                     <div>
@@ -1646,32 +1663,32 @@ export default function LearnPage() {
                                     {allModulesCompleted && (
                                         <button
                                             onClick={() => userHasInvestisseurPlus ? setShowCertificate(true) : setShowCertPaywall(true)}
-                                            className={`flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${userHasInvestisseurPlus ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-amber-500 hover:bg-amber-600'}`}
+                                            className={`flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${userHasInvestisseurPlus ? 'bg-brand-navy hover:bg-brand-navy-hover' : 'bg-brand-orange hover:bg-brand-orange'}`}
                                         >
                                             {userHasInvestisseurPlus ? <Award className="w-3.5 h-3.5" /> : <Crown className="w-3.5 h-3.5" />}
                                             Certificat
                                         </button>
                                     )}
-                                    <span className="text-2xl sm:text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
+                                    <span className="text-2xl sm:text-3xl font-extrabold text-brand-navy">{progressPercentage}%</span>
                                 </div>
                             </div>
                             {/* Barre de progression avec objectif certificat */}
                             <div className="relative">
                                 <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                                     <div
-                                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
+                                        className="bg-gradient-to-r from-brand-navy to-[#173F66] h-3 rounded-full transition-all duration-700 ease-out"
                                         style={{ width: `${progressPercentage}%` }}
                                     />
                                 </div>
                                 {/* Icône certificat à la fin de la barre */}
                                 <div className="absolute -right-1 -top-3.5 flex flex-col items-center">
-                                    <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-md transition-all ${allModulesCompleted ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-200'}`}>
+                                    <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-md transition-all ${allModulesCompleted ? 'bg-brand-navy border-brand-navy' : 'bg-white border-gray-200'}`}>
                                         {allModulesCompleted
-                                            ? <Award className="w-5 h-5 text-yellow-300" />
+                                            ? <Award className="w-5 h-5 text-orange-300" />
                                             : <Lock className="w-4 h-4 text-gray-400" />
                                         }
                                     </div>
-                                    <span className={`text-xs font-semibold mt-1 whitespace-nowrap ${allModulesCompleted ? 'text-indigo-600' : 'text-gray-400'}`}>
+                                    <span className={`text-xs font-semibold mt-1 whitespace-nowrap ${allModulesCompleted ? 'text-brand-navy' : 'text-gray-400'}`}>
                                         Certificat
                                     </span>
                                 </div>
@@ -1685,22 +1702,22 @@ export default function LearnPage() {
                     <div className="max-w-4xl mx-auto mb-8">
                         {userHasInvestisseurPlus ? (
                             /* Abonné Investisseur+ → certificat disponible */
-                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 sm:p-6 shadow-xl">
+                            <div className="bg-gradient-to-r from-brand-navy to-[#173F66] rounded-2xl p-5 sm:p-6 shadow-xl">
                                 <div className="flex flex-col sm:flex-row items-center gap-4">
                                     <div className="w-14 h-14 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
-                                        <Award className="w-8 h-8 text-yellow-300" />
+                                        <Award className="w-8 h-8 text-orange-300" />
                                     </div>
                                     <div className="flex-1 text-center sm:text-left">
                                         <div className="text-white font-extrabold text-lg sm:text-xl mb-1">
                                             Félicitations ! Parcours complété
                                         </div>
-                                        <div className="text-indigo-200 text-sm">
+                                        <div className="text-ink-200 text-sm">
                                             Vous avez terminé tous les modules du Parcours Investisseur BRVM. Votre certificat est disponible.
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setShowCertificate(true)}
-                                        className="flex-shrink-0 flex items-center gap-2 bg-white text-indigo-700 font-bold text-sm px-5 py-2.5 rounded-xl shadow-md hover:bg-indigo-50 transition-colors active:scale-95"
+                                        className="flex-shrink-0 flex items-center gap-2 bg-white text-brand-navy-hover font-bold text-sm px-5 py-2.5 rounded-xl shadow-md hover:bg-ink-50 transition-colors active:scale-95"
                                     >
                                         <Award className="w-4 h-4" />
                                         Voir mon certificat
@@ -1709,7 +1726,7 @@ export default function LearnPage() {
                             </div>
                         ) : (
                             /* Non abonné → incitation à passer Investisseur+ */
-                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 sm:p-6 shadow-xl">
+                            <div className="bg-gradient-to-r from-brand-orange to-orange-500 rounded-2xl p-5 sm:p-6 shadow-xl">
                                 <div className="flex flex-col sm:flex-row items-center gap-4">
                                     <div className="w-14 h-14 flex-shrink-0 bg-white/20 rounded-full flex items-center justify-center">
                                         <Crown className="w-8 h-8 text-white" />
@@ -1718,13 +1735,13 @@ export default function LearnPage() {
                                         <div className="text-white font-extrabold text-lg sm:text-xl mb-1">
                                             Parcours complété — Certificat verrouillé
                                         </div>
-                                        <div className="text-amber-100 text-sm">
+                                        <div className="text-orange-100 text-sm">
                                             Passez à Investisseur+ pour débloquer et télécharger votre certificat officiel AfriBourse.
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setShowCertPaywall(true)}
-                                        className="flex-shrink-0 flex items-center gap-2 bg-white text-amber-700 font-bold text-sm px-5 py-2.5 rounded-xl shadow-md hover:bg-amber-50 transition-colors active:scale-95"
+                                        className="flex-shrink-0 flex items-center gap-2 bg-white text-brand-orange-dark font-bold text-sm px-5 py-2.5 rounded-xl shadow-md hover:bg-orange-50 transition-colors active:scale-95"
                                     >
                                         <Crown className="w-4 h-4" />
                                         Débloquer le certificat
@@ -1736,14 +1753,14 @@ export default function LearnPage() {
                 )}
 
                 {!isLoggedIn && (
-                    <div className="max-w-2xl mx-auto bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 mb-8">
+                    <div className="max-w-2xl mx-auto bg-white border-2 border-brand-orange rounded-2xl p-6 mb-8 shadow-sm">
                         <div className="flex items-start space-x-4">
-                            <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-6 h-6 text-brand-orange flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="font-semibold text-yellow-900 mb-1">
+                                <p className="font-semibold text-gray-900 mb-1">
                                     Connectez-vous pour suivre votre progression
                                 </p>
-                                <p className="text-yellow-700 text-sm">
+                                <p className="text-gray-600 text-sm">
                                     Créez un compte gratuit pour débloquer les quiz, sauvegarder votre progression et obtenir des certificats.
                                 </p>
                             </div>
@@ -1755,18 +1772,18 @@ export default function LearnPage() {
             {/* Teaser certificat — visible tant que le parcours n'est pas complété */}
             {isLoggedIn && !allModulesCompleted && (
                 <div className="max-w-4xl mx-auto mb-8">
-                    <div className="relative overflow-hidden bg-gradient-to-r from-slate-800 to-indigo-900 rounded-2xl px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-4 shadow-lg">
+                    <div className="relative overflow-hidden bg-gradient-to-r from-gray-800 to-ink-950 rounded-2xl px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-4 shadow-lg">
                         {/* Halo décoratif */}
-                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full opacity-10 blur-2xl pointer-events-none" />
-                        <div className="absolute right-16 -bottom-8 w-28 h-28 bg-purple-500 rounded-full opacity-10 blur-2xl pointer-events-none" />
+                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-brand-navy rounded-full opacity-10 blur-2xl pointer-events-none" />
+                        <div className="absolute right-16 -bottom-8 w-28 h-28 bg-brand-navy rounded-full opacity-10 blur-2xl pointer-events-none" />
 
                         {/* Icône cadenas + award */}
                         <div className="relative flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14">
                             <div className="w-full h-full rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                                <Award className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-300" />
+                                <Award className="w-6 h-6 sm:w-7 sm:h-7 text-ink-300" />
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-slate-800">
-                                <Lock className="w-2.5 h-2.5 text-amber-900" />
+                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-orange-400 rounded-full flex items-center justify-center border-2 border-gray-800">
+                                <Lock className="w-2.5 h-2.5 text-brand-orange-dark" />
                             </div>
                         </div>
 
@@ -1774,7 +1791,7 @@ export default function LearnPage() {
                             <div className="text-white font-bold text-sm sm:text-base leading-snug">
                                 Certificat officiel à débloquer
                             </div>
-                            <div className="text-indigo-300 text-xs sm:text-sm mt-0.5">
+                            <div className="text-ink-300 text-xs sm:text-sm mt-0.5">
                                 Complétez les {publishedModules.length - completedCount} modules restants
                                 {!userHasInvestisseurPlus && ' et passez à Investisseur+'} pour obtenir votre attestation de réussite AfriBourse.
                             </div>
@@ -1784,48 +1801,52 @@ export default function LearnPage() {
                         <div className="hidden sm:flex flex-col items-center flex-shrink-0 bg-white/10 border border-white/20 rounded-xl px-4 py-2 gap-0.5">
                             <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Récompense</span>
                             <div className="flex items-center gap-1.5">
-                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                <Star className="w-4 h-4 text-orange-400 fill-orange-400" />
                                 <span className="text-sm font-bold text-white">Certifié BRVM</span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* Filtres thématiques */}
+            {/* Filtres thématiques — une seule ligne de cellules de largeur
+                egale des md (six thèmes + Time Machine = 7 colonnes), qui
+                remplit toute la barre. Sous md, la rangee redevient une bande
+                qui defile horizontalement : sept cellules n'y tiendraient pas
+                sans devenir illisibles. */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-10 sticky top-20 z-10">
-                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
+                <div className="flex md:grid md:grid-cols-7 gap-2 sm:gap-3 overflow-x-auto md:overflow-visible scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
                     {CATEGORIES.map((cat) => (
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start ${selectedCategory === cat.id
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
+                            className={`flex flex-col items-center justify-center gap-1.5 px-3 py-3 rounded-xl font-semibold text-xs text-center transition-colors duration-200 flex-shrink-0 md:flex-shrink snap-start min-w-[92px] md:min-w-0 ${selectedCategory === cat.id
+                                ? 'bg-gradient-to-r from-brand-navy to-[#173F66] text-white shadow-md'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
-                            {cat.label}
+                            <cat.icon className="w-5 h-5 shrink-0" />
+                            <span className="leading-tight">{cat.label}</span>
                         </button>
                     ))}
 
-                    {/* Séparateur */}
-                    <div className="flex-shrink-0 w-px bg-gray-200 self-stretch mx-1" />
-
-                    {/* Time Machine */}
+                    {/* Time Machine — septieme cellule, meme gabarit que les
+                        themes pour que la rangee reste reguliere. */}
                     <button
                         onClick={() => navigate('/time-machine')}
-                        className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                        className="relative flex flex-col items-center justify-center gap-1.5 px-3 py-3 rounded-xl font-semibold text-xs text-center transition-colors duration-200 flex-shrink-0 md:flex-shrink snap-start min-w-[92px] md:min-w-0 bg-ink-50 text-brand-navy-hover hover:bg-ink-100 border border-ink-200"
                     >
-                        <Clock className="w-4 h-4" />
-                        Time Machine
-                        <span className="text-[9px] font-bold bg-indigo-600 text-white px-1.5 py-0.5 rounded-full leading-none">NEW</span>
+                        <span className="absolute top-1 right-1 text-[8px] font-bold bg-brand-navy text-white px-1.5 py-0.5 rounded-full leading-none">
+                            NEW
+                        </span>
+                        <Clock className="w-5 h-5 shrink-0" />
+                        <span className="leading-tight">Time Machine</span>
                     </button>
                 </div>
             </div>
 
             {loading && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh]">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mb-4"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-brand-navy border-t-transparent mb-4"></div>
                     <p className="text-gray-600 font-medium">Chargement des modules...</p>
                 </div>
             )}
@@ -1839,7 +1860,7 @@ export default function LearnPage() {
                     <p className="text-red-600 mb-6">{error}</p>
                     <button
                         onClick={() => loadData()}
-                        className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                        className="px-6 py-3 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover transition-colors font-medium"
                     >
                         Réessayer
                     </button>
@@ -1872,12 +1893,12 @@ export default function LearnPage() {
 
                     {/* Gradient de fondu gauche sur mobile */}
                     {canScrollLeft && (
-                        <div className="md:hidden absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-[5] pointer-events-none" />
+                        <div className="md:hidden absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-50 to-transparent z-[5] pointer-events-none" />
                     )}
 
                     {/* Gradient de fondu droite sur mobile */}
                     {canScrollRight && (
-                        <div className="md:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-[5] pointer-events-none" />
+                        <div className="md:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-50 to-transparent z-[5] pointer-events-none" />
                     )}
 
                     {/* Module cards - horizontal scroll on mobile, grid on desktop */}
@@ -1918,7 +1939,7 @@ export default function LearnPage() {
                                     className={`bg-white rounded-2xl shadow-lg border-2 p-5 sm:p-6 transition-all text-left flex flex-col h-full group relative overflow-hidden w-[280px] sm:w-[320px] md:w-auto flex-shrink-0 md:flex-shrink snap-start ${isCompleted
                                         ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl hover:-translate-y-1'
                                         : isUnlocked
-                                            ? 'border-gray-200 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1'
+                                            ? 'border-gray-200 hover:border-ink-400 hover:shadow-xl hover:-translate-y-1'
                                             : 'border-gray-200 opacity-60 cursor-not-allowed'
                                         }`}
                                 >
@@ -1931,15 +1952,15 @@ export default function LearnPage() {
                                     )}
 
                                     {isPremiumModule(module.order_index ?? 0) && !userHasPremium && !isCompleted && isUnlocked && (
-                                        <div className="absolute inset-0 bg-amber-900/10 backdrop-blur-[1px] flex items-center justify-center z-10">
+                                        <div className="absolute inset-0 bg-brand-orange-dark/10 backdrop-blur-[1px] flex items-center justify-center z-10">
                                             <div className="bg-white rounded-full p-4 shadow-xl">
-                                                <Crown className="w-8 h-8 text-amber-500" />
+                                                <Crown className="w-8 h-8 text-brand-orange" />
                                             </div>
                                         </div>
                                     )}
 
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-base sm:text-lg shadow-md">
+                                        <div className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 bg-gradient-to-br from-brand-navy to-[#173F66] text-white rounded-xl font-bold text-base sm:text-lg shadow-md">
                                             {module.order_index ?? index + 1}
                                         </div>
 
@@ -1963,7 +1984,7 @@ export default function LearnPage() {
                                             )}
 
                                             {isPremiumModule(module.order_index ?? 0) && !isCompleted && !userHasPremium && (
-                                                <div className="flex items-center space-x-1 bg-amber-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
+                                                <div className="flex items-center space-x-1 bg-brand-orange text-white px-2.5 py-1 rounded-full text-xs font-semibold">
                                                     <Crown className="w-3.5 h-3.5" />
                                                     <span>Premium</span>
                                                 </div>
@@ -1972,7 +1993,7 @@ export default function LearnPage() {
                                     </div>
 
                                     <div className="flex flex-col flex-grow mb-4">
-                                        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
+                                        <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-brand-navy transition-colors leading-tight">
                                             {module.title}
                                         </h3>
                                         {module.description && (
@@ -1998,7 +2019,7 @@ export default function LearnPage() {
 
                                         <div className="flex items-center gap-2 flex-wrap">
                                             {hasQuiz && (
-                                                <div className="flex items-center space-x-1 bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold">
+                                                <div className="flex items-center space-x-1 bg-ink-100 text-brand-navy-hover px-2 py-1 rounded-full text-xs font-semibold">
                                                     <Brain className="w-3.5 h-3.5" />
                                                     <span>Quiz</span>
                                                 </div>
@@ -2014,7 +2035,8 @@ export default function LearnPage() {
                                     {!isUnlocked && previousModule && (
                                         <div className="mt-3 pt-3 border-t-2 border-gray-200">
                                             <p className="text-xs text-gray-600 font-medium">
-                                                🔒 Complétez d'abord "{previousModule.title}"
+                                                <Lock className="w-3.5 h-3.5 shrink-0" />
+                                            Complétez d'abord "{previousModule.title}"
                                             </p>
                                         </div>
                                     )}
@@ -2037,7 +2059,7 @@ export default function LearnPage() {
                                     }}
                                     className={`rounded-full transition-all duration-300 ${
                                         activeCardIndex === idx
-                                            ? 'w-6 h-2 bg-blue-600'
+                                            ? 'w-6 h-2 bg-brand-navy'
                                             : 'w-2 h-2 bg-gray-300'
                                     }`}
                                     aria-label={`Aller au module ${idx + 1}`}
@@ -2064,17 +2086,18 @@ export default function LearnPage() {
             )}
 
             {/* Bandeau Webinaires */}
-            <div className="mt-12 mb-4 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+            <div className="mt-12 mb-4 bg-gradient-to-r from-brand-navy to-brand-navy-hover rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
                 <div className="text-white text-center sm:text-left">
-                    <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Formation Live</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-ink-200 mb-1">Formation Live</p>
                     <h3 className="text-lg font-extrabold">Rejoignez nos webinaires de formation</h3>
-                    <p className="text-blue-200 text-sm mt-1">3 sessions avec nos experts — tarif early bird disponible</p>
+                    <p className="text-ink-200 text-sm mt-1">Cinq sessions live animées par nos experts, avec un tarif préférentiel réservé aux premières inscriptions.</p>
                 </div>
                 <a
                     href="/webinaires"
-                    className="flex-shrink-0 bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm px-6 py-3 rounded-xl transition-colors shadow-sm whitespace-nowrap"
+                    className="flex-shrink-0 inline-flex items-center gap-2 bg-white text-brand-navy-hover hover:bg-ink-50 font-bold text-sm px-6 py-3 rounded-xl transition-colors shadow-sm whitespace-nowrap"
                 >
-                    Voir les webinaires →
+                    Voir les webinaires
+                    <ArrowRight className="w-4 h-4 shrink-0" />
                 </a>
             </div>
         </div>

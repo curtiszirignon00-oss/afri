@@ -94,9 +94,9 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
             <button
                 onClick={() => canAddMore && setShowAddDropdown(!showAddDropdown)}
                 disabled={!canAddMore}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
+                className={`flex items-center gap-1.5 px-3 h-9 text-sm font-semibold rounded-lg border-2 transition-colors ${
                     canAddMore
-                        ? 'border-blue-300 text-blue-700 bg-white hover:bg-blue-50'
+                        ? 'border-brand-navy text-brand-navy bg-white hover:bg-brand-navy hover:text-white cursor-pointer'
                         : 'border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed'
                 }`}
                 title={!canAddMore ? `Limite de ${comparisonLimit} titres atteinte` : 'Ajouter un titre'}
@@ -117,7 +117,7 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
                                 value={addSearch}
                                 onChange={e => setAddSearch(e.target.value)}
                                 placeholder="Rechercher un titre..."
-                                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy"
                             />
                         </div>
                     </div>
@@ -135,7 +135,7 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
                                     <button
                                         key={stock.id}
                                         onClick={() => handleAdd(stock)}
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 transition-colors text-left"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left"
                                     >
                                         {logo ? (
                                             <img src={logo} alt={stock.symbol} className="w-7 h-7 rounded object-contain bg-gray-50 border border-gray-100 flex-shrink-0" onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
@@ -169,11 +169,11 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
     // Empty state
     if (stocks.length === 0) {
         return (
-            <div className="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-dashed border-blue-300 rounded-xl comparison-fade-in">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-blue-200">
+            <div className="mb-6 bg-ink-50 border-2 border-dashed border-ink-200 rounded-xl comparison-fade-in">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-ink-200">
                     <div className="flex items-center gap-2">
-                        <Scale className="w-5 h-5 text-blue-600" />
-                        <span className="font-semibold text-blue-900 text-sm">Comparaison de titres</span>
+                        <Scale className="w-5 h-5 text-brand-navy" />
+                        <span className="font-semibold text-brand-navy text-sm">Comparaison de titres</span>
                     </div>
                     <div className="flex items-center gap-2">
                         {addButton}
@@ -183,7 +183,7 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
                     </div>
                 </div>
                 <div className="p-8 text-center">
-                    <Scale className="w-12 h-12 text-blue-300 mx-auto mb-3" />
+                    <Scale className="w-12 h-12 text-ink-300 mx-auto mb-3" />
                     <p className="text-sm font-medium text-gray-700 mb-1">Aucun titre sélectionné</p>
                     <p className="text-xs text-gray-500">Utilisez le bouton <strong>Ajouter un titre</strong> ou cliquez sur <strong>+</strong> dans le tableau</p>
                 </div>
@@ -193,23 +193,23 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
 
     return (
         <div className="mb-6 comparison-container">
-            <Card className="bg-blue-50 border-blue-200 comparison-fade-in">
+            <Card className="bg-gray-50 border-gray-200 comparison-fade-in">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
-                        <Scale className="w-5 h-5 text-blue-600" />
+                        <Scale className="w-5 h-5 text-brand-navy" />
                         {/* Tabs */}
                         <div className="flex rounded-lg border border-gray-300 bg-white overflow-hidden">
                             <button
                                 onClick={() => setActiveTab('table')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium ${activeTab === 'table' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                                className={`flex items-center gap-1.5 px-3 h-9 text-sm font-medium transition-colors ${activeTab === 'table' ? 'bg-brand-navy text-white' : 'text-gray-700 hover:bg-gray-50'}`}
                             >
                                 <Table className="w-4 h-4" />
                                 Tableau
                             </button>
                             <button
                                 onClick={() => setActiveTab('chart')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border-l ${activeTab === 'chart' ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                                className={`flex items-center gap-1.5 px-3 h-9 text-sm font-medium border-l border-gray-300 transition-colors ${activeTab === 'chart' ? 'bg-brand-navy text-white' : 'text-gray-700 hover:bg-gray-50'}`}
                             >
                                 <BarChart3 className="w-4 h-4" />
                                 Graphique
@@ -235,7 +235,7 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
                         <ShareButton stockIds={stocks.map(s => s.id)} />
                         <button
                             onClick={onClose}
-                            className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors"
+                            className="flex items-center gap-1.5 px-3 h-9 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors cursor-pointer"
                         >
                             <X className="w-4 h-4" />
                             Fermer
@@ -274,9 +274,9 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
                             </div>
                         </div>
 
-                        <div className="mt-3 sm:mt-4 flex items-start gap-2 p-2.5 sm:p-3 bg-blue-100 rounded-lg">
-                            <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <p className="text-xs text-blue-900">
+                        <div className="mt-3 sm:mt-4 flex items-start gap-2 p-2.5 sm:p-3 bg-ink-100 rounded-lg">
+                            <Info className="w-4 h-4 text-brand-navy mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-brand-navy">
                                 <strong>Astuce :</strong> Les valeurs en vert indiquent les meilleures performances,
                                 et les valeurs en rouge les moins bonnes. Utilisez cette comparaison pour identifier
                                 rapidement les opportunités d'investissement.

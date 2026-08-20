@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Activity, BarChart3, Loader2 } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Activity, ChevronDown, Loader2 } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import type { MarketIndex } from '../types';
 import { lazyWithRetry } from '../lib/lazyWithRetry';
@@ -34,7 +34,7 @@ export default function IndicesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-navy" />
       </div>
     );
   }
@@ -42,14 +42,14 @@ export default function IndicesPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <Helmet>
-        <title>Indices BRVM — BRVM Composite et BRVM 10 en Temps Réel | AfriBourse</title>
-        <meta name="description" content="BRVM Composite et BRVM 10 en temps réel. Suivez les indices brvm aujourd'hui avec leurs graphiques historiques. La bourse BRVM d'Afrique de l'Ouest (UEMOA) à portée de main." />
-        <meta name="keywords" content="brvm, brvm composite, brvm 10, indice brvm, brvm composite aujourd'hui, brvm 10 aujourd'hui, cours brvm, brvm bourse, indices brvm, performance brvm, bourse afrique ouest, UEMOA indice bourse" />
+        <title>Indices BRVM — BRVM Composite et BRVM 30 en Temps Réel | AfriBourse</title>
+        <meta name="description" content="BRVM Composite et BRVM 30 en temps réel. Suivez les indices brvm aujourd'hui avec leurs graphiques historiques. La bourse BRVM d'Afrique de l'Ouest (UEMOA) à portée de main." />
+        <meta name="keywords" content="brvm, brvm composite, brvm 30, indice brvm, brvm composite aujourd'hui, brvm 30 aujourd'hui, cours brvm, brvm bourse, indices brvm, performance brvm, bourse afrique ouest, UEMOA indice bourse" />
         <link rel="canonical" href={`${SITE_URL}/indices`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />
-        <meta property="og:title" content="Indices BRVM Composite et BRVM 10 en Temps Réel | AfriBourse" />
-        <meta property="og:description" content="BRVM Composite et BRVM 10 en temps réel avec graphiques d'évolution historique." />
+        <meta property="og:title" content="Indices BRVM Composite et BRVM 30 en Temps Réel | AfriBourse" />
+        <meta property="og:description" content="BRVM Composite et BRVM 30 en temps réel avec graphiques d'évolution historique." />
         <meta property="og:image" content={OG_IMAGE} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -57,7 +57,7 @@ export default function IndicesPage() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@AfriBourse" />
         <meta name="twitter:title" content="Indices BRVM en Temps Réel | AfriBourse" />
-        <meta name="twitter:description" content="BRVM Composite et BRVM 10 avec graphiques historiques." />
+        <meta name="twitter:description" content="BRVM Composite et BRVM 30 avec graphiques historiques." />
         <meta name="twitter:image" content={OG_IMAGE} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
@@ -68,78 +68,56 @@ export default function IndicesPage() {
           ]
         })}</script>
       </Helmet>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/markets')}
-            className="flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Retour aux marchés
-          </button>
-          <div className="flex items-center space-x-3">
-            <Activity className="w-8 h-8 text-blue-600" />
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Indices BRVM</h1>
-              <p className="text-gray-600">
-                Suivez les principaux indices de la Bourse Régionale des Valeurs Mobilières
-              </p>
-            </div>
-          </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Retour */}
+        <button
+          onClick={() => navigate('/markets')}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors cursor-pointer mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour aux marchés
+        </button>
+
+        {/* En-tete — meme composition que les autres pages : titre centre sur
+            une colonne etroite, chapeau en dessous. */}
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
+            Indices BRVM
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed">
+            Les principaux baromètres de la Bourse Régionale des Valeurs Mobilières,
+            avec leur évolution historique.
+          </p>
         </div>
 
-        {/* Indices Cards */}
+        {/* Liste des indices — une carte sobre par indice, le graphique se
+            deplie au clic. La bande de couleur verte ou rouge en tete de carte
+            a disparu : la variation est deja lisible dans sa pastille. */}
         {indices.length > 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {indices.map((index) => {
               const isPositive = index.daily_change_percent >= 0;
               const isSelected = selectedIndex === index.index_name;
               return (
                 <div
                   key={index.id}
-                  className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
-                    isSelected ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-200'
+                  className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-[border-color,box-shadow] duration-200 ${
+                    isSelected ? 'border-brand-navy/40 shadow-md' : 'border-gray-200 hover:border-brand-navy/25'
                   }`}
                 >
-                  {/* Bande de couleur en haut */}
-                  <div className={`h-1.5 ${isPositive ? 'bg-green-500' : 'bg-red-500'}`} />
-
-                  <div className="p-6">
-                    {/* Clickable header */}
-                    <button
-                      onClick={() => setSelectedIndex(isSelected ? null : index.index_name)}
-                      className="w-full text-left"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center space-x-2">
-                          <BarChart3 className="w-5 h-5 text-blue-600" />
-                          <h3 className="text-lg font-bold text-gray-900">{index.index_name}</h3>
-                        </div>
-                        <div
-                          className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-semibold ${
-                            isPositive
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {isPositive ? (
-                            <TrendingUp className="w-4 h-4" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4" />
-                          )}
-                          <span>
-                            {isPositive ? '+' : ''}
-                            {index.daily_change_percent.toFixed(2)}%
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-end justify-between">
-                        <p className="text-3xl font-bold text-gray-900">
+                  <button
+                    onClick={() => setSelectedIndex(isSelected ? null : index.index_name)}
+                    className="w-full text-left px-6 py-5 cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide truncate">
+                          {index.index_name}
+                        </h2>
+                        <p className="text-3xl font-bold text-gray-900 font-mono tabular-nums tracking-tight mt-2">
                           {formatNumber(index.index_value)}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-400 mt-2">
                           Mis à jour le{' '}
                           {new Date(index.date).toLocaleDateString('fr-FR', {
                             day: 'numeric',
@@ -148,27 +126,45 @@ export default function IndicesPage() {
                           })}
                         </p>
                       </div>
-                    </button>
 
-                    {/* Chart (expandable) — lazy: lightweight-charts chargé au clic */}
-                    {isSelected && (
+                      <div className="flex items-center gap-4 shrink-0">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-mono ring-1 ${
+                            isPositive
+                              ? 'bg-emerald-50 text-emerald-700 ring-emerald-100'
+                              : 'bg-red-50 text-red-600 ring-red-100'
+                          }`}
+                        >
+                          {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                          {isPositive ? '+' : ''}{index.daily_change_percent.toFixed(2)}%
+                        </span>
+                        <ChevronDown
+                          className={`w-5 h-5 text-gray-300 transition-transform duration-300 ${isSelected ? 'rotate-180 text-brand-navy' : ''}`}
+                        />
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Graphique — lazy : lightweight-charts chargé au clic */}
+                  {isSelected && (
+                    <div className="border-t border-gray-100 px-6 pb-6 pt-4">
                       <Suspense
                         fallback={
-                          <div className="flex items-center justify-center h-[350px] mt-4">
-                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                          <div className="flex items-center justify-center h-[350px]">
+                            <Loader2 className="w-8 h-8 text-brand-navy animate-spin" />
                           </div>
                         }
                       >
                         <IndexChart indexName={index.index_name} />
                       </Suspense>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">Aucune donnée d'indice disponible</p>
             <p className="text-gray-400 text-sm mt-1">
@@ -177,16 +173,16 @@ export default function IndicesPage() {
           </div>
         )}
 
-        {/* Info */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">À propos des indices BRVM</h3>
-          <div className="space-y-2 text-sm text-blue-800">
+        {/* Note explicative — carte grise sobre, plus l'aplat bleu d'avant. */}
+        <div className="mt-8 bg-gray-50 border border-gray-200 rounded-2xl p-6">
+          <h3 className="font-bold text-gray-900 mb-3">À propos des indices BRVM</h3>
+          <div className="space-y-2 text-sm text-gray-600 leading-relaxed">
             <p>
-              <strong>BRVM COMPOSITE</strong> — Indice global regroupant toutes les valeurs cotées à la BRVM.
+              <strong className="font-semibold text-gray-900">BRVM COMPOSITE</strong> : indice global regroupant toutes les valeurs cotées à la BRVM.
               Il reflète la performance générale du marché boursier ouest-africain.
             </p>
             <p>
-              <strong>BRVM 30</strong> — Indice composé des 30 valeurs les plus actives et les plus liquides
+              <strong className="font-semibold text-gray-900">BRVM 30</strong> : indice composé des 30 valeurs les plus actives et les plus liquides
               de la BRVM. Il sert de baromètre principal pour les investisseurs.
             </p>
           </div>
