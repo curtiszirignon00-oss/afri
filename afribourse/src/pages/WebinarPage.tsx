@@ -308,43 +308,6 @@ export default function WebinarPage() {
         </section>
       )}
 
-      {/* ── Section 2 — Le problème ──────────────────────────────────────────
-          Trois constats numerotes face au titre, plutot que trois paragraphes
-          centres : le lecteur retrouve chaque idee separement au lieu d'un bloc
-          de texte a lire d'un trait. */}
-      <section className={`bg-gray-50 ${SECTION_PAD}`}>
-        <div className={SECTION}>
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-            <div>
-              <Eyebrow icon={BookOpen} align="left">Pourquoi ce programme existe</Eyebrow>
-              <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-6">
-                Le problème n'est pas l'ambition, c'est la méthode
-              </h2>
-              <div className="rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
-                <p className="text-gray-900 font-medium leading-relaxed">
-                  Résultat : vous hésitez, vous agissez sur des rumeurs, ou vous n'agissez pas du tout.
-                  Ce programme existe pour changer ça, concrètement, en 5 sessions.
-                </p>
-              </div>
-            </div>
-
-            <ol className="space-y-6">
-              {[
-                "La plupart des investisseurs africains perdent de l'argent non pas par manque d'ambition, mais par manque de méthode. Ils regardent les cours sans savoir pourquoi ils bougent.",
-                "L'information sur la BRVM est fragmentée. Les données financières sont difficiles à interpréter.",
-                'Et les rares formations disponibles sont soit trop génériques, soit trop coûteuses pour être accessibles.',
-              ].map((text, i) => (
-                <li key={i} className="flex gap-5">
-                  <span className="shrink-0 text-2xl font-bold text-brand-navy/25 font-mono tabular-nums leading-none pt-0.5">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <p className="text-gray-600 leading-relaxed border-l border-gray-200 pl-5">{text}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      </section>
       {/* ── Section 7 — Speakers ─────────────────────────────────────────────
           Trois fiches a bandeau : le monogramme chevauche un aplat navy, et le
           lien LinkedIn est ancre en pied de carte (mt-auto) pour que les trois

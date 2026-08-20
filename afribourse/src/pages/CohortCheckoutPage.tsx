@@ -1,7 +1,13 @@
+// src/pages/CohortCheckoutPage.tsx
+//
+// Choix de la formule puis paiement, sur une seule page : les trois packs en
+// cartes comparables en haut, puis le moyen de paiement a gauche et le
+// recapitulatif chiffre a droite. La charte reste celle du site : navy pour la
+// selection, orange pour l'action de paiement, vert et rouge pour les etats.
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, ArrowLeft, Flame } from 'lucide-react';
+import { Check, CheckCircle, Loader2, AlertCircle, ArrowLeft, Flame, Smartphone, ShieldCheck } from 'lucide-react';
 import { applyPromo, promoPercent } from '../utils/promo';
 import { usePromoCountdown } from '../hooks/usePromoCountdown';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -13,7 +19,7 @@ const PACK_ID = 'pack-parcours-investisseur';
 
 // Packs (good-better-best) — comptant, plein tarif
 // +2 sessions et +6h par palier (Starter 5/15h · Parcours 7/21h · Investisseur 9/27h)
-const PACK_TIERS: Record<string, { name: string; full: number; sessions: number; hours: number; perks: string[] }> = {
+const PACK_TIERS: Record<string, { name: string; full: number; sessions: number; hours: number; popular?: boolean; perks: string[] }> = {
   starter: {
     name: 'Pack Starter', full: 70000, sessions: 5, hours: 15,
     perks: [
@@ -21,28 +27,28 @@ const PACK_TIERS: Record<string, { name: string; full: number; sessions: number;
       "5 plans d'action personnalisés",
       'Deal Flow hebdo + Communauté (3 mois)',
       'Replays à vie + Certificat BRVM Niveau 1',
-      'Ouverture compte SGI — guide écrit',
+      'Ouverture compte SGI : guide écrit',
     ],
   },
   parcours: {
-    name: 'Pack Parcours', full: 100000, sessions: 7, hours: 21,
+    name: 'Pack Parcours', full: 100000, sessions: 7, hours: 21, popular: true,
     perks: [
       'Tout le Starter, plus :',
-      'W6 — Constitution de portefeuille',
-      'W7 — Gestion du risque',
+      'W6 : Constitution de portefeuille',
+      'W7 : Gestion du risque',
       'Revue de portefeuille perso + Q&A live mensuelle',
-      'Ouverture SGI — session collective live',
+      'Ouverture SGI : session collective live',
     ],
   },
   investisseur: {
     name: 'Pack Investisseur', full: 150000, sessions: 9, hours: 27,
     perks: [
       'Tout le Parcours, plus :',
-      "W8 — Psychologie de l'investisseur",
-      'W9 — IA et Finance',
+      "W8 : Psychologie de l'investisseur",
+      'W9 : IA et Finance',
       'Appel 1:1 de 30 min avec votre coach',
       'Investment Policy Statement + accès à vie',
-      'Ouverture SGI — accompagnement main dans la main',
+      'Ouverture SGI : accompagnement main dans la main',
     ],
   },
 };
@@ -56,37 +62,42 @@ function readLead(): { name?: string; email?: string; dialCode?: string; phone?:
 }
 
 const WHATSAPP_DIAL_CODES = [
-  { code: '+225', flag: '🇨🇮' }, { code: '+221', flag: '🇸🇳' }, { code: '+226', flag: '🇧🇫' },
-  { code: '+223', flag: '🇲🇱' }, { code: '+228', flag: '🇹🇬' }, { code: '+229', flag: '🇧🇯' },
-  { code: '+227', flag: '🇳🇪' }, { code: '+237', flag: '🇨🇲' }, { code: '+233', flag: '🇬🇭' },
-  { code: '+234', flag: '🇳🇬' }, { code: '+241', flag: '🇬🇦' }, { code: '+33', flag: '🇫🇷' },
+  { code: '+225', name: "Côte d'Ivoire" }, { code: '+221', name: 'Sénégal' }, { code: '+226', name: 'Burkina Faso' },
+  { code: '+223', name: 'Mali' }, { code: '+228', name: 'Togo' }, { code: '+229', name: 'Bénin' },
+  { code: '+227', name: 'Niger' }, { code: '+237', name: 'Cameroun' }, { code: '+233', name: 'Ghana' },
+  { code: '+234', name: 'Nigeria' }, { code: '+241', name: 'Gabon' }, { code: '+33', name: 'France' },
 ];
 
 const PAYMENT_DIAL_CODES = [
-  { code: '+225', flag: '🇨🇮', name: "Côte d'Ivoire" },
-  { code: '+221', flag: '🇸🇳', name: 'Sénégal' },
-  { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
-  { code: '+223', flag: '🇲🇱', name: 'Mali' },
-  { code: '+229', flag: '🇧🇯', name: 'Bénin' },
-  { code: '+228', flag: '🇹🇬', name: 'Togo' },
-  { code: '+237', flag: '🇨🇲', name: 'Cameroun' },
-  { code: '+233', flag: '🇬🇭', name: 'Ghana' },
-  { code: '+256', flag: '🇺🇬', name: 'Ouganda' },
-  { code: '+250', flag: '🇷🇼', name: 'Rwanda' },
+  { code: '+225', name: "Côte d'Ivoire" },
+  { code: '+221', name: 'Sénégal' },
+  { code: '+226', name: 'Burkina Faso' },
+  { code: '+223', name: 'Mali' },
+  { code: '+229', name: 'Bénin' },
+  { code: '+228', name: 'Togo' },
+  { code: '+237', name: 'Cameroun' },
+  { code: '+233', name: 'Ghana' },
+  { code: '+256', name: 'Ouganda' },
+  { code: '+250', name: 'Rwanda' },
 ];
 
 // Pays sans paiement en ligne (Mobile Money non disponible) → contact manuel
 const OFFLINE_PAYMENT_CODES = ['+228'];
 
 const MOBILE_OPERATORS = [
-  { id: 'wave',         label: 'Wave',         emoji: '🌊' },
-  { id: 'orange-money', label: 'Orange Money', emoji: '🟠' },
-  { id: 'mtn-momo',     label: 'MTN MoMo',     emoji: '🟡' },
-  { id: 'moov-money',   label: 'Moov Money',   emoji: '🔵' },
-  { id: 'free-money',   label: 'Free Money',   emoji: '🟢' },
+  { id: 'wave',         label: 'Wave' },
+  { id: 'orange-money', label: 'Orange Money' },
+  { id: 'mtn-momo',     label: 'MTN MoMo' },
+  { id: 'moov-money',   label: 'Moov Money' },
+  { id: 'free-money',   label: 'Free Money' },
 ];
 
-function formatPrice(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
+function formatPrice(n: number) { return n.toLocaleString('fr-FR') + ' FCFA'; }
+
+const FIELD_CLASS =
+  'w-full h-12 px-4 text-sm bg-white border border-gray-200 rounded-xl ' +
+  'focus:outline-none focus:ring-2 focus:ring-brand-navy/30 focus:border-brand-navy ' +
+  'placeholder:text-gray-400 transition-colors';
 
 export default function CohortCheckoutPage() {
   const navigate = useNavigate();
@@ -99,6 +110,7 @@ export default function CohortCheckoutPage() {
   const promo = usePromoCountdown();
   const price = applyPromo(tier, tierCfg.full);
   const pct = promoPercent(tier);
+  const discount = tierCfg.full - price;
 
   const lead = readLead();
   const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
@@ -192,16 +204,20 @@ export default function CohortCheckoutPage() {
   // ── Succès ──
   if (payStatus === 'completed') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-9 h-9 text-green-500" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl border border-gray-200 shadow-sm p-8 text-center">
+          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-9 h-9 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Paiement confirmé 🎉</h1>
-          <p className="text-sm text-gray-600 mb-5">
-            Votre place au Parcours Investisseur (cohorte août) est confirmée. Vous recevrez tous les détails par email et WhatsApp.
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Paiement confirmé</h1>
+          <p className="text-sm text-gray-600 leading-relaxed mb-6">
+            Votre place au Parcours Investisseur (cohorte août) est confirmée. Vous recevrez tous les détails
+            par email et sur WhatsApp.
           </p>
-          <button onClick={() => navigate('/webinaires')} className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+          <button
+            onClick={() => navigate('/webinaires')}
+            className="w-full h-12 rounded-xl font-semibold text-white bg-brand-navy hover:bg-brand-navy-hover transition-colors"
+          >
             Retour aux webinaires
           </button>
         </div>
@@ -209,214 +225,352 @@ export default function CohortCheckoutPage() {
     );
   }
 
+  const operators = MOBILE_OPERATORS.filter((op) => getAvailableCountries(op.id).includes(payDialCode));
+  const offline = OFFLINE_PAYMENT_CODES.includes(payDialCode);
+  const canPay = !!payOperator && (payOperator === 'wave' || !!payPhone.trim()) && payStatus !== 'initiating';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-10 px-4">
-      <div className="max-w-lg mx-auto">
-        <button onClick={() => navigate('/webinaires')} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-5xl mx-auto">
+        <button
+          onClick={() => navigate('/webinaires')}
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-4"
+        >
           <ArrowLeft className="w-4 h-4" /> Retour
         </button>
 
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
-            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">Cohorte Août 2026</p>
-            <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
-            <div className="mt-2 flex items-baseline gap-2 flex-wrap">
-              <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
-              {promo.active && pct > 0 && (
-                <>
-                  <span className="text-lg line-through text-blue-300/80 font-semibold">{formatPrice(tierCfg.full)}</span>
-                  <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
-                </>
-              )}
-            </div>
-            <p className="text-blue-200 text-xs mt-1">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation</p>
-            {promo.active && pct > 0 && (
-              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5" /> Offre -{pct}% — se termine dans <span className="font-mono">{promo.label}</span>
-              </p>
-            )}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-8">
+
+          {/* Titre */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Choisissez votre formule</h1>
+            <p className="text-sm text-gray-500 mt-1.5">
+              Cohorte Août 2026 · sans engagement · paiement en FCFA
+            </p>
           </div>
 
-          {/* Pack + résumé — toujours visibles (changement de pack possible à tout moment) */}
-          <div className="p-6 pb-0 space-y-4">
-            {/* Sélecteur de pack */}
-            <div>
-              <p className="text-xs font-semibold text-gray-700 mb-2">Votre pack</p>
-              <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(PACK_TIERS) as Array<keyof typeof PACK_TIERS>).map((k) => {
-                  const c = PACK_TIERS[k];
-                  const active = tier === k;
-                  return (
-                    <button key={k} onClick={() => setTier(k)} type="button"
-                      className={`rounded-xl border-2 p-2 text-center transition-all ${active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
-                      <span className={`block text-xs font-extrabold ${active ? 'text-blue-800' : 'text-gray-700'}`}>{c.name.replace('Pack ', '')}</span>
-                      <span className="block text-[11px] font-bold text-gray-900 mt-0.5">{c.full.toLocaleString('fr-FR')}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-              <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
-              <p className="text-xs mt-0.5">1ère session le samedi 8 août.</p>
-            </div>
-
-
-            {/* Avantages clés du pack sélectionné */}
-            <div className="border border-gray-100 rounded-xl p-3 bg-gray-50">
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Inclus dans le {tierCfg.name}</p>
-              <ul className="space-y-1.5">
-                {tierCfg.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2 text-xs text-gray-700">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                    <span className={perk.endsWith('plus :') ? 'font-bold text-gray-900' : ''}>{perk}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Étape 1 — Contact (affichée seulement si on n'a pas déjà les infos) */}
-          {step === 'form' && (
-            <div className="p-6 space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Nom complet *</label>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ex : Kofi Mensah" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Adresse email *</label>
-                  <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                    className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="votre@email.com" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro WhatsApp *</label>
-                  <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                    <select value={waDialCode} onChange={e => setWaDialCode(e.target.value)}
-                      className="bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-700 pl-2 pr-1 py-2.5 focus:outline-none cursor-pointer" style={{ minWidth: '85px' }}>
-                      {WHATSAPP_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}
-                    </select>
-                    <input type="tel" value={waPhone} onChange={e => setWaPhone(e.target.value.replace(/[^\d\s-]/g, ''))}
-                      placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
-                  </div>
-                </div>
-              </div>
-
-              <button onClick={handleContinue} disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 hover:opacity-90 active:scale-95 disabled:opacity-60 transition-all">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> Continuer vers le paiement</>}
-              </button>
-
-              <div className="text-center pt-1">
-                <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
-                  Ou payer en 3 fois
-                </button>
-              </div>
+          {/* Compte a rebours de l'offre */}
+          {promo.active && pct > 0 && (
+            <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2.5 rounded-xl bg-brand-orange/10 text-brand-orange-dark text-sm font-semibold">
+              <Flame className="w-4 h-4 shrink-0" />
+              Offre -{pct}% : se termine dans <span className="font-mono">{promo.label}</span>
             </div>
           )}
 
-          {/* Étape paiement */}
-          {step === 'payment' && (
-            <div className="p-6 space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                ✅ Inscription enregistrée · Payez pour confirmer votre place
-                <span className="block font-bold mt-0.5">{formatPrice(price)}</span>
-              </div>
+          {/* Les trois formules */}
+          <div className="grid md:grid-cols-3 gap-5">
+            {(Object.keys(PACK_TIERS) as Array<keyof typeof PACK_TIERS>).map((k) => {
+              const c = PACK_TIERS[k];
+              const active = tier === k;
+              const tierPrice = applyPromo(k as string, c.full);
+              const tierPct = promoPercent(k as string);
 
-              {(payStatus === 'idle' || payStatus === 'initiating') && (
-                <>
+              return (
+                <div
+                  key={k}
+                  className={`relative flex flex-col rounded-2xl p-5 transition-all ${
+                    active
+                      ? 'border-2 border-brand-navy shadow-md'
+                      : 'border border-gray-200 hover:border-brand-navy/40'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <h2 className="font-bold text-gray-900">{c.name.replace('Pack ', '')}</h2>
+                    {c.popular && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-brand-orange/10 text-brand-orange-dark border border-brand-orange/30 shrink-0">
+                        populaire
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-2xl font-extrabold text-gray-900 font-mono tabular-nums leading-none">
+                    {tierPrice.toLocaleString('fr-FR')}
+                    <span className="text-sm font-semibold text-gray-400 ml-1.5">FCFA</span>
+                  </p>
+                  {promo.active && tierPct > 0 && (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      <span className="line-through font-mono">{c.full.toLocaleString('fr-FR')}</span>
+                      <span className="ml-2 font-semibold text-green-600">-{tierPct}%</span>
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    {c.sessions} sessions live · {c.hours}h de formation
+                  </p>
+
+                  <ul className="mt-4 space-y-2 flex-1">
+                    {c.perks.map((perk) => (
+                      <li key={perk} className="flex items-start gap-2 text-xs text-gray-600 leading-relaxed">
+                        <Check className="w-3.5 h-3.5 text-brand-navy shrink-0 mt-0.5" />
+                        <span className={perk.endsWith('plus :') ? 'font-semibold text-gray-900' : ''}>{perk}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    type="button"
+                    onClick={() => setTier(k as string)}
+                    disabled={active}
+                    className={`mt-6 w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-colors ${
+                      active
+                        ? 'bg-brand-navy text-white cursor-default'
+                        : 'border-2 border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white'
+                    }`}
+                  >
+                    {active ? (<><Check className="w-4 h-4" /> Formule choisie</>) : 'Choisir'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="border-t border-dashed border-gray-300 mt-8 sm:mt-10 mb-8 sm:mb-10" />
+
+          {/* Paiement + recapitulatif */}
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+
+            {/* ── Colonne gauche ── */}
+            <div>
+              <h2 className="font-bold text-gray-900 mb-4">
+                {step === 'form' ? 'Vos coordonnées' : 'Paiement'}
+              </h2>
+
+              {/* Etape 1 : coordonnees (seulement si elles manquent) */}
+              {step === 'form' && (
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Pays</label>
-                    <select value={payDialCode} onChange={e => { setPayDialCode(e.target.value); setPayOperator(null); }}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                      {PAYMENT_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.name} ({c.code})</option>)}
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Nom complet *</label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                      className={FIELD_CLASS}
+                      placeholder="Ex : Kofi Mensah"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Adresse email *</label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                      className={FIELD_CLASS}
+                      placeholder="votre@email.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro WhatsApp *</label>
+                    <div className="flex items-stretch h-12 border border-gray-200 rounded-xl overflow-hidden bg-white focus-within:ring-2 focus-within:ring-brand-navy/30 focus-within:border-brand-navy transition-colors">
+                      <select
+                        value={waDialCode}
+                        onChange={e => setWaDialCode(e.target.value)}
+                        className="bg-gray-50 border-r border-gray-200 text-sm font-medium text-gray-600 pl-3 pr-2 focus:outline-none cursor-pointer"
+                      >
+                        {WHATSAPP_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
+                      </select>
+                      <input
+                        type="tel"
+                        value={waPhone}
+                        onChange={e => setWaPhone(e.target.value.replace(/[^\d\s-]/g, ''))}
+                        placeholder="07 00 00 00 00"
+                        className="flex-1 px-3 text-sm focus:outline-none bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Etape 2 : moyen de paiement */}
+              {step === 'payment' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Pays</label>
+                    <select
+                      value={payDialCode}
+                      onChange={e => { setPayDialCode(e.target.value); setPayOperator(null); }}
+                      className={`${FIELD_CLASS} cursor-pointer`}
+                    >
+                      {PAYMENT_DIAL_CODES.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
                     </select>
                   </div>
 
-                  {OFFLINE_PAYMENT_CODES.includes(payDialCode) ? (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                      <p className="font-bold mb-1">🇹🇬 Paiement en ligne non disponible au Togo</p>
-                      <p className="text-xs leading-relaxed">Pas d'inquiétude — vos coordonnées sont bien enregistrées. Notre équipe vous contacte très vite sur WhatsApp avec les informations pour régler votre place.</p>
+                  {offline ? (
+                    <div className="bg-white border-2 border-brand-orange rounded-xl p-4">
+                      <p className="font-bold text-gray-900 text-sm mb-1">Paiement en ligne non disponible au Togo</p>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        Vos coordonnées sont bien enregistrées. Notre équipe vous contacte très vite sur WhatsApp
+                        avec les informations pour régler votre place.
+                      </p>
                     </div>
                   ) : (
-                  <>
-                  <div>
-                    <p className="text-xs font-semibold text-gray-700 mb-2">Opérateur Mobile Money</p>
-                    {(() => {
-                      const ops = MOBILE_OPERATORS.filter(op => getAvailableCountries(op.id).includes(payDialCode));
-                      if (ops.length === 0) return <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">Aucun opérateur Mobile Money disponible pour ce pays.</p>;
-                      return (
-                        <div className="grid grid-cols-2 gap-2">
-                          {ops.map(op => (
-                            <button key={op.id} onClick={() => setPayOperator(op.id)}
-                              className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all text-left cursor-pointer
-                                ${payOperator === op.id ? 'border-blue-600 bg-blue-50 text-blue-800' : 'border-gray-200 text-gray-700 hover:border-blue-300'}`}>
-                              {op.emoji} {op.label}
-                            </button>
-                          ))}
+                    <>
+                      {/* Operateurs, en pastilles a cocher */}
+                      {operators.length === 0 ? (
+                        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                          Aucun opérateur Mobile Money disponible pour ce pays.
+                        </p>
+                      ) : (
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          {operators.map(op => {
+                            const selected = payOperator === op.id;
+                            return (
+                              <button
+                                key={op.id}
+                                type="button"
+                                onClick={() => setPayOperator(op.id)}
+                                className={`flex items-center gap-3 h-12 px-4 rounded-xl text-sm font-semibold text-left transition-colors ${
+                                  selected
+                                    ? 'border-2 border-brand-navy bg-ink-50 text-brand-navy'
+                                    : 'border border-gray-200 text-gray-600 hover:border-brand-navy/40'
+                                }`}
+                              >
+                                <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                  selected ? 'border-brand-navy' : 'border-gray-300'
+                                }`}>
+                                  {selected && <span className="w-2 h-2 rounded-full bg-brand-navy" />}
+                                </span>
+                                {op.label}
+                              </button>
+                            );
+                          })}
                         </div>
-                      );
-                    })()}
-                  </div>
-                  {payOperator === 'wave' ? (
-                    <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-xs text-sky-800 leading-relaxed">
-                      🌊 Vous allez être redirigé vers <strong>Wave</strong> pour finaliser le paiement en toute sécurité. Aucun numéro à saisir ici.
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro Mobile Money</label>
-                      <div className="flex items-stretch border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                        <span className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 flex items-center">{payDialCode}</span>
-                        <input type="tel" value={payPhone} onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
-                          placeholder="07 00 00 00 00" className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white" />
+                      )}
+
+                      {payOperator === 'wave' ? (
+                        <div className="bg-ink-50 rounded-xl p-4 text-sm text-gray-600 leading-relaxed">
+                          Vous allez être redirigé vers <strong className="text-gray-900">Wave</strong> pour finaliser
+                          le paiement en toute sécurité. Aucun numéro à saisir ici.
+                        </div>
+                      ) : (
+                        <div className="flex items-stretch h-12 border border-gray-200 rounded-xl overflow-hidden bg-white focus-within:ring-2 focus-within:ring-brand-navy/30 focus-within:border-brand-navy transition-colors">
+                          <span className="bg-gray-50 border-r border-gray-200 px-3 text-sm font-medium text-gray-600 flex items-center font-mono">
+                            {payDialCode}
+                          </span>
+                          <input
+                            type="tel"
+                            value={payPhone}
+                            onChange={e => setPayPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                            placeholder="numéro mobile money"
+                            className="flex-1 px-3 text-sm focus:outline-none bg-white"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-2.5 rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-500">
+                        <Smartphone className="w-4 h-4 text-brand-navy shrink-0 mt-0.5" />
+                        Vous recevrez une demande de confirmation sur votre téléphone.
                       </div>
-                    </div>
-                  )}
 
-                  {payError && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{payError}</p>}
-
-                  <button onClick={handlePay} disabled={!payOperator || (payOperator !== 'wave' && !payPhone.trim()) || payStatus === 'initiating'}
-                    className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    {payStatus === 'initiating' ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : payOperator === 'wave' ? `Payer avec Wave · ${formatPrice(price)}` : `Payer ${formatPrice(price)}`}
-                  </button>
-                  </>
+                      {payError && (
+                        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{payError}</p>
+                      )}
+                    </>
                   )}
-                </>
+                </div>
               )}
+            </div>
 
-              {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
-                <div className="text-center pt-1 space-y-2">
+            {/* ── Colonne droite : recapitulatif ── */}
+            <div className="bg-ink-50 rounded-2xl border border-ink-100 p-5">
+              <h2 className="font-bold text-gray-900 mb-4">Récapitulatif</h2>
+
+              <dl className="text-sm">
+                <div className="flex items-baseline justify-between gap-4 pb-3">
+                  <dt className="text-gray-600">{tierCfg.name} · comptant</dt>
+                  <dd className="font-mono tabular-nums text-gray-900 shrink-0">
+                    {tierCfg.full.toLocaleString('fr-FR')}
+                  </dd>
+                </div>
+
+                {promo.active && pct > 0 && (
+                  <div className="flex items-baseline justify-between gap-4 pb-3">
+                    <dt className="text-green-600 font-semibold">Offre de lancement -{pct}%</dt>
+                    <dd className="font-mono tabular-nums text-green-600 font-semibold shrink-0">
+                      −{discount.toLocaleString('fr-FR')}
+                    </dd>
+                  </div>
+                )}
+
+                <div className="flex items-baseline justify-between gap-4 pt-3 border-t border-ink-200">
+                  <dt className="font-bold text-gray-900">Total</dt>
+                  <dd className="font-mono tabular-nums font-bold text-gray-900 text-lg shrink-0">
+                    {formatPrice(price)}
+                  </dd>
+                </div>
+              </dl>
+
+              {/* Action principale, selon l'etape et l'etat du paiement */}
+              <div className="mt-5">
+                {step === 'form' ? (
+                  <button
+                    onClick={handleContinue}
+                    disabled={loading}
+                    className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl font-semibold text-white text-sm bg-brand-orange hover:bg-brand-orange-hover disabled:opacity-60 transition-colors"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Continuer vers le paiement</>}
+                  </button>
+                ) : payStatus === 'pending' ? (
+                  <div className="text-center py-2 space-y-2">
+                    <Loader2 className="w-8 h-8 text-brand-navy animate-spin mx-auto" />
+                    <p className="font-bold text-gray-900 text-sm">Vérifiez votre téléphone</p>
+                    <p className="text-sm text-gray-600">
+                      Entrez votre PIN Mobile Money pour confirmer {formatPrice(price)}
+                    </p>
+                  </div>
+                ) : payStatus === 'failed' ? (
+                  <div className="text-center py-2 space-y-2">
+                    <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
+                    <p className="text-red-600 font-semibold text-sm">{payError}</p>
+                    <button onClick={reset} className="text-sm font-semibold text-brand-navy hover:underline">
+                      Réessayer
+                    </button>
+                  </div>
+                ) : offline ? (
+                  <p className="text-sm text-gray-500 text-center">
+                    Notre équipe vous contacte sur WhatsApp pour finaliser.
+                  </p>
+                ) : (
+                  <button
+                    onClick={handlePay}
+                    disabled={!canPay}
+                    className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-xl font-semibold text-white text-sm bg-brand-orange hover:bg-brand-orange-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {payStatus === 'initiating'
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</>
+                      : payOperator === 'wave'
+                        ? `Payer avec Wave · ${formatPrice(price)}`
+                        : `Payer ${formatPrice(price)}`}
+                  </button>
+                )}
+              </div>
+
+              <p className="flex items-center justify-center gap-1.5 text-xs text-gray-500 mt-3">
+                <ShieldCheck className="w-3.5 h-3.5 text-brand-navy shrink-0" />
+                Paiement sécurisé · annulable à tout moment
+              </p>
+
+              {/* Liens secondaires */}
+              {payStatus === 'idle' && !offline && (
+                <div className="mt-4 pt-4 border-t border-ink-200 space-y-2 text-center">
                   {!promo.active && (
-                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
+                    <button
+                      onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)}
+                      className="block w-full text-sm font-semibold text-brand-navy hover:underline"
+                    >
                       Ou payer en 3 fois <span className="text-gray-400 font-normal">(léger surcoût)</span>
                     </button>
                   )}
-                  <button onClick={() => setStep('form')} className="block w-full text-[11px] text-gray-400 hover:text-gray-600">
-                    Modifier mes coordonnées
-                  </button>
-                </div>
-              )}
-
-              {payStatus === 'pending' && (
-                <div className="text-center py-4 space-y-3">
-                  <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
-                  <p className="font-bold text-gray-900">Vérifiez votre téléphone</p>
-                  <p className="text-sm text-gray-600">Entrez votre PIN Mobile Money pour confirmer {formatPrice(price)}</p>
-                </div>
-              )}
-
-              {payStatus === 'failed' && (
-                <div className="text-center py-2 space-y-3">
-                  <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
-                  <p className="text-red-600 font-semibold text-sm">{payError}</p>
-                  <button onClick={reset} className="text-sm font-semibold text-blue-600 hover:underline">Réessayer</button>
+                  {step === 'payment' && (
+                    <button
+                      onClick={() => setStep('form')}
+                      className="block w-full text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      Modifier mes coordonnées
+                    </button>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

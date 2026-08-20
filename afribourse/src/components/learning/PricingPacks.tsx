@@ -2,7 +2,6 @@ import React from 'react';
 import { BookOpen, Check, Flame, Gift, Landmark } from 'lucide-react';
 import { applyPromo, promoPercent, isPromoActive } from '../../utils/promo';
 import { usePromoCountdown } from '../../hooks/usePromoCountdown';
-import { Button } from '../ui';
 
 export type PackId = 'starter' | 'parcours' | 'investisseur';
 
@@ -51,7 +50,7 @@ const PACKS: Pack[] = [
     tagline: 'Je construis ma stratégie et je gère mon risque',
     price: 100000,
     monthly: 35000,
-    badge: 'Le plus populaire',
+    badge: 'populaire',
     highlight: true,
     includesTitle: 'Tout le Starter, plus',
     features: [
@@ -71,7 +70,7 @@ const PACKS: Pack[] = [
     tagline: "J'investis comme un pro et je maximise mes profits",
     price: 150000,
     monthly: 53000,
-    badge: 'Expérience complète',
+    badge: 'complet',
     highlight: false,
     includesTitle: 'Tout le Parcours, plus',
     features: [
@@ -126,126 +125,105 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
           </p>
         </div>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        {/* Cartes — meme gabarit que le choix de formule de la page de paiement :
+            carte blanche, bordure navy doublee sur le pack mis en avant, prix en
+            chiffres tabulaires, coches navy et bouton ancre en pied. */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           {PACKS.map((p) => {
-            // Le pack mis en avant reprend l'aplat navy des encarts de l'accueil.
-            const dark = p.highlight;
-
-            // Une seule echelle de tons par carte : le reste du markup s'y
-            // reporte au lieu de re-tester `dark` a chaque ligne.
-            const tone = dark
-              ? { title: 'text-white', body: 'text-white/80', muted: 'text-white/55', accent: 'text-brand-orange-light' }
-              : { title: 'text-gray-900', body: 'text-gray-700', muted: 'text-gray-500', accent: 'text-brand-navy' };
+            const featured = p.highlight;
+            const promoOn = isPromoActive();
+            const pct = promoPercent(p.id);
+            const price = applyPromo(p.id, p.price);
+            const monthly = applyPromo(p.id, p.monthly);
 
             return (
               <div
                 key={p.id}
-                className={`relative rounded-2xl border flex flex-col transition-all duration-300 ${
+                className={`relative flex flex-col rounded-2xl bg-white p-5 transition-all duration-300 ${
                   p.id === 'parcours' ? 'order-first md:order-none' : ''
                 } ${
-                  dark
-                    ? 'bg-brand-navy border-brand-navy text-white shadow-md shadow-brand-navy/20'
-                    : 'bg-white border-gray-200 shadow-sm hover:border-brand-navy/25 hover:shadow-md'
+                  featured
+                    ? 'border-2 border-brand-navy shadow-md'
+                    : 'border border-gray-200 shadow-sm hover:border-brand-navy/40 hover:shadow-md'
                 }`}
               >
-                {p.badge && (
-                  <div
-                    className={`absolute -top-3 left-1/2 -translate-x-1/2 z-10 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide whitespace-nowrap ${
-                      dark ? 'bg-brand-orange text-white' : 'bg-white text-brand-navy border border-brand-navy/25'
-                    }`}
-                  >
-                    {p.badge}
-                  </div>
-                )}
-
-                <div className="p-6 flex flex-col h-full">
-                  {/* Nom + promesse. Les icones Star et Trophy ne distinguaient
-                      que deux cartes sur trois : le badge suffit a hierarchiser. */}
-                  <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${tone.accent}`}>
-                    {p.name}
-                  </p>
-                  <p className={`text-sm mb-5 leading-snug ${tone.muted}`}>{p.tagline}</p>
-
-                  {/* Prix */}
-                  {(() => {
-                    const promoOn = isPromoActive();
-                    const pct = promoPercent(p.id);
-                    const price = applyPromo(p.id, p.price);
-                    const monthly = applyPromo(p.id, p.monthly);
-                    return (
-                      <>
-                        <div className="mb-1 flex items-baseline gap-2 flex-wrap">
-                          <span className={`text-3xl font-bold ${tone.title}`}>{fmt(price)}</span>
-                          <span className={`text-sm font-semibold ${tone.muted}`}>XOF</span>
-                          {promoOn && pct > 0 && (
-                            <>
-                              <span className={`text-base line-through font-semibold ${tone.muted}`}>{fmt(p.price)}</span>
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-orange text-white">
-                                -{pct}%
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <p className={`text-sm mb-6 ${tone.muted}`}>
-                          {promoOn ? 'Offre flash : paiement en une fois' : `ou dès ${fmt(monthly)} XOF/mois en 3×`}
-                        </p>
-                      </>
-                    );
-                  })()}
-
-                  {/* CTA — orange sur le pack mis en avant, contour navy ailleurs.
-                      Meme paire que le hero et le bandeau de l'accueil. */}
-                  <Button
-                    variant={dark ? 'orange' : 'navyOutline'}
-                    size="md"
-                    className="w-full h-12 mb-6"
-                    onClick={() => onChoose(p.id)}
-                  >
-                    {p.cta}
-                  </Button>
-
-                  {/* Inclusions */}
-                  <p className={`text-[10px] font-bold uppercase tracking-wider mb-3 ${tone.muted}`}>
-                    {p.includesTitle}
-                  </p>
-                  <ul className="space-y-2.5 mb-6">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5">
-                        <Check className={`w-4 h-4 flex-shrink-0 mt-0.5 ${tone.accent}`} strokeWidth={2.5} />
-                        <span className={`text-sm leading-snug ${tone.body}`}>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {/* SGI et bonus — panneau a deux rangees strictement
-                      identiques : meme tuile d'icone, meme micro-titre, meme
-                      gouttiere. La symetrie tient meme quand les deux textes
-                      n'ont pas la meme longueur. */}
-                  <div className={`mt-auto rounded-xl overflow-hidden divide-y ${
-                    dark ? 'bg-white/[0.06] divide-white/10' : 'bg-gray-50 divide-gray-200/70'
-                  }`}>
-                    {[
-                      { icon: Landmark, label: 'Compte SGI', text: p.sgiDesc, minH: 'min-h-[3.6rem]' },
-                      { icon: Gift, label: 'Bonus', text: p.bonus, minH: 'min-h-[2.4rem]' },
-                    ].map(({ icon: Icon, label, text, minH }) => (
-                      <div key={label} className="flex gap-3 p-4">
-                        <span className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
-                          dark
-                            ? 'bg-white/10 ring-1 ring-white/15 text-brand-orange-light'
-                            : 'bg-white border border-gray-200 text-brand-navy'
-                        }`}>
-                          <Icon className="w-4 h-4" strokeWidth={1.75} />
-                        </span>
-                        <div className="min-w-0">
-                          <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${tone.muted}`}>
-                            {label}
-                          </p>
-                          <p className={`text-sm leading-snug ${minH} ${tone.body}`}>{text}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                {/* Nom + badge */}
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <h3 className="font-bold text-gray-900">{p.name}</h3>
+                  {p.badge && (
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
+                        featured
+                          ? 'bg-brand-orange/10 text-brand-orange-dark border border-brand-orange/30'
+                          : 'bg-ink-50 text-brand-navy border border-ink-200'
+                      }`}
+                    >
+                      {p.badge}
+                    </span>
+                  )}
                 </div>
+
+                {/* Prix */}
+                <p className="text-2xl font-extrabold text-gray-900 font-mono tabular-nums leading-none">
+                  {fmt(price)}
+                  <span className="text-sm font-semibold text-gray-400 ml-1.5">FCFA</span>
+                </p>
+                {promoOn && pct > 0 && (
+                  <p className="text-xs text-gray-400 mt-1.5">
+                    <span className="line-through font-mono">{fmt(p.price)}</span>
+                    <span className="ml-2 font-semibold text-green-600">-{pct}%</span>
+                  </p>
+                )}
+                <p className="text-xs text-gray-500 mt-2">
+                  {promoOn ? 'Offre flash : paiement en une fois' : `ou dès ${fmt(monthly)} FCFA/mois en 3×`}
+                </p>
+                <p className="text-sm text-gray-500 leading-snug mt-3">{p.tagline}</p>
+
+                {/* Inclusions */}
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-5 mb-2.5">
+                  {p.includesTitle}
+                </p>
+                <ul className="space-y-2 flex-1">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-xs text-gray-600 leading-relaxed">
+                      <Check className="w-3.5 h-3.5 text-brand-navy shrink-0 mt-0.5" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* SGI et bonus — deux rangees strictement identiques : meme
+                    tuile d'icone, meme micro-titre, meme gouttiere. La symetrie
+                    tient meme quand les deux textes n'ont pas la meme longueur. */}
+                <div className="mt-5 rounded-xl overflow-hidden bg-gray-50 divide-y divide-gray-200/70">
+                  {[
+                    { icon: Landmark, label: 'Compte SGI', text: p.sgiDesc, minH: 'min-h-[3.6rem]' },
+                    { icon: Gift, label: 'Bonus', text: p.bonus, minH: 'min-h-[2.4rem]' },
+                  ].map(({ icon: Icon, label, text, minH }) => (
+                    <div key={label} className="flex gap-3 p-4">
+                      <span className="shrink-0 w-8 h-8 rounded-lg bg-white border border-gray-200 text-brand-navy flex items-center justify-center">
+                        <Icon className="w-4 h-4" strokeWidth={1.75} />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">{label}</p>
+                        <p className={`text-xs leading-relaxed text-gray-600 ${minH}`}>{text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA — plein navy sur le pack mis en avant, contour ailleurs. */}
+                <button
+                  type="button"
+                  onClick={() => onChoose(p.id)}
+                  className={`mt-6 w-full inline-flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-semibold transition-colors ${
+                    featured
+                      ? 'bg-brand-navy text-white hover:bg-brand-navy-hover'
+                      : 'border-2 border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white'
+                  }`}
+                >
+                  {p.cta}
+                </button>
               </div>
             );
           })}
