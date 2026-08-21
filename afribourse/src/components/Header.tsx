@@ -166,13 +166,13 @@ export default function Header() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-1">
+            <nav className="hidden lg:flex space-x-1 self-stretch">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.id}
-                    className="relative"
+                    className="relative flex items-center"
                     onMouseEnter={() => item.hasMegaMenu && openMegaMenu(item.id)}
                     onMouseLeave={scheduleClose}
                     onFocus={() => item.hasMegaMenu && openMegaMenu(item.id)}
@@ -222,6 +222,18 @@ export default function Header() {
                         }`}
                       />
                     </button>
+
+                    {/* Sous-menu ancre sous son onglet. En absolute il ne
+                        compte pas dans la hauteur mesuree du bloc fixe. */}
+                    {item.hasMegaMenu && activeMegaMenu === item.id && ActiveMegaMenuComponent && (
+                      <div
+                        className="absolute left-0 top-full z-40"
+                        onMouseEnter={cancelClose}
+                        onMouseLeave={scheduleClose}
+                      >
+                        <ActiveMegaMenuComponent />
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -421,14 +433,6 @@ export default function Header() {
       </header>
       </div>
 
-      {/* Mega Menus - rendered inside the sticky wrapper so they attach to the header */}
-      {ActiveMegaMenuComponent && (
-        // onMouseEnter annule la fermeture programmee par l'onglet : c'est ce
-        // qui rend le panneau atteignable.
-        <div className="relative" onMouseEnter={cancelClose} onMouseLeave={scheduleClose}>
-          <ActiveMegaMenuComponent />
-        </div>
-      )}
     </div>
   );
 }
