@@ -1,0 +1,34 @@
+name: Keep Render backend awake
+
+# Empêche le backend Render (plan gratuit) de se mettre en veille : ping l'endpoint
+# /health toutes les ~10 minutes (Render s'endort après 15 min d'inactivité).
+# Les runs planifiés GitHub Actions ne s'exécutent que sur la branche par défaut.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # toutes les 10 minutes
+  workflow_dispatch: {}        # déclenchement manuel possible
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping /health (avec retries pour le cold-start)
+        run: |
+          URL="https://afribourse-api.onrender.com/health"
+          for i in 1 2 3 4; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "$URL" || echo "000")
+            echo "Tentative $i -> HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "Backend réveillé ✅"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::warning::Le ping /health n'a pas répondu 200 après 4 tentatives"
+          exit 1
