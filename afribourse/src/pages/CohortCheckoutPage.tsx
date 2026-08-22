@@ -125,24 +125,28 @@ export default function CohortCheckoutPage() {
     analytics.trackAction('cohort_payment_success', PACK_NAME, { amount: price });
   });
 
-  // Enregistre le lead (pré-inscription pack) — le webhook la marquera payée + accès
+  // Enregistre le lead (pré-inscription pack). Lève une erreur si l'enregistrement échoue
+  // (réseau, serveur, cohorte complète) pour NE PAS afficher un faux succès.
   const registerLead = async () => {
-    try {
-      await authFetch(`${API_BASE_URL}/webinars/preregister`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          webinarId: PACK_ID,
-          name: form.name.trim(),
-          email: form.email.trim(),
-          phone: `${waDialCode} ${waPhone.trim()}`,
-          type: 'pack',
-          pack: tier,
-          ...(isBudget ? { variant: 'budget' } : {}),
-        }),
-      });
-      try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
-    } catch { /* non bloquant */ }
+    const res = await authFetch(`${API_BASE_URL}/webinars/preregister`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        webinarId: PACK_ID,
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: `${waDialCode} ${waPhone.trim()}`,
+        type: 'pack',
+        pack: tier,
+        ...(isBudget ? { variant: 'budget' } : {}),
+      }),
+    });
+    if (!res.ok) {
+      let msg = 'Enregistrement impossible. Vérifiez votre connexion et réessayez.';
+      try { const d = await res.json(); if (d?.message) msg = d.message; } catch { /* ignore */ }
+      throw new Error(msg);
+    }
+    try { localStorage.setItem('afb_cohort_lead', JSON.stringify({ name: form.name.trim(), email: form.email.trim(), dialCode: waDialCode, phone: waPhone.trim() })); } catch { /* ignore */ }
   };
 
   // Si on a déjà les infos → on enregistre le lead une fois au montage (l'étape 1 est sautée)
@@ -151,7 +155,7 @@ export default function CohortCheckoutPage() {
     // Budget : pas d'auto-enregistrement — l'utilisateur valide le formulaire lui-même.
     if (!isBudget && infoComplete && !autoRegistered.current) {
       autoRegistered.current = true;
-      registerLead();
+      registerLead().catch(() => { /* non bloquant pour le flux standard prépayé */ });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -168,8 +172,8 @@ export default function CohortCheckoutPage() {
       }
       // Budget : après la pré-inscription → écran de choix (payer maintenant ou continuer)
       setStep(isBudget ? 'reserved' : 'payment');
-    } catch {
-      toast.error("Erreur lors de l'enregistrement. Réessayez.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur lors de l'enregistrement. Réessayez.");
     } finally {
       setLoading(false);
     }
