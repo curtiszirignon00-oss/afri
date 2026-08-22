@@ -48,11 +48,14 @@ const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 450
 // Variante "budget" — cohorte septembre (page /webinaires-eco), -50% sur tous les packs
 export const PACK_TIER_BUDGET: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
 
-// Webinaires à l'unité — prix officiels (source de vérité côté serveur)
+// Webinaires à l'unité + événements présentiels — prix officiels (source de vérité côté serveur)
 export const INDIVIDUAL_WEBINAR_PRICES: Record<string, number> = {
   'webinaire-introduction-bourse': 5000,
   'webinaire-fondamentaux-analyse': 30000,
   'webinaire-analyse-technique': 40000,
+  // Présentiel « De curieux à investisseur BRVM » (11 & 12 septembre) — paiement direct
+  'presentiel-calavi-benin': 50000,
+  'presentiel-ouaga-bf': 50000,
 };
 
 // Réconcilie la pré-inscription cohorte (liste d'attente) en "paid" quand le pack est réglé

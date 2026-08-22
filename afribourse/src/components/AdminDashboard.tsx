@@ -1496,6 +1496,8 @@ export default function AdminDashboard() {
             { id: 'webinaire-introduction-bourse',  label: 'Intro Bourse',     date: 'À l\'unité', color: 'blue' },
             { id: 'webinaire-fondamentaux-analyse', label: 'Fondamentaux (unité)', date: 'À l\'unité', color: 'emerald' },
             { id: 'webinaire-analyse-technique',    label: 'Technique (unité)',    date: 'À l\'unité', color: 'orange' },
+            { id: 'presentiel-calavi-benin',        label: 'Présentiel Calavi (BJ)',  date: '11-12 sept', color: 'emerald' },
+            { id: 'presentiel-ouaga-bf',            label: 'Présentiel Ouaga (BF)',   date: '11-12 sept', color: 'orange' },
           ];
           const BADGE: Record<string, string> = {
             blue: 'bg-blue-100 text-blue-700', emerald: 'bg-emerald-100 text-emerald-700',
