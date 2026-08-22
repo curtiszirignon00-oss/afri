@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, ArrowLeft, X, MapPin, CalendarDays } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
-import { analytics } from '../services/analytics';
+import { CheckCircle, Loader2, X, MapPin, CalendarDays } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../../hooks/usePawaPayment';
+import { analytics } from '../../services/analytics';
 
 // ── Événements présentiels (ids alignés sur le backend INDIVIDUAL_WEBINAR_PRICES) ──
 interface Event {
@@ -16,39 +15,22 @@ interface Event {
   price: number;
   dates: string;
   accent: string;
-  payDial: string; // pays de paiement par défaut
+  payDial: string;
 }
 
 const EVENTS: Event[] = [
   {
     id: 'presentiel-calavi-benin',
-    city: 'Calavi',
-    country: 'Bénin',
-    flag: '🇧🇯',
-    venue: 'Calavi',
-    price: 50000,
-    dates: '11 & 12 septembre 2026',
-    accent: 'from-emerald-600 to-green-700',
-    payDial: '+229',
+    city: 'Calavi', country: 'Bénin', flag: '🇧🇯', venue: 'Calavi',
+    price: 50000, dates: '11 & 12 septembre 2026',
+    accent: 'from-emerald-600 to-green-700', payDial: '+229',
   },
   {
     id: 'presentiel-ouaga-bf',
-    city: 'Ouagadougou',
-    country: 'Burkina Faso',
-    flag: '🇧🇫',
-    venue: 'Ouagadougou',
-    price: 50000,
-    dates: '11 & 12 septembre 2026',
-    accent: 'from-orange-500 to-red-600',
-    payDial: '+226',
+    city: 'Ouagadougou', country: 'Burkina Faso', flag: '🇧🇫', venue: 'Ouagadougou',
+    price: 50000, dates: '11 & 12 septembre 2026',
+    accent: 'from-orange-500 to-red-600', payDial: '+226',
   },
-];
-
-const BENEFITS = [
-  "Comprendre concrètement comment fonctionne la BRVM",
-  "Savoir analyser et choisir une action (méthode d'investisseur)",
-  "Lire le marché et repérer les bons moments d'entrée",
-  "Repartir avec un plan d'action pour investir vraiment",
 ];
 
 const WHATSAPP_DIAL_CODES = [
@@ -75,45 +57,27 @@ const MOBILE_OPERATORS = [
 
 function formatPrice(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
-export default function PresentielPage() {
-  const navigate = useNavigate();
+export default function PresentielSection() {
   const { userProfile } = useAuth();
   const [selected, setSelected] = useState<Event | null>(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-10 px-4">
-      <div className="max-w-3xl mx-auto">
-        <button onClick={() => navigate('/webinaires-eco')} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4">
-          <ArrowLeft className="w-4 h-4" /> Nos parcours en ligne
-        </button>
+    <section className="px-4 sm:px-6 py-14 bg-white">
+      <div className="max-w-4xl mx-auto">
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Ou en présentiel · 2 jours</p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-2" style={{ letterSpacing: '-0.01em' }}>
+          De curieux à investisseur BRVM
+        </h2>
+        <p className="text-gray-500 text-center text-sm max-w-xl mx-auto mb-8">
+          Deux jours intensifs en salle pour passer de la curiosité à l'action — les <strong>11 & 12 septembre</strong>. Places limitées.
+        </p>
 
-        {/* Hero */}
-        <div className="text-center mb-10">
-          <span className="inline-block bg-blue-100 text-blue-700 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3">Formation en présentiel · 2 jours</span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">De curieux à investisseur BRVM</h1>
-          <p className="text-gray-500 mt-3 max-w-xl mx-auto">Deux jours intensifs en salle pour passer de la curiosité à l'action, encadré par des analystes qui connaissent la BRVM. Places limitées.</p>
-        </div>
-
-        {/* Ce que vous repartez avec */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-8">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-3">Ce que vous saurez faire</p>
-          <ul className="space-y-2">
-            {BENEFITS.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-sm text-gray-700">
-                <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /> <span>{b}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 2 blocs villes */}
-        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-4">Choisissez votre ville</p>
         <div className="grid sm:grid-cols-2 gap-5">
           {EVENTS.map((ev) => (
-            <div key={ev.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+            <div key={ev.id} className="bg-gray-50 rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
               <div className={`bg-gradient-to-r ${ev.accent} px-6 py-5 text-white`}>
                 <p className="text-3xl">{ev.flag}</p>
-                <h2 className="text-xl font-extrabold leading-snug mt-1">{ev.city}</h2>
+                <h3 className="text-xl font-extrabold leading-snug mt-1">{ev.city}</h3>
                 <p className="text-white/80 text-sm">{ev.country}</p>
               </div>
               <div className="p-6 flex flex-col flex-1">
@@ -142,7 +106,7 @@ export default function PresentielPage() {
           initEmail={(userProfile as any)?.email || ''}
         />
       )}
-    </div>
+    </section>
   );
 }
 
@@ -214,7 +178,6 @@ function InscriptionModal({
         <p className="text-2xl font-extrabold text-gray-900 mt-1">{formatPrice(event.price)}</p>
       </div>
 
-      {/* Coordonnées */}
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">Nom complet *</label>
@@ -238,7 +201,6 @@ function InscriptionModal({
         </div>
       </div>
 
-      {/* Paiement */}
       <div className="mt-5 pt-5 border-t border-gray-100 space-y-3">
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">Pays de paiement</label>

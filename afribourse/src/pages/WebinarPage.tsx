@@ -5,6 +5,7 @@ import {
   Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
 } from 'lucide-react';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
+import PresentielSection from '../components/learning/PresentielSection';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -264,8 +265,11 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
         </div>
       </section>
 
-      {/* ── Les 3 packs (good-better-best) ───────────────────────────────── */}
+      {/* ── Les 3 packs (good-better-best) — inscriptions en ligne (CI) ──── */}
       <PricingPacks onChoose={handleChoosePack} variant={variant} />
+
+      {/* ── Événements présentiels (Calavi + Ouaga) — paiement direct ────── */}
+      <PresentielSection />
 
 
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}
