@@ -559,6 +559,14 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     if (isNaN(finalAmount) || finalAmount <= 0) return res.status(400).json({ error: 'amount invalide' });
   }
 
+  // Présentiel : refuser si l'événement est complet (20 places payées)
+  if (String(planId).startsWith('presentiel-')) {
+    const paidCount = await prisma.webinarRegistration.count({ where: { webinarId: planId, paymentStatus: 'paid' } });
+    if (paidCount >= 20) {
+      return res.status(409).json({ error: 'Cet événement est complet — les 20 places sont prises.' });
+    }
+  }
+
   // Pack cohorte OU webinaire à l'unité : enregistrer/compléter l'inscrit dès la tentative de
   // paiement (garantit que TOUTE tentative apparaît au dashboard, avec nom/email/tel même sans compte).
   if ((planId === PACK_ID || INDIVIDUAL_WEBINAR_PRICES[planId]) && registrationEmail) {

@@ -12,8 +12,12 @@ const COHORT_ID = 'cohorte-juillet-2026';
 
 const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
 
-// Cohorte "budget" septembre (page /webinaires-eco) : 50 pré-inscriptions max par pack
-const BUDGET_SEAT_LIMIT = 50;
+// Cohorte "budget" septembre (page /webinaires-eco) : 20 pré-inscriptions max par pack
+const BUDGET_SEAT_LIMIT = 20;
+
+// Événements présentiels : 20 places max par ville (comptées sur les PAIEMENTS effectifs)
+export const PRESENTIEL_LIMIT = 20;
+const PRESENTIEL_IDS = ['presentiel-calavi-benin', 'presentiel-ouaga-bf'];
 
 /** Nombre de pré-inscriptions budget pour un pack (payées ou non), plafonné à la limite. */
 async function getBudgetReserved(tier: string): Promise<number> {
@@ -23,14 +27,25 @@ async function getBudgetReserved(tier: string): Promise<number> {
   return Math.min(BUDGET_SEAT_LIMIT, count);
 }
 
-// GET /api/webinars/cohort-seats — pré-inscriptions restantes par pack (cohorte budget)
+/** Places occupées pour un événement présentiel = PAIEMENTS confirmés. */
+export async function getPresentielReserved(eventId: string): Promise<number> {
+  const count = await prisma.webinarRegistration.count({
+    where: { webinarId: eventId, paymentStatus: 'paid' },
+  });
+  return Math.min(PRESENTIEL_LIMIT, count);
+}
+
+// GET /api/webinars/cohort-seats — places restantes (packs budget + événements présentiels)
 export async function getCohortSeats(_req: Request, res: Response, next: NextFunction) {
   try {
-    const tiers = ['starter', 'parcours', 'investisseur'];
     const data: Record<string, { reserved: number; limit: number; soldOut: boolean }> = {};
-    for (const t of tiers) {
+    for (const t of ['starter', 'parcours', 'investisseur']) {
       const reserved = await getBudgetReserved(t);
       data[t] = { reserved, limit: BUDGET_SEAT_LIMIT, soldOut: reserved >= BUDGET_SEAT_LIMIT };
+    }
+    for (const id of PRESENTIEL_IDS) {
+      const reserved = await getPresentielReserved(id);
+      data[id] = { reserved, limit: PRESENTIEL_LIMIT, soldOut: reserved >= PRESENTIEL_LIMIT };
     }
     return res.status(200).json({ data });
   } catch (error) {

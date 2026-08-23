@@ -6,8 +6,8 @@ export const PACK_TIER_BUDGET: Record<string, number> = {
   investisseur: 75000, // -50% (150 000)
 };
 
-// Cohorte septembre : 50 pré-inscriptions max par pack
-export const BUDGET_SEAT_LIMIT = 50;
+// Cohorte septembre : 20 pré-inscriptions max par pack
+export const BUDGET_SEAT_LIMIT = 20;
 
 /** Prix comptant "normal" (pour l'affichage barré). */
 export const PACK_TIER_FULL: Record<string, number> = {

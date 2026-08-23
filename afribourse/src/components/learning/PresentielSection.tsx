@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, X, MapPin, CalendarDays } from 'lucide-react';
+import { CheckCircle, Loader2, X, MapPin, CalendarDays, Users } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../../hooks/usePawaPayment';
 import { analytics } from '../../services/analytics';
+import { API_BASE_URL } from '../../config/api';
+
+type SeatInfo = { reserved: number; limit: number; soldOut: boolean };
 
 // ── Événements présentiels (ids alignés sur le backend INDIVIDUAL_WEBINAR_PRICES) ──
 interface Event {
@@ -60,6 +63,14 @@ function formatPrice(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 export default function PresentielSection() {
   const { userProfile } = useAuth();
   const [selected, setSelected] = useState<Event | null>(null);
+  const [seats, setSeats] = useState<Record<string, SeatInfo> | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/webinars/cohort-seats`)
+      .then((r) => r.json())
+      .then((d) => setSeats(d.data ?? null))
+      .catch(() => { /* silencieux */ });
+  }, []);
 
   return (
     <section className="px-4 sm:px-6 py-14 bg-white">
@@ -85,10 +96,29 @@ export default function PresentielSection() {
                   <p className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-gray-400" /> {ev.dates}</p>
                   <p className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /> En présentiel — {ev.venue}</p>
                 </div>
-                <p className="text-2xl font-extrabold text-gray-900 mb-4">{formatPrice(ev.price)} <span className="text-sm font-semibold text-gray-500">/ personne</span></p>
+                <p className="text-2xl font-extrabold text-gray-900 mb-3">{formatPrice(ev.price)} <span className="text-sm font-semibold text-gray-500">/ personne</span></p>
+
+                {seats?.[ev.id] && (() => {
+                  const s = seats[ev.id];
+                  const remaining = Math.max(0, s.limit - s.reserved);
+                  const ratio = Math.min(100, Math.round((s.reserved / s.limit) * 100));
+                  return (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
+                        <span className="flex items-center gap-1 text-gray-500"><Users className="w-3 h-3" /> {s.reserved}/{s.limit} inscrits</span>
+                        <span className={s.soldOut ? 'text-red-500' : 'text-emerald-600'}>{s.soldOut ? 'Complet' : `${remaining} place${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}`}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden bg-gray-100">
+                        <div className={`h-full rounded-full ${s.soldOut ? 'bg-red-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}`} style={{ width: `${ratio}%` }} />
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 <button onClick={() => { setSelected(ev); analytics.trackAction('presentiel_selected', ev.city, { amount: ev.price }); }}
-                  className="mt-auto w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity">
-                  Je m'inscris — {formatPrice(ev.price)}
+                  disabled={seats?.[ev.id]?.soldOut}
+                  className="mt-auto w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">
+                  {seats?.[ev.id]?.soldOut ? 'Complet' : `Je m'inscris — ${formatPrice(ev.price)}`}
                 </button>
               </div>
             </div>
