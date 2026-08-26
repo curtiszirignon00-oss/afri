@@ -118,11 +118,13 @@ apiClient.interceptors.response.use(
           const PUBLIC_PATHS = ['/', '/markets', '/indices', '/stock', '/news', '/learn',
             '/glossary', '/about', '/contact', '/privacy', '/help', '/subscriptions',
             '/community', '/communities', '/classement', '/login', '/signup',
-            '/webinaires', '/pay',
+            '/webinaires', '/webinaires-eco', '/webinaires-presentiel', '/pay',
+            '/parcours', '/formation', '/echelonner', '/paiement', '/certificat',
             '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email',
             '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'];
           const currentPath = window.location.pathname;
-          const isPublic = PUBLIC_PATHS.some(p => currentPath === p || currentPath.startsWith(p + '/'));
+          const isPublic = currentPath.startsWith('/webinaires') || currentPath.startsWith('/parcours')
+            || PUBLIC_PATHS.some(p => currentPath === p || currentPath.startsWith(p + '/'));
           if (!isPublic) window.location.href = '/login';
         } finally {
           isRefreshing = false;
