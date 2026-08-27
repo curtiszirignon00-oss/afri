@@ -240,6 +240,15 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
   return (
     <div className="min-h-screen bg-white pb-20 sm:pb-0">
 
+      {/* ── Bannière présentiel (Ouaga + Calavi) ─────────────────────────── */}
+      <button
+        onClick={() => scrollToId('presentiel')}
+        className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-center px-4 py-2.5 text-sm font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-2 flex-wrap"
+      >
+        <span>🏫 Nouveau — Formations <strong>en présentiel</strong> à Ouagadougou 🇧🇫 &amp; Calavi 🇧🇯 · 11-12 septembre</span>
+        <span className="underline font-bold whitespace-nowrap">Je m'inscris →</span>
+      </button>
+
       {/* ── Section 1 — Hero ─────────────────────────────────────────────── */}
       <section
         style={{ background: 'linear-gradient(135deg, #0D2B4E 0%, #1a3a6b 50%, #0f1f3d 100%)' }}

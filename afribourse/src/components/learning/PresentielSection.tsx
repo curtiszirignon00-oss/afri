@@ -73,7 +73,7 @@ export default function PresentielSection() {
   }, []);
 
   return (
-    <section className="px-4 sm:px-6 py-14 bg-white">
+    <section id="presentiel" className="px-4 sm:px-6 py-14 bg-white scroll-mt-20">
       <div className="max-w-4xl mx-auto">
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Ou en présentiel · 2 jours</p>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-2" style={{ letterSpacing: '-0.01em' }}>
