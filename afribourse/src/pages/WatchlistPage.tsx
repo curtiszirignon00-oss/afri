@@ -2,12 +2,7 @@
 import { useState, useMemo } from 'react';
 import { trackWatchlistAction } from '../lib/amplitude';
 import { useNavigate } from 'react-router-dom';
-import {
-  Star, TrendingUp, TrendingDown, Edit3, Trash2, Tag,
-  StickyNote, DollarSign, Search, RefreshCw, ArrowLeft,
-  Plus, X, Check, ArrowUpRight, ArrowDownRight, Target,
-  Activity, Zap, Sun, Moon, LayoutGrid, List,
-} from 'lucide-react';
+import { Star, TrendingUp, TrendingDown, Edit3, Trash2, Tag, StickyNote, DollarSign, Search, RefreshCw, ArrowLeft, Plus, X, Check, ArrowUpRight, ArrowDownRight, Activity, Sun, Moon, LayoutGrid, List } from 'lucide-react';
 import {
   useWatchlistEnriched,
   useWatchlistScores,
@@ -351,7 +346,6 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView 
           <div className={pnlBox}>
             <div className="flex items-center justify-between">
               <div className={`flex items-center gap-1.5 ${entLbl}`}>
-                <Target className="w-3 h-3 flex-shrink-0" />
                 <span>Entrée : <span className={entVal}>{fmtPrice(item.entry_price)}</span></span>
               </div>
               {item.pnl_pct != null && <span className={`text-xs font-bold ${pnlClr}`}>{fmtPct(item.pnl_pct)} P&L</span>}
@@ -599,9 +593,6 @@ export default function WatchlistPage() {
             </div>
 
             <div className={statCard}>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isDark ? 'bg-cyan-500/10' : 'bg-blue-50'}`}>
-                <Zap className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-blue-600'}`} />
-              </div>
               <div>
                 <p className={`text-2xl font-extrabold leading-none ${isDark ? 'text-cyan-400' : 'text-blue-700'}`}>{avgScore ?? '–'}</p>
                 <p className={`text-[11px] mt-0.5 ${subClr}`}>Score moyen</p>

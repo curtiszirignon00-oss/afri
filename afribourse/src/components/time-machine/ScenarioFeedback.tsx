@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, CheckCircle, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Star, CheckCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useSubmitScenarioFeedback } from '../../hooks/useTimeMachine';
 
 interface Props {
@@ -151,7 +151,6 @@ export default function ScenarioFeedback({ sessionId, scenarioTitle }: Props) {
       {/* Optional comment */}
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
           Un commentaire ? <span className="font-normal text-gray-400">(optionnel)</span>
         </label>
         <textarea

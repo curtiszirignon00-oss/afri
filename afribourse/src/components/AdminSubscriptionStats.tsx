@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Users, Zap, Crown, Target, Calendar } from 'lucide-react';
+import { TrendingUp, Users, Zap, Crown } from 'lucide-react';
 
 interface IntentsByPlan {
   planId: string;
@@ -163,7 +163,6 @@ export default function AdminSubscriptionStats() {
           {/* By Feature */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center mb-4">
-              <Target className="w-5 h-5 text-blue-600 mr-2" />
               <h3 className="text-lg font-semibold text-gray-900">Par Fonctionnalité</h3>
             </div>
             <div className="space-y-3">
@@ -189,7 +188,6 @@ export default function AdminSubscriptionStats() {
           {/* By Source */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center mb-4">
-              <Calendar className="w-5 h-5 text-green-600 mr-2" />
               <h3 className="text-lg font-semibold text-gray-900">Par Source</h3>
             </div>
             <div className="space-y-3">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Flame, ChevronRight, Video, Zap, Users } from 'lucide-react';
+import { Calendar, Flame, ChevronRight, Zap } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -110,7 +110,6 @@ const QuickRegisterModal: React.FC<{ registeredCount: number; onClose: () => voi
       >
         <div className={`bg-gradient-to-r ${NEXT_WEBINAR.gradient} p-5 text-white`}>
           <div className="flex items-center gap-2 mb-1">
-            <Video className="w-4 h-4" />
             <span className="text-xs font-bold uppercase tracking-wide opacity-80">Webinaire · Live</span>
           </div>
           <h3 className="font-bold text-base leading-tight">{NEXT_WEBINAR.title}</h3>
@@ -231,7 +230,6 @@ const DashboardWebinarWidget: React.FC = () => {
         <div className={`bg-gradient-to-r ${NEXT_WEBINAR.gradient} p-4 text-white`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
-              <Video className="w-3.5 h-3.5 opacity-80" />
               <span className="text-[10px] font-bold uppercase tracking-widest opacity-80">Prochain webinaire</span>
             </div>
             <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -249,7 +247,6 @@ const DashboardWebinarWidget: React.FC = () => {
             <Calendar className="w-4 h-4 text-blue-500 flex-shrink-0" />
             <span className="text-sm font-medium">{formatDate(NEXT_WEBINAR.date)}</span>
             <span className="text-gray-400 text-xs">•</span>
-            <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
             <span className="text-xs text-gray-500">09h00</span>
           </div>
 
@@ -275,7 +272,6 @@ const DashboardWebinarWidget: React.FC = () => {
             </div>
           ) : (
             <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
-              <Users className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
               <span className="text-[10px] text-blue-700 font-semibold">
                 Places limitées · Starter dès 35 000 XOF · 3 niveaux disponibles
               </span>

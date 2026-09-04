@@ -1,9 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Clock, ChevronRight, X, Filter, Star,
-  TrendingUp, TrendingDown, Minus, ExternalLink,
-  BarChart2, Tag,
-} from 'lucide-react';
+import { Clock, ChevronRight, X, Filter, Star, TrendingUp, TrendingDown, BarChart2, Tag } from 'lucide-react';
 import { BRVM_NEWS, BRVMArticle, ImpactType, BRVM_CATEGORIES } from '../data/brvm2026News';
 import { BlockRenderer } from './BlockRenderer';
 import ArticleInteractions from './ArticleInteractions';
@@ -125,7 +121,7 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
           {article.tickers.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-                <BarChart2 size={13} /> Actions concernées
+ Actions concernées
               </h3>
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="w-full text-xs">
@@ -162,7 +158,7 @@ function DetailPanel({ article, onClose }: { article: BRVMArticle; onClose: () =
           {/* Sources */}
           <div>
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <ExternalLink size={12} /> Sources & références
+ Sources & références
             </h3>
             <ul className="space-y-1">
               {article.sources.map((s, i) => (

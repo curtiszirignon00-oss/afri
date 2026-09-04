@@ -7,9 +7,12 @@ import toast from 'react-hot-toast';
 interface FollowButtonProps {
     userId: string;
     initialFollowing?: boolean;
+    /** Habillage pour le hero navy : aplat blanc / contour blanc au lieu de l'orange. */
+    onDark?: boolean;
+    size?: 'sm' | 'md';
 }
 
-export default function FollowButton({ userId, initialFollowing = false }: FollowButtonProps) {
+export default function FollowButton({ userId, initialFollowing = false, onDark = false, size = 'md' }: FollowButtonProps) {
     const [isFollowing, setIsFollowing] = useState(initialFollowing);
 
     // Synchroniser avec initialFollowing quand il change (ex: après chargement des données)
@@ -45,26 +48,39 @@ export default function FollowButton({ userId, initialFollowing = false }: Follo
         }
     };
 
+    // Suivre = action principale, donc l'orange de marque sur fond clair. Sur le
+    // hero navy l'orange voisinerait avec le bouton « Partager ma carte » : on
+    // bascule sur l'aplat blanc, l'autre traitement primaire de la charte.
+    const skin = onDark
+        ? isFollowing
+            ? 'bg-white/10 text-white ring-1 ring-white/20 hover:bg-white/20 focus-visible:ring-white focus-visible:ring-offset-brand-navy'
+            : 'bg-white text-brand-navy hover:bg-ink-50 shadow-sm focus-visible:ring-white focus-visible:ring-offset-brand-navy'
+        : isFollowing
+            ? 'bg-ink-100 text-ink-700 hover:bg-ink-200 focus-visible:ring-brand-navy'
+            : 'bg-brand-orange text-white hover:bg-brand-orange-hover shadow-sm hover:shadow-md hover:shadow-brand-orange/30 focus-visible:ring-brand-orange';
+
+    const sizeClass = size === 'sm' ? 'px-3 py-1.5 text-sm gap-1.5' : 'px-6 py-2.5 gap-2';
+    const iconClass = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
+
     return (
         <button
             onClick={handleClick}
             disabled={isLoading}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all ${isFollowing
-                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+            className={`flex items-center rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+                ${sizeClass} ${skin} disabled:opacity-50 disabled:cursor-not-allowed`}
         >
             {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className={`${iconClass} animate-spin`} />
             ) : isFollowing ? (
                 <>
-                    <UserMinus className="w-5 h-5" />
-                    <span className="hidden sm:inline">Se désabonner</span>
+                    <UserMinus className={iconClass} />
+                    <span className={size === 'sm' ? '' : 'hidden sm:inline'}>Se désabonner</span>
                 </>
             ) : (
                 <>
-                    <UserPlus className="w-5 h-5" />
-                    <span className="hidden sm:inline">Suivre</span>
+                    <UserPlus className={iconClass} />
+                    <span className={size === 'sm' ? '' : 'hidden sm:inline'}>Suivre</span>
                 </>
             )}
         </button>

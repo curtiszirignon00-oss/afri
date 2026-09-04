@@ -1,6 +1,6 @@
 // src/components/moderation/ModerationSection.tsx
 import { useState } from 'react';
-import { Flag, AlertTriangle, Ban, FileText, CheckCircle, X, Eye, Trash2 } from 'lucide-react';
+import { Flag, AlertTriangle, Ban, FileText, CheckCircle, X, Eye } from 'lucide-react';
 import { useModerationStats, useReports, useProcessReport } from '../../hooks/useModeration';
 import { toast } from 'react-hot-toast';
 
@@ -92,7 +92,6 @@ export default function ModerationSection() {
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <Flag className="w-5 h-5 text-red-600" />
                         Signalements Récents
                     </h3>
                     <div className="flex gap-2">

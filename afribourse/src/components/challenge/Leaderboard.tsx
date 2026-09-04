@@ -4,7 +4,7 @@
 // unique, une ligne par participant separee par un filet, identite a gauche et
 // chiffres alignes a droite. Les trois premiers gardent un insigne, les autres
 // un simple numero en chiffres tabulaires.
-import { Crown, Medal, Flame, BadgeCheck, Trophy, AlertCircle, Loader2 } from 'lucide-react';
+import { Crown, Medal, Flame, BadgeCheck, AlertCircle, Loader2 } from 'lucide-react';
 import { useLeaderboard, useMyRank, useChallengeStats } from '../../hooks/useChallenge';
 
 interface LeaderboardProps {
@@ -61,7 +61,6 @@ export function Leaderboard({ limit = 10, showMyRank = true }: LeaderboardProps)
     if (!rankings || rankings.length === 0) {
         return (
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center">
-                <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-700 font-medium">
                     Le classement s'affichera dès les premières transactions.
                 </p>
@@ -81,9 +80,6 @@ export function Leaderboard({ limit = 10, showMyRank = true }: LeaderboardProps)
         <div className="space-y-4">
             {isDay1 && (
                 <div className="bg-white rounded-2xl border-2 border-brand-orange shadow-sm px-5 py-4 flex items-start gap-3">
-                    <span className="w-9 h-9 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0">
-                        <Trophy className="w-4 h-4 text-brand-orange-dark" />
-                    </span>
                     <p className="text-sm text-gray-700 leading-relaxed">
                         <span className="font-semibold text-gray-900">Challenge lancé.</span>{' '}
                         Le classement évoluera dès les premières transactions.
@@ -95,9 +91,6 @@ export function Leaderboard({ limit = 10, showMyRank = true }: LeaderboardProps)
                 {/* En-tete de la carte */}
                 <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-2.5">
-                        <span className="w-9 h-9 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                            <Trophy className="w-4 h-4 text-brand-navy" />
-                        </span>
                         <h2 className="font-bold text-gray-900">
                             Top {limit} du Challenge AfriBourse 2026
                         </h2>

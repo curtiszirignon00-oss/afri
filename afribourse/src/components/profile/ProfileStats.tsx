@@ -1,29 +1,22 @@
 // src/components/profile/ProfileStats.tsx
+//
+// Bloc « Progression » de la colonne laterale.
+//
+// Chaque sous-bloc avait sa propre couleur d'ambiance : indigo/violet pour le
+// niveau, orange pour la serie, bleu pour l'apprentissage, vert pour le
+// portefeuille, ambre pour la watchlist. Cinq familles, aucune du logo. Les
+// encarts sont desormais neutres (ink-50 borde ink-100), l'accent orange marque
+// la progression (niveau, serie, XP) et le vert/rouge reste reserve a ce qui est
+// vraiment semantique : le gain et la perte du portefeuille.
 import { useState } from 'react';
-import {
-    Zap,
-    Trophy,
-    Flame,
-    TrendingUp,
-    TrendingDown,
-    BookOpen,
-    Wallet,
-    Eye,
-    EyeOff,
-    Lock,
-    ChevronRight,
-    Star,
-    X,
-    Loader2,
-    Bookmark,
-} from 'lucide-react';
+import { Zap, Flame, TrendingUp, TrendingDown, Eye, Lock, ChevronRight, Star, X, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Card } from '../ui';
 import { ShareButton, ShareModal } from '../share';
 import { useShare } from '../../hooks/useShare';
 import { useUpdatePrivacySettings } from '../../hooks/useOnboarding';
 import { calculateLevelFromXP } from '../../hooks/useGamification';
+import ProfileSectionCard, { SECTION_ACTION_CLASS } from './ProfileSectionCard';
 import type { ShareablePortfolioData } from '../../types/share';
 
 interface PositionItem {
@@ -107,13 +100,15 @@ function formatCurrency(amount: number): string {
     }).format(amount) + ' FCFA';
 }
 
-// Get level color based on level
+// Palier de niveau : la pastille se rapproche de l'orange de marque a mesure que
+// le niveau monte (ink neutre -> navy -> orange), au lieu de l'ancienne echelle
+// or / violet / bleu / vert empruntee aux jeux video.
 function getLevelColor(level: number): string {
-    if (level >= 50) return 'from-yellow-400 to-amber-500'; // Legendary
-    if (level >= 30) return 'from-purple-400 to-indigo-500'; // Epic
-    if (level >= 20) return 'from-blue-400 to-cyan-500'; // Rare
-    if (level >= 10) return 'from-green-400 to-emerald-500'; // Uncommon
-    return 'from-gray-400 to-gray-500'; // Common
+    if (level >= 50) return 'from-brand-orange to-brand-orange-light'; // Legendary
+    if (level >= 30) return 'from-brand-orange-dark to-brand-orange';  // Epic
+    if (level >= 20) return 'from-brand-navy to-brand-navy-hover';     // Rare
+    if (level >= 10) return 'from-ink-600 to-ink-500';                 // Uncommon
+    return 'from-ink-500 to-ink-400';                                  // Common
 }
 
 // Get level title
@@ -125,6 +120,19 @@ function getLevelTitle(level: number): string {
     if (level >= 10) return 'Intermédiaire';
     if (level >= 5) return 'Apprenti';
     return 'Débutant';
+}
+
+/** Encart neutre commun aux sous-blocs. */
+const PANEL = 'rounded-xl bg-ink-50 border border-ink-100';
+
+/** Bandeau « information privee » quand un reglage de visibilite masque la donnee. */
+function PrivateNotice({ label }: { label: string }) {
+    return (
+        <div className={`flex items-center justify-center py-4 ${PANEL}`}>
+            <Lock className="w-4 h-4 text-ink-400 mr-2" />
+            <span className="text-sm text-ink-500">{label}</span>
+        </div>
+    );
 }
 
 export default function ProfileStats({
@@ -168,277 +176,238 @@ export default function ProfileStats({
     const blurClass = 'blur-sm select-none';
 
     return (
-        <Card className="p-6">
-            <div className="flex items-center justify-between mb-5">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-amber-500" />
-                    Progression
-                </h3>
-                {isOwnProfile && (
-                    <button
-                        onClick={() => setShowVisibilityModal(true)}
-                        className="text-xs text-gray-500 hover:text-indigo-600 flex items-center gap-1"
-                    >
-                        <Eye className="w-3 h-3" />
-                        Visibilité
-                    </button>
-                )}
-            </div>
-
-            <div className="space-y-5">
+        <ProfileSectionCard
+            title="Progression"
+            subtitle="Niveau, série et portefeuille simulé"
+            action={isOwnProfile ? (
+                <button
+                    onClick={() => setShowVisibilityModal(true)}
+                    className={`${SECTION_ACTION_CLASS} flex items-center gap-1 text-xs`}
+                >
+                    <Eye className="w-3.5 h-3.5" />
+                    Visibilité
+                </button>
+            ) : undefined}
+        >
+            <div className="space-y-4">
                 {/* Level & XP Section */}
-                <div className="relative">
-                    {!showLevel && !isOwnProfile ? (
-                        <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
-                            <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-500">Information privée</span>
-                        </div>
-                    ) : (
-                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getLevelColor(level)} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                                        {level}
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold text-gray-900">Niveau {level}</div>
-                                        <div className="text-sm text-gray-600">{getLevelTitle(level)}</div>
-                                    </div>
-                                </div>
-                                {(showXp || isOwnProfile) && (
-                                    <div className="text-right">
-                                        <div className={`flex items-center gap-1 ${!showXp && !isOwnProfile ? blurClass : ''}`}>
-                                            <Zap className="w-4 h-4 text-amber-500" />
-                                            <span className="font-bold text-gray-900">{formatNumber(totalXp)}</span>
-                                        </div>
-                                        <div className="text-xs text-gray-500">XP total</div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Progress bar to next level */}
-                            <div className="mt-2">
-                                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                                    <span>Prochain : Niv. {level + 1}</span>
-                                    <span>{Math.round(progressPercent)}%</span>
-                                </div>
-                                <div className="h-2 bg-white/50 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
-                                        style={{ width: `${progressPercent}%` }}
-                                    />
-                                </div>
-                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                    <span>{formatNumber(totalXp)} XP</span>
-                                    <span>{formatNumber(xpLevelEnd)} XP</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Streak Section */}
-                <div className="relative">
-                    {!showStreak && !isOwnProfile ? (
-                        <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
-                            <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                            <span className="text-sm text-gray-500">Information privée</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-between p-4 bg-orange-50 rounded-xl">
+                {!showLevel && !isOwnProfile ? (
+                    <PrivateNotice label="Information privée" />
+                ) : (
+                    <div className={`${PANEL} p-4`}>
+                        <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${currentStreak > 0 ? 'bg-orange-500' : 'bg-gray-300'}`}>
-                                    <Flame className={`w-5 h-5 ${currentStreak > 0 ? 'text-white' : 'text-gray-500'}`} />
+                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getLevelColor(level)} flex items-center justify-center text-white font-mono font-bold text-lg shadow-sm`}>
+                                    {level}
                                 </div>
                                 <div>
-                                    <div className="font-semibold text-gray-900">
-                                        {currentStreak} jour{currentStreak > 1 ? 's' : ''}
-                                    </div>
-                                    <div className="text-xs text-gray-600">Streak actuel</div>
+                                    <div className="font-semibold text-ink-900">Niveau {level}</div>
+                                    <div className="text-sm text-ink-500">{getLevelTitle(level)}</div>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="flex items-center gap-1">
-                                    <Star className="w-4 h-4 text-amber-500" />
-                                    <span className="font-bold text-gray-900">{longestStreak}</span>
+                            {(showXp || isOwnProfile) && (
+                                <div className="text-right">
+                                    <div className={`flex items-center justify-end gap-1 ${!showXp && !isOwnProfile ? blurClass : ''}`}>
+                                        <Zap className="w-4 h-4 text-brand-orange" />
+                                        <span className="font-mono font-bold text-ink-900 tabular-nums">{formatNumber(totalXp)}</span>
+                                    </div>
+                                    <div className="text-xs text-ink-500">XP total</div>
                                 </div>
-                                <div className="text-xs text-gray-500">Record</div>
+                            )}
+                        </div>
+
+                        {/* Progress bar to next level */}
+                        <div>
+                            <div className="flex justify-between text-xs text-ink-600 mb-1">
+                                <span>Prochain : Niv. {level + 1}</span>
+                                <span className="font-mono">{Math.round(progressPercent)}%</span>
+                            </div>
+                            <div className="h-2 bg-white rounded-full overflow-hidden border border-ink-100">
+                                <div
+                                    className="h-full bg-gradient-to-r from-brand-orange to-brand-orange-light rounded-full transition-all duration-500"
+                                    style={{ width: `${progressPercent}%` }}
+                                />
+                            </div>
+                            <div className="flex justify-between text-xs text-ink-400 mt-1 font-mono">
+                                <span>{formatNumber(totalXp)} XP</span>
+                                <span>{formatNumber(xpLevelEnd)} XP</span>
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
+
+                {/* Streak Section */}
+                {!showStreak && !isOwnProfile ? (
+                    <PrivateNotice label="Information privée" />
+                ) : (
+                    <div className={`flex items-center justify-between p-4 ${PANEL}`}>
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${currentStreak > 0 ? 'bg-brand-orange' : 'bg-ink-200'}`}>
+                                <Flame className={`w-5 h-5 ${currentStreak > 0 ? 'text-white' : 'text-ink-500'}`} />
+                            </div>
+                            <div>
+                                <div className="font-semibold text-ink-900">
+                                    <span className="font-mono">{currentStreak}</span> jour{currentStreak > 1 ? 's' : ''}
+                                </div>
+                                <div className="text-xs text-ink-500">Série en cours</div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                                <Star className="w-4 h-4 text-brand-orange" />
+                                <span className="font-mono font-bold text-ink-900 tabular-nums">{longestStreak}</span>
+                            </div>
+                            <div className="text-xs text-ink-500">Record</div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Learning Progress */}
                 {learningProgress && (
-                    <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className={`p-4 ${PANEL}`}>
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
-                                <BookOpen className="w-5 h-5 text-blue-600" />
-                                <span className="font-medium text-gray-900">Apprentissage</span>
+                                <span className="font-medium text-ink-900">Apprentissage</span>
                             </div>
-                            <Link
-                                to="/learn"
-                                className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                            >
+                            <Link to="/learn" className={`${SECTION_ACTION_CLASS} flex items-center gap-1 text-xs`}>
                                 Continuer
                                 <ChevronRight className="w-3 h-3" />
                             </Link>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white/60 rounded-lg p-3">
-                                <div className="text-2xl font-bold text-blue-600">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-white rounded-lg p-3 border border-ink-100">
+                                <div className="font-mono text-2xl font-bold text-brand-navy tabular-nums">
                                     {learningProgress.completedModules}/{learningProgress.totalModules}
                                 </div>
-                                <div className="text-xs text-gray-600">Modules complétés</div>
+                                <div className="text-xs text-ink-500">Modules complétés</div>
                             </div>
-                            <div className="bg-white/60 rounded-lg p-3">
-                                <div className="text-2xl font-bold text-green-600">
+                            <div className="bg-white rounded-lg p-3 border border-ink-100">
+                                <div className="font-mono text-2xl font-bold text-brand-orange-dark tabular-nums">
                                     {learningProgress.averageScore}%
                                 </div>
-                                <div className="text-xs text-gray-600">Score moyen quiz</div>
+                                <div className="text-xs text-ink-500">Score moyen quiz</div>
                             </div>
                         </div>
                         {/* Progress bar */}
-                        <div className="mt-3">
-                            <div className="h-2 bg-white/50 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
-                                    style={{ width: `${(learningProgress.completedModules / learningProgress.totalModules) * 100}%` }}
-                                />
-                            </div>
+                        <div className="mt-3 h-2 bg-white rounded-full overflow-hidden border border-ink-100">
+                            <div
+                                className="h-full bg-brand-navy rounded-full transition-all duration-500"
+                                style={{ width: `${(learningProgress.completedModules / learningProgress.totalModules) * 100}%` }}
+                            />
                         </div>
                     </div>
                 )}
 
                 {/* Performance simulée (résumé condensé — pas de tableau de positions) */}
                 {portfolioData && (
-                    <div className="relative">
-                        {!showPortfolio && !isOwnProfile ? (
-                            <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
-                                <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-500">Portefeuille privé</span>
+                    !showPortfolio && !isOwnProfile ? (
+                        <PrivateNotice label="Portefeuille privé" />
+                    ) : (
+                        <div className={`p-4 ${PANEL}`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-ink-900">Performance simulée</span>
+                                </div>
+                                {isOwnProfile && showPortfolio && (
+                                    <ShareButton
+                                        onClick={() => {
+                                            const shareDataObj: ShareablePortfolioData = {
+                                                totalValue: portfolioData.totalValue,
+                                                gainLoss: portfolioData.gainLoss,
+                                                gainLossPercent: portfolioData.gainLossPercent,
+                                                cashBalance: portfolioData.cashBalance ?? 0,
+                                                stocksValue: portfolioData.totalValue - (portfolioData.cashBalance ?? 0),
+                                            };
+                                            openShareModal({
+                                                type: 'PORTFOLIO_VALUE',
+                                                data: shareDataObj,
+                                                generatedContent: '',
+                                            });
+                                        }}
+                                        variant="ghost"
+                                        size="sm"
+                                        label=""
+                                    />
+                                )}
                             </div>
-                        ) : (
-                            <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <Wallet className="w-5 h-5 text-green-600" />
-                                        <span className="font-medium text-gray-900">Performance simulée</span>
-                                    </div>
-                                    {isOwnProfile && showPortfolio && (
-                                        <ShareButton
-                                            onClick={() => {
-                                                const shareDataObj: ShareablePortfolioData = {
-                                                    totalValue: portfolioData.totalValue,
-                                                    gainLoss: portfolioData.gainLoss,
-                                                    gainLossPercent: portfolioData.gainLossPercent,
-                                                    cashBalance: portfolioData.cashBalance ?? 0,
-                                                    stocksValue: portfolioData.totalValue - (portfolioData.cashBalance ?? 0),
-                                                };
-                                                openShareModal({
-                                                    type: 'PORTFOLIO_VALUE',
-                                                    data: shareDataObj,
-                                                    generatedContent: '',
-                                                });
-                                            }}
-                                            variant="ghost"
-                                            size="sm"
-                                            label=""
-                                        />
-                                    )}
-                                </div>
 
-                                {/* Chiffre principal + ROI + sparkline */}
-                                <div className="flex items-end justify-between gap-3">
-                                    <div>
-                                        <div className="text-2xl font-bold text-gray-900">
-                                            {formatCurrency(portfolioData.totalValue)}
-                                        </div>
-                                        <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${portfolioData.gainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {portfolioData.gainLoss >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                                            <span>{portfolioData.gainLoss >= 0 ? '+' : ''}{portfolioData.gainLossPercent.toFixed(2)}%</span>
-                                            <span className="text-gray-400">·</span>
-                                            <span>{portfolioData.gainLoss >= 0 ? '+' : ''}{formatCurrency(portfolioData.gainLoss)}</span>
-                                        </div>
+                            {/* Chiffre principal + ROI + sparkline */}
+                            <div className="flex items-end justify-between gap-3">
+                                <div>
+                                    <div className="font-mono text-2xl font-bold text-ink-900 tabular-nums">
+                                        {formatCurrency(portfolioData.totalValue)}
                                     </div>
-                                    {portfolioData.history && portfolioData.history.length >= 2 && (
-                                        <Sparkline data={portfolioData.history} positive={portfolioData.gainLoss >= 0} />
-                                    )}
-                                </div>
-
-                                {/* Deux métriques : liquidités + nombre de positions */}
-                                <div className="grid grid-cols-2 gap-2 mt-3">
-                                    <div className="bg-white/60 rounded-lg px-3 py-2">
-                                        <div className="text-sm font-semibold text-gray-900">{formatCurrency(portfolioData.cashBalance ?? 0)}</div>
-                                        <div className="text-xs text-gray-500">Liquidités</div>
-                                    </div>
-                                    <div className="bg-white/60 rounded-lg px-3 py-2">
-                                        <div className="text-sm font-semibold text-gray-900">{positions.length}</div>
-                                        <div className="text-xs text-gray-500">Position{positions.length > 1 ? 's' : ''}</div>
+                                    <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${portfolioData.gainLoss >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                                        {portfolioData.gainLoss >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                                        <span className="font-mono">{portfolioData.gainLoss >= 0 ? '+' : ''}{portfolioData.gainLossPercent.toFixed(2)}%</span>
+                                        <span className="text-ink-300">·</span>
+                                        <span className="font-mono">{portfolioData.gainLoss >= 0 ? '+' : ''}{formatCurrency(portfolioData.gainLoss)}</span>
                                     </div>
                                 </div>
-
-                                <Link
-                                    to="/dashboard"
-                                    className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:text-green-800"
-                                >
-                                    Voir le détail sur le Dashboard
-                                    <ChevronRight className="w-3 h-3" />
-                                </Link>
-                                <p className="mt-2 text-[11px] text-gray-400 leading-snug">
-                                    Portefeuille virtuel · simulation pédagogique. Ne reflète pas une performance réelle.
-                                </p>
+                                {portfolioData.history && portfolioData.history.length >= 2 && (
+                                    <Sparkline data={portfolioData.history} positive={portfolioData.gainLoss >= 0} />
+                                )}
                             </div>
-                        )}
-                    </div>
+
+                            {/* Deux métriques : liquidités + nombre de positions */}
+                            <div className="grid grid-cols-2 gap-2 mt-3">
+                                <div className="bg-white rounded-lg px-3 py-2 border border-ink-100">
+                                    <div className="font-mono text-sm font-semibold text-ink-900 tabular-nums">{formatCurrency(portfolioData.cashBalance ?? 0)}</div>
+                                    <div className="text-xs text-ink-500">Liquidités</div>
+                                </div>
+                                <div className="bg-white rounded-lg px-3 py-2 border border-ink-100">
+                                    <div className="font-mono text-sm font-semibold text-ink-900 tabular-nums">{positions.length}</div>
+                                    <div className="text-xs text-ink-500">Position{positions.length > 1 ? 's' : ''}</div>
+                                </div>
+                            </div>
+
+                            <Link to="/dashboard" className={`${SECTION_ACTION_CLASS} mt-3 inline-flex items-center gap-1 text-xs`}>
+                                Voir le détail sur le Dashboard
+                                <ChevronRight className="w-3 h-3" />
+                            </Link>
+                            <p className="mt-2 text-[11px] text-ink-400 leading-snug">
+                                Portefeuille virtuel · simulation pédagogique. Ne reflète pas une performance réelle.
+                            </p>
+                        </div>
+                    )
                 )}
 
                 {/* Watchlist (Actions suivies) */}
                 {(watchlist.length > 0 || (!isOwnProfile && !showWatchlist)) && (
-                    <div className="relative">
-                        {!showWatchlist && !isOwnProfile ? (
-                            <div className="flex items-center justify-center py-4 bg-gray-50 rounded-xl">
-                                <Lock className="w-4 h-4 text-gray-400 mr-2" />
-                                <span className="text-sm text-gray-500">Watchlist privée</span>
-                            </div>
-                        ) : watchlist.length > 0 ? (
-                            <div className="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <Bookmark className="w-5 h-5 text-amber-600" />
-                                        <span className="font-medium text-gray-900">Actions suivies</span>
-                                    </div>
-                                    {isOwnProfile && (
-                                        <Link
-                                            to="/markets"
-                                            className="text-xs text-amber-600 hover:text-amber-700 flex items-center gap-1"
-                                        >
-                                            Marché
-                                            <ChevronRight className="w-3 h-3" />
-                                        </Link>
-                                    )}
+                    !showWatchlist && !isOwnProfile ? (
+                        <PrivateNotice label="Watchlist privée" />
+                    ) : watchlist.length > 0 ? (
+                        <div className={`p-4 ${PANEL}`}>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-medium text-ink-900">Actions suivies</span>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {watchlist.slice(0, 8).map((item) => (
-                                        <Link
-                                            key={item.ticker}
-                                            to={`/markets?ticker=${item.ticker}`}
-                                            className="inline-flex items-center px-3 py-1.5 bg-white/70 hover:bg-white rounded-lg text-sm font-medium text-gray-700 border border-amber-200 hover:border-amber-400 transition-colors cursor-pointer"
-                                        >
-                                            {item.ticker}
-                                        </Link>
-                                    ))}
-                                    {watchlist.length > 8 && (
-                                        <span className="inline-flex items-center px-3 py-1.5 text-xs text-amber-600 font-medium">
-                                            +{watchlist.length - 8} autres
-                                        </span>
-                                    )}
-                                </div>
+                                {isOwnProfile && (
+                                    <Link to="/markets" className={`${SECTION_ACTION_CLASS} flex items-center gap-1 text-xs`}>
+                                        Marché
+                                        <ChevronRight className="w-3 h-3" />
+                                    </Link>
+                                )}
                             </div>
-                        ) : null}
-                    </div>
+                            <div className="flex flex-wrap gap-2">
+                                {watchlist.slice(0, 8).map((item) => (
+                                    <Link
+                                        key={item.ticker}
+                                        to={`/markets?ticker=${item.ticker}`}
+                                        className="inline-flex items-center px-3 py-1.5 bg-white hover:bg-ink-50 rounded-lg font-mono text-sm font-semibold text-brand-navy border border-ink-200 hover:border-brand-navy transition-colors cursor-pointer"
+                                    >
+                                        {item.ticker}
+                                    </Link>
+                                ))}
+                                {watchlist.length > 8 && (
+                                    <span className="inline-flex items-center px-3 py-1.5 text-xs text-ink-500 font-medium">
+                                        +{watchlist.length - 8} autres
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ) : null
                 )}
-
             </div>
 
             {/* Share Modal */}
@@ -455,7 +424,7 @@ export default function ProfileStats({
                     onClose={() => setShowVisibilityModal(false)}
                 />
             )}
-        </Card>
+        </ProfileSectionCard>
     );
 }
 
@@ -523,42 +492,42 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/60 backdrop-blur-sm p-4" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden"
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 border-b">
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <Eye className="w-5 h-5 text-indigo-600" />
+                <div className="flex items-center justify-between p-5 border-b border-ink-100">
+                    <h3 className="text-lg font-semibold text-ink-900 flex items-center gap-2">
+                        <Eye className="w-5 h-5 text-brand-navy" />
                         Visibilité du profil
                     </h3>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
-                        <X className="w-5 h-5 text-gray-500" />
+                    <button onClick={onClose} aria-label="Fermer" className="p-1 hover:bg-ink-100 rounded-lg cursor-pointer">
+                        <X className="w-5 h-5 text-ink-500" />
                     </button>
                 </div>
 
                 {/* Body */}
                 <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
-                    <p className="text-sm text-gray-500 mb-2">
+                    <p className="text-sm text-ink-500 mb-2">
                         Choisissez les informations visibles par les autres utilisateurs.
                     </p>
                     {toggleGroups.map((group) => (
                         <div key={group.title}>
-                            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 px-3">
+                            <h4 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-1 px-3">
                                 {group.title}
                             </h4>
                             <div className="space-y-0.5">
                                 {group.toggles.map(({ key, label, description }) => (
                                     <label
                                         key={key}
-                                        className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                                        className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-ink-50 cursor-pointer"
                                     >
                                         <div className="flex-1 mr-3">
-                                            <span className="text-sm font-medium text-gray-700">{label}</span>
+                                            <span className="text-sm font-medium text-ink-700">{label}</span>
                                             {description && (
-                                                <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+                                                <p className="text-xs text-ink-400 mt-0.5">{description}</p>
                                             )}
                                         </div>
                                         <button
@@ -566,8 +535,8 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
                                             role="switch"
                                             aria-checked={settings[key]}
                                             onClick={() => setSettings(prev => ({ ...prev, [key]: !prev[key] }))}
-                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${
-                                                settings[key] ? 'bg-indigo-600' : 'bg-gray-300'
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+                                                settings[key] ? 'bg-brand-orange' : 'bg-ink-300'
                                             }`}
                                         >
                                             <span
@@ -584,17 +553,17 @@ function VisibilitySettingsModal({ investorProfile, onClose }: VisibilitySetting
                 </div>
 
                 {/* Footer */}
-                <div className="flex gap-3 p-5 border-t">
+                <div className="flex gap-3 p-5 border-t border-ink-100">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                        className="flex-1 px-4 py-2.5 text-sm font-semibold text-ink-700 bg-ink-100 rounded-xl hover:bg-ink-200 transition-colors cursor-pointer"
                     >
                         Annuler
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isPending}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-brand-orange rounded-xl hover:bg-brand-orange-hover transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                     >
                         {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                         Enregistrer

@@ -4,11 +4,7 @@
 import { Helmet } from 'react-helmet-async';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Trophy, BookOpen, TrendingUp, Users, Flame, Star,
-  ArrowLeft, Lock, Zap, CheckCircle, X, Info,
-  Target, Award, Gift, Clock, Sparkles
-} from 'lucide-react';
+import { Trophy, BookOpen, TrendingUp, Users, Flame, Star, ArrowLeft, Lock, Zap, CheckCircle, X, Info, Target, Award } from 'lucide-react';
 import { useAllAchievements, useMyAchievements } from '../hooks/useGamification';
 import { useAuth } from '../contexts/AuthContext';
 import BadgeShareModal from '../components/share/BadgeShareModal';
@@ -246,7 +242,6 @@ function BadgeDetailModal({
           {/* Récompense */}
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
             <div className="flex items-center gap-2">
-              <Gift className="w-5 h-5 text-amber-500" />
               <span className="text-sm font-medium text-gray-700">Récompense</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -613,7 +608,6 @@ export default function AchievementsPage() {
         {/* Légende des raretés */}
         <div className="mt-10 p-6 bg-white rounded-2xl border border-gray-200">
           <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
             Niveaux de rareté
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -647,7 +641,6 @@ export default function AchievementsPage() {
         {stats.totalXP > 0 && (
           <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-500" />
               <span className="text-sm font-medium text-gray-700">XP total gagné via les badges</span>
             </div>
             <div className="flex items-center gap-1">

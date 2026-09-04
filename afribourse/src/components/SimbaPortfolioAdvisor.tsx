@@ -123,11 +123,11 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
   };
 
   return (
-    <div className="border border-indigo-100 rounded-2xl overflow-hidden shadow-sm bg-white">
+    <div className="border border-ink-100 rounded-2xl overflow-hidden shadow-sm bg-white">
       {/* Header — toujours visible, cliquable pour ouvrir/fermer */}
       <button
         onClick={() => setIsOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 transition-all"
+        className="w-full flex items-center justify-between px-5 py-4 bg-gradient-to-r from-brand-navy to-[#173F66] text-white hover:from-brand-navy-hover hover:to-brand-navy-hover transition-all"
       >
         <div className="flex items-center gap-3">
           <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
@@ -136,11 +136,11 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
           <div className="text-left">
             <div className="flex items-center gap-2">
               <span className="font-bold text-base">SIMBA — Conseiller Portefeuille</span>
-              <span className="text-xs bg-yellow-400 text-yellow-900 font-semibold px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-brand-orange text-brand-orange-dark font-semibold px-2 py-0.5 rounded-full">
                 BÊTA
               </span>
             </div>
-            <p className="text-xs text-blue-100 flex items-center gap-1 mt-0.5">
+            <p className="text-xs text-ink-100 flex items-center gap-1 mt-0.5">
               <Sparkles className="w-3 h-3" />
               Avis pédagogique sur ton portefeuille simulé
             </p>
@@ -156,45 +156,45 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
       {isOpen && (
         <>
           {/* Disclaimer */}
-          <div className="flex items-start gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100">
-            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-700 leading-snug">
+          <div className="flex items-start gap-2 px-4 py-2 bg-brand-orange/10 border-b border-brand-orange/30">
+            <AlertTriangle className="w-4 h-4 text-brand-orange mt-0.5 shrink-0" />
+            <p className="text-xs text-brand-orange-dark leading-snug">
               <strong>Version bêta.</strong> Les avis de SIMBA sont pédagogiques et basés sur ton portefeuille{' '}
               <strong>simulé</strong>. Ceci ne constitue pas un conseil en investissement sur un portefeuille réel.
             </p>
           </div>
 
           {/* Messages */}
-          <div className="h-80 overflow-y-auto p-4 space-y-4 bg-slate-50">
+          <div className="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                 {msg.paywallHit ? (
-                  <div className="w-full max-w-[92%] bg-gradient-to-br from-indigo-950 to-blue-900 rounded-2xl p-4 shadow-lg border border-indigo-800/50">
+                  <div className="w-full max-w-[92%] bg-gradient-to-br from-brand-navy to-ink-950 rounded-2xl p-4 shadow-lg border border-brand-navy-hover/50">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-yellow-400/20 p-1.5 rounded-lg">
-                        <Lock className="w-4 h-4 text-yellow-400" />
+                      <div className="bg-brand-orange/20 p-1.5 rounded-lg">
+                        <Lock className="w-4 h-4 text-brand-orange" />
                       </div>
                       <span className="text-white font-semibold text-sm">Quota journalier atteint</span>
                     </div>
-                    <p className="text-indigo-200 text-xs leading-relaxed mb-3">
+                    <p className="text-ink-200 text-xs leading-relaxed mb-3">
                       Tu as utilisé tes <strong className="text-white">4 questions gratuites</strong> aujourd'hui.<br />
-                      Pour continuer avec SIMBA sans limite, passe à la formule <strong className="text-yellow-400">Premium</strong>.
+                      Pour continuer avec SIMBA sans limite, passe à la formule <strong className="text-brand-orange">Premium</strong>.
                     </p>
                     <a
                       href="/subscriptions"
-                      className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-900 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm"
+                      className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-brand-orange to-orange-400 hover:from-brand-orange-light hover:to-orange-300 text-gray-900 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm"
                     >
                       <Zap className="w-3.5 h-3.5" />
                       Passer à Premium
                     </a>
-                    <p className="text-indigo-400 text-[10px] text-center mt-2">↻ Tes questions gratuites se réinitialisent demain</p>
+                    <p className="text-ink-400 text-[10px] text-center mt-2">↻ Tes questions gratuites se réinitialisent demain</p>
                   </div>
                 ) : (
                   <div
                     className={`max-w-[88%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
                       msg.role === 'user'
-                        ? 'bg-indigo-600 text-white rounded-br-sm'
-                        : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
+                        ? 'bg-brand-navy text-white rounded-br-sm'
+                        : 'bg-white text-gray-700 border border-gray-100 rounded-bl-sm'
                     }`}
                   >
                     {renderMarkdown(msg.text)}
@@ -208,8 +208,8 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
                       title="Réponse utile"
                       className={`p-1 rounded-full transition-colors ${
                         msg.rating === 'up'
-                          ? 'text-indigo-600 bg-indigo-50'
-                          : 'text-slate-300 hover:text-indigo-500 hover:bg-indigo-50'
+                          ? 'text-brand-navy bg-ink-50'
+                          : 'text-gray-300 hover:text-brand-navy hover:bg-ink-50'
                       }`}
                     >
                       <ThumbsUp className="w-3.5 h-3.5" />
@@ -220,7 +220,7 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
                       className={`p-1 rounded-full transition-colors ${
                         msg.rating === 'down'
                           ? 'text-red-500 bg-red-50'
-                          : 'text-slate-300 hover:text-red-400 hover:bg-red-50'
+                          : 'text-gray-300 hover:text-red-400 hover:bg-red-50'
                       }`}
                     >
                       <ThumbsDown className="w-3.5 h-3.5" />
@@ -232,12 +232,12 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white border border-slate-100 p-3 rounded-2xl rounded-bl-sm shadow-sm">
+                <div className="bg-white border border-gray-100 p-3 rounded-2xl rounded-bl-sm shadow-sm">
                   <div className="flex gap-1 items-center">
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" />
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    <span className="ml-1 text-xs text-slate-400">SIMBA analyse...</span>
+                    <span className="w-2 h-2 bg-ink-400 rounded-full animate-bounce" />
+                    <span className="w-2 h-2 bg-ink-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <span className="w-2 h-2 bg-ink-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    <span className="ml-1 text-xs text-gray-400">SIMBA analyse...</span>
                   </div>
                 </div>
               </div>
@@ -247,12 +247,12 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
 
           {/* Suggestions rapides */}
           {messages.length <= 1 && (
-            <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-slate-100 pt-2">
+            <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-gray-100 pt-2">
               {QUICK_SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleSend(s)}
-                  className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100 transition-colors border border-indigo-100"
+                  className="text-xs px-3 py-1.5 bg-ink-50 text-brand-navy-hover rounded-full hover:bg-ink-100 transition-colors border border-ink-100"
                 >
                   {s}
                 </button>
@@ -261,11 +261,11 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
           )}
 
           {/* Input / Paywall lock */}
-          <div className="p-3 bg-white border-t border-slate-100">
+          <div className="p-3 bg-white border-t border-gray-100">
             {paywallHit ? (
               <a
                 href="/subscriptions"
-                className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold text-sm py-3 rounded-xl transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-brand-navy to-[#173F66] hover:from-brand-navy hover:to-brand-navy text-white font-semibold text-sm py-3 rounded-xl transition-all shadow-sm"
               >
                 <Zap className="w-4 h-4" />
                 Passer à Premium pour continuer
@@ -279,12 +279,12 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
                   onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ex: Comment gérer ma perte sur ETIT ?"
                   maxLength={1000}
-                  className="w-full pl-4 pr-12 py-3 bg-slate-100 border-transparent focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 rounded-xl text-sm transition-all outline-none placeholder:text-slate-400"
+                  className="w-full pl-4 pr-12 py-3 bg-gray-100 border-transparent focus:bg-white focus:border-ink-400 focus:ring-2 focus:ring-ink-100 rounded-xl text-sm transition-all outline-none placeholder:text-gray-400"
                 />
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || isLoading}
-                  className="absolute right-2 p-1.5 bg-indigo-600 text-white rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-colors shadow-sm"
+                  className="absolute right-2 p-1.5 bg-brand-navy text-white rounded-lg disabled:opacity-50 hover:bg-brand-navy-hover transition-colors shadow-sm"
                 >
                   <Send className="w-4 h-4" />
                 </button>

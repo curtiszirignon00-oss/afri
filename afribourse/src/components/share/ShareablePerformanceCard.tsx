@@ -1,5 +1,5 @@
 // src/components/share/ShareablePerformanceCard.tsx
-import { TrendingUp, TrendingDown, Activity, Trophy, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import type { ShareablePerformanceData } from '../../types/share';
 import CardBranding from './CardBranding';
 
@@ -56,7 +56,6 @@ export default function ShareablePerformanceCard({ data }: ShareablePerformanceC
             {data.dailyPerf && (
                 <div className="bg-white/60 rounded-lg p-3 mb-3">
                     <div className="flex items-center gap-2 mb-1">
-                        <Activity className="w-4 h-4 text-blue-600" />
                         <p className="text-xs font-medium text-gray-600">Aujourd'hui</p>
                     </div>
                     <p className={`font-semibold ${data.dailyPerf.value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -73,7 +72,6 @@ export default function ShareablePerformanceCard({ data }: ShareablePerformanceC
                 {data.bestDay && (
                     <div className="bg-green-50 rounded-lg p-3 border border-green-100">
                         <div className="flex items-center gap-1 mb-1">
-                            <Trophy className="w-3 h-3 text-green-600" />
                             <p className="text-xs font-medium text-green-700">Meilleur jour</p>
                         </div>
                         <p className="text-sm font-bold text-green-700">

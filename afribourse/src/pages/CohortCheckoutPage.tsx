@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { Check, CheckCircle, Loader2, AlertCircle, ArrowLeft, Flame, Smartphone, ShieldCheck } from 'lucide-react';
+import { Check, CheckCircle, Loader2, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { applyPromo, promoPercent } from '../utils/promo';
 import { usePromoCountdown } from '../hooks/usePromoCountdown';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -252,7 +252,6 @@ export default function CohortCheckoutPage() {
           {/* Compte a rebours de l'offre */}
           {promo.active && pct > 0 && (
             <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2.5 rounded-xl bg-brand-orange/10 text-brand-orange-dark text-sm font-semibold">
-              <Flame className="w-4 h-4 shrink-0" />
               Offre -{pct}% : se termine dans <span className="font-mono">{promo.label}</span>
             </div>
           )}
@@ -456,7 +455,6 @@ export default function CohortCheckoutPage() {
                       )}
 
                       <div className="flex items-start gap-2.5 rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-500">
-                        <Smartphone className="w-4 h-4 text-brand-navy shrink-0 mt-0.5" />
                         Vous recevrez une demande de confirmation sur votre téléphone.
                       </div>
 

@@ -1,6 +1,16 @@
 // src/components/profile/ProfileHeader.tsx
+//
+// Hero identitaire du profil — « Passeport Investisseur ».
+//
+// L'ancien bandeau partait sur un degrade bleu -> indigo -> violet et posait
+// l'identite sur du blanc : trois familles de couleurs absentes du logo, et une
+// entete qui ne ressemblait a aucune autre page du site. Il reprend desormais le
+// fond navy signature (utils/heroBackgrounds), comme l'accueil, /communities et
+// les pages editoriales : degrade navy, halo bleu clair, trame quadrillee. Toute
+// l'identite (nom, ADN, XP, statistiques, bio) vit sur ce fond sombre, l'orange
+// de marque servant d'unique accent.
 import { useState } from 'react';
-import { MapPin, Link as LinkIcon, Calendar, CheckCircle, Edit2, Linkedin, Twitter, Instagram, Facebook, MessageCircle, MoreHorizontal, Share2, ShieldCheck, ArrowLeft, Flame, Trophy, Copy, ImageDown } from 'lucide-react';
+import { MapPin, Link as LinkIcon, CheckCircle, Edit2, Linkedin, Twitter, Instagram, Facebook, MessageCircle, MoreHorizontal, Share2, ShieldCheck, ArrowLeft, Copy, ImageDown, Clock } from 'lucide-react';
 import FollowButton from './FollowButton';
 import EditProfileModal from './EditProfileModal';
 import toast from 'react-hot-toast';
@@ -32,11 +42,22 @@ interface ProfileHeaderProps {
     onShareCard?: () => void;
 }
 
+/** Bouton icone pose sur le fond sombre du hero. */
+const GHOST_ICON_BTN =
+    'p-2.5 rounded-xl bg-white/10 text-white ring-1 ring-white/15 hover:bg-white/20 transition-colors ' +
+    'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ' +
+    'focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy';
+
+/** Pastille de statut sur fond sombre. */
+const CHIP =
+    'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium ' +
+    'bg-white/10 text-white ring-1 ring-white/15';
+
 export default function ProfileHeader({ profile, isOwnProfile = false, onBack, heroStats, profileUrl, onShareCard }: ProfileHeaderProps) {
     const [showEditModal, setShowEditModal] = useState(false);
 
-    const avatarColor = profile.profile?.avatar_color || 'from-blue-500 to-purple-600';
-    const bannerColor = profile.profile?.banner_color || 'from-blue-600 via-indigo-600 to-purple-700';
+    // Avatar : la couleur choisie par l'utilisateur prime, sinon l'orange de marque.
+    const avatarColor = profile.profile?.avatar_color || 'from-brand-orange to-brand-orange-dark';
     const bannerUrl = profile.profile?.banner_url;
     const avatarUrl = profile.profile?.avatar_url;
 
@@ -81,299 +102,280 @@ export default function ProfileHeader({ profile, isOwnProfile = false, onBack, h
             .catch(() => toast.error('Impossible de copier le lien'));
     };
 
+    // Rail de statistiques : uniquement les valeurs renseignees, en chiffres mono.
+    const railStats: { label: string; value: string }[] = [
+        { label: 'XP total', value: totalXp.toLocaleString('fr-FR') },
+        ...(showFollowers ? [{ label: 'Abonnés', value: (profile.stats?.followers_count || 0).toLocaleString('fr-FR') }] : []),
+        ...(showFollowing ? [{ label: 'Abonnements', value: (profile.stats?.following_count || 0).toLocaleString('fr-FR') }] : []),
+        { label: 'Publications', value: (profile.stats?.posts_count || 0).toLocaleString('fr-FR') },
+        ...(completedModules != null ? [{ label: 'Modules', value: String(completedModules) }] : []),
+        ...(rank != null && rank > 0 ? [{ label: 'Classement', value: `#${rank}` }] : []),
+    ];
+
     return (
-        <div className="bg-white shadow-sm">
-            {/* Banner */}
-            <div className="relative">
+        <header className="relative overflow-hidden text-white bg-brand-navy">
+
+            {/* Banniere personnalisee : elle occupe la bande haute puis s'efface
+                par masque. Un calque degrade aurait laisse une couture nette avec
+                le fond du hero, dont la teinte varie horizontalement (135deg) ;
+                le masque, lui, laisse le navy reapparaitre exactement. */}
+            {bannerUrl && (
                 <div
-                    className={`h-32 sm:h-48 md:h-56 lg:h-64 relative ${bannerUrl ? '' : `bg-gradient-to-br ${bannerColor}`}`}
-                    style={bannerUrl ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                    aria-hidden="true"
+                    className="absolute inset-x-0 top-0 h-28 sm:h-36 bg-cover bg-center"
+                    style={{
+                        backgroundImage: `url(${bannerUrl})`,
+                        maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 55%, transparent 100%)',
+                    }}
+                />
+            )}
+
+            {onBack && (
+                <button
+                    onClick={onBack}
+                    className="absolute top-4 left-4 sm:left-6 lg:left-8 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 ring-1 ring-white/15 backdrop-blur-sm text-white text-sm font-medium hover:bg-white/20 transition-colors cursor-pointer"
+                    aria-label="Retour"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    {onBack && (
-                        <button
-                            onClick={onBack}
-                            className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-black/30 backdrop-blur-sm text-white rounded-lg text-sm font-medium hover:bg-black/50 transition-colors cursor-pointer"
-                            aria-label="Retour"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span>Retour</span>
-                        </button>
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Retour</span>
+                </button>
+            )}
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 pb-6 sm:pb-8">
+                {/* Rangee haute : avatar + actions */}
+                <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
+                    <div className="shrink-0">
+                        {avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt={`${profile.name} ${profile.lastname}`}
+                                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-2 ring-white/25 shadow-xl shadow-ink-950/40"
+                            />
+                        ) : (
+                            <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-2xl sm:text-3xl font-bold ring-2 ring-white/25 shadow-xl shadow-ink-950/40`}>
+                                {initials}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="hidden sm:block flex-1" />
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:ml-auto">
+                        {isOwnProfile ? (
+                            <>
+                                <button
+                                    onClick={() => (onShareCard ? onShareCard() : toast('Carte partageable bientôt disponible', { icon: '🪪' }))}
+                                    className="px-5 py-2.5 rounded-xl bg-brand-orange text-white font-semibold shadow-sm hover:bg-brand-orange-hover hover:shadow-md hover:shadow-brand-orange/30 transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
+                                >
+                                    <ImageDown className="w-4 h-4" />
+                                    <span>Partager ma carte</span>
+                                </button>
+                                <button
+                                    onClick={handleCopyLink}
+                                    className="px-4 py-2.5 rounded-xl border-2 border-white/70 text-white font-semibold hover:bg-white hover:text-brand-navy transition-colors flex items-center gap-2 cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
+                                >
+                                    <Copy className="w-4 h-4" />
+                                    <span>Copier mon lien</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowEditModal(true)}
+                                    aria-label="Modifier le profil"
+                                    className={GHOST_ICON_BTN}
+                                >
+                                    <Edit2 className="w-5 h-5" />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <div onClick={() => trackProfileFollowClicked(profile.id)}>
+                                    <FollowButton userId={profile.id} initialFollowing={profile.isFollowing} onDark />
+                                </div>
+                                <button
+                                    onClick={() => toast('Messagerie bientôt disponible', { icon: <MessageCircle className="w-5 h-5 text-brand-navy" /> })}
+                                    aria-label="Envoyer un message"
+                                    className={GHOST_ICON_BTN}
+                                >
+                                    <MessageCircle className="w-5 h-5" />
+                                </button>
+                                <button
+                                    aria-label="Partager le profil"
+                                    onClick={() => {
+                                        const shareData = {
+                                            title: `Profil de ${profile.name} ${profile.lastname}`,
+                                            text: `Découvrez le profil de ${profile.name} sur AfriBourse`,
+                                            url: publicUrl,
+                                        };
+                                        if (navigator.share) {
+                                            navigator.share(shareData).catch(handleCopyLink);
+                                        } else {
+                                            handleCopyLink();
+                                        }
+                                    }}
+                                    className={GHOST_ICON_BTN}
+                                >
+                                    <Share2 className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => toast('Bientôt disponible', { icon: <Clock className="w-5 h-5 text-brand-navy" /> })}
+                                    aria-label="Plus d'options"
+                                    className={GHOST_ICON_BTN}
+                                >
+                                    <MoreHorizontal className="w-5 h-5" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Nom + pseudo */}
+                <div className="mt-5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
+                            {profile.name} {profile.lastname}
+                        </h1>
+                        <RareBadgeIcon badge={rareBadge} size="sm" />
+                        {profile.role === 'admin' && (
+                            <span className={CHIP} title="Administrateur">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Admin</span>
+                            </span>
+                        )}
+                        {profile.profile?.verified_investor && (
+                            <span
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium bg-brand-orange/20 text-brand-orange-light ring-1 ring-brand-orange/40"
+                                title="Investisseur vérifié"
+                            >
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Vérifié</span>
+                            </span>
+                        )}
+                    </div>
+                    {profile.profile?.username && (
+                        <p className="text-ink-300 mt-1 font-mono text-sm">@{profile.profile.username}</p>
                     )}
                 </div>
-            </div>
 
-            {/* Profile Content Container */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative -mt-16 sm:-mt-20 pb-6">
-                    {/* Top Row: Avatar + Stats + Actions */}
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6">
-                        {/* Avatar */}
-                        <div className="relative flex-shrink-0">
-                            {avatarUrl ? (
-                                <img
-                                    src={avatarUrl}
-                                    alt={`${profile.name} ${profile.lastname}`}
-                                    className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white object-cover shadow-xl ring-4 ring-white"
-                                />
-                            ) : (
-                                <div className={`w-28 h-28 sm:w-36 sm:h-36 rounded-2xl border-4 border-white bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-xl ring-4 ring-white`}>
-                                    {initials}
-                                </div>
-                            )}
-                        </div>
+                {/* Identite : titre auto + pastilles de statut */}
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold bg-brand-orange text-white shadow-sm shadow-brand-orange/30">
+                        {autoTitle}
+                    </span>
+                    {currentStreak > 0 && (
+                        <span className={CHIP}>
+                            {currentStreak} j de série
+                        </span>
+                    )}
+                    {percentile != null && percentile > 0 && (
+                        <span className={CHIP}>
+                            Top {Math.max(1, Math.round(percentile))}%
+                        </span>
+                    )}
+                    {monthlyRoi != null && (
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium ring-1 ${monthlyRoi >= 0 ? 'bg-green-400/15 text-green-300 ring-green-400/30' : 'bg-red-400/15 text-red-300 ring-red-400/30'}`}>
+                            ROI mois {monthlyRoi >= 0 ? '+' : ''}{monthlyRoi.toFixed(1)}%
+                        </span>
+                    )}
+                </div>
 
-                        {/* Spacer pour pousser les actions à droite sur desktop */}
-                        <div className="hidden sm:block flex-1" />
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 sm:ml-auto mt-4 sm:mt-0">
-                            {isOwnProfile ? (
-                                <>
-                                    <button
-                                        onClick={handleCopyLink}
-                                        className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                        <span>Copier mon lien</span>
-                                    </button>
-                                    <button
-                                        onClick={() => (onShareCard ? onShareCard() : toast('Carte partageable bientôt disponible', { icon: '🪪' }))}
-                                        className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-                                    >
-                                        <ImageDown className="w-4 h-4" />
-                                        <span>Partager ma carte</span>
-                                    </button>
-                                    <button
-                                        onClick={() => setShowEditModal(true)}
-                                        aria-label="Modifier le profil"
-                                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
-                                    >
-                                        <Edit2 className="w-5 h-5" />
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <button
-                                        onClick={() => toast('Bientôt disponible', { icon: '🔜' })}
-                                        aria-label="Plus d'options"
-                                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
-                                    >
-                                        <MoreHorizontal className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => toast('Messagerie bientôt disponible', { icon: '💬' })}
-                                        aria-label="Envoyer un message"
-                                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
-                                    >
-                                        <MessageCircle className="w-5 h-5" />
-                                    </button>
-                                    <div onClick={() => trackProfileFollowClicked(profile.id)}>
-                                        <FollowButton userId={profile.id} initialFollowing={profile.isFollowing} />
-                                    </div>
-                                    <button
-                                        aria-label="Partager le profil"
-                                        onClick={() => {
-                                            const shareData = {
-                                                title: `Profil de ${profile.name} ${profile.lastname}`,
-                                                text: `Découvrez le profil de ${profile.name} sur AfriBourse`,
-                                                url: publicUrl,
-                                            };
-                                            if (navigator.share) {
-                                                navigator.share(shareData).catch(handleCopyLink);
-                                            } else {
-                                                handleCopyLink();
-                                            }
-                                        }}
-                                        className="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors cursor-pointer"
-                                    >
-                                        <Share2 className="w-5 h-5" />
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                {/* Progression XP vers le niveau suivant */}
+                <div className="mt-5 max-w-md">
+                    <div className="flex items-center justify-between text-xs text-ink-300 mb-1.5">
+                        <span>Niveau {level}</span>
+                        <span className="font-mono">{xpInLevel.toLocaleString('fr-FR')} / {xpNeeded.toLocaleString('fr-FR')} XP</span>
                     </div>
-
-                    {/* Name & Username */}
-                    <div className="mt-4 sm:mt-6">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                                {profile.name} {profile.lastname}
-                            </h1>
-                            <RareBadgeIcon badge={rareBadge} size="sm" />
-                            {profile.role === 'admin' && (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-medium" title="Administrateur">
-                                    <ShieldCheck className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Admin</span>
-                                </span>
-                            )}
-                            {profile.profile?.verified_investor && (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium" title="Investisseur vérifié">
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Vérifié</span>
-                                </span>
-                            )}
-                        </div>
-                        {profile.profile?.username && (
-                            <p className="text-gray-500 mt-1">@{profile.profile.username}</p>
-                        )}
+                    <div className="h-2 w-full bg-white/15 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-gradient-to-r from-brand-orange to-brand-orange-light rounded-full transition-all duration-500 motion-reduce:transition-none"
+                            style={{ width: `${xpProgressPct}%` }}
+                        />
                     </div>
+                </div>
 
-                    {/* Identité : titre auto + chips de statut */}
-                    <div className="mt-4">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-full text-sm font-semibold">
-                                {levelTitle.emoji} {autoTitle}
+                {/* Bio */}
+                {profile.profile?.bio ? (
+                    <p className="mt-5 text-ink-100 leading-relaxed max-w-3xl">
+                        {profile.profile.bio}
+                    </p>
+                ) : isOwnProfile ? (
+                    <button
+                        onClick={() => setShowEditModal(true)}
+                        className="mt-5 text-left text-sm text-ink-300 italic hover:text-white transition-colors cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-navy"
+                    >
+                        Ajoute une bio pour dire à la communauté quel type d'investisseur tu veux devenir →
+                    </button>
+                ) : null}
+
+                {/* Tags de spécialité */}
+                {Array.isArray(profile.profile?.specialty_tags) && profile.profile.specialty_tags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {profile.profile.specialty_tags.map((tag: string) => (
+                            <span key={tag} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-white/10 text-ink-100 ring-1 ring-white/15">
+                                {tag}
                             </span>
-                            {currentStreak > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-orange-50 text-orange-700 rounded-full text-xs font-medium">
-                                    <Flame className="w-3.5 h-3.5" />
-                                    {currentStreak} j
-                                </span>
-                            )}
-                            {percentile != null && percentile > 0 && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">
-                                    <Trophy className="w-3.5 h-3.5" />
-                                    Top {Math.max(1, Math.round(percentile))}%
-                                </span>
-                            )}
-                            {monthlyRoi != null && (
-                                <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium ${monthlyRoi >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                    ROI mois {monthlyRoi >= 0 ? '+' : ''}{monthlyRoi.toFixed(1)}%
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Barre de progression XP vers le niveau suivant */}
-                        <div className="mt-3 max-w-md">
-                            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                                <span>Niveau {level}</span>
-                                <span>{xpInLevel.toLocaleString('fr-FR')} / {xpNeeded.toLocaleString('fr-FR')} XP</span>
-                            </div>
-                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-teal-500 to-emerald-600 rounded-full transition-all motion-reduce:transition-none"
-                                    style={{ width: `${xpProgressPct}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Ligne de statistiques sociales */}
-                        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-                            <span className="text-gray-700"><span className="font-bold text-gray-900">{totalXp.toLocaleString('fr-FR')}</span> XP</span>
-                            {showFollowing && (
-                                <span className="text-gray-700"><span className="font-bold text-gray-900">{profile.stats?.following_count || 0}</span> abonnements</span>
-                            )}
-                            {showFollowers && (
-                                <span className="text-gray-700"><span className="font-bold text-gray-900">{profile.stats?.followers_count || 0}</span> abonnés</span>
-                            )}
-                            {completedModules != null && (
-                                <span className="text-gray-700"><span className="font-bold text-gray-900">{completedModules}</span> modules</span>
-                            )}
-                            {rank != null && rank > 0 && (
-                                <span className="text-gray-700">Classement <span className="font-bold text-gray-900">#{rank}</span></span>
-                            )}
-                        </div>
+                        ))}
                     </div>
+                )}
 
-                    {/* Bio */}
-                    {profile.profile?.bio ? (
-                        <p className="mt-4 text-gray-700 text-base leading-relaxed max-w-3xl">
-                            {profile.profile.bio}
-                        </p>
-                    ) : isOwnProfile ? (
-                        <button
-                            onClick={() => setShowEditModal(true)}
-                            className="mt-4 text-left text-sm text-gray-500 italic hover:text-teal-700 transition-colors cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2"
+                {/* Rail de statistiques */}
+                {railStats.length > 0 && (
+                    <div className="mt-6 grid grid-cols-2 sm:flex sm:flex-wrap gap-px overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/10">
+                        {railStats.map((s) => (
+                            <div key={s.label} className="flex-1 min-w-[7.5rem] bg-[#12395E]/60 backdrop-blur-sm px-4 py-3">
+                                <div className="font-mono text-xl font-bold text-white tabular-nums">{s.value}</div>
+                                <div className="text-[11px] uppercase tracking-wide text-ink-300 mt-0.5">{s.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Meta + liens sociaux */}
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-ink-300">
+                    {profile.profile?.country && (
+                        <span className="flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4" />
+                            {profile.profile.country}
+                        </span>
+                    )}
+                    <span className="flex items-center gap-1.5">
+                        A rejoint en {new Date(profile.joined_at || profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                    </span>
+                    {socialLinks?.website && (
+                        <a
+                            href={socialLinks.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-brand-orange-light hover:text-white transition-colors"
                         >
-                            Ajoute une bio pour dire à la communauté quel type d'investisseur tu veux devenir →
-                        </button>
-                    ) : null}
-
-                    {/* Tags de spécialité */}
-                    {Array.isArray(profile.profile?.specialty_tags) && profile.profile.specialty_tags.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {profile.profile.specialty_tags.map((tag: string) => (
-                                <span key={tag} className="inline-flex items-center px-2.5 py-1 bg-teal-50 text-teal-700 rounded-full text-xs font-medium">
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
+                            <LinkIcon className="w-4 h-4" />
+                            <span className="truncate max-w-[200px]">{socialLinks.website.replace(/^https?:\/\/(www\.)?/, '')}</span>
+                        </a>
                     )}
 
-                    {/* Meta Info Row */}
-                    <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
-                        {profile.profile?.country && (
-                            <div className="flex items-center gap-1.5">
-                                <MapPin className="w-4 h-4" />
-                                <span>{profile.profile.country}</span>
-                            </div>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                            <Calendar className="w-4 h-4" />
-                            <span>A rejoint en {new Date(profile.joined_at || profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
-                        </div>
-                        {socialLinks?.website && (
-                            <a
-                                href={socialLinks.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-1.5 text-blue-600 hover:underline"
-                            >
-                                <LinkIcon className="w-4 h-4" />
-                                <span className="truncate max-w-[200px]">{socialLinks.website.replace(/^https?:\/\/(www\.)?/, '')}</span>
-                            </a>
-                        )}
-                    </div>
-
-                    {/* Social Links */}
                     {hasSocialLinks && (
-                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <span className="flex items-center gap-2">
                             {socialLinks?.linkedin && (
-                                <a
-                                    href={socialLinks.linkedin}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label="LinkedIn"
-                                    className="p-2.5 bg-[#0077B5]/10 text-[#0077B5] rounded-xl hover:bg-[#0077B5]/20 transition-colors"
-                                >
-                                    <Linkedin className="w-5 h-5" />
+                                <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">
+                                    <Linkedin className="w-4 h-4" />
                                 </a>
                             )}
                             {socialLinks?.twitter && (
-                                <a
-                                    href={socialLinks.twitter}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label="Twitter/X"
-                                    className="p-2.5 bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 transition-colors"
-                                >
-                                    <Twitter className="w-5 h-5" />
+                                <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter/X" className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">
+                                    <Twitter className="w-4 h-4" />
                                 </a>
                             )}
                             {socialLinks?.instagram && (
-                                <a
-                                    href={socialLinks.instagram}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label="Instagram"
-                                    className="p-2.5 bg-gradient-to-br from-purple-500/10 to-pink-500/10 text-pink-600 rounded-xl hover:from-purple-500/20 hover:to-pink-500/20 transition-colors"
-                                >
-                                    <Instagram className="w-5 h-5" />
+                                <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">
+                                    <Instagram className="w-4 h-4" />
                                 </a>
                             )}
                             {socialLinks?.facebook && (
-                                <a
-                                    href={socialLinks.facebook}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label="Facebook"
-                                    className="p-2.5 bg-[#1877F2]/10 text-[#1877F2] rounded-xl hover:bg-[#1877F2]/20 transition-colors"
-                                >
-                                    <Facebook className="w-5 h-5" />
+                                <a href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors">
+                                    <Facebook className="w-4 h-4" />
                                 </a>
                             )}
-                        </div>
+                        </span>
                     )}
                 </div>
             </div>
@@ -384,6 +386,6 @@ export default function ProfileHeader({ profile, isOwnProfile = false, onBack, h
                 onClose={() => setShowEditModal(false)}
                 profile={profile}
             />
-        </div>
+        </header>
     );
 }

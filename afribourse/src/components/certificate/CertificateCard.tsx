@@ -1,6 +1,6 @@
 // src/components/certificate/CertificateCard.tsx
 import { useState } from 'react';
-import { Download, Calendar, Award } from 'lucide-react';
+import { Download, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../../lib/api-client';
 import CertificateShareButtons from './CertificateShareButtons';
@@ -70,9 +70,6 @@ export default function CertificateCard({ cert }: Props) {
           />
         ) : (
           <div className="w-full aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex flex-col items-center justify-center gap-2">
-            <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-              <Award size={20} className="text-amber-400" />
-            </div>
             <p className="text-xs text-slate-400 text-center px-4">{cert.module.name}</p>
           </div>
         )}
@@ -90,9 +87,6 @@ export default function CertificateCard({ cert }: Props) {
       {/* Infos */}
       <div className="p-4">
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <Award size={18} className="text-amber-600" />
-          </div>
           <div>
             <h3 className="font-semibold text-gray-900 text-sm leading-tight">{cert.module.name}</h3>
             <p className="text-xs text-gray-500 mt-0.5">{cert.module.subtitle}</p>

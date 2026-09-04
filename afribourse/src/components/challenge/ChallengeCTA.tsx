@@ -1,16 +1,7 @@
 // src/components/challenge/ChallengeCTA.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Trophy,
-  Banknote,
-  Target,
-  Medal,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  TrendingUp,
-} from 'lucide-react';
+import { Trophy, Banknote, Target, Medal, ArrowRight, CheckCircle2, TrendingUp } from 'lucide-react';
 import { useChallengeStatus, useIsChallengeOpen } from '../../hooks/useChallenge';
 import { EnrollmentModal } from './EnrollmentModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -143,7 +134,6 @@ export function ChallengeCTA() {
           {/* Countdown — only when launch is in the future and user is enrolled */}
           {!isChallengeOpen && challengeStatus?.enrolled && daysLeft > 0 && (
             <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-gray-700 px-5 py-2.5 rounded-full text-sm font-medium mb-8">
-              <Clock className="w-4 h-4 text-orange-500 shrink-0" />
               Le trading ouvre le 2 mars —{' '}
               <span className="text-gray-900 font-bold ml-1">dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}</span>
             </div>

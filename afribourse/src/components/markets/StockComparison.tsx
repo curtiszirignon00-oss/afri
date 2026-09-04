@@ -172,7 +172,6 @@ export default function StockComparison({ stocks, allStocks, onRemove, onAdd, on
             <div className="mb-6 bg-ink-50 border-2 border-dashed border-ink-200 rounded-xl comparison-fade-in">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-ink-200">
                     <div className="flex items-center gap-2">
-                        <Scale className="w-5 h-5 text-brand-navy" />
                         <span className="font-semibold text-brand-navy text-sm">Comparaison de titres</span>
                     </div>
                     <div className="flex items-center gap-2">

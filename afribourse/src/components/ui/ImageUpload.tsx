@@ -1,6 +1,6 @@
 // src/components/ui/ImageUpload.tsx
 import { useRef, useState, useCallback } from 'react';
-import { Camera, Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Camera, X, Loader2 } from 'lucide-react';
 import { validateImageFile, createImagePreview } from '../../hooks/useUpload';
 
 interface ImageUploadProps {
@@ -206,7 +206,6 @@ export default function ImageUpload({
                     </div>
                 ) : (
                     <div className="flex flex-col items-center gap-2">
-                        <ImageIcon className="w-8 h-8 text-gray-400" />
                         <p className="text-sm text-gray-600">
                             Cliquez ou glissez-déposez vos images
                         </p>

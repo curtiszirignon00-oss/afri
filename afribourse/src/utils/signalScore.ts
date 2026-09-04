@@ -425,7 +425,7 @@ export function calculateSignalScore(
 
 export function getScoreHexColor(score: number): string {
   if (score <= 25) return '#dc2626';
-  if (score <= 40) return '#f97316';
+  if (score <= 40) return '#EE7B23';
   if (score <= 59) return '#6b7280';
   if (score <= 74) return '#22c55e';
   return '#16a34a';

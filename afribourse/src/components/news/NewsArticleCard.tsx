@@ -1,4 +1,4 @@
-import { Calendar, Clock, Newspaper, Heart, MessageCircle, Eye, Flame } from 'lucide-react';
+import { Clock, Newspaper, Heart, MessageCircle, Eye } from 'lucide-react';
 import {
   getCategoryLabel, getCategoryColor, formatTimeAgo, calcReadTime,
   isNewArticle, stripHtml, type ArticleCounts,
@@ -50,7 +50,7 @@ export default function NewsArticleCard({ article, counts, popular, onOpen, comp
           )}
           {popular && (
             <span className="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full bg-brand-navy text-white shadow">
-              <Flame className="w-2.5 h-2.5" />Populaire
+Populaire
             </span>
           )}
         </div>
@@ -77,7 +77,7 @@ export default function NewsArticleCard({ article, counts, popular, onOpen, comp
         )}
 
         <div className="flex items-center justify-between text-gray-400 text-xs pt-3 border-t border-gray-100 mt-auto">
-          <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(article.published_at)}</span>
+          <span className="flex items-center gap-1">Il y a {formatTimeAgo(article.published_at)}</span>
           <div className="flex items-center gap-2.5">
             {counts && (counts.likes > 0 || counts.comments > 0 || counts.views > 0) ? (
               <>

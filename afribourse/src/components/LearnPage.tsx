@@ -4,36 +4,7 @@ import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/learn';
-import {
-    BookOpen,
-    Clock,
-    Award,
-    AlertTriangle,
-    ArrowLeft,
-    CheckCircle,
-    Lock,
-    Volume2,
-    Brain,
-    Target,
-    TrendingUp,
-    Star,
-    XCircle,
-    MessageSquarePlus,
-    HelpCircle,
-    BarChart3,
-    ChevronLeft,
-    ChevronRight,
-    Zap,
-    Share2,
-    Crown,
-    FileText,
-    ExternalLink,
-    ArrowRight,
-    Briefcase,
-    Flame,
-    Lightbulb,
-    Video
-} from 'lucide-react';
+import { BookOpen, Clock, Award, AlertTriangle, ArrowLeft, CheckCircle, Lock, Brain, Target, TrendingUp, Star, XCircle, MessageSquarePlus, HelpCircle, BarChart3, ChevronLeft, ChevronRight, Zap, Share2, Crown, FileText, ExternalLink, ArrowRight, Briefcase, Flame, Video } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -108,7 +79,6 @@ function ModuleContent({ module, onComplete }: {
 
     return (
         <div className="text-center py-12 px-6">
-            <BookOpen className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <p className="text-gray-500 text-lg">Contenu du module en préparation...</p>
         </div>
     );
@@ -504,8 +474,8 @@ export default function LearnPage() {
             }
 
             const result = await response.json();
-            console.log('📊 Résultat du quiz reçu:', result);
-            console.log('📝 Détails des réponses:', result.detailedResults);
+            console.log('Résultat du quiz reçu:', result);
+            console.log('Détails des réponses:', result.detailedResults);
 
             // Afficher les résultats d'abord
             setQuizState(prev => ({
@@ -857,7 +827,6 @@ export default function LearnPage() {
                                 <>
                                     <span className="text-gray-400 text-sm">•</span>
                                     <span className="text-gray-400 text-sm flex items-center gap-1">
-                                        <Brain className="w-4 h-4" />
                                         Quiz inclus
                                     </span>
                                 </>
@@ -1176,7 +1145,6 @@ export default function LearnPage() {
                                                 </div>
 
                                                 <h4 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                        <FileText className="w-5 h-5 text-brand-navy shrink-0" />
                                         Détails de vos réponses
                                     </h4>
 
@@ -1210,7 +1178,6 @@ export default function LearnPage() {
                                                                             {result.explanation && (
                                                                                 <div className="mt-3 pt-3 border-t border-gray-300">
                                                                                     <p className="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
-                                                            <Lightbulb className="w-4 h-4 text-brand-orange shrink-0" />
                                                             Explication :
                                                         </p>
                                                                                     <p className="text-sm text-gray-600">
@@ -1238,7 +1205,6 @@ export default function LearnPage() {
                                                 <div className="mb-6 p-4 bg-gradient-to-r from-ink-50 to-ink-50 rounded-xl border border-ink-200">
                                                     <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                                                         <div className="flex items-center gap-2 text-brand-navy-hover">
-                                                            <Share2 className="w-5 h-5" />
                                                             <span className="font-medium text-sm">Partagez votre score avec la communauté !</span>
                                                         </div>
                                                         <button
@@ -1249,10 +1215,9 @@ export default function LearnPage() {
                                                                 const correctCount = quizState.detailedResults?.filter(r => r.isCorrect).length ?? 0;
                                                                 const totalCount = quizState.detailedResults?.length ?? quizQuestions.length;
 
-                                                                const emoji = passed ? (score! >= 90 ? '🏆' : '🎉') : '💪';
                                                                 const content = passed
-                                                                    ? `${emoji} J'ai obtenu ${score}% au quiz "${moduleTitle}" (${correctCount}/${totalCount} bonnes réponses) ! #AfriBourse #Apprentissage`
-                                                                    : `${emoji} J'ai terminé le quiz "${moduleTitle}" avec ${score}% (${correctCount}/${totalCount}). Je continue à apprendre ! #AfriBourse #Apprentissage`;
+                                                                    ? `J'ai obtenu ${score}% au quiz "${moduleTitle}" (${correctCount}/${totalCount} bonnes réponses) ! #AfriBourse #Apprentissage`
+                                                                    : `J'ai terminé le quiz "${moduleTitle}" avec ${score}% (${correctCount}/${totalCount}). Je continue à apprendre ! #AfriBourse #Apprentissage`;
 
                                                                 createPost({
                                                                     type: 'ACHIEVEMENT',
@@ -1985,7 +1950,6 @@ export default function LearnPage() {
 
                                             {isPremiumModule(module.order_index ?? 0) && !isCompleted && !userHasPremium && (
                                                 <div className="flex items-center space-x-1 bg-brand-orange text-white px-2.5 py-1 rounded-full text-xs font-semibold">
-                                                    <Crown className="w-3.5 h-3.5" />
                                                     <span>Premium</span>
                                                 </div>
                                             )}
@@ -2020,13 +1984,11 @@ export default function LearnPage() {
                                         <div className="flex items-center gap-2 flex-wrap">
                                             {hasQuiz && (
                                                 <div className="flex items-center space-x-1 bg-ink-100 text-brand-navy-hover px-2 py-1 rounded-full text-xs font-semibold">
-                                                    <Brain className="w-3.5 h-3.5" />
                                                     <span>Quiz</span>
                                                 </div>
                                             )}
 
                                             <div className="flex items-center space-x-1 bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-medium opacity-50">
-                                                <Volume2 className="w-3.5 h-3.5" />
                                                 <span>Audio</span>
                                             </div>
                                         </div>

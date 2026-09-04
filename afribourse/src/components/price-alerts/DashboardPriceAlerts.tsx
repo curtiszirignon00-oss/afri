@@ -1,18 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import {
-  Bell,
-  BellOff,
-  TrendingUp,
-  TrendingDown,
-  Edit2,
-  Trash2,
-  CheckCircle,
-  AlertCircle,
-  ExternalLink,
-  Plus,
-} from 'lucide-react';
+import { Bell, BellOff, TrendingUp, TrendingDown, Trash2, CheckCircle, ExternalLink, Plus } from 'lucide-react';
 import { usePriceAlerts, useTogglePriceAlert, useDeletePriceAlert } from '../../hooks/usePriceAlerts';
 
 export default function DashboardPriceAlerts() {
@@ -257,12 +246,10 @@ function AlertCard({ alert, onToggle, onDelete, onViewStock }: AlertCardProps) {
           </span>
         ) : alert.is_active ? (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            <Bell className="w-3 h-3" />
             Active
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            <BellOff className="w-3 h-3" />
             Désactivée
           </span>
         )}

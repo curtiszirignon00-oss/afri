@@ -25,8 +25,8 @@ export default function ShareCardModal({ isOpen, onClose, username, dnaType }: S
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 text-center" onClick={(e) => e.stopPropagation()}>
-                    <p className="text-gray-700">Définis d'abord un nom d'utilisateur pour générer ta carte.</p>
-                    <button onClick={onClose} className="mt-4 px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium">Fermer</button>
+                    <p className="text-ink-700">Définis d'abord un nom d'utilisateur pour générer ta carte.</p>
+                    <button onClick={onClose} className="mt-4 px-4 py-2 bg-ink-100 rounded-lg text-sm font-medium">Fermer</button>
                 </div>
             </div>
         );
@@ -84,9 +84,9 @@ export default function ShareCardModal({ isOpen, onClose, username, dnaType }: S
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between p-5 border-b">
-                    <h3 className="text-lg font-semibold text-gray-900">Partager ma carte</h3>
-                    <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
-                        <X className="w-5 h-5 text-gray-500" />
+                    <h3 className="text-lg font-semibold text-ink-900">Partager ma carte</h3>
+                    <button onClick={onClose} className="p-1 hover:bg-ink-100 rounded-lg">
+                        <X className="w-5 h-5 text-ink-500" />
                     </button>
                 </div>
 
@@ -97,7 +97,7 @@ export default function ShareCardModal({ isOpen, onClose, username, dnaType }: S
                             <button
                                 key={f}
                                 onClick={() => setFormat(f)}
-                                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-1 ${format === f ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-1 ${format === f ? 'bg-brand-navy text-white' : 'bg-ink-100 text-ink-700 hover:bg-ink-200'}`}
                             >
                                 {f === 'square' ? 'Carré (1:1)' : 'Story (9:16)'}
                             </button>
@@ -105,7 +105,7 @@ export default function ShareCardModal({ isOpen, onClose, username, dnaType }: S
                     </div>
 
                     {/* Aperçu */}
-                    <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-center">
+                    <div className="bg-ink-50 rounded-xl p-3 flex items-center justify-center">
                         <img
                             src={imageUrl}
                             alt="Carte ADN Investisseur"
@@ -119,20 +119,20 @@ export default function ShareCardModal({ isOpen, onClose, username, dnaType }: S
                         <button
                             onClick={handleDownload}
                             disabled={downloading}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2"
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-navy text-white rounded-xl font-semibold hover:bg-brand-navy-hover transition-colors disabled:opacity-60 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                         >
                             {downloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                             Télécharger
                         </button>
                         <button
                             onClick={handleNativeShare}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-teal-600 text-white rounded-xl font-medium hover:bg-teal-700 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+                            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-orange text-white rounded-xl font-semibold hover:bg-brand-orange-hover transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
                         >
                             <Share2 className="w-4 h-4" />
                             Partager
                         </button>
                     </div>
-                    <p className="mt-3 text-[11px] text-gray-400 text-center">
+                    <p className="mt-3 text-[11px] text-ink-400 text-center">
                         Portefeuille virtuel — simulation pédagogique.
                     </p>
                 </div>

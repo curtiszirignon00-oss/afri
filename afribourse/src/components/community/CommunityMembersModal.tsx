@@ -1,7 +1,7 @@
 // src/components/community/CommunityMembersModal.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X, Users, Crown, Shield, Loader2, UserMinus, ChevronDown } from 'lucide-react';
+import { X, Users, Loader2, UserMinus, ChevronDown } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
     useCommunityMembers,
@@ -79,21 +79,18 @@ export default function CommunityMembersModal({ communityId, canManage, onClose 
             case 'OWNER':
                 return (
                     <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-brand-orange-dark rounded-full text-xs">
-                        <Crown className="w-3 h-3" />
                         Proprietaire
                     </span>
                 );
             case 'ADMIN':
                 return (
                     <span className="flex items-center gap-1 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-xs">
-                        <Shield className="w-3 h-3" />
                         Admin
                     </span>
                 );
             case 'MODERATOR':
                 return (
                     <span className="flex items-center gap-1 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-xs">
-                        <Shield className="w-3 h-3" />
                         Modo
                     </span>
                 );

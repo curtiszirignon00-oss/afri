@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Check, Flame, Gift, Landmark } from 'lucide-react';
+import { Check, Gift, Landmark } from 'lucide-react';
 import { applyPromo, promoPercent, isPromoActive } from '../../utils/promo';
 import { usePromoCountdown } from '../../hooks/usePromoCountdown';
 
@@ -101,7 +101,6 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
         {countdown.active && (
           <div className="mb-10 rounded-xl bg-brand-orange px-5 py-4 text-white text-center shadow-sm">
             <p className="font-bold flex items-center justify-center gap-2 flex-wrap">
-              <Flame className="w-5 h-5 shrink-0" />
               Offre flash 24h · Starter <span className="underline">-50%</span> · Parcours &amp; Investisseur <span className="underline">-30%</span>
             </p>
             <p className="text-sm font-semibold mt-1 text-white/80">
@@ -114,7 +113,6 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void }> = ({ onChoose }
             l'accueil : pastille qui bat, titre, chapeau borne en largeur. */}
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy px-3 py-1.5 rounded-full text-xs font-bold mb-4">
-            <BookOpen className="w-4 h-4 shrink-0" />
             <span>Choisis ton parcours</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-3">3 niveaux d'accompagnement</h2>

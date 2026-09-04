@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowLeft, Crown, CheckCircle, Lock, Shield,
-  ChevronDown, ChevronRight, Star, Zap, BookOpen,
-  Brain, BarChart3, Award, Clock,
-} from 'lucide-react';
+import { ArrowLeft, CheckCircle, Lock, Shield, ChevronDown, ChevronRight, Star, Zap, BookOpen, Brain, BarChart3, Award, Clock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import PaymentModal from '../components/payment/PaymentModal';
 import { analytics } from '../services/analytics';
@@ -218,7 +214,6 @@ export default function FormationPremiumPage() {
       {/* ── Sticky banner ── */}
       <div style={{ position: 'sticky', top: 0, zIndex: 50, background: '#FFFBF0', borderBottom: `1px solid ${C.goldBorder}`, padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Crown style={{ width: 15, height: 15, color: C.goldLight }} />
           <span style={{ fontSize: 13, color: C.gold, fontWeight: 700 }}>Formation Complète — 15 000 FCFA · Accès à vie</span>
         </div>
         <button onClick={scrollToPricing} style={{ background: C.goldLight, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
@@ -233,7 +228,6 @@ export default function FormationPremiumPage() {
         </button>
 
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.goldBg, border: `1px solid ${C.goldBorder}`, borderRadius: 20, padding: '5px 14px', marginBottom: 18 }}>
-          <Crown style={{ width: 12, height: 12, color: C.goldLight }} />
           <span style={{ fontSize: 11, fontWeight: 700, color: C.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Accès à vie · Paiement unique</span>
         </div>
 
@@ -354,7 +348,7 @@ export default function FormationPremiumPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, marginTop: 20 }}>
             <div className="divider-line" />
             <span style={{ fontSize: 11, color: C.gold, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: C.goldBg, border: `1px solid ${C.goldBorder}`, borderRadius: 6, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
-              <Crown style={{ width: 10, height: 10 }} /> Formation Complète — 15 000 FCFA
+ Formation Complète — 15 000 FCFA
             </span>
             <div className="divider-line" />
           </div>
@@ -487,7 +481,6 @@ export default function FormationPremiumPage() {
               RECOMMANDÉ
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <Crown style={{ width: 15, height: 15, color: C.goldLight }} />
               <p style={{ fontSize: 12, color: C.gold, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Formation Complète</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
@@ -502,7 +495,6 @@ export default function FormationPremiumPage() {
                 </li>
               ))}
               <li style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.textMuted }}>
-                <Award style={{ width: 14, height: 14, color: C.textMuted, flexShrink: 0 }} />
                 <span>Certificat <span style={{ fontSize: 11, background: C.redBg, color: C.red, border: `1px solid ${C.redBorder}`, borderRadius: 4, padding: '1px 5px', marginLeft: 3 }}>+15 000 FCFA option</span></span>
               </li>
             </ul>
@@ -526,7 +518,7 @@ export default function FormationPremiumPage() {
                   ))}
                 </div>
                 <p style={{ textAlign: 'center', fontSize: 11, color: C.textMuted, marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                  <Shield style={{ width: 11, height: 11 }} /> Paiement sécurisé via PawaPay
+ Paiement sécurisé via PawaPay
                 </p>
               </div>
             )}
@@ -535,7 +527,6 @@ export default function FormationPremiumPage() {
 
         {/* Bundle note */}
         <div style={{ background: C.bgSub, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <BookOpen style={{ width: 18, height: 18, color: C.goldLight, flexShrink: 0 }} />
           <p style={{ fontSize: 13, color: C.textSub }}>M0–M6 restent toujours <strong>gratuits</strong>. Vous payez une fois pour débloquer M7–M19 en plus.</p>
         </div>
       </section>
@@ -580,7 +571,6 @@ export default function FormationPremiumPage() {
       {/* ── Final CTA ── */}
       <section className="reveal" style={{ maxWidth: 760, margin: '0 auto 80px', padding: '0 20px' }}>
         <div style={{ background: '#FFFBF0', border: `1px solid rgba(201,168,76,.3)`, borderRadius: 20, padding: '40px 32px', textAlign: 'center' }}>
-          <Crown style={{ width: 34, height: 34, color: C.goldLight, margin: '0 auto 14px' }} />
           <h2 style={{ fontSize: 'clamp(22px,4vw,32px)', fontWeight: 800, marginBottom: 12, color: C.text }}>
             Prenez votre avenir financier en main
           </h2>
@@ -596,7 +586,7 @@ export default function FormationPremiumPage() {
             </button>
           </div>
           <p style={{ fontSize: 12, color: C.textMuted, marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-            <Shield style={{ width: 12, height: 12 }} /> Satisfait ou remboursé 7 jours · Paiement sécurisé PawaPay
+ Satisfait ou remboursé 7 jours · Paiement sécurisé PawaPay
           </p>
         </div>
       </section>

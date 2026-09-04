@@ -2,7 +2,23 @@
 // Pop-up de célébration pour les micro-victoires (premier quiz, première plus-value, level up…)
 
 import { useEffect, useState } from 'react';
-import { X, Share2 } from 'lucide-react';
+import {
+  X,
+  Share2,
+  Target,
+  Sparkles,
+  BookOpen,
+  Briefcase,
+  TrendingUp,
+  ChevronsUp,
+  Flame,
+  Crown,
+  Trophy,
+  Users,
+  PartyPopper,
+  Zap,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export type MilestoneType =
@@ -41,87 +57,87 @@ interface MilestonePopupProps {
 // Config par type de milestone
 const MILESTONE_CONFIG: Record<
   MilestoneType,
-  { emoji: string; title: string; message: string; gradient: string; confettiColors: string[] }
+  { icon: LucideIcon; title: string; message: string; gradient: string; confettiColors: string[] }
 > = {
   first_quiz: {
-    emoji: '🎯',
+    icon: Target,
     title: 'Premier quiz validé !',
     message: 'Tu viens de passer ton tout premier quiz avec succès. C\'est le début d\'une belle aventure !',
     gradient: 'from-blue-500 to-indigo-600',
     confettiColors: ['#3B82F6', '#6366F1', '#60A5FA', '#A5B4FC'],
   },
   perfect_quiz: {
-    emoji: '🌟',
+    icon: Sparkles,
     title: 'Quiz parfait !',
     message: 'Incroyable — 100% de bonnes réponses ! Tu maîtrises ce sujet à la perfection.',
     gradient: 'from-amber-400 to-orange-500',
     confettiColors: ['#F59E0B', '#F97316', '#FCD34D', '#FED7AA'],
   },
   first_module: {
-    emoji: '📚',
+    icon: BookOpen,
     title: 'Premier module terminé !',
     message: 'Tu viens de compléter ton premier module de formation. Continue sur ta lancée !',
     gradient: 'from-green-500 to-emerald-600',
     confettiColors: ['#22C55E', '#10B981', '#86EFAC', '#6EE7B7'],
   },
   first_trade: {
-    emoji: '💼',
+    icon: Briefcase,
     title: 'Premier trade effectué !',
     message: 'Tu viens d\'effectuer ta toute première transaction sur AfriBourse. Bienvenue dans le monde du trading !',
     gradient: 'from-purple-500 to-violet-600',
     confettiColors: ['#8B5CF6', '#7C3AED', '#C4B5FD', '#A78BFA'],
   },
   first_gain: {
-    emoji: '📈',
+    icon: TrendingUp,
     title: 'Première plus-value réalisée !',
     message: 'Félicitations ! Tu viens de réaliser ta première plus-value. Tu sais maintenant ce que ça fait de gagner sur les marchés !',
     gradient: 'from-green-400 to-teal-500',
     confettiColors: ['#4ADE80', '#2DD4BF', '#86EFAC', '#99F6E4'],
   },
   level_up: {
-    emoji: '🎯',
+    icon: ChevronsUp,
     title: 'Nouveau niveau atteint !',
     message: 'Tu viens de franchir un nouveau palier. Tes efforts paient — continue comme ça !',
     gradient: 'from-amber-400 to-yellow-500',
     confettiColors: ['#F59E0B', '#EAB308', '#FCD34D', '#FEF08A'],
   },
   streak_7: {
-    emoji: '🔥',
+    icon: Flame,
     title: '7 jours de suite !',
     message: 'Une semaine sans interruption ! Ta régularité est exemplaire. Continue à maintenir ta série !',
     gradient: 'from-orange-400 to-red-500',
     confettiColors: ['#F97316', '#EF4444', '#FED7AA', '#FCA5A5'],
   },
   streak_30: {
-    emoji: '🔥',
+    icon: Flame,
     title: '30 jours de suite !',
     message: 'Un mois entier de présence quotidienne ! Tu es un vrai investisseur engagé.',
     gradient: 'from-red-500 to-pink-600',
     confettiColors: ['#EF4444', '#EC4899', '#FCA5A5', '#F9A8D4'],
   },
   streak_100: {
-    emoji: '👑',
+    icon: Crown,
     title: '100 jours de suite !',
     message: 'Cent jours de régularité absolue — tu es une légende vivante d\'AfriBourse !',
     gradient: 'from-violet-500 to-fuchsia-600',
     confettiColors: ['#8B5CF6', '#D946EF', '#C4B5FD', '#F0ABFC'],
   },
   challenge_complete: {
-    emoji: '🏆',
+    icon: Trophy,
     title: 'Défi de la semaine accompli !',
     message: 'Tu as relevé le défi ! Tes récompenses sont en route. Prêt pour le prochain ?',
     gradient: 'from-amber-500 to-yellow-400',
     confettiColors: ['#F59E0B', '#EAB308', '#FBBF24', '#FDE047'],
   },
   first_community: {
-    emoji: '🤝',
+    icon: Users,
     title: 'Tu rejoins la communauté !',
     message: 'Bienvenue dans ta première communauté AfriBourse. Échanges, idées et opportunités t\'attendent !',
     gradient: 'from-sky-500 to-blue-600',
     confettiColors: ['#0EA5E9', '#3B82F6', '#7DD3FC', '#93C5FD'],
   },
   custom: {
-    emoji: '🎉',
+    icon: PartyPopper,
     title: 'Félicitations !',
     message: 'Tu viens d\'accomplir quelque chose de remarquable !',
     gradient: 'from-blue-500 to-indigo-600',
@@ -132,6 +148,7 @@ const MILESTONE_CONFIG: Record<
 export function MilestonePopup({ type, data, isOpen, onClose, onShare }: MilestonePopupProps) {
   const [visible, setVisible] = useState(false);
   const config = MILESTONE_CONFIG[type] || MILESTONE_CONFIG.custom;
+  const MilestoneIcon = config.icon;
 
   const title = data?.title ?? config.title;
   const message = data?.message ?? config.message;
@@ -197,12 +214,12 @@ export function MilestonePopup({ type, data, isOpen, onClose, onShare }: Milesto
             <X className="w-4 h-4 text-white" />
           </button>
 
-          {/* Emoji animé */}
+          {/* Icone animee */}
           <div
-            className="text-6xl mb-3 relative"
+            className="relative mx-auto mb-3 w-16 h-16 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center"
             style={{ animation: 'milestone-bounce 0.6s ease-out' }}
           >
-            {config.emoji}
+            <MilestoneIcon className="w-8 h-8 text-white" strokeWidth={1.75} />
           </div>
 
           {/* Titre */}
@@ -227,7 +244,7 @@ export function MilestonePopup({ type, data, isOpen, onClose, onShare }: Milesto
           {/* XP badge */}
           {data?.xp != null && data.xp > 0 && (
             <div className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-amber-50 border border-amber-200 rounded-full mb-4">
-              <span className="text-amber-500 text-base">⚡</span>
+              <Zap className="w-4 h-4 text-amber-500" />
               <span className="font-bold text-amber-700 text-sm">+{data.xp} XP</span>
             </div>
           )}

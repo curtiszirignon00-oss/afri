@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Wallet, BarChart3, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 
 interface StepPerf {
   pfVal: number;
@@ -88,7 +88,6 @@ export default function PerformanceSnapshot({ perf, year, capital: _capital, pre
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <div className="bg-white border border-gray-100 shadow-sm rounded-xl p-3 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <Wallet className="w-3 h-3 text-gray-400" />
             <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Valeur PF</p>
           </div>
           <p className="text-base font-extrabold text-gray-900 tabular-nums">{Math.round(perf.pfVal ?? 0).toLocaleString('fr-FR')}</p>
@@ -97,7 +96,6 @@ export default function PerformanceSnapshot({ perf, year, capital: _capital, pre
 
         <div className="bg-amber-50 border border-amber-100 shadow-sm rounded-xl p-3 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
-            <BarChart3 className="w-3 h-3 text-amber-400" />
             <p className="text-[9px] text-amber-500 uppercase font-bold tracking-widest">Dividendes</p>
           </div>
           <p className="text-base font-extrabold text-amber-600 tabular-nums">{Math.round(perf.pfDivCum ?? 0).toLocaleString('fr-FR')}</p>

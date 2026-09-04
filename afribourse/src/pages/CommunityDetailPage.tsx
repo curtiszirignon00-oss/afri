@@ -8,40 +8,7 @@
 const POSTS_DISABLED = false;
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import {
-    Users,
-    MessageSquare,
-    Settings,
-    Globe,
-    Lock,
-    Shield,
-    Crown,
-    BadgeCheck,
-    Loader2,
-    ArrowLeft,
-    UserPlus,
-    LogOut,
-    Clock,
-    AlertCircle,
-    Trophy,
-    Calendar,
-    Video,
-    ExternalLink,
-    MapPin,
-    Plus,
-    Edit,
-    Trash2,
-    Eye,
-    EyeOff,
-    Play,
-    Share2,
-    Copy,
-    RefreshCw,
-    Info,
-    CheckCircle,
-    Tag,
-    X,
-} from 'lucide-react';
+import { Users, MessageSquare, Settings, Globe, Lock, Shield, Crown, BadgeCheck, Loader2, ArrowLeft, UserPlus, LogOut, Clock, AlertCircle, Trophy, Calendar, Video, ExternalLink, MapPin, Plus, Edit, Trash2, Eye, EyeOff, Play, Share2, Copy, RefreshCw, Info, CheckCircle, Tag, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
     useCommunity,
@@ -356,7 +323,6 @@ export default function CommunityDetailPage() {
 
                             {community.hasPendingRequest && (
                                 <span className="inline-flex items-center gap-2 h-11 px-4 rounded-lg bg-white/10 border border-white/25 text-white text-sm font-semibold">
-                                    <Clock className="w-4 h-4" />
                                     Demande en attente
                                 </span>
                             )}
@@ -429,9 +395,6 @@ export default function CommunityDetailPage() {
                     <div className="space-y-6">
                         <div className="bg-white rounded-2xl border-2 border-brand-orange shadow-sm p-5 sm:p-6">
                             <div className="flex items-start gap-4">
-                                <span className="w-11 h-11 rounded-xl bg-brand-orange/10 flex items-center justify-center shrink-0">
-                                    <Trophy className="w-5 h-5 text-brand-orange-dark" />
-                                </span>
                                 <div>
                                     <h3 className="font-bold text-gray-900 mb-1">
                                         Classement du Challenge AfriBourse 2026
@@ -453,9 +416,6 @@ export default function CommunityDetailPage() {
                     <div className="space-y-6">
                         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
                             <div className="flex items-start gap-4">
-                                <span className="w-11 h-11 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                                    <Calendar className="w-5 h-5 text-brand-navy" />
-                                </span>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-bold text-gray-900 mb-1">Evenements du challenge</h3>
                                     <p className="text-sm text-gray-600 leading-relaxed">
@@ -1116,9 +1076,6 @@ export default function CommunityDetailPage() {
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
                         <div className="flex items-center justify-between p-5 border-b border-gray-100">
                             <div className="flex items-center gap-2.5">
-                                <span className="w-9 h-9 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                                    <Share2 className="w-4 h-4 text-brand-navy" />
-                                </span>
                                 <h3 className="font-bold text-gray-900">Inviter des membres</h3>
                             </div>
                             <button

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ShieldCheck, Users, Zap, Flame } from 'lucide-react';
+import { X, ShieldCheck, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { applyPromo, promoPercent, isPromoActive } from '../utils/promo';
 import { usePromoCountdown } from '../hooks/usePromoCountdown';
@@ -97,7 +97,7 @@ export default function WebinarAnnouncementPopup() {
         {promoActive && (
           <div className="bg-gradient-to-r from-red-600 to-orange-500 px-5 py-2 text-white text-center">
             <p className="text-xs font-extrabold flex items-center justify-center gap-1.5 flex-wrap">
-              <Flame className="w-3.5 h-3.5" /> OFFRE FLASH 24H · Starter -50% · Parcours & Investisseur -30% · <span className="font-mono">{promo.label}</span>
+ OFFRE FLASH 24H · Starter -50% · Parcours & Investisseur -30% · <span className="font-mono">{promo.label}</span>
             </p>
           </div>
         )}
@@ -158,7 +158,6 @@ export default function WebinarAnnouncementPopup() {
         {/* Pied de card */}
         <div className="px-5 pb-2 flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <Users className="w-3.5 h-3.5 text-gray-400" />
             <span>Places limitées · 50 par session</span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-emerald-700 ml-auto">

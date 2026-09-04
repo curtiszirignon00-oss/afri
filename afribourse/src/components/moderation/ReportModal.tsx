@@ -84,9 +84,6 @@ export default function ReportModal({ contentType, contentId, contentAuthorName,
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                            <Flag className="w-5 h-5 text-red-600" />
-                        </div>
                         <div>
                             <h2 className="text-xl font-bold text-gray-900">Signaler ce contenu</h2>
                             {contentAuthorName && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Newspaper, BarChart2, ChevronRight, X, TrendingUp, TrendingDown, Minus, Clock, ArrowUpRight, ArrowDownRight, Landmark, Leaf, Fuel, Radio, Star } from 'lucide-react';
+import { ExternalLink, Newspaper, ChevronRight, X, TrendingUp, TrendingDown, Minus, Clock, ArrowUpRight, ArrowDownRight, Landmark, Leaf, Fuel, Radio, Star } from 'lucide-react';
 import { findNewsByTicker, StockNews as FundamentalsNews, Sector } from '../../data/newsData';
 import { BRVM_NEWS, BRVMArticle, ContentBlock } from '../../data/brvm2026News';
 import { BRVMDetailPanel, BRVMArticleCard } from '../BRVMNewsGrid';
@@ -52,11 +52,11 @@ const SECTOR_ICONS: Record<Sector, () => React.ReactNode> = {
   Télécommunications: () => <Radio size={12} />,
 };
 
-const COUNTRY_FLAG: Record<string, string> = { CI: "🇨🇮", BF: "🇧🇫", SN: "🇸🇳" };
+const COUNTRY_LABEL: Record<string, string> = { CI: "Côte d'Ivoire", BF: "Burkina Faso", SN: "Sénégal" };
 
 function FundTrendBadge({ trend }: { trend: "hausse" | "baisse" | "stable" }) {
   if (trend === "hausse") return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-green-700 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
       <TrendingUp size={9} /> Hausse
     </span>
   );
@@ -66,7 +66,7 @@ function FundTrendBadge({ trend }: { trend: "hausse" | "baisse" | "stable" }) {
     </span>
   );
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 rounded-full px-2 py-0.5">
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-2 py-0.5">
       <Minus size={9} /> Stable
     </span>
   );
@@ -81,8 +81,8 @@ function DivBar({ history }: { history: FundamentalsNews["history"] }) {
         const pct = Math.round((h.dividend / maxDiv) * 100);
         return (
           <div key={h.year} className="flex flex-col items-center gap-0.5 flex-1">
-            <div className="w-full rounded-sm" style={{ height: `${Math.max(pct * 0.28, 3)}px`, background: isLast ? "#00D4A8" : "#CBD5E1" }} />
-            <span className="text-[8px] text-slate-400">{String(h.year).slice(2)}</span>
+            <div className="w-full rounded-sm" style={{ height: `${Math.max(pct * 0.28, 3)}px`, background: isLast ? "#12395E" : "#E2E5E9" }} />
+            <span className="text-[8px] text-gray-400">{String(h.year).slice(2)}</span>
           </div>
         );
       })}
@@ -123,17 +123,17 @@ function FundDetailPanel({ news, onClose }: { news: FundamentalsNews; onClose: (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-xl bg-white shadow-2xl overflow-y-auto flex flex-col" style={{ animation: "slideIn 0.25s cubic-bezier(0.16,1,0.3,1)" }}>
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-5 z-10">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-5 z-10">
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-mono text-lg font-bold text-slate-900">{news.ticker}</span>
-                <span className="text-xl">{COUNTRY_FLAG[news.country]}</span>
+                <span className="font-mono text-lg font-bold text-gray-900">{news.ticker}</span>
+                <span className="text-xs font-medium text-gray-500 border border-gray-200 rounded-full px-2 py-0.5">{COUNTRY_LABEL[news.country] ?? news.country}</span>
               </div>
-              <p className="text-sm text-slate-600">{news.name}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{relTime(news.publishedAt)}</p>
+              <p className="text-sm text-gray-600">{news.name}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{relTime(news.publishedAt)}</p>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors">
               <X size={18} />
             </button>
           </div>
@@ -141,8 +141,8 @@ function FundDetailPanel({ news, onClose }: { news: FundamentalsNews; onClose: (
 
         <div className="flex-1 px-6 py-6 space-y-5">
           <div>
-            <h2 className="text-base font-bold text-slate-900 leading-snug mb-2">{news.headline}</h2>
-            <p className="text-sm text-slate-600 leading-relaxed">{news.summary}</p>
+            <h2 className="text-base font-bold text-gray-900 leading-snug mb-2">{news.headline}</h2>
+            <p className="text-sm text-gray-600 leading-relaxed">{news.summary}</p>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -154,22 +154,22 @@ function FundDetailPanel({ news, onClose }: { news: FundamentalsNews; onClose: (
               { label: "Var. BNPA",  value: fmtPct(news.bnpaVar),          accent: news.bnpaVar > 0 },
               { label: "Payout",     value: fmtPct(news.payout, false),    accent: false },
             ].map(k => (
-              <div key={k.label} className="bg-slate-50 rounded-lg p-3 text-center">
-                <p className="text-[10px] text-slate-400 mb-1 uppercase tracking-wide">{k.label}</p>
-                <p className={`text-sm font-bold ${k.accent ? "text-[#00D4A8]" : "text-slate-900"}`}>{k.value}</p>
+              <div key={k.label} className="bg-gray-50 rounded-lg p-3 text-center">
+                <p className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">{k.label}</p>
+                <p className={`text-sm font-bold ${k.accent ? "text-[#12395E]" : "text-gray-900"}`}>{k.value}</p>
               </div>
             ))}
           </div>
 
           <div>
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Évolution sur 5 ans (M XOF)</h3>
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Évolution sur 5 ans (M XOF)</h3>
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-800 text-white">
+                  <tr className="bg-gray-800 text-white">
                     <th className="text-left px-3 py-2 font-medium">Indicateur</th>
                     {news.history.map(h => (
-                      <th key={h.year} className={`px-3 py-2 font-medium text-right ${h.year === 2025 ? "text-[#00D4A8]" : ""}`}>{h.year}</th>
+                      <th key={h.year} className={`px-3 py-2 font-medium text-right ${h.year === 2025 ? "text-[#12395E]" : ""}`}>{h.year}</th>
                     ))}
                   </tr>
                 </thead>
@@ -180,8 +180,8 @@ function FundDetailPanel({ news, onClose }: { news: FundamentalsNews; onClose: (
                     { label: "Dividende (XOF)", key: "dividend" as const },
                     { label: "DY (%)",          key: "dy" as const },
                   ].map((row, ri) => (
-                    <tr key={row.label} className={ri % 2 === 0 ? "bg-white" : "bg-slate-50"}>
-                      <td className="px-3 py-2 font-medium text-slate-600">{row.label}</td>
+                    <tr key={row.label} className={ri % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                      <td className="px-3 py-2 font-medium text-gray-600">{row.label}</td>
                       {news.history.map((h, hi) => {
                         const val = h[row.key];
                         const prevVal = hi > 0 ? news.history[hi - 1][row.key] : null;
@@ -189,9 +189,9 @@ function FundDetailPanel({ news, onClose }: { news: FundamentalsNews; onClose: (
                         const isUp   = prevVal !== null && (val as number) > (prevVal as number);
                         const isDown = prevVal !== null && (val as number) < (prevVal as number);
                         return (
-                          <td key={h.year} className={`px-3 py-2 text-right font-mono ${isLast ? "font-bold text-[#00D4A8]" : "text-slate-700"}`}>
+                          <td key={h.year} className={`px-3 py-2 text-right font-mono ${isLast ? "font-bold text-[#12395E]" : "text-gray-700"}`}>
                             <span className="flex items-center justify-end gap-1">
-                              {isLast && isUp   && <ArrowUpRight   size={9} className="text-emerald-500" />}
+                              {isLast && isUp   && <ArrowUpRight   size={9} className="text-green-500" />}
                               {isLast && isDown && <ArrowDownRight size={9} className="text-red-400" />}
                               {row.key === "dy" ? `${(val as number).toFixed(1)}%`
                                 : row.key === "dividend" ? (val as number).toLocaleString("fr-FR")
@@ -208,34 +208,34 @@ function FundDetailPanel({ news, onClose }: { news: FundamentalsNews; onClose: (
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-2">Résultat net — tendance</p>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Résultat net — tendance</p>
               <Sparkline values={rnValues} color={incomeVar >= 0 ? "#10b981" : "#ef4444"} />
             </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-2">Dividende — tendance</p>
-              <Sparkline values={divValues} color="#00D4A8" />
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-2">Dividende — tendance</p>
+              <Sparkline values={divValues} color="#12395E" />
             </div>
           </div>
 
           <div>
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Points clés</h3>
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Points clés</h3>
             <ul className="space-y-2">
               {news.keyFacts.map((fact, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#00D4A8] shrink-0" />
+                <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#12395E] shrink-0" />
                   {fact}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="border-l-2 border-[#00D4A8] pl-4 py-1">
-            <p className="text-[10px] font-semibold text-[#00D4A8] uppercase tracking-wide mb-1">Note analytique</p>
-            <p className="text-sm text-slate-600 leading-relaxed italic">{news.analyst_note}</p>
+          <div className="border-l-2 border-[#12395E] pl-4 py-1">
+            <p className="text-[10px] font-semibold text-[#12395E] uppercase tracking-wide mb-1">Note analytique</p>
+            <p className="text-sm text-gray-600 leading-relaxed italic">{news.analyst_note}</p>
           </div>
 
-          <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4">
+          <p className="text-[10px] text-gray-400 italic text-center border-t border-gray-100 pt-4">
             Informations fournies à titre éducatif. Données officielles BRVM.
           </p>
         </div>
@@ -254,54 +254,54 @@ function FundCard({ news, onOpen }: { news: FundamentalsNews; onOpen: () => void
 
   return (
     <article
-      className="group bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden mb-6"
+      className="group bg-white border border-gray-200 rounded-xl hover:border-[#12395E] hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden mb-6"
       onClick={onOpen}
     >
-      <div className="h-0.5 bg-[#00D4A8]" />
+      <div className="h-0.5 bg-[#12395E]" />
       <div className="p-4">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#00D4A8] bg-[#00D4A8]/10 border border-[#00D4A8]/20 rounded-full px-2 py-0.5">
-              <BarChart2 size={10} /> Résultats 2025
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#12395E] bg-[#12395E]/10 border border-[#12395E]/20 rounded-full px-2 py-0.5">
+ Résultats 2025
             </span>
-            <span className="font-mono text-sm font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">{news.ticker}</span>
-            <span>{COUNTRY_FLAG[news.country]}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 border border-slate-200 rounded-full px-2 py-0.5">
+            <span className="font-mono text-sm font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">{news.ticker}</span>
+            <span className="text-[10px] font-medium text-gray-500 border border-gray-200 rounded-full px-2 py-0.5">{COUNTRY_LABEL[news.country] ?? news.country}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-gray-500 border border-gray-200 rounded-full px-2 py-0.5">
               {SECTOR_ICONS[news.sector]?.()}{news.sector}
             </span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] text-slate-400 shrink-0">
+          <div className="flex items-center gap-1 text-[10px] text-gray-400 shrink-0">
             <Clock size={10} />{relTime(news.publishedAt)}
           </div>
         </div>
 
-        <h3 className="text-sm font-semibold text-slate-900 leading-snug mb-2 group-hover:text-[#00D4A8] transition-colors">
+        <h3 className="text-sm font-semibold text-gray-900 leading-snug mb-2 group-hover:text-[#12395E] transition-colors">
           {news.headline}
         </h3>
-        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-3">{news.summary}</p>
+        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-3">{news.summary}</p>
 
         <div className="flex items-center justify-between">
           <div className="flex items-end gap-4">
             <div>
-              <p className="text-[9px] text-slate-400 uppercase tracking-wide mb-1">Dividende 5 ans</p>
+              <p className="text-[9px] text-gray-400 uppercase tracking-wide mb-1">Dividende 5 ans</p>
               <DivBar history={news.history} />
             </div>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400">DY</span>
-                <span className="text-xs font-bold text-[#00D4A8]">{fmtPct(news.dyAnnual, false)}</span>
+                <span className="text-[10px] text-gray-400">DY</span>
+                <span className="text-xs font-bold text-[#12395E]">{fmtPct(news.dyAnnual, false)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400">DIV</span>
-                <span className="text-xs font-semibold text-slate-700">{last.dividend.toLocaleString("fr-FR")} XOF</span>
-                <span className={`text-[10px] font-medium ${divVar >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                <span className="text-[10px] text-gray-400">DIV</span>
+                <span className="text-xs font-semibold text-gray-700">{last.dividend.toLocaleString("fr-FR")} XOF</span>
+                <span className={`text-[10px] font-medium ${divVar >= 0 ? "text-green-600" : "text-red-500"}`}>
                   {divVar >= 0 ? "+" : ""}{divVar.toFixed(1)}%
                 </span>
               </div>
               <FundTrendBadge trend={news.dividendTrend} />
             </div>
           </div>
-          <span className="text-[11px] text-[#00D4A8] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-[11px] text-[#12395E] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             Détails <ChevronRight size={12} />
           </span>
         </div>
@@ -328,36 +328,36 @@ function DBArticleCard({ article, onOpen }: { article: DBArticle; onOpen: () => 
   return (
     <article
       onClick={onOpen}
-      className="group bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+      className="group bg-white border border-gray-200 rounded-xl hover:border-[#12395E] hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
     >
-      <div className="h-0.5 bg-[#00D4A8]" />
+      <div className="h-0.5 bg-[#12395E]" />
       <div className="p-4">
         <div className="flex items-center gap-2 flex-wrap mb-2">
           {article.category && (
-            <span className="inline-flex items-center text-[10px] font-medium text-[#00D4A8] bg-[#00D4A8]/10 border border-[#00D4A8]/20 rounded-full px-2 py-0.5">
+            <span className="inline-flex items-center text-[10px] font-medium text-[#12395E] bg-[#12395E]/10 border border-[#12395E]/20 rounded-full px-2 py-0.5">
               {article.category}
             </span>
           )}
           {article.is_featured && (
-            <Star size={11} className="text-amber-400 fill-amber-400" />
+            <Star size={11} className="text-brand-orange fill-brand-orange" />
           )}
           {article.tickers.map(t => (
-            <span key={t} className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">{t}</span>
+            <span key={t} className="font-mono text-xs font-bold text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">{t}</span>
           ))}
         </div>
-        <h3 className="text-sm font-semibold text-slate-900 leading-snug mb-1 group-hover:text-[#00D4A8] transition-colors">
+        <h3 className="text-sm font-semibold text-gray-900 leading-snug mb-1 group-hover:text-[#12395E] transition-colors">
           {article.title}
         </h3>
         {article.summary && (
-          <p className="text-xs text-slate-500 line-clamp-2">{article.summary}</p>
+          <p className="text-xs text-gray-500 line-clamp-2">{article.summary}</p>
         )}
         <div className="flex items-center justify-between mt-3">
           {article.published_at && (
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-gray-400">
               {new Date(article.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
           )}
-          <span className="text-[11px] text-[#00D4A8] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+          <span className="text-[11px] text-[#12395E] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
             Lire <ChevronRight size={12} />
           </span>
         </div>
@@ -376,35 +376,35 @@ function DBArticlePanel({ article, onClose }: { article: DBArticle; onClose: () 
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-xl bg-white shadow-2xl overflow-y-auto flex flex-col" style={{ animation: 'slideIn 0.25s cubic-bezier(0.16,1,0.3,1)' }}>
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-5 z-10">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-5 z-10">
           <div className="flex items-start justify-between">
             <div className="flex-1 pr-4">
-              <span className="text-xs font-semibold text-[#00D4A8] uppercase tracking-wide">{article.category}</span>
-              <h2 className="font-bold text-slate-900 text-base leading-snug mt-0.5">{article.title}</h2>
+              <span className="text-xs font-semibold text-[#12395E] uppercase tracking-wide">{article.category}</span>
+              <h2 className="font-bold text-gray-900 text-base leading-snug mt-0.5">{article.title}</h2>
               {article.published_at && (
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-gray-400 mt-0.5">
                   {new Date(article.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               )}
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100">
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100">
               <X size={18} />
             </button>
           </div>
         </div>
         <div className="flex-1 px-6 py-6">
           {article.summary && (
-            <p className="text-sm text-slate-600 leading-relaxed mb-5 pb-5 border-b border-slate-100">{article.summary}</p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-5 pb-5 border-b border-gray-100">{article.summary}</p>
           )}
           {blocks ? (
             <BlockRenderer blocks={blocks} variant="news" />
           ) : article.content ? (
             <HtmlArticleRenderer html={article.content} />
           ) : (
-            <p className="text-sm text-slate-500 italic">Aucun contenu disponible.</p>
+            <p className="text-sm text-gray-500 italic">Aucun contenu disponible.</p>
           )}
           <ArticleInteractions articleId={article.id} />
-          <p className="text-[10px] text-slate-400 italic text-center border-t border-slate-100 pt-4 mt-6">
+          <p className="text-[10px] text-gray-400 italic text-center border-t border-gray-100 pt-4 mt-6">
             {article.author ?? 'AfriBourse Research'} — Informations éducatives uniquement.
           </p>
         </div>
@@ -485,8 +485,8 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
         {brvmArticles.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-3">
-              <Star size={13} className="text-indigo-500 fill-indigo-500" />
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses AfriBourse</span>
+              <Star size={13} className="text-brand-navy fill-brand-navy" />
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Analyses AfriBourse</span>
             </div>
             <div className="grid grid-cols-1 gap-3">
               {brvmArticles.map(a => (
@@ -500,8 +500,8 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
         {dbArticles.length > 0 && (
           <div className="mb-4">
             <div className="flex items-center gap-1.5 mb-3">
-              <Star size={13} className="text-teal-500 fill-teal-500" />
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses publiées</span>
+              <Star size={13} className="text-brand-navy fill-brand-navy" />
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Analyses publiées</span>
             </div>
             <div className="grid grid-cols-1 gap-3">
               {dbArticles.map(a => (
@@ -537,8 +537,8 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
       {brvmArticles.length > 0 && (
         <div className="mb-2">
           <div className="flex items-center gap-1.5 mb-3">
-            <Star size={13} className="text-indigo-500 fill-indigo-500" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses AfriBourse</span>
+            <Star size={13} className="text-brand-navy fill-brand-navy" />
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Analyses AfriBourse</span>
           </div>
           <div className="grid grid-cols-1 gap-3">
             {brvmArticles.map(a => (
@@ -554,8 +554,8 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
       {dbArticles.length > 0 && (
         <div className="mb-2">
           <div className="flex items-center gap-1.5 mb-3">
-            <Star size={13} className="text-teal-500 fill-teal-500" />
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Analyses publiées</span>
+            <Star size={13} className="text-brand-navy fill-brand-navy" />
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Analyses publiées</span>
           </div>
           <div className="grid grid-cols-1 gap-3">
             {dbArticles.map(a => (
@@ -576,12 +576,12 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h4 className="text-lg font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+              <h4 className="text-lg font-semibold text-gray-900 mb-2 hover:text-brand-navy transition-colors">
                 {item.title}
               </h4>
 
               <div className="flex items-center space-x-3 text-sm text-gray-600 mb-3">
-                <span className="font-medium text-blue-600">{item.source}</span>
+                <span className="font-medium text-brand-navy">{item.source}</span>
                 <span>•</span>
                 <time dateTime={item.published_at.toString()}>
                   {getTimeAgo(item.published_at)}
@@ -597,7 +597,7 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
+                  className="inline-flex items-center space-x-2 text-brand-navy hover:text-brand-navy-hover font-medium text-sm"
                 >
                   <span>Lire l'article complet</span>
                   <ExternalLink className="w-4 h-4" />
@@ -606,9 +606,6 @@ export default function StockNews({ news, isLoading = false, ticker }: StockNews
             </div>
 
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                <Newspaper className="w-6 h-6 text-blue-600" />
-              </div>
             </div>
           </div>
         </article>

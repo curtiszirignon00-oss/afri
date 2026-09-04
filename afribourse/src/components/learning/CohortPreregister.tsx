@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Loader2, CalendarClock, Users, Flame } from 'lucide-react';
+import { CheckCircle, Loader2, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../../config/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -154,7 +154,7 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
                 {!cd.expired && (
                   <>
                     <p className="text-[10px] font-bold text-amber-200 mb-1.5 flex items-center gap-1">
-                      <Flame className="w-3 h-3 animate-pulse" /> L'offre -10% se termine dans :
+ L'offre -10% se termine dans :
                     </p>
                     <div className="flex gap-1.5">
                       {cd.days > 0 && (
@@ -184,8 +184,8 @@ const CohortPreregister: React.FC<{ selectedPack?: string | null }> = ({ selecte
                 {preinscrits !== null && (
                   <div className="flex items-center gap-2"><Users className="w-4 h-4 text-emerald-300 flex-shrink-0" /> <strong className="text-white">Déjà {preinscrits} préinscrits</strong> · places limitées</div>
                 )}
-                <div className="flex items-center gap-2"><CalendarClock className="w-4 h-4 text-blue-300 flex-shrink-0" /> 1ère session le samedi 4 juillet</div>
-                <div className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-300 flex-shrink-0" /> 50 places maximum par session</div>
+                <div className="flex items-center gap-2"> 1ère session le samedi 4 juillet</div>
+                <div className="flex items-center gap-2"> 50 places maximum par session</div>
               </div>
             </div>
 

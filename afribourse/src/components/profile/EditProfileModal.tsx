@@ -1,6 +1,6 @@
 // src/components/profile/EditProfileModal.tsx
 import { useState, useEffect, useRef } from 'react';
-import { X, Loader2, Globe, Linkedin, Twitter, Instagram, Facebook, Camera, Trash2, ImagePlus } from 'lucide-react';
+import { X, Loader2, Linkedin, Twitter, Instagram, Facebook, Camera, Trash2, ImagePlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
     useUpdateProfile,
@@ -10,6 +10,7 @@ import {
     validateImageFile,
     type ProfileUpdateData,
 } from '../../hooks/useUpload';
+import { HERO_BACKGROUNDS, HERO_GRID_STYLE } from '../../utils/heroBackgrounds';
 
 /** Extrait le nom de fichier d'une URL (dernier segment). */
 function filenameFromUrl(url?: string | null): string | null {
@@ -87,8 +88,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                 username: profile.profile?.username || '',
                 bio: profile.profile?.bio || '',
                 country: profile.profile?.country || '',
-                avatar_color: profile.profile?.avatar_color || 'from-blue-500 to-purple-600',
-                banner_color: profile.profile?.banner_color || 'from-blue-600 via-indigo-600 to-purple-700',
+                avatar_color: profile.profile?.avatar_color || 'from-brand-orange to-brand-orange-dark',
+                banner_color: profile.profile?.banner_color || '',
                 linkedin: profile.profile?.social_links?.linkedin || '',
                 twitter: profile.profile?.social_links?.twitter || '',
                 website: profile.profile?.social_links?.website || '',
@@ -223,16 +224,16 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-ink-950/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
                 {/* Header */}
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
-                    <h2 className="text-xl font-semibold text-gray-900">
+                <div className="sticky top-0 bg-white border-b border-ink-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                    <h2 className="text-xl font-semibold text-ink-900">
                         Modifier le profil
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-2 text-ink-400 hover:text-ink-600 hover:bg-ink-100 rounded-lg"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -242,17 +243,25 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Photos : bannière + avatar */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-ink-700 mb-2">
                             Photos
                         </label>
 
                         {/* Bannière */}
                         <div className="relative">
                             <div
-                                className={`h-28 rounded-xl overflow-hidden ${bannerUrl ? '' : `bg-gradient-to-br ${formData.banner_color || 'from-blue-600 via-indigo-600 to-purple-700'}`}`}
-                                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                                className="h-28 rounded-xl overflow-hidden relative"
+                                style={bannerUrl
+                                    ? { backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                                    : { backgroundImage: HERO_BACKGROUNDS[0].gradient }}
                             >
-                                <div className="absolute inset-0 bg-black/15" />
+                                {!bannerUrl && (
+                                    <>
+                                        <div aria-hidden="true" className="absolute inset-0" style={{ backgroundImage: HERO_BACKGROUNDS[0].halo }} />
+                                        <div aria-hidden="true" className="absolute inset-0 opacity-[0.07]" style={HERO_GRID_STYLE} />
+                                    </>
+                                )}
+                                <div className="absolute inset-0 bg-ink-950/15" />
                             </div>
 
                             {/* Actions bannière */}
@@ -289,7 +298,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                                             className="w-20 h-20 rounded-2xl border-4 border-white object-cover shadow-lg"
                                         />
                                     ) : (
-                                        <div className={`w-20 h-20 rounded-2xl border-4 border-white bg-gradient-to-br ${formData.avatar_color || 'from-blue-500 to-purple-600'} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
+                                        <div className={`w-20 h-20 rounded-2xl border-4 border-white bg-gradient-to-br ${formData.avatar_color || 'from-brand-orange to-brand-orange-dark'} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
                                             {`${profile?.name?.[0] || ''}${profile?.lastname?.[0] || ''}`}
                                         </div>
                                     )}
@@ -297,7 +306,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                                         type="button"
                                         onClick={() => avatarInputRef.current?.click()}
                                         disabled={uploadAvatar.isPending}
-                                        className="absolute -bottom-1 -right-1 p-1.5 bg-gray-900 hover:bg-gray-700 text-white rounded-lg shadow-md transition-colors disabled:opacity-60"
+                                        className="absolute -bottom-1 -right-1 p-1.5 bg-brand-navy hover:bg-brand-navy-hover text-white rounded-lg shadow-md transition-colors disabled:opacity-60 cursor-pointer"
                                         title="Changer la photo de profil"
                                     >
                                         {uploadAvatar.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
@@ -307,7 +316,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                         </div>
 
                         <div className="mt-10 flex items-center justify-between">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-ink-500">
                                 JPG, PNG, GIF ou WebP. Avatar ≤ 5 Mo, bannière ≤ 10 Mo.
                             </p>
                             {avatarUrl && (
@@ -329,7 +338,7 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-ink-700 mb-1">
                             Prénom
                         </label>
                         <input
@@ -337,14 +346,14 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             placeholder="Votre prénom"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                             maxLength={50}
                         />
                     </div>
 
                     {/* Lastname */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-ink-700 mb-1">
                             Nom de famille
                         </label>
                         <input
@@ -352,35 +361,35 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                             value={formData.lastname}
                             onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
                             placeholder="Votre nom de famille"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                             maxLength={50}
                         />
                     </div>
 
                     {/* Username */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-ink-700 mb-1">
                             Nom d'utilisateur
                         </label>
                         <div className="flex items-center">
-                            <span className="text-gray-500 mr-1">@</span>
+                            <span className="text-ink-500 mr-1">@</span>
                             <input
                                 type="text"
                                 value={formData.username}
                                 onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
                                 placeholder="votre_nom"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="flex-1 px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 maxLength={30}
                             />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-ink-500 mt-1">
                             Lettres, chiffres et underscores uniquement
                         </p>
                     </div>
 
                     {/* Bio */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-ink-700 mb-1">
                             Bio
                         </label>
                         <textarea
@@ -388,22 +397,22 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                             placeholder="Parlez-nous de vous..."
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="w-full px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                             maxLength={200}
                         />
-                        <p className="text-xs text-gray-500 mt-1 text-right">
+                        <p className="text-xs text-ink-500 mt-1 text-right">
                             {formData.bio.length}/200
                         </p>
                         {/* Suggestions de bio cliquables */}
                         <div className="mt-2">
-                            <p className="text-xs text-gray-400 mb-1.5">Suggestions :</p>
+                            <p className="text-xs text-ink-400 mb-1.5">Suggestions :</p>
                             <div className="flex flex-wrap gap-2">
                                 {bioSuggestions.map((s) => (
                                     <button
                                         key={s}
                                         type="button"
                                         onClick={() => setFormData({ ...formData, bio: s.slice(0, 200) })}
-                                        className="text-left text-xs px-2.5 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-colors max-w-full"
+                                        className="text-left text-xs px-2.5 py-1.5 bg-ink-50 border border-ink-100 text-brand-navy rounded-lg hover:bg-ink-100 transition-colors max-w-full cursor-pointer"
                                     >
                                         {s.length > 70 ? s.slice(0, 70) + '…' : s}
                                     </button>
@@ -414,8 +423,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                     {/* Tags de spécialité */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Tags de spécialité <span className="font-normal text-gray-400">({specialtyTags.length}/8)</span>
+                        <label className="block text-sm font-medium text-ink-700 mb-2">
+                            Tags de spécialité <span className="font-normal text-ink-400">({specialtyTags.length}/8)</span>
                         </label>
                         <div className="flex flex-wrap gap-2">
                             {SPECIALTY_OPTIONS.map((tag) => {
@@ -426,8 +435,8 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
                                         type="button"
                                         onClick={() => toggleTag(tag)}
                                         className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${active
-                                            ? 'bg-teal-600 text-white border-teal-600'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'}`}
+                                            ? 'bg-brand-navy text-white border-brand-navy'
+                                            : 'bg-white text-ink-700 border-ink-200 hover:border-brand-navy hover:text-brand-navy'}`}
                                     >
                                         {tag}
                                     </button>
@@ -438,13 +447,13 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                     {/* Country */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-ink-700 mb-1">
                             Pays
                         </label>
                         <select
                             value={formData.country}
                             onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                         >
                             <option value="">Sélectionner un pays</option>
                             <option value="Côte d'Ivoire">Côte d'Ivoire</option>
@@ -462,57 +471,27 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                     {/* Avatar Color */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Couleur de l'avatar <span className="font-normal text-gray-400">(si aucune photo)</span>
+                        <label className="block text-sm font-medium text-ink-700 mb-2">
+                            Couleur de l'avatar <span className="font-normal text-ink-400">(si aucune photo)</span>
                         </label>
                         <div className="grid grid-cols-4 gap-2">
                             {[
-                                { value: 'from-blue-500 to-purple-600', label: 'Bleu-Violet' },
-                                { value: 'from-green-500 to-teal-600', label: 'Vert' },
-                                { value: 'from-orange-500 to-red-600', label: 'Orange' },
-                                { value: 'from-pink-500 to-purple-600', label: 'Rose' },
-                                { value: 'from-yellow-500 to-orange-600', label: 'Jaune' },
-                                { value: 'from-indigo-500 to-blue-600', label: 'Indigo' },
-                                { value: 'from-red-500 to-pink-600', label: 'Rouge' },
-                                { value: 'from-teal-500 to-green-600', label: 'Turquoise' },
+                                { value: 'from-brand-orange to-brand-orange-dark', label: 'Orange' },
+                                { value: 'from-brand-navy to-brand-navy-hover', label: 'Navy' },
+                                { value: 'from-brand-orange-light to-brand-orange', label: 'Ambre' },
+                                { value: 'from-brand-navy to-brand-orange', label: 'Navy-Orange' },
+                                { value: 'from-ink-700 to-ink-900', label: 'Encre' },
+                                { value: 'from-ink-500 to-brand-navy', label: 'Ardoise' },
+                                { value: 'from-brand-orange to-brand-navy', label: 'Coucher' },
+                                { value: 'from-ink-400 to-ink-600', label: 'Gris' },
                             ].map((color) => (
                                 <button
                                     key={color.value}
                                     type="button"
                                     onClick={() => setFormData({ ...formData, avatar_color: color.value })}
                                     className={`h-12 rounded-lg bg-gradient-to-br ${color.value} border-2 transition-all ${formData.avatar_color === color.value
-                                            ? 'border-gray-900 ring-2 ring-gray-900'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    title={color.label}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Banner Color */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Couleur de la bannière <span className="font-normal text-gray-400">(si aucune photo)</span>
-                        </label>
-                        <div className="grid grid-cols-4 gap-2">
-                            {[
-                                { value: 'from-blue-600 via-indigo-600 to-purple-700', label: 'Bleu-Violet' },
-                                { value: 'from-green-600 via-teal-600 to-cyan-700', label: 'Vert-Cyan' },
-                                { value: 'from-orange-600 via-red-600 to-pink-700', label: 'Orange-Rose' },
-                                { value: 'from-purple-600 via-pink-600 to-red-700', label: 'Violet-Rouge' },
-                                { value: 'from-yellow-600 via-orange-600 to-red-700', label: 'Jaune-Rouge' },
-                                { value: 'from-indigo-600 via-blue-600 to-cyan-700', label: 'Indigo-Cyan' },
-                                { value: 'from-gray-600 via-gray-700 to-gray-800', label: 'Gris' },
-                                { value: 'from-emerald-600 via-green-600 to-teal-700', label: 'Émeraude' },
-                            ].map((color) => (
-                                <button
-                                    key={color.value}
-                                    type="button"
-                                    onClick={() => setFormData({ ...formData, banner_color: color.value })}
-                                    className={`h-12 rounded-lg bg-gradient-to-br ${color.value} border-2 transition-all ${formData.banner_color === color.value
-                                            ? 'border-gray-900 ring-2 ring-gray-900'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                            ? 'border-brand-navy ring-2 ring-brand-navy'
+                                            : 'border-ink-100 hover:border-ink-300'
                                         }`}
                                     title={color.label}
                                 />
@@ -522,95 +501,92 @@ export default function EditProfileModal({ isOpen, onClose, profile }: EditProfi
 
                     {/* Social Links */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                        <label className="block text-sm font-medium text-ink-700 mb-3">
                             Réseaux sociaux
                         </label>
                         <div className="space-y-3">
                             {/* LinkedIn */}
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <Linkedin className="w-5 h-5 text-blue-700" />
+                                <div className="w-10 h-10 bg-ink-100 rounded-lg flex items-center justify-center">
+                                    <Linkedin className="w-5 h-5 text-brand-navy" />
                                 </div>
                                 <input
                                     type="url"
                                     value={formData.linkedin}
                                     onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
                                     placeholder="https://linkedin.com/in/..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="flex-1 px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                             </div>
 
                             {/* Twitter/X */}
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <Twitter className="w-5 h-5 text-gray-700" />
+                                <div className="w-10 h-10 bg-ink-100 rounded-lg flex items-center justify-center">
+                                    <Twitter className="w-5 h-5 text-brand-navy" />
                                 </div>
                                 <input
                                     type="url"
                                     value={formData.twitter}
                                     onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                                     placeholder="https://twitter.com/..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="flex-1 px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                             </div>
 
                             {/* Instagram */}
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                                    <Instagram className="w-5 h-5 text-pink-600" />
+                                <div className="w-10 h-10 bg-ink-100 rounded-lg flex items-center justify-center">
+                                    <Instagram className="w-5 h-5 text-brand-navy" />
                                 </div>
                                 <input
                                     type="url"
                                     value={formData.instagram}
                                     onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                                     placeholder="https://instagram.com/..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="flex-1 px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                             </div>
 
                             {/* Facebook */}
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <Facebook className="w-5 h-5 text-blue-600" />
+                                <div className="w-10 h-10 bg-ink-100 rounded-lg flex items-center justify-center">
+                                    <Facebook className="w-5 h-5 text-brand-navy" />
                                 </div>
                                 <input
                                     type="url"
                                     value={formData.facebook}
                                     onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
                                     placeholder="https://facebook.com/..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="flex-1 px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                             </div>
 
                             {/* Website */}
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                    <Globe className="w-5 h-5 text-green-600" />
-                                </div>
                                 <input
                                     type="url"
                                     value={formData.website}
                                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                                     placeholder="https://votre-site.com"
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="flex-1 px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex gap-3 pt-4 border-t border-ink-100">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium"
+                            className="flex-1 px-4 py-2.5 text-ink-700 bg-ink-100 hover:bg-ink-200 rounded-xl font-semibold transition-colors cursor-pointer"
                         >
                             Annuler
                         </button>
                         <button
                             type="submit"
                             disabled={isPending}
-                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2.5 bg-brand-orange text-white rounded-xl hover:bg-brand-orange-hover disabled:opacity-50 font-semibold transition-colors cursor-pointer flex items-center justify-center gap-2"
                         >
                             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                             Enregistrer

@@ -1,7 +1,12 @@
 // src/components/challenge/WalletSwitcher.tsx
-import React from 'react';
+//
+// Bascule entre le portefeuille d'apprentissage et celui du concours. Rendu en
+// interrupteur segmente : une piste grise, la cellule active en navy plein.
+// Les emojis 🎓 et 🏆 laissent la place a des icones, et les degrades indigo
+// et orange de l'ancienne feuille de style disparaissent avec elle.
+import { GraduationCap, Trophy } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useChallengeStatus } from '../../hooks/useChallenge';
-import './WalletSwitcher.css';
 
 export type WalletMode = 'SANDBOX' | 'CONCOURS';
 
@@ -10,6 +15,11 @@ interface WalletSwitcherProps {
     onModeChange: (mode: WalletMode) => void;
     className?: string;
 }
+
+const MODES: { mode: WalletMode; icon: LucideIcon; label: string; sublabel: string }[] = [
+    { mode: 'SANDBOX', icon: GraduationCap, label: 'Sandbox', sublabel: 'Apprentissage' },
+    { mode: 'CONCOURS', icon: Trophy, label: 'Concours', sublabel: 'Challenge 2026' },
+];
 
 export function WalletSwitcher({ currentMode, onModeChange, className = '' }: WalletSwitcherProps) {
     const { data: challengeStatus } = useChallengeStatus();
@@ -25,28 +35,37 @@ export function WalletSwitcher({ currentMode, onModeChange, className = '' }: Wa
     };
 
     return (
-        <div className={`wallet-switcher ${className}`}>
-            <button
-                className={`wallet-switcher-btn sandbox ${currentMode === 'SANDBOX' ? 'active' : ''}`}
-                onClick={() => handleSwitch('SANDBOX')}
-                aria-label="Mode Sandbox (Apprentissage)"
-            >
-                <span className="icon">🎓</span>
-                <span className="label">Sandbox</span>
-                <span className="sublabel">Apprentissage</span>
-            </button>
+        <div className={`inline-flex gap-1 p-1 rounded-xl bg-gray-100 ${className}`}>
+            {MODES.map(({ mode, icon: Icon, label, sublabel }) => {
+                const active = currentMode === mode;
+                const locked = mode === 'CONCOURS' && !challengeStatus?.enrolled;
 
-            <button
-                className={`wallet-switcher-btn concours ${currentMode === 'CONCOURS' ? 'active' : ''} ${!challengeStatus?.enrolled ? 'disabled' : ''}`}
-                onClick={() => handleSwitch('CONCOURS')}
-                disabled={!challengeStatus?.enrolled}
-                aria-label="Mode Concours"
-                title={!challengeStatus?.enrolled ? 'Inscrivez-vous au Challenge pour activer' : ''}
-            >
-                <span className="icon">🏆</span>
-                <span className="label">Concours</span>
-                <span className="sublabel">Challenge 2026</span>
-            </button>
+                return (
+                    <button
+                        key={mode}
+                        onClick={() => handleSwitch(mode)}
+                        disabled={locked}
+                        aria-label={`Mode ${label}`}
+                        aria-pressed={active}
+                        title={locked ? 'Inscrivez-vous au Challenge pour activer' : ''}
+                        className={`flex items-center gap-2.5 px-4 py-2 rounded-lg text-left transition-colors ${
+                            active
+                                ? 'bg-brand-navy text-white shadow-sm'
+                                : locked
+                                    ? 'text-gray-400 cursor-not-allowed'
+                                    : 'text-gray-600 hover:bg-white hover:text-brand-navy'
+                        }`}
+                    >
+                        <Icon className="w-5 h-5 shrink-0" />
+                        <span className="min-w-0">
+                            <span className="block text-sm font-semibold leading-none">{label}</span>
+                            <span className={`block text-[11px] mt-1 ${active ? 'text-white/60' : 'text-gray-400'}`}>
+                                {sublabel}
+                            </span>
+                        </span>
+                    </button>
+                );
+            })}
         </div>
     );
 }

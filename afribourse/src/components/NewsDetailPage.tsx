@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import {
-  Calendar, Clock, ArrowLeft, Tag, Share2,
-  ExternalLink, TrendingUp, TrendingDown, BarChart2, Newspaper,
-} from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Tag, Share2, ExternalLink, TrendingUp, TrendingDown, Newspaper } from 'lucide-react';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
 import { BlockRenderer } from './BlockRenderer';
@@ -412,7 +409,7 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
             {article.tickers.length > 0 && (
               <div className="mt-10">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-slate-700 uppercase tracking-wide mb-4">
-                  <BarChart2 size={16} className="text-brand-navy" /> Actions concernées
+ Actions concernées
                 </h2>
                 <div className="overflow-x-auto rounded-xl border border-slate-200">
                   <table className="w-full text-sm">

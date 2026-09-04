@@ -1,12 +1,21 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
+// Contournement de developpement : avec VITE_DEV_BYPASS_AUTH=true dans .env,
+// les pages protegees s'affichent sans session. Double garde-fou : le drapeau
+// doit etre pose a la main ET import.meta.env.DEV doit etre vrai, donc un build
+// de production n'est jamais concerne.
+const DEV_BYPASS_AUTH =
+  import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 export default function AdminRoute({ children }: AdminRouteProps) {
   const { isLoggedIn, userProfile, loading } = useAuth();
+
+  if (DEV_BYPASS_AUTH) return <>{children}</>;
 
   // Afficher un loader pendant la vérification
   if (loading) {

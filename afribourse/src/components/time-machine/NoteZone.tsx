@@ -1,4 +1,4 @@
-import { PenLine } from 'lucide-react';
+
 
 interface Props {
   value: string;
@@ -15,7 +15,6 @@ export default function NoteZone({ value, onChange }: Props) {
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <PenLine className="w-4 h-4 text-amber-500" />
         <p className="text-sm font-semibold text-amber-700">
           Justifiez votre stratégie <span className="font-normal text-amber-500">( optionnel )</span>
         </p>

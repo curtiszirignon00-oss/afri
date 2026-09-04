@@ -77,7 +77,7 @@ export default function TimeMachinePlayPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-3 border-amber-200 border-t-amber-500 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-3 border-brand-orange/30 border-t-amber-500 rounded-full animate-spin" />
           <p className="text-gray-400 text-sm">Chargement…</p>
         </div>
       </div>
@@ -89,12 +89,12 @@ export default function TimeMachinePlayPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center text-center px-4">
         <div className="space-y-4">
           <div className="w-14 h-14 bg-white border border-gray-200 shadow-sm rounded-2xl flex items-center justify-center mx-auto">
-            <Zap className="w-7 h-7 text-amber-500" />
+            <Zap className="w-7 h-7 text-brand-orange" />
           </div>
           <p className="text-lg font-semibold text-gray-800">Session introuvable.</p>
           <button
             onClick={() => navigate(`/time-machine/${slug}`)}
-            className="text-amber-600 text-sm underline cursor-pointer hover:text-amber-500 transition-colors"
+            className="text-brand-orange-dark text-sm underline cursor-pointer hover:text-brand-orange transition-colors"
           >
             Retour au scénario
           </button>
@@ -161,11 +161,11 @@ export default function TimeMachinePlayPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-amber-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-ink-50">
       {/* Soft ambient blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-amber-100/60 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-100/40 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-orange/10/60 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-orange/10/40 rounded-full blur-3xl" />
       </div>
 
       {/* Top bar */}
@@ -182,7 +182,7 @@ export default function TimeMachinePlayPage() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-gray-500">Étape {displayStep + 1}</span>
               <span className="text-gray-300">·</span>
-              <span className="text-sm font-bold text-amber-600">{year}</span>
+              <span className="text-sm font-bold text-brand-orange-dark">{year}</span>
             </div>
           </div>
           <StepProgress years={scenario.years} currentStep={displayStep} />
@@ -214,8 +214,8 @@ export default function TimeMachinePlayPage() {
 
             <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
               <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-5 bg-amber-500 rounded-full inline-block" />
-                Contexte — <span className="text-amber-600">{year}</span>
+                <span className="w-1.5 h-5 bg-brand-orange rounded-full inline-block" />
+                Contexte — <span className="text-brand-orange-dark">{year}</span>
               </h2>
               <ContextPanel
                 context={contextData}
@@ -234,8 +234,8 @@ export default function TimeMachinePlayPage() {
               <>
                 <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-4">
                   <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <span className="w-1.5 h-5 bg-violet-500 rounded-full inline-block" />
-                    Votre allocation — <span className="text-amber-600">{year}</span>
+                    <span className="w-1.5 h-5 bg-brand-orange rounded-full inline-block" />
+                    Votre allocation — <span className="text-brand-orange-dark">{year}</span>
                   </h2>
                   <AllocationZone
                     tickers={tickers}
@@ -261,7 +261,7 @@ export default function TimeMachinePlayPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting || cash < -1}
-                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 py-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-900 font-bold rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-amber-500/30 shadow-lg shadow-amber-500/20 cursor-pointer"
+                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 py-4 bg-brand-orange hover:bg-brand-orange disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 font-bold rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-brand-orange/30 shadow-lg shadow-brand-orange/20 cursor-pointer"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
                   {isSubmitting ? (
@@ -275,11 +275,11 @@ export default function TimeMachinePlayPage() {
               <div className="space-y-4">
                 <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <div className="w-7 h-7 bg-green-100 border border-green-200 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
                     </div>
                     <h2 className="text-base font-bold text-gray-900">
-                      Résultats — <span className="text-amber-600">{year}</span>
+                      Résultats — <span className="text-brand-orange-dark">{year}</span>
                     </h2>
                   </div>
                   {stepPerf && (
@@ -302,7 +302,7 @@ export default function TimeMachinePlayPage() {
                 {/* Animated secondary button */}
                 <button
                   onClick={handleNext}
-                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 py-4 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-violet-500/30 shadow-lg shadow-violet-500/20 cursor-pointer"
+                  className="group relative overflow-hidden w-full flex items-center justify-center gap-2.5 py-4 bg-brand-orange-dark hover:bg-brand-orange text-white font-bold rounded-2xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:shadow-xl hover:shadow-brand-orange/30 shadow-lg shadow-brand-orange/20 cursor-pointer"
                 >
                   <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
                   {isLastStep ? 'Voir le bilan final' : `Passer à ${scenario.years[displayStep + 1]}`}

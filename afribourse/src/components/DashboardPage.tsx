@@ -1,6 +1,6 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock, BookOpen, GraduationCap, Users2, MessageSquare, BarChart2, HelpCircle, Star, Heart } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
+import { Settings, Wallet, PlusCircle, X, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock, BookOpen, Users2, MessageSquare, BarChart2, HelpCircle, Star, Heart } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
@@ -34,7 +34,7 @@ import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 // Gamification imports
 import { useGamificationSummary, useMyChallengesProgress, useClaimChallengeReward, useClaimAllChallengeRewards, useMyRewards } from '../hooks/useGamification';
 import { XPProgressBar, StreakCounter, LevelBadge, WeeklyChallengeCard, WeeklyChallengeList } from './gamification';
-import { Target, Flame, Zap, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { useFeed } from '../hooks/useSocial';
 
 type DashboardPageProps = {};
@@ -49,7 +49,7 @@ interface LearningProgressSummary {
 }
 
 // <-- AJOUT: Couleurs pour le graphique d'allocation
-const ALLOCATION_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+const ALLOCATION_COLORS = ['#0E2B47', '#12395E', '#1B4E7D', '#2C6296', '#537593', '#7C95AB', '#A8BAC8', '#C7D2DC'];
 
 // <-- AJOUT: Type pour les filtres de temps du graphique
 type TimeFilter = '1W' | '1M' | '3M' | '6M' | '1Y' | 'MAX';
@@ -497,8 +497,8 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 px-4">
         <Card className="max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Wallet className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 bg-ink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Wallet className="w-8 h-8 text-brand-navy" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Créez votre Portfolio</h2>
           <p className="text-gray-600 mb-6">
@@ -634,19 +634,15 @@ export default function DashboardPage() {
         )}
 
         {/* <-- NOUVEAU: Vue d'Ensemble - Le Solde Principal */}
-        <Card className={`mb-8 text-white ${
-          walletMode === 'CONCOURS'
-            ? 'bg-gradient-to-br from-orange-500 via-orange-600 to-amber-700'
-            : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800'
-        }`}>
+        <Card className="mb-8 text-white bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* KPI Principal */}
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <Wallet className={`w-5 h-5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`} />
-                  <p className={`text-sm font-medium uppercase tracking-wide ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>
-                    {walletMode === 'CONCOURS' ? '🏆 Portefeuille Challenge 2026' : 'Valeur Totale du Portefeuille'}
+                  <Wallet className={`w-5 h-5 text-ink-200`} />
+                  <p className={'text-sm font-medium uppercase tracking-wide text-ink-100'}>
+                    {walletMode === 'CONCOURS' ? 'Portefeuille Challenge 2026' : 'Valeur Totale du Portefeuille'}
                   </p>
                 </div>
                 <ShareButton
@@ -702,9 +698,9 @@ export default function DashboardPage() {
 
               {/* <-- AJOUT: Performance du Jour */}
               <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 inline-flex items-center space-x-3">
-                <Activity className={`w-5 h-5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`} />
+                <Activity className={`w-5 h-5 text-ink-200`} />
                 <div>
-                  <p className={`text-xs mb-0.5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`}>Aujourd'hui</p>
+                  <p className={`text-xs mb-0.5 text-ink-200`}>Aujourd'hui</p>
                   <p className={`text-lg font-bold ${dailyPerf.value >= 0 ? 'text-green-300' : 'text-red-300'}`}>
                     {dailyPerf.value >= 0 ? '+' : ''}{formatNumber(dailyPerf.value)} FCFA
                     <span className="text-sm ml-2">
@@ -718,18 +714,17 @@ export default function DashboardPage() {
             {/* KPIs Secondaires */}
             <div className="space-y-4">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>💰 Liquidités</p>
+                <p className={`text-sm mb-1 text-ink-100`}>Liquidités</p>
                 <p className="text-2xl font-bold">{formatNumber(portfolio.cash_balance)} FCFA</p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>📊 Valeur des Actions</p>
+                <p className={`text-sm mb-1 text-ink-100`}>Valeur des Actions</p>
                 <p className="text-2xl font-bold">{formatNumber(stocksValue)} FCFA</p>
               </div>
               {/* Classement */}
               {userRank && userRank.rank !== null && (
-                <div className={`bg-white/10 backdrop-blur-sm rounded-lg p-4 border ${walletMode === 'CONCOURS' ? 'border-orange-400/40' : 'border-blue-400/40'}`}>
-                  <p className={`text-sm mb-1 ${walletMode === 'CONCOURS' ? 'text-orange-100' : 'text-blue-100'}`}>
-                    <Trophy className="w-3.5 h-3.5 inline mr-1" />
+                <div className={`bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/25`}>
+                  <p className={`text-sm mb-1 text-ink-100`}>
                     Classement {walletMode === 'CONCOURS' ? 'Concours' : 'Sandbox'}
                   </p>
                   <p className="text-2xl font-bold">
@@ -737,7 +732,7 @@ export default function DashboardPage() {
                     <span className="text-sm font-normal ml-2 opacity-75">/ {userRank.totalParticipants}</span>
                   </p>
                   {userRank.percentile !== undefined && (
-                    <p className={`text-xs mt-0.5 ${walletMode === 'CONCOURS' ? 'text-orange-200' : 'text-blue-200'}`}>
+                    <p className={`text-xs mt-0.5 text-ink-200`}>
                       Top {(100 - userRank.percentile).toFixed(0)}% des investisseurs
                     </p>
                   )}
@@ -756,7 +751,6 @@ export default function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <ChartIcon className="w-6 h-6 text-indigo-600" />
                   <h2 className="text-2xl font-bold text-gray-900">Évolution du Portefeuille</h2>
                 </div>
 
@@ -767,7 +761,7 @@ export default function DashboardPage() {
                       key={filter}
                       onClick={() => setTimeFilter(filter)}
                       className={`px-3 py-1 rounded text-sm font-medium transition-colors ${timeFilter === filter
-                        ? 'bg-white text-indigo-600 shadow-sm'
+                        ? 'bg-white text-brand-navy shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                         }`}
                     >
@@ -782,8 +776,8 @@ export default function DashboardPage() {
                   <AreaChart data={filteredHistory}>
                     <defs>
                       <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#12395E" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#12395E" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -813,11 +807,11 @@ export default function DashboardPage() {
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#3b82f6"
+                      stroke="#12395E"
                       strokeWidth={2}
                       fill="url(#colorValue)"
                       dot={false}
-                      activeDot={{ r: 5, fill: '#3b82f6' }}
+                      activeDot={{ r: 5, fill: '#12395E' }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -834,7 +828,6 @@ export default function DashboardPage() {
             {/* <-- CORRECTION: Mes Positions avec Bouton Vendre et Colonnes Améliorées */}
             <Card>
               <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5 text-indigo-600" />
                 <span>Mes Positions</span>
               </h3>
 
@@ -871,7 +864,7 @@ export default function DashboardPage() {
                                 className="flex items-center space-x-3 cursor-pointer group"
                                 onClick={() => navigate(`/stock/${position.stock_ticker}`)}
                               >
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
+                                <div className="w-10 h-10 bg-gradient-to-br from-brand-navy to-[#173F66] rounded-lg flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
                                   {logoUrl ? (
                                     <OptimizedImage src={logoUrl} alt={stockData.symbol} className="w-full h-full object-cover rounded-lg" />
                                   ) : (
@@ -879,8 +872,8 @@ export default function DashboardPage() {
                                   )}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{position.stock_ticker}</p>
-                                  <p className="text-xs text-gray-500 group-hover:text-indigo-400 transition-colors">{stockData.company_name}</p>
+                                  <p className="font-bold text-gray-900 group-hover:text-brand-navy transition-colors">{position.stock_ticker}</p>
+                                  <p className="text-xs text-gray-500 group-hover:text-ink-400 transition-colors">{stockData.company_name}</p>
                                 </div>
                               </div>
                             </td>
@@ -955,7 +948,7 @@ export default function DashboardPage() {
                   <div className="relative inline-block mt-4">
                     <PulseDot visible={isActive && !steps.achat} />
                     <Button
-                      variant="primary"
+                      variant="navy"
                       size="sm"
                       onClick={() => navigate('/markets')}
                     >
@@ -969,7 +962,6 @@ export default function DashboardPage() {
             {/* Plus-value Latente vs Réalisée */}
             <Card>
               <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5 text-indigo-600" />
                 <span>Plus-values</span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -993,17 +985,17 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Réalisée */}
-                <div className={`rounded-xl p-5 border-2 ${realizedGainLoss >= 0 ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'}`}>
+                <div className={`rounded-xl p-5 border-2 ${realizedGainLoss >= 0 ? 'bg-ink-50 border-ink-200' : 'bg-gray-50 border-gray-200'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Réalisée</span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${realizedGainLoss >= 0 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${realizedGainLoss >= 0 ? 'bg-ink-100 text-brand-navy-hover' : 'bg-gray-100 text-gray-600'}`}>
                       Ventes clôturées
                     </span>
                   </div>
-                  <p className={`text-2xl font-bold ${realizedGainLoss >= 0 ? 'text-blue-700' : 'text-orange-700'}`}>
+                  <p className={`text-2xl font-bold ${realizedGainLoss >= 0 ? 'text-brand-navy-hover' : 'text-gray-600'}`}>
                     {realizedGainLoss >= 0 ? '+' : ''}{formatNumber(realizedGainLoss)} F
                   </p>
-                  <p className={`text-sm mt-1 ${realizedGainLoss >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+                  <p className={`text-sm mt-1 ${realizedGainLoss >= 0 ? 'text-brand-navy' : 'text-gray-500'}`}>
                     {realizedGainLoss >= 0 ? '+' : ''}{realizedPercent.toFixed(2)}% sur capital initial
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
@@ -1032,33 +1024,32 @@ export default function DashboardPage() {
                 ];
 
                 return (
-                  <div className="mt-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-5">
+                  <div className="mt-4 rounded-xl border border-ink-200 bg-ink-50 p-5">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-amber-600" />
                         <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Bonus Badges & Niveaux</span>
                       </div>
-                      <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
+                      <span className="text-xs font-bold px-2 py-1 rounded-full bg-ink-100 text-brand-navy-hover">
                         Capital additionnel
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-amber-700">
+                    <p className="text-2xl font-bold text-brand-navy">
                       +{formatNumber(totalBonusCash)} F
                     </p>
-                    <p className="text-sm text-amber-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1">
                       Ajouté à ton capital initial (ne compte pas dans le P/L)
                     </p>
                     {totalBonusCash > 0 ? (
                       <div className="mt-3 space-y-1">
                         {allRows.map(row => (
-                          <div key={row.id} className="flex items-center justify-between text-xs text-amber-700 bg-amber-100 rounded-lg px-3 py-1.5">
+                          <div key={row.id} className="flex items-center justify-between text-xs text-brand-navy-hover bg-white border border-ink-100 rounded-lg px-3 py-1.5">
                             <span className="font-medium">{row.label}</span>
                             <span className="font-bold">+{formatNumber(row.amount)} F</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-amber-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-2">
                         Débloque des badges et monte en niveau pour recevoir des bonus de capital !
                       </p>
                     )}
@@ -1074,7 +1065,6 @@ export default function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-indigo-600" />
                   <span>Historique Récent</span>
                 </h3>
                 <Button
@@ -1139,10 +1129,9 @@ export default function DashboardPage() {
 
             {/* Widget Gamification */}
             {gamificationSummary?.xp && gamificationSummary?.streak && (
-              <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100">
+              <Card className="bg-ink-50 border-ink-100">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-indigo-600" />
                     Ma Progression
                   </h3>
                   <LevelBadge level={gamificationSummary.xp.level ?? 1} size="sm" />
@@ -1154,11 +1143,10 @@ export default function DashboardPage() {
                 {/* Streak */}
                 <div className="flex items-center justify-between p-3 bg-white/60 rounded-xl mb-4">
                   <div className="flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-500" />
                     <span className="font-medium text-gray-700">Série actuelle</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-orange-600">
+                    <span className="text-2xl font-bold text-brand-navy">
                       {gamificationSummary.streak.current_streak ?? 0}
                     </span>
                     <span className="text-gray-500">jours</span>
@@ -1167,16 +1155,16 @@ export default function DashboardPage() {
 
                 {/* Badges récents */}
                 {gamificationSummary.achievements?.recent && gamificationSummary.achievements.recent.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-indigo-100">
+                  <div className="mt-4 pt-4 border-t border-ink-100">
                     <p className="text-xs text-gray-500 mb-2">Derniers badges</p>
                     <div className="flex gap-2">
                       {gamificationSummary.achievements.recent.slice(0, 3).map((ua) => (
                         <div
                           key={ua.id}
-                          className="text-2xl"
+                          className="w-9 h-9 rounded-lg bg-ink-50 flex items-center justify-center text-lg"
                           title={ua.achievement?.name || ''}
                         >
-                          {ua.achievement?.icon || '🏆'}
+                          {ua.achievement?.icon || <Trophy className="w-4 h-4 text-brand-navy" />}
                         </div>
                       ))}
                     </div>
@@ -1199,14 +1187,13 @@ export default function DashboardPage() {
 
             {/* Widget Progression Apprentissage */}
             {learningProgress && (
-              <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100">
+              <Card className="bg-ink-50 border-ink-100">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-emerald-600" />
                     Mon Apprentissage
                   </h3>
                   {learningProgress.averageScore > 0 && (
-                    <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                    <span className="text-xs font-bold px-2 py-1 rounded-full bg-ink-100 text-brand-navy-hover">
                       Moy. quiz : {learningProgress.averageScore}%
                     </span>
                   )}
@@ -1218,11 +1205,11 @@ export default function DashboardPage() {
                     <span className="font-medium text-gray-700">
                       {learningProgress.completedModules} / {learningProgress.totalModules} modules
                     </span>
-                    <span className="font-bold text-emerald-700">{learningProgress.progressPercent}%</span>
+                    <span className="font-bold text-brand-navy">{learningProgress.progressPercent}%</span>
                   </div>
-                  <div className="w-full bg-emerald-100 rounded-full h-3 overflow-hidden">
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                     <div
-                      className="h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
+                      className="h-3 rounded-full bg-gradient-to-r from-brand-navy to-[#173F66] transition-all duration-500"
                       style={{ width: `${learningProgress.progressPercent}%` }}
                     />
                   </div>
@@ -1230,17 +1217,16 @@ export default function DashboardPage() {
 
                 {/* Modules restants */}
                 <div className="flex items-center gap-2 p-3 bg-white/60 rounded-xl mb-4">
-                  <BookOpen className="w-4 h-4 text-teal-600 flex-shrink-0" />
                   <p className="text-sm text-gray-700">
                     {learningProgress.totalModules - learningProgress.completedModules > 0 ? (
                       <>
-                        <span className="font-bold text-teal-700">
+                        <span className="font-bold text-brand-navy-hover">
                           {learningProgress.totalModules - learningProgress.completedModules} module{learningProgress.totalModules - learningProgress.completedModules > 1 ? 's' : ''}
                         </span>
                         {' '}restant{learningProgress.totalModules - learningProgress.completedModules > 1 ? 's' : ''} pour obtenir votre certificat
                       </>
                     ) : (
-                      <span className="font-bold text-emerald-700">Tous les modules complétés !</span>
+                      <span className="font-bold text-green-700">Tous les modules complétés !</span>
                     )}
                   </p>
                 </div>
@@ -1252,11 +1238,11 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-1.5">
                       <div className="w-20 bg-gray-200 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full transition-all duration-500 ${learningProgress.averageScore >= 70 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                          className={`h-2 rounded-full transition-all duration-500 ${learningProgress.averageScore >= 70 ? 'bg-brand-navy' : 'bg-ink-300'}`}
                           style={{ width: `${learningProgress.averageScore}%` }}
                         />
                       </div>
-                      <span className={`text-sm font-bold ${learningProgress.averageScore >= 70 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                      <span className={`text-sm font-bold ${learningProgress.averageScore >= 70 ? 'text-brand-navy' : 'text-gray-500'}`}>
                         {learningProgress.averageScore}%
                       </span>
                     </div>
@@ -1266,7 +1252,7 @@ export default function DashboardPage() {
                 {/* Bouton Continuer */}
                 <button
                   onClick={() => navigate('/learn')}
-                  className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm shadow-sm"
+                  className="w-full py-2.5 px-4 bg-brand-navy hover:bg-brand-navy-hover text-white font-semibold rounded-xl transition-colors duration-200 flex items-center justify-center gap-2 text-sm shadow-sm"
                 >
                   <BookOpen className="w-4 h-4" />
                   Continuer votre apprentissage
@@ -1282,11 +1268,11 @@ export default function DashboardPage() {
               const recentFollowingPosts: any[] = (feedData?.data || feedData?.posts || []).slice(0, 3);
 
               const postTypeInfo: Record<string, { label: string; color: string; Icon: any }> = {
-                ANALYSIS: { label: 'une analyse', color: 'bg-blue-100 text-blue-700', Icon: BarChart2 },
-                OPINION:  { label: 'une opinion', color: 'bg-purple-100 text-purple-700', Icon: MessageSquare },
-                QUESTION: { label: 'une question', color: 'bg-orange-100 text-orange-700', Icon: HelpCircle },
-                TRANSACTION: { label: 'une transaction', color: 'bg-green-100 text-green-700', Icon: TrendingUp },
-                ACHIEVEMENT: { label: 'un succès', color: 'bg-yellow-100 text-yellow-700', Icon: Star },
+                ANALYSIS: { label: 'une analyse', color: 'bg-ink-100 text-brand-navy-hover', Icon: BarChart2 },
+                OPINION:  { label: 'une opinion', color: 'bg-ink-100 text-brand-navy-hover', Icon: MessageSquare },
+                QUESTION: { label: 'une question', color: 'bg-ink-100 text-brand-navy-hover', Icon: HelpCircle },
+                TRANSACTION: { label: 'une transaction', color: 'bg-ink-100 text-brand-navy-hover', Icon: TrendingUp },
+                ACHIEVEMENT: { label: 'un succès', color: 'bg-ink-100 text-brand-navy-hover', Icon: Star },
                 ARTICLE:  { label: 'un article', color: 'bg-gray-100 text-gray-700', Icon: BookOpen },
               };
 
@@ -1301,15 +1287,14 @@ export default function DashboardPage() {
               };
 
               return (
-                <Card className="border-violet-100">
+                <Card className="border-ink-100">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                      <Users2 className="w-5 h-5 text-violet-600" />
                       Fil de vos relations
                     </h3>
                     <button
                       onClick={() => navigate('/community?following=true')}
-                      className="text-xs font-semibold text-violet-600 hover:text-violet-800 transition-colors"
+                      className="text-xs font-semibold text-brand-navy hover:text-brand-navy-hover transition-colors"
                     >
                       Voir tout
                     </button>
@@ -1322,7 +1307,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-gray-400">Suivez des investisseurs pour voir leurs analyses ici.</p>
                       <button
                         onClick={() => navigate('/community')}
-                        className="mt-3 text-xs font-semibold text-violet-600 hover:underline"
+                        className="mt-3 text-xs font-semibold text-brand-navy hover:underline"
                       >
                         Découvrir la communauté
                       </button>
@@ -1343,7 +1328,7 @@ export default function DashboardPage() {
                           <button
                             key={post.id}
                             onClick={() => navigate(`/community?postId=${post.id}`)}
-                            className="w-full text-left p-3 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50/40 transition-all duration-150 group"
+                            className="w-full text-left p-3 rounded-xl border border-gray-100 hover:border-ink-200 hover:bg-ink-50/40 transition-all duration-150 group"
                           >
                             {/* En-tête : avatar + nom + type */}
                             <div className="flex items-center gap-2 mb-2">
@@ -1363,7 +1348,7 @@ export default function DashboardPage() {
                                   <span className="text-[10px] text-gray-400">{timeAgo(post.created_at)}</span>
                                 </div>
                               </div>
-                              <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-violet-500 transition-colors flex-shrink-0" />
+                              <ExternalLink className="w-3.5 h-3.5 text-gray-300 group-hover:text-brand-navy transition-colors flex-shrink-0" />
                             </div>
 
                             {/* Titre si présent */}
@@ -1383,7 +1368,7 @@ export default function DashboardPage() {
                                 <MessageSquare className="w-3 h-3" />{post.comments_count ?? 0}
                               </span>
                               {post.stock_symbol && (
-                                <span className="text-[10px] font-bold text-violet-600 ml-auto">{post.stock_symbol}</span>
+                                <span className="text-[10px] font-bold text-brand-navy ml-auto">{post.stock_symbol}</span>
                               )}
                             </div>
                           </button>
@@ -1392,7 +1377,7 @@ export default function DashboardPage() {
 
                       <button
                         onClick={() => navigate('/community?following=true')}
-                        className="w-full py-2 text-xs font-semibold text-violet-600 hover:text-violet-800 hover:bg-violet-50 rounded-lg transition-colors"
+                        className="w-full py-2 text-xs font-semibold text-brand-navy hover:text-brand-navy-hover hover:bg-ink-50 rounded-lg transition-colors"
                       >
                         Voir toutes les publications →
                       </button>
@@ -1405,7 +1390,6 @@ export default function DashboardPage() {
             {/* <-- AJOUT: Allocation du Portefeuille (Donut Chart) */}
             <Card>
               <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
-                <PieChartIcon className="w-5 h-5 text-indigo-600" />
                 <span>Allocation</span>
               </h3>
 
@@ -1459,7 +1443,6 @@ export default function DashboardPage() {
             {/* <-- AJOUT: Aperçu du Marché */}
             <Card>
               <h3 className="text-xl font-bold mb-4 flex items-center space-x-2">
-                <Activity className="w-5 h-5 text-indigo-600" />
                 <span>Aperçu du Marché</span>
               </h3>
 
@@ -1563,7 +1546,7 @@ export default function DashboardPage() {
                     <div className="border-t border-gray-200 pt-3">
                       <div className="flex justify-between">
                         <span className="text-sm font-medium text-gray-700">Total à recevoir:</span>
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-lg font-bold text-brand-navy">
                           {formatNumber(sellQuantity * currentPrice)} F
                         </span>
                       </div>
@@ -1573,11 +1556,11 @@ export default function DashboardPage() {
               })()}
 
               <div className="flex space-x-3">
-                <Button variant="secondary" onClick={() => setSellModalOpen(false)} className="flex-1">
+                <Button variant="navyOutline" onClick={() => setSellModalOpen(false)} className="flex-1">
                   Annuler
                 </Button>
                 <Button
-                  variant="danger"
+                  variant="orange"
                   onClick={handleSell}
                   isLoading={sellStock.isPending}
                   className="flex-1"
@@ -1637,11 +1620,11 @@ export default function DashboardPage() {
               )}
 
               <div className="flex space-x-3">
-                <Button variant="secondary" onClick={() => setBuyModalOpen(false)} className="flex-1">
+                <Button variant="navyOutline" onClick={() => setBuyModalOpen(false)} className="flex-1">
                   Annuler
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="navy"
                   onClick={handleBuy}
                   isLoading={buyStock.isPending}
                   disabled={buyQuantity * selectedStockToBuy.current_price > portfolio.cash_balance}

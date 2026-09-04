@@ -1,25 +1,7 @@
 // src/components/community/CommunityPostCard.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-    Heart,
-    MessageCircle,
-    MoreHorizontal,
-    Pin,
-    Trash2,
-    Clock,
-    TrendingUp,
-    TrendingDown,
-    CheckCircle,
-    Flag,
-    Zap,
-    FileText,
-    Download,
-    Lock,
-    Flame,
-    Trophy,
-    Play,
-} from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Pin, Trash2, Clock, TrendingUp, TrendingDown, CheckCircle, Flag, Zap, FileText, Download, Lock, Flame, Trophy, Play } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -166,7 +148,6 @@ export default function CommunityPostCard({ post, communityId: _communityId, can
             {/* Pinned indicator */}
             {post.is_pinned && (
                 <div className="px-4 py-2 bg-ink-50 border-b flex items-center gap-2 text-sm text-brand-navy">
-                    <Pin className="w-4 h-4" />
                     Post epingle
                 </div>
             )}

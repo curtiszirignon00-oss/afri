@@ -96,7 +96,10 @@ export default function CommunityPostDetailPage() {
                         <span className="text-sm font-medium">Retour</span>
                     </button>
                     {sectionCfg && (
-                        <span className="text-sm text-gray-500">{sectionCfg.emoji} {sectionCfg.label}</span>
+                        <span className="inline-flex items-center gap-1.5 text-sm text-gray-500">
+                            <sectionCfg.icon className="w-4 h-4 text-brand-navy" />
+                            {sectionCfg.label}
+                        </span>
                     )}
                 </div>
             </div>

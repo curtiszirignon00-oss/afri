@@ -1,22 +1,29 @@
 // src/components/profile/ActivityHeatmap.tsx
-// Heatmap d'activité façon GitHub/Strava — 12 semaines glissantes, palette teal.
+// Heatmap d'activité façon GitHub/Strava — 12 semaines glissantes.
+//
+// La rampe teal (teal-200 -> teal-800) n'appartenait pas a la charte. Les cinq
+// niveaux sont maintenant des opacites croissantes de l'orange de marque : une
+// seule teinte, celle du logo, et une intensite qui se lit d'un coup d'oeil.
 import { useQuery } from '@tanstack/react-query';
-import { Activity } from 'lucide-react';
+
 import { apiClient } from '../../lib/api-client';
+import ProfileSectionCard from './ProfileSectionCard';
 
 interface HeatmapDay {
     date: string;
     count: number;
 }
 
-// 5 niveaux d'intensité (palette teal Afribourse)
+// 5 niveaux d'intensité (rampe orange de marque)
 function levelClass(count: number): string {
-    if (count <= 0) return 'bg-gray-100';
-    if (count === 1) return 'bg-teal-200';
-    if (count <= 3) return 'bg-teal-400';
-    if (count <= 5) return 'bg-teal-600';
-    return 'bg-teal-800';
+    if (count <= 0) return 'bg-ink-100';
+    if (count === 1) return 'bg-brand-orange/25';
+    if (count <= 3) return 'bg-brand-orange/50';
+    if (count <= 5) return 'bg-brand-orange/75';
+    return 'bg-brand-orange-dark';
 }
+
+const LEGEND = ['bg-ink-100', 'bg-brand-orange/25', 'bg-brand-orange/50', 'bg-brand-orange/75', 'bg-brand-orange-dark'];
 
 export default function ActivityHeatmap({ enabled = true }: { enabled?: boolean }) {
     const { data, isLoading } = useQuery({
@@ -41,19 +48,12 @@ export default function ActivityHeatmap({ enabled = true }: { enabled?: boolean 
     const totalActive = days.filter(d => d.count > 0).length;
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-teal-600" />
-                </div>
-                <div>
-                    <h3 className="font-semibold text-gray-900">Activité</h3>
-                    <p className="text-sm text-gray-500">{totalActive} jour{totalActive > 1 ? 's' : ''} actif{totalActive > 1 ? 's' : ''} sur 12 semaines</p>
-                </div>
-            </div>
-
+        <ProfileSectionCard
+            title="Activité"
+            subtitle={`${totalActive} jour${totalActive > 1 ? 's' : ''} actif${totalActive > 1 ? 's' : ''} sur 12 semaines`}
+        >
             {isLoading ? (
-                <div className="h-24 bg-gray-50 rounded-xl animate-pulse" />
+                <div className="h-24 bg-ink-50 rounded-xl animate-pulse" />
             ) : (
                 <>
                     <div className="flex gap-1 overflow-x-auto pb-1">
@@ -69,17 +69,15 @@ export default function ActivityHeatmap({ enabled = true }: { enabled?: boolean 
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center justify-end gap-1 mt-3 text-xs text-gray-400">
+                    <div className="flex items-center justify-end gap-1 mt-3 text-xs text-ink-400">
                         <span>Moins</span>
-                        <div className="w-3 h-3 rounded-sm bg-gray-100" />
-                        <div className="w-3 h-3 rounded-sm bg-teal-200" />
-                        <div className="w-3 h-3 rounded-sm bg-teal-400" />
-                        <div className="w-3 h-3 rounded-sm bg-teal-600" />
-                        <div className="w-3 h-3 rounded-sm bg-teal-800" />
+                        {LEGEND.map((c) => (
+                            <div key={c} className={`w-3 h-3 rounded-sm ${c}`} />
+                        ))}
                         <span>Plus</span>
                     </div>
                 </>
             )}
-        </div>
+        </ProfileSectionCard>
     );
 }

@@ -1,18 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Search,
-  ChevronDown,
-  ChevronUp,
-  Rocket,
-  TrendingUp,
-  BookOpen,
-  Building,
-  Lightbulb,
-  Shield,
-  Mail,
-  BookMarked,
-  Send
-} from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Rocket, TrendingUp, BookOpen, Building, Shield, Send } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
@@ -293,7 +280,6 @@ const HelpCenterPage: React.FC = () => {
         {/* Question spécifique */}
         <div className="mt-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-xl p-8 text-white">
           <div className="flex items-center gap-3 mb-4">
-            <Lightbulb className="h-8 w-8" />
             <h2 className="text-2xl font-bold">Vous avez une question spécifique ?</h2>
           </div>
           <p className="mb-6 text-blue-100">
@@ -322,7 +308,6 @@ const HelpCenterPage: React.FC = () => {
           {/* Glossaire */}
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="flex items-center gap-3 mb-4">
-              <BookMarked className="h-8 w-8 text-blue-600" />
               <h2 className="text-2xl font-bold text-gray-900">Terminologie Boursière</h2>
             </div>
             <p className="text-gray-600 mb-6">
@@ -339,7 +324,6 @@ const HelpCenterPage: React.FC = () => {
           {/* Contact Support */}
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="flex items-center gap-3 mb-4">
-              <Mail className="h-8 w-8 text-blue-600" />
               <h2 className="text-2xl font-bold text-gray-900">Besoin d'aide ?</h2>
             </div>
             <p className="text-gray-600 mb-6">

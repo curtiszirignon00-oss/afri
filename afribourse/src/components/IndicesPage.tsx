@@ -107,9 +107,6 @@ export default function IndicesPage() {
                       className="group w-full flex items-center gap-4 sm:gap-5 px-4 sm:px-6 py-4 sm:py-5 text-left transition-colors duration-150 cursor-pointer hover:bg-gray-50"
                     >
                       {/* Pastille d'indice, a la place du logo d'une action */}
-                      <span className="w-12 h-12 rounded-xl bg-ink-50 border border-gray-200 flex items-center justify-center shrink-0">
-                        <Activity className="w-5 h-5 text-brand-navy" />
-                      </span>
 
                       <span className="min-w-0 flex-1">
                         <span className="block text-lg font-bold text-gray-900 font-mono tracking-tight group-hover:text-brand-navy transition-colors truncate">

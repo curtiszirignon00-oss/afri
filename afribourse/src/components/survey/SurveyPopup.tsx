@@ -1,7 +1,7 @@
 // src/components/survey/SurveyPopup.tsx
 // Non-blocking popup for existing users who haven't completed the discovery survey
 import { useState } from 'react';
-import { X, Sparkles } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useOnboardingStatus } from '../../hooks/useOnboarding';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,10 +20,9 @@ export default function SurveyPopup() {
 
     return (
         <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full animate-in slide-in-from-bottom-4">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 flex items-start justify-between">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                <div className="bg-gradient-to-r from-brand-navy to-[#173F66] p-4 flex items-start justify-between">
                     <div className="flex items-center gap-2 text-white">
-                        <Sparkles className="w-5 h-5" />
                         <span className="font-semibold text-sm">Personnalisez votre expérience</span>
                     </div>
                     <button
@@ -40,9 +39,9 @@ export default function SurveyPopup() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => navigate('/onboarding')}
-                            className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors"
+                            className="flex-1 h-11 bg-brand-orange text-white rounded-xl text-sm font-semibold hover:bg-brand-orange-hover transition-colors"
                         >
-                            Commencer — 1 min
+                            Commencer, 1 minute
                         </button>
                         <button
                             onClick={() => setDismissed(true)}

@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Zap, AlertTriangle, TrendingUp, MessageCircle, Sparkles } from 'lucide-react';
+import { AlertTriangle, TrendingUp, MessageCircle, Sparkles } from 'lucide-react';
 import { StockAnalystChat } from './StockAnalystChat';
 import type { Stock } from '../../types';
 import {
   calculateSignalScore,
   computeBBPosition,
   computeMADeviation,
-  getScoreHexColor,
   ANALYSIS_MODE_LABELS,
   ANALYSIS_MODE_DESCRIPTIONS,
   MODE_WEIGHTS,
@@ -42,7 +41,7 @@ function ScoreCircle({ score, color }: { score: number; color: string }) {
   const filled = circ * (score / 100);
   return (
     <svg width="100" height="100" viewBox="0 0 100 100">
-      <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={SW} />
+      <circle cx="50" cy="50" r={R} fill="none" stroke="#E5E7EB" strokeWidth={SW} />
       <circle
         cx="50" cy="50" r={R} fill="none"
         stroke={color} strokeWidth={SW}
@@ -51,18 +50,17 @@ function ScoreCircle({ score, color }: { score: number; color: string }) {
         transform="rotate(-90 50 50)"
         style={{ transition: 'stroke-dasharray 0.6s ease' }}
       />
-      <text x="50" y="46" textAnchor="middle" fontSize="22" fontWeight="600" fill={color}>{score}</text>
-      <text x="50" y="60" textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.4)">/100</text>
+      <text x="50" y="46" textAnchor="middle" fontSize="22" fontWeight="700" fill="#111827">{score}</text>
+      <text x="50" y="60" textAnchor="middle" fontSize="10" fill="#9CA3AF">/100</text>
     </svg>
   );
 }
 
 // ── Pillar badge ──────────────────────────────────────────────────────────────
 
-function PillarBadge({ label, pct, color }: { label: string; pct: number; color: string }) {
+function PillarBadge({ label, pct }: { label: string; pct: number }) {
   return (
-    <span style={{ background: `${color}22`, color, border: `1px solid ${color}44` }}
-      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full">
+    <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-ink-50 text-brand-navy">
       {label} <span className="opacity-70">{Math.round(pct * 100)}%</span>
     </span>
   );
@@ -71,18 +69,18 @@ function PillarBadge({ label, pct, color }: { label: string; pct: number; color:
 // ── Indicator row with mini progress bar ──────────────────────────────────────
 
 function IndicatorRow({ name, rawValue, normalizedScore }: { name: string; rawValue: string; normalizedScore: number }) {
-  const color = normalizedScore >= 60 ? '#22c55e' : normalizedScore >= 40 ? '#f59e0b' : '#ef4444';
+  // Une seule teinte : la valeur chiffree suffit a dire si l'indicateur est bon.
+  const color = '#12395E';
   return (
-    <div className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0">
-      <span className="text-[12px] text-gray-300 flex-1 min-w-0 truncate">{name}</span>
-      <div className="w-20 h-1.5 rounded-full bg-white/10 flex-shrink-0 overflow-hidden">
+    <div className="flex items-center gap-2 py-1.5 border-b border-gray-200/70 last:border-0">
+      <span className="text-[12px] text-gray-600 flex-1 min-w-0 truncate">{name}</span>
+      <div className="w-20 h-1.5 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${normalizedScore}%`, background: color }}
         />
       </div>
-      <span className="text-[11px] font-mono font-semibold w-12 text-right flex-shrink-0"
-        style={{ color }}>{rawValue}</span>
+      <span className="text-[11px] font-mono font-semibold w-12 text-right flex-shrink-0 text-gray-900">{rawValue}</span>
     </div>
   );
 }
@@ -93,14 +91,14 @@ function SubScoreBar({ label, score, color, maxWidth = '100%' }: { label: string
   return (
     <div className="flex items-center gap-3 mb-2.5">
       <span className="text-[12px] text-gray-400 w-28 flex-shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+      <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: score != null ? `${score}%` : '0%', background: color, maxWidth }}
         />
       </div>
       <span className="text-[12px] font-mono font-semibold w-8 text-right flex-shrink-0"
-        style={{ color: score != null ? color : 'rgba(255,255,255,0.25)' }}>
+        style={{ color: score != null ? color : '#D1D5DB' }}>
         {score ?? '—'}
       </span>
     </div>
@@ -110,11 +108,11 @@ function SubScoreBar({ label, score, color, maxWidth = '100%' }: { label: string
 // ── Zone chip ─────────────────────────────────────────────────────────────────
 
 const ZONE_CONFIG = [
-  { range: '0–25',  label: 'Vente Forte', bg: '#fef2f2', text: '#991b1b' },
-  { range: '26–40', label: 'Vente',        bg: '#fff7ed', text: '#92400e' },
-  { range: '41–59', label: 'Neutre',       bg: '#f9fafb', text: '#374151' },
-  { range: '60–74', label: 'Achat',        bg: '#f0fdf4', text: '#166534' },
-  { range: '75–100',label: 'Achat Fort',   bg: '#dcfce7', text: '#14532d' },
+  { range: '0–25',   label: 'Vente Forte' },
+  { range: '26–40',  label: 'Vente' },
+  { range: '41–59',  label: 'Neutre' },
+  { range: '60–74',  label: 'Achat' },
+  { range: '75–100', label: 'Achat Fort' },
 ] as const;
 
 // ── Build score context string for SIMBA ──────────────────────────────────────
@@ -249,7 +247,6 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
   );
 
   const hasData = !!(data && data.length >= 30);
-  const scoreColor = result ? getScoreHexColor(result.score) : '#6b7280';
   const weights = MODE_WEIGHTS[mode];
 
   const techRows    = result?.indicators.filter(i => i.pillar === 'technical')   ?? [];
@@ -265,7 +262,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <TrendingUp size={20} className="text-blue-600" />
+            <TrendingUp size={20} className="text-brand-navy" />
             Score de confiance hybride
           </h3>
           <p className="text-xs text-gray-500 mt-0.5">Technique · Fondamental · Croissance</p>
@@ -290,41 +287,41 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
       </div>
 
       {/* Mode description */}
-      <p className="text-[12px] text-gray-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+      <p className="text-[12px] text-gray-500 bg-ink-50 border border-ink-100 rounded-lg px-3 py-2">
         {ANALYSIS_MODE_DESCRIPTIONS[mode]}
       </p>
 
       {/* Main card */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 rounded-2xl overflow-hidden relative">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-5">
 
           {/* Pillar weight badges row */}
           <div className="flex gap-2 mb-4 flex-wrap">
-            <PillarBadge label="Technique"    pct={weights.technical}   color="#3b82f6" />
-            <PillarBadge label="Fondamental"  pct={weights.fundamental} color="#8b5cf6" />
-            <PillarBadge label="Croissance"   pct={weights.growth}      color="#10b981" />
+            <PillarBadge label="Technique"    pct={weights.technical} />
+            <PillarBadge label="Fondamental"  pct={weights.fundamental} />
+            <PillarBadge label="Croissance"   pct={weights.growth} />
           </div>
 
           {/* 2-col indicator grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
 
             {/* Left: Technique */}
-            <div className="bg-white/5 rounded-xl p-4 border border-blue-500/20">
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
-                  📈 Pilier Technique
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  <TrendingUp className="w-3.5 h-3.5" /> Pilier Technique
                 </span>
-                <span className="text-[11px] font-mono font-bold text-blue-300">
+                <span className="text-[11px] font-mono font-bold text-brand-navy">
                   {result?.subScores.technical ?? '—'}/100
                 </span>
               </div>
               {hasData && techRows.length > 0
                 ? techRows.map(r => <IndicatorRow key={r.name} {...r} />)
                 : ['RSI (14)', 'MACD Histogramme', 'Prix vs MA20', 'Prix vs MA50', 'BB Position', 'Volume relatif'].map(n => (
-                    <div key={n} className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0">
-                      <span className="text-[12px] text-gray-500 flex-1">{n}</span>
-                      <div className="w-20 h-1.5 rounded-full bg-white/5" />
-                      <span className="text-[11px] font-mono text-gray-600 w-12 text-right">—</span>
+                    <div key={n} className="flex items-center gap-2 py-1.5 border-b border-gray-200/70 last:border-0">
+                      <span className="text-[12px] text-gray-400 flex-1">{n}</span>
+                      <div className="w-20 h-1.5 rounded-full bg-gray-200" />
+                      <span className="text-[11px] font-mono text-gray-300 w-12 text-right">—</span>
                     </div>
                   ))
               }
@@ -332,43 +329,43 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
 
             {/* Right: Fondamental + Croissance */}
             <div className="space-y-3">
-              <div className="bg-white/5 rounded-xl p-4 border border-purple-500/20">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-semibold text-purple-400 uppercase tracking-wider">
-                    📊 Pilier Fondamental
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+ Pilier Fondamental
                   </span>
-                  <span className="text-[11px] font-mono font-bold text-purple-300">
+                  <span className="text-[11px] font-mono font-bold text-brand-navy">
                     {result?.subScores.fundamental ?? '—'}/100
                   </span>
                 </div>
                 {fundRows.length > 0
                   ? fundRows.map(r => <IndicatorRow key={r.name} {...r} />)
                   : ['PER', 'ROE', 'Marge nette', 'Div. Yield', 'PBR', 'Dette/FP'].map(n => (
-                      <div key={n} className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0">
-                        <span className="text-[12px] text-gray-500 flex-1">{n}</span>
-                        <div className="w-20 h-1.5 rounded-full bg-white/5" />
-                        <span className="text-[11px] font-mono text-gray-600 w-12 text-right">—</span>
+                      <div key={n} className="flex items-center gap-2 py-1.5 border-b border-gray-200/70 last:border-0">
+                        <span className="text-[12px] text-gray-400 flex-1">{n}</span>
+                        <div className="w-20 h-1.5 rounded-full bg-gray-200" />
+                        <span className="text-[11px] font-mono text-gray-300 w-12 text-right">—</span>
                       </div>
                     ))
                 }
               </div>
 
-              <div className="bg-white/5 rounded-xl p-4 border border-emerald-500/20">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
-                    🌱 Pilier Croissance
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+ Pilier Croissance
                   </span>
-                  <span className="text-[11px] font-mono font-bold text-emerald-300">
+                  <span className="text-[11px] font-mono font-bold text-brand-navy">
                     {result?.subScores.growth ?? '—'}/100
                   </span>
                 </div>
                 {growthRows.length > 0
                   ? growthRows.map(r => <IndicatorRow key={r.name} {...r} />)
                   : ['Croissance CA', 'Croissance RN', 'Tendance EPS'].map(n => (
-                      <div key={n} className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0">
-                        <span className="text-[12px] text-gray-500 flex-1">{n}</span>
-                        <div className="w-20 h-1.5 rounded-full bg-white/5" />
-                        <span className="text-[11px] font-mono text-gray-600 w-12 text-right">—</span>
+                      <div key={n} className="flex items-center gap-2 py-1.5 border-b border-gray-200/70 last:border-0">
+                        <span className="text-[12px] text-gray-400 flex-1">{n}</span>
+                        <div className="w-20 h-1.5 rounded-full bg-gray-200" />
+                        <span className="text-[11px] font-mono text-gray-300 w-12 text-right">—</span>
                       </div>
                     ))
                 }
@@ -377,21 +374,21 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
           </div>
 
           {/* Score composite display */}
-          <div className="border-t border-white/10 pt-4">
+          <div className="border-t border-gray-100 pt-4">
             <div className="flex items-center gap-5">
               {/* Circle */}
               <div className="flex-shrink-0">
-                <ScoreCircle score={result?.score ?? 0} color={scoreColor} />
+                <ScoreCircle score={result?.score ?? 0} color="#12395E" />
               </div>
 
               {/* Pillar bars */}
               <div className="flex-1 min-w-0">
-                <SubScoreBar label="Technique"   score={result?.subScores.technical}   color="#3b82f6" />
-                <SubScoreBar label="Fondamental" score={result?.subScores.fundamental} color="#8b5cf6" />
-                <SubScoreBar label="Croissance"  score={result?.subScores.growth}      color="#10b981" />
-                <div className="flex items-center gap-3 mt-2 pt-2 border-t border-white/10">
+                <SubScoreBar label="Technique"   score={result?.subScores.technical}   color="#12395E" />
+                <SubScoreBar label="Fondamental" score={result?.subScores.fundamental} color="#12395E" />
+                <SubScoreBar label="Croissance"  score={result?.subScores.growth}      color="#12395E" />
+                <div className="flex items-center gap-3 mt-2 pt-2 border-t border-gray-100">
                   <span className="text-[12px] text-gray-500 w-28 flex-shrink-0">Fiabilité</span>
-                  <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500 bg-gray-400"
                       style={{ width: `${fiabPct}%` }} />
                   </div>
@@ -403,23 +400,22 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
 
           {/* Interpretation box */}
           {result && (
-            <div className="mt-4 rounded-xl px-4 py-3 border-l-4"
-              style={{ borderColor: scoreColor, background: `${scoreColor}12` }}>
-              <p className="text-[13px] leading-relaxed" style={{ color: scoreColor }}>
+            <div className="mt-4 rounded-xl px-4 py-3 bg-ink-50">
+              <p className="text-[13px] leading-relaxed text-gray-900">
                 <strong>Score {result.score}/100 — {result.zone}.</strong>{' '}
-                <span className="text-gray-300">
+                <span className="text-gray-600">
                   {ANALYSIS_MODE_DESCRIPTIONS[mode].split('—')[0].trim()}
                 </span>
               </p>
-              <p className="text-[12px] text-gray-400 mt-1">{result.phrase}</p>
+              <p className="text-[12px] text-gray-500 mt-1">{result.phrase}</p>
             </div>
           )}
 
           {/* Divergence warning */}
           {result?.divergenceWarning && (
-            <div className="mt-3 flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2.5">
-              <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-[12px] text-amber-300">{result.divergenceWarning}</p>
+            <div className="mt-3 flex items-start gap-2 bg-brand-orange/10 rounded-xl px-3 py-2.5">
+              <AlertTriangle size={14} className="text-brand-orange flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-brand-orange-dark">{result.divergenceWarning}</p>
             </div>
           )}
         </div>
@@ -439,11 +435,9 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
             );
             return (
               <div key={z.label}
-                className={`flex-1 min-w-[60px] rounded-lg px-2 py-2 text-center transition-all ${active ? 'ring-2 ring-offset-1' : ''}`}
-                style={{
-                  background: z.bg, color: z.text,
-                  boxShadow: active ? `0 0 0 2px ${z.text}` : undefined,
-                }}>
+                className={`flex-1 min-w-[60px] rounded-lg px-2 py-2 text-center transition-colors ${
+                  active ? 'bg-brand-navy text-white' : 'bg-gray-50 text-gray-500'
+                }`}>
                 <p className="text-[11px] font-semibold">{z.range}</p>
                 <p className="text-[10px] mt-0.5">{z.label}</p>
               </div>
@@ -454,10 +448,10 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
 
       {/* SIMBA — Poser une question */}
       {stock && (
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl overflow-hidden">
+        <div className="bg-ink-50 border border-ink-100 rounded-xl overflow-hidden">
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-blue-600" />
+              <Sparkles size={16} className="text-brand-navy" />
               <div>
                 <p className="text-sm font-semibold text-gray-900">Poser une question à SIMBA</p>
                 <p className="text-[11px] text-gray-500">Notre analyste IA connaît ce score et les données de {stock.company_name}</p>
@@ -478,7 +472,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
                   <button
                     key={q}
                     onClick={() => { setInitialQuestion(q); setShowChat(true); }}
-                    className="text-[11px] px-2.5 py-1 bg-white border border-blue-200 text-blue-700 rounded-full hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    className="text-[11px] px-2.5 py-1 bg-white border border-ink-200 text-brand-navy-hover rounded-full hover:bg-ink-50 hover:border-ink-300 transition-colors"
                   >
                     {q}
                   </button>
@@ -486,7 +480,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
               </div>
               <button
                 onClick={() => { setInitialQuestion(undefined); setShowChat(true); }}
-                className="w-full flex items-center justify-center gap-2 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2 bg-brand-navy hover:bg-brand-navy-hover text-white text-sm font-semibold rounded-lg transition-colors"
               >
                 <MessageCircle size={15} />
                 Discuter avec SIMBA
@@ -497,7 +491,7 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
       )}
 
       {/* Disclaimer */}
-      <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-3 text-yellow-800 text-xs flex gap-2">
+      <div className="bg-brand-orange/10 rounded-lg p-3 text-brand-orange-dark text-xs flex gap-2">
         <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
         <p>L'analyse technique est fournie à titre indicatif uniquement et ne doit pas constituer la seule base de vos décisions d'investissement.</p>
       </div>

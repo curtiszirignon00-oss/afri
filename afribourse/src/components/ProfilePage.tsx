@@ -1,6 +1,6 @@
 // src/components/ProfilePage.tsx - VERSION AMÉLIORÉE
 import { useState, useEffect } from 'react';
-import { User, Target, ArrowRight, Calendar, BookOpen, TrendingUp, Megaphone, Star } from 'lucide-react';
+import { Target, ArrowRight, Calendar, BookOpen, TrendingUp, Star } from 'lucide-react';
 import { useUserProfile, useUpdateProfile } from '../hooks/useApi';
 import { Button, Input, Card, LoadingSpinner, ErrorMessage } from './ui';
 
@@ -163,9 +163,6 @@ export default function ProfilePage() {
           {/* 1. Personal Info */}
           <Card>
             <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
               <h2 className="text-xl font-bold text-gray-900">Informations Personnelles</h2>
             </div>
             <div className="space-y-5">
@@ -225,9 +222,6 @@ export default function ProfilePage() {
           {/* 2. Investor Profile */}
           <Card>
             <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Target className="w-5 h-5 text-green-600" />
-              </div>
               <h2 className="text-xl font-bold text-gray-900">Profil d'Investisseur</h2>
             </div>
             <div className="space-y-6">
@@ -352,9 +346,6 @@ export default function ProfilePage() {
           {/* <-- NOUVEAU: 3. Préférences d'Apprentissage */}
           <Card>
             <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-5 h-5 text-purple-600" />
-              </div>
               <h2 className="text-xl font-bold text-gray-900">Préférences d'Apprentissage</h2>
             </div>
             <div className="space-y-6">
@@ -391,9 +382,6 @@ export default function ProfilePage() {
           {/* <-- NOUVEAU: 4. Feedback & Amélioration */}
           <Card>
             <div className="flex items-center space-x-3 mb-6 border-b border-gray-100 pb-4">
-              <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Megaphone className="w-5 h-5 text-orange-600" />
-              </div>
               <h2 className="text-xl font-bold text-gray-900">Feedback & Amélioration</h2>
             </div>
             <div className="space-y-6">

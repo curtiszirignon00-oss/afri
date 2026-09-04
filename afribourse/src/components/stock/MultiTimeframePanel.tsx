@@ -151,8 +151,8 @@ export default function MultiTimeframePanel({ data, theme }: MultiTimeframePanel
       {hasDivergence ? (
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
           isDark
-            ? 'bg-amber-900/30 text-amber-300 border border-amber-700/40'
-            : 'bg-amber-50 text-amber-700 border border-amber-200'
+            ? 'bg-brand-orange-dark/30 text-brand-orange-light border border-brand-orange-dark/40'
+            : 'bg-brand-orange/10 text-brand-orange-dark border border-brand-orange/30'
         }`}>
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span>
@@ -163,8 +163,8 @@ export default function MultiTimeframePanel({ data, theme }: MultiTimeframePanel
       ) : allBullish ? (
         <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
           isDark
-            ? 'bg-emerald-900/30 text-emerald-300 border border-emerald-700/40'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            ? 'bg-green-900/30 text-green-300 border border-green-700/40'
+            : 'bg-green-50 text-green-700 border border-green-200'
         }`}>
           <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" />
           <span>
@@ -188,9 +188,9 @@ export default function MultiTimeframePanel({ data, theme }: MultiTimeframePanel
       <div className="grid grid-cols-3 gap-2">
         {frames.map((frame) => {
           const pctStr    = `${frame.pct >= 0 ? '+' : ''}${frame.pct.toFixed(2)}%`;
-          const pctColor  = frame.isUp ? 'text-emerald-600' : 'text-red-500';
+          const pctColor  = frame.isUp ? 'text-green-600' : 'text-red-500';
           const badgeBg   = frame.isUp
-            ? (isDark ? 'bg-emerald-900/40 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+            ? (isDark ? 'bg-green-900/40 text-green-300' : 'bg-green-100 text-green-700')
             : (isDark ? 'bg-red-900/40 text-red-300'         : 'bg-red-100 text-red-600');
 
           return (
@@ -216,7 +216,7 @@ export default function MultiTimeframePanel({ data, theme }: MultiTimeframePanel
                 <span className={`text-xs font-semibold ${textMain}`}>{fmt(frame.last)} FCFA</span>
                 <div className="flex items-center gap-1">
                   {frame.isUp
-                    ? <TrendingUp  className="w-3.5 h-3.5 text-emerald-500" />
+                    ? <TrendingUp  className="w-3.5 h-3.5 text-green-500" />
                     : <TrendingDown className="w-3.5 h-3.5 text-red-500" />
                   }
                   <span className={`text-xs font-semibold ${pctColor}`}>{pctStr}</span>
@@ -235,7 +235,7 @@ export default function MultiTimeframePanel({ data, theme }: MultiTimeframePanel
                 <div className="px-2 py-1.5">
                   <p className={`${textMuted} text-[10px] uppercase tracking-wide`}>+ bas</p>
                   <p className={`font-semibold ${textMain}`}>{fmt(frame.periodLow)}</p>
-                  <p className={`text-[10px] ${frame.distFromLow < 10 ? 'text-red-500' : 'text-emerald-600'}`}>
+                  <p className={`text-[10px] ${frame.distFromLow < 10 ? 'text-red-500' : 'text-green-600'}`}>
                     +{frame.distFromLow.toFixed(1)}%
                   </p>
                 </div>

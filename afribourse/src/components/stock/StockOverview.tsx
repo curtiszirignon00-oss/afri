@@ -70,35 +70,34 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
     <div className="space-y-8 py-8">
       {/* AI Analysis Card — SIMBA */}
       <section>
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 relative overflow-hidden">
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="text-blue-600" size={20} />
             <h3 className="text-lg font-bold text-gray-900">Analyse par SIMBA</h3>
           </div>
 
           {/* Chargement */}
           {isLoadingAI && (
-            <div className="flex flex-col items-center justify-center py-10 gap-3 text-slate-500">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-gray-500">
+              <Loader2 className="w-8 h-8 animate-spin text-brand-navy" />
               <p className="text-sm">SIMBA analyse l'action...</p>
             </div>
           )}
 
           {/* Analyse disponible */}
           {!isLoadingAI && aiAnalysis && (
-            <div className="prose prose-sm max-w-none text-slate-700">
+            <div className="prose prose-sm max-w-none text-gray-700">
               <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
 
               {/* Actions : feedback + chat */}
-              <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 not-prose">
-                <span className="text-xs text-slate-400">Cette analyse vous a aidé ?</span>
+              <div className="flex items-center gap-3 mt-4 pt-3 border-t border-gray-100 not-prose">
+                <span className="text-xs text-gray-400">Cette analyse vous a aidé ?</span>
                 <button
                   onClick={() => rateAnalysis('up')}
                   title="Analyse utile"
                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm transition-colors ${
                     analysisRating === 'up'
-                      ? 'bg-blue-100 text-blue-600 font-medium'
-                      : 'text-slate-400 hover:text-blue-500 hover:bg-blue-50'
+                      ? 'bg-ink-100 text-brand-navy font-medium'
+                      : 'text-gray-400 hover:text-brand-navy hover:bg-ink-50'
                   }`}
                 >
                   <ThumbsUp className="w-4 h-4" />
@@ -110,7 +109,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm transition-colors ${
                     analysisRating === 'down'
                       ? 'bg-red-100 text-red-500 font-medium'
-                      : 'text-slate-400 hover:text-red-400 hover:bg-red-50'
+                      : 'text-gray-400 hover:text-red-400 hover:bg-red-50'
                   }`}
                 >
                   <ThumbsDown className="w-4 h-4" />
@@ -118,7 +117,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
                 </button>
                 <button
                   onClick={() => setShowChat(true)}
-                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors border border-blue-100"
+                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 bg-ink-50 text-brand-navy-hover text-sm font-medium rounded-lg hover:bg-ink-100 transition-colors border border-ink-100"
                 >
                   <MessageCircle className="w-4 h-4" />
                   Poser une question à SIMBA
@@ -132,7 +131,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
             <div className="text-center py-6 space-y-3">
               <button
                 onClick={fetchSIMBAAnalysis}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:opacity-90 transition-all shadow-md"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-brand-navy to-[#173F66] text-white font-semibold rounded-lg hover:opacity-90 transition-all shadow-md"
               >
                 <Sparkles className="w-5 h-5" />
                 Demander à l'Analyste IA
@@ -140,7 +139,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
               <div className="pt-1">
                 <button
                   onClick={() => setShowChat(true)}
-                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                  className="inline-flex items-center gap-2 text-sm text-brand-navy hover:text-brand-navy-hover underline underline-offset-2"
                 >
                   <MessageCircle className="w-4 h-4" />
                   Ou poser une question directement à SIMBA
@@ -161,32 +160,27 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
       {/* Informations Clés */}
       <section>
         <h3 className="text-xl font-bold text-gray-900 mb-4">Informations Clés</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Prix d'ouverture</p>
-            <p className="text-lg font-bold text-gray-900">
-              {stock.previous_close ? formatNumber(stock.previous_close) : 'N/A'} FCFA
-            </p>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Prix actuel</p>
-            <p className="text-lg font-bold text-gray-900">
-              {formatNumber(stock.current_price)} FCFA
-            </p>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Volume</p>
-            <p className="text-lg font-bold text-gray-900">{formatNumber(stock.volume)}</p>
-          </div>
-
-          <div className="bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">Cap. Boursière</p>
-            <p className="text-lg font-bold text-gray-900">
-              {formatCurrency(stock.market_cap)}
-            </p>
-          </div>
+        {/* Une carte blanche par chiffre : sur un fond gris, quatre tuiles
+            grises se lisaient comme un seul pave. */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: "Prix d'ouverture",
+              value: stock.previous_close ? formatNumber(stock.previous_close) : 'N/A',
+              unit: stock.previous_close ? 'FCFA' : '',
+            },
+            { label: 'Prix actuel', value: formatNumber(stock.current_price), unit: 'FCFA' },
+            { label: 'Volume', value: formatNumber(stock.volume), unit: '' },
+            { label: 'Cap. Boursière', value: formatCurrency(stock.market_cap), unit: '' },
+          ].map(({ label, value, unit }) => (
+            <div key={label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">{label}</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">
+                {value}
+                {unit && <span className="text-xs font-semibold text-gray-400 ml-1.5">{unit}</span>}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -277,7 +271,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
                       href={companyInfo.website || stock.website_url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-blue-600 hover:text-blue-700"
+                      className="font-semibold text-brand-navy hover:text-brand-navy-hover"
                     >
                       Visiter le site
                     </a>
@@ -294,27 +288,14 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
                   <p className="text-sm text-gray-600 font-medium">Indices de cotation</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {companyInfo.indices.map((idx) => {
-                    const isBRVM30 = idx === 'BRVM-30';
-                    const isPrestige = idx === 'BRVM-Prestige';
-                    const isSector = idx.startsWith('BRVM-') && !['BRVM-30', 'BRVM-C', 'BRVM-Prestige', 'BRVM-Principal'].includes(idx);
-                    return (
-                      <span
-                        key={idx}
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                          isBRVM30
-                            ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                            : isPrestige
-                            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                            : isSector
-                            ? 'bg-green-50 text-green-700 border border-green-200'
-                            : 'bg-gray-100 text-gray-600 border border-gray-200'
-                        }`}
-                      >
-                        {idx}
-                      </span>
-                    );
-                  })}
+                  {companyInfo.indices.map((idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200"
+                    >
+                      {idx}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -325,35 +306,38 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
       {/* Performance */}
       <section>
         <h3 className="text-xl font-bold text-gray-900 mb-4">Performance</h3>
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Variation du jour</p>
-              <p className={`text-lg font-bold ${stock.daily_change_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {stock.daily_change_percent >= 0 ? '+' : ''}
-                {stock.daily_change_percent.toFixed(2)}%
+        {/* Meme traitement que les informations cles : une carte blanche par
+            chiffre, plutot qu'une grande carte qui les regroupe. */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'Variation du jour',
+              value: `${stock.daily_change_percent >= 0 ? '+' : ''}${stock.daily_change_percent.toFixed(2)}%`,
+              unit: '',
+              tone: stock.daily_change_percent >= 0 ? 'text-green-600' : 'text-red-600',
+            },
+            { label: 'Volume', value: formatNumber(stock.volume), unit: '', tone: 'text-gray-900' },
+            {
+              label: 'Plus Haut 52s',
+              value: weekData?.high52w != null ? formatNumber(weekData.high52w) : 'N/A',
+              unit: weekData?.high52w != null ? 'FCFA' : '',
+              tone: 'text-gray-900',
+            },
+            {
+              label: 'Plus Bas 52s',
+              value: weekData?.low52w != null ? formatNumber(weekData.low52w) : 'N/A',
+              unit: weekData?.low52w != null ? 'FCFA' : '',
+              tone: 'text-gray-900',
+            },
+          ].map(({ label, value, unit, tone }) => (
+            <div key={label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">{label}</p>
+              <p className={`text-lg font-bold font-mono tabular-nums leading-none ${tone}`}>
+                {value}
+                {unit && <span className="text-xs font-semibold text-gray-400 ml-1.5">{unit}</span>}
               </p>
             </div>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Volume</p>
-              <p className="text-lg font-bold text-gray-900">{formatNumber(stock.volume)}</p>
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Plus Haut 52s</p>
-              <p className="text-lg font-bold text-gray-900">
-                {weekData?.high52w != null ? `${formatNumber(weekData.high52w)} FCFA` : 'N/A'}
-              </p>
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">Plus Bas 52s</p>
-              <p className="text-lg font-bold text-gray-900">
-                {weekData?.low52w != null ? `${formatNumber(weekData.low52w)} FCFA` : 'N/A'}
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
     </div>

@@ -49,8 +49,8 @@ export function StreakFreezeIndicator({
         className={`
           p-1 rounded-lg transition-all duration-300
           ${isActive
-            ? 'bg-blue-100 text-blue-500'
-            : 'bg-gray-100 text-gray-300'}
+            ? 'bg-brand-navy/10 text-brand-navy'
+            : 'bg-ink-100 text-ink-300'}
         `}
       >
         <Snowflake className={sizes.icon} />
@@ -60,9 +60,9 @@ export function StreakFreezeIndicator({
 
   return (
     <div className={`inline-flex flex-col ${className}`}>
-      <div className={`flex items-center ${sizes.text} text-gray-600 mb-1`}>
+      <div className={`flex items-center ${sizes.text} text-ink-600 mb-1`}>
         <span className="font-medium">Protections de série</span>
-        <span className="ml-1 text-gray-400">({freezesCount}/{maxFreezes})</span>
+        <span className="ml-1 text-ink-400">({freezesCount}/{maxFreezes})</span>
       </div>
 
       <div className={`flex items-center ${sizes.container}`}>
@@ -72,8 +72,8 @@ export function StreakFreezeIndicator({
           <button
             onClick={onBuyFreeze}
             className={`
-              p-1 rounded-lg bg-amber-100 text-amber-600
-              hover:bg-amber-200 transition-colors
+              p-1 rounded-lg bg-brand-orange/10 text-brand-orange-dark
+              hover:bg-brand-orange/20 transition-colors
               ml-1
             `}
             title="Acheter un freeze (300 XP)"
@@ -83,7 +83,7 @@ export function StreakFreezeIndicator({
         )}
       </div>
 
-      <p className={`${sizes.text} text-gray-400 mt-1`}>
+      <p className={`${sizes.text} text-ink-400 mt-1`}>
         Les freezes protègent votre série quand vous ratez un jour
       </p>
     </div>

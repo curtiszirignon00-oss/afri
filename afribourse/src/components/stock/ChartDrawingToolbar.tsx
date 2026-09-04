@@ -79,7 +79,7 @@ export default function ChartDrawingToolbar({
   const btnClass   = isDark
     ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-100'
     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900';
-  const activeClass = isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-600';
+  const activeClass = isDark ? 'bg-ink-950 text-ink-300' : 'bg-ink-100 text-brand-navy';
   const divClass   = isDark ? 'bg-gray-600' : 'bg-gray-200';
 
   const ToolBtn = ({ tool }: { tool: DrawingTool }) => {

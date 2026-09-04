@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, BarChart2, RefreshCw, CheckCircle } from 'lucide-react';
+import {
+  ChevronLeft, ChevronRight, BarChart2, RefreshCw, CheckCircle,
+  Shield, Scale, Rocket, Zap,
+  Landmark, Coins, Clock, TrendingUp, Target,
+  Telescope, Microscope, Recycle, Brain, Eye,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { apiFetch } from '../hooks/useApi';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -11,10 +17,10 @@ const QUESTIONS = [
     category: "L'horizon de temps",
     text: "Dans combien de temps avez-vous besoin de récupérer l'argent que vous allez investir ?",
     options: [
-      { icon: '⚡', title: 'Moins de 2 ans', sub: "J'ai un projet à court terme (mariage, voiture, voyage) ou je ne suis pas sûr de ne pas en avoir besoin rapidement." },
-      { icon: '🌱', title: '2 à 5 ans', sub: "J'ai un projet de moyen terme (achat immobilier, formation, création d'entreprise) et je peux me permettre d'attendre un peu." },
-      { icon: '🌳', title: '5 à 10 ans', sub: "Je construis mon patrimoine progressivement. Je n'ai pas besoin de cet argent avant plusieurs années." },
-      { icon: '🏔️', title: 'Plus de 10 ans', sub: "Je prépare ma retraite ou l'avenir de mes enfants. Le long terme est mon horizon naturel." },
+      { title: 'Moins de 2 ans', sub: "J'ai un projet à court terme (mariage, voiture, voyage) ou je ne suis pas sûr de ne pas en avoir besoin rapidement." },
+      { title: '2 à 5 ans', sub: "J'ai un projet de moyen terme (achat immobilier, formation, création d'entreprise) et je peux me permettre d'attendre un peu." },
+      { title: '5 à 10 ans', sub: "Je construis mon patrimoine progressivement. Je n'ai pas besoin de cet argent avant plusieurs années." },
+      { title: 'Plus de 10 ans', sub: "Je prépare ma retraite ou l'avenir de mes enfants. Le long terme est mon horizon naturel." },
     ],
   },
   {
@@ -22,10 +28,10 @@ const QUESTIONS = [
     category: 'La tolérance au risque',
     text: 'Vous investissez 500 000 FCFA. Trois mois plus tard, votre portefeuille affiche −15 % (−75 000 FCFA). Quelle est votre réaction spontanée ?',
     options: [
-      { icon: '😰', title: 'Je vends immédiatement', sub: "Je ne supporte pas de voir mon argent fondre. Je préfère sortir et limiter les dégâts." },
-      { icon: '😟', title: "Je suis inquiet mais j'attends", sub: "C'est stressant, mais je résiste à la tentation de vendre. J'espère que ça remonte." },
-      { icon: '😊', title: "Je reste calme et j'analyse", sub: "Je vérifie si les fondamentaux ont changé. Si non, je tiens ma position sans panique." },
-      { icon: '😎', title: "Je vois une opportunité d'acheter plus", sub: "Les bonnes actions à prix réduit, c'est exactement ce que je cherche. Je renforce ma position." },
+      { title: 'Je vends immédiatement', sub: "Je ne supporte pas de voir mon argent fondre. Je préfère sortir et limiter les dégâts." },
+      { title: "Je suis inquiet mais j'attends", sub: "C'est stressant, mais je résiste à la tentation de vendre. J'espère que ça remonte." },
+      { title: "Je reste calme et j'analyse", sub: "Je vérifie si les fondamentaux ont changé. Si non, je tiens ma position sans panique." },
+      { title: "Je vois une opportunité d'acheter plus", sub: "Les bonnes actions à prix réduit, c'est exactement ce que je cherche. Je renforce ma position." },
     ],
   },
   {
@@ -33,10 +39,10 @@ const QUESTIONS = [
     category: "L'objectif principal",
     text: 'Quel est votre objectif principal en investissant sur la BRVM ?',
     options: [
-      { icon: '🔒', title: "Protéger mon épargne de l'inflation", sub: "Je veux que mon argent ne perde pas de valeur avec le temps. La sécurité prime sur le rendement." },
-      { icon: '💸', title: 'Recevoir des revenus réguliers', sub: "Je veux des dividendes qui complètent mes revenus ou que je réinvestis progressivement." },
-      { icon: '📈', title: 'Faire croître mon capital', sub: "Je veux que mon argent travaille et grossisse sur le long terme, même si cela implique des fluctuations." },
-      { icon: '🚀', title: 'Maximiser les gains, peu importe le risque', sub: "Je cherche la performance maximale. Je suis prêt à accepter de fortes variations pour des rendements élevés." },
+      { title: "Protéger mon épargne de l'inflation", sub: "Je veux que mon argent ne perde pas de valeur avec le temps. La sécurité prime sur le rendement." },
+      { title: 'Recevoir des revenus réguliers', sub: "Je veux des dividendes qui complètent mes revenus ou que je réinvestis progressivement." },
+      { title: 'Faire croître mon capital', sub: "Je veux que mon argent travaille et grossisse sur le long terme, même si cela implique des fluctuations." },
+      { title: 'Maximiser les gains, peu importe le risque', sub: "Je cherche la performance maximale. Je suis prêt à accepter de fortes variations pour des rendements élevés." },
     ],
   },
   {
@@ -44,10 +50,10 @@ const QUESTIONS = [
     category: 'Le capital disponible',
     text: "Quel capital initial pouvez-vous consacrer à votre portefeuille BRVM sans mettre en danger votre stabilité financière ?",
     options: [
-      { icon: '🌱', title: 'Moins de 100 000 FCFA', sub: "Je commence petit. L'essentiel est de démarrer et de construire l'habitude d'investir." },
-      { icon: '🌿', title: '100 000 à 500 000 FCFA', sub: "J'ai une épargne de départ solide qui me permet de commencer à diversifier." },
-      { icon: '🌳', title: '500 000 à 2 000 000 FCFA', sub: "J'ai un capital significatif qui me permet de construire un portefeuille diversifié dès le départ." },
-      { icon: '🏆', title: 'Plus de 2 000 000 FCFA', sub: "J'ai un capital important à faire fructifier avec une stratégie structurée." },
+      { title: 'Moins de 100 000 FCFA', sub: "Je commence petit. L'essentiel est de démarrer et de construire l'habitude d'investir." },
+      { title: '100 000 à 500 000 FCFA', sub: "J'ai une épargne de départ solide qui me permet de commencer à diversifier." },
+      { title: '500 000 à 2 000 000 FCFA', sub: "J'ai un capital significatif qui me permet de construire un portefeuille diversifié dès le départ." },
+      { title: 'Plus de 2 000 000 FCFA', sub: "J'ai un capital important à faire fructifier avec une stratégie structurée." },
     ],
   },
   {
@@ -55,10 +61,10 @@ const QUESTIONS = [
     category: "La régularité d'épargne",
     text: "Pouvez-vous investir un montant fixe chaque mois en plus de votre capital initial ?",
     options: [
-      { icon: '🚫', title: "Non, pas de capacité d'épargne mensuelle", sub: "Je vais uniquement gérer mon capital initial sans apports réguliers." },
-      { icon: '🏹', title: 'Oui, moins de 25 000 FCFA par mois', sub: "Je peux épargner un petit montant régulier. Chaque FCFA compte sur le long terme." },
-      { icon: '💰', title: 'Oui, entre 25 000 et 100 000 FCFA par mois', sub: "J'ai une capacité d'épargne régulière qui va accélérer la croissance de mon portefeuille." },
-      { icon: '💎', title: 'Oui, plus de 100 000 FCFA par mois', sub: "Mon épargne mensuelle est un levier puissant pour construire un patrimoine significatif rapidement." },
+      { title: "Non, pas de capacité d'épargne mensuelle", sub: "Je vais uniquement gérer mon capital initial sans apports réguliers." },
+      { title: 'Oui, moins de 25 000 FCFA par mois', sub: "Je peux épargner un petit montant régulier. Chaque FCFA compte sur le long terme." },
+      { title: 'Oui, entre 25 000 et 100 000 FCFA par mois', sub: "J'ai une capacité d'épargne régulière qui va accélérer la croissance de mon portefeuille." },
+      { title: 'Oui, plus de 100 000 FCFA par mois', sub: "Mon épargne mensuelle est un levier puissant pour construire un patrimoine significatif rapidement." },
     ],
   },
   {
@@ -66,9 +72,9 @@ const QUESTIONS = [
     category: "L'expérience financière",
     text: "Comment décririez-vous votre niveau d'expérience en investissement aujourd'hui ?",
     options: [
-      { icon: '🐣', title: 'Débutant complet', sub: "Je n'ai jamais investi. J'apprends à lire les fiches valeur et je découvre comment fonctionne la BRVM." },
-      { icon: '📊', title: 'Intermédiaire', sub: "J'ai quelques notions de base. J'ai peut-être déjà acheté une action ou suivi les marchés sans investir." },
-      { icon: '💼', title: 'Confirmé', sub: "J'ai déjà un portefeuille ou une expérience concrète. Je cherche à structurer et améliorer ma méthode." },
+      { title: 'Débutant complet', sub: "Je n'ai jamais investi. J'apprends à lire les fiches valeur et je découvre comment fonctionne la BRVM." },
+      { title: 'Intermédiaire', sub: "J'ai quelques notions de base. J'ai peut-être déjà acheté une action ou suivi les marchés sans investir." },
+      { title: 'Confirmé', sub: "J'ai déjà un portefeuille ou une expérience concrète. Je cherche à structurer et améliorer ma méthode." },
     ],
   },
   {
@@ -76,9 +82,9 @@ const QUESTIONS = [
     category: 'La priorité absolue',
     text: "Si vous deviez choisir UNE seule priorité pour votre portefeuille BRVM, laquelle choisiriez-vous ?",
     options: [
-      { icon: '🛡️', title: 'Sécurité maximale — ne pas perdre mon capital', sub: "Je veux dormir tranquille. La préservation du capital prime sur tout le reste." },
-      { icon: '⚖️', title: 'Équilibre — croissance modérée avec risque maîtrisé', sub: "Je veux faire croître mon argent sans prendre de risques excessifs. Un bon compromis." },
-      { icon: '🚀', title: 'Performance — maximiser le rendement sur le long terme', sub: "Je suis prêt à traverser des phases difficiles si le potentiel de gain est élevé." },
+      { title: 'Sécurité maximale — ne pas perdre mon capital', sub: "Je veux dormir tranquille. La préservation du capital prime sur tout le reste." },
+      { title: 'Équilibre — croissance modérée avec risque maîtrisé', sub: "Je veux faire croître mon argent sans prendre de risques excessifs. Un bon compromis." },
+      { title: 'Performance — maximiser le rendement sur le long terme', sub: "Je suis prêt à traverser des phases difficiles si le potentiel de gain est élevé." },
     ],
   },
 ];
@@ -86,11 +92,11 @@ const QUESTIONS = [
 type ProfileKey = 'prudent' | 'equilibre' | 'dynamique' | 'offensif';
 
 interface AllocItem { label: string; pct: number; color: string }
-interface RecoItem  { icon: string; head: string; body: string }
+interface RecoItem  { icon: LucideIcon; head: string; body: string }
 
 interface Profile {
   name: string;
-  emoji: string;
+  icon: LucideIcon;
   accentColor: string;
   badgeBg: string;
   badgeText: string;
@@ -105,7 +111,7 @@ interface Profile {
 const PROFILES: Record<ProfileKey, Profile> = {
   prudent: {
     name: 'Investisseur Prudent',
-    emoji: '🛡️',
+    icon: Shield,
     accentColor: '#185FA5',
     badgeBg: '#EFF6FF',
     badgeText: '#1D4ED8',
@@ -119,14 +125,14 @@ const PROFILES: Record<ProfileKey, Profile> = {
       { label: 'Liquidités', pct: 15, color: '#CBD5E1' },
     ],
     recos: [
-      { icon: '🏛️', head: "Commencer par les obligations d'État UEMOA", body: "Rendement de 5 à 7 %, risque très faible, remboursement garanti par les États membres. Votre ancre de portefeuille idéale." },
-      { icon: '💰', head: "Ajouter des Blue Chips à dividendes réguliers", body: "SONATEL (dividende >20 ans consécutifs), SOLIBRA, ECOBANK CI. Des revenus stables qui compensent la volatilité de court terme." },
-      { icon: '⏱️', head: "Ne jamais investir de l'argent dont vous pourriez avoir besoin", body: "Constituez votre fonds d'urgence (3–6 mois de dépenses) AVANT d'investir. La règle des 3 enveloppes est votre fondation." },
+      { icon: Landmark, head: "Commencer par les obligations d'État UEMOA", body: "Rendement de 5 à 7 %, risque très faible, remboursement garanti par les États membres. Votre ancre de portefeuille idéale." },
+      { icon: Coins, head: "Ajouter des Blue Chips à dividendes réguliers", body: "SONATEL (dividende >20 ans consécutifs), SOLIBRA, ECOBANK CI. Des revenus stables qui compensent la volatilité de court terme." },
+      { icon: Clock, head: "Ne jamais investir de l'argent dont vous pourriez avoir besoin", body: "Constituez votre fonds d'urgence (3–6 mois de dépenses) AVANT d'investir. La règle des 3 enveloppes est votre fondation." },
     ],
   },
   equilibre: {
     name: 'Investisseur Équilibré',
-    emoji: '⚖️',
+    icon: Scale,
     accentColor: '#00D4A8',
     badgeBg: '#F0FDF4',
     badgeText: '#166534',
@@ -141,14 +147,14 @@ const PROFILES: Record<ProfileKey, Profile> = {
       { label: 'Liquidités', pct: 10, color: '#CBD5E1' },
     ],
     recos: [
-      { icon: '📈', head: 'Combiner croissance et revenus', body: "Un mix d'actions de croissance (secteur bancaire, télécoms) et d'actions à dividendes réguliers vous donne le meilleur des deux mondes." },
-      { icon: '🔄', head: 'Appliquer le DCA mensuel systématiquement', body: "Investir un montant fixe chaque mois vous protège du risque de timing et construit votre patrimoine indépendamment des humeurs du marché." },
-      { icon: '🎯', head: 'Rééquilibrer une fois par an', body: "Un rééquilibrage annuel maintient votre allocation cible et vous oblige à vendre ce qui est cher pour acheter ce qui est sous-valorisé — la discipline du professionnel." },
+      { icon: TrendingUp, head: 'Combiner croissance et revenus', body: "Un mix d'actions de croissance (secteur bancaire, télécoms) et d'actions à dividendes réguliers vous donne le meilleur des deux mondes." },
+      { icon: RefreshCw, head: 'Appliquer le DCA mensuel systématiquement', body: "Investir un montant fixe chaque mois vous protège du risque de timing et construit votre patrimoine indépendamment des humeurs du marché." },
+      { icon: Target, head: 'Rééquilibrer une fois par an', body: "Un rééquilibrage annuel maintient votre allocation cible et vous oblige à vendre ce qui est cher pour acheter ce qui est sous-valorisé — la discipline du professionnel." },
     ],
   },
   dynamique: {
     name: 'Investisseur Dynamique',
-    emoji: '🚀',
+    icon: Rocket,
     accentColor: '#C9A84C',
     badgeBg: '#FFFBEB',
     badgeText: '#92400E',
@@ -162,14 +168,14 @@ const PROFILES: Record<ProfileKey, Profile> = {
       { label: 'Liquidités (trésor de guerre)', pct: 10, color: '#CBD5E1' },
     ],
     recos: [
-      { icon: '🔭', head: 'Cibler les secteurs à forte croissance UEMOA', body: "Banques (inclusion financière), télécoms (digitalisation), distribution (classe moyenne). Ces secteurs portent la croissance économique de la zone sur 10–15 ans." },
-      { icon: '🔬', head: "Maîtriser l'analyse fondamentale", body: "À ce niveau de prise de risque, vous devez savoir analyser un bilan, calculer un DCF et identifier des valeurs sous-évaluées. Les modules M7 à M10 sont essentiels." },
-      { icon: '♻️', head: '100 % des dividendes réinvestis', body: "En phase d'accumulation, chaque dividende réinvesti active l'effet boule de neige. Sur 15 ans avec réinvestissement, votre capital peut être multiplié par 4 à 6." },
+      { icon: Telescope, head: 'Cibler les secteurs à forte croissance UEMOA', body: "Banques (inclusion financière), télécoms (digitalisation), distribution (classe moyenne). Ces secteurs portent la croissance économique de la zone sur 10–15 ans." },
+      { icon: Microscope, head: "Maîtriser l'analyse fondamentale", body: "À ce niveau de prise de risque, vous devez savoir analyser un bilan, calculer un DCF et identifier des valeurs sous-évaluées. Les modules M7 à M10 sont essentiels." },
+      { icon: Recycle, head: '100 % des dividendes réinvestis', body: "En phase d'accumulation, chaque dividende réinvesti active l'effet boule de neige. Sur 15 ans avec réinvestissement, votre capital peut être multiplié par 4 à 6." },
     ],
   },
   offensif: {
     name: 'Investisseur Offensif',
-    emoji: '⚡',
+    icon: Zap,
     accentColor: '#DC2626',
     badgeBg: '#FEF2F2',
     badgeText: '#991B1B',
@@ -183,9 +189,9 @@ const PROFILES: Record<ProfileKey, Profile> = {
       { label: 'Liquidités (munitions)', pct: 10, color: '#CBD5E1' },
     ],
     recos: [
-      { icon: '🧠', head: 'La méthode avant tout', body: "Un profil offensif sans méthode rigoureuse finit en catastrophe. Vous devez maîtriser l'analyse fondamentale complète (M7–M10) avant de prendre des positions concentrées." },
-      { icon: '🛡️', head: "Gérer le risque malgré l'appétit de performance", body: "Même avec un profil offensif, les règles de position sizing sont non-négociables. La concentration n'exclut pas la discipline sur la taille des positions." },
-      { icon: '👁️', head: 'Surveiller le marché macro UEMOA', body: "Un investisseur offensif doit comprendre les cycles économiques, les décisions de la BCEAO et les flux de capitaux régionaux. Le module macro est stratégique pour vous." },
+      { icon: Brain, head: 'La méthode avant tout', body: "Un profil offensif sans méthode rigoureuse finit en catastrophe. Vous devez maîtriser l'analyse fondamentale complète (M7–M10) avant de prendre des positions concentrées." },
+      { icon: Shield, head: "Gérer le risque malgré l'appétit de performance", body: "Même avec un profil offensif, les règles de position sizing sont non-négociables. La concentration n'exclut pas la discipline sur la taille des positions." },
+      { icon: Eye, head: 'Surveiller le marché macro UEMOA', body: "Un investisseur offensif doit comprendre les cycles économiques, les décisions de la BCEAO et les flux de capitaux régionaux. Le module macro est stratégique pour vous." },
     ],
   },
 };
@@ -253,6 +259,7 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
   if (done) {
     const profileKey = calcProfile(answers);
     const P = PROFILES[profileKey];
+    const ProfileIcon = P.icon;
     const horizon  = answers[0];
     const capital  = answers[3];
     const dca      = answers[4];
@@ -261,8 +268,10 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
       <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
-               style={{ background: P.badgeBg }}>{P.emoji}</div>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center"
+               style={{ background: P.badgeBg }}>
+            <ProfileIcon className="w-4 h-4" style={{ color: P.badgeText }} />
+          </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Votre profil investisseur</p>
             <h3 className="text-lg font-bold text-slate-900">{P.name}</h3>
@@ -273,7 +282,8 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
         <div className="rounded-xl border border-slate-200 p-5 space-y-4">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
                 style={{ background: P.badgeBg, color: P.badgeText }}>
-            {P.emoji} {P.name}
+            <ProfileIcon className="w-3.5 h-3.5" />
+            {P.name}
           </span>
           <p className="text-sm text-slate-600 leading-relaxed">{P.desc}</p>
 
@@ -318,15 +328,18 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
           <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
             Recommandations pour votre profil
           </p>
-          {P.recos.map(r => (
-            <div key={r.head} className="flex gap-3 border border-slate-200 rounded-xl p-4">
-              <span className="text-xl flex-shrink-0">{r.icon}</span>
-              <div>
-                <p className="text-sm font-semibold text-slate-800 mb-0.5">{r.head}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{r.body}</p>
+          {P.recos.map(r => {
+            const RecoIcon = r.icon;
+            return (
+              <div key={r.head} className="flex gap-3 border border-slate-200 rounded-xl p-4">
+                <RecoIcon className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-800 mb-0.5">{r.head}</p>
+                  <p className="text-xs text-slate-500 leading-relaxed">{r.body}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Warnings */}
@@ -415,7 +428,11 @@ export default function InvestorProfileQuiz({ onComplete }: Props) {
                   : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
               }`}
             >
-              <span className="text-xl flex-shrink-0 mt-0.5">{opt.icon}</span>
+              <span className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-full border text-[11px] font-semibold flex items-center justify-center ${
+                selected ? 'border-[#00D4A8] bg-[#00D4A8] text-white' : 'border-slate-300 text-slate-400'
+              }`}>
+                {String.fromCharCode(65 + i)}
+              </span>
               <span className="flex-1">
                 <span className={`block text-sm font-medium leading-snug ${selected ? 'text-[#00894F]' : 'text-slate-800'}`}>
                   {opt.title}

@@ -3,6 +3,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../lib/api-client';
+import { Sparkles, Gem, Crown, Star, Trophy, Target, BarChart3, Briefcase, BookOpen, Sprout } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type {
   XPStats,
   XPHistoryEntry,
@@ -391,17 +393,17 @@ export function getXPForNextLevel(level: number): number {
 /**
  * Retourne le titre et l'emoji du niveau
  */
-export function getLevelTitle(level: number): { title: string; emoji: string } {
-  if (level >= 100) return { title: 'Immortel', emoji: '🌟' };
-  if (level >= 80) return { title: 'Titan', emoji: '💎' };
-  if (level >= 65) return { title: 'Champion', emoji: '👑' };
-  if (level >= 50) return { title: 'Légende', emoji: '⭐' };
-  if (level >= 40) return { title: 'Maître', emoji: '🏆' };
-  if (level >= 30) return { title: 'Expert', emoji: '🎯' };
-  if (level >= 20) return { title: 'Trader', emoji: '📊' };
-  if (level >= 10) return { title: 'Investisseur', emoji: '💼' };
-  if (level >= 5) return { title: 'Apprenti', emoji: '📚' };
-  return { title: 'Débutant', emoji: '🌱' };
+export function getLevelTitle(level: number): { title: string; icon: LucideIcon } {
+  if (level >= 100) return { title: 'Immortel', icon: Sparkles };
+  if (level >= 80) return { title: 'Titan', icon: Gem };
+  if (level >= 65) return { title: 'Champion', icon: Crown };
+  if (level >= 50) return { title: 'Légende', icon: Star };
+  if (level >= 40) return { title: 'Maître', icon: Trophy };
+  if (level >= 30) return { title: 'Expert', icon: Target };
+  if (level >= 20) return { title: 'Trader', icon: BarChart3 };
+  if (level >= 10) return { title: 'Investisseur', icon: Briefcase };
+  if (level >= 5) return { title: 'Apprenti', icon: BookOpen };
+  return { title: 'Débutant', icon: Sprout };
 }
 
 /**

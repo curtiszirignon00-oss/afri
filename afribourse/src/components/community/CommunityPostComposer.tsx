@@ -198,7 +198,6 @@ export default function CommunityPostComposer({ communityId, canModerate }: Prop
                 {type === 'TASK_LIST' && (
                     <div className="mt-3 border border-green-100 rounded-xl overflow-hidden">
                         <div className="bg-green-50 px-3 py-2 flex items-center gap-2 border-b border-green-100">
-                            <CheckSquare className="w-4 h-4 text-green-600" />
                             <span className="text-sm font-medium text-green-800">Tâches</span>
                         </div>
                         <div className="divide-y divide-gray-50">

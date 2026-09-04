@@ -74,7 +74,6 @@ export default function AdminAmbassadors() {
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-              <Gift className="w-6 h-6" />
               Programme Ambassadeur — Pack Parcours
             </h2>
             <p className="text-blue-100 text-sm">
@@ -91,7 +90,6 @@ export default function AdminAmbassadors() {
       {/* Créer un code */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
         <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-          <Gift className="w-4 h-4 text-indigo-500" />
           Attribuer un lien ambassadeur
         </h3>
         <div className="flex gap-3 flex-wrap">

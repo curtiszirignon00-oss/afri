@@ -4,7 +4,6 @@ import { Heart, MessageCircle, Share2, TrendingUp, TrendingDown, CheckCircle, Mo
 import { useLikePost, useUnlikePost, useDeletePost, useUpdatePost, useFollowUser, useUnfollowUser } from '../../hooks/useSocial';
 import CommentSection from './CommentSection';
 import ReportModal from '../moderation/ReportModal';
-import { Card } from '../ui';
 import { ShareablePortfolioCard, ShareablePerformanceCard, ShareablePositionCard } from '../share';
 import { Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -141,21 +140,21 @@ export default function PostCard({ post }: PostCardProps) {
     };
 
     return (
-        <Card className="p-6">
+        <article className="bg-white rounded-2xl border border-ink-100 shadow-sm p-5 sm:p-6">
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 max-w-sm mx-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h3 className="text-lg font-semibold text-ink-900 mb-2">
                             Supprimer ce post ?
                         </h3>
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-ink-600 mb-4">
                             Cette action est irréversible. Le post et tous ses commentaires seront définitivement supprimés.
                         </p>
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setShowDeleteConfirm(false)}
-                                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                                className="px-4 py-2 text-ink-700 hover:bg-ink-100 rounded-lg"
                             >
                                 Annuler
                             </button>
@@ -185,12 +184,12 @@ export default function PostCard({ post }: PostCardProps) {
                     <div className="flex items-center gap-2 flex-wrap">
                         <button
                             onClick={() => navigate(`/profile/${authorId}`)}
-                            className="font-semibold text-gray-900 hover:text-blue-600 hover:underline"
+                            className="font-semibold text-ink-900 hover:text-brand-navy hover:underline"
                         >
                             {post.author.name} {post.author.lastname}
                         </button>
                         {post.author.profile?.verified_investor && (
-                            <CheckCircle className="w-4 h-4 text-blue-600" />
+                            <CheckCircle className="w-4 h-4 text-brand-orange-dark" />
                         )}
                         {(post.author.profile?.current_streak ?? 0) >= 3 && (
                             <span
@@ -206,8 +205,8 @@ export default function PostCard({ post }: PostCardProps) {
                                 onClick={handleFollow}
                                 disabled={isFollowLoading}
                                 className={`flex items-center gap-1 px-2 py-0.5 text-xs rounded-full font-medium transition-all ${isFollowing
-                                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                    ? 'bg-ink-100 text-ink-700 hover:bg-ink-200'
+                                    : 'bg-brand-orange text-white hover:bg-brand-orange-hover'
                                     } disabled:opacity-50`}
                             >
                                 {isFollowLoading ? (
@@ -230,7 +229,7 @@ export default function PostCard({ post }: PostCardProps) {
                             {typeConfig.label}
                         </span>
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-ink-500">
                         {new Date(post.created_at).toLocaleDateString('fr-FR', {
                             day: 'numeric',
                             month: 'long',
@@ -239,7 +238,7 @@ export default function PostCard({ post }: PostCardProps) {
                             minute: '2-digit',
                         })}
                         {post.updated_at && post.updated_at !== post.created_at && (
-                            <span className="text-gray-400 ml-1">(modifié)</span>
+                            <span className="text-ink-400 ml-1">(modifié)</span>
                         )}
                     </p>
                 </div>
@@ -250,7 +249,7 @@ export default function PostCard({ post }: PostCardProps) {
                         <>
                             <button
                                 onClick={() => setShowMenu(!showMenu)}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                                className="p-2 text-ink-400 hover:text-ink-600 hover:bg-ink-100 rounded-lg"
                             >
                                 <MoreHorizontal className="w-5 h-5" />
                             </button>
@@ -260,13 +259,13 @@ export default function PostCard({ post }: PostCardProps) {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setShowMenu(false)}
                                     />
-                                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-ink-100 py-1 z-20">
                                         <button
                                             onClick={() => {
                                                 setIsEditing(true);
                                                 setShowMenu(false);
                                             }}
-                                            className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                            className="w-full px-4 py-2 text-left text-ink-700 hover:bg-ink-100 flex items-center gap-2"
                                         >
                                             <Edit2 className="w-4 h-4" />
                                             Modifier
@@ -289,7 +288,7 @@ export default function PostCard({ post }: PostCardProps) {
                         <>
                             <button
                                 onClick={() => setShowMenu(!showMenu)}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                                className="p-2 text-ink-400 hover:text-ink-600 hover:bg-ink-100 rounded-lg"
                             >
                                 <MoreHorizontal className="w-5 h-5" />
                             </button>
@@ -299,7 +298,7 @@ export default function PostCard({ post }: PostCardProps) {
                                         className="fixed inset-0 z-10"
                                         onClick={() => setShowMenu(false)}
                                     />
-                                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                                    <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-ink-100 py-1 z-20">
                                         <button
                                             onClick={() => {
                                                 setShowReportModal(true);
@@ -326,18 +325,18 @@ export default function PostCard({ post }: PostCardProps) {
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         placeholder="Titre (optionnel)"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                     />
                     <textarea
                         value={editContent}
                         onChange={(e) => setEditContent(e.target.value)}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        className="w-full px-3 py-2 border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none"
                     />
                     <div className="flex gap-2 justify-end">
                         <button
                             onClick={cancelEdit}
-                            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-2"
+                            className="px-4 py-2 text-ink-700 hover:bg-ink-100 rounded-lg flex items-center gap-2"
                         >
                             <X className="w-4 h-4" />
                             Annuler
@@ -345,7 +344,7 @@ export default function PostCard({ post }: PostCardProps) {
                         <button
                             onClick={handleUpdate}
                             disabled={updateMutation.isPending || !editContent.trim()}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                            className="px-4 py-2 bg-brand-orange text-white rounded-xl font-semibold hover:bg-brand-orange-hover transition-colors disabled:opacity-50 cursor-pointer flex items-center gap-2"
                         >
                             {updateMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                             Enregistrer
@@ -357,17 +356,17 @@ export default function PostCard({ post }: PostCardProps) {
                     {/* Clickable Post Content */}
                     <div
                         onClick={() => setShowComments(true)}
-                        className="cursor-pointer hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+                        className="cursor-pointer hover:bg-ink-50 -mx-2 px-2 py-1 rounded-lg transition-colors"
                     >
                         {/* Title */}
                         {post.title && (
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            <h3 className="text-lg font-semibold text-ink-900 mb-2">
                                 {post.title}
                             </h3>
                         )}
 
                         {/* Content */}
-                        <div className="text-gray-700 mb-4 whitespace-pre-wrap">
+                        <div className="text-ink-700 mb-4 whitespace-pre-wrap">
                             {post.content}
                         </div>
                     </div>
@@ -408,21 +407,21 @@ export default function PostCard({ post }: PostCardProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-bold text-gray-900 truncate">
+                                <h4 className="font-bold text-ink-900 truncate">
                                     {post.metadata.achievement.name}
                                 </h4>
                                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                                     post.metadata.achievement.rarity === 'legendary' ? 'bg-amber-100 text-amber-700' :
                                     post.metadata.achievement.rarity === 'epic' ? 'bg-purple-100 text-purple-700' :
                                     post.metadata.achievement.rarity === 'rare' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-gray-100 text-gray-700'
+                                    'bg-ink-100 text-ink-600'
                                 }`}>
                                     {post.metadata.achievement.rarity === 'legendary' ? 'Legendaire' :
                                      post.metadata.achievement.rarity === 'epic' ? 'Epique' :
                                      post.metadata.achievement.rarity === 'rare' ? 'Rare' : 'Commun'}
                                 </span>
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">
+                            <p className="text-sm text-ink-600 mb-2">
                                 {post.metadata.achievement.description}
                             </p>
                             {post.metadata.achievement.xp_reward > 0 && (
@@ -440,12 +439,12 @@ export default function PostCard({ post }: PostCardProps) {
             {post.stock_symbol && (
                 <div
                     onClick={() => setShowComments(true)}
-                    className="mb-4 p-4 bg-gray-50 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="mb-4 p-4 bg-ink-50 rounded-lg flex items-center justify-between cursor-pointer hover:bg-ink-100 transition-colors"
                 >
                     <div>
-                        <span className="font-semibold text-gray-900">{post.stock_symbol}</span>
+                        <span className="font-semibold text-ink-900">{post.stock_symbol}</span>
                         {post.stock_price && (
-                            <span className="ml-3 text-gray-600">{post.stock_price} FCFA</span>
+                            <span className="ml-3 text-ink-600">{post.stock_price} FCFA</span>
                         )}
                     </div>
                     {post.stock_change !== undefined && (
@@ -493,7 +492,7 @@ export default function PostCard({ post }: PostCardProps) {
                     {post.tags.map((tag: string) => (
                         <span
                             key={tag}
-                            className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
+                            className="px-2 py-1 bg-ink-100 text-brand-navy text-xs font-medium rounded-full"
                         >
                             #{tag}
                         </span>
@@ -502,10 +501,10 @@ export default function PostCard({ post }: PostCardProps) {
             )}
 
             {/* Actions */}
-            <div className="flex items-center gap-6 pt-4 border-t border-gray-200">
+            <div className="flex items-center gap-6 pt-4 border-t border-ink-100">
                 <button
                     onClick={handleLike}
-                    className={`flex items-center gap-2 ${isLiked ? 'text-red-600' : 'text-gray-600 hover:text-red-600'} transition-colors`}
+                    className={`flex items-center gap-2 ${isLiked ? 'text-red-600' : 'text-ink-600 hover:text-red-600'} transition-colors`}
                 >
                     <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
                     <span className="text-sm font-medium">{post.likes_count || 0}</span>
@@ -513,7 +512,7 @@ export default function PostCard({ post }: PostCardProps) {
 
                 <button
                     onClick={() => setShowComments(!showComments)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                    className="flex items-center gap-2 text-ink-600 hover:text-brand-navy transition-colors"
                 >
                     <MessageCircle className="w-5 h-5" />
                     <span className="text-sm font-medium">{post.comments_count || 0}</span>
@@ -521,7 +520,7 @@ export default function PostCard({ post }: PostCardProps) {
 
                 <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors"
+                    className="flex items-center gap-2 text-ink-600 hover:text-brand-navy transition-colors cursor-pointer"
                 >
                     <Share2 className="w-5 h-5" />
                     <span className="text-sm font-medium">Partager</span>
@@ -530,7 +529,7 @@ export default function PostCard({ post }: PostCardProps) {
 
             {/* Comments Section */}
             {showComments && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4 border-t border-ink-100">
                     <CommentSection postId={post.id} />
                 </div>
             )}
@@ -544,6 +543,6 @@ export default function PostCard({ post }: PostCardProps) {
                     onClose={() => setShowReportModal(false)}
                 />
             )}
-        </Card>
+        </article>
     );
 }

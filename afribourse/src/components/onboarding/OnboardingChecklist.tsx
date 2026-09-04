@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, ArrowRight, Trophy, ChevronUp } from 'lucide-react';
+import { Check, ArrowRight, ChevronUp } from 'lucide-react';
 import { useOnboardingGuideContext } from '../../context/OnboardingGuideContext';
 
 const ITEMS = [
@@ -40,10 +40,10 @@ export default function OnboardingChecklist() {
         <button
           onClick={() => setCollapsed(false)}
           className="fixed z-40 flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-white text-xs font-semibold transition-transform hover:scale-105"
-          style={{ bottom: '24px', right: '24px', backgroundColor: '#0A1628', animation: 'ob-slideUp 0.3s ease-out' }}
+          style={{ bottom: '24px', right: '24px', backgroundColor: '#12395E', animation: 'ob-slideUp 0.3s ease-out' }}
           aria-label="Ouvrir le guide premiers pas"
         >
-          <span style={{ color: '#00D4A8' }}>●</span>
+          <span className="w-2 h-2 rounded-full bg-brand-orange" />
           Premiers Pas {completedCount}/2
           <ChevronUp className="w-3.5 h-3.5 opacity-60" />
         </button>
@@ -73,7 +73,7 @@ export default function OnboardingChecklist() {
         <button
           onClick={() => setCollapsed(true)}
           className="w-full flex items-center justify-between px-3 py-2.5 text-white text-sm font-semibold"
-          style={{ backgroundColor: '#0A1628' }}
+          style={{ backgroundColor: '#12395E' }}
         >
           <span>Premiers Pas</span>
           <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export default function OnboardingChecklist() {
         <div className="h-1 bg-gray-100">
           <div
             className="h-1 transition-all duration-500"
-            style={{ width: `${progress}%`, backgroundColor: '#00D4A8' }}
+            style={{ width: `${progress}%`, backgroundColor: '#12395E' }}
           />
         </div>
 
@@ -94,7 +94,6 @@ export default function OnboardingChecklist() {
         <div className="p-2">
           {isComplete ? (
             <div className="flex flex-col items-center gap-2 py-3 text-center">
-              <Trophy className="w-8 h-8" style={{ color: '#00D4A8' }} />
               <p className="text-xs font-semibold text-gray-800">Parcours terminé !</p>
               <p className="text-xs text-gray-500">Bravo, tu es prêt(e) à investir</p>
             </div>
@@ -116,13 +115,13 @@ export default function OnboardingChecklist() {
                           className={`flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center ${
                             done ? 'border-transparent' : 'border-gray-300'
                           }`}
-                          style={done ? { backgroundColor: '#00D4A8' } : {}}
+                          style={done ? { backgroundColor: '#12395E' } : {}}
                         >
                           {done && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
                         </span>
                         <span className={`flex-1 ${done ? 'line-through' : ''}`}>{label}</span>
                         {!done && xp && (
-                          <span className="text-xs font-semibold flex-shrink-0" style={{ color: '#00D4A8' }}>
+                          <span className="text-xs font-semibold flex-shrink-0" style={{ color: '#12395E' }}>
                             {xp}
                           </span>
                         )}
@@ -138,15 +137,15 @@ export default function OnboardingChecklist() {
               {/* Bonus badge */}
               <div
                 className="mt-2 mx-1 px-2 py-1.5 rounded-lg text-xs text-center"
-                style={{ backgroundColor: 'rgba(0,212,168,0.08)', color: '#00b894' }}
+                style={{ backgroundColor: 'rgba(238,123,35,0.10)', color: '#A64F0D' }}
               >
-                🎁 Badge <strong>Éveillé</strong> débloqué à 2/2
+                Badge <strong>Éveillé</strong> débloqué à 2/2
               </div>
 
               {/* 48h urgency */}
               {past48h && (
-                <p className="mt-1.5 mx-1 text-xs text-center text-amber-600 font-medium">
-                  ⏳ 2 100 investisseurs actifs cette semaine
+                <p className="mt-1.5 mx-1 text-xs text-center text-brand-orange-dark font-medium">
+                  2 100 investisseurs actifs cette semaine
                 </p>
               )}
             </>

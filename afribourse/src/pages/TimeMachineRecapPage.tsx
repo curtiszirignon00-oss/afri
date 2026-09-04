@@ -36,9 +36,9 @@ export default function TimeMachineRecapPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-amber-50/30 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-ink-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
+          <Loader2 className="w-10 h-10 text-brand-orange animate-spin" />
           <p className="text-gray-400 text-sm">Calcul de votre bilan…</p>
         </div>
       </div>
@@ -50,12 +50,12 @@ export default function TimeMachineRecapPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center text-center px-4">
         <div className="space-y-4">
           <div className="w-14 h-14 bg-white border border-gray-200 shadow-sm rounded-2xl flex items-center justify-center mx-auto">
-            <Zap className="w-7 h-7 text-amber-500" />
+            <Zap className="w-7 h-7 text-brand-orange" />
           </div>
           <p className="text-lg font-semibold text-gray-800">Session introuvable.</p>
           <button
             onClick={() => navigate('/time-machine')}
-            className="text-amber-600 text-sm underline cursor-pointer hover:text-amber-500"
+            className="text-brand-orange-dark text-sm underline cursor-pointer hover:text-brand-orange"
           >
             Retour aux scénarios
           </button>
@@ -86,11 +86,11 @@ export default function TimeMachineRecapPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-amber-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-ink-50">
       {/* Ambient blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-amber-100/60 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-100/40 rounded-full blur-3xl" />
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-orange/10/60 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-brand-orange/10/40 rounded-full blur-3xl" />
       </div>
 
       <div className="relative max-w-5xl mx-auto px-4 py-10">

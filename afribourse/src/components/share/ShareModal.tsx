@@ -1,6 +1,6 @@
 // src/components/share/ShareModal.tsx
 import { useState, useRef } from 'react';
-import { X, Send, Loader2, Download, Smartphone } from 'lucide-react';
+import { X, Send, Loader2 } from 'lucide-react';
 import { trackShare } from '../../lib/amplitude';
 import { useCreatePost } from '../../hooks/useSocial';
 import type { ShareData } from '../../types/share';
@@ -239,9 +239,6 @@ export default function ShareModal({ isOpen, onClose, shareData, shareUrl }: Sha
                                 className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200"
                                 title="Télécharger l'image"
                             >
-                                <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                                    <Download className="w-5 h-5 text-white" />
-                                </div>
                                 <span className="text-[11px] text-gray-600 font-medium">Télécharger</span>
                             </button>
 
@@ -307,9 +304,6 @@ export default function ShareModal({ isOpen, onClose, shareData, shareUrl }: Sha
                                 className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200"
                                 title="Plus d'options"
                             >
-                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <Smartphone className="w-5 h-5 text-white" />
-                                </div>
                                 <span className="text-[11px] text-gray-600 font-medium">Plus</span>
                             </button>
                         </div>

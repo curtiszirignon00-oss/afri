@@ -1,6 +1,6 @@
 // src/components/share/BadgeShareModal.tsx
 import { useState, useRef } from 'react';
-import { X, Send, Loader2, Download, Smartphone, Award } from 'lucide-react';
+import { X, Send, Loader2 } from 'lucide-react';
 import { useCreatePost } from '../../hooks/useSocial';
 import { downloadCardAsImage, cardToDataUrl, dataUrlToBlob, shareCardNative } from '../../utils/cardDownload';
 import ShareableBadgeCard from './ShareableBadgeCard';
@@ -159,7 +159,6 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <div className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-amber-500" />
                         <h2 className="text-xl font-bold text-gray-900">Partager mon badge</h2>
                     </div>
                     <button
@@ -189,9 +188,6 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
                                 disabled={isDownloading}
                                 className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200"
                             >
-                                <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                                    <Download className="w-5 h-5 text-white" />
-                                </div>
                                 <span className="text-[11px] text-gray-600 font-medium">Télécharger</span>
                             </button>
 
@@ -252,9 +248,6 @@ export default function BadgeShareModal({ isOpen, onClose, achievement, unlocked
                                 onClick={handleNativeShare}
                                 className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200"
                             >
-                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <Smartphone className="w-5 h-5 text-white" />
-                                </div>
                                 <span className="text-[11px] text-gray-600 font-medium">Plus</span>
                             </button>
                         </div>

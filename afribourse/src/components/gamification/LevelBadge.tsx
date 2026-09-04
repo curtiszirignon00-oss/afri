@@ -21,23 +21,9 @@ export function LevelBadge({
   variant = 'filled',
   className = ''
 }: LevelBadgeProps) {
-  const { title, emoji } = useMemo(() => getLevelTitle(level), [level]);
+  const { title, icon: LevelIcon } = useMemo(() => getLevelTitle(level), [level]);
 
-  // Couleurs par niveau
-  const getLevelColors = (lvl: number) => {
-    if (lvl >= 100) return { bg: 'bg-yellow-500', text: 'text-yellow-900', border: 'border-yellow-500' };
-    if (lvl >= 80) return { bg: 'bg-cyan-500', text: 'text-cyan-900', border: 'border-cyan-500' };
-    if (lvl >= 65) return { bg: 'bg-red-500', text: 'text-white', border: 'border-red-500' };
-    if (lvl >= 50) return { bg: 'bg-orange-500', text: 'text-white', border: 'border-orange-500' };
-    if (lvl >= 40) return { bg: 'bg-amber-500', text: 'text-amber-900', border: 'border-amber-500' };
-    if (lvl >= 30) return { bg: 'bg-purple-500', text: 'text-white', border: 'border-purple-500' };
-    if (lvl >= 20) return { bg: 'bg-indigo-500', text: 'text-white', border: 'border-indigo-500' };
-    if (lvl >= 10) return { bg: 'bg-blue-500', text: 'text-white', border: 'border-blue-500' };
-    if (lvl >= 5) return { bg: 'bg-green-500', text: 'text-white', border: 'border-green-500' };
-    return { bg: 'bg-gray-400', text: 'text-white', border: 'border-gray-400' };
-  };
 
-  const colors = getLevelColors(level);
 
   const sizeClasses = {
     xs: 'px-1.5 py-0.5 text-xs',
@@ -54,8 +40,8 @@ export function LevelBadge({
 
   if (variant === 'outline') {
     return (
-      <span className={`${baseClasses} border-2 ${colors.border} bg-transparent text-gray-700`}>
-        {showEmoji && <span>{emoji}</span>}
+      <span className={`${baseClasses} border border-ink-200 bg-white text-brand-navy`}>
+        {showEmoji && <LevelIcon className="w-3.5 h-3.5 shrink-0" />}
         <span>Niv. {level}</span>
         {showTitle && <span className="hidden sm:inline">- {title}</span>}
       </span>
@@ -63,8 +49,8 @@ export function LevelBadge({
   }
 
   return (
-    <span className={`${baseClasses} ${colors.bg} ${colors.text}`}>
-      {showEmoji && <span>{emoji}</span>}
+    <span className={`${baseClasses} bg-brand-navy text-white`}>
+      {showEmoji && <LevelIcon className="w-3.5 h-3.5 shrink-0" />}
       <span>Niv. {level}</span>
       {showTitle && <span className="hidden sm:inline">- {title}</span>}
     </span>

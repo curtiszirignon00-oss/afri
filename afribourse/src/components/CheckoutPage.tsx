@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle, Tag } from 'lucide-react';
+import { ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { authFetch, API_BASE_URL } from '../config/api';
 import PaymentModal from './payment/PaymentModal';
@@ -148,7 +148,6 @@ export default function CheckoutPage() {
               </div>
               {promo?.hasDiscount && (
                 <div className="mt-4 flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-4 py-2">
-                  <Tag className="w-4 h-4 text-orange-500 shrink-0" />
                   <p className="text-sm text-orange-700 font-medium">
                     Offre spéciale — {promo.discountPercent}% de réduction pendant {promo.maxUses} mois
                     {promo.remainingUses !== undefined && promo.remainingUses < promo.maxUses! && (

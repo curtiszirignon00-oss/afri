@@ -24,15 +24,15 @@ import React from 'react';
  * Le fond reste neutre, seul le texte prend l'accent.
  */
 const MENU_ROW =
-  'group flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm ' +
+  'group flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] ' +
   'border-b border-ink-100 text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-navy';
 
 /** Icone de ligne : discrete au repos, elle suit l'accent au survol. */
 const MENU_ICON =
-  'w-4 h-4 shrink-0 text-ink-400 transition-colors group-hover:text-brand-navy';
+  'w-3.5 h-3.5 shrink-0 text-ink-400 transition-colors group-hover:text-brand-navy';
 
 /** Intitule de colonne. */
-const MENU_HEADING = 'text-[11px] font-semibold text-ink-400 uppercase tracking-wider mb-2';
+const MENU_HEADING = 'text-[10px] font-semibold text-ink-400 uppercase tracking-wider mb-1.5';
 
 /**
  * Conteneur exterieur : panneau etroit accroche sous l'onglet.
@@ -40,10 +40,10 @@ const MENU_HEADING = 'text-[11px] font-semibold text-ink-400 uppercase tracking-
  * autres cotes sont dessines.
  */
 const MENU_SHELL =
-  'w-[264px] bg-white border border-t-0 border-ink-100 rounded-b-xl shadow-xl overflow-hidden';
+  'w-[236px] bg-white border border-t-0 border-ink-100 rounded-b-xl shadow-xl overflow-hidden';
 
 /** Interieur d'un mega menu. */
-const MENU_INNER = 'px-4 py-4';
+const MENU_INNER = 'px-3 py-3';
 
 /** Bouton d'action plein. */
 const MENU_BTN =
@@ -108,9 +108,9 @@ export function NewsMegaMenu() {
         <MenuGroup title="Catégories" items={NAV_CATS} />
         <button
           onClick={() => navigate('/news')}
-          className={`mt-4 w-full flex items-center justify-center gap-1.5 px-4 py-2 text-sm ${MENU_BTN}`}
+          className={`mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs ${MENU_BTN}`}
         >
-          Toutes les actualités <ChevronRight className="w-3.5 h-3.5" />
+          Toutes les actualités <ChevronRight className="w-3 h-3" />
         </button>
       </div>
     </div>
@@ -133,9 +133,9 @@ export function MarketsMegaMenu() {
         <MenuGroup title="Navigation" items={NAV} />
         <button
           onClick={() => navigate('/markets')}
-          className={`mt-4 w-full flex items-center justify-center gap-1.5 px-4 py-2 text-sm ${MENU_BTN}`}
+          className={`mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs ${MENU_BTN}`}
         >
-          Voir les cotations <ChevronRight className="w-3.5 h-3.5" />
+          Voir les cotations <ChevronRight className="w-3 h-3" />
         </button>
       </div>
     </div>
@@ -158,7 +158,7 @@ export function PortfolioMegaMenu() {
     <div className={MENU_SHELL}>
       <div className={MENU_INNER}>
         <MenuGroup title="Mes outils" items={OUTILS} />
-        <button onClick={go} className={`mt-4 w-full px-4 py-2 text-sm ${MENU_BTN}`}>
+        <button onClick={go} className={`mt-3 w-full px-3 py-1.5 text-xs ${MENU_BTN}`}>
           {isLoggedIn ? 'Accéder au Dashboard' : 'Se connecter'}
         </button>
       </div>
@@ -188,7 +188,7 @@ export function CommunityMegaMenu() {
     <div className={MENU_SHELL}>
       <div className={MENU_INNER}>
         <MenuGroup title="Communauté" items={COMMUNAUTE} />
-        <MenuGroup title="Activités" items={ACTIVITES} className="mt-5" />
+        <MenuGroup title="Activités" items={ACTIVITES} className="mt-4" />
       </div>
     </div>
   );

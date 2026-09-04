@@ -459,7 +459,7 @@ export default function MarketsPageRefactored() {
                 <button
                   key={index.id}
                   onClick={() => navigate('/indices')}
-                  className="group flex flex-1 min-w-[190px] items-center justify-between gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2.5 transition-colors duration-150 cursor-pointer hover:border-brand-navy/25"
+                  className="group flex flex-1 min-w-[190px] items-center justify-between gap-3 bg-gray-100 border border-transparent rounded-xl px-4 py-2.5 transition-colors duration-150 cursor-pointer hover:bg-gray-200 hover:border-brand-navy/25"
                 >
                   <span className="text-xs font-semibold text-gray-500 group-hover:text-brand-navy transition-colors">
                     {index.index_name}

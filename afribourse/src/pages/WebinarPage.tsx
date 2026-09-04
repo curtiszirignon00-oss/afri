@@ -1,9 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ChevronRight, TrendingUp, BookOpen,
-  Users, Award, Zap, MessageSquare, Linkedin,
-} from 'lucide-react';
+import { ChevronRight, TrendingUp, BookOpen, Users, Award, Zap, MessageSquare, Linkedin } from 'lucide-react';
 import { Button } from '../components/ui';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
 import { HERO_GRID_STYLE } from '../utils/heroBackgrounds';
@@ -401,7 +398,6 @@ export default function WebinarPage() {
 
           <div className="relative">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3 py-1.5 text-xs font-bold backdrop-blur-sm mb-5">
-              <Users className="w-3.5 h-3.5" />
               50 places par session
             </span>
             <h2 className="text-3xl font-bold mb-3">Prêt à investir avec méthode ?</h2>

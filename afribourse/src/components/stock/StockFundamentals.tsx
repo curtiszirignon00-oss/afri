@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { TrendingUp, DollarSign, PieChart, Activity, Users, BarChart3, Info } from 'lucide-react';
-import { useShareholders, useAnnualFinancials } from '../../hooks/useStockDetails';
+import { TrendingUp, Info } from 'lucide-react';
+import { useShareholders } from '../../hooks/useStockDetails';
 import { ShareholdersPieChart } from './ShareholdersPieChart';
-import { AnnualFinancialsTable } from './AnnualFinancialsTable';
-import { FinancialCharts } from './FinancialCharts';
 
 type FundamentalData = {
   stock_ticker: string;
@@ -90,7 +88,6 @@ const RATIO_TOOLTIPS: Record<string, string> = {
 export default function StockFundamentals({ fundamentals, isLoading = false, symbol }: StockFundamentalsProps) {
   // Fetch shareholders and annual financials
   const { data: shareholders } = useShareholders(symbol || '');
-  const { data: annualFinancials } = useAnnualFinancials(symbol || '', 5);
   const formatNumber = (num?: number | null) => {
     if (num === null || num === undefined) return 'N/A';
     return new Intl.NumberFormat('fr-FR').format(num);
@@ -132,7 +129,6 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
     return (
       <div className="py-16 text-center">
         <div className="flex flex-col items-center justify-center text-gray-400">
-          <PieChart className="w-16 h-16 mb-4" />
           <p className="text-lg font-medium text-gray-600">Données fondamentales non disponibles</p>
           <p className="text-sm text-gray-500 mt-2">
             Les données financières de cette action ne sont pas encore disponibles.
@@ -147,49 +143,48 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
       {/* Ratios de Valorisation */}
       <section>
         <div className="flex items-center space-x-2 mb-4">
-          <DollarSign className="w-5 h-5 text-blue-600" />
           <h3 className="text-xl font-bold text-gray-900">Ratios de Valorisation</h3>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <RatioTooltip tooltip={RATIO_TOOLTIPS.market_cap}>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
-              <p className="text-sm text-gray-700 mb-1">Capitalisation</p>
-              <p className="text-xl font-bold text-gray-900">{formatCurrency(fundamentals.market_cap)}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Capitalisation</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{formatCurrency(fundamentals.market_cap)}</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.pe_ratio}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">P/E Ratio</p>
-              <p className="text-xl font-bold text-gray-900">{fundamentals.pe_ratio?.toFixed(2) ?? 'N/A'}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">P/E Ratio</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{fundamentals.pe_ratio?.toFixed(2) ?? 'N/A'}</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.pb_ratio}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">P/B Ratio</p>
-              <p className="text-xl font-bold text-gray-900">{fundamentals.pb_ratio?.toFixed(2) ?? 'N/A'}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">P/B Ratio</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{fundamentals.pb_ratio?.toFixed(2) ?? 'N/A'}</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.eps}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">BPA (EPS)</p>
-              <p className="text-xl font-bold text-gray-900">{fundamentals.eps ? `${formatNumber(fundamentals.eps)} F` : 'N/A'}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">BPA (EPS)</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{fundamentals.eps ? `${formatNumber(fundamentals.eps)} FCFA` : 'N/A'}</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.dividend_yield}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Rendement Div.</p>
-              <p className="text-xl font-bold text-gray-900">{formatPercent(fundamentals.dividend_yield)}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Rendement Div.</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{formatPercent(fundamentals.dividend_yield)}</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.shares_outstanding}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Actions en circulation</p>
-              <p className="text-xl font-bold text-gray-900">{formatNumber(fundamentals.shares_outstanding)}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Actions en circulation</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{formatNumber(fundamentals.shares_outstanding)}</p>
             </div>
           </RatioTooltip>
         </div>
@@ -203,33 +198,33 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <RatioTooltip tooltip={RATIO_TOOLTIPS.roe}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">ROE</p>
-              <p className="text-xl font-bold text-gray-900">{formatPercent(fundamentals.roe)}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">ROE</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{formatPercent(fundamentals.roe)}</p>
               <p className="text-xs text-gray-500 mt-1">Return on Equity</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.roa}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">ROA</p>
-              <p className="text-xl font-bold text-gray-900">{formatPercent(fundamentals.roa)}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">ROA</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{formatPercent(fundamentals.roa)}</p>
               <p className="text-xs text-gray-500 mt-1">Return on Assets</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.profit_margin}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Marge bénéf.</p>
-              <p className="text-xl font-bold text-gray-900">{formatPercent(fundamentals.profit_margin)}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Marge bénéf.</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{formatPercent(fundamentals.profit_margin)}</p>
               <p className="text-xs text-gray-500 mt-1">Profit Margin</p>
             </div>
           </RatioTooltip>
 
           <RatioTooltip tooltip={RATIO_TOOLTIPS.debt_to_equity}>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Dette/Capitaux</p>
-              <p className="text-xl font-bold text-gray-900">{fundamentals.debt_to_equity?.toFixed(2) ?? 'N/A'}</p>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Dette/Capitaux</p>
+              <p className="text-lg font-bold text-gray-900 font-mono tabular-nums leading-none">{fundamentals.debt_to_equity?.toFixed(2) ?? 'N/A'}</p>
               <p className="text-xs text-gray-500 mt-1">Debt to Equity</p>
             </div>
           </RatioTooltip>
@@ -239,7 +234,6 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
       {/* Données Financières */}
       <section>
         <div className="flex items-center space-x-2 mb-4">
-          <Activity className="w-5 h-5 text-purple-600" />
           <h3 className="text-xl font-bold text-gray-900">Données Financières</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -301,38 +295,15 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
       {shareholders && shareholders.length > 0 && (
         <section>
           <div className="flex items-center space-x-2 mb-4">
-            <Users className="w-5 h-5 text-indigo-600" />
             <h3 className="text-xl font-bold text-gray-900">Actionnaires</h3>
           </div>
           <ShareholdersPieChart shareholders={shareholders} />
         </section>
       )}
 
-      {/* Historique Financier (Tableau + Graphiques) */}
-      {annualFinancials && annualFinancials.data && annualFinancials.data.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5 text-orange-600" />
-              <h3 className="text-xl font-bold text-gray-900">Historique Financier</h3>
-            </div>
-          </div>
-
-          {/* Tableau */}
-          <div className="mb-6">
-            <AnnualFinancialsTable financials={annualFinancials.data} />
-          </div>
-
-          {/* Graphiques */}
-          <div>
-            <FinancialCharts financials={annualFinancials.data} />
-          </div>
-        </section>
-      )}
-
       {/* Avertissement */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-8">
-        <p className="text-sm text-yellow-800">
+      <div className="bg-brand-orange/10 border border-brand-orange/30 rounded-lg p-4 mt-8">
+        <p className="text-sm text-brand-orange-dark">
           <strong>Note :</strong> Les données financières sont mises à jour périodiquement et peuvent ne pas refléter les résultats les plus récents. Ces informations ne constituent pas un conseil en investissement.
         </p>
       </div>

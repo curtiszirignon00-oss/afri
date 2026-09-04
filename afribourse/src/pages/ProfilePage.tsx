@@ -11,11 +11,11 @@ import InvestorDNA from '../components/profile/InvestorDNA';
 import InvestorScore from '../components/profile/InvestorScore';
 import ActivityHeatmap from '../components/profile/ActivityHeatmap';
 import SimilarProfiles from '../components/profile/SimilarProfiles';
-import SocialStats from '../components/profile/SocialStats';
 import ProfileStats from '../components/profile/ProfileStats';
 import ActivityFeed from '../components/profile/ActivityFeed';
+import ProfileSectionCard, { SECTION_ACTION_CLASS } from '../components/profile/ProfileSectionCard';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
-import { Loader2, Users, Plus, Trophy, Snowflake } from 'lucide-react';
+import { Loader2, Plus, Trophy, UserCircle2 } from 'lucide-react';
 import { useUserProfile } from '../hooks/useApi';
 
 // Gamification imports
@@ -158,13 +158,16 @@ export default function ProfilePage() {
     // Garde : si c'est "son propre profil" mais pas connecte, rediriger
     if (isOwnProfile && !isLoggedIn) {
         return (
-            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-ink-50 px-4">
                 <div className="text-center max-w-md mx-auto p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Connexion requise</h2>
-                    <p className="text-gray-600 mb-6">Connectez-vous pour voir votre profil.</p>
+                    <div className="w-14 h-14 rounded-2xl bg-ink-100 flex items-center justify-center mx-auto mb-4">
+                        <UserCircle2 className="w-7 h-7 text-brand-navy" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-ink-900 mb-2">Connexion requise</h2>
+                    <p className="text-ink-500 mb-6">Connectez-vous pour voir votre profil.</p>
                     <a
                         href="/login"
-                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                        className="inline-flex items-center px-6 py-3 bg-brand-orange text-white rounded-xl hover:bg-brand-orange-hover font-semibold shadow-sm hover:shadow-md hover:shadow-brand-orange/30 transition-all"
                     >
                         Se connecter
                     </a>
@@ -175,8 +178,8 @@ export default function ProfilePage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-ink-50">
+                <Loader2 className="w-8 h-8 animate-spin text-brand-navy" />
             </div>
         );
     }
@@ -184,15 +187,18 @@ export default function ProfilePage() {
     // Gestion des erreurs : profil d'un autre utilisateur introuvable
     if (!isOwnProfile && (errorOther || !otherUserProfile)) {
         return (
-            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
+            <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-ink-50 px-4">
                 <div className="text-center max-w-md mx-auto p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil non trouve</h2>
-                    <p className="text-gray-600 mb-6">
+                    <div className="w-14 h-14 rounded-2xl bg-ink-100 flex items-center justify-center mx-auto mb-4">
+                        <UserCircle2 className="w-7 h-7 text-brand-navy" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-ink-900 mb-2">Profil introuvable</h2>
+                    <p className="text-ink-500 mb-6">
                         Ce profil n'existe pas ou n'est pas accessible.
                     </p>
                     <button
                         onClick={() => navigate(-1)}
-                        className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                        className="inline-flex items-center px-6 py-3 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover font-semibold shadow-sm transition-colors cursor-pointer"
                     >
                         Retour
                     </button>
@@ -286,7 +292,7 @@ export default function ProfilePage() {
           <meta property="og:image"       content={profileData.profile?.username ? `${import.meta.env.VITE_API_URL || 'https://api.africbourse.com/api'}/og/image/profile/${profileData.profile.username}` : "https://africbourse.com/images/logo_afribourse.png"}/>
           <meta name="twitter:card"       content="summary_large_image"/>
         </Helmet>
-        <div className="min-h-[calc(100vh-5rem)] bg-gray-50">
+        <div className="min-h-[calc(100vh-5rem)] bg-ink-50">
             {/* Profile Header (bouton Retour intégré dans la bannière) */}
             <ProfileHeader
                 profile={profileData}
@@ -321,9 +327,9 @@ export default function ProfilePage() {
             />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
                     {/* Left Column - Investor DNA & Stats */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-1 space-y-5">
                         {/* Progression Stats (XP, Level, Streak, Portfolio) */}
                         <ProfileStats
                             profile={profileData}
@@ -385,61 +391,40 @@ export default function ProfilePage() {
                                 <InvestorScore enabled={isOwnProfile && isLoggedIn} />
                             </div>
                         )}
-                        <SocialStats profile={profileData} />
-
                         {/* Gamification Section - Only for own profile */}
                         {isOwnProfile && (
                             <>
                                 {/* Streak Freezes */}
                                 {streakData && streakData.streak_freezes > 0 && (
-                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                                <Snowflake className="w-5 h-5 text-blue-600" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-gray-900">Protection Streak</h3>
-                                                <p className="text-sm text-gray-500">
-                                                    {streakData.streak_freezes} freeze{streakData.streak_freezes > 1 ? 's' : ''} disponible{streakData.streak_freezes > 1 ? 's' : ''}
-                                                </p>
-                                            </div>
-                                        </div>
+                                    <ProfileSectionCard
+                                        title="Protection de série"
+                                        subtitle={`${streakData.streak_freezes} freeze${streakData.streak_freezes > 1 ? 's' : ''} disponible${streakData.streak_freezes > 1 ? 's' : ''}`}
+                                    >
                                         <StreakFreezeIndicator
                                             freezesCount={streakData.streak_freezes}
                                             maxFreezes={5}
                                         />
-                                    </div>
+                                    </ProfileSectionCard>
                                 )}
 
                                 {/* Recent Achievements */}
                                 {myAchievements && myAchievements.length > 0 && (
-                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                                                    <Trophy className="w-5 h-5 text-amber-600" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-semibold text-gray-900">Mes Badges</h3>
-                                                    <p className="text-sm text-gray-500">
-                                                        {myAchievements.length} badge{myAchievements.length > 1 ? 's' : ''} débloqués · top 3 les plus rares
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => navigate('/achievements')}
-                                                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
-                                            >
+                                    <ProfileSectionCard
+                                        title="Mes badges"
+                                        subtitle={`${myAchievements.length} débloqué${myAchievements.length > 1 ? 's' : ''} · top 3 les plus rares`}
+                                        action={
+                                            <button onClick={() => navigate('/achievements')} className={SECTION_ACTION_CLASS}>
                                                 Voir tout
                                             </button>
-                                        </div>
+                                        }
+                                    >
                                         <div className="space-y-3">
                                             {getTopRareBadges(myAchievements, 3).map((ua) => (
                                                 <button
                                                     key={ua.id}
                                                     type="button"
                                                     onClick={() => setDetailBadge({ achievement: ua.achievement, unlockedDate: ua.unlocked_at })}
-                                                    className="w-full text-left rounded-xl cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 motion-reduce:transition-none"
+                                                    className="w-full text-left rounded-xl cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2 motion-reduce:transition-none"
                                                     aria-label={`Voir le détail du badge ${ua.achievement.name}`}
                                                 >
                                                     <AchievementCard
@@ -456,25 +441,25 @@ export default function ProfilePage() {
                                         {myAchievements.length > 3 && (
                                             <button
                                                 onClick={() => navigate('/achievements')}
-                                                className="w-full mt-4 py-2 text-sm text-gray-600 hover:text-gray-800 bg-gray-50 rounded-lg"
+                                                className="w-full mt-4 py-2 text-sm font-medium text-ink-600 hover:text-brand-navy bg-ink-50 border border-ink-100 rounded-xl transition-colors cursor-pointer"
                                             >
                                                 +{myAchievements.length - 3} autres badges
                                             </button>
                                         )}
-                                    </div>
+                                    </ProfileSectionCard>
                                 )}
 
                                 {/* Empty state badges : aucun badge encore débloqué */}
                                 {(!myAchievements || myAchievements.length === 0) && (
-                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
-                                        <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <Trophy className="w-6 h-6 text-amber-600" />
+                                    <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-6 text-center">
+                                        <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <Trophy className="w-6 h-6 text-brand-orange-dark" />
                                         </div>
-                                        <p className="text-sm font-medium text-gray-900">Aucun badge pour l'instant</p>
-                                        <p className="text-xs text-gray-500 mt-1">Termine ton premier quiz pour débloquer ton premier badge.</p>
+                                        <p className="text-sm font-semibold text-ink-900">Aucun badge pour l'instant</p>
+                                        <p className="text-xs text-ink-500 mt-1">Termine ton premier quiz pour débloquer ton premier badge.</p>
                                         <button
                                             onClick={() => navigate('/learn')}
-                                            className="mt-3 inline-flex items-center gap-1 text-sm text-amber-600 hover:text-amber-700 font-medium cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
+                                            className={`${SECTION_ACTION_CLASS} mt-3 inline-flex items-center gap-1`}
                                         >
                                             Commencer un quiz →
                                         </button>
@@ -496,37 +481,34 @@ export default function ProfilePage() {
 
                         {/* Mes Certificats — uniquement sur son propre profil */}
                         {isOwnProfile && isLoggedIn && (
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <ProfileSectionCard
+                                title="Mes certificats"
+                                subtitle="Délivrés après chaque webinaire complété"
+                            >
                                 <MyCertificates />
-                            </div>
+                            </ProfileSectionCard>
                         )}
 
                         {/* Create Community Button - Only for own profile */}
                         {isOwnProfile && (
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                                        <Users className="w-5 h-5 text-indigo-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900">Communautés</h3>
-                                        <p className="text-sm text-gray-500">Créez votre propre communauté</p>
-                                    </div>
-                                </div>
+                            <ProfileSectionCard
+                                title="Communautés"
+                                subtitle="Créez votre propre communauté"
+                            >
                                 <button
                                     onClick={() => setShowCreateCommunityModal(true)}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-medium"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-brand-navy text-white rounded-xl hover:bg-brand-navy-hover hover:shadow-md hover:shadow-brand-navy/30 transition-all font-semibold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-navy focus-visible:ring-offset-2"
                                 >
                                     <Plus className="w-5 h-5" />
                                     Créer une communauté
                                 </button>
                                 <button
                                     onClick={() => navigate('/communities')}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-3 text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors text-sm font-medium"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 mt-2 text-brand-navy bg-ink-50 border border-ink-100 rounded-xl hover:bg-ink-100 transition-colors text-sm font-medium cursor-pointer"
                                 >
                                     Voir toutes les communautés
                                 </button>
-                            </div>
+                            </ProfileSectionCard>
                         )}
                     </div>
 

@@ -1,8 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import {
-  Upload, Eye, EyeOff, Save, X, FileText, Tag, Star,
-  AlertCircle, Check, Code2, ImagePlus, Trash2,
-} from 'lucide-react';
+import { Upload, Eye, EyeOff, Save, X, FileText, Star, AlertCircle, Check, ImagePlus, Trash2 } from 'lucide-react';
 import { ImpactType, TickerImpact } from '../data/brvm2026News';
 import { authFetch } from '../config/api';
 
@@ -271,7 +268,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
         {/* ── Métadonnées ── */}
         <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-            <FileText size={13} /> Informations
+ Informations
           </h3>
 
           {/* Titre */}
@@ -358,7 +355,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
         {/* ── Image de couverture ── */}
         <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-            <ImagePlus size={13} /> Image de couverture
+ Image de couverture
           </h3>
 
           {form.image_url ? (
@@ -418,7 +415,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
         {/* ── Tickers ── */}
         <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-            <Tag size={13} /> Tickers associés
+ Tickers associés
           </h3>
           <p className="text-xs text-slate-400">
             L'article apparaîtra dans la section analyse de chaque ticker ajouté.
@@ -476,7 +473,7 @@ export default function AdminArticleEditor({ articleId, initialData, onSaved, on
         {/* ── Contenu HTML ── */}
         <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wide flex items-center gap-2">
-            <Code2 size={13} /> Contenu HTML
+ Contenu HTML
           </h3>
 
           <div

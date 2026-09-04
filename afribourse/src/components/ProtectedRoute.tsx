@@ -3,6 +3,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { LoadingSpinner } from './ui';
 import { useOnboardingRedirect } from '../hooks/useOnboarding';
 
+// Contournement de developpement : avec VITE_DEV_BYPASS_AUTH=true dans .env,
+// les pages protegees s'affichent sans session. Double garde-fou : le drapeau
+// doit etre pose a la main ET import.meta.env.DEV doit etre vrai, donc un build
+// de production n'est jamais concerne.
+const DEV_BYPASS_AUTH =
+  import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireOnboarding?: boolean;
@@ -16,6 +23,10 @@ export default function ProtectedRoute({ children, requireOnboarding = true }: P
     enabled: isLoggedIn && requireOnboarding,
     redirectTo: '/onboarding'
   });
+
+  // Raccourci de developpement, place apres les hooks pour que leur ordre
+  // reste identique a chaque rendu.
+  if (DEV_BYPASS_AUTH) return <>{children}</>;
 
   // Affiche un spinner pendant la vérification de l'authentification
   if (authLoading) {

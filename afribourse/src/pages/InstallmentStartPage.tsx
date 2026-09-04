@@ -270,7 +270,7 @@ export default function InstallmentStartPage() {
             <p className="text-blue-200 text-sm mt-1">{formatPrice(TOTAL)} répartis en 3 mensualités</p>
             {promo.active && pct > 0 && (
               <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5" /> Offre -{pct}% appliquée — se termine dans <span className="font-mono">{promo.label}</span>
+ Offre -{pct}% appliquée — se termine dans <span className="font-mono">{promo.label}</span>
               </p>
             )}
           </div>
@@ -281,7 +281,7 @@ export default function InstallmentStartPage() {
               {/* Échéancier */}
               <div>
                 <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <CalendarClock className="w-4 h-4 text-blue-600" /> Votre échéancier
+ Votre échéancier
                 </h2>
                 <div className="space-y-2">
                   {schedule.map((s, i) => (

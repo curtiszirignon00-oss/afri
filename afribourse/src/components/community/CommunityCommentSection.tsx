@@ -60,7 +60,6 @@ export default function CommunityCommentSection({ postId }: Props) {
                 <form onSubmit={handleSubmit} className="p-4 border-b">
                     {replyTo && (
                         <div className="flex items-center gap-2 mb-2 text-sm text-gray-500">
-                            <Reply className="w-4 h-4" />
                             <span>Reponse a {replyTo.name}</span>
                             <button
                                 type="button"

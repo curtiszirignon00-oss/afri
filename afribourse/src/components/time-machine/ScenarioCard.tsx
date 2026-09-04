@@ -1,4 +1,4 @@
-import { Clock, TrendingUp, ChevronRight, Timer } from 'lucide-react';
+import { Clock, TrendingUp, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const TIER_BADGE: Record<string, { label: string; cls: string }> = {
@@ -65,7 +65,6 @@ export default function ScenarioCard({ scenario }: Props) {
       {scenario.comingSoon && (
         <div className="absolute inset-0 rounded-2xl bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center z-10 gap-2">
           <div className="bg-white rounded-xl px-4 py-2.5 shadow-md flex items-center gap-2">
-            <Timer className="w-4 h-4 text-amber-500" />
             <span className="text-sm font-bold text-gray-700">Bientôt disponible</span>
           </div>
           <p className="text-[10px] text-gray-500 font-medium">En cours de développement</p>

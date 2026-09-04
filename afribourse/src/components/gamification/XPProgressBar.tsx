@@ -19,7 +19,7 @@ export function XPProgressBar({
   size = 'md',
   className = ''
 }: XPProgressBarProps) {
-  const { title, emoji } = useMemo(() => getLevelTitle(stats.level), [stats.level]);
+  const { title, icon: LevelIcon } = useMemo(() => getLevelTitle(stats.level), [stats.level]);
 
   const sizeClasses = {
     sm: {
@@ -62,7 +62,7 @@ export function XPProgressBar({
         <div className={`flex items-center justify-between mb-1 ${sizes.text}`}>
           <div className="flex items-center gap-1.5">
             <span className="font-medium text-gray-700">
-              {emoji} Niveau {stats.level}
+              <LevelIcon className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />Niveau {stats.level}
             </span>
             <span className="text-gray-400">•</span>
             <span className="text-gray-500">{title}</span>

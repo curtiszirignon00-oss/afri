@@ -1,9 +1,6 @@
 // src/components/learning/WebinarSection.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Calendar, Clock, Users, Zap, ChevronRight, CheckCircle,
-  Flame, Video, Tag, X, Loader2, Star, TrendingUp, Award,
-} from 'lucide-react';
+import { Calendar, Clock, Users, Zap, ChevronRight, CheckCircle, Flame, Video, X, Loader2, Star, TrendingUp } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, authFetch } from '../../config/api';
@@ -873,7 +870,6 @@ const PacksGrid: React.FC<{ onSelect: (pack: Pack) => void; referralInfo?: Refer
 
               {/* Bonus */}
               <div className="flex items-start gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-2 mb-4">
-                <Zap className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />
                 <span className="text-[11px] text-amber-800 font-semibold leading-snug">Bonus : {pack.bonus}</span>
               </div>
 
@@ -1302,9 +1298,6 @@ const InstallmentBanner: React.FC = () => {
     <>
       <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <Flame className="w-5 h-5 text-amber-600" />
-          </div>
           <div>
             <p className="text-sm font-bold text-amber-900">
               Mensualité {plan.installmentsPaid + 1}/{plan.installmentsTotal} à régler : {formatPrice(next.amount)}
@@ -1466,9 +1459,6 @@ const WebinarSection: React.FC = () => {
         {/* En-tête */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Users className="w-4 h-4 text-blue-600" />
-            </div>
             <span className="text-xs font-bold uppercase tracking-widest text-blue-600">Formation Live · Cohorte Juillet 2026</span>
           </div>
           <h2 className="text-xl font-bold text-gray-900 leading-tight">

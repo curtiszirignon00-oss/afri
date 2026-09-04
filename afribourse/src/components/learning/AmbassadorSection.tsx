@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, Check, Users, Gift, ChevronRight } from 'lucide-react';
+import { Copy, Check, Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authFetch, API_BASE_URL } from '../../config/api';
 
@@ -51,9 +51,6 @@ export default function AmbassadorSection() {
     <div className="mt-8 rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-4 flex items-center gap-3">
-        <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Gift className="w-5 h-5 text-white" />
-        </div>
         <div>
           <h3 className="text-white font-bold text-base leading-tight">Espace Ambassadeur</h3>
           <p className="text-blue-200 text-xs">Partagez votre lien · +1 mois d'accompagnement par vente</p>

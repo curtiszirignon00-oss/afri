@@ -21,9 +21,6 @@ export default function KofiBubble({ message, loading, mode = 'feedback', onRequ
     <div className={`${cfg.bg} border ${cfg.border} rounded-2xl p-4 space-y-3`}>
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-xl ${cfg.avatar} border flex items-center justify-center shrink-0`}>
-          <Brain className={`w-4 h-4 ${cfg.icon}`} />
-        </div>
         <div>
           <div className="flex items-center gap-1.5">
             <p className={`text-xs font-bold uppercase tracking-wider ${cfg.text}`}>Simba</p>

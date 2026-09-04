@@ -1,5 +1,5 @@
 // src/components/share/ShareablePositionCard.tsx
-import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ShareablePositionData } from '../../types/share';
 import CardBranding from './CardBranding';
 
@@ -32,9 +32,6 @@ export default function ShareablePositionCard({ data }: ShareablePositionCardPro
                 <div className="flex-1">
                     <h3 className="font-bold text-gray-900">{data.ticker}</h3>
                     <p className="text-sm text-gray-600">{data.companyName}</p>
-                </div>
-                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-                    <BarChart3 className="w-4 h-4 text-white" />
                 </div>
             </div>
 

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Download, Award, Calendar, Loader2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Download, Calendar, Loader2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiClient } from '../lib/api-client';
 import CertificateShareButtons from '../components/certificate/CertificateShareButtons';
@@ -163,9 +163,6 @@ export default function CertificatePage() {
           {/* Infos */}
           <div className="bg-slate-800/60 rounded-2xl border border-slate-700 p-6 mb-6">
             <div className="flex items-start gap-4 mb-4">
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                <Award size={20} className="text-amber-400" />
-              </div>
               <div>
                 <h1 className="text-white font-bold text-lg">{cert.module.name}</h1>
                 <p className="text-slate-400 text-sm">{cert.module.subtitle}</p>

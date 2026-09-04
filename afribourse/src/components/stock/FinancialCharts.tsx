@@ -43,7 +43,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
     revenue: {
       title: 'Évolution du Chiffre d\'Affaires',
       dataKey: 'revenue',
-      color: '#3b82f6',
+      color: '#12395E',
       type: 'bar' as const,
       formatter: formatMillions,
       unit: ' FCFA'
@@ -51,7 +51,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
     netIncome: {
       title: 'Évolution du Résultat Net',
       dataKey: 'net_income',
-      color: '#10b981',
+      color: '#12395E',
       type: 'bar' as const,
       formatter: formatMillions,
       unit: ' FCFA'
@@ -59,7 +59,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
     eps: {
       title: 'Évolution du BNPA',
       dataKey: 'eps',
-      color: '#f59e0b',
+      color: '#12395E',
       type: 'bar' as const,
       formatter: (value: number) => value.toFixed(2),
       unit: ' FCFA'
@@ -67,7 +67,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
     per: {
       title: 'Évolution du PER',
       dataKey: 'pe_ratio',
-      color: '#8b5cf6',
+      color: '#12395E',
       type: 'line' as const,
       formatter: (value: number) => value.toFixed(2),
       unit: ''
@@ -75,7 +75,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
     dividend: {
       title: 'Évolution des Dividendes',
       dataKey: 'dividend',
-      color: '#ec4899',
+      color: '#12395E',
       type: 'bar' as const,
       formatter: (value: number) => value.toFixed(2),
       unit: ' FCFA'
@@ -110,7 +110,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg p-6">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Graphiques d'Évolution
       </h3>
@@ -123,7 +123,7 @@ export function FinancialCharts({ financials }: FinancialChartsProps) {
             onClick={() => setSelectedChart(key as ChartType)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               selectedChart === key
-                ? 'bg-blue-600 text-white'
+                ? 'bg-brand-navy text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >

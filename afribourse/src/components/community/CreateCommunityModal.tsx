@@ -1,7 +1,7 @@
 // src/components/community/CreateCommunityModal.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Plus, Trash2, Loader2, Globe, Lock, Shield, Users } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, Globe, Lock, Shield } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
     useCreateCommunity,
@@ -116,9 +116,6 @@ export default function CreateCommunityModal({ onClose }: Props) {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-ink-100 rounded-xl flex items-center justify-center">
-                            <Users className="w-5 h-5 text-brand-navy" />
-                        </div>
                         <h2 className="text-xl font-bold text-gray-900">Creer une communaute</h2>
                     </div>
                     <button

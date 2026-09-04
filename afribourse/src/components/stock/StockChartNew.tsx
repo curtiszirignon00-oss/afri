@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid, CandlestickChart, AreaChart, LineChart, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Loader2, Maximize2, Minimize2, TrendingUp as Indicator, Lock, Share2, Info, PenLine, LayoutGrid, CandlestickChart, AreaChart, LineChart, BarChart3, X as XIcon, Check } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useStockChart } from '../../hooks/useStockChart';
 import { useIntradayHistory } from '../../hooks/useStockDetails';
@@ -325,8 +325,8 @@ export default function StockChartNew({
     : 'bg-gray-100';
 
   const buttonActiveBgClasses = theme === 'dark'
-    ? 'bg-gray-600 text-blue-400'
-    : 'bg-white text-blue-600';
+    ? 'bg-gray-600 text-ink-400'
+    : 'bg-white text-brand-navy';
 
   const buttonHoverBgClasses = theme === 'dark'
     ? 'hover:bg-gray-600'
@@ -370,7 +370,7 @@ export default function StockChartNew({
 
         {/* Ligne 2 : Timeframes + badge résolution */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
+          <div className={`flex shrink-0 ${buttonBgClasses} rounded-lg p-1`}>
             {DISPLAY_INTERVALS.map((interval) => {
               const isLocked = !!interval.premium && !isPremium;
               return (
@@ -404,12 +404,12 @@ export default function StockChartNew({
               )}
               <span className={`inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium ${
                 activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily'
-                  ? 'bg-blue-50 text-blue-600'
+                  ? 'bg-ink-50 text-brand-navy'
                   : activeConfig.resolution === 'weekly'
-                    ? 'bg-violet-50 text-violet-600'
+                    ? 'bg-ink-50 text-brand-navy'
                     : activeConfig.resolution === 'monthly'
-                      ? 'bg-amber-50 text-amber-600'
-                      : 'bg-emerald-50 text-emerald-600'
+                      ? 'bg-brand-orange/10 text-brand-orange-dark'
+                      : 'bg-green-50 text-green-600'
               }`}>
                 {resolutionLabel}
               </span>
@@ -418,16 +418,16 @@ export default function StockChartNew({
         </div>
 
         {/* Ligne 3 : Type de graphique | Indicateurs · Dessiner · Partager */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center justify-between flex-nowrap gap-2 overflow-x-auto scrollbar-hide">
           {/* Type selector */}
-          <div className={`flex ${buttonBgClasses} rounded-lg p-1`}>
+          <div className={`flex shrink-0 ${buttonBgClasses} rounded-lg p-1`}>
             {CHART_TYPES.map((type) => {
               const TypeIcon = type.icon;
               return (
               <button
                 key={type.value}
                 onClick={() => handleChartTypeChange(type.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${
+                className={`px-2.5 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 whitespace-nowrap ${
                   selectedChartType === type.value
                     ? `${buttonActiveBgClasses} shadow-sm`
                     : `${mutedTextClasses} ${buttonHoverBgClasses}`
@@ -442,12 +442,12 @@ export default function StockChartNew({
           </div>
 
           {/* Boutons d'action */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setShowIndicators(!showIndicators)}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
+              className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${
                 showIndicators
-                  ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                  ? 'bg-ink-100 text-brand-navy border border-ink-300'
                   : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
               }`}
               title="Indicateurs techniques"
@@ -458,9 +458,9 @@ export default function StockChartNew({
 
             <button
               onClick={() => setShowMultiTF(!showMultiTF)}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
+              className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${
                 showMultiTF
-                  ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                  ? 'bg-ink-100 text-brand-navy border border-ink-300'
                   : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
               }`}
               title="Vue multi-timeframe 1J / 1S / 1M"
@@ -474,9 +474,9 @@ export default function StockChartNew({
                 setShowDrawingToolbar(!showDrawingToolbar);
                 if (showDrawingToolbar) setActiveDrawingTool(null);
               }}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${
+              className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${
                 showDrawingToolbar
-                  ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                  ? 'bg-ink-100 text-brand-navy border border-ink-300'
                   : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
               }`}
               title="Outils de dessin"
@@ -488,7 +488,7 @@ export default function StockChartNew({
             <button
               onClick={handleShare}
               disabled={!isReady || data.length === 0}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent disabled:opacity-40`}
+              className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium whitespace-nowrap ${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent disabled:opacity-40`}
               title="Partager le graphique"
             >
               <Share2 className="w-4 h-4" />
@@ -529,7 +529,7 @@ export default function StockChartNew({
                         isLocked
                           ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed opacity-60'
                           : activeIndicators.includes(indicator.id)
-                            ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                            ? 'bg-ink-100 text-brand-navy-hover border border-ink-300'
                             : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
                       }`}
                       title={isLocked ? 'Disponible avec un abonnement Premium' : indicator.description}
@@ -537,7 +537,7 @@ export default function StockChartNew({
                     >
                       <div className="flex items-center justify-between">
                         <span>{indicator.label}</span>
-                        {isLocked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : activeIndicators.includes(indicator.id) ? <span className="text-blue-600">✓</span> : null}
+                        {isLocked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : activeIndicators.includes(indicator.id) ? <Check className="w-3.5 h-3.5 text-brand-navy" /> : null}
                       </div>
                     </button>
                   );
@@ -567,7 +567,7 @@ export default function StockChartNew({
                         isLocked
                           ? 'bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed opacity-60'
                           : activeIndicators.includes(indicator.id)
-                            ? 'bg-blue-100 text-blue-700 border border-blue-300'
+                            ? 'bg-ink-100 text-brand-navy-hover border border-ink-300'
                             : `${buttonBgClasses} ${mutedTextClasses} ${buttonHoverBgClasses} border border-transparent`
                       }`}
                       title={isLocked ? 'Disponible avec un abonnement Premium' : indicator.description}
@@ -575,7 +575,7 @@ export default function StockChartNew({
                     >
                       <div className="flex items-center justify-between">
                         <span>{indicator.label}</span>
-                        {isLocked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : activeIndicators.includes(indicator.id) ? <span className="text-blue-600">✓</span> : null}
+                        {isLocked ? <Lock className="w-3.5 h-3.5 text-gray-400" /> : activeIndicators.includes(indicator.id) ? <Check className="w-3.5 h-3.5 text-brand-navy" /> : null}
                       </div>
                     </button>
                   );
@@ -584,7 +584,7 @@ export default function StockChartNew({
             </div>
 
             {!isPremium && (
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-brand-orange-dark">
                 Les indicateurs techniques sont réservés aux abonnés Premium
               </p>
             )}
@@ -645,7 +645,7 @@ export default function StockChartNew({
             style={{ background: theme === 'dark' ? 'rgba(31,41,55,0.85)' : 'rgba(255,255,255,0.85)' }}
           >
             {isLoading || !isReady ? (
-              <Loader2 className={`w-10 h-10 animate-spin ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
+              <Loader2 className={`w-10 h-10 animate-spin ${theme === 'dark' ? 'text-ink-400' : 'text-brand-navy'}`} />
             ) : (
               <>
                 <svg className={`w-16 h-16 mb-4 ${mutedTextClasses}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -669,7 +669,6 @@ export default function StockChartNew({
           <span>Baisse</span>
         </div>
         <div className="flex items-center space-x-1">
-          <Indicator className="w-3 h-3" />
           <span>Indicateurs</span>
         </div>
       </div>
@@ -706,7 +705,7 @@ export default function StockChartNew({
                 else if (e.key === 'Escape') { setShowTextModal(false); setActiveDrawingTool(null); }
               }}
               placeholder="Votre texte..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 mb-3"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink-400 mb-3"
             />
             <p className="text-xs text-gray-400 mb-3">Cliquez sur le graphique pour placer l'annotation.</p>
             <div className="flex justify-end gap-2">
@@ -719,7 +718,7 @@ export default function StockChartNew({
               <button
                 onClick={handleTextConfirm}
                 disabled={!textInput.trim()}
-                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover transition-colors disabled:opacity-40"
               >
                 Placer
               </button>
@@ -742,7 +741,7 @@ export default function StockChartNew({
               <h4 className="text-sm font-semibold text-gray-800">Niveaux Fibonacci</h4>
               <button
                 onClick={() => setFibLevels(DEFAULT_FIB_LEVELS)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 transition-colors"
+                className="text-xs text-brand-navy hover:text-brand-navy-hover transition-colors"
               >
                 Réinitialiser
               </button>
@@ -756,7 +755,7 @@ export default function StockChartNew({
                     type="checkbox"
                     checked={level.enabled}
                     onChange={(e) => setFibLevels(prev => prev.map((l, i) => i === idx ? { ...l, enabled: e.target.checked } : l))}
-                    className="w-3.5 h-3.5 accent-blue-600 flex-shrink-0"
+                    className="w-3.5 h-3.5 accent-brand-navy flex-shrink-0"
                   />
                   <input
                     type="color"
@@ -783,7 +782,7 @@ export default function StockChartNew({
                     className="text-gray-300 hover:text-red-500 transition-colors text-xs flex-shrink-0"
                     title="Supprimer ce niveau"
                   >
-                    ✕
+                    <XIcon className="w-3 h-3" />
                   </button>
                 </div>
               ))}
@@ -802,7 +801,7 @@ export default function StockChartNew({
                   step="0.001"
                   min="0"
                   max="2"
-                  className="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ink-400"
                 />
                 <input
                   type="color"
@@ -831,7 +830,7 @@ export default function StockChartNew({
               <button
                 onClick={handleFibConfirm}
                 disabled={!fibLevels.some(l => l.enabled)}
-                className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40"
+                className="px-3 py-1.5 text-sm bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover transition-colors disabled:opacity-40"
               >
                 Tracer
               </button>

@@ -5,7 +5,7 @@
 // navy et a l'orange du logo, l'orange etant reserve a l'action principale.
 // Le vert et le rouge ne servent qu'aux etats d'envoi.
 import React, { useState, useEffect } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle, Twitter, Linkedin, Instagram, AlertCircle, Share2, Clock } from 'lucide-react';
+import { Mail, Send, CheckCircle, Twitter, Linkedin, Instagram, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { useLocation, Link } from 'react-router-dom';
@@ -235,9 +235,6 @@ const ContactPage: React.FC = () => {
 
               <dl className="divide-y divide-gray-100">
                 <div className="flex items-start gap-4 py-4 first:pt-0">
-                  <span className="w-11 h-11 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                    <Mail className="w-5 h-5 text-brand-navy" />
-                  </span>
                   <div className="min-w-0">
                     <dt className="font-semibold text-gray-900">Email</dt>
                     <dd className="text-sm text-gray-600 mt-1 space-y-0.5">
@@ -252,9 +249,6 @@ const ContactPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-4 py-4">
-                  <span className="w-11 h-11 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                    <Phone className="w-5 h-5 text-brand-navy" />
-                  </span>
                   <div className="min-w-0">
                     <dt className="font-semibold text-gray-900">Téléphone</dt>
                     <dd className="text-sm text-gray-600 mt-1">
@@ -262,7 +256,6 @@ const ContactPage: React.FC = () => {
                         +225 07 03 12 45 06
                       </a>
                       <span className="flex items-center gap-1.5 text-gray-400 mt-1">
-                        <Clock className="w-3.5 h-3.5 shrink-0" />
                         Lundi au vendredi, 8h00 à 18h00 GMT
                       </span>
                     </dd>
@@ -270,9 +263,6 @@ const ContactPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-4 py-4">
-                  <span className="w-11 h-11 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                    <MapPin className="w-5 h-5 text-brand-navy" />
-                  </span>
                   <div className="min-w-0">
                     <dt className="font-semibold text-gray-900">Adresse</dt>
                     <dd className="text-sm text-gray-600 mt-1">
@@ -283,9 +273,6 @@ const ContactPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-4 py-4 last:pb-0">
-                  <span className="w-11 h-11 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-                    <Share2 className="w-5 h-5 text-brand-navy" />
-                  </span>
                   <div className="min-w-0">
                     <dt className="font-semibold text-gray-900">Réseaux sociaux</dt>
                     <dd className="mt-2 flex flex-wrap gap-2">

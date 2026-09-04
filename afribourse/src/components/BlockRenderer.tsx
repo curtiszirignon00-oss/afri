@@ -1,4 +1,5 @@
 import React from 'react';
+import { Compass } from 'lucide-react';
 import { ContentBlock } from '../data/brvm2026News';
 import { ChartById } from './charts/SGBCICharts';
 import InvestorProfileQuiz from './InvestorProfileQuiz';
@@ -225,7 +226,7 @@ function renderBlock(block: ContentBlock, i: number, v: Variant, onModuleComplet
       return (
         <div key={i} className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl px-5 py-4 text-white shadow-md">
           <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-3"
-             dangerouslySetInnerHTML={{ __html: block.title ?? '🎯 Objectifs pédagogiques' }} />
+             dangerouslySetInnerHTML={{ __html: block.title ?? 'Objectifs pédagogiques' }} />
           <p className="text-sm text-white/80 mb-2 italic"
              dangerouslySetInnerHTML={{ __html: block.subtitle ?? 'À la fin de ce module, vous :' }} />
           <ul className="space-y-2">
@@ -267,7 +268,7 @@ function renderBlock(block: ContentBlock, i: number, v: Variant, onModuleComplet
       return (
         <div key={i} data-profile-quiz className="border border-slate-200 rounded-2xl p-5 bg-white shadow-sm">
           <div className="flex items-center gap-2 mb-5">
-            <span className="text-lg">🧭</span>
+            <Compass className="w-5 h-5 text-slate-400 shrink-0" />
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Exercice pratique</p>
               <p className="text-sm font-bold text-slate-900">Découvrez votre profil investisseur</p>

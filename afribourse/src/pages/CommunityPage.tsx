@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/community';
-import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Compass, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound, PenSquare } from 'lucide-react';
+import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound } from 'lucide-react';
 import { apiClient } from '../lib/api-client';
 import PostCard from '../components/profile/PostCard';
 import PostComposer from '../components/profile/PostComposer';
@@ -198,9 +198,6 @@ export default function CommunityPage() {
                             pleine largeur, dans la colonne. */}
                         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-11 h-11 rounded-xl bg-brand-navy flex items-center justify-center shrink-0">
-                                    <Users className="w-5 h-5 text-white" />
-                                </div>
                                 <div className="min-w-0">
                                     <h1 className="text-lg font-bold text-gray-900 leading-none">Communauté</h1>
                                     <p className="text-xs text-gray-500 mt-1">
@@ -248,9 +245,6 @@ export default function CommunityPage() {
                         <div className="bg-white rounded-2xl shadow-sm p-5">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2.5">
-                                    <span className="w-8 h-8 rounded-lg bg-ink-50 flex items-center justify-center shrink-0">
-                                        <Compass className="w-4 h-4 text-brand-navy" />
-                                    </span>
                                     <h3 className="font-semibold text-gray-900">À découvrir</h3>
                                 </div>
                                 <Link
@@ -322,7 +316,6 @@ export default function CommunityPage() {
                         {isLoggedIn && (
                             <div className="bg-white rounded-2xl shadow-sm p-5">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <UserPlus className="w-5 h-5 text-brand-navy" />
                                     <h3 className="font-semibold text-gray-900">Suggestions</h3>
                                 </div>
 
@@ -427,9 +420,6 @@ export default function CommunityPage() {
                             </div>
                         ) : (
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6 flex items-center gap-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-brand-navy to-brand-navy rounded-full flex items-center justify-center flex-shrink-0">
-                                    <PenSquare className="w-6 h-6 text-white" />
-                                </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-gray-700 font-medium">Partagez votre analyse ou opinion avec la communauté</p>
                                     <p className="text-sm text-gray-500 mt-0.5">Connectez-vous pour publier</p>

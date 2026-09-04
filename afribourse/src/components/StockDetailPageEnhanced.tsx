@@ -4,7 +4,7 @@ import { lazyWithRetry as lazy } from '../lib/lazyWithRetry';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { trackStockViewed } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
-import { ArrowLeft, TrendingUp, TrendingDown, Wallet, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2, BarChart3, Trophy } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Star, Bell, Scale, Search, X as XIcon, Loader2, BarChart3, Trophy } from 'lucide-react';
 import { apiFetch, useStocks, type Stock as ApiStock } from '../hooks/useApi';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../config/api';
@@ -23,6 +23,10 @@ import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 // Composants utilisés au render initial — eager
 import StockChartNew from './stock/StockChartNew';
 import StockTabs from './stock/StockTabs';
+// Tableau et graphiques de l'historique financier : charges a la demande,
+// comme les onglets, et rendus pleine largeur sous la grille.
+const AnnualFinancialsTable = lazy(() => import('./stock/AnnualFinancialsTable').then(m => ({ default: m.AnnualFinancialsTable })));
+const FinancialCharts = lazy(() => import('./stock/FinancialCharts').then(m => ({ default: m.FinancialCharts })));
 import type { TabId } from './stock/StockTabs';
 import { BRVM_NEWS } from '../data/brvm2026News';
 import { findNewsByTicker } from '../data/newsData';
@@ -47,6 +51,16 @@ import { flashButton, highlightSection, focusInput } from '../utils/nudgeUtils';
 import { Period } from '../services/stockApi';
 
 type StockDetailPageEnhancedProps = {};
+
+// Echelle de tons des indicateurs de decision : vert, orange et rouge disent
+// l'etat, le neutre reste gris pour ne pas se lire comme un avertissement.
+const INDICATOR_TONE: Record<string, string> = {
+  green:  'bg-green-100 text-green-800',
+  lime:   'bg-green-50 text-green-700',
+  yellow: 'bg-gray-100 text-gray-700',
+  orange: 'bg-brand-orange/10 text-brand-orange-dark',
+  red:    'bg-red-100 text-red-800',
+};
 
 export default function StockDetailPageEnhanced() {
   const { symbol } = useParams<{ symbol: string }>();
@@ -89,7 +103,7 @@ export default function StockDetailPageEnhanced() {
       toast('Action ajoutée à ta Watchlist !', {
         icon: <Star className="w-5 h-5 text-brand-orange" />,
         duration: 4000,
-        style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+        style: { background: '#12395E', color: '#fff', fontWeight: '600', borderRadius: '12px' },
       });
     },
     OPEN_ALERT_MODAL: () => {
@@ -98,7 +112,7 @@ export default function StockDetailPageEnhanced() {
       toast('Crée ton alerte de prix dans le formulaire ci-dessous', {
         icon: <Bell className="w-5 h-5 text-brand-navy" />,
         duration: 4000,
-        style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+        style: { background: '#12395E', color: '#fff', fontWeight: '600', borderRadius: '12px' },
       });
     },
     OPEN_COMPARATOR: () => {
@@ -111,7 +125,7 @@ export default function StockDetailPageEnhanced() {
         toast('Comparateur ouvert : tape une action à comparer', {
         icon: <Scale className="w-5 h-5 text-brand-navy" />,
           duration: 5000,
-          style: { background: '#1e40af', color: '#fff', fontWeight: '600', borderRadius: '12px' },
+          style: { background: '#12395E', color: '#fff', fontWeight: '600', borderRadius: '12px' },
         });
       }, 350);
     },
@@ -576,9 +590,9 @@ export default function StockDetailPageEnhanced() {
     <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
       {/* En-tête */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
           {/* Bouton retour + recherche rapide */}
-          <div className="mb-4 sm:mb-6 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <button
               onClick={() => navigate('/markets')}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -589,117 +603,94 @@ export default function StockDetailPageEnhanced() {
             <StockQuickSearch currentSymbol={symbol} />
           </div>
 
-          {/* Informations de l'action */}
-          <div className="flex flex-col gap-4 sm:gap-6">
-            {/* Ligne 1: Logo + Symbole + Boutons */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                {/* Logo entreprise */}
-                {(() => {
-                  const logo = getStockLogo(stock.symbol, stock.logo_url);
-                  return logo ? (
-                    <img
-                      src={logo}
-                      alt={stock.symbol}
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain bg-white border border-gray-200 shadow-sm flex-shrink-0"
-                      onError={e => (e.target as HTMLImageElement).style.display = 'none'}
-                    />
-                  ) : null;
-                })()}
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{stock.symbol}</h1>
+          {/* Identite et cours sur une seule rangee : le symbole, la raison
+              sociale et le cours a droite. Le panneau de prix pleine largeur
+              et les trois colonnes legendees de 84px etiraient l'en-tete sur
+              quatre etages ; les actions sont revenues a des icones, leur
+              legende passe en infobulle. */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            {/* Logo */}
+            {(() => {
+              const logo = getStockLogo(stock.symbol, stock.logo_url);
+              return logo ? (
+                <img
+                  src={logo}
+                  alt=""
+                  className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-200 shadow-sm shrink-0 p-1"
+                  onError={e => (e.target as HTMLImageElement).style.display = 'none'}
+                />
+              ) : null;
+            })()}
+
+            {/* Symbole, secteur, raison sociale */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-mono tracking-tight leading-none">
+                  {stock.symbol}
+                </h1>
                 {stock.sector && (
-                  <span className="hidden sm:inline-block px-3 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-sm font-medium">
+                  <span className="px-2.5 py-0.5 bg-ink-100 text-brand-navy-hover rounded-full text-xs font-medium">
                     {stock.sector}
                   </span>
                 )}
               </div>
-              <div className="flex items-start space-x-1 sm:space-x-3">
-                {/* Watchlist Button */}
-                <div className="flex flex-col items-center w-[70px] sm:w-[84px]">
-                  <button
-                    id="nudge-watchlist-btn"
-                    onClick={handleToggleWatchlist}
-                    disabled={isTogglingWatchlist}
-                    className={`p-2 rounded-full hover:bg-orange-100 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    title={isInWatchlist ? 'Retirer de la watchlist' : 'Ajouter à la watchlist'}
-                  >
-                    {isTogglingWatchlist ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-orange"></div>
-                    ) : (
-                      <Star
-                        className={`w-5 h-5 ${isInWatchlist ? 'text-brand-orange fill-brand-orange' : 'text-gray-400 hover:text-brand-orange'
-                          }`}
-                      />
-                    )}
-                  </button>
-                  <span className="mt-0.5 text-[10px] sm:text-[11px] leading-tight text-center text-gray-500">
-                    Surveiller cette action
-                  </span>
-                </div>
-                {/* Price Alert Button */}
-                <div className="flex flex-col items-center w-[70px] sm:w-[84px]">
-                  <button
-                    id="nudge-alert-btn"
-                    onClick={() => setIsAlertModalOpen(true)}
-                    className="p-2 rounded-full hover:bg-orange-100 transition-colors"
-                    title="Créer une alerte de prix"
-                  >
-                    <Bell className="w-5 h-5 text-gray-400 hover:text-orange-600" />
-                  </button>
-                  <span className="mt-0.5 text-[10px] sm:text-[11px] leading-tight text-center text-gray-500">
-                    Notification au prix visé
-                  </span>
-                </div>
-                {/* Compare Button */}
-                <div className="flex flex-col items-center w-[70px] sm:w-[84px]">
-                  <button
-                    id="nudge-compare-btn"
-                    onClick={showComparison ? closeComparison : openComparison}
-                    className={`p-2 rounded-full transition-colors ${
-                      showComparison
-                        ? 'bg-ink-100 text-brand-navy'
-                        : 'hover:bg-ink-100 text-gray-400 hover:text-brand-navy'
-                    }`}
-                    title={showComparison ? 'Fermer la comparaison' : 'Comparer avec un autre titre'}
-                  >
-                    <Scale className="w-5 h-5" />
-                  </button>
-                  <span className="mt-0.5 text-[10px] sm:text-[11px] leading-tight text-center text-gray-500">
-                    Comparer au secteur
-                  </span>
-                </div>
-              </div>
+              <p className="text-sm text-gray-500 truncate mt-1">{stock.company_name}</p>
             </div>
 
-            {/* Ligne 2: Nom complet + Secteur mobile */}
-            <div>
-              <h2 className="text-lg sm:text-xl text-gray-700">{stock.company_name}</h2>
-              {stock.sector && (
-                <span className="sm:hidden inline-block mt-2 px-2 py-1 bg-ink-100 text-brand-navy-hover rounded-full text-xs font-medium">
-                  {stock.sector}
-                </span>
-              )}
-            </div>
-
-            {/* Ligne 3: Prix actuel - Format mobile optimisé */}
-            <div className="bg-gradient-to-br from-ink-50 to-ink-50 rounded-xl p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Prix actuel</p>
-                  <p className="text-2xl sm:text-4xl font-bold text-gray-900">{formatNumber(stock.current_price)} <span className="text-base sm:text-xl">FCFA</span></p>
+            {/* Cours et variation */}
+            {(() => {
+              const pct = chartVariation ? chartVariation.percent : stock.daily_change_percent;
+              const positive = chartVariation ? chartVariation.isPositive : pct >= 0;
+              return (
+                <div className="text-right shrink-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tabular-nums leading-none">
+                    {formatNumber(stock.current_price)}
+                    <span className="text-sm font-semibold text-gray-400 ml-1.5">FCFA</span>
+                  </p>
+                  <p className={`text-sm font-bold font-mono mt-1.5 ${positive ? 'text-green-600' : 'text-red-600'}`}>
+                    {positive ? '▲' : '▼'} {positive ? '+' : ''}{pct?.toFixed(2) ?? '0.00'}%
+                  </p>
                 </div>
-                {(() => {
-                  const pct = chartVariation ? chartVariation.percent : stock.daily_change_percent;
-                  const positive = chartVariation ? chartVariation.isPositive : pct >= 0;
-                  return (
-                    <div className={`flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm sm:text-lg font-semibold ${positive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {positive ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
-                      <span>{positive ? '+' : ''}{pct?.toFixed(2) ?? '0.00'}%</span>
-                    </div>
-                  );
-                })()}
-              </div>
+              );
+            })()}
+
+            {/* Actions : icones seules, la legende passe en infobulle */}
+            <div className="flex items-center gap-1 shrink-0 sm:border-l sm:border-gray-200 sm:pl-3">
+              <button
+                id="nudge-watchlist-btn"
+                onClick={handleToggleWatchlist}
+                disabled={isTogglingWatchlist}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg hover:bg-brand-orange/10 transition-colors ${isTogglingWatchlist ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isInWatchlist ? 'Retirer de la watchlist' : 'Surveiller cette action'}
+              >
+                {isTogglingWatchlist ? (
+                  <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-orange" />
+                ) : (
+                  <Star className={`w-5 h-5 ${isInWatchlist ? 'text-brand-orange fill-brand-orange' : 'text-gray-400 hover:text-brand-orange'}`} />
+                )}
+              </button>
+
+              <button
+                id="nudge-alert-btn"
+                onClick={() => setIsAlertModalOpen(true)}
+                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-brand-orange/10 transition-colors"
+                title="Créer une alerte : notification au prix visé"
+              >
+                <Bell className="w-5 h-5 text-gray-400 hover:text-brand-orange" />
+              </button>
+
+              <button
+                id="nudge-compare-btn"
+                onClick={showComparison ? closeComparison : openComparison}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
+                  showComparison
+                    ? 'bg-ink-100 text-brand-navy'
+                    : 'hover:bg-ink-100 text-gray-400 hover:text-brand-navy'
+                }`}
+                title={showComparison ? 'Fermer la comparaison' : 'Comparer au secteur'}
+              >
+                <Scale className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
@@ -813,7 +804,7 @@ export default function StockDetailPageEnhanced() {
                 lors des cycles démontage/remontage sur changement de période. */}
             <div>
               {!historyLoading && lightweightData.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6">
                   <div className="flex flex-col justify-center items-center h-64 sm:h-96 text-gray-500">
                     <svg className="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -861,49 +852,48 @@ export default function StockDetailPageEnhanced() {
               )}
             </div>
 
-            {/* Indicateurs (toujours visibles) */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8">
-              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Indicateurs de Décision</h3>
-              <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-                <div>
-                  <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Sentiment du Marché</h4>
-                  <span
-                    className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${sentiment.color === 'green'
-                      ? 'bg-green-100 text-green-800'
-                      : sentiment.color === 'lime'
-                        ? 'bg-lime-100 text-lime-800'
-                        : sentiment.color === 'yellow'
-                          ? 'bg-orange-100 text-brand-orange-dark'
-                          : sentiment.color === 'orange'
-                            ? 'bg-orange-100 text-orange-800'
-                            : 'bg-red-100 text-red-800'
-                      }`}
-                  >
-                    {sentiment.label}
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base">Signal Technique</h4>
-                  <span
-                    className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold inline-block ${technicalSignal.color === 'green'
-                      ? 'bg-green-100 text-green-800'
-                      : technicalSignal.color === 'lime'
-                        ? 'bg-lime-100 text-lime-800'
-                        : technicalSignal.color === 'yellow'
-                          ? 'bg-orange-100 text-brand-orange-dark'
-                          : technicalSignal.color === 'orange'
-                            ? 'bg-orange-100 text-orange-800'
-                            : 'bg-red-100 text-red-800'
-                      }`}
-                  >
-                    {technicalSignal.label}
-                  </span>
-                  <p className="text-xs text-gray-600 mt-1 sm:mt-2 hidden sm:block">{technicalSignal.description}</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-4 sm:mt-6 border-t border-gray-100 pt-3">
-                <strong>Note :</strong> Ces indicateurs sont générés automatiquement et ne constituent pas un conseil en
-                investissement.
+            {/* Indicateurs de decision : une ligne par indicateur, libelle et
+                explication a gauche, verdict en pastille a droite. Les deux
+                verdicts avaient des pastilles de formes et de tailles
+                differentes, posees sous leur titre dans deux colonnes a moitie
+                vides. */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 px-5 sm:px-6 pt-5 pb-4">
+                Indicateurs de décision
+              </h3>
+
+              <dl className="border-t border-gray-100 divide-y divide-gray-100">
+                {[
+                  {
+                    label: 'Sentiment du marché',
+                    desc: 'Calculé sur la variation du jour et le volume échangé.',
+                    value: sentiment.label,
+                    color: sentiment.color,
+                  },
+                  {
+                    label: 'Signal technique',
+                    desc: technicalSignal.description,
+                    value: technicalSignal.label,
+                    color: technicalSignal.color,
+                  },
+                ].map(({ label, desc, value, color }) => (
+                  <div key={label} className="flex items-center justify-between gap-4 px-5 sm:px-6 py-4">
+                    <div className="min-w-0">
+                      <dt className="font-semibold text-gray-900">{label}</dt>
+                      <dd className="text-xs text-gray-500 mt-0.5">{desc}</dd>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold shrink-0 ${INDICATOR_TONE[color] ?? INDICATOR_TONE.yellow}`}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </dl>
+
+              <p className="text-xs text-gray-500 bg-gray-50 border-t border-gray-100 px-5 sm:px-6 py-3">
+                <strong>Note :</strong> ces indicateurs sont générés automatiquement et ne constituent pas un
+                conseil en investissement.
               </p>
             </div>
 
@@ -937,7 +927,7 @@ export default function StockDetailPageEnhanced() {
 
           {/* Colonne latérale - Panel d'ordre (DESKTOP ONLY) */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-24 bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+            <div className="sticky top-24 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
               <h3 className="text-lg font-bold text-gray-900 mb-2">Passer un ordre</h3>
 
               {/* Mini Wallet Switcher */}
@@ -968,7 +958,6 @@ export default function StockDetailPageEnhanced() {
               {portfolio ? (
                 <div className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Wallet className="w-5 h-5 text-gray-400" />
                     <span>Liquidités</span>
                   </div>
                   <span className="font-semibold text-gray-800">{formatNumber(portfolio.cash_balance)} FCFA</span>
@@ -1028,12 +1017,12 @@ export default function StockDetailPageEnhanced() {
               <button
                 onClick={handleBuy}
                 disabled={!portfolio || totalCost > (portfolio?.cash_balance ?? 0) || isBuying}
-                className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-6 py-3 bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isBuying ? (
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>
                 ) : (
-                  `Acheter ${quantity} action(s)`
+                  `Acheter ${quantity} action${quantity > 1 ? 's' : ''}`
                 )}
               </button>
             </div>
@@ -1048,6 +1037,30 @@ export default function StockDetailPageEnhanced() {
             </div>
           </div>
         </div>
+
+        {/* Historique financier : sorti de la colonne de contenu pour occuper
+            toute la largeur de la page. Le tableau sur cinq exercices et ses
+            graphiques etaient a l'etroit dans les deux tiers de gauche. */}
+        {activeTab === 'fundamentals' && (annualFinancialsData?.data?.length ?? 0) > 0 && (
+          <section className="mt-6 sm:mt-8">
+            <div className="flex items-center space-x-2 mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Historique Financier</h3>
+            </div>
+
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 text-brand-navy animate-spin" />
+                </div>
+              }
+            >
+              <div className="mb-6">
+                <AnnualFinancialsTable financials={annualFinancialsData!.data} />
+              </div>
+              <FinancialCharts financials={annualFinancialsData!.data} />
+            </Suspense>
+          </section>
+        )}
       </div>
 
       {/* ===== MOBILE: Fixed Bottom Bar ===== */}
@@ -1055,11 +1068,11 @@ export default function StockDetailPageEnhanced() {
         <div className="px-4 py-3 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-500">Prix actuel</p>
-            <p className="text-lg font-bold text-gray-900">{formatNumber(stock.current_price)} F</p>
+            <p className="text-lg font-bold text-gray-900">{formatNumber(stock.current_price)} FCFA</p>
           </div>
           <button
             onClick={() => setShowMobileOrder(true)}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+            className="px-6 py-3 bg-brand-navy text-white rounded-lg font-semibold hover:bg-brand-navy-hover transition-colors"
           >
             {portfolio ? 'Acheter' : 'Se connecter'}
           </button>
@@ -1110,7 +1123,6 @@ export default function StockDetailPageEnhanced() {
             {portfolio ? (
               <div className="flex justify-between items-center bg-gray-50 rounded-lg p-3 mb-4">
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Wallet className="w-5 h-5 text-gray-400" />
                   <span>Liquidités</span>
                 </div>
                 <span className="font-semibold text-gray-800">{formatNumber(portfolio.cash_balance)} FCFA</span>
@@ -1208,7 +1220,7 @@ export default function StockDetailPageEnhanced() {
                       setShowMobileOrder(false);
                     }}
                     disabled={totalCost > portfolio.cash_balance || isBuying}
-                    className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 px-4 py-3 bg-brand-navy text-white rounded-lg font-semibold hover:bg-brand-navy-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isBuying ? 'Achat...' : 'Confirmer'}
                   </button>

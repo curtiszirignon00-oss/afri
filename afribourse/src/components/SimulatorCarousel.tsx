@@ -79,7 +79,6 @@ export default function SimulatorCarousel() {
       {/* Label */}
       <div className="flex items-center gap-3 mb-6">
         <span className="inline-flex items-center gap-2 bg-brand-navy/10 text-brand-navy text-xs font-bold px-3 py-1.5 rounded-full">
-          <BarChart2 className="w-3.5 h-3.5" />
           Simulateur BRVM
         </span>
         <div className="h-px flex-1 bg-gray-100" />

@@ -25,7 +25,7 @@ const QUICK_SUGGESTIONS = [
   'Expliquer le PER',
 ];
 
-const MOTIVATION_WELCOME = `Félicitations pour ton premier module ! 🎉
+const MOTIVATION_WELCOME = `Félicitations pour ton premier module !
 
 Dis-moi — qu'est-ce qui t'a motivé à apprendre sur la BRVM et les marchés financiers africains ?`;
 
@@ -132,7 +132,7 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose, 
             <h3 className="font-bold text-sm">SIMBA — {motivationMode ? 'Coach Motivation' : 'Tuteur Afribourse'}</h3>
             <p className="text-xs text-blue-100 flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
-              {motivationMode ? 'Premier module complété 🎉' : (userContext.currentModule ?? 'Learning Academy')}
+              {motivationMode ? 'Premier module complété' : (userContext.currentModule ?? 'Learning Academy')}
             </p>
           </div>
         </div>

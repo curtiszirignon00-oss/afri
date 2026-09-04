@@ -4,7 +4,6 @@ import { Send, TrendingUp, X, Loader2 } from 'lucide-react';
 import { useCreatePost } from '../../hooks/useSocial';
 import type { CreatePostData } from '../../hooks/useSocial';
 import { useAuth } from '../../contexts/AuthContext';
-import { Card } from '../ui';
 import toast from 'react-hot-toast';
 
 export default function PostComposer() {
@@ -61,9 +60,9 @@ export default function PostComposer() {
     };
 
     return (
-        <Card className="p-6">
+        <div className="bg-white rounded-2xl border border-ink-100 shadow-sm p-5 sm:p-6">
             <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-navy to-brand-navy-hover flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                     {userProfile?.name?.[0]?.toUpperCase() ?? ''}{userProfile?.lastname?.[0]?.toUpperCase() ?? ''}
                 </div>
 
@@ -71,7 +70,7 @@ export default function PostComposer() {
                     {!isExpanded ? (
                         <button
                             onClick={() => setIsExpanded(true)}
-                            className="w-full text-left px-4 py-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 transition-colors"
+                            className="w-full text-left px-4 py-3 bg-ink-50 border border-ink-100 rounded-xl text-ink-500 hover:bg-ink-100 hover:border-ink-200 transition-colors cursor-pointer"
                         >
                             Partagez votre analyse ou opinion...
                         </button>
@@ -83,9 +82,9 @@ export default function PostComposer() {
                                     <button
                                         key={t}
                                         onClick={() => setType(t)}
-                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${type === t
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        className={`px-3 py-1.5 rounded-full border text-sm font-semibold transition-colors cursor-pointer ${type === t
+                                                ? 'bg-brand-navy text-white border-brand-navy'
+                                                : 'bg-white text-ink-600 border-ink-200 hover:border-brand-navy hover:text-brand-navy'
                                             }`}
                                     >
                                         {t === 'OPINION' && 'Opinion'}
@@ -102,7 +101,7 @@ export default function PostComposer() {
                                 placeholder="Titre (optionnel)"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent placeholder:text-ink-400"
                             />
 
                             {/* Content */}
@@ -111,19 +110,19 @@ export default function PostComposer() {
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 rows={4}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                className="w-full px-4 py-3 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent placeholder:text-ink-400 resize-none"
                             />
 
                             {/* Stock Symbol */}
                             <div className="flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-gray-400" />
+                                <TrendingUp className="w-5 h-5 text-ink-400" />
                                 <input
                                     type="text"
                                     placeholder="Symbole boursier (ex: SNTS)"
                                     value={stockSymbol}
                                     onChange={(e) => setStockSymbol(e.target.value.toUpperCase())}
                                     maxLength={10}
-                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="flex-1 px-4 py-2 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent placeholder:text-ink-400"
                                 />
                             </div>
 
@@ -136,11 +135,11 @@ export default function PostComposer() {
                                         value={tagInput}
                                         onChange={(e) => setTagInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="flex-1 px-4 py-2 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent placeholder:text-ink-400"
                                     />
                                     <button
                                         onClick={addTag}
-                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                                        className="px-4 py-2 bg-ink-100 text-ink-700 rounded-xl hover:bg-ink-200 transition-colors cursor-pointer font-medium"
                                     >
                                         Ajouter
                                     </button>
@@ -150,7 +149,7 @@ export default function PostComposer() {
                                         {tags.map((tag) => (
                                             <span
                                                 key={tag}
-                                                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm flex items-center gap-2"
+                                                className="px-3 py-1 bg-ink-100 text-brand-navy rounded-full text-sm font-medium flex items-center gap-2"
                                             >
                                                 #{tag}
                                                 <button onClick={() => removeTag(tag)}>
@@ -163,7 +162,7 @@ export default function PostComposer() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-gray-200">
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-ink-100">
                                 <button
                                     onClick={() => {
                                         setIsExpanded(false);
@@ -172,14 +171,14 @@ export default function PostComposer() {
                                         setStockSymbol('');
                                         setTags([]);
                                     }}
-                                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                                    className="px-4 py-2 text-ink-700 hover:bg-ink-100 rounded-xl transition-colors cursor-pointer font-medium"
                                 >
                                     Annuler
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isPending || !content.trim()}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    className="px-6 py-2 bg-brand-orange text-white rounded-xl font-semibold shadow-sm hover:bg-brand-orange-hover hover:shadow-md hover:shadow-brand-orange/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
                                 >
                                     {isPending ? (
                                         <>
@@ -198,6 +197,6 @@ export default function PostComposer() {
                     )}
                 </div>
             </div>
-        </Card>
+        </div>
     );
 }

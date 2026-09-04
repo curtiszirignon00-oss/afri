@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Smartphone, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency, PAWAPAY_CORRESPONDENTS } from '../../hooks/usePawaPayment';
 
 // ─── Indicatifs pays supportés par PawaPay ────────────────────────────────────
@@ -94,7 +94,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             </button>
           )}
           <div className="flex items-center gap-2 mb-1">
-            <Smartphone className="w-5 h-5 text-white/80" />
             <p className="text-white/80 text-xs font-semibold uppercase tracking-wider">
               Paiement {OPERATOR_LABELS[paymentMethod]}
             </p>

@@ -40,7 +40,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-4 text-gray-600">
+            <div className="flex items-center justify-center py-4 text-ink-600">
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
                 Chargement des commentaires...
             </div>
@@ -73,13 +73,13 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                         onChange={(e) => setCommentText(e.target.value)}
                         rows={2}
                         disabled={!isLoggedIn}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-2 border border-ink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none text-sm disabled:bg-ink-100 disabled:cursor-not-allowed"
                     />
                     <div className="flex justify-end mt-2">
                         <button
                             onClick={() => handleSubmit(replyTo || undefined)}
                             disabled={isPending || !commentText.trim() || !isLoggedIn}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+                            className="px-4 py-2 bg-brand-orange text-white rounded-xl font-semibold hover:bg-brand-orange-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2 text-sm"
                         >
                             {isPending ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -94,11 +94,11 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
             {/* Reply indicator */}
             {replyTo && (
-                <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-brand-navy bg-ink-50 border border-ink-100 px-3 py-2 rounded-xl">
                     <span>Répondre au commentaire</span>
                     <button
                         onClick={() => setReplyTo(null)}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-ink-500 hover:text-ink-700"
                     >
                         ✕
                     </button>
@@ -109,23 +109,23 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             <div className="space-y-4">
                 {comments?.data?.map((comment: any) => (
                     <div key={comment.id} className="flex gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-navy to-brand-navy-hover flex items-center justify-center text-white font-bold text-sm">
                             {comment.author.name?.[0]}{comment.author.lastname?.[0]}
                         </div>
                         <div className="flex-1">
-                            <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="bg-ink-50 border border-ink-100 rounded-xl p-3">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-semibold text-gray-900 text-sm">
+                                    <span className="font-semibold text-ink-900 text-sm">
                                         {comment.author.name} {comment.author.lastname}
                                     </span>
                                     {comment.author.profile?.verified_investor && (
-                                        <CheckCircle className="w-3 h-3 text-blue-600" />
+                                        <CheckCircle className="w-3 h-3 text-brand-orange-dark" />
                                     )}
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-ink-500">
                                         {new Date(comment.created_at).toLocaleDateString('fr-FR')}
                                     </span>
                                 </div>
-                                <p className="text-gray-700 text-sm">{comment.content}</p>
+                                <p className="text-ink-700 text-sm">{comment.content}</p>
                             </div>
 
                             {/* Replies */}
@@ -136,16 +136,16 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-navy to-[#173F66] flex items-center justify-center text-white font-bold text-xs">
                                                 {reply.author.name?.[0]}{reply.author.lastname?.[0]}
                                             </div>
-                                            <div className="flex-1 bg-gray-50 rounded-lg p-2">
+                                            <div className="flex-1 bg-ink-50 border border-ink-100 rounded-xl p-2">
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <span className="font-semibold text-gray-900 text-xs">
+                                                    <span className="font-semibold text-ink-900 text-xs">
                                                         {reply.author.name} {reply.author.lastname}
                                                     </span>
-                                                    <span className="text-xs text-gray-500">
+                                                    <span className="text-xs text-ink-500">
                                                         {new Date(reply.created_at).toLocaleDateString('fr-FR')}
                                                     </span>
                                                 </div>
-                                                <p className="text-gray-700 text-xs">{reply.content}</p>
+                                                <p className="text-ink-700 text-xs">{reply.content}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -155,7 +155,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                             {isLoggedIn && (
                                 <button
                                     onClick={() => setReplyTo(comment.id)}
-                                    className="text-xs text-blue-600 hover:text-blue-700 mt-2"
+                                    className="text-xs font-medium text-brand-navy hover:text-brand-orange-dark mt-2 cursor-pointer"
                                 >
                                     Répondre
                                 </button>
@@ -166,7 +166,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
             </div>
 
             {(!comments?.data || comments.data.length === 0) && (
-                <p className="text-center text-gray-500 text-sm py-4">
+                <p className="text-center text-ink-500 text-sm py-4">
                     Aucun commentaire. Soyez le premier à commenter !
                 </p>
             )}

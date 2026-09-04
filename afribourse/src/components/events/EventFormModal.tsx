@@ -1,16 +1,6 @@
 // src/components/events/EventFormModal.tsx
 import { useState, useEffect } from 'react';
-import {
-    X,
-    Calendar,
-    Clock,
-    Video,
-    MapPin,
-    Users,
-    Save,
-    Loader2,
-    Globe,
-} from 'lucide-react';
+import { X, Save, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
     useCreateEvent,
@@ -176,7 +166,6 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                         {/* Informations de base */}
                         <div className="space-y-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-indigo-600" />
                                 Informations de base
                             </h3>
 
@@ -244,7 +233,6 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                         {/* Date et heure */}
                         <div className="space-y-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-indigo-600" />
                                 Date et heure
                             </h3>
 
@@ -294,7 +282,6 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                         {/* Lieu / Plateforme */}
                         <div className="space-y-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                <Globe className="w-5 h-5 text-indigo-600" />
                                 Lieu / Plateforme
                             </h3>
 
@@ -306,7 +293,6 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                                         onChange={() => setFormData({ ...formData, is_online: true })}
                                         className="w-4 h-4 text-indigo-600"
                                     />
-                                    <Video className="w-4 h-4" />
                                     En ligne
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -316,7 +302,6 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                                         onChange={() => setFormData({ ...formData, is_online: false })}
                                         className="w-4 h-4 text-indigo-600"
                                     />
-                                    <MapPin className="w-4 h-4" />
                                     En presentiel
                                 </label>
                             </div>
@@ -402,7 +387,6 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                         {/* Inscriptions */}
                         <div className="space-y-4">
                             <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                <Users className="w-5 h-5 text-indigo-600" />
                                 Inscriptions
                             </h3>
 

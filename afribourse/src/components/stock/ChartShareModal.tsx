@@ -1,6 +1,6 @@
 // src/components/stock/ChartShareModal.tsx
 import { useState } from 'react';
-import { X, Download, Send, Loader2, Smartphone } from 'lucide-react';
+import { X, Send, Loader2 } from 'lucide-react';
 import { useCreatePost } from '../../hooks/useSocial';
 import toast from 'react-hot-toast';
 
@@ -233,7 +233,7 @@ export default function ChartShareModal({
                       {sign}{changePercent.toFixed(2)}%
                     </span>
                   </div>
-                  <span className="text-xs text-blue-600 font-semibold">AfriBourse</span>
+                  <span className="text-xs text-brand-navy font-semibold">AfriBourse</span>
                 </div>
               </div>
             </div>
@@ -253,7 +253,7 @@ export default function ChartShareModal({
               onChange={(e) => setCustomMessage(e.target.value)}
               placeholder="Ajoutez votre analyse ou commentaire..."
               rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent resize-none text-sm"
             />
           </div>
 
@@ -270,9 +270,6 @@ export default function ChartShareModal({
                 className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 disabled:opacity-50"
                 title="Télécharger l'image"
               >
-                <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center">
-                  <Download className="w-5 h-5 text-white" />
-                </div>
                 <span className="text-[11px] text-gray-600 font-medium">Télécharger</span>
               </button>
 
@@ -339,9 +336,6 @@ export default function ChartShareModal({
                 className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 disabled:opacity-50"
                 title="Plus d'options"
               >
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-white" />
-                </div>
                 <span className="text-[11px] text-gray-600 font-medium">Plus</span>
               </button>
             </div>
@@ -369,7 +363,7 @@ export default function ChartShareModal({
           <button
             onClick={handleShareCommunity}
             disabled={isBusy}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+            className="px-6 py-2 bg-brand-navy text-white rounded-lg hover:bg-brand-navy-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
             {isBusy ? (
               <>

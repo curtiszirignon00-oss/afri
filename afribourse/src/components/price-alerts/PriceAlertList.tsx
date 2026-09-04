@@ -1,17 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Bell,
-  BellOff,
-  TrendingUp,
-  TrendingDown,
-  Edit2,
-  Trash2,
-  CheckCircle,
-  Clock,
-  Mail,
-  Smartphone,
-  AlertCircle,
-} from 'lucide-react';
+import { Bell, BellOff, TrendingUp, TrendingDown, Edit2, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useStockAlerts, useTogglePriceAlert, useDeletePriceAlert } from '../../hooks/usePriceAlerts';
 import { PriceAlert } from '../../types';
 import PriceAlertModal from './PriceAlertModal';
@@ -80,7 +68,6 @@ export default function PriceAlertList({ stockTicker, currentPrice, companyName 
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-orange-600" />
             <h3 className="font-semibold text-gray-900">
               Mes alertes ({alerts.length})
             </h3>
@@ -124,7 +111,6 @@ export default function PriceAlertList({ stockTicker, currentPrice, companyName 
                       )}
                       {!alert.is_active && !alert.is_notified && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                          <Clock className="w-3 h-3" />
                           Désactivée
                         </span>
                       )}
@@ -146,13 +132,11 @@ export default function PriceAlertList({ stockTicker, currentPrice, companyName 
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       {alert.notify_email && (
                         <span className="flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
                           Email
                         </span>
                       )}
                       {alert.notify_in_app && (
                         <span className="flex items-center gap-1">
-                          <Smartphone className="w-3 h-3" />
                           In-app
                         </span>
                       )}

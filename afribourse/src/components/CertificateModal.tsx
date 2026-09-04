@@ -1,14 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import { toPng } from 'html-to-image';
-import {
-    X,
-    Download,
-    Share2,
-    CheckCircle,
-    Star,
-    Award,
-    Printer
-} from 'lucide-react';
+import { X, Download, Share2, CheckCircle, Star, Printer } from 'lucide-react';
 
 interface CertificateModalProps {
     onClose: () => void;
@@ -97,7 +89,7 @@ export default function CertificateModal({
     }, [verifyUrl]);
 
     const shareWhatsApp = useCallback(() => {
-        const text = `🎓 Je viens de terminer le Parcours Investisseur BRVM sur AfriBourse !\n\n✅ ${modulesCompleted}/${totalModules} modules complétés\n📊 Score final : ${averageScore}%\n⏱️ Durée : ${durationDays} jours\n\n🔗 Vérifier mon certificat : https://${verifyUrl}`;
+        const text = `Je viens de terminer le Parcours Investisseur BRVM sur AfriBourse !\n\nModules complétés : ${modulesCompleted}/${totalModules}\nScore final : ${averageScore}%\nDurée : ${durationDays} jours\n\nVérifier mon certificat : https://${verifyUrl}`;
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
     }, [modulesCompleted, totalModules, averageScore, durationDays, verifyUrl]);
 
@@ -113,7 +105,6 @@ export default function CertificateModal({
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                     <div className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-indigo-600" />
                         <h2 className="text-lg font-bold text-gray-900">Mon Certificat</h2>
                     </div>
                     <button

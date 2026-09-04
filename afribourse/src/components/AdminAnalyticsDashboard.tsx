@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, MousePointer, Eye, Smartphone, TrendingUp, Target, BookOpen, Activity, AlertTriangle, BarChart2 } from 'lucide-react';
+import { Users, MousePointer, Eye, TrendingUp, Target, AlertTriangle, BarChart2 } from 'lucide-react';
 
 // ─── Types Stats classiques ───────────────────────────────────────────────────
 interface AnalyticsData {
@@ -326,7 +326,7 @@ export default function AdminAnalyticsDashboard() {
               {/* Devices */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Smartphone className="h-5 w-5 text-gray-500" /> Appareils
+ Appareils
                 </h2>
                 <div className="space-y-3">
                   {data.deviceBreakdown.map((d, i) => {
@@ -426,7 +426,6 @@ export default function AdminAnalyticsDashboard() {
               <div className="bg-white rounded-xl border border-gray-200 mb-6 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100">
                   <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-purple-500" />
                     Première action après inscription
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">
@@ -483,7 +482,6 @@ export default function AdminAnalyticsDashboard() {
               {/* ── Q4 TEMPS LEARNING vs SIMULATEUR ──────────────────────── */}
               <div className="bg-white rounded-xl border border-gray-200 mb-6 p-6">
                 <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-teal-500" />
                   Engagement — Modules éducatifs vs Simulateur
                 </h2>
                 <div className="grid grid-cols-2 gap-6">
@@ -547,7 +545,6 @@ export default function AdminAnalyticsDashboard() {
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100">
                   <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Target className="h-5 w-5 text-indigo-500" />
                     Aha moment — signaux de rétention
                   </h2>
                   <p className="text-xs text-gray-400 mt-0.5">{cohort.ahaSignals.methodology}</p>

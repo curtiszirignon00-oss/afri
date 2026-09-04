@@ -2,7 +2,7 @@
 // Tableau de classement gamification (par XP)
 
 import { useState } from 'react';
-import { Trophy, Globe, MapPin, Users, Flame, Zap, Medal, Crown } from 'lucide-react';
+import { Globe, MapPin, Users, Flame, Zap, Medal, Crown } from 'lucide-react';
 import { LevelBadge } from './LevelBadge';
 import RareBadgeIcon from '../common/RareBadgeIcon';
 import type { GamificationLeaderboardResponse, GamificationLeaderboardEntry } from '../../types';
@@ -87,9 +87,6 @@ export function GamificationLeaderboard({
         <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
-                <Trophy className="w-6 h-6 text-blue-600" />
-              </div>
               <div>
                 <p className="text-sm text-gray-600">Votre position</p>
                 <p className="text-2xl font-bold text-blue-600">

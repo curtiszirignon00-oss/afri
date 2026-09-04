@@ -4,10 +4,7 @@
 // blanches au gabarit unique. La charte se limite au navy, a l'orange du logo
 // et aux gris ; les emojis des rubriques laissent la place a des icones.
 import React, { useEffect, useState } from 'react';
-import {
-  Users, Target, Award, TrendingUp, User, Linkedin, Globe, BookOpen, Wallet,
-  Info, ShieldCheck, BarChart3, Newspaper, Trophy, Building2,
-} from 'lucide-react';
+import { Users, Target, Award, TrendingUp, User, Linkedin, Globe, BookOpen, Wallet, Info, ShieldCheck, BarChart3, Newspaper, Trophy } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api';
@@ -256,9 +253,6 @@ const AboutPage: React.FC = () => {
         {/* La BRVM */}
         <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6">
           <div className="flex items-center gap-3 mb-4">
-            <span className="w-11 h-11 rounded-xl bg-ink-50 flex items-center justify-center shrink-0">
-              <Building2 className="w-5 h-5 text-brand-navy" />
-            </span>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">La BRVM</h2>
           </div>
           <p className="text-gray-600 leading-relaxed mb-3">

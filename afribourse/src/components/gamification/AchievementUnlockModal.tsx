@@ -2,7 +2,8 @@
 // Modal de célébration lors du déblocage d'un badge
 
 import { useEffect, useState } from 'react';
-import { X, Zap, Share2, Users, Download, Smartphone } from 'lucide-react';
+import { X, Zap, Share2, Medal, Award, Trophy, Crown } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Achievement, AchievementRarity } from '../../types';
 import { RARITY_COLORS } from '../../types';
@@ -31,6 +32,15 @@ export function AchievementUnlockModal({
     legendary: 'Légendaire',
   };
 
+  // Icone du badge selon la rarete (remplace les emojis renvoyes par l'API)
+  const rarityIcons: Record<string, LucideIcon> = {
+    common: Medal,
+    rare: Award,
+    epic: Trophy,
+    legendary: Crown,
+  };
+  const BadgeIcon = rarityIcons[achievement.rarity] || Trophy;
+
   // Confetti à l'ouverture
   useEffect(() => {
     if (!isOpen) { setIsAnimating(false); return; }
@@ -57,7 +67,7 @@ export function AchievementUnlockModal({
 
   if (!isOpen) return null;
 
-  const shareText = `${achievement.icon || '🏆'} J'ai débloqué le badge "${achievement.name}" sur AfriBourse !`;
+  const shareText = `J'ai débloqué le badge "${achievement.name}" sur AfriBourse !`;
 
   const handleShareWhatsApp = () => {
     const text = encodeURIComponent(shareText + '\n\nRejoins-moi sur https://africbourse.com');
@@ -97,9 +107,12 @@ export function AchievementUnlockModal({
             {rarityLabels[achievement.rarity]}
           </span>
 
-          {/* Icône animée */}
-          <div className="text-7xl mb-2" style={{ animation: 'badge-pop 0.55s cubic-bezier(.36,1.8,.44,.95) both' }}>
-            {achievement.icon || '🏆'}
+          {/* Icone animee */}
+          <div
+            className="mx-auto mb-2 w-20 h-20 rounded-2xl bg-white/50 border border-white/60 flex items-center justify-center"
+            style={{ animation: 'badge-pop 0.55s cubic-bezier(.36,1.8,.44,.95) both' }}
+          >
+            <BadgeIcon className={`w-10 h-10 ${rarityColors.text}`} strokeWidth={1.75} />
           </div>
 
           <p className="text-sm font-semibold text-gray-700 opacity-80">Badge débloqué !</p>
@@ -152,9 +165,6 @@ export function AchievementUnlockModal({
                   title="Partager dans la communauté"
                   className="flex flex-col items-center gap-1 group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <Users className="w-5 h-5 text-blue-600" />
-                  </div>
                   <span className="text-[10px] text-gray-500">Commu.</span>
                 </button>
 
@@ -192,9 +202,6 @@ export function AchievementUnlockModal({
                   title="Plus d'options"
                   className="flex flex-col items-center gap-1 group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                    <Smartphone className="w-5 h-5 text-gray-500" />
-                  </div>
                   <span className="text-[10px] text-gray-500">Plus</span>
                 </button>
               </div>

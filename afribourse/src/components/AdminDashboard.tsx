@@ -1,45 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Users,
-  TrendingUp,
-  Briefcase,
-  CreditCard,
-  UserCheck,
-  UserX,
-  Target,
-  Activity,
-  Crown,
-  Zap,
-  Calendar,
-  DollarSign,
-  BarChart3,
-  Eye,
-  MousePointerClick,
-  Shield,
-  Flag,
-  AlertTriangle,
-  Ban,
-  FileText,
-  Download,
-  Pencil,
-  Trash,
-  Plus,
-  Newspaper,
-  Bot,
-  ThumbsUp,
-  ThumbsDown,
-  Gift,
-  CheckCircle2,
-  Clock,
-  MailOpen,
-  Video,
-  Phone,
-  Send,
-  Loader2,
-  AlertCircle,
-  X,
-} from 'lucide-react';
+import { Users, TrendingUp, Briefcase, CreditCard, Activity, Crown, Zap, BarChart3, Eye, Download, Pencil, Trash, Plus, Bot, ThumbsUp, ThumbsDown, CheckCircle2, Clock, MailOpen, Send, Loader2, AlertCircle, X } from 'lucide-react';
 import { useModerationStats, useReports } from '../hooks/useModeration';
 import ModerationSection from './moderation/ModerationSection';
 import AdminArticleEditor from './AdminArticleEditor';
@@ -658,7 +619,6 @@ export default function AdminDashboard() {
               </div>
               <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <MousePointerClick className="w-5 h-5 text-blue-200" />
                   <span className="text-blue-100 text-sm">Actions</span>
                 </div>
                 <p className="text-3xl font-bold text-white">
@@ -667,7 +627,6 @@ export default function AdminDashboard() {
               </div>
               <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <Activity className="w-5 h-5 text-blue-200" />
                   <span className="text-blue-100 text-sm">Utilisations</span>
                 </div>
                 <p className="text-3xl font-bold text-white">
@@ -676,7 +635,6 @@ export default function AdminDashboard() {
               </div>
               <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <Users className="w-5 h-5 text-blue-200" />
                   <span className="text-blue-100 text-sm">Actifs uniques</span>
                 </div>
                 <p className="text-3xl font-bold text-white">
@@ -768,7 +726,6 @@ export default function AdminDashboard() {
           {/* Email Confirmation */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <UserCheck className="w-5 h-5 text-green-600 mr-2" />
               Confirmation Email
             </h3>
             <div className="space-y-3">
@@ -812,7 +769,6 @@ export default function AdminDashboard() {
           {/* Transaction Volume */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <DollarSign className="w-5 h-5 text-green-600 mr-2" />
               Volume Total
             </h3>
             <div className="text-center">
@@ -828,7 +784,6 @@ export default function AdminDashboard() {
           {/* Subscription Conversion */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Target className="w-5 h-5 text-blue-600 mr-2" />
               Conversion Premium
             </h3>
             <div className="text-center">
@@ -847,7 +802,6 @@ export default function AdminDashboard() {
           {/* Subscription by Plan */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <BarChart3 className="w-5 h-5 text-blue-600 mr-2" />
               Intentions par Plan
             </h3>
             <div className="space-y-3">
@@ -891,7 +845,6 @@ export default function AdminDashboard() {
           {/* Payment Methods */}
           <div className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <CreditCard className="w-5 h-5 text-green-600 mr-2" />
               Méthodes de Paiement Préférées
             </h3>
             <div className="space-y-3">
@@ -932,7 +885,6 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Activity className="w-5 h-5 text-blue-600 mr-2" />
               Top 10 Utilisateurs Actifs
             </h3>
           </div>
@@ -995,7 +947,6 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Calendar className="w-5 h-5 text-green-600 mr-2" />
               Derniers Utilisateurs Inscrits
             </h3>
           </div>
@@ -1034,12 +985,10 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.email_verified_at ? (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          <UserCheck className="w-3 h-3 mr-1" />
                           Confirmé
                         </span>
                       ) : (
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                          <UserX className="w-3 h-3 mr-1" />
                           Non confirmé
                         </span>
                       )}
@@ -1072,7 +1021,6 @@ export default function AdminDashboard() {
         {/* Débloquer un utilisateur - Forcer la vérification email */}
         <div className="bg-white rounded-xl shadow-md p-6 mb-8 border-l-4 border-orange-400">
           <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-orange-500" />
             Débloquer un utilisateur
           </h3>
           <p className="text-sm text-gray-500 mb-4">
@@ -1106,7 +1054,6 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <Crown className="w-5 h-5 text-yellow-500 mr-2" />
               Intentions Premium — Emails ({premiumIntents.length} intentions,{' '}
               {new Set(premiumIntents.map((i) => i.user.id)).size} utilisateurs uniques)
             </h3>
@@ -1176,7 +1123,6 @@ export default function AdminDashboard() {
           <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Phone className="w-5 h-5 text-green-600 mr-2" />
                 Prospects Formation — Numéros ({formationLeads.length})
               </h3>
               <p className="text-xs text-gray-500 mt-1">
@@ -1271,7 +1217,6 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                  <Gift className="w-6 h-6" />
                   Essai Gratuit IA — 14 jours
                 </h2>
                 <p className="text-violet-100 text-sm">Suivi des invitations et activations trial</p>
@@ -1334,15 +1279,15 @@ export default function AdminDashboard() {
                             <td className="px-5 py-3">
                               {isActive ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                  <Zap className="w-3 h-3" /> Actif
+ Actif
                                 </span>
                               ) : isExpired ? (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
-                                  <Clock className="w-3 h-3" /> Expiré
+ Expiré
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
-                                  <MailOpen className="w-3 h-3" /> En attente
+ En attente
                                 </span>
                               )}
                             </td>
@@ -1376,7 +1321,6 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                  <Bot className="w-6 h-6" />
                   Feedback IA — Pouces levé / baissé
                 </h2>
                 <p className="text-blue-100 text-sm">Satisfaction utilisateurs sur les 30 derniers jours</p>
@@ -1514,7 +1458,6 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                      <Video className="w-6 h-6" />
                       Webinaires — Inscriptions & Paiements
                     </h2>
                     <p className="text-blue-100 text-sm">
@@ -1562,7 +1505,7 @@ export default function AdminDashboard() {
                         <th className="px-5 py-3">Webinaire</th>
                         <th className="px-5 py-3">Nom</th>
                         <th className="px-5 py-3">Email</th>
-                        <th className="px-5 py-3"><Phone className="w-3.5 h-3.5 inline mr-1" />Téléphone</th>
+                        <th className="px-5 py-3">Téléphone</th>
                         <th className="px-5 py-3">Paiement</th>
                         <th className="px-5 py-3">Inscrit le</th>
                       </tr>
@@ -1596,11 +1539,11 @@ export default function AdminDashboard() {
                                   <span className="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full"><CheckCircle2 className="w-3 h-3" /> Payé{inst ? ` (3×)` : ''}</span>
                                 ) : isPartial && inst ? (
                                   <div className="flex flex-col gap-0.5">
-                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full w-fit"><Clock className="w-3 h-3" /> Échelonné {inst.paid}/{inst.total} · reste {inst.remaining}</span>
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full w-fit"> Échelonné {inst.paid}/{inst.total} · reste {inst.remaining}</span>
                                     <span className="text-[10px] text-gray-500">{fmtXof(inst.amountPaid)} payés / {fmtXof(inst.totalAmount)}{inst.nextDueAt ? ` · éch. ${new Date(inst.nextDueAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}` : ''}</span>
                                   </div>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"><Clock className="w-3 h-3" /> En attente</span>
+                                  <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full"> En attente</span>
                                 )}
                               </td>
                               <td className="px-5 py-3 text-xs text-gray-400">
@@ -1617,7 +1560,7 @@ export default function AdminDashboard() {
 
               {/* Envoi lien Zoom */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2"><Video className="w-4 h-4 text-blue-600" /> Envoyer le lien Zoom aux inscrits payés</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2"> Envoyer le lien Zoom aux inscrits payés</h3>
                 <p className="text-sm text-gray-500 mb-4">Seuls les inscrits avec statut <strong>Payé</strong> recevront le lien.</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <select value={zoomWebinarId} onChange={e => { setZoomWebinarId(e.target.value); setZoomStatus('idle'); setZoomResult(null); }}
@@ -1649,7 +1592,6 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h2 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-                  <Send className="w-6 h-6" />
                   Campagne Email — Lancement Webinaires
                 </h2>
                 <p className="text-blue-100 text-sm">
@@ -1785,7 +1727,6 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                  <Newspaper className="w-6 h-6" />
                   Analyses &amp; Articles
                 </h2>
                 <p className="text-teal-100 text-sm">
@@ -1895,7 +1836,6 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                  <Shield className="w-6 h-6" />
                   Modération de la Plateforme
                 </h2>
                 <p className="text-red-100 text-sm">

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, TrendingUp, Wallet, ArrowLeft, Play, Lock } from 'lucide-react';
+import { TrendingUp, ArrowLeft, Play, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { useTimeMachineScenario } from '../hooks/useTimeMachine';
 import { useTimeMachine } from '../contexts/TimeMachineContext';
@@ -36,7 +36,7 @@ export default function TimeMachineScenarioPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Chargement du scénario">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-brand-navy border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -75,21 +75,20 @@ export default function TimeMachineScenarioPage() {
       <div className="max-w-3xl mx-auto px-4 pb-16 space-y-6">
         {/* Hero card */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="bg-gradient-to-br from-slate-800 to-blue-900 p-8 text-white space-y-3">
+          <div className="bg-gradient-to-br from-brand-navy to-ink-950 p-8 text-white space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/20 text-white">
                 {TIER_LABEL[scenario.tier] ?? scenario.tier}
               </span>
-              <span className="text-xs text-blue-200">{scenario.category}</span>
+              <span className="text-xs text-ink-200">{scenario.category}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">{scenario.title}</h1>
-            <p className="text-blue-100 leading-relaxed">{scenario.description}</p>
+            <p className="text-ink-100 leading-relaxed">{scenario.description}</p>
           </div>
 
           {/* Meta */}
           <div className="px-8 py-5 grid grid-cols-3 gap-4 border-t border-gray-100">
             <div className="flex flex-col items-center gap-1 text-center">
-              <Clock className="w-5 h-5 text-blue-500" />
               <p className="text-xs text-gray-500">Étapes</p>
               <p className="text-base font-bold text-gray-900">{scenario.years.length}</p>
             </div>
@@ -99,7 +98,6 @@ export default function TimeMachineScenarioPage() {
               <p className="text-base font-bold text-gray-900">{scenario.years[0]}–{scenario.years[scenario.years.length - 1]}</p>
             </div>
             <div className="flex flex-col items-center gap-1 text-center">
-              <Wallet className="w-5 h-5 text-amber-500" />
               <p className="text-xs text-gray-500">Budget départ</p>
               <p className="text-base font-bold text-gray-900">{(scenario.startBudget / 1000).toFixed(0)}k FCFA</p>
             </div>
@@ -138,7 +136,7 @@ export default function TimeMachineScenarioPage() {
         <button
           onClick={handleStart}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold text-lg rounded-2xl transition-colors shadow-lg shadow-blue-200"
+          className="w-full flex items-center justify-center gap-3 py-4 bg-brand-navy hover:bg-brand-navy-hover disabled:opacity-60 text-white font-bold text-lg rounded-2xl transition-colors shadow-lg shadow-ink-200"
         >
           {scenario.locked ? (
             <><Lock className="w-5 h-5" />Scénario verrouillé</>

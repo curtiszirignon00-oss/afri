@@ -1,4 +1,4 @@
-import { Wallet, Briefcase, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
+import { AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import StockRow from './StockRow';
 
 interface Props {
@@ -38,7 +38,6 @@ export default function AllocationZone({
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">
-              <Wallet className="w-3.5 h-3.5 text-amber-500" />
               <p className="text-[9px] font-bold text-amber-600 uppercase tracking-widest">Cash</p>
             </div>
             <p className={`text-base font-extrabold tabular-nums ${overBudget ? 'text-red-600' : 'text-amber-600'}`}>
@@ -53,7 +52,6 @@ export default function AllocationZone({
 
           <div className="bg-violet-50 border border-violet-200 rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1">
-              <Briefcase className="w-3.5 h-3.5 text-violet-500" />
               <p className="text-[9px] font-bold text-violet-600 uppercase tracking-widest">Portefeuille</p>
             </div>
             <p className="text-base font-extrabold text-violet-600 tabular-nums">

@@ -1,10 +1,7 @@
 // src/components/learning/ContentRenderer.tsx
 import React from 'react';
 import DOMPurify from 'dompurify';
-import {
-  Lightbulb, Globe, Book, ArrowRightLeft,
-  CheckCircle, AlertCircle, Info
-} from 'lucide-react';
+import { Lightbulb, Globe, Book, ArrowRightLeft, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 // Sanitizer centralisé — utilisé pour tout dangerouslySetInnerHTML
 const sanitize = (html: string): string => DOMPurify.sanitize(html, {
@@ -323,7 +320,6 @@ const AnalogyBox: React.FC<AnalogyBoxProps> = ({
   return (
     <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-r-xl">
       <h3 className="text-amber-900 font-bold flex items-center gap-2 mb-2">
-        <Lightbulb className="w-5 h-5" />
         L'analogie à retenir : {title}
       </h3>
 
@@ -540,7 +536,6 @@ const GlossarySection: React.FC<GlossarySectionProps> = ({ terms }) => {
   return (
     <div className="bg-slate-50 rounded-xl p-8">
       <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-6">
-        <Book className="w-5 h-5 text-slate-400" />
         Termes à maîtriser
       </h2>
 

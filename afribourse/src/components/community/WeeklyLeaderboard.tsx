@@ -1,5 +1,5 @@
 // src/components/community/WeeklyLeaderboard.tsx
-import { Trophy, TrendingUp, Crown, Medal, Loader2 } from 'lucide-react';
+import { TrendingUp, Crown, Medal, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useWeeklyLeaderboard } from '../../hooks/useWeeklyLeaderboard';
 
@@ -16,9 +16,6 @@ export default function WeeklyLeaderboard() {
         return (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                 <div className="flex items-center gap-2.5 mb-4">
-                    <span className="w-8 h-8 rounded-lg bg-ink-50 flex items-center justify-center shrink-0">
-                        <Trophy className="w-4 h-4 text-brand-navy" />
-                    </span>
                     <h3 className="font-bold text-gray-900">Top 5 Portfolios</h3>
                 </div>
                 <div className="flex justify-center py-6">
@@ -39,9 +36,6 @@ export default function WeeklyLeaderboard() {
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-lg bg-ink-50 flex items-center justify-center shrink-0">
-                        <Trophy className="w-4 h-4 text-brand-navy" />
-                    </span>
                     <h3 className="font-bold text-gray-900 text-sm">Top 5 Portfolios</h3>
                 </div>
                 <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">

@@ -49,7 +49,7 @@ export default function StockTabs({ activeTab, onTabChange, newsCount = 0 }: Sto
               onClick={() => onTabChange(tab.id)}
               className={`flex items-center space-x-2 px-6 py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
+                  ? 'border-brand-navy text-brand-navy'
                   : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
               }`}
             >
@@ -58,7 +58,7 @@ export default function StockTabs({ activeTab, onTabChange, newsCount = 0 }: Sto
               {tab.id === 'news' && newsCount > 0 && (
                 <span className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold ${
                   activeTab === 'news'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-navy text-white'
                     : 'bg-red-500 text-white'
                 }`}>
                   {newsCount}

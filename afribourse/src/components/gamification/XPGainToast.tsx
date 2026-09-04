@@ -151,7 +151,6 @@ export function XPGainDisplay({ data, className = '' }: XPGainDisplayProps) {
   return (
     <div className={`p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 ${className}`}>
       <div className="flex items-center gap-2 mb-2">
-        <Zap className="w-5 h-5 text-amber-600" />
         <span className="font-bold text-amber-700">Récompenses gagnées</span>
       </div>
 

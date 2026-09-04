@@ -1,5 +1,5 @@
 // src/components/share/ShareablePortfolioCard.tsx
-import { Wallet, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ShareablePortfolioData } from '../../types/share';
 import CardBranding from './CardBranding';
 
@@ -22,9 +22,6 @@ export default function ShareablePortfolioCard({ data }: ShareablePortfolioCardP
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <Wallet className="w-5 h-5 text-white" />
-                </div>
                 <div>
                     <h3 className="font-semibold text-gray-900">Portefeuille Virtuel</h3>
                     <p className="text-xs text-gray-500">Snapshot partagé</p>
@@ -71,7 +68,6 @@ export default function ShareablePortfolioCard({ data }: ShareablePortfolioCardP
             {data.topPositions && data.topPositions.length > 0 && (
                 <div>
                     <div className="flex items-center gap-2 mb-2">
-                        <PieChart className="w-4 h-4 text-gray-600" />
                         <p className="text-xs font-medium text-gray-600">Top Positions</p>
                     </div>
                     <div className="space-y-2">

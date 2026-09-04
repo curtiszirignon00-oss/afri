@@ -1,6 +1,5 @@
 import { useTimeMachineScenarios } from '../hooks/useTimeMachine';
 import ScenarioCard, { type StaticScenario } from '../components/time-machine/ScenarioCard';
-import { Clock, Timer } from 'lucide-react';
 
 // Scénario "bientôt disponible" — card statique, pas de contenu en DB
 const COMING_SOON: StaticScenario[] = [
@@ -121,16 +120,15 @@ export default function TimeMachinePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 py-16 px-4">
+      <div className="bg-gradient-to-br from-brand-navy via-[#173F66] to-ink-950 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs font-semibold mb-2">
-            <Clock className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-navy/20 border border-ink-400/30 rounded-full text-ink-300 text-xs font-semibold mb-2">
             Apprentissage par l'histoire
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
             La Time Machine
           </h1>
-          <p className="text-lg text-blue-200 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-ink-200 max-w-2xl mx-auto leading-relaxed">
             Rejouez les grands événements de la BRVM. Composez votre portefeuille virtuel, prenez vos décisions et découvrez ce qui se serait réellement passé.
           </p>
           {/* Stats bar — valeurs dérivées des scénarios réels */}
@@ -148,7 +146,7 @@ export default function TimeMachinePage() {
             ].map(({ label, value }) => (
               <div key={label} className="text-center">
                 <p className="text-2xl font-extrabold text-white">{value}</p>
-                <p className="text-xs text-blue-300 font-medium">{label}</p>
+                <p className="text-xs text-ink-300 font-medium">{label}</p>
               </div>
             ))}
           </div>
@@ -159,17 +157,17 @@ export default function TimeMachinePage() {
         {/* Legend */}
         <div className="flex items-center gap-3 text-[11px] text-gray-500">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />Disponible
+            <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />Disponible
           </span>
           <span className="flex items-center gap-1">
-            <Timer className="w-3 h-3 text-amber-500" />Bientôt disponible
+Bientôt disponible
           </span>
         </div>
 
         {/* Loading */}
         {isLoading && (
           <div className="flex items-center justify-center py-20" role="status" aria-label="Chargement des scénarios">
-            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-4 border-brand-navy border-t-transparent rounded-full animate-spin" />
           </div>
         )}
 
@@ -198,7 +196,7 @@ export default function TimeMachinePage() {
               { n: '3', t: 'Découvrez les résultats réels', d: "Comparez vos décisions à l'histoire." },
             ].map(({ n, t, d }) => (
               <div key={n} className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-sm flex items-center justify-center">{n}</div>
+                <div className="w-8 h-8 rounded-full bg-ink-100 text-brand-navy-hover font-bold text-sm flex items-center justify-center">{n}</div>
                 <p className="font-semibold text-gray-800">{t}</p>
                 <p className="text-xs">{d}</p>
               </div>

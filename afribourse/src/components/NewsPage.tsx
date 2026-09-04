@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X, Search, LineChart, Globe, Mic, FileText, Coins } from 'lucide-react';
+import { Clock, Newspaper, BarChart2, X, Search, LineChart, Globe, Mic, FileText, Coins } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://africbourse.com';
@@ -33,7 +33,6 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   resultats:  FileText,
   dividendes: Coins,
 };
-
 
 // Marque une vue (dédup par session via localStorage)
 function trackArticleView(articleId: string) {
@@ -444,7 +443,6 @@ export default function NewsPage() {
       {selectedCategory === 'resultats' && (
         <div className="mt-2">
           <div className="flex items-center gap-2 mb-5">
-            <BarChart2 size={18} className="text-brand-navy" />
             <h2 className="text-lg font-bold text-slate-900">Résultats annuels 2025</h2>
             <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Fondamentaux BRVM</span>
           </div>
@@ -503,7 +501,7 @@ export default function NewsPage() {
                   </h2>
                   <p className="text-slate-200 line-clamp-2 mb-4 max-w-2xl">{featuredArticle.summary}</p>
                   <div className="flex items-center gap-4 text-slate-300 text-xs font-medium">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Il y a {formatTimeAgo(featuredArticle.published_at)}</span>
+                    <span className="flex items-center gap-1">Il y a {formatTimeAgo(featuredArticle.published_at)}</span>
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{calcReadTime(featuredArticle.content)} min de lecture</span>
                   </div>
                 </div>
@@ -539,7 +537,6 @@ export default function NewsPage() {
       {!isStaticOnly && !loading && !gated && brvmFiltered.length > 0 && (
         <div className="mt-10">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart2 size={15} className="text-brand-navy" />
             <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wide">Intelligence de marché BRVM 2026</h3>
             <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
               {brvmFiltered.length} article{brvmFiltered.length > 1 ? 's' : ''}
