@@ -245,7 +245,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
         onClick={() => scrollToId('presentiel')}
         className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-center px-4 py-2.5 text-sm font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-2 flex-wrap"
       >
-        <span>🏫 Nouveau — Formations <strong>en présentiel</strong> à Ouagadougou 🇧🇫 &amp; Calavi 🇧🇯 · 11-12 septembre</span>
+        <span>🏫 Nouveau — Formations <strong>en présentiel</strong> à Ouagadougou 🇧🇫 &amp; Calavi 🇧🇯 · 9-10 octobre</span>
         <span className="underline font-bold whitespace-nowrap">Je m'inscris →</span>
       </button>
 
@@ -259,7 +259,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
             <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
               {isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026'}
             </span>
-            <span className="text-blue-400 text-xs">· Places limitées à 50 par pack</span>
+            <span className="text-blue-400 text-xs">· Places limitées à 20 par pack</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ letterSpacing: '-0.02em' }}>
@@ -397,7 +397,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
           <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
           <p className="text-blue-200 mb-8 text-base leading-relaxed">
-            La prochaine cohorte démarre le {isBudget ? '12 septembre' : '8 août'}. Les places sont limitées à 50 par pack.
+            La prochaine cohorte démarre le {isBudget ? '12 septembre' : '8 août'}. Les places sont limitées à 20 par pack.
           </p>
           <button
             onClick={scrollToRegistration}

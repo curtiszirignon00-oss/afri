@@ -25,13 +25,13 @@ const EVENTS: Event[] = [
   {
     id: 'presentiel-calavi-benin',
     city: 'Calavi', country: 'Bénin', flag: '🇧🇯', venue: 'Calavi',
-    price: 50000, dates: '11 & 12 septembre 2026',
+    price: 50000, dates: '9 & 10 octobre 2026',
     accent: 'from-emerald-600 to-green-700', payDial: '+229',
   },
   {
     id: 'presentiel-ouaga-bf',
     city: 'Ouagadougou', country: 'Burkina Faso', flag: '🇧🇫', venue: 'Ouagadougou',
-    price: 50000, dates: '11 & 12 septembre 2026',
+    price: 50000, dates: '9 & 10 octobre 2026',
     accent: 'from-orange-500 to-red-600', payDial: '+226',
   },
 ];
@@ -80,7 +80,7 @@ export default function PresentielSection() {
           De curieux à investisseur BRVM
         </h2>
         <p className="text-gray-500 text-center text-sm max-w-xl mx-auto mb-8">
-          Deux jours intensifs en salle pour passer de la curiosité à l'action — les <strong>11 & 12 septembre</strong>. Places limitées.
+          Deux jours intensifs en salle pour passer de la curiosité à l'action — les <strong>9 & 10 octobre</strong>. Places limitées.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-5">

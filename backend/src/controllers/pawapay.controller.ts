@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
-import { applyPromo } from '../config/promo';
+import { applyPromo, isOnlineRegClosed } from '../config/promo';
 import {
   initiateDeposit,
   initiateRefund,
@@ -498,6 +498,11 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
 
   const { planId, planName, currency, correspondent, phone, registrationEmail, registrationName, referralCode } = req.body;
   const isBudgetVariant = req.body.variant === 'budget';
+
+  // Cohorte budget en ligne : inscriptions closes après la deadline (ce soir minuit)
+  if (isBudgetVariant && isOnlineRegClosed()) {
+    return res.status(409).json({ error: 'Les inscriptions en ligne sont terminées.' });
+  }
 
   // Wave passe par la Payment Page hébergée : le numéro y est saisi par le client,
   // il n'est donc pas requis côté API.

@@ -6,6 +6,7 @@ import {
   sendWebinarZoomLinkEmail,
   sendCohortPreregistrationEmail,
 } from '../services/email.service';
+import { isOnlineRegClosed } from '../config/promo';
 
 // Identifiant de la cohorte courante (pré-inscriptions liste d'attente)
 const COHORT_ID = 'cohorte-juillet-2026';
@@ -76,6 +77,11 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
     const existing = await prisma.webinarRegistration.findFirst({
       where: { webinarId, email },
     });
+
+    // Cohorte budget : inscriptions en ligne closes après la deadline (ce soir minuit)
+    if (isBudget && isOnlineRegClosed()) {
+      return res.status(409).json({ message: 'Les inscriptions en ligne sont terminées.' });
+    }
 
     // Cohorte budget : refuser si le pack est complet (50 pré-inscriptions) — sauf si cette
     // personne est déjà comptée dans ce pack budget (mise à jour de sa propre pré-inscription).

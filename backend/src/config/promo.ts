@@ -24,3 +24,10 @@ export function applyPromo(tier: string, amount: number, now: number = Date.now(
   const r = promoRate(tier, now);
   return r ? Math.round((amount * (1 - r)) / 100) * 100 : amount;
 }
+
+// Clôture des inscriptions EN LIGNE (cohorte budget) : ce soir à minuit (UTC/Abidjan).
+// Doit rester synchronisé avec afribourse/src/config/budgetPricing.ts (ONLINE_DEADLINE_ISO).
+export const ONLINE_REG_DEADLINE_ISO = '2026-09-13T00:00:00Z';
+export function isOnlineRegClosed(now: number = Date.now()): boolean {
+  return now >= new Date(ONLINE_REG_DEADLINE_ISO).getTime();
+}

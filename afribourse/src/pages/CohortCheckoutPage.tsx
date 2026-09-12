@@ -433,8 +433,8 @@ export default function CohortCheckoutPage() {
 
               {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
                 <div className="text-center pt-1 space-y-2">
-                  {!promo.active && !isBudget && (
-                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
+                  {(!promo.active || isBudget) && (
+                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}${isBudget ? '&variant=budget' : ''}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
                       Ou payer en 3 fois <span className="text-gray-400 font-normal">(léger surcoût)</span>
                     </button>
                   )}

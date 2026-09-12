@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, Landmark, Gift, Star, Trophy, Flame, Users } from 'lucide-react';
-import { applyPromo, promoPercent, isPromoActive } from '../../utils/promo';
+import { applyPromo, promoPercent, isPromoActive, formatCountdown } from '../../utils/promo';
 import { usePromoCountdown } from '../../hooks/usePromoCountdown';
-import { budgetPrice, budgetDiscountPct, BUDGET_SEAT_LIMIT, PACK_TIER_FULL as BUDGET_FULL } from '../../config/budgetPricing';
+import { budgetPrice, budgetDiscountPct, BUDGET_SEAT_LIMIT, PACK_TIER_FULL as BUDGET_FULL, onlineRegOpen, onlineRemainingMs } from '../../config/budgetPricing';
 import { API_BASE_URL } from '../../config/api';
 
 type SeatInfo = { reserved: number; limit: number; soldOut: boolean };
@@ -97,6 +97,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
   const promo = usePromoCountdown();
   const isBudget = variant === 'budget';
   const [seats, setSeats] = useState<Record<string, SeatInfo> | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!isBudget) return;
@@ -105,6 +106,15 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
       .then((d) => setSeats(d.data ?? null))
       .catch(() => { /* silencieux */ });
   }, [isBudget]);
+
+  // Compte à rebours live jusqu'à la clôture des inscriptions en ligne (ce soir minuit)
+  useEffect(() => {
+    if (!isBudget) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [isBudget]);
+
+  const regOpen = onlineRegOpen(now);
 
   return (
     <section id="packs" className="px-4 sm:px-6 py-14 bg-gray-50 scroll-mt-20">
@@ -117,6 +127,23 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
             </p>
             <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">Se termine dans <span className="font-mono font-extrabold text-white">{promo.label}</span></p>
           </div>
+        )}
+
+        {/* Bandeau clôture des inscriptions en ligne (cohorte budget) */}
+        {isBudget && (
+          regOpen ? (
+            <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
+              <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
+                <Flame className="w-5 h-5" /> DERNIER JOUR — les inscriptions en ligne se terminent <span className="underline">aujourd'hui à minuit</span>
+              </p>
+              <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">Se termine dans <span className="font-mono font-extrabold text-white">{formatCountdown(onlineRemainingMs(now))}</span></p>
+            </div>
+          ) : (
+            <div className="mb-8 rounded-2xl bg-gray-700 px-5 py-4 text-white text-center shadow-lg">
+              <p className="text-sm sm:text-base font-extrabold">Les inscriptions en ligne sont terminées</p>
+              <p className="text-xs sm:text-sm font-semibold mt-1 text-gray-300">Merci de votre intérêt — la prochaine cohorte arrive bientôt.</p>
+            </div>
+          )
         )}
 
         {/* En-tête */}
@@ -215,7 +242,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                   {/* CTA */}
                   <button
                     onClick={() => onChoose(p.id)}
-                    disabled={isBudget && seats?.[p.id]?.soldOut}
+                    disabled={isBudget && (!regOpen || seats?.[p.id]?.soldOut)}
                     className={`w-full py-3 rounded-xl font-extrabold text-sm transition-all active:scale-95 mb-5 disabled:opacity-50 disabled:cursor-not-allowed ${
                       dark
                         ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 hover:from-amber-300 hover:to-orange-300 shadow-lg'
@@ -224,7 +251,9 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                           : 'border-2 border-gray-300 text-gray-700 hover:border-blue-400 hover:text-blue-700'
                     }`}
                   >
-                    {isBudget ? (seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →') : `${p.cta} →`}
+                    {isBudget
+                      ? (!regOpen ? 'Inscriptions terminées' : seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →')
+                      : `${p.cta} →`}
                   </button>
 
                   {/* Inclusions */}

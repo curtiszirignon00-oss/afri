@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import { initiateDeposit, initiatePaymentPageSession } from '../services/pawapay.service';
-import { applyPromo, isPromoActive } from '../config/promo';
+import { applyPromo, isPromoActive, isOnlineRegClosed } from '../config/promo';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // ── Paramètres du paiement échelonné (Pack Parcours) ──────────────────────────
@@ -19,6 +19,12 @@ const PACK_TIER_INSTALLMENTS: Record<string, number[]> = {
   starter:      [25000, 25000, 25000], // 75 000 (unique : 70 000 — léger surcoût 3×)
   parcours:     [35000, 35000, 35000], // 105 000 (unique : 100 000)
   investisseur: [53000, 53000, 53000], // 159 000 (unique : 150 000)
+};
+// Échéancier 3× cohorte budget (-50%) — léger surcoût 3× vs paiement unique
+const PACK_TIER_INSTALLMENTS_BUDGET: Record<string, number[]> = {
+  starter:      [12500, 12500, 12500], // 37 500 (unique budget : 35 000)
+  parcours:     [17500, 17500, 17500], // 52 500 (unique budget : 50 000)
+  investisseur: [26500, 26500, 26500], // 79 500 (unique budget : 75 000)
 };
 const PACK_TIER_NAME: Record<string, string> = {
   starter:      'Pack Starter BRVM',
@@ -197,13 +203,13 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
 
   const isBudgetVariant = req.body.variant === 'budget';
 
-  // Cohorte budget : paiement en 3 fois non disponible (réservation + paiement unique)
-  if (isBudgetVariant) {
-    return res.status(403).json({ error: "Le paiement en 3 fois n'est pas disponible pour cette offre. Réservez votre place et réglez en une fois." });
+  // Cohorte budget : inscriptions en ligne closes après la deadline (ce soir minuit)
+  if (isBudgetVariant && isOnlineRegClosed()) {
+    return res.status(409).json({ error: 'Les inscriptions en ligne sont terminées.' });
   }
 
-  // Pendant l'offre flash, le paiement en 3 fois est désactivé
-  if (isPromoActive()) {
+  // Hors budget : pendant l'offre flash, le paiement en 3 fois est désactivé
+  if (!isBudgetVariant && isPromoActive()) {
     return res.status(403).json({ error: "Le paiement en 3 fois n'est pas disponible pendant l'offre flash. Profitez du tarif remisé en un seul paiement." });
   }
 
@@ -214,8 +220,10 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
   if (!correspondent || (!payPhone && !isWaveStart)) return res.status(400).json({ error: 'Opérateur et numéro Mobile Money requis.' });
 
   const tier = resolveTier(req.body.pack);
-  // Promo 24h éventuelle appliquée à chaque mensualité — verrouillée à la création du plan
-  const tierAmounts = PACK_TIER_INSTALLMENTS[tier].map((a) => applyPromo(tier, a));
+  // Budget (-50%) : barème dédié ; sinon plein tarif (+ promo flash éventuelle)
+  const tierAmounts = isBudgetVariant
+    ? PACK_TIER_INSTALLMENTS_BUDGET[tier]
+    : PACK_TIER_INSTALLMENTS[tier].map((a) => applyPromo(tier, a));
   const tierName = PACK_TIER_NAME[tier];
 
   try {
@@ -233,7 +241,7 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
       return res.status(409).json({ error: 'Un plan de paiement échelonné est déjà en cours.', plan: publicPlan(existingPlan) });
     }
 
-    // Pré-inscription (créer si absente)
+    // Pré-inscription (créer si absente, sinon compléter pack/variant)
     const resolvedFirstName = firstName ?? name ?? null;
     if (!existingReg) {
       await prisma.webinarRegistration.create({
@@ -248,6 +256,15 @@ export async function startInstallmentPlan(req: AuthenticatedRequest, res: Respo
           userId,
           paymentStatus: 'pending',
           pack: tier,
+          variant: isBudgetVariant ? 'budget' : null,
+        },
+      });
+    } else {
+      await prisma.webinarRegistration.update({
+        where: { id: existingReg.id },
+        data: {
+          pack: existingReg.pack ?? tier,
+          variant: isBudgetVariant ? 'budget' : existingReg.variant,
         },
       });
     }

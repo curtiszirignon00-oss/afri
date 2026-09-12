@@ -4460,8 +4460,8 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
   'webinaire-introduction-bourse':  { title: 'Webinaire — Introduction à la Bourse',                    date: 'À venir', accentColor: '#1D4ED8' },
   'webinaire-fondamentaux-analyse': { title: 'Webinaire — Les Fondamentaux : Analyser & Valoriser une Action', date: 'À venir (2 sessions)', accentColor: '#059669' },
   'webinaire-analyse-technique':    { title: "Webinaire — L'Analyse Technique : Lire le Marché",         date: 'À venir (2 sessions)', accentColor: '#EA580C' },
-  'presentiel-calavi-benin':        { title: 'Présentiel « De curieux à investisseur BRVM » — Calavi (Bénin)', date: '11 & 12 septembre 2026', accentColor: '#1D4ED8' },
-  'presentiel-ouaga-bf':            { title: 'Présentiel « De curieux à investisseur BRVM » — Ouagadougou (Burkina Faso)', date: '11 & 12 septembre 2026', accentColor: '#EA580C' },
+  'presentiel-calavi-benin':        { title: 'Présentiel « De curieux à investisseur BRVM » — Calavi (Bénin)', date: '9 & 10 octobre 2026', accentColor: '#1D4ED8' },
+  'presentiel-ouaga-bf':            { title: 'Présentiel « De curieux à investisseur BRVM » — Ouagadougou (Burkina Faso)', date: '9 & 10 octobre 2026', accentColor: '#EA580C' },
 };
 
 export async function sendWebinarPaymentConfirmEmail({
