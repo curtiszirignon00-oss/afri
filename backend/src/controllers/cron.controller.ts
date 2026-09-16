@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { scrapeStock, scrapeIndex } from '../services/scraping.service';
 import { saveStocks } from '../services/stock.service.prisma';
 import { saveIndices, saveCurrentDayIndexHistory } from '../services/index.service.prisma';
-import { saveCurrentDayHistory } from '../services/stockHistory.service';
+import { saveCurrentDayHistory, saveIntradaySnapshots } from '../services/stockHistory.service';
 import {
     getActiveAlerts,
     shouldTriggerAlert,
@@ -43,6 +43,14 @@ export async function cronScrapeStocks(req: Request, res: Response) {
 
         await saveStocks(stocks);
         await saveIndices(indices);
+
+        // Snapshot intraday (prix + volume cumule) pour les bougies 1H / 15 min
+        // no-op hors heures de cotation BRVM
+        try {
+            await saveIntradaySnapshots(stocks);
+        } catch (err: any) {
+            log.error('[CRON API] Erreur snapshots intraday:', err?.message ?? err);
+        }
 
         // Verifier les alertes de prix
         await checkPriceAlerts();

@@ -10,6 +10,7 @@ import {
   fetchAnnualFinancials,
   Period
 } from '../services/stockApi';
+import type { IntradayInterval } from '../services/stockApi';
 
 /**
  * Hook pour récupérer l'historique de prix d'une action
@@ -25,13 +26,19 @@ export function useStockHistory(symbol: string, period: Period = '1Y') {
 }
 
 /**
- * Hook pour récupérer les bougies horaires intraday d'une action.
- * `enabled` permet de ne fetcher que lorsque le timeframe 1H est sélectionné.
+ * Hook pour récupérer les bougies intraday (15 min ou 1 h) d'une action.
+ * `enabled` permet de ne fetcher que lorsqu'un timeframe intraday est sélectionné.
+ * `days` couvre toute la rétention disponible côté backend (plafonné à 400).
  */
-export function useIntradayHistory(symbol: string, enabled: boolean = true, days: number = 5) {
+export function useIntradayHistory(
+  symbol: string,
+  enabled: boolean = true,
+  days: number = 400,
+  interval: IntradayInterval = '1h'
+) {
   return useQuery({
-    queryKey: ['stock-intraday', symbol, days],
-    queryFn: () => fetchIntradayHistory(symbol, days),
+    queryKey: ['stock-intraday', symbol, days, interval],
+    queryFn: () => fetchIntradayHistory(symbol, days, interval),
     enabled: !!symbol && enabled,
     staleTime: 5 * 60 * 1000, // le scraper alimente toutes les 15 min
     gcTime: 10 * 60 * 1000

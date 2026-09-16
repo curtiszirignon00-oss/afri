@@ -180,9 +180,9 @@ export async function saveIntradaySnapshots(stocks: StockData[]) {
 }
 
 /**
- * Purge les snapshots intraday plus vieux que `days` jours (par défaut 30).
+ * Purge les snapshots intraday plus vieux que `days` jours (par défaut 400).
  */
-export async function purgeOldIntradaySnapshots(days: number = 30) {
+export async function purgeOldIntradaySnapshots(days: number = 400) {
   const cutoff = new Date();
   cutoff.setUTCDate(cutoff.getUTCDate() - days);
   const result = await prisma.intradaySnapshot.deleteMany({

@@ -67,15 +67,17 @@ export async function getStockHistory(req: Request, res: Response, next: NextFun
   }
 }
 
-// Pour la route: GET /api/stocks/:symbol/intraday?days=5
+// Pour la route: GET /api/stocks/:symbol/intraday?days=30&interval=1h
 export async function getStockIntraday(req: Request, res: Response, next: NextFunction) {
   try {
     const symbol = req.params.symbol.toUpperCase();
-    const days = Math.min(30, Math.max(1, parseInt(req.query.days as string) || 5));
+    // Plafond aligne sur la retention des snapshots (voir purgeOldIntradaySnapshots)
+    const days = Math.min(400, Math.max(1, parseInt(req.query.days as string) || 30));
+    const interval = req.query.interval === '15m' ? '15m' : '1h';
 
-    const data = await stockService.getIntradayHourly(symbol, days);
+    const data = await stockService.getIntradayHourly(symbol, days, interval);
 
-    return res.status(200).json({ symbol, days, data });
+    return res.status(200).json({ symbol, days, interval, data });
   } catch (error) {
     return next(error);
   }

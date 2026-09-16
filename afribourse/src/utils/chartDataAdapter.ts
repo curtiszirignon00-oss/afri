@@ -308,6 +308,7 @@ export const aggregateToAnnual = (data: OHLCVData[]): OHLCVData[] => {
 // ─── Système de résolution ───────────────────────────────────────────────────
 
 export type CandleResolution =
+  | 'quarterHour'  // 15m – bougies de 15 min (fallback: journalier)
   | 'hourly'       // 1H  – données horaires (fallback: journalier)
   | 'daily'        // 1J  – 1 bougie = 1 jour
   | 'weekly'       // 5J  – 1 bougie = 1 semaine
@@ -317,6 +318,7 @@ export type CandleResolution =
   | 'annual';      // 1A  – 1 bougie = 1 an
 
 export const RESOLUTION_LABEL: Record<CandleResolution, string> = {
+  quarterHour: '1 bougie = 15 minutes',
   hourly:     '1 bougie ≈ 1 heure',
   daily:      '1 bougie = 1 jour',
   weekly:     '1 bougie = 1 semaine',
@@ -334,6 +336,7 @@ export const applyResolution = (
   resolution: CandleResolution
 ): OHLCVData[] => {
   switch (resolution) {
+    case 'quarterHour':
     case 'hourly':
     case 'daily':
       return data;

@@ -112,7 +112,7 @@ export async function fetchStockHistory(
 }
 
 export type IntradayCandle = {
-  time: number; // timestamp Unix (secondes) du début d'heure UTC
+  time: number; // timestamp Unix (secondes) du début du bucket UTC
   open: number;
   high: number;
   low: number;
@@ -120,22 +120,28 @@ export type IntradayCandle = {
   volume: number;
 };
 
+/** Taille des bougies intraday agrégées côté backend. */
+export type IntradayInterval = '15m' | '1h';
+
 export type IntradayHistoryResponse = {
   symbol: string;
   days: number;
+  interval: IntradayInterval;
   data: IntradayCandle[];
 };
 
 /**
- * Récupère les bougies horaires intraday d'une action (agrégées côté backend
- * à partir des snapshots du scraper — vide tant que la collecte n'a pas commencé)
+ * Récupère les bougies intraday d'une action (agrégées côté backend à partir
+ * des snapshots du scraper — vide tant que la collecte n'a pas commencé).
+ * Le backend plafonne `days` à 400 (rétention des snapshots).
  */
 export async function fetchIntradayHistory(
   symbol: string,
-  days: number = 5
+  days: number = 30,
+  interval: IntradayInterval = '1h'
 ): Promise<IntradayHistoryResponse> {
   const response = await authFetch(
-    `${API_BASE_URL}/stocks/${symbol}/intraday?days=${days}`,
+    `${API_BASE_URL}/stocks/${symbol}/intraday?days=${days}&interval=${interval}`,
     { credentials: 'include' }
   );
 

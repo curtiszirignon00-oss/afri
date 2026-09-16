@@ -65,10 +65,11 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
     }
 });
 
-// Purge quotidienne des snapshots intraday de plus de 30 jours (3h00 du matin)
+// Purge quotidienne des snapshots intraday de plus de 400 jours (3h00 du matin)
+// Retention longue : le timeframe 1H doit remonter le plus loin possible.
 cron.schedule('0 3 * * *', async () => {
     try {
-        const deleted = await purgeOldIntradaySnapshots(30);
+        const deleted = await purgeOldIntradaySnapshots(400);
         console.log(`🧹 Purge snapshots intraday: ${deleted} supprimés`);
     } catch (error) {
         console.error('❌ Erreur purge snapshots intraday:', error);

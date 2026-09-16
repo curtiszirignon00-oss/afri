@@ -5,6 +5,7 @@ import { useIntradayHistory } from '../../hooks/useStockDetails';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
 import type { CandleResolution } from '../../utils/chartDataAdapter';
+import type { IntradayInterval } from '../../services/stockApi';
 import { applyResolution, RESOLUTION_LABEL, filterDataByInterval } from '../../utils/chartDataAdapter';
 import ChartShareModal from './ChartShareModal';
 import ChartDrawingToolbar from './ChartDrawingToolbar';
@@ -30,7 +31,7 @@ interface StockChartProps {
 //   resolution     → granularité de chaque bougie
 //   backendPeriod  → période envoyée au backend pour récupérer les données
 //   resolutionInfo → texte descriptif affiché dans le badge
-type DisplayInterval = '1H' | '1D' | '1W' | '1M' | '3M' | '6M' | '1Y';
+type DisplayInterval = '15m' | '1H' | '1D' | '1W' | '1M' | '3M' | '6M' | '1Y';
 
 interface IntervalConfig {
   value: DisplayInterval;
@@ -41,6 +42,7 @@ interface IntervalConfig {
 }
 
 const DISPLAY_INTERVALS: IntervalConfig[] = [
+  { value: '15m', label: '15m', resolution: 'quarterHour', backendPeriod: '5D', premium: true },
   { value: '1H', label: '1H',  resolution: 'hourly',     backendPeriod: '5D',  premium: true },
   { value: '1D', label: '1J',  resolution: 'daily',      backendPeriod: 'ALL' },
   { value: '1W', label: '5J',  resolution: 'weekly',     backendPeriod: 'ALL' },
@@ -52,6 +54,7 @@ const DISPLAY_INTERVALS: IntervalConfig[] = [
 
 // Fenêtre temporelle à utiliser pour calculer la variation selon l'intervalle affiché
 const PERIOD_WINDOW: Record<DisplayInterval, '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL'> = {
+  '15m': '1D', // Dernier jour (15 min non dispo → journalier)
   '1H': '1D',  // Dernier jour (horaire non dispo → journalier)
   '1D': '1D',  // Hier → aujourd'hui
   '1W': '5D',  // 5 jours glissants
@@ -122,9 +125,17 @@ export default function StockChartNew({
 
   const activeConfig = DISPLAY_INTERVALS.find(i => i.value === selectedDisplay)!;
 
-  // Bougies horaires intraday — fetch uniquement quand le timeframe 1H est actif
-  const { data: intradayResp } = useIntradayHistory(symbol, selectedDisplay === '1H');
-  const hasIntraday = selectedDisplay === '1H' && (intradayResp?.data?.length ?? 0) > 0;
+  // Bougies intraday — fetch uniquement quand un timeframe intraday (15m / 1H) est actif.
+  // On demande toute la rétention disponible : le backend plafonne à 400 jours.
+  const intradayInterval: IntradayInterval | null =
+    selectedDisplay === '15m' ? '15m' : selectedDisplay === '1H' ? '1h' : null;
+  const { data: intradayResp } = useIntradayHistory(
+    symbol,
+    intradayInterval !== null,
+    400,
+    intradayInterval ?? '1h'
+  );
+  const hasIntraday = intradayInterval !== null && (intradayResp?.data?.length ?? 0) > 0;
 
   // Données agrégées selon la résolution de bougie sélectionnée
   const displayData = useMemo(() => {
@@ -147,7 +158,8 @@ export default function StockChartNew({
   // Zoom par défaut : ~65 bougies (3 mois en daily) pour des mèches lisibles ;
   // undefined = fitContent (résolutions agrégées, peu de bougies)
   const defaultVisibleBars =
-    activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily' ? 65
+    activeConfig.resolution === 'quarterHour' ? 96 // ~4 séances BRVM en bougies de 15 min
+    : activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily' ? 65
     : activeConfig.resolution === 'weekly' ? 104
     : undefined;
 
@@ -207,7 +219,7 @@ export default function StockChartNew({
     let firstPrice: number;
     let lastPrice: number;
 
-    if (selectedDisplay === '1D' || selectedDisplay === '1H') {
+    if (selectedDisplay === '1D' || selectedDisplay === '1H' || selectedDisplay === '15m') {
       // Pour 1J : utiliser directement daily_change_percent stocké en base
       if (dailyChangePercent !== undefined) {
         const last = data[data.length - 1].close;
@@ -242,9 +254,11 @@ export default function StockChartNew({
     onVariationChangeRef.current?.(periodChange);
   }, [periodChange]); // Ne dépend PAS de onVariationChange pour briser la boucle
 
-  // En 1H sans données intraday collectées : fallback sur des bougies journalières
-  // (5 derniers jours) → le label doit rester honnête
-  const resolutionLabel = activeConfig.resolution === 'hourly' && !hasIntraday
+  // Un timeframe intraday sélectionné mais aucun snapshot collecté : fallback sur
+  // des bougies journalières → le label doit rester honnête
+  const isIntradayResolution =
+    activeConfig.resolution === 'quarterHour' || activeConfig.resolution === 'hourly';
+  const resolutionLabel = isIntradayResolution && !hasIntraday
     ? RESOLUTION_LABEL['daily']
     : RESOLUTION_LABEL[activeConfig.resolution];
 
@@ -429,14 +443,14 @@ export default function StockChartNew({
           {/* Badge résolution — visible uniquement en mode chandelier ou barre */}
           {(selectedChartType === 'candlestick' || selectedChartType === 'bar') && (
             <div className="flex items-center gap-2">
-              {activeConfig.resolution === 'hourly' && !hasIntraday && (
+              {isIntradayResolution && !hasIntraday && (
                 <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-orange-50 text-orange-600 border border-orange-200">
                   <Info className="w-3 h-3" />
                   <span className="hidden sm:inline">Données journalières</span>
                 </span>
               )}
               <span className={`inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium ${
-                activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily'
+                isIntradayResolution || activeConfig.resolution === 'daily'
                   ? 'bg-blue-50 text-blue-600'
                   : activeConfig.resolution === 'weekly'
                     ? 'bg-violet-50 text-violet-600'
