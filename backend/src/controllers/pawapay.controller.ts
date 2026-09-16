@@ -201,6 +201,7 @@ async function handleInstallmentCompleted(payment: any, depositId: string, paylo
       earlyBird: false,
       registrationId: reg?.id ?? plan.id,
       pack: reg?.pack ?? undefined,
+      amount: plan.totalAmount, // total réellement réglé en 3× (plein tarif + frais)
     }).catch((err) => log.error('[Installment] Échec email confirmation inscription finale', { err, planId }));
     await reconcileCohortPreregistration(plan.email, depositId);
     log.info('[Installment] Plan complété', { planId, totalAmount: plan.totalAmount });

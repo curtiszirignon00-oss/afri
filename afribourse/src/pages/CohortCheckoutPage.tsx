@@ -355,7 +355,7 @@ export default function CohortCheckoutPage() {
               {!isBudget && (
                 <div className="text-center pt-1">
                   <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
-                    Ou payer en 3 fois
+                    Ou payer en 3 fois <span className="text-gray-400 font-normal">(plein tarif +5 000)</span>
                   </button>
                 </div>
               )}
@@ -433,9 +433,9 @@ export default function CohortCheckoutPage() {
 
               {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
                 <div className="text-center pt-1 space-y-2">
-                  {(!promo.active || isBudget) && (
-                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}${isBudget ? '&variant=budget' : ''}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
-                      Ou payer en 3 fois <span className="text-gray-400 font-normal">(léger surcoût)</span>
+                  {!promo.active && (
+                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
+                      Ou payer en 3 fois <span className="text-gray-400 font-normal">(plein tarif +5 000, sans réduction)</span>
                     </button>
                   )}
                   {isBudget && (

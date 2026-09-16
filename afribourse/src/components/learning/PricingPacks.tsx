@@ -73,7 +73,7 @@ const PACKS: Pack[] = [
     name: 'Investisseur',
     tagline: "J'investis comme un pro — je maximise mes profits",
     price: 150000,
-    monthly: 53000,
+    monthly: 50000,
     badge: '🏆 Expérience complète',
     highlight: false,
     includesTitle: 'Tout le Parcours, plus',
@@ -212,10 +212,10 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                         </div>
                         <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
                           {isBudget
-                            ? 'Réservation gratuite · payez maintenant ou plus tard'
+                            ? 'Réservation gratuite · paiement en 1 fois pour garder le -50%'
                             : flashActive
                               ? 'Offre flash — paiement en une fois'
-                              : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×)`}
+                              : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×, +5 000)`}
                         </p>
                       </>
                     );

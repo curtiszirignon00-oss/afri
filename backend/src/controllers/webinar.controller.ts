@@ -244,7 +244,7 @@ export async function getWebinarRegistrations(req: Request, res: Response, next:
     const planByEmail = new Map<string, (typeof plans)[number]>();
     for (const p of plans) {
       const prev = planByEmail.get(p.email);
-      if (!prev || new Date(p.created_at) > new Date(prev.created_at)) planByEmail.set(p.email, p);
+      if (!prev || new Date(p.createdAt) > new Date(prev.createdAt)) planByEmail.set(p.email, p);
     }
 
     const data = registrations.map((r) => {

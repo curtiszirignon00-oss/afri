@@ -4774,7 +4774,9 @@ export async function sendCohortPreregistrationEmail({
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:16px 20px;">
-              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Important :</strong> pour participer à la cohorte qui démarre le <strong>${startDate}</strong>, votre paiement doit être effectué <strong>avant le ${payDeadline}</strong>. Passé ce délai, votre place n'est plus garantie.</p>
+              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Important :</strong> ${isBudget
+                ? `votre tarif réduit est garanti jusqu'au <strong>${payDeadline}</strong>. Réglez <strong>en 1 fois</strong> avant cette date pour conserver la réduction — la cohorte démarre le <strong>${startDate}</strong>.`
+                : `pour participer à la cohorte qui démarre le <strong>${startDate}</strong>, votre paiement doit être effectué <strong>avant le ${payDeadline}</strong>. Passé ce délai, votre place n'est plus garantie.`}</p>
             </td></tr>
           </table>
 
@@ -4791,7 +4793,7 @@ export async function sendCohortPreregistrationEmail({
               <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#2563EB 0%,#4F46E5 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
                 💳 Finaliser mon paiement →
               </a>
-              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">${isBudget ? 'Paiement en 1 fois — Mobile Money & Wave sécurisé.' : 'Paiement en 1 fois ou en 3 fois — Mobile Money sécurisé.'}</p>
+              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Mobile Money &amp; Wave sécurisé.${isBudget ? ' Le tarif réduit s\'applique au <strong>paiement en 1 fois</strong> uniquement — le paiement en 3 fois reste possible au plein tarif (+5 000 XOF), sans réduction.' : ' Paiement en 1 fois, ou en 3 fois (plein tarif +5 000 XOF).'}</p>
             </td></tr>
           </table>
 
@@ -4824,7 +4826,9 @@ export async function sendCohortPreregistrationEmail({
     to: email,
     subject: `📝 Pré-inscription reçue — finalisez votre paiement (${packTitle})`,
     html,
-    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte ${cohortMonth}) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. IMPORTANT : pour participer à la cohorte qui démarre le ${startDate}, payez avant le ${payDeadline} (au-delà, votre place n'est plus garantie). Vous recevrez ensuite votre confirmation d'inscription.`,
+    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte ${cohortMonth}) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. IMPORTANT : ${isBudget
+      ? `votre tarif réduit est garanti jusqu'au ${payDeadline}. Réglez en 1 fois avant cette date pour conserver la réduction (la cohorte démarre le ${startDate}). Le paiement en 3 fois reste possible au plein tarif (+5 000 XOF), sans réduction.`
+      : `pour participer à la cohorte qui démarre le ${startDate}, payez avant le ${payDeadline} (au-delà, votre place n'est plus garantie). Paiement en 1 fois, ou en 3 fois (plein tarif +5 000 XOF).`} Vous recevrez ensuite votre confirmation d'inscription.`,
   });
 }
 
