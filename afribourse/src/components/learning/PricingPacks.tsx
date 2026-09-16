@@ -129,19 +129,19 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
           </div>
         )}
 
-        {/* Bandeau clôture des inscriptions en ligne (cohorte budget) */}
+        {/* Bandeau offre -50% pré-inscription (cohorte octobre) */}
         {isBudget && (
           regOpen ? (
             <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
               <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
-                <Flame className="w-5 h-5" /> DERNIER JOUR — les inscriptions en ligne se terminent <span className="underline">aujourd'hui à minuit</span>
+                <Flame className="w-5 h-5" /> Cohorte Octobre — <span className="underline">-50%</span> en pré-inscription jusqu'au <span className="underline">25 septembre</span>
               </p>
-              <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">Se termine dans <span className="font-mono font-extrabold text-white">{formatCountdown(onlineRemainingMs(now))}</span></p>
+              <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">L'offre se termine dans <span className="font-mono font-extrabold text-white">{formatCountdown(onlineRemainingMs(now))}</span></p>
             </div>
           ) : (
             <div className="mb-8 rounded-2xl bg-gray-700 px-5 py-4 text-white text-center shadow-lg">
-              <p className="text-sm sm:text-base font-extrabold">Les inscriptions en ligne sont terminées</p>
-              <p className="text-xs sm:text-sm font-semibold mt-1 text-gray-300">Merci de votre intérêt — la prochaine cohorte arrive bientôt.</p>
+              <p className="text-sm sm:text-base font-extrabold">L'offre -50% en pré-inscription est terminée</p>
+              <p className="text-xs sm:text-sm font-semibold mt-1 text-gray-300">Merci de votre intérêt — contactez-nous pour rejoindre la cohorte d'octobre.</p>
             </div>
           )
         )}
@@ -252,7 +252,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                     }`}
                   >
                     {isBudget
-                      ? (!regOpen ? 'Inscriptions terminées' : seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →')
+                      ? (!regOpen ? 'Offre -50% terminée' : seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →')
                       : `${p.cta} →`}
                   </button>
 

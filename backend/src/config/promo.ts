@@ -25,9 +25,10 @@ export function applyPromo(tier: string, amount: number, now: number = Date.now(
   return r ? Math.round((amount * (1 - r)) / 100) * 100 : amount;
 }
 
-// Clôture des inscriptions EN LIGNE (cohorte budget) : ce soir à minuit (UTC/Abidjan).
+// Cohorte OCTOBRE 2026 (démarrage 10 octobre). Offre -50% (pré-inscription) valable jusqu'au
+// 25 septembre inclus → clôture le 26/09 à 00:00 UTC/Abidjan.
 // Doit rester synchronisé avec afribourse/src/config/budgetPricing.ts (ONLINE_DEADLINE_ISO).
-export const ONLINE_REG_DEADLINE_ISO = '2026-09-13T00:00:00Z';
+export const ONLINE_REG_DEADLINE_ISO = '2026-09-26T00:00:00Z';
 export function isOnlineRegClosed(now: number = Date.now()): boolean {
   return now >= new Date(ONLINE_REG_DEADLINE_ISO).getTime();
 }

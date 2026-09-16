@@ -13,17 +13,25 @@ const COHORT_ID = 'cohorte-juillet-2026';
 
 const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
 
-// Cohorte "budget" septembre (page /webinaires-eco) : 20 pré-inscriptions max par pack
+// Cohorte "budget" OCTOBRE (page /webinaires-eco) : 20 pré-inscriptions max par pack.
 const BUDGET_SEAT_LIMIT = 20;
+// Début de la nouvelle cohorte : seules les pré-inscriptions à partir de cette date comptent
+// (remet les compteurs à 0 sans supprimer l'historique des cohortes précédentes).
+const BUDGET_COHORT_START_ISO = '2026-09-15T00:00:00Z';
 
 // Événements présentiels : 20 places max par ville (comptées sur les PAIEMENTS effectifs)
 export const PRESENTIEL_LIMIT = 20;
 const PRESENTIEL_IDS = ['presentiel-calavi-benin', 'presentiel-ouaga-bf'];
 
-/** Nombre de pré-inscriptions budget pour un pack (payées ou non), plafonné à la limite. */
+/** Nombre de pré-inscriptions budget pour un pack sur la cohorte courante (payées ou non). */
 async function getBudgetReserved(tier: string): Promise<number> {
   const count = await prisma.webinarRegistration.count({
-    where: { webinarId: PACK_WEBINAR_ID, pack: tier, variant: 'budget' },
+    where: {
+      webinarId: PACK_WEBINAR_ID,
+      pack: tier,
+      variant: 'budget',
+      created_at: { gte: new Date(BUDGET_COHORT_START_ISO) },
+    },
   });
   return Math.min(BUDGET_SEAT_LIMIT, count);
 }

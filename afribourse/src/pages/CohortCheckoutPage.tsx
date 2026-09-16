@@ -231,10 +231,10 @@ export default function CohortCheckoutPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Pré-inscription enregistrée ✓</h1>
           <p className="text-sm text-gray-600 mb-2">
-            Votre place au <strong>{PACK_NAME}</strong> est réservée pour la <strong>cohorte de septembre</strong> (démarrage le <strong>12 septembre</strong>).
+            Votre place au <strong>{PACK_NAME}</strong> est réservée pour la <strong>cohorte d'octobre</strong> (démarrage le <strong>10 octobre</strong>).
           </p>
           <p className="text-sm text-gray-600 mb-6">
-            Confirmez dès maintenant en réglant votre paiement, ou continuez à explorer — vous recevez aussi un email avec votre lien de paiement (à régler avant le 11 septembre pour garder votre place).
+            Confirmez dès maintenant en réglant votre paiement, ou continuez à explorer — vous recevez aussi un email avec votre lien de paiement (réglez avant le 25 septembre pour profiter du tarif -50%).
           </p>
           <button onClick={() => setStep('payment')} className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity mb-2 flex items-center justify-center gap-2">
             💳 Payer maintenant — {formatPrice(price)}
@@ -257,7 +257,7 @@ export default function CohortCheckoutPage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
-            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">{isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026'}</p>
+            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">{isBudget ? 'Cohorte Octobre 2026' : 'Cohorte Août 2026'}</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
@@ -302,7 +302,7 @@ export default function CohortCheckoutPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
               <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
-              <p className="text-xs mt-0.5">1ère session le {isBudget ? 'samedi 12 septembre' : 'samedi 8 août'}.</p>
+              <p className="text-xs mt-0.5">1ère session le {isBudget ? 'samedi 10 octobre' : 'samedi 8 août'}.</p>
             </div>
 
 
@@ -367,7 +367,7 @@ export default function CohortCheckoutPage() {
             <div className="p-6 space-y-4">
               <div className={`${isBudget ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'} border rounded-xl p-3 text-sm`}>
                 {isBudget ? '✅ Place réservée · Payez maintenant ou plus tard pour la confirmer' : '✅ Inscription enregistrée · Payez pour confirmer votre place'}
-                <span className="block font-bold mt-0.5">{formatPrice(price)}{isBudget ? ' · démarrage le 12 septembre' : ''}</span>
+                <span className="block font-bold mt-0.5">{formatPrice(price)}{isBudget ? ' · démarrage le 10 octobre' : ''}</span>
               </div>
 
               {(payStatus === 'idle' || payStatus === 'initiating') && (

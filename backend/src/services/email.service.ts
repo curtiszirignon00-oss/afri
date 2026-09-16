@@ -4717,15 +4717,15 @@ export async function sendCohortPreregistrationEmail({
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
   const isBudget = variant === 'budget';
-  // Cohorte septembre pour la variante budget, cohorte août pour le standard
-  const cohortLabel = isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026';
-  const cohortMonth = isBudget ? 'de septembre' : "d'août";
-  const startDate = isBudget ? '12 septembre' : '8 août';
-  const payDeadline = isBudget ? '11 septembre' : '7 août';
+  // Cohorte octobre pour la variante budget (offre -50% jusqu'au 25 sept), cohorte août pour le standard
+  const cohortLabel = isBudget ? 'Cohorte Octobre 2026' : 'Cohorte Août 2026';
+  const cohortMonth = isBudget ? "d'octobre" : "d'août";
+  const startDate = isBudget ? '10 octobre' : '8 août';
+  const payDeadline = isBudget ? '25 septembre' : '7 août';
   const progRows = isBudget
-    ? `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>12 septembre</strong> — S1 · Fondamentaux de la bourse</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>26–27 septembre</strong> — S2 & S3 · Analyse fondamentale</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>10–11 octobre</strong> — S4 & S5 · Analyse technique</td></tr>
+    ? `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>10 octobre</strong> — S1 · Fondamentaux de la bourse</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>24–25 octobre</strong> — S2 & S3 · Analyse fondamentale</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>7–8 novembre</strong> — S4 & S5 · Analyse technique</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>`
     : `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>8 août</strong> — S1 · Fondamentaux de la bourse</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>22–23 août</strong> — S2 & S3 · Analyse fondamentale</td></tr>

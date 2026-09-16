@@ -5,7 +5,6 @@ import {
   Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
 } from 'lucide-react';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
-import PresentielSection from '../components/learning/PresentielSection';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -240,15 +239,6 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
   return (
     <div className="min-h-screen bg-white pb-20 sm:pb-0">
 
-      {/* ── Bannière présentiel (Ouaga + Calavi) ─────────────────────────── */}
-      <button
-        onClick={() => scrollToId('presentiel')}
-        className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white text-center px-4 py-2.5 text-sm font-semibold hover:opacity-95 transition-opacity flex items-center justify-center gap-2 flex-wrap"
-      >
-        <span>🏫 Nouveau — Formations <strong>en présentiel</strong> à Ouagadougou 🇧🇫 &amp; Calavi 🇧🇯 · 9-10 octobre</span>
-        <span className="underline font-bold whitespace-nowrap">Je m'inscris →</span>
-      </button>
-
       {/* ── Section 1 — Hero ─────────────────────────────────────────────── */}
       <section
         style={{ background: 'linear-gradient(135deg, #0D2B4E 0%, #1a3a6b 50%, #0f1f3d 100%)' }}
@@ -257,7 +247,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-2 mb-6">
             <span className="bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-              {isBudget ? 'Cohorte Septembre 2026' : 'Cohorte Août 2026'}
+              {isBudget ? 'Cohorte Octobre 2026' : 'Cohorte Août 2026'}
             </span>
             <span className="text-blue-400 text-xs">· Places limitées à 20 par pack</span>
           </div>
@@ -274,11 +264,8 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
         </div>
       </section>
 
-      {/* ── Les 3 packs (good-better-best) — inscriptions en ligne (CI) ──── */}
+      {/* ── Les 3 packs (good-better-best) — inscriptions en ligne ──────── */}
       <PricingPacks onChoose={handleChoosePack} variant={variant} />
-
-      {/* ── Événements présentiels (Calavi + Ouaga) — paiement direct ────── */}
-      <PresentielSection />
 
 
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}
@@ -397,7 +384,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
           <BarChart3 className="w-10 h-10 text-blue-400 mx-auto mb-4" />
           <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">Prêt à investir avec méthode ?</h2>
           <p className="text-blue-200 mb-8 text-base leading-relaxed">
-            La prochaine cohorte démarre le {isBudget ? '12 septembre' : '8 août'}. Les places sont limitées à 20 par pack.
+            La prochaine cohorte démarre le {isBudget ? '10 octobre' : '8 août'}. Les places sont limitées à 20 par pack.
           </p>
           <button
             onClick={scrollToRegistration}
@@ -415,7 +402,7 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
           onClick={scrollToRegistration}
           className="w-full py-3 rounded-xl font-extrabold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-95 transition-transform"
         >
-          🎟️ Réserver ma place — Cohorte {isBudget ? '12 sept' : '8 août'} →
+          🎟️ Réserver ma place — Cohorte {isBudget ? '10 oct' : '8 août'} →
         </button>
       </div>
 
