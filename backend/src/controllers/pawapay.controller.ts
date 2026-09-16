@@ -14,6 +14,7 @@ import {
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
 import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail, sendWebinarConfirmationEmail } from '../services/email.service';
 import { buildInstallmentPayUrl } from './installment.controller';
+import { CURRENT_COHORT } from './webinar.controller';
 import { buildUserData, sendMetaEvent } from '../services/meta-capi.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
@@ -327,6 +328,7 @@ export async function handleDepositCallback(req: Request, res: Response) {
                 paymentStatus: 'pending',
                 pack: isPackReg && ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string) ? (meta?.pack as string) : null,
                 variant: meta?.variant === 'budget' ? 'budget' : null,
+                cohort: meta?.variant === 'budget' ? CURRENT_COHORT : null,
               },
             });
             log.info('[PawaPay] Inscription créée depuis le paiement (filet de sécurité)', { depositId, planId: payment.planId, email: registrationEmail });
@@ -594,6 +596,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
             paymentStatus: 'pending',
             pack: regTier,
             variant: isBudgetVariant ? 'budget' : null,
+            cohort: isBudgetVariant ? CURRENT_COHORT : null,
           },
         });
       } else {
@@ -606,6 +609,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
             pack: existingReg.pack ?? regTier,
             userId: existingReg.userId ?? userId,
             variant: existingReg.variant ?? (isBudgetVariant ? 'budget' : null),
+            cohort: isBudgetVariant ? CURRENT_COHORT : existingReg.cohort,
           },
         });
       }

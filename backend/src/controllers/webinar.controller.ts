@@ -15,22 +15,32 @@ const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
 
 // Cohorte "budget" OCTOBRE (page /webinaires-eco) : 20 pré-inscriptions max par pack.
 const BUDGET_SEAT_LIMIT = 20;
-// Début de la nouvelle cohorte : seules les pré-inscriptions à partir de cette date comptent
-// (remet les compteurs à 0 sans supprimer l'historique des cohortes précédentes).
-const BUDGET_COHORT_START_ISO = '2026-09-15T00:00:00Z';
+// Cohorte courante : seules les pré-inscriptions rattachées à ce tag comptent.
+// Pour repartir de 0 sur une future cohorte : changer ce tag (l'historique est conservé).
+export const CURRENT_COHORT = 'oct-2026';
+// Filet : les pré-inscriptions prises depuis l'ouverture de cette cohorte mais enregistrées
+// avant l'introduction du tag (cohort = null) restent comptées.
+const COHORT_OPENED_AT = new Date('2026-09-15T00:00:00Z');
+const currentCohortWhere = {
+  OR: [
+    { cohort: CURRENT_COHORT },
+    { cohort: null, created_at: { gte: COHORT_OPENED_AT } },
+  ],
+};
 
 // Événements présentiels : 20 places max par ville (comptées sur les PAIEMENTS effectifs)
 export const PRESENTIEL_LIMIT = 20;
 const PRESENTIEL_IDS = ['presentiel-calavi-benin', 'presentiel-ouaga-bf'];
 
-/** Nombre de pré-inscriptions budget pour un pack sur la cohorte courante (payées ou non). */
+/** Places prises pour un pack sur la cohorte courante : TOUTE pré-inscription compte,
+ *  qu'elle soit payée ou non (la réservation occupe la place dès l'enregistrement). */
 async function getBudgetReserved(tier: string): Promise<number> {
   const count = await prisma.webinarRegistration.count({
     where: {
       webinarId: PACK_WEBINAR_ID,
       pack: tier,
       variant: 'budget',
-      created_at: { gte: new Date(BUDGET_COHORT_START_ISO) },
+      ...currentCohortWhere,
     },
   });
   return Math.min(BUDGET_SEAT_LIMIT, count);
@@ -91,10 +101,13 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
       return res.status(409).json({ message: 'Les inscriptions en ligne sont terminées.' });
     }
 
-    // Cohorte budget : refuser si le pack est complet (50 pré-inscriptions) — sauf si cette
-    // personne est déjà comptée dans ce pack budget (mise à jour de sa propre pré-inscription).
+    // Cohorte budget : refuser si le pack est complet — sauf si cette personne occupe déjà
+    // une place de ce pack sur la cohorte courante (mise à jour de sa propre pré-inscription).
     if (isBudget && resolvedPack) {
-      const alreadyCounted = existing?.variant === 'budget' && existing?.pack === resolvedPack;
+      const alreadyCounted = existing?.variant === 'budget'
+        && existing?.pack === resolvedPack
+        && (existing?.cohort === CURRENT_COHORT
+          || (existing?.cohort == null && existing.created_at >= COHORT_OPENED_AT));
       if (!alreadyCounted) {
         const reserved = await getBudgetReserved(resolvedPack);
         if (reserved >= BUDGET_SEAT_LIMIT) {
@@ -116,6 +129,8 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
           userId: userId ?? existing.userId,
           pack: resolvedPack ?? existing.pack,
           variant: isBudget ? 'budget' : existing.variant,
+          // Rattache la personne à la cohorte courante → sa place est comptée dès la réservation
+          cohort: isBudget ? CURRENT_COHORT : existing.cohort,
         },
       });
       logger.info({ webinarId, email, userId }, '[WEBINAR] Préinscription mise à jour (déjà existante)');
@@ -133,6 +148,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
           referralCode: referralCode ?? null,
           pack: resolvedPack,
           variant: isBudget ? 'budget' : null,
+          cohort: isBudget ? CURRENT_COHORT : null,
         },
       });
       logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');

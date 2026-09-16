@@ -4223,6 +4223,7 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
       'Webinaire W6 — Constitution de portefeuille',
       'Webinaire W7 — Gestion du risque',
       'Revue de portefeuille personnalisée + Q&A live mensuelle (×3)',
+      'Accès 3 mois à AfriBourse Pro',
       'Ouverture compte SGI — session collective live',
     ] },
     investisseur: { sessions: 9, hours: 27, extras: [
@@ -4232,6 +4233,7 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
       'Webinaire W9 — IA et Finance',
       'Appel 1:1 de 30 min avec votre coach (revue personnelle)',
       'Investment Policy Statement personnalisé + accès à vie',
+      'Accès à vie à AfriBourse Pro',
       'Ouverture compte SGI — accompagnement main dans la main',
     ] },
   };

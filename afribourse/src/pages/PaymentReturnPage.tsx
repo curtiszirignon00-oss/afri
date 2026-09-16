@@ -19,7 +19,7 @@ export default function PaymentReturnPage() {
           Aucune action supplémentaire n'est requise.
         </p>
         <button
-          onClick={() => navigate('/webinaires')}
+          onClick={() => navigate('/webinaires-eco')}
           className="w-full py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
         >
           Retour aux webinaires

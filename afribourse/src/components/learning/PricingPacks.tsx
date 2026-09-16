@@ -62,6 +62,7 @@ const PACKS: Pack[] = [
       'Webinaire W7 — Gestion du risque',
       'Revue de portefeuille simulé personnalisée (semaine 6)',
       'Session Q&A live mensuelle — 1h/mois × 3 mois',
+      'Accès 3 mois à AfriBourse Pro',
     ],
     sgiTitle: 'Ouverture de compte SGI',
     sgiDesc: 'Tout le Starter + session collective live avec le représentant SGI — tu ouvres ton compte avec le groupe, guidé étape par étape.',
@@ -83,6 +84,7 @@ const PACKS: Pack[] = [
       'Appel 1:1 de 30 min avec votre coach (revue personnelle)',
       'Investment Policy Statement personnalisé (tes règles)',
       'Accès à vie aux replays, y compris cohortes futures',
+      'Accès à vie à AfriBourse Pro',
     ],
     sgiTitle: 'Ouverture de compte SGI — Main dans la main',
     sgiDesc: 'Curtis ou un analyste vérifie ton dossier avant soumission + mise en relation directe avec un interlocuteur SGI nommé + accompagnement pour ton premier ordre réel.',
@@ -212,7 +214,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                         </div>
                         <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
                           {isBudget
-                            ? 'Réservation gratuite · paiement en 1 fois pour garder le -50%'
+                            ? 'Réservation gratuite · payez maintenant ou plus tard'
                             : flashActive
                               ? 'Offre flash — paiement en une fois'
                               : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×, +5 000)`}
@@ -229,7 +231,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                     return (
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
-                          <span className={`flex items-center gap-1 ${dark ? 'text-blue-200' : 'text-gray-500'}`}><Users className="w-3 h-3" /> {s.reserved}/{s.limit} places confirmées</span>
+                          <span className={`flex items-center gap-1 ${dark ? 'text-blue-200' : 'text-gray-500'}`}><Users className="w-3 h-3" /> {s.reserved}/{s.limit} places réservées</span>
                           <span className={s.soldOut ? 'text-red-500' : (dark ? 'text-emerald-300' : 'text-emerald-600')}>{s.soldOut ? 'Complet' : `${remaining} restante${remaining > 1 ? 's' : ''}`}</span>
                         </div>
                         <div className={`h-1.5 rounded-full overflow-hidden ${dark ? 'bg-white/15' : 'bg-gray-100'}`}>
