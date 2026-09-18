@@ -381,18 +381,32 @@ export async function getStockHistory(
   }
 }
 
+export type IntradayInterval = '15m' | '1h';
+
+/** Taille du bucket d'agrégation, en secondes. */
+const INTRADAY_BUCKET_SECONDS: Record<IntradayInterval, number> = {
+  '15m': 15 * 60,
+  '1h': 60 * 60,
+};
+
 /**
- * Agrège les snapshots intraday en bougies horaires.
+ * Agrège les snapshots intraday en bougies de 15 min ou 1 h.
  * @param symbol - Symbole de l'action (ex: SLBC)
- * @param days - Nombre de jours calendaires à couvrir (défaut 5)
- * @returns Bougies { time: Unix s (début d'heure UTC), open, high, low, close, volume }
+ * @param days - Nombre de jours calendaires à couvrir (défaut 30)
+ * @param interval - Taille des bougies ('15m' ou '1h', défaut '1h')
+ * @returns Bougies { time: Unix s (début du bucket UTC), open, high, low, close, volume }
  *
- * Le volume des snapshots est le volume CUMULÉ du jour : le volume horaire est
- * donc la différence entre le dernier cumul de l'heure et celui de l'heure
- * précédente du même jour (première heure du jour = cumul tel quel).
+ * Le volume des snapshots est le volume CUMULÉ du jour : le volume d'une bougie
+ * est donc la différence entre le dernier cumul du bucket et celui du bucket
+ * précédent du même jour (premier bucket du jour = cumul tel quel).
  */
-export async function getIntradayHourly(symbol: string, days: number = 5) {
+export async function getIntradayHourly(
+  symbol: string,
+  days: number = 30,
+  interval: IntradayInterval = '1h'
+) {
   try {
+    const bucketSeconds = INTRADAY_BUCKET_SECONDS[interval] ?? INTRADAY_BUCKET_SECONDS['1h'];
     const startDate = new Date();
     startDate.setUTCDate(startDate.getUTCDate() - days);
 
@@ -406,13 +420,12 @@ export async function getIntradayHourly(symbol: string, days: number = 5) {
 
     if (snapshots.length === 0) return [];
 
-    // Grouper par heure (clé = timestamp Unix du début d'heure UTC)
-    const hours = new Map<number, typeof snapshots>();
+    // Grouper par bucket (clé = timestamp Unix du début de bucket UTC)
+    const buckets = new Map<number, typeof snapshots>();
     for (const snap of snapshots) {
-      const t = snap.timestamp;
-      const hourStart = Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate(), t.getUTCHours()) / 1000;
-      if (!hours.has(hourStart)) hours.set(hourStart, []);
-      hours.get(hourStart)!.push(snap);
+      const bucketStart = Math.floor(snap.timestamp.getTime() / 1000 / bucketSeconds) * bucketSeconds;
+      if (!buckets.has(bucketStart)) buckets.set(bucketStart, []);
+      buckets.get(bucketStart)!.push(snap);
     }
 
     const candles: { time: number; open: number; high: number; low: number; close: number; volume: number }[] = [];
@@ -420,7 +433,7 @@ export async function getIntradayHourly(symbol: string, days: number = 5) {
     let prevDayKey = '';
     let prevCumulVolume = 0;
 
-    for (const [time, snaps] of Array.from(hours.entries()).sort(([a], [b]) => a - b)) {
+    for (const [time, snaps] of Array.from(buckets.entries()).sort(([a], [b]) => a - b)) {
       const prices = snaps.map(s => s.price);
       const lastCumul = snaps[snaps.length - 1].volume;
       const dayKey = new Date(time * 1000).toISOString().slice(0, 10);
