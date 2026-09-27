@@ -21,6 +21,7 @@ import logger from './config/logger';
 // Imports des routes
 import userRoutes from './routes/user.routes';
 import stockRoutes from './routes/stock.routes';
+import valuationRoutes from './routes/valuation.routes';
 import indexRoutes from './routes/index.routes';
 import portfolioRoutes from './routes/portfolio.routes';
 import homepageRoutes from './routes/homepage.routes';
@@ -285,6 +286,7 @@ class App {
     // API Routes
     this.app?.use('/api/users', userRoutes);
     this.app?.use('/api/stocks', stockRoutes);
+    this.app?.use('/api/valuation', valuationRoutes);
     this.app?.use('/api/indices', indexRoutes);
     this.app?.use('/api/portfolios', portfolioRoutes);
     this.app?.use('/api/homepage', homepageRoutes);

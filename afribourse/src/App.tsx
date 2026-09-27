@@ -45,6 +45,7 @@ const TimeMachineRecapPage = lazy(() => import('./pages/TimeMachineRecapPage'));
 const MarketsPageRefactored = lazy(() => import('./components/MarketsPageRefactored'));
 const IndicesPage = lazy(() => import('./components/IndicesPage'));
 const StockDetailPageEnhanced = lazy(() => import('./components/StockDetailPageEnhanced'));
+const ValuationPage = lazy(() => import('./pages/ValuationPage'));
 const UniWaxDashboardPage = lazy(() => import('./pages/UniWaxDashboardPage'));
 const NewsPage = lazy(() => import('./components/NewsPage'));
 const NewsDetailPage = lazy(() => import('./components/NewsDetailPage'));
@@ -212,6 +213,9 @@ function Layout() {
           <Route path="/markets" element={<MarketsPageRefactored />} />
           <Route path="/indices" element={<IndicesPage />} />
           <Route path="/stock/UNXC/UNIWAX_Dashboard_Analytique" element={<UniWaxDashboardPage />} />
+          {/* Valorisation fondamentale : premium, accessible par lien direct uniquement
+              (aucune entree de navigation pour l'instant). Declaree avant /stock/:symbol. */}
+          <Route path="/stock/:symbol/valorisation" element={<ValuationPage />} />
           <Route path="/stock/:symbol" element={<StockDetailPageEnhanced />} />
           <Route path="/news/:slug" element={<NewsDetailPage />} />
           <Route path="/news" element={<NewsPage />} />

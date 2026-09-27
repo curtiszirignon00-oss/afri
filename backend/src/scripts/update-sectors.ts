@@ -49,11 +49,13 @@ const SECTOR_MAPPING: Record<string, string> = {
   'CABC': 'Industriels', // SICABLE COTE D'IVOIRE
   'FTSC': 'Industriels', // FILTISAC COTE D'IVOIRE
   'SDSC': 'Industriels', // AFRICA GLOBAL LOGISTICS COTE D'IVOIRE
+  'SVOC': 'Industriels', // MOVIS CI (desactivee en base)
   'SEMC': 'Industriels', // EVIOSYS PACKAGING SIEM COTE D'IVOIRE
   'SIVC': 'Industriels', // AIR LIQUIDE COTE D'IVOIRE
   'STAC': 'Industriels', // SETAO COTE D'IVOIRE
 
   // === SERVICES FINANCIERS ===
+  'BBGC': 'Services Financiers', // BRIDGE BANK GROUP COTE D'IVOIRE
   'BICB': 'Services Financiers', // BANQUE INTERNATIONALE POUR L'INDUSTRIE ET LE COMMERCE DU BENIN
   'BICC': 'Services Financiers', // BICI COTE D'IVOIRE
   'BOAB': 'Services Financiers', // BANK OF AFRICA BENIN

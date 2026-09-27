@@ -21,8 +21,13 @@ import type {
 } from '../types/chart.types';
 import {
   loadSavedDrawings, saveDrawings, buildStyleOptions, readDrawingStyle,
-  type DrawingStyle,
+  parseSnapshot, stringifySnapshot, EMPTY_SNAPSHOT,
+  type DrawingStyle, type FibGroupData,
 } from '../utils/drawingTools';
+import {
+  buildComposite, childOptions, isFibComposite, colorForRatio, FIB_EXTENSION_RATIOS,
+  type FibCompositeType, type FibPoint, type FibConverters,
+} from '../utils/fibonacciTools';
 import {
   calculateSMA, calculateEMA, calculateBollingerBands,
   calculateRSI,
@@ -161,8 +166,12 @@ export const useStockChart = ({
   const [selectedDrawing, setSelectedDrawing] = useState<DrawingInfo | null>(null);
   /** Options du dernier outil armé, pour pouvoir le réarmer en mode continu */
   const lastToolRef = useRef<{ toolType: string; textValue?: string; fibLevels?: unknown } | null>(null);
+  /** Composites Fibonacci : idAncre → { type, idsEnfants } */
+  const fibGroupsRef = useRef<Map<string, FibGroupData>>(new Map());
+  /** Composite en attente de son ancre (l'utilisateur est en train de la poser) */
+  const pendingCompositeRef = useRef<FibCompositeType | null>(null);
   /** Pile d'états (JSON exportLineTools) pour l'annulation */
-  const historyRef = useRef<string[]>(['[]']);
+  const historyRef = useRef<string[]>([stringifySnapshot(EMPTY_SNAPSHOT)]);
   const [canUndo, setCanUndo] = useState(false);
 
   // Utiliser une clé pour détecter les vrais changements de données
@@ -1169,22 +1178,49 @@ export const useStockChart = ({
   /** Symbole dont les tracés sont actuellement chargés (évite les fuites entre actions) */
   const loadedSymbolRef = useRef<string | null>(null);
 
+  /** Instantané complet : tracés terminés + composites Fibonacci */
+  const snapshotNow = () => ({
+    tools: serializeFinished(),
+    groups: Array.from(fibGroupsRef.current.entries()),
+  });
+
   const persistDrawings = () => {
     const sym = symbolRef.current;
     if (!sym || loadedSymbolRef.current !== sym) return;
-    saveDrawings(sym, serializeFinished());
+    saveDrawings(sym, stringifySnapshot(snapshotNow()));
   };
 
   const refreshDrawings = () => {
+    const present = new Set(readTools().map(t => t.id).filter(Boolean) as string[]);
+
+    // Écarter les groupes dont l'ancre a disparu (annulation, suppression…)
+    for (const [anchorId, group] of Array.from(fibGroupsRef.current.entries())) {
+      if (!present.has(anchorId)) {
+        const chartApi = chartRef.current as any;
+        const orphans = group.childIds.filter(id => present.has(id));
+        if (orphans.length > 0) chartApi?.removeLineToolsById?.(orphans);
+        orphans.forEach(id => finishedIdsRef.current.delete(id));
+        fibGroupsRef.current.delete(anchorId);
+      }
+    }
+
+    // Les enfants d'un composite ne sont pas listés : le groupe compte pour un
+    const childIds = new Set<string>();
+    fibGroupsRef.current.forEach(g => g.childIds.forEach(id => childIds.add(id)));
+
     const list = readTools()
-      .filter(t => t.id && finishedIdsRef.current.has(t.id))
-      .map(t => ({ id: t.id as string, toolType: t.toolType || 'TrendLine' }));
+      .filter(t => t.id && finishedIdsRef.current.has(t.id) && !childIds.has(t.id))
+      .map(t => ({
+        id: t.id as string,
+        // Une ancre s'affiche sous le nom de son composite (Éventail, Arcs…)
+        toolType: fibGroupsRef.current.get(t.id as string)?.type || t.toolType || 'TrendLine',
+      }));
     setDrawings(list);
   };
 
   /** Empile l'état courant pour permettre l'annulation */
   const pushHistory = () => {
-    const snapshot = serializeFinished();
+    const snapshot = stringifySnapshot(snapshotNow());
     const stack = historyRef.current;
     if (stack[stack.length - 1] === snapshot) return;
     stack.push(snapshot);
@@ -1203,17 +1239,88 @@ export const useStockChart = ({
     persistDrawings();
   };
 
-  /** Remplace tous les tracés du graphique par ceux d'un JSON exporté */
-  const restoreFrom = (json: string) => {
+  /** Remplace tous les tracés du graphique par ceux d'un instantané */
+  const restoreFrom = (raw: string) => {
     const chartApi = chartRef.current as any;
     if (!chartApi) return;
+    const snapshot = parseSnapshot(raw);
     chartApi.removeAllLineTools?.();
     finishedIdsRef.current = new Set();
-    if (json && json !== '[]') {
-      chartApi.importLineTools?.(json);
-      markAllFinished();
+    fibGroupsRef.current = new Map(snapshot.groups);
+    if (snapshot.tools && snapshot.tools !== '[]') {
+      chartApi.importLineTools?.(snapshot.tools);
+      markAllFinished();  // les ids sont conservés à l'import : les groupes restent valides
     }
     refreshDrawings();
+  };
+
+  // ── Composites Fibonacci (éventail, zones temporelles, arcs) ──────────────
+  // La librairie ne fournit que FibRetracement. Les autres variantes sont
+  // générées à partir d'une ligne d'ancrage : la déplacer recalcule le tracé.
+
+  /** Style de l'ancre : discrète, elle sert de poignée au composite */
+  const ANCHOR_OPTIONS = { line: { color: '#9ca3af', width: 1, style: 2 } };
+
+  /** Conversions prix/temps ↔ pixels, nécessaires aux arcs */
+  const getConverters = (): FibConverters => {
+    const series = seriesRef.current as any;
+    const timeScale = chartRef.current?.timeScale() as any;
+    return {
+      priceToY: (price) => series?.priceToCoordinate?.(price) ?? null,
+      yToPrice: (y) => series?.coordinateToPrice?.(y) ?? null,
+      timeToX: (t) => timeScale?.timeToCoordinate?.(t) ?? null,
+      xToTime: (x) => {
+        // Sur un graphique journalier, coordinateToTime renvoie un BusinessDay
+        // { year, month, day } et non un timestamp : il faut le convertir,
+        // sinon tous les points calcules sont rejetes (arcs invisibles).
+        const time = timeScale?.coordinateToTime?.(x);
+        if (typeof time === 'number') return time;
+        if (time && typeof time === 'object' && typeof time.year === 'number') {
+          return Date.UTC(time.year, time.month - 1, time.day) / 1000;
+        }
+        return null;
+      },
+    };
+  };
+
+  /** Crée les tracés enfants et retourne leurs ids (repérés par différence) */
+  const createChildren = (anchorPoints: FibPoint[], type: FibCompositeType): string[] => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi) return [];
+    const children = buildComposite(type, anchorPoints, getConverters());
+    if (children.length === 0) return [];
+
+    const before = new Set(readTools().map(t => t.id).filter(Boolean) as string[]);
+    children.forEach(child => {
+      try {
+        chartApi.addLineTool?.(child.toolType, child.points, childOptions(child));
+      } catch (e) {
+        console.warn('[fib] tracé enfant impossible', child.toolType, e);
+      }
+    });
+    const created = readTools()
+      .map(t => t.id)
+      .filter((id): id is string => !!id && !before.has(id));
+    created.forEach(id => finishedIdsRef.current.add(id));
+    return created;
+  };
+
+  const removeChildren = (childIds: string[]) => {
+    const chartApi = chartRef.current as any;
+    if (!chartApi || childIds.length === 0) return;
+    chartApi.removeLineToolsById?.(childIds);
+    childIds.forEach(id => finishedIdsRef.current.delete(id));
+  };
+
+  /** Recalcule un composite après déplacement de son ancre */
+  const rebuildComposite = (anchorId: string) => {
+    const group = fibGroupsRef.current.get(anchorId);
+    if (!group) return;
+    const anchor = readTools().find(t => t.id === anchorId);
+    if (!anchor) return;
+    removeChildren(group.childIds);
+    const childIds = createChildren((anchor.points || []) as FibPoint[], group.type as FibCompositeType);
+    fibGroupsRef.current.set(anchorId, { ...group, childIds });
   };
 
   /**
@@ -1226,6 +1333,7 @@ export const useStockChart = ({
       const chartApi = chartRef.current as any;
       chartApi.setActiveLineTool?.(null, {}); // efface _activeType côté librairie
       pruneUnfinished();
+      pendingCompositeRef.current = null;
       lastToolRef.current = null;
       setActiveTool(null);
       setSelectedDrawing(null); // Échap ferme aussi le panneau de propriétés
@@ -1240,13 +1348,23 @@ export const useStockChart = ({
     toolType: string,
     textValue?: string,
     fibLevels?: FibLevelInput[],
-  ) => {
+  ): void => {
     if (!chartRef.current) return;
     try {
       const chartApi = chartRef.current as any;
 
       // Un seul tracé en attente à la fois : jeter celui qui n'a pas été posé
       pruneUnfinished();
+
+      // « Fibonacci étendu » n'existe pas dans la librairie : c'est un
+      // FibRetracement dont les coefficients dépassent 1 (projection).
+      if (toolType === 'FibExtension') {
+        const levels = fibLevels ?? FIB_EXTENSION_RATIOS.map(coeff => ({
+          coeff, color: colorForRatio(coeff), opacity: 0.25,
+        }));
+        startDrawingRef.current('FibRetracement', undefined, levels as FibLevelInput[]);
+        return;
+      }
 
       const options: Record<string, unknown> = {};
       // Text et Callout partagent la même option text.value
@@ -1267,6 +1385,16 @@ export const useStockChart = ({
       }
 
       lastToolRef.current = { toolType, textValue, fibLevels };
+
+      // Variantes Fibonacci composites : on arme une ancre, les tracés seront
+      // générés une fois les 2 points posés (voir le gestionnaire afterEdit).
+      if (isFibComposite(toolType)) {
+        pendingCompositeRef.current = toolType;
+        chartApi.addLineTool?.('TrendLine', [], ANCHOR_OPTIONS);
+        setActiveTool(toolType);
+        return;
+      }
+
       // Créer l'outil en mode placement (points vides = attend les clics de l'utilisateur)
       chartApi.addLineTool?.(toolType, [], options);
       setActiveTool(toolType);
@@ -1287,6 +1415,11 @@ export const useStockChart = ({
     } catch { /* pas de sélection exploitable */ }
     if (!Array.isArray(selection) || selection.length === 0) return false;
 
+    // Une ancre sélectionnée entraîne ses enfants
+    (selection as ExportedTool[]).forEach(t => {
+      const group = t.id ? fibGroupsRef.current.get(t.id) : undefined;
+      if (t.id && group) { removeChildren(group.childIds); fibGroupsRef.current.delete(t.id); }
+    });
     chartApi.removeSelectedLineTools?.();
     (selection as ExportedTool[]).forEach(t => { if (t.id) finishedIdsRef.current.delete(t.id); });
     commitChange();
@@ -1296,6 +1429,12 @@ export const useStockChart = ({
   const removeDrawingById = (id: string) => {
     const chartApi = chartRef.current as any;
     if (!chartApi || !id) return;
+    // Supprimer une ancre emporte tous les tracés de son composite
+    const group = fibGroupsRef.current.get(id);
+    if (group) {
+      removeChildren(group.childIds);
+      fibGroupsRef.current.delete(id);
+    }
     chartApi.removeLineToolsById?.([id]);
     finishedIdsRef.current.delete(id);
     setSelectedDrawing(prev => (prev?.id === id ? null : prev));
@@ -1307,6 +1446,8 @@ export const useStockChart = ({
     if (!chartApi) return;
     chartApi.removeAllLineTools?.();
     finishedIdsRef.current = new Set();
+    fibGroupsRef.current = new Map();
+    pendingCompositeRef.current = null;
     lastToolRef.current = null;
     setActiveTool(null);
     setSelectedDrawing(null);
@@ -1357,6 +1498,22 @@ export const useStockChart = ({
 
     if (stage === 'lineToolFinished' || stage === 'pathFinished') {
       finishedIdsRef.current.add(id);
+
+      // L'ancre d'un composite vient d'être posée : générer les tracés
+      const pending = pendingCompositeRef.current;
+      if (pending) {
+        pendingCompositeRef.current = null;
+        const points = (event.selectedLineTool?.points || []) as FibPoint[];
+        const childIds = createChildren(points, pending);
+        if (childIds.length > 0) {
+          fibGroupsRef.current.set(id, { type: pending, childIds });
+        } else {
+          // Géométrie impossible (points confondus) : ne pas laisser d'ancre orpheline
+          const chartApi = chartRef.current as any;
+          chartApi?.removeLineToolsById?.([id]);
+          finishedIdsRef.current.delete(id);
+        }
+      }
       // Le mode placement de la librairie s'arrête ici : réarmer ou revenir au curseur
       const repeat = continuousModeRef.current ? lastToolRef.current : null;
       if (repeat) {
@@ -1367,6 +1524,11 @@ export const useStockChart = ({
         setActiveTool(null);
       }
     }
+    // Déplacement de l'ancre : le composite se recalcule
+    if (stage === 'lineToolEdited' && fibGroupsRef.current.has(id)) {
+      rebuildComposite(id);
+    }
+
     // Création comme édition (déplacement d'un point) modifient l'état à sauvegarder
     commitChange();
   };
@@ -1378,7 +1540,10 @@ export const useStockChart = ({
     const onAfterEdit = (event: any) => afterEditRef.current(event);
     const onDoubleClick = (event: { selectedLineTool?: ExportedTool }) => {
       const tool = event?.selectedLineTool;
-      if (tool?.id) setSelectedDrawing({ id: tool.id, toolType: tool.toolType || 'TrendLine' });
+      if (!tool?.id) return;
+      // L ancre d un composite s affiche sous le nom du composite
+      const group = fibGroupsRef.current.get(tool.id);
+      setSelectedDrawing({ id: tool.id, toolType: group?.type || tool.toolType || 'TrendLine' });
     };
 
     chartApi.subscribeLineToolsAfterEdit?.(onAfterEdit);
@@ -1399,7 +1564,7 @@ export const useStockChart = ({
 
     try {
       restoreFrom(loadSavedDrawings(symbol) || '[]');
-      historyRef.current = [serializeFinished()];
+      historyRef.current = [stringifySnapshot(snapshotNow())];
       setCanUndo(false);
       setActiveTool(null);
       setSelectedDrawing(null);

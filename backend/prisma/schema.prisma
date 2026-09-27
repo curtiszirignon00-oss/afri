@@ -659,6 +659,9 @@ model Stock {
   volume               Float @default(0)
   market_cap           Float @default(0)
 
+  shares_outstanding Float?  // nombre de titres, requis par le moteur de valorisation
+  currency           String? @default("XOF")
+
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
 
@@ -2436,4 +2439,194 @@ model PackReferral {
   @@index([referrerId])
   @@index([status])
   @@map("pack_referrals")
+}
+
+// ====================================================== //
+// === MOTEUR DE VALORISATION FONDAMENTALE ============== //
+// ====================================================== //
+// Couche 1 : faits historiques saisis (SYSCOHADA)
+// Couche 2 : hypotheses de valorisation (pilotables)
+// Couche 3 : runs de valorisation versionnes (calcul cote client)
+
+enum StatementPeriod {
+  FY
+  T1
+  S1
+  M9
+}
+
+/// Etats financiers historiques SYSCOHADA, annuels et infra-annuels.
+/// Montants en millions de FCFA, stockes tels que publies.
+model FinancialStatement {
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  year         Int
+  period       StatementPeriod
+
+  // --- Compte de resultat
+  revenue           Float? // Chiffre d'affaires
+  value_added       Float? // Valeur ajoutee
+  ebe               Float? // Excedent brut d'exploitation
+  depreciation      Float? // Dotations aux amortissements & provisions
+  operating_income  Float? // Resultat d'exploitation (REX)
+  financial_income  Float? // Resultat financier
+  ordinary_income   Float? // Resultat des activites ordinaires
+  hao_income        Float? // Resultat HAO (= VNC des cessions dans le modele SODECI)
+  income_tax        Float? // Impot sur le resultat
+  net_income        Float? // Resultat net
+
+  // --- Actif
+  fixed_assets           Float? // Actif immobilise
+  intangible_assets      Float? // Immobilisations incorporelles
+  tangible_assets        Float? // Immobilisations corporelles
+  financial_assets       Float? // Immobilisations financieres
+  current_assets         Float? // Actif circulant
+  inventory              Float? // Stocks
+  receivables            Float? // Creances et emplois assimiles
+  other_receivables      Float? // Autres creances
+  cash_assets            Float? // Tresorerie de l'actif
+  total_assets           Float?
+
+  // --- Passif
+  equity                   Float? // Capitaux propres
+  financial_debt_total     Float? // Dettes financieres et ressources assimilees
+  borrowings               Float? // Emprunts et dettes financieres
+  other_financial_debt     Float? // Dettes financieres diverses
+  financial_provisions     Float? // Provisions financieres pour risques et charges
+  current_liabilities      Float? // Passifs circulants
+  customer_advances        Float? // Clients avances recues
+  trade_payables           Float? // Fournisseurs d'exploitation
+  tax_social_payables      Float? // Dettes fiscales, sociales et autres dettes
+  cash_liabilities         Float? // Tresorerie passif (decouverts / mobilisations)
+  total_liabilities        Float?
+
+  // --- Distribution & retraitements
+  dividend_per_share Float? // DPA
+  payout_ratio       Float? // Taux de distribution
+  fictitious_assets  Float? // Actifs fictifs (pour l'ANC)
+  gross_fixed_assets Float? // Immobilisations brutes (feuille Investissement)
+
+  source     String? // provenance de la publication (rapport T1 2026, etc.)
+  note       String? // note de tracabilite
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([stock_ticker, year, period])
+  @@index([stock_ticker])
+  @@index([year])
+  @@map("financial_statements")
+}
+
+/// Fiches sectorielles Damodaran : betas desendettes et primes.
+model SectorBeta {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  sector          String // libelle Damodaran, ex. "Utility (Water)"
+  dataset         String // "global" | "emerging" | "us" | "europe" | "japan"
+  number_of_firms Int?
+  beta            Float? // beta reendette moyen de l'echantillon
+  de_ratio        Float? // D/E de l'echantillon
+  effective_tax   Float?
+  beta_unlevered  Float // beta desendette
+  beta_unlevered_cash_adj Float? // corrige de la tresorerie
+  as_of           DateTime // date de mise a jour de la fiche
+  source          String   @default("Damodaran")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@unique([sector, dataset, as_of])
+  @@index([dataset])
+  @@map("sector_betas")
+}
+
+/// Primes de risque par pays (ERP + CRP), fiche pays Damodaran.
+model CountryRiskPremium {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  country    String
+  erp        Float // prime de risque action (mature market premium)
+  crp        Float // prime de risque pays
+  as_of      DateTime
+  source     String   @default("Damodaran")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([country, as_of])
+  @@map("country_risk_premiums")
+}
+
+/// Hypotheses de valorisation pilotables par titre (les "cellules jaunes").
+model ValuationAssumptions {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String @unique
+
+  // Cout du capital
+  risk_free_rate Float // Rf
+  erp            Float // prime de risque action
+  crp            Float // prime de risque pays
+  cost_of_debt   Float // Kd avant impot
+  tax_rate       Float // IS
+  g_terminal     Float // croissance a l'infini
+
+  // Bêta
+  beta_source       String  @default("BOTTOM_UP") // BOTTOM_UP | REGRESSION | MANUAL
+  beta_datasets     String[] // fiches Damodaran moyennees, ex. ["global","emerging"]
+  damodaran_sector  String? // libelle de mapping vers SectorBeta
+  beta_unlevered_override Float?
+  beta_regression   Float? // beta de regression vs composite BRVM (controle)
+  beta_regression_r2 Float?
+  beta_regression_points Int?
+
+  // Gearing : reel si plausible, sinon cible
+  gearing_target   Float @default(0.3) // D/(D+CP) cible, repli
+  gearing_max_plausible Float @default(0.6) // au-dela on retombe sur la cible
+
+  // Structure
+  shares_outstanding Float
+  net_debt_override  Float?
+
+  // Synthese
+  weight_dcf Float @default(0.5)
+  weight_ddm Float @default(0.25)
+  weight_anc Float @default(0.25)
+
+  // Ancrage T-1
+  seasonality_stat  String @default("MEAN") // MEAN | MEDIAN
+  t1_anchor_weight  Float  @default(1) // 0 = tendance pure, 1 = ancrage pur
+
+  // Drivers par scenario (10 drivers x 3 scenarios), JSON
+  scenarios Json
+
+  // Probabilites de scenario pour la colonne ponderee
+  prob_pessimistic Float @default(0.25)
+  prob_base        Float @default(0.5)
+  prob_optimistic  Float @default(0.25)
+
+  updated_by String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("valuation_assumptions")
+}
+
+/// Instantane versionne d'une valorisation : inputs + resultats, tracable.
+model ValuationRun {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  version      Int
+
+  assumptions_snapshot Json // copie integrale des hypotheses au moment du run
+  projection_snapshot  Json // drivers x annees x scenarios, avec flags "forced"
+  results              Json // { pessimistic|base|optimistic|weighted: { dcf, ddmGordon, ddm2Stage, anc, weighted } }
+  diagnostics          Json? // DCF inverse, alertes, controles
+
+  price_at_run Float? // cours de reference utilise
+  sector       String?
+  is_published Boolean @default(false)
+  created_by   String?
+  created_at   DateTime @default(now())
+
+  @@unique([stock_ticker, version])
+  @@index([stock_ticker])
+  @@index([sector])
+  @@index([is_published])
+  @@map("valuation_runs")
 }

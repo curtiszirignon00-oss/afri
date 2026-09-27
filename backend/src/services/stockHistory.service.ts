@@ -4,6 +4,7 @@ import { log } from '../config/logger';
 
 import prisma from '../config/prisma';
 import { scrapeStock, StockData } from './scraping.service';
+import { normalizeSymbol } from './stock.service.prisma';
 
 /**
  * Sauvegarde l'historique du jour pour toutes les actions
@@ -53,9 +54,13 @@ export async function saveCurrentDayHistory() {
 
     for (const stock of stocks) {
       try {
+        // Meme normalisation que saveStocks : l'historique doit etre ecrit sous
+        // le symbole canonique, sinon il n'est pas rattache a la bonne fiche
+        const symbol = normalizeSymbol(stock.symbol);
+
         // Vérifier que le stock existe dans la table Stock
         const existingStock = await prisma.stock.findUnique({
-          where: { symbol: stock.symbol }
+          where: { symbol }
         });
 
         if (!existingStock) {
@@ -75,7 +80,7 @@ export async function saveCurrentDayHistory() {
         const volume = stock.volume ?? 0;
 
         // Fusionner les extrêmes intraday : vrais plus hauts/plus bas de séance
-        const extremes = intradayExtremes.get(stock.symbol);
+        const extremes = intradayExtremes.get(symbol);
         const high = Math.max(stock.high ?? stock.lastPrice, extremes?.max ?? -Infinity, open, close);
         const low = Math.min(stock.low ?? stock.lastPrice, extremes?.min ?? Infinity, open, close);
 
@@ -83,7 +88,7 @@ export async function saveCurrentDayHistory() {
         await prisma.stockHistory.upsert({
           where: {
             stock_ticker_date: {
-              stock_ticker: stock.symbol,
+              stock_ticker: symbol,
               date: today
             }
           },
@@ -96,7 +101,7 @@ export async function saveCurrentDayHistory() {
           },
           create: {
             stockId: existingStock.id,
-            stock_ticker: stock.symbol,
+            stock_ticker: symbol,
             date: today,
             open,
             high,
@@ -107,7 +112,7 @@ export async function saveCurrentDayHistory() {
         });
 
         savedCount++;
-        log.debug(`✅ ${stock.symbol}: historique sauvegardé`);
+        log.debug(`✅ ${symbol}: historique sauvegardé`);
 
       } catch (stockError) {
         errorCount++;
@@ -160,7 +165,8 @@ export async function saveIntradaySnapshots(stocks: StockData[]) {
     const snapshots = stocks
       .filter(s => s.symbol && s.lastPrice !== null)
       .map(s => ({
-        stock_ticker: s.symbol,
+        // meme symbole canonique que l'historique quotidien
+        stock_ticker: normalizeSymbol(s.symbol),
         timestamp: now,
         price: s.lastPrice as number,
         volume: s.volume ?? 0,

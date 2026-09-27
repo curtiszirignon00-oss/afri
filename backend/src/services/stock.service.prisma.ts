@@ -38,11 +38,13 @@ const SECTOR_MAPPING: Record<string, string> = {
   'CABC': 'Industriels',
   'FTSC': 'Industriels',
   'SDSC': 'Industriels',
+  'SVOC': 'Industriels', // MOVIS CI — desactivee en base, mappee pour ne pas alerter a chaque scrape
   'SEMC': 'Industriels',
   'SIVC': 'Industriels',
   'STAC': 'Industriels',
 
   // === SERVICES FINANCIERS ===
+  'BBGC': 'Services Financiers',
   'BICB': 'Services Financiers',
   'BICC': 'Services Financiers',
   'BOAB': 'Services Financiers',
@@ -70,37 +72,78 @@ const SECTOR_MAPPING: Record<string, string> = {
   'SNTS': 'Télécommunications',
 };
 
+/**
+ * Symboles alternatifs -> symbole canonique utilise chez nous.
+ *
+ * Le scraper deduit le symbole depuis l'URL Sikafinance. Si la source publie une
+ * valeur sous un code different du notre, l'upsert (qui matche sur `symbol`)
+ * creerait une SECONDE ligne pour la meme societe : deux fiches, deux pages, et
+ * les positions des utilisateurs eclatees entre les deux. Cette table normalise
+ * le symbole scrape avant tout acces base.
+ *
+ * BBGC a ete ajoute a la main (admis a la cote le 2026-09-24, non encore publie
+ * par la source). A verifier / ajuster des que Sikafinance le cotera.
+ */
+const SYMBOL_ALIASES: Record<string, string> = {
+  // Vide a ce jour : verifie le 2026-09-24 sur les 49 valeurs cotees, tous les
+  // codes de la source correspondent aux notres (BBGC inclus). Le garde-fou
+  // reste en place pour les prochaines admissions a la cote.
+};
+
+export function normalizeSymbol(symbol: string): string {
+  const upper = symbol.trim().toUpperCase();
+  return SYMBOL_ALIASES[upper] ?? upper;
+}
+
 export async function saveStocks(stocksData: StockData[]) {
   try {
     for (const data of stocksData) {
       if (!data.symbol || data.lastPrice === null) continue;
 
-      // Calcule le "previous_close"
-      const changeValue = data.change ? (data.lastPrice * (data.change / 100)) : 0;
-      const previousClose = data.lastPrice - changeValue;
+      // Un code alternatif cote source ne doit pas creer un doublon de fiche
+      const symbol = normalizeSymbol(data.symbol);
+
+      // Calcule le "previous_close" en inversant la variation.
+      // `last - last * pct` est faux : la variation se rapporte au cours de la
+      // veille, pas au cours du jour. L'ecart est invisible a +0,5% mais reel
+      // des que la valeur bouge (BBGC a +7,48% : 6712 au lieu de 6750).
+      const previousClose = data.change
+        ? data.lastPrice / (1 + data.change / 100)
+        : data.lastPrice;
 
       // <-- AJOUT : Récupérer le secteur depuis le mapping
-      const sector = SECTOR_MAPPING[data.symbol] || null;
+      const sector = SECTOR_MAPPING[symbol] || null;
+
+      // Une valeur absente du mapping (nouvelle admission a la cote) doit etre
+      // signalee : sans secteur elle sort des filtres de /markets.
+      if (!sector) {
+        log.warn(`⚠️  ${symbol} (${data.name}) n'est pas dans SECTOR_MAPPING — secteur existant conserve`);
+      }
 
       await prisma.stock.upsert({
-        where: { symbol: data.symbol },
+        where: { symbol },
         update: {
           company_name: data.name,
           current_price: data.lastPrice,
           daily_change_percent: data.change ?? 0,
           volume: data.volume ?? 0,
           previous_close: previousClose,
-          sector: sector, // <-- AJOUT : Mise à jour du secteur
+          // Secteur ecrit uniquement si le mapping le connait : sinon on preserve
+          // la valeur en base (sans ce garde-fou, chaque scrape la remettait a null)
+          ...(sector ? { sector } : {}),
           updated_at: new Date(),
         },
         create: {
-          symbol: data.symbol,
+          symbol,
           company_name: data.name,
           current_price: data.lastPrice,
           daily_change_percent: data.change ?? 0,
           volume: data.volume ?? 0,
           previous_close: previousClose,
-          market_cap: data.volumeXOF ?? 0,
+          // volumeXOF = capitaux echanges dans la journee, PAS la capitalisation.
+          // On laisse 0 (= inconnu, masque a l'affichage) : calculateAndUpdateDailyRatios
+          // le calculera correctement des que les fondamentaux seront saisis.
+          market_cap: 0,
           sector: sector, // <-- AJOUT : Assignation du secteur lors de la création
         }
       });

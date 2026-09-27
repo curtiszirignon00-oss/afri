@@ -69,7 +69,10 @@
     "seed": "ts-node src/seed-learning.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "add-bbgc": "tsx scripts/addBBGC.ts",
+    "import-sodeci-statements": "tsx scripts/importSodeciStatements.ts",
+    "import-damodaran-sectors": "tsx scripts/importDamodaranSectors.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

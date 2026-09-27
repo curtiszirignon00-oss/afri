@@ -10,6 +10,7 @@ import { applyResolution, RESOLUTION_LABEL, filterDataByInterval } from '../../u
 import ChartShareModal from './ChartShareModal';
 import ChartDrawingToolbar from './ChartDrawingToolbar';
 import MultiTimeframePanel from './MultiTimeframePanel';
+import { FIB_EXTENSION_RATIOS, colorForRatio, isFibComposite } from '../../utils/fibonacciTools';
 import {
   getToolLabel, getPlacementHint, isTextTool,
   LINE_STYLE_OPTIONS, DEFAULT_DRAWING_STYLE, type DrawingStyle,
@@ -87,6 +88,11 @@ const DEFAULT_FIB_LEVELS: FibLevel[] = [
   { coeff: 0.786, color: '#9c27b0', opacity: 0.25, enabled: true },
   { coeff: 1,     color: '#787b86', opacity: 0.25, enabled: true },
 ];
+
+/** Niveaux de projection : les coefficients > 1 dépassent le mouvement mesuré */
+const EXTENSION_FIB_LEVELS: FibLevel[] = FIB_EXTENSION_RATIOS.map(coeff => ({
+  coeff, color: colorForRatio(coeff), opacity: 0.25, enabled: true,
+}));
 
 export default function StockChartNew({
   symbol,
@@ -299,9 +305,17 @@ export default function StockChartNew({
       setShowTextModal(true);
       return;
     }
-    if (toolType === 'FibRetracement') {
-      setPendingModalTool('FibRetracement');
+    // Retracement et extension passent par la modale de niveaux
+    if (toolType === 'FibRetracement' || toolType === 'FibExtension') {
+      setPendingModalTool(toolType);
+      setFibLevels(toolType === 'FibExtension' ? EXTENSION_FIB_LEVELS : DEFAULT_FIB_LEVELS);
       setShowFibModal(true);
+      return;
+    }
+    // Éventail, zones temporelles et arcs : niveaux fixes, pose directe
+    if (isFibComposite(toolType)) {
+      setPendingModalTool(null);
+      startDrawing(toolType);
       return;
     }
     setPendingModalTool(null);
@@ -341,7 +355,7 @@ export default function StockChartNew({
 
   const addFibLevel = () => {
     const coeff = parseFloat(newFibCoeff);
-    if (isNaN(coeff) || coeff < 0 || coeff > 2) return;
+    if (isNaN(coeff) || coeff < 0 || coeff > 4.236) return;
     if (fibLevels.some(l => l.coeff === coeff)) return;
     setFibLevels(prev => [...prev, { coeff, color: newFibColor, opacity: 0.25, enabled: true }].sort((a, b) => a.coeff - b.coeff));
     setNewFibCoeff('');
@@ -873,13 +887,32 @@ export default function StockChartNew({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-gray-800">Niveaux Fibonacci</h4>
-              <button
-                onClick={() => setFibLevels(DEFAULT_FIB_LEVELS)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 transition-colors"
-              >
-                Réinitialiser
-              </button>
+              <h4 className="text-sm font-semibold text-gray-800">
+                {pendingModalTool === 'FibExtension' ? 'Niveaux d’extension' : 'Niveaux de retracement'}
+              </h4>
+              <div className="flex items-center gap-1">
+                {/* Bascule entre les deux jeux de niveaux sans fermer la modale */}
+                <button
+                  onClick={() => { setPendingModalTool('FibRetracement'); setFibLevels(DEFAULT_FIB_LEVELS); }}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    pendingModalTool !== 'FibExtension'
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                >
+                  Retracement
+                </button>
+                <button
+                  onClick={() => { setPendingModalTool('FibExtension'); setFibLevels(EXTENSION_FIB_LEVELS); }}
+                  className={`px-2 py-0.5 text-xs rounded transition-colors ${
+                    pendingModalTool === 'FibExtension'
+                      ? 'bg-indigo-100 text-indigo-700'
+                      : 'text-gray-500 hover:bg-gray-100'
+                  }`}
+                >
+                  Extension
+                </button>
+              </div>
             </div>
 
             {/* Liste des niveaux */}
@@ -925,7 +958,7 @@ export default function StockChartNew({
 
             {/* Ajouter un niveau personnalisé */}
             <div className="border-t border-gray-100 pt-3 mb-4">
-              <p className="text-xs text-gray-500 mb-2">Ajouter un niveau personnalisé (0 – 2)</p>
+              <p className="text-xs text-gray-500 mb-2">Ajouter un niveau personnalisé (0 – 4.236)</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -935,7 +968,7 @@ export default function StockChartNew({
                   placeholder="ex: 1.618"
                   step="0.001"
                   min="0"
-                  max="2"
+                  max="4.236"
                   className="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
                 <input

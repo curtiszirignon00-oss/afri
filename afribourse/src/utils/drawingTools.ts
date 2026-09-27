@@ -43,6 +43,10 @@ export const DRAWING_TOOLS: Record<string, DrawingToolMeta> = {
   PriceRange:      { label: 'Mesure de prix',      points:  2, family: 'shape', shapeKey: 'priceRange' },
   Highlighter:     { label: 'Surbrillance',        points: -1, family: 'line', gesture: 'drag' },
   Brush:           { label: 'Pinceau libre',       points: -1, family: 'line', gesture: 'drag' },
+  FibExtension:    { label: 'Fibonacci étendu',    points:  2, family: 'line' },
+  FibFan:          { label: 'Éventail de Fibonacci', points: 2, family: 'line' },
+  FibTimeZones:    { label: 'Zones temporelles Fib.', points: 2, family: 'line' },
+  FibArcs:         { label: 'Arcs de Fibonacci',  points:  2, family: 'line' },
   Text:            { label: 'Texte',               points:  1, family: 'text' },
   Callout:         { label: 'Bulle de texte',      points:  2, family: 'line' },
 };
@@ -225,3 +229,39 @@ export function saveToolbarPosition(pos: ToolbarPosition): void {
     /* stockage indisponible : la position vaut pour la session */
   }
 }
+
+// ─── Instantané des tracés (outils + groupes composites) ─────────────────────
+
+/** Un composite Fibonacci : une ancre pilote ses tracés enfants */
+export interface FibGroupData { type: string; childIds: string[] }
+
+export interface DrawingsSnapshot {
+  /** JSON exportLineTools() */
+  tools: string;
+  /** [idAncre, groupe][] */
+  groups: [string, FibGroupData][];
+}
+
+export const EMPTY_SNAPSHOT: DrawingsSnapshot = { tools: '[]', groups: [] };
+
+/**
+ * Lit un instantané en tolérant l'ancien format (simple tableau de tracés),
+ * pour ne pas perdre les dessins enregistrés avant l'arrivée des composites.
+ */
+export function parseSnapshot(raw: string | null | undefined): DrawingsSnapshot {
+  if (!raw) return { ...EMPTY_SNAPSHOT };
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return { tools: raw, groups: [] };   // ancien format
+    if (parsed && typeof parsed.tools === 'string') {
+      return { tools: parsed.tools, groups: Array.isArray(parsed.groups) ? parsed.groups : [] };
+    }
+  } catch { /* contenu illisible : on repart de zéro */ }
+  return { ...EMPTY_SNAPSHOT };
+}
+
+export const stringifySnapshot = (snapshot: DrawingsSnapshot): string => JSON.stringify(snapshot);
+
+/** Vrai si l'instantané ne contient aucun tracé */
+export const isEmptySnapshot = (snapshot: DrawingsSnapshot): boolean =>
+  !snapshot.tools || snapshot.tools === '[]';

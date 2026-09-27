@@ -27,6 +27,10 @@ import {
   List,
   X,
   GripHorizontal,
+  BarChart3,
+  Waypoints,
+  Columns3,
+  Radius,
 } from 'lucide-react';
 import {
   getToolLabel, loadToolbarPosition, saveToolbarPosition,
@@ -70,12 +74,19 @@ const LINE_TOOLS: DrawingTool[] = [
 ];
 
 const SHAPE_TOOLS: DrawingTool[] = [
-  { type: 'FibRetracement', icon: BarChart2,   label: 'Fibonacci (configurable)' },
   { type: 'Rectangle',      icon: Square,      label: 'Rectangle'                },
   { type: 'Circle',         icon: Circle,      label: 'Cercle'                   },
   { type: 'Triangle',       icon: Triangle,    label: 'Triangle'                 },
   { type: 'Highlighter',    icon: Highlighter, label: 'Surbrillance'             },
   { type: 'PriceRange',     icon: Ruler,       label: 'Mesure de prix (%)'       },
+];
+
+const FIB_TOOLS: DrawingTool[] = [
+  { type: 'FibRetracement', icon: BarChart2,  label: 'Fibonacci — retracement (niveaux configurables)' },
+  { type: 'FibExtension',   icon: BarChart3,  label: 'Fibonacci — extension / projection' },
+  { type: 'FibFan',         icon: Waypoints,  label: 'Fibonacci — éventail' },
+  { type: 'FibTimeZones',   icon: Columns3,   label: 'Fibonacci — zones temporelles' },
+  { type: 'FibArcs',        icon: Radius,     label: 'Fibonacci — arcs' },
 ];
 
 const ANNOTATION_TOOLS: DrawingTool[] = [
@@ -306,6 +317,11 @@ export default function ChartDrawingToolbar({
 
         {/* Figures */}
         {SHAPE_TOOLS.map((t) => <ToolBtn key={t.type} tool={t} />)}
+
+        <div className={`w-5 h-px ${divClass} my-0.5`} />
+
+        {/* Fibonacci */}
+        {FIB_TOOLS.map((t) => <ToolBtn key={t.type} tool={t} />)}
 
         <div className={`w-5 h-px ${divClass} my-0.5`} />
 
