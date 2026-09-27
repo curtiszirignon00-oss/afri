@@ -6,6 +6,7 @@ import { useValuation } from '../../hooks/useValuation';
 import type { ScenarioId } from '../../lib/valuation';
 import AssumptionsPanel from './AssumptionsPanel';
 import FootballField from './FootballField';
+import HistoricalStatements from './HistoricalStatements';
 import ProjectionGrid from './ProjectionGrid';
 import SensitivityTornado from './SensitivityTornado';
 import { NAVY, ORANGE, SEVERITY_STYLES, formatMillions, formatPerShare, formatUpside } from './ValuationFormat';
@@ -31,6 +32,7 @@ export default function ValuationPanel({ symbol }: { symbol: string }) {
 
   const valuation = useValuation(hasAccess ? symbol : '');
   const [showProjection, setShowProjection] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   if (!hasAccess) {
     return (
@@ -78,7 +80,7 @@ export default function ValuationPanel({ symbol }: { symbol: string }) {
         <Notice severity="error" title="Calcul impossible">
           {computed.error}
         </Notice>
-        {computed.capital && (
+        {computed.capital ? (
           <AssumptionsPanel
             assumptions={computed.assumptions}
             capital={computed.capital}
@@ -87,12 +89,24 @@ export default function ValuationPanel({ symbol }: { symbol: string }) {
             onReset={valuation.resetAssumptions}
             readOnly={!isAdmin}
           />
+        ) : (
+          // Sortie de secours : quand le cout du capital lui-meme n'a pas pu etre
+          // calcule (ex. beta manuel sans valeur), le panneau ne peut pas s'afficher.
+          // On garantit malgre tout un retour en arriere.
+          <button
+            type="button"
+            onClick={valuation.resetAssumptions}
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 font-semibold text-white"
+            style={{ backgroundColor: ORANGE }}
+          >
+            Réinitialiser les hypothèses
+          </button>
         )}
       </div>
     );
   }
 
-  const { result, capital, inputs, assumptions, tornado, netDebt } = computed;
+  const { result, capital, inputs, assumptions, calibration, tornado, netDebt } = computed;
   const active = result.outcomes[valuation.scenario];
   const weighted = formatUpside(result.upside[valuation.scenario]);
 
@@ -111,8 +125,12 @@ export default function ValuationPanel({ symbol }: { symbol: string }) {
         </div>
       </div>
 
-      {/* Sélecteur de scénario + chiffres clés */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      {/* Sélecteur de scénario + chiffres clés. Épinglé en haut : en modifiant une
+          hypothèse plus bas, on voit la valorisation réagir sans avoir à remonter. */}
+      <div
+        className="sticky z-20 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+        style={{ top: 'calc(var(--app-top-h, 4rem) + 0.5rem)' }}
+      >
         <div className="flex flex-wrap items-center gap-2">
           {SCENARIO_TABS.map((tab) => (
             <button
@@ -202,6 +220,18 @@ export default function ValuationPanel({ symbol }: { symbol: string }) {
         onReset={valuation.resetAssumptions}
         readOnly={!isAdmin}
       />
+
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowHistory((v) => !v)}
+          className="mb-3 text-sm font-semibold underline decoration-dotted"
+          style={{ color: NAVY }}
+        >
+          {showHistory ? 'Masquer' : 'Afficher'} les états financiers
+        </button>
+        {showHistory && <HistoricalStatements history={calibration.history} />}
+      </div>
 
       <div>
         <button

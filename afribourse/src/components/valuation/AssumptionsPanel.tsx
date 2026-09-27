@@ -136,7 +136,16 @@ export default function AssumptionsPanel({
                 key={s.value}
                 type="button"
                 disabled={readOnly || (s.value === 'REGRESSION' && inputs.regression.beta === null)}
-                onClick={() => onChange('betaSource', s.value)}
+                onClick={() => {
+                  // Passer en saisie manuelle sans valeur ferait echouer le calcul
+                  // du cout du capital (beta absent) et masquerait tout le panneau :
+                  // on seme le beta desendette courant comme point de depart.
+                  if (s.value === 'MANUAL' && assumptions.betaUnleveredOverride == null) {
+                    const seed = capital.betaUnlevered ?? inputs.sectorBetas[0]?.beta_unlevered ?? 0.6;
+                    onChange('betaUnleveredOverride', Number(seed.toFixed(4)));
+                  }
+                  onChange('betaSource', s.value);
+                }}
                 title={s.hint}
                 className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                   assumptions.betaSource === s.value

@@ -152,7 +152,12 @@ export function useValuation(symbol: string) {
   const query = useQuery({
     queryKey: ['valuation-inputs', symbol],
     queryFn: () => fetchValuationInputs(symbol),
+    // Le cours (et donc les potentiels) doit refleter la derniere cotation : le
+    // scraper met a jour Stock.current_price chaque jour, on refetch a l'ouverture
+    // de la page et au retour sur l'onglet pour ne jamais afficher un cours perime.
     staleTime: 5 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     enabled: Boolean(symbol)
   });
 
