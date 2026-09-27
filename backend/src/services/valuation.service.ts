@@ -11,16 +11,21 @@
 import prisma from '../config/prisma';
 import { Prisma, StatementPeriod } from '@prisma/client';
 
-/** Mapping secteur AfriBourse -> libelle de fiche sectorielle Damodaran. */
+/**
+ * Mapping secteur AfriBourse -> libelle de fiche sectorielle Damodaran.
+ * Les cles doivent correspondre EXACTEMENT aux libelles stockes dans Stock.sector,
+ * accents compris (ex. "Télécommunications", "Consommation Discrétionnaire") :
+ * une cle non accentuee renvoie null et prive le titre de toute fiche Damodaran.
+ * Reste surchargeable par titre via ValuationAssumptions.damodaran_sector.
+ */
 const DAMODARAN_SECTOR_MAP: Record<string, string> = {
   'Services Publics': 'Utility (Water)',
+  'Services Financiers': 'Bank (Money Center)',
   Energie: 'Oil/Gas (Integrated)',
-  Finance: 'Bank (Money Center)',
   Industriels: 'Machinery',
   'Consommation de Base': 'Food Processing',
   'Consommation Discrétionnaire': 'Retail (General)',
-  Telecommunications: 'Telecom (Wireless)',
-  Agriculture: 'Farming/Agriculture'
+  Télécommunications: 'Telecom (Wireless)'
 };
 
 /**

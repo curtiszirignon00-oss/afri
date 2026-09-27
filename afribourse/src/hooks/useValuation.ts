@@ -264,7 +264,11 @@ export function useValuation(symbol: string) {
       lastRevenue: lastHistory?.revenue ?? 0,
       lastWorkingCapital: lastHistory?.workingCapital ?? 0,
       lastWorkingCapitalRatio: lastHistory?.workingCapitalRatio ?? 0,
+      // Total pour le repli ; part du groupe (hors minoritaires) preferee pour l'ANC.
       lastEquity: lastHistory?.equity ?? 0,
+      lastEquityGroupShare: lastHistory?.equityGroupShare ?? undefined,
+      // Deduits du pont DCF pour un groupe consolide (0 sinon).
+      minorityInterests: lastHistory?.minorityInterests ?? 0,
       taxRate: assumptions.taxRate,
       // Montants en millions de FCFA -> nombre d'actions exprime en millions de titres,
       // pour que la valeur par action ressorte directement en FCFA.

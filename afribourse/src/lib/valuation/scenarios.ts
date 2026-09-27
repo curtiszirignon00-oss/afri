@@ -64,8 +64,12 @@ export type ValuationEngineInput = {
   lastRevenue: number;
   lastWorkingCapital: number;
   lastWorkingCapitalRatio: number;
-  /** Capitaux propres du dernier exercice publie, base de l'ANC. */
+  /** Capitaux propres totaux du dernier exercice publie (base de l'ANC a defaut de part du groupe). */
   lastEquity: number;
+  /** Capitaux propres part du groupe : base preferee de l'ANC pour un groupe consolide. */
+  lastEquityGroupShare?: number;
+  /** Interets minoritaires, deduits du pont DCF. */
+  minorityInterests?: number;
   fictitiousAssets?: number;
 
   taxRate: number;
@@ -124,7 +128,8 @@ export function runScenario(
     wacc: input.wacc,
     gTerminal: drivers.gTerminal,
     netDebt: input.netDebt,
-    sharesOutstanding: input.sharesOutstanding
+    sharesOutstanding: input.sharesOutstanding,
+    minorityInterests: input.minorityInterests
   });
 
   const ddm = dividendDiscountModel({
@@ -135,7 +140,9 @@ export function runScenario(
   });
 
   const anc = netAssetValue({
-    equity: input.lastEquity,
+    // Part du groupe si disponible (exclut les minoritaires) : c'est l'actif net
+    // revenant aux actionnaires de la maison mere. Sinon capitaux propres totaux.
+    equity: input.lastEquityGroupShare ?? input.lastEquity,
     fictitiousAssets: input.fictitiousAssets,
     sharesOutstanding: input.sharesOutstanding,
     price: input.price

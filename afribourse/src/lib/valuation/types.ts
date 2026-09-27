@@ -67,7 +67,11 @@ export type CostOfCapitalInput = {
   gearingMaxPlausible: number;
 };
 
-export type GearingOrigin = 'OBSERVED' | 'TARGET_FALLBACK_IMPLAUSIBLE' | 'TARGET_FALLBACK_MISSING_DATA';
+export type GearingOrigin =
+  | 'OBSERVED'
+  | 'NET_CASH_ZERO'
+  | 'TARGET_FALLBACK_IMPLAUSIBLE'
+  | 'TARGET_FALLBACK_MISSING_DATA';
 
 export type CostOfCapitalResult = {
   /** Beta desendette retenu (moyenne des fiches, override, ou n/a en mode regression). */

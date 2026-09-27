@@ -80,12 +80,28 @@ export function resolveGearing(input: CostOfCapitalInput): {
 
   const gearingObserved = netDebt! / (netDebt! + equity!);
 
-  if (gearingObserved < 0 || gearingObserved > gearingMaxPlausible) {
+  // Tresorerie nette positive (dette nette negative) : l'entreprise n'a pas de
+  // dette nette a financer. On retient un gearing de 0 (WACC = Ke) plutot que de
+  // retomber sur la cible, qui injecterait a tort de la dette bon marche et
+  // sous-estimerait le cout du capital. Cas d'un telecom comme SONATEL.
+  if (gearingObserved < 0) {
+    warnings.push({
+      code: 'NET_CASH_GEARING_ZERO',
+      severity: 'info',
+      message:
+        `Tresorerie nette positive (dette nette negative) : gearing ramene a 0 %, ` +
+        `le WACC egale le cout des capitaux propres. La cible n'est pas appliquee ` +
+        `(elle surestimerait l'endettement d'une entreprise sans dette nette).`
+    });
+    return { gearing: 0, gearingObserved, gearingOrigin: 'NET_CASH_ZERO', warnings };
+  }
+
+  if (gearingObserved > gearingMaxPlausible) {
     warnings.push({
       code: 'GEARING_IMPLAUSIBLE',
       severity: 'warning',
       message:
-        `Gearing observe de ${(gearingObserved * 100).toFixed(1)} % hors de la plage plausible ` +
+        `Gearing observe de ${(gearingObserved * 100).toFixed(1)} % au-dela de la plage plausible ` +
         `(0 - ${(gearingMaxPlausible * 100).toFixed(0)} %) : gearing cible de ` +
         `${(gearingTarget * 100).toFixed(1)} % retenu pour le reendettement du beta et la ponderation du WACC.`
     });

@@ -2488,7 +2488,9 @@ model FinancialStatement {
   total_assets           Float?
 
   // --- Passif
-  equity                   Float? // Capitaux propres
+  equity                   Float? // Capitaux propres (total, minoritaires inclus si consolide)
+  equity_group_share       Float? // Capitaux propres part du groupe (hors minoritaires)
+  minority_interests       Float? // Interets minoritaires / participations ne donnant pas le controle
   financial_debt_total     Float? // Dettes financieres et ressources assimilees
   borrowings               Float? // Emprunts et dettes financieres
   other_financial_debt     Float? // Dettes financieres diverses

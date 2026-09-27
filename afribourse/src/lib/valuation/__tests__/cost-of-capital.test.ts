@@ -101,6 +101,25 @@ describe('resolveGearing', () => {
     expect(r.warnings).toHaveLength(0);
   });
 
+  it('ramene le gearing a 0 pour une tresorerie nette positive (net cash)', () => {
+    // SONATEL : dette nette negative -> pas de dette nette a financer.
+    const r = resolveGearing(sodeciInput({ netDebt: -232929, equity: 1399263 }));
+    expect(r.gearingObserved).toBeLessThan(0);
+    expect(r.gearing).toBe(0);
+    expect(r.gearingOrigin).toBe('NET_CASH_ZERO');
+    expect(r.warnings.map((w) => w.code)).toContain('NET_CASH_GEARING_ZERO');
+  });
+
+  it('donne WACC = Ke pour une entreprise en net cash', () => {
+    const r = computeCostOfCapital(
+      sodeciInput({ netDebt: -232929, equity: 1399263, betaSource: 'MANUAL', betaUnleveredOverride: 0.6 })
+    );
+    expect(r.gearing).toBe(0);
+    // beta_L = beta_u a gearing nul, et WACC = Ke.
+    expect(r.betaLevered).toBeCloseTo(0.6, 10);
+    expect(r.wacc).toBeCloseTo(r.costOfEquity, 10);
+  });
+
   it('retombe sur la cible faute de donnees', () => {
     const r = resolveGearing(sodeciInput({ netDebt: undefined, equity: undefined }));
     expect(r.gearingOrigin).toBe('TARGET_FALLBACK_MISSING_DATA');

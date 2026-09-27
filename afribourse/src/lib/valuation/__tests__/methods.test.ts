@@ -119,8 +119,13 @@ describe('discountedCashFlow', () => {
     expect(r.warnings.map((w) => w.code)).toContain('NEGATIVE_EQUITY_VALUE');
   });
 
-  it('alerte quand le flux terminal est porte par une reprise de BFR', () => {
-    const withRelease = [...years.slice(0, 5), year(2031, 30000, 0, { deltaWorkingCapital: -27622 })];
+  it('alerte quand la reprise de BFR terminale est transitoire (ratio non stabilise)', () => {
+    // Ratio BFR/CA qui bouge encore entre l'avant-dernier et le dernier exercice.
+    const withRelease = [
+      ...years.slice(0, 4),
+      year(2030, 1300, 0, { workingCapitalRatio: 0.2 }),
+      year(2031, 30000, 0, { deltaWorkingCapital: -27622, workingCapitalRatio: 0.05 })
+    ];
     const r = discountedCashFlow({
       years: withRelease,
       valuationYear: 2026,
@@ -130,6 +135,25 @@ describe('discountedCashFlow', () => {
       sharesOutstanding: 10
     });
     expect(r.warnings.map((w) => w.code)).toContain('TERMINAL_FLOW_ON_WC_RELEASE');
+  });
+
+  it("n'alerte pas pour un BFR structurellement negatif en regime etabli (telecom)", () => {
+    // Ratio BFR/CA stable (−21 %) sur les deux derniers exercices : la reprise de
+    // BFR se perpetue legitimement, ce n'est pas un artefact.
+    const steady = [
+      ...years.slice(0, 4),
+      year(2030, 1300, 0, { deltaWorkingCapital: -5000, workingCapitalRatio: -0.21 }),
+      year(2031, 1400, 0, { deltaWorkingCapital: -5200, workingCapitalRatio: -0.21 })
+    ];
+    const r = discountedCashFlow({
+      years: steady,
+      valuationYear: 2026,
+      wacc: 0.1,
+      gTerminal: 0.025,
+      netDebt: 0,
+      sharesOutstanding: 10
+    });
+    expect(r.warnings.map((w) => w.code)).not.toContain('TERMINAL_FLOW_ON_WC_RELEASE');
   });
 
   it('refuse WACC inferieur ou egal a g', () => {
@@ -143,6 +167,20 @@ describe('discountedCashFlow', () => {
         sharesOutstanding: 10
       })
     ).toThrow(/superieur a g/);
+  });
+
+  it('deduit les interets minoritaires du pont (groupe consolide)', () => {
+    const sansMino = discountedCashFlow({ years, valuationYear: 2026, wacc: 0.1, gTerminal: 0.025, netDebt: 5000, sharesOutstanding: 10 });
+    const avecMino = discountedCashFlow({ years, valuationYear: 2026, wacc: 0.1, gTerminal: 0.025, netDebt: 5000, sharesOutstanding: 10, minorityInterests: 2000 });
+    expect(avecMino.minorityInterests).toBe(2000);
+    expect(avecMino.equityValue).toBeCloseTo(sansMino.equityValue - 2000, 8);
+    expect(avecMino.valuePerShare).toBeCloseTo(sansMino.valuePerShare - 200, 8);
+  });
+
+  it('minoritaires par defaut a 0 (hors groupe)', () => {
+    const r = discountedCashFlow({ years, valuationYear: 2026, wacc: 0.1, gTerminal: 0.025, netDebt: 5000, sharesOutstanding: 10 });
+    expect(r.minorityInterests).toBe(0);
+    expect(r.equityValue).toBeCloseTo(r.enterpriseValue - 5000, 8);
   });
 });
 

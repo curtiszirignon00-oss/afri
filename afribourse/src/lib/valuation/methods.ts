@@ -48,6 +48,8 @@ export type DcfResult = {
   /** Actif economique = VA(flux) + VA(valeur terminale). */
   enterpriseValue: number;
   netDebt: number;
+  /** Interets minoritaires deduits du pont (0 hors groupe consolide). */
+  minorityInterests: number;
   equityValue: number;
   valuePerShare: number;
   /** Detail par exercice, pour la transparence. */
@@ -63,8 +65,11 @@ export function discountedCashFlow(params: {
   gTerminal: number;
   netDebt: number;
   sharesOutstanding: number;
+  /** Interets minoritaires a deduire (DCF consolide -> valeur part du groupe). Defaut 0. */
+  minorityInterests?: number;
 }): DcfResult {
   const { years, valuationYear, wacc, gTerminal, netDebt, sharesOutstanding } = params;
+  const minorityInterests = params.minorityInterests ?? 0;
   const warnings: ValuationWarning[] = [];
 
   if (years.length === 0) throw new Error('Aucun exercice projete');
@@ -91,20 +96,31 @@ export function discountedCashFlow(params: {
   const terminalPeriods = Math.max(1, lastYear.year - valuationYear);
   const terminal = gordonTerminalValue(lastYear.fcff, wacc, gTerminal, terminalPeriods);
 
-  // Une reprise de BFR est ponctuelle : elle ne peut pas etre perpetuee.
-  if (lastYear.deltaWorkingCapital < 0) {
+  // Une reprise de BFR gonfle le flux terminal. Elle n'est un probleme que si elle
+  // resulte d'une TRANSITION (le ratio BFR/CA bouge encore au dernier exercice) :
+  // cette reprise-la est ponctuelle et ne se perpetue pas. En regime etabli — ratio
+  // stable, y compris un BFR structurellement negatif comme celui d'un telecom —
+  // la variation de BFR croit au rythme du CA et se perpetue legitimement : pas d'alerte.
+  const prevYear = years.length >= 2 ? years[years.length - 2] : null;
+  const ratioStillMoving = prevYear
+    ? Math.abs(lastYear.workingCapitalRatio - prevYear.workingCapitalRatio) > 0.005
+    : false;
+  if (lastYear.deltaWorkingCapital < 0 && ratioStillMoving) {
     warnings.push({
       code: 'TERMINAL_FLOW_ON_WC_RELEASE',
       severity: 'warning',
       message:
         `Le flux terminal ${lastYear.year} est porte par une reprise de BFR de ` +
-        `${Math.abs(lastYear.deltaWorkingCapital).toFixed(0)} : une reprise de BFR ne se perpetue pas, ` +
-        `la valeur terminale est surevaluee.`
+        `${Math.abs(lastYear.deltaWorkingCapital).toFixed(0)} alors que le ratio BFR/CA n'est pas ` +
+        `encore stabilise : cette reprise est transitoire et ne se perpetue pas, la valeur terminale est surevaluee.`
     });
   }
 
   const enterpriseValue = presentValueOfFlows + terminal.presentValue;
-  const equityValue = enterpriseValue - netDebt;
+  // Pont : actif economique - dette nette - interets minoritaires = valeur revenant
+  // aux actionnaires de la maison mere. Les minoritaires sont deduits a leur valeur
+  // comptable (proxy standard) ; nuls hors groupe consolide (cas SODECI).
+  const equityValue = enterpriseValue - netDebt - minorityInterests;
 
   if (equityValue < 0) {
     warnings.push({
@@ -121,6 +137,7 @@ export function discountedCashFlow(params: {
     terminal,
     enterpriseValue,
     netDebt,
+    minorityInterests,
     equityValue,
     valuePerShare: equityValue / sharesOutstanding,
     schedule,

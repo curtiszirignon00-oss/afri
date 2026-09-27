@@ -27,6 +27,10 @@ export type Statement = {
   cashAssets?: number | null;
 
   equity?: number | null;
+  /** Capitaux propres part du groupe (hors minoritaires), pour l'ANC d'un groupe consolide. */
+  equityGroupShare?: number | null;
+  /** Interets minoritaires, deduits du pont DCF pour la valeur revenant a l'actionnaire. */
+  minorityInterests?: number | null;
   /** Dettes financieres et ressources assimilees — total du poste SYSCOHADA. */
   financialDebtTotal?: number | null;
   /** Emprunts et dettes financieres seuls, sous-poste du precedent. */
@@ -299,6 +303,8 @@ export type HistoricalYear = {
   netDebt: number | null;
   economicAsset: number | null;
   equity: number | null;
+  equityGroupShare: number | null;
+  minorityInterests: number | null;
   netIncome: number | null;
   netMargin: number | null;
   dividendPerShare: number | null;
@@ -350,6 +356,8 @@ export function buildHistoricalSeries(statements: Statement[], taxRate: number):
       netDebt: netDebt(s),
       economicAsset: economicAsset(s),
       equity: n(s.equity),
+      equityGroupShare: n(s.equityGroupShare),
+      minorityInterests: n(s.minorityInterests),
       netIncome,
       netMargin: ratio(netIncome),
       dividendPerShare: n(s.dividendPerShare),
