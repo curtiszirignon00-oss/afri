@@ -158,7 +158,7 @@ function Layout() {
   const showLayout = !['/signup', '/login', '/survey', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-clip">
       {/* PWA Offline Banner */}
       <OfflineBanner />
       <Toaster position="top-center" />

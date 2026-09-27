@@ -4,7 +4,9 @@
 
 html,
 body {
-  overflow-x: hidden;
+  /* clip (et non hidden) : empeche le debordement horizontal sans faire de html/body
+     un conteneur de defilement, ce qui casserait tout position: sticky de la page. */
+  overflow-x: clip;
   max-width: 100%;
 }
 
