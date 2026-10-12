@@ -10,10 +10,18 @@ import type { ValuationWarning } from './types';
  * en regime : c'est la distinction de la feuille "Hyp Scenarios".
  */
 export type ScenarioDrivers = {
-  /** Croissance du CA de l'exercice ancre. Defaut derive de l'ancrage T-1. */
+  /** Croissance du CA de l'exercice ancre (annee en cours). Defaut derive de l'ancrage T-1. */
   revenueGrowthFirst: number;
-  /** Croissance du CA des exercices suivants. */
+  /** Croissance du CA du 1er exercice de regime (debut de la trajectoire de fade). */
   revenueGrowthRest: number;
+  /**
+   * Croissance du CA de long terme, atteinte au dernier exercice explicite. La
+   * croissance fond lineairement de `revenueGrowthRest` vers cette valeur sur
+   * l'horizon : une croissance constante puis une valeur terminale a g creerait
+   * une rupture. On raccorde en faisant converger la croissance vers g (~PIB
+   * nominal) avant la perpetuite. Defaut : gTerminal.
+   */
+  revenueGrowthTerminal: number;
   /** Marge d'exploitation de l'exercice ancre. */
   operatingMarginFirst: number;
   /** Marge d'exploitation des exercices suivants. */
@@ -138,6 +146,25 @@ export function workingCapitalRatioAt(
 }
 
 /**
+ * Croissance du CA de l'exercice de rang `offset` sur un horizon de `horizon`
+ * exercices. L'exercice ancre (offset 0) prend `first` ; les suivants fondent
+ * lineairement de `rest` (au 1er exercice de regime) vers `terminal` (au dernier
+ * exercice explicite), pour raccorder proprement la valeur terminale a g.
+ */
+export function revenueGrowthAt(
+  offset: number,
+  horizon: number,
+  first: number,
+  rest: number,
+  terminal: number
+): number {
+  if (offset <= 0) return first;
+  if (horizon <= 2) return terminal; // un seul exercice de regime -> deja au long terme
+  const frac = (offset - 1) / (horizon - 2); // 0 au 1er exercice de regime, 1 au dernier
+  return rest + (terminal - rest) * frac;
+}
+
+/**
  * Projette les exercices explicites. Le premier exercice utilise les drivers
  * "First" (il est pilote par la derniere publication), les suivants les drivers
  * "Rest". Toute valeur forcee se substitue au calcul mais laisse les exercices
@@ -159,7 +186,13 @@ export function project(input: ProjectionInput): Projection {
     const year = firstYear + offset;
     const isFirst = offset === 0;
 
-    const growth = isFirst ? drivers.revenueGrowthFirst : drivers.revenueGrowthRest;
+    const growth = revenueGrowthAt(
+      offset,
+      horizon,
+      drivers.revenueGrowthFirst,
+      drivers.revenueGrowthRest,
+      drivers.revenueGrowthTerminal
+    );
     const margin = isFirst ? drivers.operatingMarginFirst : drivers.operatingMarginRest;
     const netMargin = isFirst ? drivers.netMarginFirst : drivers.netMarginRest;
 
@@ -216,20 +249,26 @@ export function project(input: ProjectionInput): Projection {
     previousWorkingCapital = workingCapital.value;
   }
 
-  // Alerte de lecture : c'est le diagnostic central du cas SODECI.
-  const last = years[years.length - 1];
-  if (last.deltaWorkingCapital > 0) {
-    const cashBeforeWc = last.operatingIncome.value - last.tax + last.depreciation.value - last.capex.value;
-    if (cashBeforeWc > 0 && last.deltaWorkingCapital / cashBeforeWc > 0.7) {
-      warnings.push({
-        code: 'WC_ABSORBS_CASH_FLOW',
-        severity: 'warning',
-        message:
-          `A l'exercice terminal, la variation de BFR absorbe ` +
-          `${((last.deltaWorkingCapital / cashBeforeWc) * 100).toFixed(0)} % de la capacite ` +
-          `d'autofinancement : la croissance detruit de la valeur tant que le BFR n'est pas maitrise.`
-      });
+  // Alerte de lecture (diagnostic central du cas SODECI) : on cherche l'exercice ou
+  // la variation de BFR absorbe le plus la capacite d'autofinancement, sur toute la
+  // projection — pas seulement le dernier exercice, dont la croissance a fondu vers g.
+  let peak = { ratio: 0, year: 0 };
+  for (const y of years) {
+    if (y.deltaWorkingCapital <= 0) continue;
+    const cashBeforeWc = y.operatingIncome.value - y.tax + y.depreciation.value - y.capex.value;
+    if (cashBeforeWc > 0) {
+      const ratio = y.deltaWorkingCapital / cashBeforeWc;
+      if (ratio > peak.ratio) peak = { ratio, year: y.year };
     }
+  }
+  if (peak.ratio > 0.7) {
+    warnings.push({
+      code: 'WC_ABSORBS_CASH_FLOW',
+      severity: 'warning',
+      message:
+        `En ${peak.year}, la variation de BFR absorbe ${(peak.ratio * 100).toFixed(0)} % de la ` +
+        `capacite d'autofinancement : la croissance detruit de la valeur tant que le BFR n'est pas maitrise.`
+    });
   }
 
   if (years.some((y) => y.fcff < 0)) {
@@ -264,6 +303,8 @@ export function defaultDrivers(calibration: {
   return {
     revenueGrowthFirst: calibration.anchorDerivedGrowth ?? growthRest,
     revenueGrowthRest: growthRest,
+    // Convergence vers g (~PIB nominal) au dernier exercice explicite.
+    revenueGrowthTerminal: calibration.gTerminal,
     operatingMarginFirst: calibration.medianOperatingMargin ?? 0,
     operatingMarginRest: calibration.medianOperatingMargin ?? 0,
     depreciationRatio: calibration.medianDepreciationRatio ?? 0,

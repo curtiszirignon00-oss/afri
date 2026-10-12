@@ -10,17 +10,24 @@ const DRIVER_LABELS: Record<SensitivityDriver, string> = {
   gTerminal: "Croissance à l'infini (g)"
 };
 
+/** Choc formaté en points de pourcentage. */
+function shockLabel(shock: number): string {
+  const pts = shock * 100;
+  const s = pts < 1 ? pts.toFixed(2) : pts.toFixed(1);
+  return `±${s.replace('.', ',')} pt`;
+}
+
 /**
- * Tornado de sensibilité du prix DCF. L'amplitude de choc de chaque driver est
- * la demi-amplitude entre le scénario optimiste et le pessimiste : un choc
- * uniforme ne comparerait rien, 1 point sur g étant un mouvement bien plus
- * large en relatif qu'1 point sur un ratio de BFR de 55 %.
+ * Tornado de sensibilité du prix DCF. Pour chaque driver : le choc réel appliqué,
+ * le prix bas et haut, et l'écart (en F et en %) par rapport au cas de base — trié
+ * par impact. Une phrase de lecture dit de quoi la valo dépend et à quoi elle est
+ * insensible : sans ça, le prix de base seul ne dit rien.
  */
 export default function SensitivityTornado({ bars }: { bars: SensitivityBar[] }) {
   const usable = bars.filter((b) => Number.isFinite(b.low) && Number.isFinite(b.high));
   if (usable.length === 0) {
     return (
-      <section className="bg-white rounded-xl border border-gray-200 p-6">
+      <section className="rounded-xl border border-gray-200 bg-white p-6">
         <h3 className="text-lg font-bold" style={{ color: NAVY }}>
           Sensibilité
         </h3>
@@ -38,16 +45,22 @@ export default function SensitivityTornado({ bars }: { bars: SensitivityBar[] })
   const span = max - min || 1;
   const pct = (v: number) => ((v - min) / span) * 100;
   const basePct = pct(base);
+  const swingPct = (b: SensitivityBar) => (base !== 0 ? b.swing / Math.abs(base) : 0);
+
+  // Phrase de lecture : les deux drivers dominants, et le moins sensible.
+  const top = usable.slice(0, 2).map((b) => DRIVER_LABELS[b.driver].toLowerCase());
+  const least = DRIVER_LABELS[usable[usable.length - 1].driver].toLowerCase();
 
   return (
-    <section className="bg-white rounded-xl border border-gray-200 p-6">
+    <section className="rounded-xl border border-gray-200 bg-white p-6">
       <header>
         <h3 className="text-lg font-bold" style={{ color: NAVY }}>
           Sensibilité du prix DCF
         </h3>
         <p className="text-sm text-gray-500">
-          Impact de chaque driver, choqué de sa demi-amplitude entre scénarios. Cas de base :{' '}
-          <strong style={{ color: NAVY }}>{formatPerShare(base)}</strong>.
+          De combien le prix DCF/action bouge quand on choque chaque hypothèse, de part et
+          d'autre du cas de base (<strong style={{ color: NAVY }}>{formatPerShare(base)}</strong>).
+          Trié par impact.
         </p>
       </header>
 
@@ -60,13 +73,13 @@ export default function SensitivityTornado({ bars }: { bars: SensitivityBar[] })
               <div className="mb-1.5 flex items-baseline justify-between gap-2">
                 <span className="text-sm font-medium text-gray-700">
                   {DRIVER_LABELS[bar.driver]}
-                  <span className="ml-1.5 text-xs font-normal text-gray-400">
-                    ±{(bar.shock * 100).toFixed(bar.shock < 0.01 ? 2 : 1).replace('.', ',')} pt
-                    {bar.shockSource === 'DEFAULT' && ' (défaut)'}
-                  </span>
+                  <span className="ml-1.5 text-xs font-normal text-gray-400">{shockLabel(bar.shock)}</span>
                 </span>
                 <span className="text-xs tabular-nums text-gray-500">
                   {formatPerShare(lo)} → {formatPerShare(hi)}
+                  <span className="ml-2 font-semibold" style={{ color: NAVY }}>
+                    ±{formatPerShare(bar.swing / 2)} ({(swingPct(bar) * 100).toFixed(0)} %)
+                  </span>
                 </span>
               </div>
               <div className="relative h-6 rounded bg-gray-100">
@@ -79,16 +92,18 @@ export default function SensitivityTornado({ bars }: { bars: SensitivityBar[] })
                     opacity: 0.35
                   }}
                 />
-                {/* Axe du cas de base : la lecture se fait par l'écart à ce trait. */}
-                <div
-                  className="absolute top-0 bottom-0 w-0.5"
-                  style={{ left: `${basePct}%`, backgroundColor: ORANGE }}
-                />
+                <div className="absolute top-0 bottom-0 w-0.5" style={{ left: `${basePct}%`, backgroundColor: ORANGE }} />
               </div>
             </div>
           );
         })}
       </div>
+
+      <p className="mt-5 rounded-lg bg-gray-50 p-3 text-sm text-gray-700">
+        <strong style={{ color: NAVY }}>Lecture.</strong> La valorisation dépend surtout de{' '}
+        <strong>{top.join(' et ')}</strong> ; elle est peu sensible à <strong>{least}</strong>. Concentrez
+        l'effort d'hypothèse sur les premiers.
+      </p>
     </section>
   );
 }

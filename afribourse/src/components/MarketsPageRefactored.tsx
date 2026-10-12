@@ -15,6 +15,7 @@ import PillTabs from './ui/PillTabs';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
 import StockComparison from './markets/StockComparison';
 import BRVMMarketMap from './markets/BRVMMarketMap';
+import MarketHours from './markets/MarketHours';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -457,6 +458,9 @@ export default function MarketsPageRefactored() {
             </div>
           </div>
         )}
+
+        {/* Horaires d'ouverture de la BRVM */}
+        <MarketHours />
 
         {/* Filtres */}
         <Card className="mb-6">

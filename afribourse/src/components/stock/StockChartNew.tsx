@@ -162,10 +162,13 @@ export default function StockChartNew({
   }, [data, activeConfig.resolution, hasIntraday, intradayResp]);
 
   // Zoom par défaut : ~65 bougies (3 mois en daily) pour des mèches lisibles ;
-  // undefined = fitContent (résolutions agrégées, peu de bougies)
+  // undefined = fitContent (résolutions agrégées, peu de bougies).
+  // Une séance BRVM cotée va du fixing d'ouverture (09h45) à la fermeture
+  // (15h00) : 21 bougies de 15 min, 6 bougies horaires.
   const defaultVisibleBars =
-    activeConfig.resolution === 'quarterHour' ? 96 // ~4 séances BRVM en bougies de 15 min
-    : activeConfig.resolution === 'hourly' || activeConfig.resolution === 'daily' ? 65
+    activeConfig.resolution === 'quarterHour' ? 63 // 3 séances BRVM en bougies de 15 min
+    : activeConfig.resolution === 'hourly' ? 60    // 10 séances BRVM en bougies horaires
+    : activeConfig.resolution === 'daily' ? 65
     : activeConfig.resolution === 'weekly' ? 104
     : undefined;
 

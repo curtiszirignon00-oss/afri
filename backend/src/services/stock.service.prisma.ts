@@ -5,6 +5,7 @@ import prisma from "../config/prisma";
 import { Prisma } from '@prisma/client';
 import { StockData } from "./scraping.service";
 import { cacheGet, cacheSet, cacheInvalidatePattern, hashFilters, CACHE_TTL, CACHE_KEYS } from './cache.service';
+import { isWithinBRVMCollectionWindow, clampToSessionEnd } from '../config/brvmMarket';
 
 // <-- AJOUT : Mapping des secteurs pour assignation automatique lors du scraping
 const SECTOR_MAPPING: Record<string, string> = {
@@ -439,6 +440,21 @@ const INTRADAY_BUCKET_SECONDS: Record<IntradayInterval, number> = {
  * @param interval - Taille des bougies ('15m' ou '1h', défaut '1h')
  * @returns Bougies { time: Unix s (début du bucket UTC), open, high, low, close, volume }
  *
+ * Deux calibrages importants :
+ *
+ * 1. Les snapshots hors séance sont écartés (week-end, férié, pré-ouverture,
+ *    après-clôture). Cela nettoie aussi à la lecture les données déjà
+ *    collectées avant le recalibrage de la fenêtre.
+ *
+ * 2. L'ouverture d'une bougie est chaînée sur la clôture de la bougie
+ *    précédente de la MÊME séance. La source n'est rafraîchie que toutes les
+ *    15 min : en bougies de 15 min chaque bucket ne contient qu'un seul
+ *    snapshot, donc open = high = low = close et toutes les bougies seraient
+ *    des doji plats. Le chaînage rend le corps des bougies visible et la série
+ *    continue (pas de trou entre deux bougies consécutives). La première
+ *    bougie de la séance garde son propre prix en ouverture : c'est le fixing
+ *    d'ouverture de 09h45.
+ *
  * Le volume des snapshots est le volume CUMULÉ du jour : le volume d'une bougie
  * est donc la différence entre le dernier cumul du bucket et celui du bucket
  * précédent du même jour (premier bucket du jour = cumul tel quel).
@@ -453,7 +469,7 @@ export async function getIntradayHourly(
     const startDate = new Date();
     startDate.setUTCDate(startDate.getUTCDate() - days);
 
-    const snapshots = await prisma.intradaySnapshot.findMany({
+    const rawSnapshots = await prisma.intradaySnapshot.findMany({
       where: {
         stock_ticker: symbol,
         timestamp: { gte: startDate },
@@ -461,12 +477,18 @@ export async function getIntradayHourly(
       orderBy: { timestamp: 'asc' },
     });
 
+    // Ne garder que les snapshots pris pendant une séance de cotation réelle
+    const snapshots = rawSnapshots.filter(s => isWithinBRVMCollectionWindow(s.timestamp));
+
     if (snapshots.length === 0) return [];
 
-    // Grouper par bucket (clé = timestamp Unix du début de bucket UTC)
+    // Grouper par bucket (clé = timestamp Unix du début de bucket UTC).
+    // Le snapshot de clôture, pris dans la marge d'après-fermeture, est replié
+    // dans la dernière tranche cotée au lieu d'ouvrir une bougie après 15h00.
     const buckets = new Map<number, typeof snapshots>();
     for (const snap of snapshots) {
-      const bucketStart = Math.floor(snap.timestamp.getTime() / 1000 / bucketSeconds) * bucketSeconds;
+      const effective = clampToSessionEnd(snap.timestamp);
+      const bucketStart = Math.floor(effective.getTime() / 1000 / bucketSeconds) * bucketSeconds;
       if (!buckets.has(bucketStart)) buckets.set(bucketStart, []);
       buckets.get(bucketStart)!.push(snap);
     }
@@ -475,27 +497,37 @@ export async function getIntradayHourly(
     // Dernier volume cumulé vu, par jour (clé YYYY-MM-DD)
     let prevDayKey = '';
     let prevCumulVolume = 0;
+    // Clôture de la bougie précédente, pour chaîner l'ouverture
+    let prevClose: number | null = null;
 
     for (const [time, snaps] of Array.from(buckets.entries()).sort(([a], [b]) => a - b)) {
       const prices = snaps.map(s => s.price);
       const lastCumul = snaps[snaps.length - 1].volume;
       const dayKey = new Date(time * 1000).toISOString().slice(0, 10);
+      const sameSession = dayKey === prevDayKey;
 
-      const volume = dayKey === prevDayKey
+      const volume = sameSession
         ? Math.max(0, lastCumul - prevCumulVolume)
         : lastCumul;
 
+      // Chaînage intra-séance : l'ouverture reprend la clôture précédente.
+      // Nouvelle séance → le premier prix observé EST l'ouverture (fixing 09h45).
+      const open = sameSession && prevClose !== null ? prevClose : prices[0];
+      const close = prices[prices.length - 1];
+
       candles.push({
         time,
-        open: prices[0],
-        high: Math.max(...prices),
-        low: Math.min(...prices),
-        close: prices[prices.length - 1],
+        open,
+        // L'ouverture chaînée fait partie de l'amplitude de la bougie
+        high: Math.max(open, ...prices),
+        low: Math.min(open, ...prices),
+        close,
         volume,
       });
 
       prevDayKey = dayKey;
       prevCumulVolume = lastCumul;
+      prevClose = close;
     }
 
     return candles;

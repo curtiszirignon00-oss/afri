@@ -12,6 +12,8 @@ export type Statement = {
   depreciation?: number | null;
   operatingIncome?: number | null;
   financialIncome?: number | null;
+  /** Charges d'interets brutes, pour la couverture (REX / interets) et le Kd synthetique. */
+  interestExpense?: number | null;
   ordinaryIncome?: number | null;
   /** Resultat HAO — porte la VNC des immobilisations cedees (negatif si perte). */
   haoIncome?: number | null;
@@ -292,6 +294,7 @@ export type HistoricalYear = {
   revenueGrowth: number | null;
   operatingIncome: number | null;
   operatingMargin: number | null;
+  interestExpense: number | null;
   depreciation: number | null;
   depreciationRatio: number | null;
   capex: number | null;
@@ -345,6 +348,7 @@ export function buildHistoricalSeries(statements: Statement[], taxRate: number):
         revenue !== null && prevRevenue !== null && prevRevenue !== 0 ? revenue / prevRevenue - 1 : null,
       operatingIncome,
       operatingMargin: ratio(operatingIncome),
+      interestExpense: n(s.interestExpense),
       depreciation,
       depreciationRatio: ratio(depreciation),
       capex,

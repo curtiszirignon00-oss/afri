@@ -215,6 +215,7 @@ export default function ValuationPanel({ symbol }: { symbol: string }) {
       <AssumptionsPanel
         assumptions={assumptions}
         capital={capital}
+        debtAnalysis={computed.debtAnalysis}
         inputs={inputs}
         onChange={valuation.setAssumption}
         onReset={valuation.resetAssumptions}

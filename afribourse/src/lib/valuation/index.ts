@@ -11,6 +11,7 @@
 export * from './types';
 export * from './historicals';
 export * from './cost-of-capital';
+export * from './cost-of-debt';
 export * from './projection';
 export * from './methods';
 export * from './scenarios';
@@ -112,6 +113,7 @@ export type DriverDeltas = Partial<
     ScenarioDrivers,
     | 'revenueGrowthFirst'
     | 'revenueGrowthRest'
+    | 'revenueGrowthTerminal'
     | 'operatingMarginFirst'
     | 'operatingMarginRest'
     | 'depreciationRatio'

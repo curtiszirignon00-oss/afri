@@ -2469,7 +2469,8 @@ model FinancialStatement {
   ebe               Float? // Excedent brut d'exploitation
   depreciation      Float? // Dotations aux amortissements & provisions
   operating_income  Float? // Resultat d'exploitation (REX)
-  financial_income  Float? // Resultat financier
+  financial_income  Float? // Resultat financier (net)
+  interest_expense  Float? // Charges d'interets brutes (pour la couverture / Kd synthetique)
   ordinary_income   Float? // Resultat des activites ordinaires
   hao_income        Float? // Resultat HAO (= VNC des cessions dans le modele SODECI)
   income_tax        Float? // Impot sur le resultat

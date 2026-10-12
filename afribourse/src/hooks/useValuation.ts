@@ -4,6 +4,7 @@ import {
   applyDeltas,
   calibrateDrivers,
   computeCostOfCapital,
+  analyzeCostOfDebt,
   runValuation,
   sensitivityTornado,
   type BetaDataset,
@@ -23,7 +24,10 @@ export type EditableAssumptions = {
   riskFreeRate: number;
   erp: number;
   crp: number;
+  /** Kd avant impot de repli quand la couverture n'est pas calculable. */
   costOfDebt: number;
+  /** Override manuel du Kd avant impot ; null = Kd synthetique automatique. */
+  costOfDebtOverride: number | null;
   taxRate: number;
   gTerminal: number;
   betaSource: BetaSource;
@@ -62,6 +66,7 @@ const FALLBACK: Omit<EditableAssumptions, 'sharesOutstanding'> = {
   erp: 0.0821,
   crp: 0.0349,
   costOfDebt: 0.075,
+  costOfDebtOverride: null,
   taxRate: 0.25,
   gTerminal: 0.025,
   betaSource: 'BOTTOM_UP',
@@ -117,6 +122,7 @@ function assumptionsFrom(inputs: ValuationInputs): EditableAssumptions {
     erp: a.erp,
     crp: a.crp,
     costOfDebt: a.cost_of_debt,
+    costOfDebtOverride: null,
     taxRate: a.tax_rate,
     gTerminal: a.g_terminal,
     betaSource: a.beta_source,
@@ -215,11 +221,27 @@ export function useValuation(symbol: string) {
     const lastHistory = calibration.history[calibration.history.length - 1];
     const netDebt = assumptions.netDebtOverride ?? lastHistory?.netDebt ?? 0;
 
+    // Cout de la dette : rating synthetique (Rf + spread sur couverture des interets),
+    // avec le taux effectif en controle. Retenu = override manuel sinon synthetique.
+    const lastFyStatement = statements
+      .filter((st) => st.period === 'FY')
+      .sort((a, b) => a.year - b.year)
+      .pop();
+    const debtAnalysis = analyzeCostOfDebt({
+      riskFreeRate: assumptions.riskFreeRate,
+      taxRate: assumptions.taxRate,
+      ebit: lastHistory?.operatingIncome ?? null,
+      interestExpense: lastFyStatement?.interestExpense ?? null,
+      grossDebt: lastFyStatement?.financialDebtTotal ?? null,
+      fallbackPreTax: assumptions.costOfDebt
+    });
+    const costOfDebtUsed = assumptions.costOfDebtOverride ?? debtAnalysis.retainedPreTax;
+
     const costOfCapitalInput: CostOfCapitalInput = {
       riskFreeRate: assumptions.riskFreeRate,
       erp: assumptions.erp,
       crp: assumptions.crp,
-      costOfDebt: assumptions.costOfDebt,
+      costOfDebt: costOfDebtUsed,
       taxRate: assumptions.taxRate,
       betaSource: assumptions.betaSource,
       sectorSheets: sheets,
@@ -297,6 +319,7 @@ export function useValuation(symbol: string) {
         inputs,
         calibration,
         capital,
+        debtAnalysis,
         netDebt,
         engineInput,
         result: runValuation(engineInput),

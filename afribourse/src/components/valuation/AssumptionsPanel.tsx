@@ -1,5 +1,5 @@
 import { RotateCcw } from 'lucide-react';
-import type { BetaDataset, BetaSource, CostOfCapitalResult } from '../../lib/valuation';
+import type { BetaDataset, BetaSource, CostOfCapitalResult, CostOfDebtResult } from '../../lib/valuation';
 import type { EditableAssumptions } from '../../hooks/useValuation';
 import type { ValuationInputs } from '../../services/valuationApi';
 import { NAVY, formatNumber, formatPercent } from './ValuationFormat';
@@ -7,6 +7,7 @@ import { NAVY, formatNumber, formatPercent } from './ValuationFormat';
 type Props = {
   assumptions: EditableAssumptions;
   capital: CostOfCapitalResult;
+  debtAnalysis?: CostOfDebtResult;
   inputs: ValuationInputs;
   onChange: <K extends keyof EditableAssumptions>(key: K, value: EditableAssumptions[K]) => void;
   onReset: () => void;
@@ -73,6 +74,7 @@ function PercentField({
 export default function AssumptionsPanel({
   assumptions,
   capital,
+  debtAnalysis,
   inputs,
   onChange,
   onReset,
@@ -111,7 +113,6 @@ export default function AssumptionsPanel({
           <PercentField label="Taux sans risque (Rf)" value={assumptions.riskFreeRate} onChange={(v) => onChange('riskFreeRate', v)} disabled={readOnly} />
           <PercentField label="Prime action (ERP)" value={assumptions.erp} onChange={(v) => onChange('erp', v)} disabled={readOnly} />
           <PercentField label="Prime pays (CRP)" value={assumptions.crp} onChange={(v) => onChange('crp', v)} disabled={readOnly} />
-          <PercentField label="Coût de la dette (Kd)" value={assumptions.costOfDebt} onChange={(v) => onChange('costOfDebt', v)} disabled={readOnly} />
           <PercentField label="Taux d'IS" value={assumptions.taxRate} onChange={(v) => onChange('taxRate', v)} disabled={readOnly} />
           <PercentField label="Croissance à l'infini (g)" step={0.1} value={assumptions.gTerminal} onChange={(v) => onChange('gTerminal', v)} disabled={readOnly} />
           <PercentField label="Gearing cible D/(D+CP)" step={1} value={assumptions.gearingTarget} onChange={(v) => onChange('gearingTarget', v)} disabled={readOnly} />
@@ -124,6 +125,68 @@ export default function AssumptionsPanel({
             disabled={readOnly}
           />
         </div>
+
+        {/* Coût de la dette : dérivé d'un rating synthétique, effectif en contrôle. */}
+        {debtAnalysis && (
+        <div className="mt-4 rounded-lg bg-gray-50 p-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <span className="text-xs font-bold uppercase tracking-wide text-gray-500">Coût de la dette</span>
+            {capital.gearing === 0 && (
+              <span className="text-[11px] font-medium text-amber-700">
+                sans effet ici : gearing 0 % (WACC = Ke)
+              </span>
+            )}
+          </div>
+          <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs lg:grid-cols-4">
+            <div>
+              <dt className="text-gray-500">Couverture des intérêts</dt>
+              <dd className="font-medium tabular-nums text-gray-800">
+                {debtAnalysis.interestCoverage !== null ? `${debtAnalysis.interestCoverage.toFixed(1)}×` : 'n.d.'}
+                {debtAnalysis.rating && <span className="ml-1 font-normal text-gray-400">→ {debtAnalysis.rating}</span>}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Kd synthétique (Rf + spread)</dt>
+              <dd className="font-bold tabular-nums" style={{ color: NAVY }}>
+                {debtAnalysis.syntheticPreTax !== null ? formatPercent(debtAnalysis.syntheticPreTax) : 'n.d.'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Kd effectif (contrôle)</dt>
+              <dd className="font-medium tabular-nums text-gray-800">
+                {debtAnalysis.effectivePreTax !== null ? formatPercent(debtAnalysis.effectivePreTax) : 'n.d.'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Kd retenu (avant impôt)</dt>
+              <dd className="font-bold tabular-nums" style={{ color: NAVY }}>
+                {formatPercent(assumptions.costOfDebtOverride ?? debtAnalysis.retainedPreTax)}
+                <span className="ml-1 font-normal text-gray-400">
+                  {assumptions.costOfDebtOverride !== null ? '(manuel)' : debtAnalysis.source === 'SYNTHETIC' ? '(synth.)' : '(repli)'}
+                </span>
+              </dd>
+            </div>
+          </dl>
+          <label className="mt-2 flex items-center gap-2">
+            <span className="text-[11px] text-gray-500">Forcer Kd (avant impôt) :</span>
+            <input
+              type="number"
+              step={0.05}
+              disabled={readOnly}
+              placeholder="auto"
+              value={assumptions.costOfDebtOverride !== null ? Number((assumptions.costOfDebtOverride * 100).toFixed(4)) : ''}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                if (raw === '') return onChange('costOfDebtOverride', null);
+                const v = Number(raw);
+                if (Number.isFinite(v)) onChange('costOfDebtOverride', v / 100);
+              }}
+              className="w-20 rounded-md border border-gray-300 px-2 py-1 text-xs tabular-nums focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:bg-gray-100"
+            />
+            <span className="text-[11px] text-gray-400">% — vide = auto (synthétique)</span>
+          </label>
+        </div>
+        )}
       </div>
 
       {/* --- Bêta : le choix revient à l'utilisateur */}

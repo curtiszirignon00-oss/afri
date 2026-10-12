@@ -274,21 +274,26 @@ export const useStockChart = ({
         borderColor: isDark ? '#374151' : '#e2e8f0',
         timeVisible: !!isIntraday, // heure affichée uniquement pour les bougies intraday
         secondsVisible: false,
+        // Empêche les bougies intraday de s'écraser en traits d'un pixel quand
+        // on dézoome sur plusieurs séances
+        minBarSpacing: isIntraday ? 2 : 0.5,
         tickMarkFormatter: (time: { year: number; month: number; day: number } | number, tickMarkType: number) => {
           // time est un number (timestamp Unix s) pour l'intraday,
           // sinon un BusinessDay {year, month, day} (dates YYYY-MM-DD)
           const d = typeof time === 'number'
             ? new Date(time * 1000)
-            : new Date(time.year, time.month - 1, time.day);
+            : new Date(Date.UTC(time.year, time.month - 1, time.day));
+          // Les horaires BRVM sont en GMT (siège à Abidjan) : on force UTC pour
+          // que l'axe affiche l'heure de la séance et non celle du visiteur
           switch (tickMarkType) {
             case 0: // Year
-              return String(d.getFullYear());
+              return String(d.getUTCFullYear());
             case 1: // Month
-              return d.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' });
+              return d.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric', timeZone: 'UTC' });
             case 2: // DayOfMonth
-              return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+              return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', timeZone: 'UTC' });
             default: // Time / TimeWithSeconds (intraday)
-              return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+              return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
           }
         },
       },

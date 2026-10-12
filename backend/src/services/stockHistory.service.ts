@@ -5,6 +5,7 @@ import { log } from '../config/logger';
 import prisma from '../config/prisma';
 import { scrapeStock, StockData } from './scraping.service';
 import { normalizeSymbol } from './stock.service.prisma';
+import { isWithinBRVMCollectionWindow, getBRVMPhase, isBRVMTradingDay } from '../config/brvmMarket';
 
 /**
  * Sauvegarde l'historique du jour pour toutes les actions
@@ -18,10 +19,10 @@ export async function saveCurrentDayHistory() {
     const now = new Date();
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-    // BRVM fermée le week-end : ne pas dupliquer la bougie du vendredi
-    const dow = today.getUTCDay();
-    if (dow === 0 || dow === 6) {
-      log.debug('📊 Week-end (BRVM fermée) — pas de sauvegarde d\'historique');
+    // BRVM fermée le week-end et les jours fériés : ne pas dupliquer la bougie
+    // de la dernière séance cotée
+    if (!isBRVMTradingDay(today)) {
+      log.debug('📊 Jour non coté (week-end ou férié) — pas de sauvegarde d\'historique');
       return { success: true, savedCount: 0, errorCount: 0, date: today };
     }
 
@@ -139,26 +140,29 @@ export async function saveCurrentDayHistory() {
 }
 
 /**
- * Vrai si l'instant donné est dans la fenêtre de cotation BRVM (élargie).
- * Séance BRVM ≈ 9h30–15h00 GMT — on garde 9h00–15h30 GMT, lun–ven.
+ * Vrai si l'instant donné est dans la fenêtre de collecte BRVM :
+ * jour de cotation (lun–ven, hors férié), du fixing d'ouverture (09h45 UTC) à
+ * la fermeture + marge (15h15 UTC). Voir config/brvmMarket.ts.
  */
 export function isWithinBRVMTradingHours(date: Date = new Date()): boolean {
-  const day = date.getUTCDay(); // 0=dim, 6=sam
-  if (day === 0 || day === 6) return false;
-  const minutes = date.getUTCHours() * 60 + date.getUTCMinutes();
-  return minutes >= 9 * 60 && minutes <= 15 * 60 + 30;
+  return isWithinBRVMCollectionWindow(date);
 }
 
 /**
  * Sauvegarde un snapshot intraday (prix + volume cumulé) pour chaque action.
  * Appelé par le cron de scraping toutes les 15 min ; les snapshots sont ensuite
- * agrégés en bougies horaires par getIntradayHourly().
- * Ne fait rien hors des heures de cotation BRVM.
+ * agrégés en bougies 15 min / 1 h par getIntradayHourly().
+ *
+ * Ne fait rien hors de la fenêtre de collecte : week-end, jour férié,
+ * pré-ouverture (aucune transaction) et après clôture. Aucune bougie n'est donc
+ * créée en dehors des plages de cotation réelles.
  */
 export async function saveIntradaySnapshots(stocks: StockData[]) {
   const now = new Date();
-  if (!isWithinBRVMTradingHours(now)) {
-    return { success: true, savedCount: 0, skipped: 'hors heures de cotation' };
+  if (!isWithinBRVMCollectionWindow(now)) {
+    const phase = getBRVMPhase(now);
+    log.debug(`📸 Snapshot ignoré — hors fenêtre de collecte (${phase.label}, ${now.toISOString()})`);
+    return { success: true, savedCount: 0, skipped: `hors fenêtre de collecte (${phase.label})` };
   }
 
   try {

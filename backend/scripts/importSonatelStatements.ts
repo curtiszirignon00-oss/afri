@@ -38,6 +38,7 @@ type FyRow = {
   tax_social_payables: number | null; cash_liabilities: number | null; total_liabilities: number | null;
   payout_ratio: number | null; dividend_per_share: number | null;
   equity_group_share?: number | null; minority_interests?: number | null;
+  interest_expense?: number | null;
 };
 
 // Repartition capitaux propres part du groupe / minoritaires — source : etats financiers
@@ -48,6 +49,11 @@ const EQUITY_SPLIT: Record<number, { equity_group_share: number; minority_intere
   2024: { equity_group_share: 1_050_347, minority_interests: 224_291 },
   2025: { equity_group_share: 1_160_715, minority_interests: 238_547 }
 };
+
+// Charges d'interets brutes (feuille "Beta Damodaran" du classeur de valo). Couverture
+// des interets 2025 = REX 669 792 / 11 236 ~= 60x -> tres bonne notation synthetique.
+// Sans effet sur le WACC de SONATEL (gearing 0, net cash) mais rend le Kd tracable.
+const INTEREST_EXPENSE: Record<number, number> = { 2025: 11_236 };
 type InterimRow = { year: number; period: 'T1'; revenue: number | null; net_income: number | null };
 
 const FY: FyRow[] = [
@@ -463,7 +469,11 @@ async function main() {
 
   let upserts = 0;
   for (const { year, ...rest } of FY) {
-    const fields = { ...rest, ...(EQUITY_SPLIT[year] ?? {}) };
+    const fields = {
+      ...rest,
+      ...(EQUITY_SPLIT[year] ?? {}),
+      ...(INTEREST_EXPENSE[year] !== undefined ? { interest_expense: INTEREST_EXPENSE[year] } : {})
+    };
     await prisma.financialStatement.upsert({
       where: { stock_ticker_year_period: { stock_ticker: TICKER, year, period: StatementPeriod.FY } },
       create: { stock_ticker: TICKER, year, period: StatementPeriod.FY, source: 'Rapport annuel SYSCOHADA', ...fields },

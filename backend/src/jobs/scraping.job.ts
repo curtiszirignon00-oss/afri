@@ -16,10 +16,18 @@ import { checkWatchlistSignals } from '../services/watchlist-signal.service';
 import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
 import prisma from '../config/prisma';
 
-// Tâche cron pour exécuter le scraping toutes les heures
+// Tous les crons sont exprimés en UTC : la BRVM siège à Abidjan (GMT+0), donc
+// les horaires de séance officiels sont des horaires UTC. Figer la timezone
+// évite toute dérive si le serveur n'est pas en UTC.
+const UTC = { timezone: 'UTC' } as const;
 
-cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
-    console.log('🔄 Tâche de scraping exécutée toutes les 15 minutes');
+// Scraping toutes les 15 minutes, uniquement pendant la séance BRVM (la source
+// n'est de toute façon rafraîchie que toutes les 15 min).
+// '9-15' couvre 09h00→15h59 UTC et '1-5' lundi→vendredi : aucun passage le
+// week-end, donc aucune bougie créée hors séance. saveIntradaySnapshots()
+// resserre encore la fenêtre à 09h45–15h15 (cf. config/brvmMarket.ts).
+cron.schedule('*/15 9-15 * * 1-5', async () => {
+    console.log('🔄 Tâche de scraping (séance BRVM, toutes les 15 minutes)');
 
     try {
         const stocks = await scrapeStock();
@@ -29,30 +37,11 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
         await saveStocks(stocks);
         await saveIndices(indices);
 
-        // Snapshot intraday (prix + volume cumulé) — no-op hors heures de cotation BRVM
+        // Snapshot intraday (prix + volume cumulé) — no-op hors fenêtre de collecte
         try {
             await saveIntradaySnapshots(stocks);
         } catch (err) {
             console.error('❌ Erreur snapshots intraday:', err);
-        }
-
-        // Sauvegarder dans l'historique (une fois par jour seulement, à 18h00 après clôture BRVM)
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        if (currentHour === 18 && currentMinute < 15) {
-            console.log('📊 Sauvegarde de l\'historique du jour (actions + indices)...');
-            await saveCurrentDayHistory();
-            await saveCurrentDayIndexHistory();
-            // Mettre à jour les streaks de position ROI sandbox (1x/jour après clôture)
-            await updateROIRankStreaks();
-            // 👁️ Vérifier les signaux watchlist et notifier les utilisateurs
-            try {
-                const result = await checkWatchlistSignals();
-                console.log(`👁️ Signaux watchlist: ${result.notificationsSent} notif(s) envoyée(s) à ${result.usersProcessed} utilisateur(s)`);
-            } catch (err) {
-                console.error('❌ Erreur checkWatchlistSignals:', err);
-            }
         }
 
         console.log('✅ Scraping et sauvegarde terminés avec succès');
@@ -63,9 +52,32 @@ cron.schedule('*/15 * * * *', async () => { // Exécute toutes les 15 minutes
     } catch (error) {
         console.error('❌ Erreur lors du scraping:', error);
     }
-});
+}, UTC);
 
-// Purge quotidienne des snapshots intraday de plus de 400 jours (3h00 du matin)
+// Clôture de séance : historique quotidien + tâches post-clôture.
+// 18h00 UTC, lundi→vendredi uniquement — pas de bougie quotidienne le week-end.
+cron.schedule('0 18 * * 1-5', async () => {
+    try {
+        console.log('📊 Sauvegarde de l\'historique du jour (actions + indices)...');
+        await saveCurrentDayHistory();
+        await saveCurrentDayIndexHistory();
+
+        // Mettre à jour les streaks de position ROI sandbox (1x/jour après clôture)
+        await updateROIRankStreaks();
+
+        // 👁️ Vérifier les signaux watchlist et notifier les utilisateurs
+        try {
+            const result = await checkWatchlistSignals();
+            console.log(`👁️ Signaux watchlist: ${result.notificationsSent} notif(s) envoyée(s) à ${result.usersProcessed} utilisateur(s)`);
+        } catch (err) {
+            console.error('❌ Erreur checkWatchlistSignals:', err);
+        }
+    } catch (error) {
+        console.error('❌ Erreur lors des tâches de clôture:', error);
+    }
+}, UTC);
+
+// Purge quotidienne des snapshots intraday de plus de 400 jours (3h00 UTC)
 // Retention longue : le timeframe 1H doit remonter le plus loin possible.
 cron.schedule('0 3 * * *', async () => {
     try {
@@ -74,7 +86,7 @@ cron.schedule('0 3 * * *', async () => {
     } catch (error) {
         console.error('❌ Erreur purge snapshots intraday:', error);
     }
-});
+}, UTC);
 
 // Fonction pour vérifier et déclencher les alertes de prix
 async function checkPriceAlerts() {
@@ -181,7 +193,7 @@ async function checkPriceAlerts() {
 }
 
 // Tâche cron pour envoyer les résumés watchlist hebdomadaires
-// S'exécute tous les lundis à 08h00
+// S'exécute tous les lundis à 08h00 UTC
 cron.schedule('0 8 * * 1', async () => {
     try {
         console.log('📊 Envoi des résumés watchlist hebdomadaires (IA)...');
@@ -190,4 +202,4 @@ cron.schedule('0 8 * * 1', async () => {
     } catch (error) {
         console.error('❌ Erreur lors de l\'envoi des résumés watchlist:', error);
     }
-});
+}, UTC);

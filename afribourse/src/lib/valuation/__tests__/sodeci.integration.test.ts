@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeCostOfCapital } from '../cost-of-capital';
 import { applyDeltas, calibrateDrivers } from '../index';
-import { project, workingCapitalRatioAt } from '../projection';
+import { project, revenueGrowthAt, workingCapitalRatioAt } from '../projection';
 import { runValuation, sensitivityTornado, type ValuationEngineInput } from '../scenarios';
 import type { CostOfCapitalInput } from '../types';
 import { SODECI_STATEMENTS } from './fixtures/sodeci';
@@ -177,6 +177,7 @@ describe('plancher d impot sur les pertes d exploitation', () => {
   const lossDrivers = {
     revenueGrowthFirst: 0,
     revenueGrowthRest: 0,
+    revenueGrowthTerminal: 0,
     operatingMarginFirst: -0.1,
     operatingMarginRest: -0.1,
     depreciationRatio: 0,
@@ -219,6 +220,35 @@ describe('plancher d impot sur les pertes d exploitation', () => {
       drivers: { ...lossDrivers, operatingMarginFirst: 0.1 }
     });
     expect(years[0].tax).toBeCloseTo(years[0].operatingIncome.value * 0.25, 8);
+  });
+});
+
+describe('revenueGrowthAt — fade de croissance', () => {
+  it('prend la croissance ancree au premier exercice', () => {
+    expect(revenueGrowthAt(0, 6, -0.0133, 0.098, 0.025)).toBeCloseTo(-0.0133, 6);
+  });
+
+  it('part du regime au 1er exercice explicite et fond vers le long terme au dernier', () => {
+    // Horizon 6 : offsets 1..5. offset1 = rest, offset5 = terminal.
+    expect(revenueGrowthAt(1, 6, -0.0133, 0.098, 0.025)).toBeCloseTo(0.098, 6);
+    expect(revenueGrowthAt(5, 6, -0.0133, 0.098, 0.025)).toBeCloseTo(0.025, 6);
+    // Milieu : fade lineaire.
+    expect(revenueGrowthAt(3, 6, -0.0133, 0.098, 0.025)).toBeCloseTo(0.098 + (0.025 - 0.098) * 0.5, 6);
+  });
+
+  it('est monotone entre le regime et le long terme', () => {
+    const g = [1, 2, 3, 4, 5].map((o) => revenueGrowthAt(o, 6, 0, 0.1, 0.025));
+    for (let i = 1; i < g.length; i += 1) expect(g[i]).toBeLessThanOrEqual(g[i - 1]);
+  });
+
+  it('place la croissance du dernier exercice a g, pour raccorder la valeur terminale', () => {
+    const cal = calibrateDrivers({ statements: SODECI_STATEMENTS, taxRate: 0.25, firstProjectedYear: 2026, gTerminal: 0.025, lookback: 5, cagrWindow: 5 });
+    const { years } = project({
+      firstYear: 2026, horizon: 6, lastRevenue: 189429.713, lastWorkingCapital: 104748.089,
+      lastWorkingCapitalRatio: 0.553, taxRate: 0.25, sharesOutstanding: 9, drivers: cal.drivers
+    });
+    // Le dernier exercice croit a g (2,5 %).
+    expect(years[years.length - 1].revenueGrowth).toBeCloseTo(0.025, 4);
   });
 });
 
@@ -354,17 +384,15 @@ describe('sensitivityTornado', () => {
     expect(byDriver.get('wacc')!.shock).toBeCloseTo(0.01, 6);
   });
 
-  it('classe BFR > croissance > capex > marge >> WACC >> g', () => {
-    expect(bars.map((b) => b.driver)).toEqual([
-      'workingCapitalRatioTarget',
-      'revenueGrowthRest',
-      'capexRatio',
-      'operatingMarginRest',
-      'wacc',
-      'gTerminal'
-    ]);
-    // Le BFR et la croissance pesent un ordre de grandeur de plus que g.
-    expect(bars[0].swing / bars[5].swing).toBeGreaterThan(10);
+  it('classe les drivers d exploitation au-dessus de g, qui est le moins sensible', () => {
+    const rank = (d: string) => bars.findIndex((b) => b.driver === d);
+    for (const d of ['workingCapitalRatioTarget', 'revenueGrowthRest', 'capexRatio', 'operatingMarginRest']) {
+      expect(rank(d)).toBeLessThan(rank('gTerminal'));
+    }
+    // g (croissance a l'infini) est le driver le moins sensible du prix DCF.
+    expect(bars[bars.length - 1].driver).toBe('gTerminal');
+    // Le driver dominant pese plusieurs fois g.
+    expect(bars[0].swing / bars[bars.length - 1].swing).toBeGreaterThan(5);
   });
 
   it('honore un choc explicite', () => {
