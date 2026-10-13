@@ -348,6 +348,11 @@ export default function MarketsPageRefactored() {
           "inLanguage": "fr"
         })}</script>
       </Helmet>
+      {/* Bande d'état du marché BRVM — tout en haut, pleine largeur */}
+      <div className="-mt-4 sm:-mt-8 mb-4 sm:mb-6">
+        <MarketHours />
+      </div>
+
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
         {/* Bannière onboarding — simulateur sans risque */}
@@ -458,9 +463,6 @@ export default function MarketsPageRefactored() {
             </div>
           </div>
         )}
-
-        {/* Horaires d'ouverture de la BRVM */}
-        <MarketHours />
 
         {/* Filtres */}
         <Card className="mb-6">

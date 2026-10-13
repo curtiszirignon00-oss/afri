@@ -1,138 +1,156 @@
 // src/components/markets/MarketHours.tsx
-import { useEffect, useMemo, useState } from 'react';
-import { Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 /**
- * Horaires d'ouverture de la BRVM (Bourse Régionale des Valeurs Mobilières).
- * La BRVM est basée à Abidjan (fuseau GMT/UTC+0), donc les horaires locaux = UTC.
- * Séances du lundi au vendredi uniquement.
+ * Bande d'état du marché BRVM : phase en cours + décompte jusqu'à la suivante.
+ *
+ * La BRVM siège à Abidjan (fuseau GMT/UTC+0) : les horaires officiels sont donc
+ * des horaires UTC, et le décompte est calculé en UTC quel que soit le fuseau
+ * du visiteur. Séances du lundi au vendredi.
+ *
+ *   09h00–09h45  pré-ouverture (saisie des ordres, aucune transaction)
+ *   09h45        fixing d'ouverture
+ *   09h45–14h00  négociation en continu
+ *   14h00–14h30  pré-clôture (saisie des ordres, aucune transaction)
+ *   14h30        fixing de clôture
+ *   14h30–15h00  négociation au dernier cours
+ *   15h00        fermeture (± 60 s aléatoires)
  */
 
-type Phase = {
-  key: string;
+/** Minutes depuis minuit UTC. */
+const at = (hours: number, minutes = 0) => hours * 60 + minutes;
+
+/** 'live' = transactions en cours · 'auction' = saisie d'ordres sans transaction */
+type Tone = 'live' | 'auction' | 'closed';
+
+type Segment = {
   label: string;
-  /** Minute de début depuis minuit (GMT) */
+  /** Début inclus, minutes depuis minuit UTC */
   start: number;
-  /** Minute de fin depuis minuit (GMT) */
+  /** Fin exclue, minutes depuis minuit UTC */
   end: number;
-  /** Horaire affiché */
-  display: string;
-  /** Fixing = moment ponctuel de calcul de cours */
-  isFixing?: boolean;
+  /** Ce qui démarre à la fin de ce segment */
+  next: string;
+  tone: Tone;
 };
 
-const h = (hours: number, minutes = 0) => hours * 60 + minutes;
-
-const PHASES: Phase[] = [
-  { key: 'pre-open',   label: 'Pré-ouverture',               start: h(9),          end: h(9, 45),  display: '09h00 – 09h45' },
-  { key: 'fix-open',   label: "Fixing d'ouverture",          start: h(9, 45),      end: h(9, 45),  display: '09h45', isFixing: true },
-  { key: 'continuous', label: 'Négociation en continu',      start: h(9, 45),      end: h(14),     display: '09h45 – 14h00' },
-  { key: 'pre-close',  label: 'Pré-clôture',                 start: h(14),         end: h(14, 30), display: '14h00 – 14h30' },
-  { key: 'fix-close',  label: 'Fixing de clôture',           start: h(14, 30),     end: h(14, 30), display: '14h30', isFixing: true },
-  { key: 'last-price', label: 'Négociation au dernier cours', start: h(14, 30),    end: h(15),     display: '14h30 – 15h00' },
+const SEGMENTS: Segment[] = [
+  { label: 'Pré-ouverture',                start: at(9),      end: at(9, 45),  next: "Fixing d'ouverture", tone: 'auction' },
+  { label: 'Négociation en continu',       start: at(9, 45),  end: at(14),     next: 'Pré-clôture',        tone: 'live'    },
+  { label: 'Pré-clôture',                  start: at(14),     end: at(14, 30), next: 'Fixing de clôture',  tone: 'auction' },
+  { label: 'Négociation au dernier cours', start: at(14, 30), end: at(15),     next: 'Fermeture',          tone: 'live'    },
 ];
 
-const OPEN_MIN = h(9);
-const CLOSE_MIN = h(15);
+const SESSION_OPEN = at(9);
 
-function getGmtNow() {
-  const now = new Date();
-  const minutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-  const day = now.getUTCDay(); // 0 = dimanche, 6 = samedi
-  return { minutes, day, isWeekday: day >= 1 && day <= 5 };
+type MarketState = {
+  label: string;
+  next: string;
+  tone: Tone;
+  /** Instant de la prochaine transition */
+  target: Date;
+};
+
+/** Date UTC à minuit, décalée de `offsetDays`. */
+function utcMidnight(from: Date, offsetDays = 0): Date {
+  return new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate() + offsetDays));
 }
 
-export default function MarketHours() {
-  const [tick, setTick] = useState(0);
+function isWeekend(date: Date): boolean {
+  const d = date.getUTCDay();
+  return d === 0 || d === 6;
+}
 
-  // Rafraîchit le statut chaque minute
+/** Prochaine ouverture de séance (09h00 UTC du prochain jour ouvré). */
+function nextSessionOpen(now: Date): Date {
+  // Aujourd'hui si la séance n'a pas encore commencé, sinon à partir de demain
+  const startOffset = !isWeekend(now) && now.getUTCHours() * 60 + now.getUTCMinutes() < SESSION_OPEN ? 0 : 1;
+  for (let i = startOffset; i < 10; i++) {
+    const day = utcMidnight(now, i);
+    if (!isWeekend(day)) return new Date(day.getTime() + SESSION_OPEN * 60_000);
+  }
+  return new Date(utcMidnight(now, 1).getTime() + SESSION_OPEN * 60_000);
+}
+
+function getMarketState(now: Date): MarketState {
+  if (!isWeekend(now)) {
+    const minutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+    const segment = SEGMENTS.find(s => minutes >= s.start && minutes < s.end);
+    if (segment) {
+      return {
+        label: segment.label,
+        next: segment.next,
+        tone: segment.tone,
+        target: new Date(utcMidnight(now).getTime() + segment.end * 60_000),
+      };
+    }
+  }
+  return {
+    label: 'Marché fermé',
+    next: 'Pré-ouverture',
+    tone: 'closed',
+    target: nextSessionOpen(now),
+  };
+}
+
+/**
+ * Décompte : MM:SS sous l'heure, H:MM:SS sur la journée, « 2j 17:00:00 » au-delà
+ * (fermeture de week-end : lire « 65:00:00 » n'aide personne).
+ */
+function formatCountdown(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const days = Math.floor(total / 86_400);
+  const h = Math.floor((total % 86_400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  if (days > 0) return `${days}j ${h}:${pad(m)}:${pad(s)}`;
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+const TONE_STYLES: Record<Tone, { dot: string; text: string; pulse: boolean }> = {
+  live:    { dot: 'bg-emerald-400', text: 'text-emerald-300', pulse: true },
+  auction: { dot: 'bg-amber-400',   text: 'text-amber-300',   pulse: true },
+  closed:  { dot: 'bg-slate-500',   text: 'text-slate-400',   pulse: false },
+};
+
+export default function MarketHours() {
+  const [now, setNow] = useState(() => new Date());
+
+  // Décompte à la seconde
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 60_000);
+    const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const { minutes, isWeekday } = useMemo(getGmtNow, [tick]);
-
-  // Détermine la phase active (hors fixings ponctuels)
-  const activePhaseKey = useMemo(() => {
-    if (!isWeekday) return null;
-    const active = PHASES.find(
-      (p) => !p.isFixing && minutes >= p.start && minutes < p.end
-    );
-    return active?.key ?? null;
-  }, [minutes, isWeekday]);
-
-  const isOpen = isWeekday && minutes >= OPEN_MIN && minutes < CLOSE_MIN;
+  const state = getMarketState(now);
+  const tone = TONE_STYLES[state.tone];
+  const remaining = state.target.getTime() - now.getTime();
 
   return (
-    <div className="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* En-tête avec statut live */}
-      <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-100 bg-gray-50/60">
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-gray-500" />
-          <h2 className="text-sm sm:text-base font-semibold text-gray-800">
-            Horaires de la BRVM
-          </h2>
-        </div>
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-            isOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              isOpen ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
-            }`}
-          />
-          {isOpen ? 'Marché ouvert' : 'Marché fermé'}
+    <div className="bg-slate-900 text-white">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3 text-xs sm:text-sm">
+        {/* État actuel */}
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="relative flex items-center justify-center w-2 h-2 flex-shrink-0">
+            {tone.pulse && (
+              <span className={`absolute inline-flex w-full h-full rounded-full opacity-60 animate-ping ${tone.dot}`} />
+            )}
+            <span className={`relative inline-flex w-2 h-2 rounded-full ${tone.dot}`} />
+          </span>
+          <span className="font-semibold truncate">{state.label}</span>
+          <span className="hidden sm:inline text-slate-500">· BRVM</span>
+        </span>
+
+        {/* Décompte jusqu'à la phase suivante */}
+        <span className="flex items-center gap-1.5 flex-shrink-0 text-slate-400">
+          <span className="hidden sm:inline">{state.next} dans</span>
+          <span className="sm:hidden">{state.next}</span>
+          <span className={`font-semibold tabular-nums ${tone.text}`}>
+            {formatCountdown(remaining)}
+          </span>
         </span>
       </div>
-
-      {/* Liste des phases */}
-      <ul className="divide-y divide-gray-100">
-        {PHASES.map((phase) => {
-          const active = phase.key === activePhaseKey;
-          return (
-            <li
-              key={phase.key}
-              className={`flex items-center justify-between px-4 sm:px-5 py-2.5 text-sm transition-colors ${
-                active ? 'bg-green-50' : ''
-              }`}
-            >
-              <span className="flex items-center gap-2 text-gray-700">
-                {active && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
-                )}
-                <span className={active ? 'font-semibold text-green-800' : ''}>
-                  {phase.label}
-                  {phase.isFixing && (
-                    <span className="ml-2 text-xs text-gray-400">(fixing)</span>
-                  )}
-                </span>
-              </span>
-              <span
-                className={`font-medium tabular-nums ${
-                  active ? 'text-green-800' : 'text-gray-500'
-                }`}
-              >
-                {phase.display}
-              </span>
-            </li>
-          );
-        })}
-        {/* Fermeture */}
-        <li className="flex items-center justify-between px-4 sm:px-5 py-2.5 text-sm">
-          <span className="text-gray-700">Fermeture du marché</span>
-          <span className="font-medium tabular-nums text-gray-500">
-            15h00 <span className="text-xs text-gray-400">(± 60s)</span>
-          </span>
-        </li>
-      </ul>
-
-      {/* Note fuseau horaire */}
-      <p className="px-4 sm:px-5 py-2.5 text-xs text-gray-400 border-t border-gray-100 bg-gray-50/40">
-        Heures en GMT/UTC (heure d'Abidjan) · du lundi au vendredi
-      </p>
     </div>
   );
 }
