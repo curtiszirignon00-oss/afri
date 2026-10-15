@@ -1,97 +1,14 @@
 // src/components/markets/MarketHours.tsx
 import { useEffect, useState } from 'react';
+import { getBRVMMarketState, type BRVMTone } from '../../utils/brvmSession';
 
 /**
  * Bande d'état du marché BRVM : phase en cours + décompte jusqu'à la suivante.
- *
- * La BRVM siège à Abidjan (fuseau GMT/UTC+0) : les horaires officiels sont donc
- * des horaires UTC, et le décompte est calculé en UTC quel que soit le fuseau
- * du visiteur. Séances du lundi au vendredi.
- *
- *   09h00–09h45  pré-ouverture (saisie des ordres, aucune transaction)
- *   09h45        fixing d'ouverture
- *   09h45–14h00  négociation en continu
- *   14h00–14h30  pré-clôture (saisie des ordres, aucune transaction)
- *   14h30        fixing de clôture
- *   14h30–15h00  négociation au dernier cours
- *   15h00        fermeture (± 60 s aléatoires)
+ * Les horaires et phases viennent de `utils/brvmSession` (partagé avec la
+ * construction de la bougie du jour).
  */
 
-/** Minutes depuis minuit UTC. */
-const at = (hours: number, minutes = 0) => hours * 60 + minutes;
-
-/** 'live' = transactions en cours · 'auction' = saisie d'ordres sans transaction */
-type Tone = 'live' | 'auction' | 'closed';
-
-type Segment = {
-  label: string;
-  /** Début inclus, minutes depuis minuit UTC */
-  start: number;
-  /** Fin exclue, minutes depuis minuit UTC */
-  end: number;
-  /** Ce qui démarre à la fin de ce segment */
-  next: string;
-  tone: Tone;
-};
-
-const SEGMENTS: Segment[] = [
-  { label: 'Pré-ouverture',                start: at(9),      end: at(9, 45),  next: "Fixing d'ouverture", tone: 'auction' },
-  { label: 'Négociation en continu',       start: at(9, 45),  end: at(14),     next: 'Pré-clôture',        tone: 'live'    },
-  { label: 'Pré-clôture',                  start: at(14),     end: at(14, 30), next: 'Fixing de clôture',  tone: 'auction' },
-  { label: 'Négociation au dernier cours', start: at(14, 30), end: at(15),     next: 'Fermeture',          tone: 'live'    },
-];
-
-const SESSION_OPEN = at(9);
-
-type MarketState = {
-  label: string;
-  next: string;
-  tone: Tone;
-  /** Instant de la prochaine transition */
-  target: Date;
-};
-
-/** Date UTC à minuit, décalée de `offsetDays`. */
-function utcMidnight(from: Date, offsetDays = 0): Date {
-  return new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate() + offsetDays));
-}
-
-function isWeekend(date: Date): boolean {
-  const d = date.getUTCDay();
-  return d === 0 || d === 6;
-}
-
-/** Prochaine ouverture de séance (09h00 UTC du prochain jour ouvré). */
-function nextSessionOpen(now: Date): Date {
-  // Aujourd'hui si la séance n'a pas encore commencé, sinon à partir de demain
-  const startOffset = !isWeekend(now) && now.getUTCHours() * 60 + now.getUTCMinutes() < SESSION_OPEN ? 0 : 1;
-  for (let i = startOffset; i < 10; i++) {
-    const day = utcMidnight(now, i);
-    if (!isWeekend(day)) return new Date(day.getTime() + SESSION_OPEN * 60_000);
-  }
-  return new Date(utcMidnight(now, 1).getTime() + SESSION_OPEN * 60_000);
-}
-
-function getMarketState(now: Date): MarketState {
-  if (!isWeekend(now)) {
-    const minutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-    const segment = SEGMENTS.find(s => minutes >= s.start && minutes < s.end);
-    if (segment) {
-      return {
-        label: segment.label,
-        next: segment.next,
-        tone: segment.tone,
-        target: new Date(utcMidnight(now).getTime() + segment.end * 60_000),
-      };
-    }
-  }
-  return {
-    label: 'Marché fermé',
-    next: 'Pré-ouverture',
-    tone: 'closed',
-    target: nextSessionOpen(now),
-  };
-}
+type Tone = BRVMTone;
 
 /**
  * Décompte : MM:SS sous l'heure, H:MM:SS sur la journée, « 2j 17:00:00 » au-delà
@@ -123,7 +40,7 @@ export default function MarketHours() {
     return () => clearInterval(id);
   }, []);
 
-  const state = getMarketState(now);
+  const state = getBRVMMarketState(now);
   const tone = TONE_STYLES[state.tone];
   const remaining = state.target.getTime() - now.getTime();
 

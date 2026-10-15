@@ -33,6 +33,7 @@ const StockNews = lazy(() => import('./stock/StockNews'));
 const StockFundamentals = lazy(() => import('./stock/StockFundamentals'));
 const StockAnalysis = lazy(() => import('./stock/StockAnalysis'));
 import { convertToLightweightData } from '../utils/simpleLightweightAdapter';
+import { hasBRVMSessionStarted } from '../utils/brvmSession';
 
 // Import des hooks
 import {
@@ -259,6 +260,15 @@ export default function StockDetailPageEnhanced() {
     void loadData();
   }, [stock?.symbol, symbol, stock, walletMode]);
 
+  // Horloge à la minute : la bougie du jour n'existe qu'après le fixing
+  // d'ouverture (09h45 GMT). Sans ce tick, une page ouverte avant l'ouverture
+  // ne verrait pas la bougie apparaître (aucun refetchInterval sur ces requêtes).
+  const [minuteTick, setMinuteTick] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => setMinuteTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   // Préparer les données pour lightweight-charts (mémoïsées)
   // Ajoute/met à jour le dernier point avec le prix actuel pour éviter un décalage
   const lightweightData = React.useMemo(() => {
@@ -273,8 +283,15 @@ export default function StockDetailPageEnhanced() {
         lastPoint.close = stock.current_price;
         lastPoint.high = Math.max(lastPoint.high, stock.current_price);
         lastPoint.low = Math.min(lastPoint.low, stock.current_price);
-      } else if (todayStr > lastPoint.time) {
+      } else if (todayStr > lastPoint.time && hasBRVMSessionStarted()) {
         // Jour suivant : nouveau point avec le prix actuel.
+        //
+        // Conditionné au fixing d'ouverture (09h45 GMT, lun–ven) : avant, aucune
+        // transaction n'a eu lieu, `current_price` est encore la clôture de la
+        // veille et `previous_close` celle de l'avant-veille — la bougie
+        // rejouait donc la séance précédente. Hors séance (week-end, avant
+        // 09h45), on n'affiche aucune bougie du jour.
+        //
         // open = clôture de la veille (proxy) pour que la bougie du jour montre
         // le mouvement au lieu d'un trait plat open=high=low=close.
         const open = stock.previous_close || stock.current_price;
@@ -285,12 +302,12 @@ export default function StockDetailPageEnhanced() {
           high: Math.max(open, stock.current_price),
           low: Math.min(open, stock.current_price),
           close: stock.current_price,
-          volume: 0,
+          volume: stock.volume ?? 0,
         });
       }
     }
     return converted;
-  }, [historyData?.data, stock?.current_price]);
+  }, [historyData?.data, stock?.current_price, stock?.volume, minuteTick]);
 
   // Afficher un loader si le stock est en cours de chargement
   if (loading) {
