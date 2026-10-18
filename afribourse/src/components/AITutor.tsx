@@ -1,16 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, ThumbsUp, ThumbsDown, X, Lock, Zap } from 'lucide-react';
-import { askGeminiTutor, sendAnalystFeedback, ChatMessage, TutorUserContext } from '../services/geminiService';
-
-interface UIMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  text: string;
-  timestamp: number;
-  messageId?: string;
-  rating?: 'up' | 'down';
-  paywallHit?: boolean;
-}
+import { Bot, Send, Sparkles, X, Zap, RotateCcw } from 'lucide-react';
+import { TutorUserContext } from '../services/geminiService';
+import SimbaFreeBadge from './SimbaFreeBadge';
+import SimbaMessageList from './simba/SimbaMessageList';
+import { useSimbaChat } from '../hooks/useSimbaChat';
 
 interface AITutorProps {
   userContext: TutorUserContext;
@@ -30,98 +23,37 @@ const MOTIVATION_WELCOME = `Félicitations pour ton premier module ! 🎉
 Dis-moi — qu'est-ce qui t'a motivé à apprendre sur la BRVM et les marchés financiers africains ?`;
 
 export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose, motivationMode = false }) => {
+  const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const moduleLabel = userContext.currentModule ?? 'ce module';
 
-  const buildWelcome = (label: string, isMotivation: boolean): UIMessage => ({
-    id: 'welcome',
-    role: 'assistant',
-    text: isMotivation
+  // Une conversation mémorisée par module (et une dédiée au mode motivation)
+  const { messages, isStreaming, status, paywallHit, hasConversation, send, resetConversation, rate } = useSimbaChat({
+    kind: 'tutor',
+    contextKey: motivationMode ? 'motivation' : (userContext.currentModule ?? 'general'),
+    welcome: motivationMode
       ? MOTIVATION_WELCOME
-      : `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${label}** — pose-moi tes questions !`,
-    timestamp: Date.now(),
+      : `Je suis SIMBA, ton tuteur Afribourse. Tu étudies **${moduleLabel}** — pose-moi tes questions !`,
+    enabled: isOpen,
+    extraBody: { userContext: { ...userContext, motivationMode: motivationMode || undefined } },
+    feedbackEndpoint: 'tutor',
   });
-
-  const [messages, setMessages] = useState<UIMessage[]>([
-    buildWelcome(moduleLabel, motivationMode),
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [paywallHit, setPaywallHit] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Réinitialiser quand le module change ou le mode change
-  useEffect(() => {
-    const label = userContext.currentModule ?? 'ce module';
-    setMessages([buildWelcome(label, motivationMode)]);
-    setPaywallHit(false);
-  }, [userContext.currentModule, motivationMode]);
-
-  const rateMessage = (id: string, rating: 'up' | 'down') => {
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id !== id) return m;
-        const newRating = m.rating === rating ? undefined : rating;
-        if (newRating && m.messageId) {
-          sendAnalystFeedback(m.messageId, newRating === 'up' ? 'positive' : 'negative', 'tutor');
-        }
-        return { ...m, rating: newRating };
-      }),
-    );
-  };
-
-  const handleSend = async (text?: string) => {
+  const handleSend = (text?: string) => {
     const messageText = (text ?? input).trim();
-    if (!messageText || isLoading) return;
-
-    const userMsg: UIMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      text: messageText,
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
+    if (!messageText || isStreaming) return;
     setInput('');
-    setIsLoading(true);
-
-    const history: ChatMessage[] = messages
-      .filter((m) => m.id !== 'welcome')
-      .map((m) => ({ role: m.role, content: m.text }));
-
-    const { reply, messageId, paywallHit: hit } = await askGeminiTutor(messageText, history, {
-      ...userContext,
-      motivationMode: motivationMode || undefined,
-    });
-
-    if (hit) {
-      setPaywallHit(true);
-      setMessages((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        text: '',
-        timestamp: Date.now(),
-        paywallHit: true,
-      }]);
-    } else {
-      setMessages((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        text: reply,
-        timestamp: Date.now(),
-        messageId,
-      }]);
-    }
-    setIsLoading(false);
+    send(messageText);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[360px] h-[70vh] max-h-[520px] sm:h-[520px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+    <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-[380px] h-[70vh] max-h-[560px] sm:h-[560px] bg-white rounded-2xl shadow-2xl flex flex-col border border-slate-200 z-50 overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 flex items-center justify-between text-white">
         <div className="flex items-center gap-2">
@@ -129,106 +61,49 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose, 
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-sm">SIMBA — {motivationMode ? 'Coach Motivation' : 'Tuteur Afribourse'}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm">SIMBA — {motivationMode ? 'Coach Motivation' : 'Tuteur Afribourse'}</h3>
+              <SimbaFreeBadge />
+            </div>
             <p className="text-xs text-blue-100 flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
               {motivationMode ? 'Premier module complété 🎉' : (userContext.currentModule ?? 'Learning Academy')}
             </p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="text-white/80 hover:text-white hover:bg-white/10 rounded-full p-1 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {hasConversation && (
+            <button
+              onClick={resetConversation}
+              title="Nouvelle conversation"
+              className="text-white/80 hover:text-white hover:bg-white/10 rounded-full p-1 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white hover:bg-white/10 rounded-full p-1 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-            {/* Carte paywall */}
-            {msg.paywallHit ? (
-              <div className="w-full max-w-[92%] bg-gradient-to-br from-blue-950 to-indigo-900 rounded-2xl p-4 shadow-lg border border-blue-800/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="bg-yellow-400/20 p-1.5 rounded-lg">
-                    <Lock className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  <span className="text-white font-semibold text-sm">Quota journalier atteint</span>
-                </div>
-                <p className="text-blue-200 text-xs leading-relaxed mb-3">
-                  Tu as utilisé tes <strong className="text-white">4 questions gratuites</strong> aujourd'hui.<br />
-                  Pour continuer à apprendre avec SIMBA sans limite, passe à la formule <strong className="text-yellow-400">Premium</strong>.
-                </p>
-                <a
-                  href="/subscriptions"
-                  className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-900 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm"
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  Passer à Premium
-                </a>
-                <p className="text-blue-400 text-[10px] text-center mt-2">↻ Tes questions gratuites se réinitialisent demain</p>
-              </div>
-            ) : (
-              <div
-                className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm whitespace-pre-wrap ${
-                  msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-sm'
-                    : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
-                }`}
-              >
-                {msg.text}
-              </div>
-            )}
-
-            {/* Boutons de vote — uniquement sur les réponses de SIMBA (hors welcome) */}
-            {msg.role === 'assistant' && msg.id !== 'welcome' && !msg.paywallHit && (
-              <div className="flex gap-1 mt-1 ml-1">
-                <button
-                  onClick={() => rateMessage(msg.id, 'up')}
-                  title="Réponse utile"
-                  className={`p-1 rounded-full transition-colors ${
-                    msg.rating === 'up'
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-slate-300 hover:text-blue-500 hover:bg-blue-50'
-                  }`}
-                >
-                  <ThumbsUp className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => rateMessage(msg.id, 'down')}
-                  title="Réponse insuffisante"
-                  className={`p-1 rounded-full transition-colors ${
-                    msg.rating === 'down'
-                      ? 'text-red-500 bg-red-50'
-                      : 'text-slate-300 hover:text-red-400 hover:bg-red-50'
-                  }`}
-                >
-                  <ThumbsDown className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-slate-100 p-3 rounded-2xl rounded-bl-sm shadow-sm">
-              <div className="flex gap-1 items-center">
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                <span className="ml-1 text-xs text-slate-400">SIMBA réfléchit...</span>
-              </div>
-            </div>
-          </div>
-        )}
+        <SimbaMessageList
+          messages={messages}
+          accent="blue"
+          status={status}
+          onRate={rate}
+          paywallVerb="apprendre"
+        />
         <div ref={messagesEndRef} />
       </div>
 
       {/* Suggestions rapides — masquées en mode motivation (SIMBA pose la question) */}
-      {messages.length <= 1 && !motivationMode && (
+      {!hasConversation && !motivationMode && (
         <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-slate-100 pt-2">
           {QUICK_SUGGESTIONS.map((s) => (
             <button
@@ -265,7 +140,7 @@ export const AITutor: React.FC<AITutorProps> = ({ userContext, isOpen, onClose, 
           />
           <button
             onClick={() => handleSend()}
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim() || isStreaming}
             className="absolute right-2 p-1.5 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors shadow-sm"
           >
             <Send className="w-4 h-4" />

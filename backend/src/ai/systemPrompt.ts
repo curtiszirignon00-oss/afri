@@ -75,7 +75,11 @@ Ta mission dans cette conversation :
 - Pas de liste à puces — des phrases directes et engageantes
 `.trim();
 
-export function buildTutorSystemPrompt(ctx: TutorUserContext = {}, contextBlock: string | null = null): string {
+export function buildTutorSystemPrompt(
+  ctx: TutorUserContext = {},
+  contextBlock: string | null = null,
+  learnerBlock: string | null = null, // progression réelle (quiz ratés…) lue côté serveur
+): string {
   const roleBlock = ctx.motivationMode ? MOTIVATION_SPECIFIC : TUTOR_SPECIFIC;
 
   const ctxSection = `## CONTEXTE UTILISATEUR
@@ -94,7 +98,7 @@ ${contextBlock}
 ---`
     : '';
 
-  return [SIMBA_BASE_IDENTITY, roleBlock, ctxSection, ragSection]
+  return [SIMBA_BASE_IDENTITY, roleBlock, ctxSection, learnerBlock ?? '', ragSection]
     .filter(Boolean)
     .join('\n\n');
 }
@@ -172,14 +176,19 @@ Tout investissement comporte des risques de perte en capital.
 `;
 
 // currentSymbol est maintenant optionnel — pas de crash si l'analyste est appelé sans ticker
-export function buildAnalystPrompt(currentSymbol?: string | null, scoreContext?: string): string {
+export function buildAnalystPrompt(
+  currentSymbol?: string | null,
+  scoreContext?: string,
+  userBlock?: string | null, // position de l'utilisateur sur le titre + profil
+): string {
   const symbolCtx = currentSymbol
     ? `\n## CONTEXTE ACTUEL\nL'utilisateur consulte la fiche du titre : **${currentSymbol}**. Commence par ce titre sauf instruction contraire.\n`
     : '';
   const scoreCtx = scoreContext
     ? `\n## SCORE DE CONFIANCE HYBRIDE (calculé en temps réel par Afribourse)\nL'utilisateur voit le score suivant sur son écran. Utilise ces données précises pour répondre à ses questions sur le score, les signaux et les piliers :\n\n${scoreContext}\n`
     : '';
-  return ANALYST_SYSTEM_PROMPT.replace('{symbol_context}', symbolCtx + scoreCtx);
+  const userCtx = userBlock ? `\n${userBlock}\n` : '';
+  return ANALYST_SYSTEM_PROMPT.replace('{symbol_context}', symbolCtx + scoreCtx + userCtx);
 }
 
 // ─── A. Coach Éducatif — Explication de Concepts ─────────────────────────────

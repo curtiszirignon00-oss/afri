@@ -14,6 +14,7 @@ import { notifyPriceAlert } from '../services/notification.service';
 import { updateROIRankStreaks } from '../services/gamification-leaderboard.service';
 import { checkWatchlistSignals } from '../services/watchlist-signal.service';
 import { sendWeeklyWatchlistSummaries } from '../services/watchlist-summary.service';
+import { precomputeStockAnalyses } from '../services/stock-ai-analysis.service';
 import prisma from '../config/prisma';
 
 // Tous les crons sont exprimés en UTC : la BRVM siège à Abidjan (GMT+0), donc
@@ -74,6 +75,16 @@ cron.schedule('0 18 * * 1-5', async () => {
         }
     } catch (error) {
         console.error('❌ Erreur lors des tâches de clôture:', error);
+    }
+}, UTC);
+
+// Analyses SIMBA de la fiche titre : régénérées après la clôture (18h30 UTC,
+// après l'historique de 18h00) pour être servies instantanément le lendemain.
+cron.schedule('30 18 * * 1-5', async () => {
+    try {
+        await precomputeStockAnalyses();
+    } catch (error) {
+        console.error('❌ Erreur pré-calcul des analyses SIMBA:', error);
     }
 }, UTC);
 

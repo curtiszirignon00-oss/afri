@@ -26,6 +26,7 @@ export interface AICallEvent {
   blockedReason?: string;
   question?: string;        // premiers 200 chars (anonymisé)
   success: boolean;
+  errorMessage?: string;    // cause de l'échec (status / message provider)
 }
 
 export interface AIFeedbackEvent {
@@ -55,6 +56,7 @@ export async function trackAICall(event: AICallEvent): Promise<void> {
           blockedReason: event.blockedReason ?? null,
           question: event.question ? event.question.slice(0, 200) : null,
           success: event.success,
+          errorMessage: event.errorMessage ? event.errorMessage.slice(0, 300) : null,
         },
       },
     });
@@ -88,6 +90,10 @@ export interface AISummary {
   avgResponseTimeMs: number;
   satisfactionRate: number;    // % de feedbacks positifs
   blockedRate: number;         // % de messages bloqués
+  failureRate: number;         // % d'appels en échec (panne provider, modèle retiré…)
+  failuresByEndpoint: Record<string, number>;
+  recentErrors: Array<{ endpoint: string; error: string }>;
+  totalTokens: number;         // tokens consommés sur la période
   callsByEndpoint: Record<string, number>;
   callsByProvider: Record<string, number>;
   topBlockedReasons: Array<{ reason: string; count: number }>;
@@ -127,6 +133,21 @@ export async function getAISummary(since?: Date): Promise<AISummary> {
   const blockedRate = calls.length
     ? Math.round((blockedCalls / calls.length) * 100)
     : 0;
+
+  // Échecs (success === false) et consommation de tokens
+  const meta = (c: { metadata: unknown }) => (c.metadata ?? {}) as Record<string, unknown>;
+  const failed = calls.filter((c) => meta(c).success === false);
+  const failureRate = calls.length ? Math.round((failed.length / calls.length) * 100) : 0;
+  const failuresByEndpoint: Record<string, number> = {};
+  for (const c of failed) {
+    const ep = String(meta(c).endpoint ?? 'unknown');
+    failuresByEndpoint[ep] = (failuresByEndpoint[ep] ?? 0) + 1;
+  }
+  const recentErrors = failed
+    .filter((c) => meta(c).errorMessage)
+    .slice(-10)
+    .map((c) => ({ endpoint: String(meta(c).endpoint ?? 'unknown'), error: String(meta(c).errorMessage) }));
+  const totalTokens = calls.reduce((acc, c) => acc + (Number(meta(c).tokensUsed) || 0), 0);
 
   // Répartition par endpoint
   const callsByEndpoint: Record<string, number> = {};
@@ -169,6 +190,10 @@ export async function getAISummary(since?: Date): Promise<AISummary> {
     avgResponseTimeMs,
     satisfactionRate,
     blockedRate,
+    failureRate,
+    failuresByEndpoint,
+    recentErrors,
+    totalTokens,
     callsByEndpoint,
     callsByProvider,
     topBlockedReasons,

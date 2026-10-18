@@ -1,65 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, ChevronDown, ChevronUp, Sparkles, ThumbsUp, ThumbsDown, AlertTriangle, Lock, Zap } from 'lucide-react';
-import {
-  askSIMBAPortfolioAdvisor,
-  sendAnalystFeedback,
-  ChatMessage,
-  PortfolioCtx,
-} from '../services/geminiService';
-
-interface UIMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  text: string;
-  timestamp: number;
-  messageId?: string;
-  rating?: 'up' | 'down';
-  paywallHit?: boolean;
-}
+import { Bot, Send, ChevronDown, ChevronUp, Sparkles, Zap, RotateCcw } from 'lucide-react';
+import SimbaFreeBadge from './SimbaFreeBadge';
+import SimbaMessageList from './simba/SimbaMessageList';
+import { useSimbaChat } from '../hooks/useSimbaChat';
 
 interface SimbaPortfolioAdvisorProps {
-  portfolioContext: PortfolioCtx;
+  walletType: 'SANDBOX' | 'CONCOURS';
 }
 
 const QUICK_SUGGESTIONS = [
-  'Analyse mon portefeuille',
-  'Suis-je bien diversifié ?',
-  'Quelle position est la plus risquée ?',
+  'Fais le diagnostic complet de mon portefeuille',
+  'Mon portefeuille correspond-il à mon profil ?',
+  'Suis-je trop concentré sur un titre ou un secteur ?',
+  'Analyse les fondamentaux de ma plus grosse position',
   'Que faire avec mes liquidités ?',
-  'Comment interpréter mes plus-values ?',
 ];
 
-// Rendu Markdown minimaliste (gras + sauts de ligne)
-function renderMarkdown(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
-    }
-    // Sauts de ligne
-    return part.split('\n').map((line, j, arr) => (
-      <React.Fragment key={`${i}-${j}`}>
-        {line}
-        {j < arr.length - 1 && <br />}
-      </React.Fragment>
-    ));
-  });
-}
-
-const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolioContext }) => {
+const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ walletType }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<UIMessage[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      text: 'Bonjour ! Je suis SIMBA, ton conseiller pédagogique de portefeuille. Je vois tes positions et ton historique — pose-moi tes questions sur la gestion de ton portefeuille simulé !',
-      timestamp: Date.now(),
-    },
-  ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [paywallHit, setPaywallHit] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Une conversation mémorisée par type de portefeuille (apprentissage / Challenge)
+  const { messages, isStreaming, status, paywallHit, hasConversation, send, resetConversation, rate } = useSimbaChat({
+    kind: 'portfolio',
+    contextKey: walletType,
+    welcome: 'Bonjour ! Je suis SIMBA, ton conseiller portefeuille. Je vois tes positions, ta répartition par secteur, tes dernières transactions et ton profil investisseur, et je peux consulter les données BRVM de chaque titre. Pose-moi ta question !',
+    enabled: isOpen,
+    extraBody: { walletType },
+    feedbackEndpoint: 'portfolio',
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -67,59 +37,11 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
     }
   }, [messages, isOpen]);
 
-  const rateMessage = (id: string, rating: 'up' | 'down') => {
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id !== id) return m;
-        const newRating = m.rating === rating ? undefined : rating;
-        if (newRating && m.messageId) {
-          sendAnalystFeedback(m.messageId, newRating === 'up' ? 'positive' : 'negative', 'analyst');
-        }
-        return { ...m, rating: newRating };
-      }),
-    );
-  };
-
-  const handleSend = async (text?: string) => {
+  const handleSend = (text?: string) => {
     const messageText = (text ?? input).trim();
-    if (!messageText || isLoading) return;
-
-    const userMsg: UIMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      text: messageText,
-      timestamp: Date.now(),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
+    if (!messageText || isStreaming) return;
     setInput('');
-    setIsLoading(true);
-
-    const history: ChatMessage[] = messages
-      .filter((m) => m.id !== 'welcome')
-      .map((m) => ({ role: m.role, content: m.text }));
-
-    const { reply, messageId, paywallHit: hit } = await askSIMBAPortfolioAdvisor(messageText, history, portfolioContext);
-
-    if (hit) {
-      setPaywallHit(true);
-      setMessages((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        text: '',
-        timestamp: Date.now(),
-        paywallHit: true,
-      }]);
-    } else {
-      setMessages((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        text: reply,
-        timestamp: Date.now(),
-        messageId,
-      }]);
-    }
-    setIsLoading(false);
+    send(messageText);
   };
 
   return (
@@ -136,13 +58,11 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
           <div className="text-left">
             <div className="flex items-center gap-2">
               <span className="font-bold text-base">SIMBA — Conseiller Portefeuille</span>
-              <span className="text-xs bg-yellow-400 text-yellow-900 font-semibold px-2 py-0.5 rounded-full">
-                BÊTA
-              </span>
+              <SimbaFreeBadge />
             </div>
             <p className="text-xs text-blue-100 flex items-center gap-1 mt-0.5">
               <Sparkles className="w-3 h-3" />
-              Avis pédagogique sur ton portefeuille simulé
+              Diagnostic personnalisé selon ton profil et les données BRVM
             </p>
           </div>
         </div>
@@ -155,98 +75,37 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
 
       {isOpen && (
         <>
-          {/* Disclaimer */}
-          <div className="flex items-start gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100">
-            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-amber-700 leading-snug">
-              <strong>Version bêta.</strong> Les avis de SIMBA sont pédagogiques et basés sur ton portefeuille{' '}
-              <strong>simulé</strong>. Ceci ne constitue pas un conseil en investissement sur un portefeuille réel.
+          {/* Mention légale discrète + nouvelle conversation */}
+          <div className="flex items-center justify-between gap-2 px-4 py-1.5 bg-white border-b border-slate-100">
+            <p className="text-[11px] text-slate-400">
+              Analyse éducative sur portefeuille simulé, pas un conseil en investissement réglementé.
             </p>
+            {hasConversation && (
+              <button
+                onClick={resetConversation}
+                className="flex items-center gap-1 text-[11px] text-indigo-600 hover:text-indigo-800 whitespace-nowrap"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Nouvelle conversation
+              </button>
+            )}
           </div>
 
           {/* Messages */}
-          <div className="h-80 overflow-y-auto p-4 space-y-4 bg-slate-50">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                {msg.paywallHit ? (
-                  <div className="w-full max-w-[92%] bg-gradient-to-br from-indigo-950 to-blue-900 rounded-2xl p-4 shadow-lg border border-indigo-800/50">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="bg-yellow-400/20 p-1.5 rounded-lg">
-                        <Lock className="w-4 h-4 text-yellow-400" />
-                      </div>
-                      <span className="text-white font-semibold text-sm">Quota journalier atteint</span>
-                    </div>
-                    <p className="text-indigo-200 text-xs leading-relaxed mb-3">
-                      Tu as utilisé tes <strong className="text-white">4 questions gratuites</strong> aujourd'hui.<br />
-                      Pour continuer avec SIMBA sans limite, passe à la formule <strong className="text-yellow-400">Premium</strong>.
-                    </p>
-                    <a
-                      href="/subscriptions"
-                      className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-slate-900 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm"
-                    >
-                      <Zap className="w-3.5 h-3.5" />
-                      Passer à Premium
-                    </a>
-                    <p className="text-indigo-400 text-[10px] text-center mt-2">↻ Tes questions gratuites se réinitialisent demain</p>
-                  </div>
-                ) : (
-                  <div
-                    className={`max-w-[88%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                      msg.role === 'user'
-                        ? 'bg-indigo-600 text-white rounded-br-sm'
-                        : 'bg-white text-slate-700 border border-slate-100 rounded-bl-sm'
-                    }`}
-                  >
-                    {renderMarkdown(msg.text)}
-                  </div>
-                )}
-
-                {msg.role === 'assistant' && msg.id !== 'welcome' && !msg.paywallHit && (
-                  <div className="flex gap-1 mt-1 ml-1">
-                    <button
-                      onClick={() => rateMessage(msg.id, 'up')}
-                      title="Réponse utile"
-                      className={`p-1 rounded-full transition-colors ${
-                        msg.rating === 'up'
-                          ? 'text-indigo-600 bg-indigo-50'
-                          : 'text-slate-300 hover:text-indigo-500 hover:bg-indigo-50'
-                      }`}
-                    >
-                      <ThumbsUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => rateMessage(msg.id, 'down')}
-                      title="Réponse insuffisante"
-                      className={`p-1 rounded-full transition-colors ${
-                        msg.rating === 'down'
-                          ? 'text-red-500 bg-red-50'
-                          : 'text-slate-300 hover:text-red-400 hover:bg-red-50'
-                      }`}
-                    >
-                      <ThumbsDown className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-slate-100 p-3 rounded-2xl rounded-bl-sm shadow-sm">
-                  <div className="flex gap-1 items-center">
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" />
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    <span className="ml-1 text-xs text-slate-400">SIMBA analyse...</span>
-                  </div>
-                </div>
-              </div>
-            )}
+          <div className="h-96 overflow-y-auto p-4 space-y-4 bg-slate-50">
+            <SimbaMessageList
+              messages={messages}
+              accent="indigo"
+              status={status}
+              onRate={rate}
+              paywallVerb="continuer"
+              thinkingLabel="SIMBA analyse..."
+            />
             <div ref={messagesEndRef} />
           </div>
 
           {/* Suggestions rapides */}
-          {messages.length <= 1 && (
+          {!hasConversation && (
             <div className="px-3 pb-2 flex gap-2 flex-wrap bg-white border-t border-slate-100 pt-2">
               {QUICK_SUGGESTIONS.map((s) => (
                 <button
@@ -283,7 +142,7 @@ const SimbaPortfolioAdvisor: React.FC<SimbaPortfolioAdvisorProps> = ({ portfolio
                 />
                 <button
                   onClick={() => handleSend()}
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isStreaming}
                   className="absolute right-2 p-1.5 bg-indigo-600 text-white rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-colors shadow-sm"
                 >
                   <Send className="w-4 h-4" />

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import Groq from 'groq-sdk';
 import { log } from '../config/logger';
+import { trackedCompletion } from '../ai/models';
 
 const prisma = new PrismaClient();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
@@ -569,7 +570,7 @@ ${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justi
 ⚠️ RAPPEL : analyse les positions RÉELLEMENT prises. Ne dis pas que l'utilisateur est en cash si des positions sont listées.`;
 
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await trackedCompletion(groq, {
       model: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
       messages: [
         { role: 'system', content: SIMBA_SYSTEM_PROMPT },
@@ -577,7 +578,7 @@ ${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justi
       ],
       max_tokens: 650,
       temperature: 0.5,
-    });
+    } as any, 'time-machine');
     return completion.choices[0]?.message?.content ?? 'Analyse Simba temporairement indisponible.';
   } catch (err: any) {
     log.error('[Simba] Groq error:', err?.message);
@@ -646,7 +647,7 @@ En te basant UNIQUEMENT sur les décisions réelles listées ci-dessus, génère
 Sois ultra-concret. Cite les tickers, les années, les montants. Pas de généralités.`;
 
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await trackedCompletion(groq, {
       model: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
       messages: [
         { role: 'system', content: SIMBA_SYSTEM_PROMPT },
@@ -654,7 +655,7 @@ Sois ultra-concret. Cite les tickers, les années, les montants. Pas de généra
       ],
       max_tokens: 700,
       temperature: 0.65,
-    });
+    } as any, 'time-machine-recap');
     return completion.choices[0]?.message?.content ?? 'Récapitulatif Simba indisponible.';
   } catch (err: any) {
     log.error('[Simba] Recap Groq error:', err?.message);

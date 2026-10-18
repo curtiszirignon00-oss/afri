@@ -3,6 +3,7 @@
 
 import Groq from 'groq-sdk';
 import { log } from '../config/logger';
+import { trackedCompletion } from '../ai/models';
 
 export interface AllocationItem {
   sector: string;
@@ -164,13 +165,13 @@ Règles impératives :
 - Chaque rationale doit se terminer par "Source : données historiques BRVM."`;
 
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await trackedCompletion(groq, {
       model: process.env.GROQ_MODEL ?? 'qwen/qwen3.8-27b',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 800,
       temperature: 0.3,
       response_format: { type: 'json_object' },
-    });
+    } as any, 'allocation');
 
     const raw = completion.choices[0]?.message?.content ?? '';
     const parsed = JSON.parse(raw);

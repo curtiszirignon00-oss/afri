@@ -8,6 +8,7 @@
 
 import Groq from 'groq-sdk';
 import { log } from '../config/logger';
+import { trackedCompletion } from '../ai/models';
 
 // ─── Singleton ────────────────────────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ export async function generatePulseQuestion(stock: StockSummary): Promise<string
       ? `${stock.current_price.toLocaleString('fr-FR')} FCFA`
       : '';
 
-    const chat = await getGroq().chat.completions.create({
+    const chat = await trackedCompletion(getGroq(), {
       model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
       max_tokens: 120,
       temperature: 0.7,
@@ -63,7 +64,7 @@ export async function generatePulseQuestion(stock: StockSummary): Promise<string
           content: `${stock.symbol} (${stock.company_name ?? 'N/D'}) est à ${change} aujourd'hui${price ? `, coté ${price}` : ''}. Pose une seule question courte et engageante (max 2 phrases) pour lancer la discussion sur ce titre dans la communauté.`,
         },
       ],
-    });
+    } as any, 'pulse-question');
 
     return chat.choices[0]?.message?.content?.trim() ?? fallbackPulseQuestion(stock);
   } catch (err: any) {
@@ -91,7 +92,7 @@ export async function generateWatchlistSummary(
       })
       .join('\n');
 
-    const chat = await getGroq().chat.completions.create({
+    const chat = await trackedCompletion(getGroq(), {
       model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
       max_tokens: 200,
       temperature: 0.5,
@@ -102,7 +103,7 @@ export async function generateWatchlistSummary(
           content: `Voici la watchlist de cette semaine :\n${lines}\nFais un bref résumé de la situation en 3 phrases maximum. Pas de bullet points. Rappelle l'importance de la diversification si pertinent.`,
         },
       ],
-    });
+    } as any, 'watchlist-summary');
 
     return chat.choices[0]?.message?.content?.trim() ?? '';
   } catch (err: any) {

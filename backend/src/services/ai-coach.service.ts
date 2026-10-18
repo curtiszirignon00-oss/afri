@@ -18,7 +18,7 @@ import {
   QuizQuestion,
 } from '../ai/systemPrompt';
 import { buildContextualPrompt } from '../ai/ragService';
-import { SIMBA_COACH_MODEL, createAnalystCompletion, reasoningParams, stripReasoning } from '../ai/models';
+import { SIMBA_COACH_MODEL, createAnalystCompletion, trackedCompletion, tokensOf, reasoningParams, stripReasoning } from '../ai/models';
 
 export type { UserContext, PortfolioHolding, QuizQuestion };
 
@@ -31,12 +31,15 @@ export interface ChatResult {
   text: string;
   provider: 'groq' | 'fallback';
   success: boolean;
+  tokensUsed?: number;
+  errorMessage?: string;
 }
 
 export interface ChatOptions {
   maxTokens?: number;
   temperature?: number;
   analyst?: boolean;           // router vers SIMBA Analyste (modèle de raisonnement)
+  source?: string;             // libellé pour la surveillance de santé (aiHealth)
   jsonMode?: boolean;          // activer response_format json_object (Groq)
   skipRag?: boolean;           // désactiver l'enrichissement RAG (quiz, portfolio…)
 }
@@ -50,7 +53,7 @@ class AfribourseChatService {
 
   // ─── Appel Groq ─────────────────────────────────────────────────────────────
 
-  private async callGroq(messages: Message[], options: ChatOptions = {}): Promise<string> {
+  private async callGroq(messages: Message[], options: ChatOptions = {}): Promise<{ text: string; tokensUsed?: number }> {
     if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
 
     const params: any = {
@@ -63,17 +66,17 @@ class AfribourseChatService {
       params.response_format = { type: 'json_object' };
     }
 
-    if (options.analyst) {
-      const completion = await createAnalystCompletion(this.groq, params);
-      return stripReasoning(completion.choices[0]?.message?.content ?? '');
-    }
-
-    const completion = await this.groq.chat.completions.create({
-      ...params,
-      model: SIMBA_COACH_MODEL,
-      ...reasoningParams(SIMBA_COACH_MODEL),
-    });
-    return stripReasoning(completion.choices[0]?.message?.content ?? '');
+    const completion = options.analyst
+      ? await createAnalystCompletion(this.groq, params, options.source ?? 'market-analysis')
+      : await trackedCompletion(this.groq, {
+          ...params,
+          model: SIMBA_COACH_MODEL,
+          ...reasoningParams(SIMBA_COACH_MODEL),
+        }, options.source ?? 'coach');
+    return {
+      text: stripReasoning(completion.choices[0]?.message?.content ?? ''),
+      tokensUsed: tokensOf(completion) ?? undefined,
+    };
   }
 
   // ─── Méthode principale avec RAG ────────────────────────────────────────────
@@ -98,14 +101,15 @@ class AfribourseChatService {
     ];
 
     try {
-      const text = await this.callGroq(messages, options);
-      return { text, provider: 'groq', success: true };
+      const { text, tokensUsed } = await this.callGroq(messages, options);
+      return { text, provider: 'groq', success: !!text, tokensUsed };
     } catch (groqError: any) {
       log.error('[SIMBA] Groq failed — status:', groqError?.status, '— message:', groqError?.message, '— error:', JSON.stringify(groqError?.error ?? {}));
       return {
         text: 'Je suis temporairement indisponible. Veuillez réessayer dans quelques instants.',
         provider: 'fallback',
         success: false,
+        errorMessage: `${groqError?.status ?? ''} ${groqError?.message ?? ''}`.trim(),
       };
     }
   }
@@ -183,6 +187,10 @@ class AfribourseChatService {
       ? (v >= 1000 ? `${(v / 1000).toFixed(0)} Mds` : `${v.toFixed(0)} M`) + ' FCFA'
       : 'N/D';
 
+    // Séparateur de milliers en espace simple : sans lui, le modèle lisait « 43500 » comme 435 000
+    const fmtInt = (v: number) => Math.round(v).toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
+    const fmtFCFA = (v?: number | null) => (v != null ? `${fmtInt(v)} FCFA` : 'N/D');
+
     // Historique annuel (3 dernières années)
     const annualLines = (stock.annual_data ?? []).slice(0, 3).map((a) => {
       const parts = [`${a.year}`];
@@ -203,12 +211,12 @@ FICHE ACTION :
 - Description : ${stock.description ? stock.description.slice(0, 300) : 'N/D'}
 
 DONNÉES DE MARCHÉ :
-- Prix actuel : ${stock.current_price ?? 'N/D'} FCFA
+- Prix actuel : ${fmtFCFA(stock.current_price)}
 - Variation journalière : ${stock.daily_change_percent?.toFixed(2) ?? 'N/D'}%
-- Volume : ${stock.volume ? stock.volume.toLocaleString('fr-FR') : 'N/D'}
+- Volume : ${stock.volume ? fmtInt(stock.volume) + ' titres' : 'N/D'}
 - Capitalisation boursière : ${capStr}
-- Plus haut 52 semaines : ${stock.week_high ?? 'N/D'} FCFA
-- Plus bas 52 semaines : ${stock.week_low ?? 'N/D'} FCFA
+- Plus haut 52 semaines : ${fmtFCFA(stock.week_high)}
+- Plus bas 52 semaines : ${fmtFCFA(stock.week_low)}
 
 FONDAMENTAUX (dernière année disponible) :
 - Chiffre d'affaires : ${fmtM(stock.revenue)}
@@ -222,7 +230,11 @@ FONDAMENTAUX (dernière année disponible) :
 
 HISTORIQUE FINANCIER (3 ans) :
   ${annualLines || 'Non disponible'}
-
+${stock.data_warnings?.length ? `
+AVERTISSEMENTS SUR LES DONNÉES (valeurs incohérentes écartées) :
+${stock.data_warnings.map((w) => `- ${w}`).join('\n')}
+Ne commente pas ces valeurs écartées et ne les remplace pas par une estimation : traite-les comme N/D.
+` : ''}
 Fournis une analyse structurée en 4 points :
 1. **Tendance de marché** : lecture du prix actuel vs 52 semaines et la variation journalière.
 2. **Santé financière** : commentaire sur les revenus, la rentabilité (ROE/marge) et l'évolution sur 3 ans.
@@ -233,6 +245,7 @@ Fournis une analyse structurée en 4 points :
       maxTokens: 1500,          // modèle de raisonnement : la réflexion masquée consomme aussi des tokens
       temperature: 0.5,
       analyst: true,
+      source: 'market-analysis',
       skipRag: true, // RAG déjà injecté manuellement ci-dessus
     });
   }
@@ -272,6 +285,7 @@ export interface StockData {
     net_margin?: number | null;
   }>;
   description?: string;
+  data_warnings?: string[];   // valeurs écartées par les contrôles de cohérence
 }
 
 // ─── Singleton exporté ────────────────────────────────────────────────────────

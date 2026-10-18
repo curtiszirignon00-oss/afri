@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Building2, Globe, MapPin, User, Users, Calendar, Sparkles, Loader2, MessageCircle, ThumbsUp, ThumbsDown, TrendingUp } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { SimbaMarkdown } from '../simba/SimbaMessageList';
 import { Stock } from '../../types';
 import { StockAnalystChat } from './StockAnalystChat';
 import { getSIMBAStockAnalysis, sendAnalystFeedback } from '../../services/geminiService';
@@ -27,16 +27,23 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
   const { data: weekData } = useStock52Week(stock.symbol);
 
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [aiGeneratedAt, setAiGeneratedAt] = useState<string | undefined>();
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const analysisRequestId = useRef(0);
   const [showChat, setShowChat] = useState(false);
   const [analysisRating, setAnalysisRating] = useState<'up' | 'down' | null>(null);
   const analysisMessageId = useRef<string>(`analysis-${stock.symbol}-${Date.now()}`);
 
   const fetchSIMBAAnalysis = async () => {
-    if (isLoadingAI || aiAnalysis) return;
+    // Chaque requête a un id : la réponse d'un titre précédent est ignorée
+    const requestId = ++analysisRequestId.current;
+    setAiAnalysis('');
+    setAiGeneratedAt(undefined);
     setIsLoadingAI(true);
-    const { text } = await getSIMBAStockAnalysis(stock);
+    const { text, generatedAt } = await getSIMBAStockAnalysis(stock);
+    if (requestId !== analysisRequestId.current) return;
     setAiAnalysis(text);
+    setAiGeneratedAt(generatedAt);
     setIsLoadingAI(false);
   };
 
@@ -53,7 +60,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
       sendAnalystFeedback(
         analysisMessageId.current,
         newRating === 'up' ? 'positive' : 'negative',
-        'analyst',
+        'market-analysis',
       );
     }
   };
@@ -74,6 +81,12 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="text-blue-600" size={20} />
             <h3 className="text-lg font-bold text-gray-900">Analyse par SIMBA</h3>
+            <SimbaFreeBadge />
+            {aiGeneratedAt && !isLoadingAI && (
+              <span className="ml-auto text-xs text-slate-400">
+                Mise à jour le {new Date(aiGeneratedAt).toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </div>
 
           {/* Chargement */}
@@ -87,7 +100,7 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
           {/* Analyse disponible */}
           {!isLoadingAI && aiAnalysis && (
             <div className="prose prose-sm max-w-none text-slate-700">
-              <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+              <SimbaMarkdown text={aiAnalysis} />
 
               {/* Actions : feedback + chat */}
               <div className="flex items-center gap-3 mt-4 pt-3 border-t border-slate-100 not-prose">
@@ -362,3 +375,4 @@ export default function StockOverview({ stock, companyInfo }: StockOverviewProps
 
 // Import manquant pour le composant BarChart
 import { BarChart } from 'lucide-react';
+import SimbaFreeBadge from '../SimbaFreeBadge';

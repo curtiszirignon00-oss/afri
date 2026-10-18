@@ -672,6 +672,35 @@ model Stock {
   @@map("stocks")
 }
 
+// Mémoire des conversations SIMBA : une conversation par (utilisateur, assistant, contexte).
+// kind = analyst | portfolio | tutor ; context_key = ticker, type de portefeuille ou module.
+model SimbaConversation {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  kind        String
+  context_key String
+  messages    Json     @default("[]") // [{ role, content, at, messageId? }] — 40 derniers max
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@unique([userId, kind, context_key])
+  @@index([userId])
+  @@map("simba_conversations")
+}
+
+// Cache de l'analyse rapide SIMBA (fiche titre) — 1 analyse par titre, régénérée
+// chaque soir après la clôture ou à la demande si elle a plus de 24 h.
+model StockAIAnalysis {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker  String   @unique
+  content       String
+  model         String
+  data_warnings String[] @default([]) // incohérences détectées dans les données sources
+  generated_at  DateTime @default(now())
+
+  @@map("stock_ai_analyses")
+}
+
 model StockHistory {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   stock_ticker String
@@ -1051,6 +1080,7 @@ model LearningProgress {
   quiz_score           Float?
   quiz_attempts        Int       @default(0)
   last_quiz_attempt_at DateTime?
+  missed_questions     String[]  @default([]) // questions ratées au dernier essai (exploitées par SIMBA Tuteur)
   time_spent_minutes   Float?
   last_accessed_at     DateTime? @default(now())
   completed_at         DateTime?

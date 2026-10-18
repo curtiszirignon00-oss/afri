@@ -27,7 +27,6 @@ import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
 import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
 import DashboardWebinarWidget from './dashboard/DashboardWebinarWidget';
-import type { PortfolioCtx } from '../services/geminiService';
 import WelcomeModal from './onboarding/WelcomeModal';
 import PulseDot from './onboarding/PulseDot';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
@@ -553,39 +552,6 @@ export default function DashboardPage() {
     r => r.reward.reward_type === 'virtual_cash' && (r as any).claimed === true
   );
 
-  // Contexte portefeuille pour SIMBA
-  const simbaPortfolioCtx: PortfolioCtx = {
-    totalValue,
-    cashBalance: portfolio.cash_balance,
-    initialBalance,
-    totalGainLoss,
-    totalGainLossPercent,
-    unrealizedGainLoss,
-    unrealizedPercent,
-    realizedGainLoss,
-    realizedPercent,
-    positions: portfolio.positions
-      .filter(pos => stocksData[pos.stock_ticker])
-      .map(pos => {
-        const stock = stocksData[pos.stock_ticker];
-        const currentValue = pos.quantity * stock.current_price;
-        const costBasis2 = pos.quantity * pos.average_buy_price;
-        const gainLoss = currentValue - costBasis2;
-        const gainLossPercent = costBasis2 > 0 ? (gainLoss / costBasis2) * 100 : 0;
-        return {
-          ticker: pos.stock_ticker,
-          companyName: stock.company_name,
-          quantity: pos.quantity,
-          avgBuyPrice: pos.average_buy_price,
-          currentPrice: stock.current_price,
-          currentValue,
-          gainLoss,
-          gainLossPercent,
-        };
-      }),
-    historyPoints: portfolioHistory.slice(-30).map(p => ({ date: p.date, value: p.value })),
-  };
-
   return (
     <>
       {/* Onboarding : modal de bienvenue pour les nouveaux utilisateurs */}
@@ -1068,7 +1034,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* SIMBA — Conseiller Portefeuille */}
-            <SimbaPortfolioAdvisor portfolioContext={simbaPortfolioCtx} />
+            <SimbaPortfolioAdvisor walletType={walletMode} />
 
             {/* <-- AJOUT: Historique des Transactions Récentes */}
             <Card>

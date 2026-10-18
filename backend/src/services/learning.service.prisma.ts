@@ -307,6 +307,12 @@ export class LearningServicePrisma {
             // Calculer les nouvelles tentatives
             const newAttempts = existingProgress ? existingProgress.quiz_attempts + 1 : 1;
 
+            // Questions ratées au dernier essai : SIMBA Tuteur s'en sert pour cibler ses explications
+            const missedQuestions = detailedResults
+                .filter((r) => !r.isCorrect && typeof r.question === 'string')
+                .map((r) => String(r.question).slice(0, 300))
+                .slice(0, 10);
+
             // Mettre à jour la progression
             const progress = await prisma.learningProgress.upsert({
                 where: {
@@ -318,6 +324,7 @@ export class LearningServicePrisma {
                 update: {
                     quiz_score: score,
                     quiz_attempts: newAttempts,
+                    missed_questions: missedQuestions,
                     last_quiz_attempt_at: new Date(),
                     is_completed: passed,
                     completed_at: passed ? new Date() : null,
@@ -329,6 +336,7 @@ export class LearningServicePrisma {
                     moduleId: module.id,
                     quiz_score: score,
                     quiz_attempts: 1,
+                    missed_questions: missedQuestions,
                     last_quiz_attempt_at: new Date(),
                     is_completed: passed,
                     completed_at: passed ? new Date() : null,

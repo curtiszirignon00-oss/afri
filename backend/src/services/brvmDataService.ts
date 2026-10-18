@@ -200,17 +200,33 @@ async function getSectorBenchmark({ symbol }: { symbol: string }) {
   }
   const peers = Object.values(latestByTicker);
 
-  const avg = (key: string): number | null => {
-    const vals = peers.map((p: any) => p[key]).filter((v: any) => v != null && !isNaN(v));
-    return vals.length ? parseFloat((vals.reduce((a: number, b: number) => a + b, 0) / vals.length).toFixed(2)) : null;
+  // Bornes plausibles : une valeur hors bornes est une erreur de saisie ou d'unité
+  // (ex. ROE stocké en fraction chez un pair, en % chez un autre) et fausse la référence.
+  const PLAUSIBLE: Record<string, [number, number]> = {
+    pe_ratio: [0, 200], pb_ratio: [0, 30], roe: [-200, 200], roa: [-100, 100],
+    profit_margin: [-200, 100], dividend_yield: [0, 30], debt_to_equity: [0, 50],
+  };
+  const isPlausible = (m: string, v: unknown): v is number =>
+    typeof v === 'number' && Number.isFinite(v) && v >= PLAUSIBLE[m][0] && v <= PLAUSIBLE[m][1];
+
+  // Médiane plutôt que moyenne : un seul pair atypique ne déplace plus la référence sectorielle
+  const median = (key: string): { value: number | null; n: number } => {
+    const vals = peers.map((p: any) => p[key]).filter((v: unknown) => isPlausible(key, v)).sort((a: number, b: number) => a - b);
+    if (!vals.length) return { value: null, n: 0 };
+    const mid = Math.floor(vals.length / 2);
+    const med = vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2;
+    return { value: parseFloat(med.toFixed(2)), n: vals.length };
   };
 
   const RATIO_METRICS = ['pe_ratio', 'pb_ratio', 'roe', 'roa', 'profit_margin', 'dividend_yield', 'debt_to_equity'];
   const benchmark: Record<string, any> = {};
 
   for (const m of RATIO_METRICS) {
-    const stockVal = fund?.[m] ?? null;
-    const sectorAvg = avg(m);
+    const rawStockVal = fund?.[m] ?? null;
+    const stockVal = isPlausible(m, rawStockVal) ? rawStockVal : null;
+    const { value: sectorMedian, n: peersUsed } = median(m);
+    // Moins de 2 pairs exploitables : pas de référence sectorielle fiable
+    const sectorAvg = peersUsed >= 2 ? sectorMedian : null;
     const diff = stockVal != null && sectorAvg != null
       ? parseFloat(((stockVal - sectorAvg) / sectorAvg * 100).toFixed(1))
       : null;
@@ -226,8 +242,9 @@ async function getSectorBenchmark({ symbol }: { symbol: string }) {
     }
 
     benchmark[m] = {
-      stock: stockVal ?? 'N/D',
-      sector_avg: sectorAvg ?? 'N/D',
+      stock: stockVal ?? (rawStockVal != null ? 'N/D (valeur incohérente écartée)' : 'N/D'),
+      sector_median: sectorAvg ?? 'N/D',
+      sector_peers_used: peersUsed,
       vs_sector_pct: diff != null ? `${diff > 0 ? '+' : ''}${diff}%` : 'N/D',
       interpretation,
     };

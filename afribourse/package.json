@@ -41,6 +41,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.6",
     "recharts": "^3.6.0",
+    "remark-gfm": "^4.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
