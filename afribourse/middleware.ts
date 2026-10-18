@@ -20,9 +20,9 @@ const SOCIAL_CRAWLERS = [
   'telegrambot',
   'slackbot',
   'discordbot',
-  'googlebot',
-  'bingbot',
-  'applebot',
+  // NE PAS ajouter googlebot / bingbot / applebot : les moteurs de recherche
+  // exécutent le JS et doivent recevoir le vrai SPA. Leur servir ce stub
+  // (sans contenu + meta refresh vers la même URL) empêche l'indexation.
 ];
 
 function isSocialCrawler(userAgent: string): boolean {
@@ -179,9 +179,10 @@ export default async function middleware(request: Request): Promise<Response | u
   return handleGenericPage(knownPage ?? pathname);
 }
 
-// Applique le middleware aux routes HTML (exclut les assets statiques)
+// Applique le middleware aux routes HTML (exclut les assets statiques et tout
+// chemin contenant un point : robots.txt, sitemap.xml, sw.js, manifest.json…)
 export const config = {
   matcher: [
-    '/((?!api|images|assets|icons|manifest\\.json|sw\\.js|workbox|favicon\\.).*)',
+    '/((?!api|images|assets|icons|.*\\.).*)',
   ],
 };

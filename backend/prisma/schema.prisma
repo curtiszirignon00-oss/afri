@@ -662,6 +662,11 @@ model Stock {
   shares_outstanding Float?  // nombre de titres, requis par le moteur de valorisation
   currency           String? @default("XOF")
 
+  // Dates de cotation (référentiel validé à la main) — utilisées par le moteur de
+  // cohérence du portefeuille réel. null = inconnue : le moteur se replie sur l'historique.
+  listed_at   DateTime?
+  delisted_at DateTime?
+
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
 
@@ -2662,4 +2667,120 @@ model ValuationRun {
   @@index([sector])
   @@index([is_published])
   @@map("valuation_runs")
+}
+
+// ================================================================ //
+// === PORTEFEUILLE RÉEL IMPORTÉ ================================== //
+// ================================================================ //
+// Collections volontairement séparées de Portfolio/Position/Transaction :
+// une vingtaine de requêtes existantes (XP, succès, admin, IA, e-mails) lisent
+// ces collections sans filtre de wallet. Rien de réel ne doit y apparaître.
+
+// Opérations sur titres (référentiel). Seules les lignes verified=true sont
+// utilisées pour ajuster quantités et cours.
+model CorporateAction {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  stock_ticker String
+  type         String // SPLIT | REVERSE_SPLIT | BONUS | DIVIDEND
+  ex_date      DateTime
+  ratio        Float? // SPLIT 1:10 → 10 (1 ancienne = 10 nouvelles) ; REVERSE 10:1 → 0.1
+  amount       Float? // DIVIDEND : montant net par action (XOF)
+  source       String?
+  verified     Boolean  @default(false)
+  note         String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([stock_ticker, type, ex_date])
+  @@index([stock_ticker])
+  @@map("corporate_actions")
+}
+
+model RealPortfolio {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @db.ObjectId
+  name             String   @default("Mon portefeuille BRVM")
+  broker           String? // SGI
+  import_mode      String   @default("SNAPSHOT") // SNAPSHOT | TRANSACTIONS
+  declared_capital Float? // valeur totale annoncée par l'utilisateur (contrôle arithmétique)
+  currency         String   @default("XOF")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  transactions RealTransaction[]
+  positions    RealPosition[]
+  cash         RealCashPosition?
+  imports      RealImportBatch[]
+
+  @@index([userId])
+  @@map("real_portfolios")
+}
+
+// Source de vérité. Une ligne de snapshot = une transaction OPENING datée au PRU.
+model RealTransaction {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioId       String        @db.ObjectId
+  portfolio         RealPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  stock_ticker      String
+  side              String // OPENING | BUY | SELL
+  trade_date        DateTime
+  quantity          Float
+  price             Float // cours unitaire (frais inclus si fees = 0)
+  fees              Float         @default(0)
+  source            String        @default("MANUAL") // MANUAL | CSV | XLSX | SGI_*
+  import_batch_id   String?       @db.ObjectId
+  validation_status String        @default("VALID") // VALID | WARNING
+  validation_flags  Json? // [{ code, severity, message }]
+  split_adjusted    Boolean       @default(false)
+  original_quantity Float?
+  original_price    Float?
+  note              String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  @@index([portfolioId, trade_date])
+  @@index([portfolioId, stock_ticker])
+  @@map("real_transactions")
+}
+
+// Cache dérivé, recalculé à partir des transactions après chaque écriture.
+model RealPosition {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioId  String        @db.ObjectId
+  portfolio    RealPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  stock_ticker String
+  quantity     Float
+  average_cost Float
+  realized_pnl Float         @default(0)
+  first_date   DateTime?
+  updated_at   DateTime      @updatedAt
+
+  @@unique([portfolioId, stock_ticker])
+  @@map("real_positions")
+}
+
+model RealCashPosition {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioId String        @unique @db.ObjectId
+  portfolio   RealPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  amount      Float         @default(0)
+  as_of       DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+
+  @@map("real_cash_positions")
+}
+
+model RealImportBatch {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  portfolioId   String        @db.ObjectId
+  portfolio     RealPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  mode          String // SNAPSHOT | TRANSACTIONS
+  source        String // MANUAL | CSV | XLSX
+  file_name     String?
+  row_count     Int
+  warning_count Int           @default(0)
+  created_at    DateTime      @default(now())
+
+  @@index([portfolioId])
+  @@map("real_import_batches")
 }

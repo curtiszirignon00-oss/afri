@@ -37,10 +37,12 @@ export async function streamSimba(
   body: Record<string, unknown>,
   handlers: SimbaStreamHandlers,
   signal?: AbortSignal,
+  /** Route de streaming spécifique (ex. reporting du portefeuille réel). */
+  pathOverride?: string,
 ): Promise<SimbaStreamResult> {
   let response: Response;
   try {
-    response = await authFetch(`${API_BASE_URL}${STREAM_PATHS[kind]}`, {
+    response = await authFetch(`${API_BASE_URL}${pathOverride ?? STREAM_PATHS[kind]}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
       body: JSON.stringify(body),

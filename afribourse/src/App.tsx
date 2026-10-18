@@ -46,6 +46,8 @@ const MarketsPageRefactored = lazy(() => import('./components/MarketsPageRefacto
 const IndicesPage = lazy(() => import('./components/IndicesPage'));
 const StockDetailPageEnhanced = lazy(() => import('./components/StockDetailPageEnhanced'));
 const ValuationPage = lazy(() => import('./pages/ValuationPage'));
+const RealPortfolioPage = lazy(() => import('./pages/RealPortfolioPage'));
+const RealPortfolioImportPage = lazy(() => import('./pages/RealPortfolioImportPage'));
 const UniWaxDashboardPage = lazy(() => import('./pages/UniWaxDashboardPage'));
 const NewsPage = lazy(() => import('./components/NewsPage'));
 const NewsDetailPage = lazy(() => import('./components/NewsDetailPage'));
@@ -330,6 +332,24 @@ function Layout() {
             element={
               <ProtectedRoute requireOnboarding={false}>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Portefeuille réel importé - Protégé (surface distincte du dashboard de simulation) */}
+          <Route
+            path="/portefeuille-reel"
+            element={
+              <ProtectedRoute requireOnboarding={false}>
+                <RealPortfolioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/portefeuille-reel/import"
+            element={
+              <ProtectedRoute requireOnboarding={false}>
+                <RealPortfolioImportPage />
               </ProtectedRoute>
             }
           />

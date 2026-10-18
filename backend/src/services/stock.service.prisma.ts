@@ -649,19 +649,16 @@ export async function getShareholders(symbol: string) {
  */
 export async function getAnnualFinancials(symbol: string, yearsBack: number = 5) {
   try {
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - yearsBack + 1;
-
+    // On prend les N derniers exercices REELLEMENT disponibles plutot qu'une fenetre
+    // calculee sur l'annee civile : les comptes de l'exercice en cours ne sont pas
+    // encore publies, et l'ancienne borne (currentYear - yearsBack + 1) faisait
+    // perdre une annee d'historique.
     const financials = await prisma.annualFinancials.findMany({
-      where: {
-        stock_ticker: symbol,
-        year: {
-          gte: startYear
-        }
-      },
-      orderBy: { year: 'asc' }
+      where: { stock_ticker: symbol },
+      orderBy: { year: 'desc' },
+      take: yearsBack
     });
-    return financials;
+    return financials.reverse();
   } catch (error) {
     log.error(`❌ Erreur lors de la récupération des données financières de ${symbol}:`, error);
     throw error;

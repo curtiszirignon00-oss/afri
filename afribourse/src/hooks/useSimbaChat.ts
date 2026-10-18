@@ -28,6 +28,8 @@ interface UseSimbaChatOptions {
   /** Corps de requête additionnel (symbol, walletType, userContext…) */
   extraBody?: Record<string, unknown>;
   feedbackEndpoint: 'analyst' | 'tutor' | 'portfolio';
+  /** Route de streaming spécifique (par défaut : celle du `kind`). */
+  streamPath?: string;
 }
 
 const FAILURE_TEXT = {
@@ -39,7 +41,7 @@ const FAILURE_TEXT = {
 
 const welcomeMessage = (text: string): SimbaUIMessage => ({ id: 'welcome', role: 'assistant', text, timestamp: Date.now() });
 
-export function useSimbaChat({ kind, contextKey, welcome, enabled, extraBody, feedbackEndpoint }: UseSimbaChatOptions) {
+export function useSimbaChat({ kind, contextKey, welcome, enabled, extraBody, feedbackEndpoint, streamPath }: UseSimbaChatOptions) {
   const [messages, setMessages] = useState<SimbaUIMessage[]>([welcomeMessage(welcome)]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -132,7 +134,7 @@ export function useSimbaChat({ kind, contextKey, welcome, enabled, extraBody, fe
         pendingRef.current = '';
         patchLast((m) => ({ ...m, text: '' }));
       },
-    }, controller.signal);
+    }, controller.signal, streamPath);
 
     if (controller.signal.aborted) return;
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
@@ -149,7 +151,7 @@ export function useSimbaChat({ kind, contextKey, welcome, enabled, extraBody, fe
     }
     setStatus(null);
     setIsStreaming(false);
-  }, [kind, isStreaming, flushPending, patchLast]);
+  }, [kind, isStreaming, flushPending, patchLast, streamPath]);
 
   const resetConversation = useCallback(async () => {
     abortRef.current?.abort();

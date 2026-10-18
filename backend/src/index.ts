@@ -77,6 +77,7 @@ import installmentRoutes from './routes/installment.routes'; // Paiement échelo
 import articleInteractionRoutes from './routes/article-interactions.routes'; // Likes & commentaires articles
 import certificateRoutes from './routes/certificate.routes';                 // Certificats de participation webinaires
 import metaRoutes from './routes/meta.routes';                               // Meta API Conversions (CAPI serveur)
+import realPortfolioRoutes from './routes/real-portfolio.routes';               // Portefeuille réel importé (collections séparées du simulateur)
 import { buildKnowledgeBase } from './ai/tutorRAG';
 
 class App {
@@ -328,6 +329,7 @@ class App {
     this.app?.use('/api/articles', articleInteractionRoutes);              // Likes & commentaires articles
     this.app?.use('/api/certificates', certificateRoutes);                 // Certificats de participation webinaires
     this.app?.use('/api/meta', metaRoutes);                                 // Meta API Conversions (relais navigateur → CAPI serveur)
+    this.app?.use('/api/real-portfolio', realPortfolioRoutes);             // Portefeuille réel importé (import, cohérence, reporting factuel)
 
     // Static Uploads Route — même racine absolue que l'écriture des fichiers (upload.config)
     this.app?.use('/uploads', Express.static(UPLOADS_ROOT));

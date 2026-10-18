@@ -29,6 +29,7 @@ import {
 } from '../ai/simbaMemory';
 import { loadAdvisorContext, buildPortfolioAdvisorPrompt, buildAnalystUserBlock, AdvisorWalletType } from '../ai/portfolioAdvisor';
 import { buildLearnerBlock } from '../ai/learnerContext';
+import { buildRealPortfolioReportPrompt } from '../ai/realPortfolioReporter';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
 
@@ -192,6 +193,27 @@ export function streamPortfolio(req: AuthenticatedRequest, res: Response, next: 
     run: (messages, emit, status, reset) => streamToolLoop(groq, messages, {
       models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 2000, source: 'portfolio',
     }, { onDelta: emit, onStatus: status, onReset: reset }),
+  });
+}
+
+// ─── SIMBA Reporting — portefeuille réel importé ──────────────────────────────
+// Mémoire séparée (clé REAL), prompt de reporting factuel (CREPMG), pas d'outils.
+
+export function streamRealPortfolio(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  return handleStreamedChat(req, res, next, {
+    kind: 'portfolio',
+    contextKey: 'REAL',
+    maxLength: 1000,
+    buildMessages: async (question, history) => {
+      const system = await buildRealPortfolioReportPrompt(req.user!.id);
+      if (!system) {
+        return { directReply: "Tu n'as pas encore importé de portefeuille réel. Importe tes lignes depuis l'espace Portefeuille réel pour obtenir un reporting chiffré." };
+      }
+      return { messages: [{ role: 'system', content: system }, ...history, { role: 'user', content: question }] };
+    },
+    run: (messages, emit) => streamCompletion(groq, messages, {
+      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 1500, source: 'real-portfolio', temperature: 0.2,
+    }, emit),
   });
 }
 

@@ -227,6 +227,22 @@ async function backupTransactions(backupPath: string): Promise<number> {
 }
 
 /**
+ * Backup des portefeuilles réels importés (JSON uniquement : données
+ * patrimoniales sensibles, pas d'export Excel lisible).
+ */
+async function backupRealPortfolios(backupPath: string): Promise<number> {
+  log.debug('
+🏦 Sauvegarde des portefeuilles réels...');
+
+  const portfolios = await prisma.realPortfolio.findMany({
+    include: { transactions: true, cash: true, imports: true },
+  });
+
+  saveToJson(portfolios, 'real_portfolios', backupPath);
+  return portfolios.length;
+}
+
+/**
  * Backup de la progression d'apprentissage
  */
 async function backupLearningProgress(backupPath: string): Promise<number> {
@@ -491,6 +507,7 @@ export async function runFullBackup(): Promise<string> {
     posts: 0,
     communities: 0,
     challengeParticipants: 0,
+    realPortfolios: 0,
   };
 
   try {
@@ -499,6 +516,7 @@ export async function runFullBackup(): Promise<string> {
     stats.portfolios = await backupPortfolios(backupPath);
     stats.positions = await backupPositions(backupPath);
     stats.transactions = await backupTransactions(backupPath);
+    stats.realPortfolios = await backupRealPortfolios(backupPath);
     stats.learningProgress = await backupLearningProgress(backupPath);
     stats.priceAlerts = await backupPriceAlerts(backupPath);
     stats.watchlists = await backupWatchlists(backupPath);

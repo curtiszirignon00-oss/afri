@@ -1,4 +1,4 @@
-import { TrendingUp, BookOpen, User, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video } from 'lucide-react';
+import { TrendingUp, BookOpen, User, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -233,6 +233,14 @@ export default function Header() {
                       </button>
 
                       <button
+                        onClick={() => { navigate('/portefeuille-reel'); setAccountMenuOpen(false); }}
+                        className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <Wallet className="w-4 h-4 text-indigo-500" />
+                        <span>Portefeuille réel</span>
+                      </button>
+
+                      <button
                         onClick={() => { navigate('/watchlist'); setAccountMenuOpen(false); }}
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
@@ -318,6 +326,13 @@ export default function Header() {
                             >
                               <User className="w-4 h-4 text-slate-400" />
                               Mon profil
+                            </button>
+                            <button
+                              onClick={() => { navigate('/portefeuille-reel'); setMobileAccountOpen(false); }}
+                              className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
+                            >
+                              <Wallet className="w-4 h-4 text-indigo-500" />
+                              Portefeuille réel
                             </button>
                             <button
                               onClick={() => { navigate('/webinaires-eco'); setMobileAccountOpen(false); }}

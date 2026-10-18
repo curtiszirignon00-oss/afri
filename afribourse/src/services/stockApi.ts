@@ -84,6 +84,15 @@ export type AnnualFinancial = {
   eps?: number | null;
   pe_ratio?: number | null;
   dividend?: number | null;
+  // Rentabilité (en %)
+  roe?: number | null;
+  roa?: number | null;
+  net_margin?: number | null;
+  operating_margin?: number | null;
+  // Bilan (millions FCFA)
+  total_actif?: number | null;
+  total_capitaux_propres?: number | null;
+  total_dettes_financieres?: number | null;
 };
 
 export type AnnualFinancialsResponse = {

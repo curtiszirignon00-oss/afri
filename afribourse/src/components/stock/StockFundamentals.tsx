@@ -90,7 +90,9 @@ const RATIO_TOOLTIPS: Record<string, string> = {
 export default function StockFundamentals({ fundamentals, isLoading = false, symbol }: StockFundamentalsProps) {
   // Fetch shareholders and annual financials
   const { data: shareholders } = useShareholders(symbol || '');
-  const { data: annualFinancials } = useAnnualFinancials(symbol || '', 5);
+  // Profondeur d'historique réglable : jusqu'à 12 exercices sont désormais disponibles
+  const [historyYears, setHistoryYears] = useState(5);
+  const { data: annualFinancials } = useAnnualFinancials(symbol || '', historyYears);
   const formatNumber = (num?: number | null) => {
     if (num === null || num === undefined) return 'N/A';
     return new Intl.NumberFormat('fr-FR').format(num);
@@ -320,7 +322,11 @@ export default function StockFundamentals({ fundamentals, isLoading = false, sym
 
           {/* Tableau */}
           <div className="mb-6">
-            <AnnualFinancialsTable financials={annualFinancials.data} />
+            <AnnualFinancialsTable
+              financials={annualFinancials.data}
+              years={historyYears}
+              onYearsChange={setHistoryYears}
+            />
           </div>
 
           {/* Graphiques */}

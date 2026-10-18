@@ -18,6 +18,7 @@ import { aiRateLimit } from '../middlewares/ai-rate-limiter.middleware';
 import {
   streamAnalyst,
   streamPortfolio,
+  streamRealPortfolio,
   streamTutor,
   getConversation,
   deleteConversation,
@@ -40,6 +41,7 @@ router.post('/quiz',               auth, aiRateLimit('quiz'),                gen
 // Chats en streaming (réponse mot à mot) + mémoire des conversations
 router.post('/analyst/stream',           auth, aiRateLimit('coach'), streamAnalyst);
 router.post('/portfolio-advisor/stream', auth, aiRateLimit('coach'), streamPortfolio);
+router.post('/real-portfolio/stream',    auth, aiRateLimit('coach'), streamRealPortfolio); // reporting factuel (CREPMG)
 router.post('/tutor/stream',             auth, aiRateLimit('tutor'), streamTutor);
 router.get('/conversations/:kind',       auth, getConversation);
 router.delete('/conversations/:kind',    auth, deleteConversation);

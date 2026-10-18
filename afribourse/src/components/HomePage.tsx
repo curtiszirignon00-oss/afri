@@ -332,9 +332,9 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>AfriBourse — Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest</title>
-        <meta name="description" content="AfriBourse — la plateforme BRVM pour apprendre à investir sur les actions brvm. Simulateur gratuit, cours brvm en temps réel, formations et analyses pour la Bourse Régionale des Valeurs Mobilières (UEMOA)." />
-        <meta name="keywords" content="brvm, brvm action, brvm bourse, cours brvm, brvm aujourd'hui, brvm composite, investir brvm, bourse brvm, action brvm, brvm abidjan, simulateur bourse Afrique, bourse Afrique de l'Ouest, bourse Côte d'Ivoire, bourse UEMOA, formation investissement BRVM, AfriBourse" />
+        <title>AfriBourse (Africbourse) — Investissez sur la BRVM, la Bourse d'Afrique de l'Ouest</title>
+        <meta name="description" content="AfriBourse (africbourse.com) — la plateforme BRVM pour apprendre à investir sur les actions brvm. Simulateur gratuit, cours brvm en temps réel, formations et analyses pour la Bourse Régionale des Valeurs Mobilières (UEMOA)." />
+        <meta name="keywords" content="brvm, brvm action, brvm bourse, cours brvm, brvm aujourd'hui, brvm composite, investir brvm, bourse brvm, action brvm, brvm abidjan, simulateur bourse Afrique, bourse Afrique de l'Ouest, bourse Côte d'Ivoire, bourse UEMOA, formation investissement BRVM, AfriBourse, Africbourse" />
         <link rel="canonical" href={`${SITE_URL}/`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="AfriBourse" />
@@ -345,7 +345,7 @@ export default function HomePage() {
         <meta property="og:image:height" content="630" />
         <meta property="og:url" content={`${SITE_URL}/`} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@AfriBourse" />
+        <meta name="twitter:site" content="@AfriBourseStart" />
         <meta name="twitter:title" content="AfriBourse — Investissez sur la BRVM" />
         <meta name="twitter:description" content="Simulateur, formations et analyse des marchés BRVM pour les investisseurs d'Afrique de l'Ouest." />
         <meta name="twitter:image" content={OG_IMAGE} />
