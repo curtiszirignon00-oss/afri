@@ -2,8 +2,8 @@ import { log } from '../config/logger';
 /**
  * AfribourseChatService — Service IA centralisé (SIMBA)
  * Provider : Groq
- *   - SIMBA Coach éducatif : SIMBA_COACH_MODEL   (llama-3.3-70b-versatile)
- *   - SIMBA Analyste       : SIMBA_ANALYST_MODEL (deepseek-r1-distill-qwen-32b, repli llama-3.3-70b)
+ *   - SIMBA Coach éducatif : SIMBA_COACH_MODEL   (qwen/qwen3.8-27b)
+ *   - SIMBA Analyste       : SIMBA_ANALYST_MODEL (openai/gpt-oss-120b, repli qwen/qwen3.8-27b)
  * Voir ../ai/models.ts
  */
 
@@ -18,7 +18,7 @@ import {
   QuizQuestion,
 } from '../ai/systemPrompt';
 import { buildContextualPrompt } from '../ai/ragService';
-import { SIMBA_COACH_MODEL, createAnalystCompletion, stripReasoning } from '../ai/models';
+import { SIMBA_COACH_MODEL, createAnalystCompletion, reasoningParams, stripReasoning } from '../ai/models';
 
 export type { UserContext, PortfolioHolding, QuizQuestion };
 
@@ -68,8 +68,12 @@ class AfribourseChatService {
       return stripReasoning(completion.choices[0]?.message?.content ?? '');
     }
 
-    const completion = await this.groq.chat.completions.create({ ...params, model: SIMBA_COACH_MODEL });
-    return completion.choices[0]?.message?.content ?? '';
+    const completion = await this.groq.chat.completions.create({
+      ...params,
+      model: SIMBA_COACH_MODEL,
+      ...reasoningParams(SIMBA_COACH_MODEL),
+    });
+    return stripReasoning(completion.choices[0]?.message?.content ?? '');
   }
 
   // ─── Méthode principale avec RAG ────────────────────────────────────────────

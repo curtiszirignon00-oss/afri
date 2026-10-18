@@ -84,7 +84,7 @@ async function generateSimbaQuestion(stock: StockSummary): Promise<string> {
       : '';
 
     const chat = await groq.chat.completions.create({
-      model: 'llama3-8b-8192',
+      model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
       max_tokens: 120,
       messages: [
         {

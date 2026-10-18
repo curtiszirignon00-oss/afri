@@ -15,18 +15,18 @@ import type {
 import { log } from '../config/logger';
 
 export const SIMBA_ANALYST_MODEL =
-  process.env.SIMBA_ANALYST_MODEL || 'deepseek-r1-distill-qwen-32b';
+  process.env.SIMBA_ANALYST_MODEL || 'openai/gpt-oss-120b';
 
 export const SIMBA_COACH_MODEL =
-  process.env.SIMBA_COACH_MODEL || 'llama-3.3-70b-versatile';
+  process.env.SIMBA_COACH_MODEL || 'qwen/qwen3.8-27b';
 
 /** Modèle de secours si le modèle analyste est indisponible / déprécié côté Groq */
 export const SIMBA_ANALYST_FALLBACK_MODEL =
-  process.env.SIMBA_ANALYST_FALLBACK_MODEL || 'llama-3.3-70b-versatile';
+  process.env.SIMBA_ANALYST_FALLBACK_MODEL || 'qwen/qwen3.8-27b';
 
-/** Modèles de raisonnement (DeepSeek R1 distill…) qui émettent un bloc <think> */
+/** Modèles de raisonnement qui émettent un bloc <think> si on ne le masque pas (gpt-oss renvoie déjà un contenu propre) */
 export function isReasoningModel(model: string): boolean {
-  return /deepseek-r1|qwq|reasoning/i.test(model);
+  return /deepseek-r1|qwq|qwen3/i.test(model);
 }
 
 /**

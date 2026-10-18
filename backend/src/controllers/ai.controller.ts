@@ -20,7 +20,7 @@ import { ANALYST_TOOLS } from '../ai/analystTools';
 import { TOOL_EXECUTORS } from '../services/brvmDataService';
 import { buildContextBlock } from '../ai/tutorRAG';
 import { prisma } from '../config/database';
-import { SIMBA_COACH_MODEL, createAnalystCompletion, stripReasoning } from '../ai/models';
+import { SIMBA_COACH_MODEL, createAnalystCompletion, reasoningParams, stripReasoning } from '../ai/models';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
 
@@ -68,8 +68,9 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
       messages,
       max_tokens: 700,
       temperature: 0.6,
+      ...reasoningParams(SIMBA_COACH_MODEL),
     });
-    const rawText = completion.choices[0]?.message?.content ?? '';
+    const rawText = stripReasoning(completion.choices[0]?.message?.content ?? '');
     const text = stripTutorIntro(rawText);
     const responseTimeMs = Date.now() - t0;
 
@@ -656,8 +657,9 @@ export async function portfolioAdvisorIA(req: AuthenticatedRequest, res: Respons
       messages,
       max_tokens: 600,
       temperature: 0.65,
+      ...reasoningParams(SIMBA_COACH_MODEL),
     });
-    const rawText = completion.choices[0]?.message?.content ?? '';
+    const rawText = stripReasoning(completion.choices[0]?.message?.content ?? '');
     const safeReply = postProcessResponse(rawText || 'Désolé, je n\'ai pas pu analyser ton portefeuille.');
     const responseTimeMs = Date.now() - t0;
 

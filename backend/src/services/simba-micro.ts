@@ -53,7 +53,7 @@ export async function generatePulseQuestion(stock: StockSummary): Promise<string
       : '';
 
     const chat = await getGroq().chat.completions.create({
-      model: process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant',
+      model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
       max_tokens: 120,
       temperature: 0.7,
       messages: [
@@ -92,7 +92,7 @@ export async function generateWatchlistSummary(
       .join('\n');
 
     const chat = await getGroq().chat.completions.create({
-      model: process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant',
+      model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
       max_tokens: 200,
       temperature: 0.5,
       messages: [

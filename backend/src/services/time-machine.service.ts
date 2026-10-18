@@ -570,7 +570,7 @@ ${note ? 'Évalue explicitement la qualité du raisonnement fourni dans la justi
 
   try {
     const completion = await groq.chat.completions.create({
-      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      model: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
       messages: [
         { role: 'system', content: SIMBA_SYSTEM_PROMPT },
         { role: 'user', content: prompt },
@@ -647,7 +647,7 @@ Sois ultra-concret. Cite les tickers, les années, les montants. Pas de généra
 
   try {
     const completion = await groq.chat.completions.create({
-      model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      model: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
       messages: [
         { role: 'system', content: SIMBA_SYSTEM_PROMPT },
         { role: 'user', content: prompt },

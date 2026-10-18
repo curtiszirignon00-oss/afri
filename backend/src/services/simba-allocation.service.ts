@@ -165,7 +165,7 @@ Règles impératives :
 
   try {
     const completion = await groq.chat.completions.create({
-      model: process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile',
+      model: process.env.GROQ_MODEL ?? 'qwen/qwen3.8-27b',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 800,
       temperature: 0.3,
