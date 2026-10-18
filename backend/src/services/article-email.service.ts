@@ -10,6 +10,8 @@ interface BroadcastOptions {
   dryRun?: boolean;
   /** Filtre optionnel : n'envoyer qu'aux comptes avec email vérifié. Défaut false (tous). */
   verifiedOnly?: boolean;
+  /** Si true, inclut les comptes de démonstration (prenom.nomNNNN@gmail.com). Défaut false. */
+  includeSeedAccounts?: boolean;
 }
 
 interface BroadcastResult {
@@ -18,6 +20,20 @@ interface BroadcastResult {
   total: number;
   sent: number;
   failed: number;
+  /** Comptes de démonstration écartés de la diffusion. */
+  skippedSeed: number;
+}
+
+/**
+ * Comptes de démonstration créés pour peupler la plateforme : adresses de la
+ * forme « prenom.nomNNNN@gmail.com ». Elles ne correspondent à aucune boîte
+ * réelle — les inclure dans une diffusion génère des rebonds qui dégradent la
+ * réputation d'envoi du domaine. Exclues par défaut.
+ */
+const SEED_ACCOUNT_EMAIL = /^[a-z]+\.[a-z]+\d+@gmail\.com$/i;
+
+export function isSeedAccountEmail(email: string | null | undefined): boolean {
+  return !!email && SEED_ACCOUNT_EMAIL.test(email.trim());
 }
 
 function sleep(ms: number) {
@@ -43,17 +59,24 @@ export async function broadcastNewArticleEmail(
 
   if (!article) {
     log.warn(`[ArticleEmail] Article ${articleId} introuvable — diffusion annulée.`);
-    return { articleId, slug: null, total: 0, sent: 0, failed: 0 };
+    return { articleId, slug: null, total: 0, sent: 0, failed: 0, skippedSeed: 0 };
   }
 
-  const users = await prisma.user.findMany({
+  const allUsers = await prisma.user.findMany({
     where: opts.verifiedOnly ? { email_verified_at: { not: null } } : undefined,
     select: { name: true, email: true },
     orderBy: { created_at: 'asc' },
   });
 
+  // Le filtre se fait en mémoire : MongoDB via Prisma ne prend pas de regex en `where`.
+  const users = opts.includeSeedAccounts
+    ? allUsers
+    : allUsers.filter(u => !isSeedAccountEmail(u.email));
+  const skippedSeed = allUsers.length - users.length;
+
   log.info(
     `[ArticleEmail] Diffusion « ${article.title} » → ${users.length} destinataire(s)` +
+    (skippedSeed ? ` (${skippedSeed} compte(s) de démo écarté(s))` : '') +
     (dryRun ? ' [DRY-RUN]' : ''),
   );
 
@@ -83,6 +106,6 @@ export async function broadcastNewArticleEmail(
     if (!dryRun && i < users.length - 1) await sleep(delayMs);
   }
 
-  log.info(`[ArticleEmail] Diffusion terminée « ${article.title} » — envoyés: ${sent}, échecs: ${failed}`);
-  return { articleId: article.id, slug: article.slug, total: users.length, sent, failed };
+  log.info(`[ArticleEmail] Diffusion terminée « ${article.title} » — envoyés: ${sent}, échecs: ${failed}, démo écartés: ${skippedSeed}`);
+  return { articleId: article.id, slug: article.slug, total: users.length, sent, failed, skippedSeed };
 }

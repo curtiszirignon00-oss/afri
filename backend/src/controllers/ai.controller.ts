@@ -20,9 +20,9 @@ import { ANALYST_TOOLS } from '../ai/analystTools';
 import { TOOL_EXECUTORS } from '../services/brvmDataService';
 import { buildContextBlock } from '../ai/tutorRAG';
 import { prisma } from '../config/database';
+import { SIMBA_COACH_MODEL, createAnalystCompletion, stripReasoning } from '../ai/models';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 
 export async function askTutor(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
@@ -64,7 +64,7 @@ export async function askTutor(req: AuthenticatedRequest, res: Response, next: N
 
     const t0 = Date.now();
     const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
+      model: SIMBA_COACH_MODEL,
       messages,
       max_tokens: 700,
       temperature: 0.6,
@@ -134,15 +134,16 @@ export async function analyzeStock(req: AuthenticatedRequest, res: Response, nex
       Reste neutre, professionnel, mais encourageant pour l'apprentissage. Formate la réponse en Markdown.
     `;
 
-    const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
+    // Modèle de raisonnement : budget de tokens élargi (la réflexion masquée consomme aussi des tokens)
+    const completion = await createAnalystCompletion(groq, {
       messages: [
         { role: 'system', content: buildAnalystPrompt(String(symbol).slice(0, 20)) },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 400,
+      max_tokens: 1500,
+      temperature: 0.5,
     });
-    const text = completion.choices[0]?.message?.content ?? '';
+    const text = stripReasoning(completion.choices[0]?.message?.content ?? '');
 
     return res.json({ success: true, data: { text: text || 'L\'analyse n\'est pas disponible pour le moment.' } });
   } catch (error) {
@@ -222,7 +223,7 @@ export async function coachIA(req: AuthenticatedRequest, res: Response, next: Ne
   }
 }
 
-// ─── Analyste de marché (Groq/HuggingFace) ───────────────────────────────────
+// ─── Analyste de marché (SIMBA Analyste) ────────────────────────────────────────
 
 export async function analyzeMarket(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
@@ -431,20 +432,19 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
       while (iterations < MAX_ITER) {
         iterations++;
 
-        const response = await groq.chat.completions.create({
-          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+        const response = await createAnalystCompletion(groq, {
           messages,
           tools: ANALYST_TOOLS,
           tool_choice: 'auto',
-          max_tokens: 2000,
-          temperature: 0.2,
+          max_tokens: 4000,
+          temperature: 0.5,
         });
 
         const choice = response.choices[0];
 
         // Réponse finale — plus d'outils à appeler
         if (choice.finish_reason === 'stop') {
-          finalText = choice.message.content ?? '';
+          finalText = stripReasoning(choice.message.content ?? '');
           break;
         }
 
@@ -482,7 +482,7 @@ export async function coachAnalyst(req: AuthenticatedRequest, res: Response, nex
           );
         } else {
           // finish_reason inattendu — on sort
-          finalText = choice.message.content ?? '';
+          finalText = stripReasoning(choice.message.content ?? '');
           break;
         }
       }
@@ -652,7 +652,7 @@ export async function portfolioAdvisorIA(req: AuthenticatedRequest, res: Respons
 
     const t0 = Date.now();
     const completion = await groq.chat.completions.create({
-      model: GROQ_MODEL,
+      model: SIMBA_COACH_MODEL,
       messages,
       max_tokens: 600,
       temperature: 0.65,

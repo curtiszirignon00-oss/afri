@@ -2,6 +2,16 @@ import { log } from '../config/logger';
 import transporter, { smtpReady } from '../config/mailer';
 import config from '../config/environnement';
 import { applyPromo } from '../config/promo';
+import {
+  ANALYSIS_PACK_FULL,
+  ANALYSIS_PACK_NAMES,
+  ANALYSIS_PACK_SCOPE,
+  ANALYSIS_PACK_SESSIONS,
+  ANALYSIS_DEADLINE_LABEL,
+  ANALYSIS_SESSION_DATES_LABEL,
+  analysisPackPrice,
+  type AnalysisPackId,
+} from '../config/analysisPacks';
 
 interface SendEmailConfirmationParams {
   email: string;
@@ -7638,5 +7648,217 @@ Lire l'article : ${articleUrl}
     subject: `📰 Nouvel article : ${title}`,
     html,
     text,
+  });
+}
+
+// ─── ÉTAGÈRE 2 · Packs d'analyses (« J'accède aux analyses ») ─────────────────
+// Deux mails : réservation (place tenue, paiement à venir) et confirmation (payé).
+// Prix et périmètres viennent de config/analysisPacks.ts — une seule source de vérité.
+
+interface AnalysisPackEmailParams {
+  email: string;
+  firstName: string;
+  pack: AnalysisPackId;
+  amount?: number;
+}
+
+/** Ce que contient chaque action analysée — identique dans les deux mails. */
+const ANALYSIS_DELIVERABLES = [
+  '<strong>Fiche &amp; secteur</strong> — modèle économique, position concurrentielle, lecture du secteur',
+  '<strong>Fondamentaux 3–5 ans</strong> — BPA, PER, ROE, rendement : des chiffres tracés, jamais tombés du ciel',
+  '<strong>Valorisation règle du triangle</strong> — PER médian secteur, ROE → PER justifié, rendement en test de risque',
+  '<strong>Verdict</strong> — sous ou sur-évaluée, fourchette de prix cible en FCFA, risque et liquidité',
+];
+
+function analysisPackRows(pack: AnalysisPackId): string {
+  const sessions = ANALYSIS_PACK_SESSIONS[pack];
+  const lines = [
+    `${ANALYSIS_PACK_SCOPE[pack]} — entièrement analysées et valorisées`,
+    'Prix cible règle du triangle (FCFA) pour chaque valeur',
+    'Verdict sous / sur-évaluée + niveau de risque et de liquidité',
+    'Rapport PDF + tableau de synthèse',
+    `${sessions} session${sessions > 1 ? 's' : ''} live de décorticage des valeurs`,
+    'Template de valorisation + atelier « mettre à jour en autonomie »',
+  ];
+  return lines
+    .map((l) => `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ ${l}</td></tr>`)
+    .join('\n                ');
+}
+
+function analysisEmailShell({ title, preheader, heroEmoji, heroTitle, heroSub, body }: {
+  title: string; preheader: string; heroEmoji: string; heroTitle: string; heroSub: string; body: string;
+}): string {
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F1F5F9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <span style="display:none;max-height:0;overflow:hidden;">${preheader} &#847;&zwnj;&nbsp;</span>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F1F5F9;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+        <tr><td style="background:#fff;border-radius:16px 16px 0 0;padding:24px 40px 20px;border-bottom:1px solid #E2E8F0;text-align:center;">
+          <span style="font-size:26px;font-weight:900;color:#1D4ED8;">AFRI</span><span style="font-size:26px;font-weight:900;color:#F97316;">BOURSE</span>
+          <p style="margin:4px 0 0;font-size:12px;color:#94A3B8;letter-spacing:1px;text-transform:uppercase;">J'accède aux analyses · Étagère 2</p>
+        </td></tr>
+
+        <tr><td style="background:linear-gradient(135deg,#0F766E 0%,#115E59 100%);padding:40px;text-align:center;">
+          <div style="width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;line-height:64px;">
+            <span style="font-size:32px;">${heroEmoji}</span>
+          </div>
+          <h1 style="margin:0 0 8px;font-size:26px;font-weight:900;color:#fff;">${heroTitle}</h1>
+          <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.85);">${heroSub}</p>
+        </td></tr>
+
+        <tr><td style="background:#fff;padding:36px 40px;">
+          ${body}
+        </td></tr>
+
+        <tr><td style="background:#F8FAFC;border-radius:0 0 16px 16px;padding:20px 40px;text-align:center;border-top:1px solid #E2E8F0;">
+          <p style="margin:0 0 4px;font-size:12px;color:#94A3B8;">Questions ? Répondez à cet email ou contactez-nous sur WhatsApp.</p>
+          <p style="margin:0;font-size:12px;color:#CBD5E1;">© 2026 AfriBourse · africbourse.com</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+/** Réservation enregistrée — la place est tenue, le paiement reste à faire. */
+export async function sendAnalysisPackReservationEmail({
+  email, firstName, pack,
+}: AnalysisPackEmailParams): Promise<void> {
+  const name = firstName || 'Investisseur';
+  const packName = ANALYSIS_PACK_NAMES[pack];
+  const price = analysisPackPrice(pack);
+  const full = ANALYSIS_PACK_FULL[pack];
+  const base = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
+  const payUrl = `${base}/analyses/paiement?pack=${pack}`;
+
+  const body = `
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
+            Votre place sur le <strong>${packName}</strong> (${ANALYSIS_PACK_SCOPE[pack]}) est <strong>réservée</strong>.
+            Elle n'est pas encore confirmée : il reste le règlement pour débloquer les analyses, les sessions live
+            de décorticage et les templates de valorisation.
+          </p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:16px 20px;">
+              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Tarif de lancement −50 % jusqu'au ${ANALYSIS_DEADLINE_LABEL}.</strong>
+              Les places sont limitées par pack — une réservation non réglée libère sa place à l'échéance.</p>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:18px 22px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;">${packName}</p>
+              <p style="margin:0;font-size:15px;color:#374151;">
+                <strong style="color:#0F172A;font-size:20px;">${fmtXof(price)}</strong>
+                <span style="color:#94A3B8;text-decoration:line-through;margin-left:6px;">${fmtXof(full)}</span>
+              </p>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+            <tr><td align="center">
+              <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#0D9488 0%,#0F766E 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
+                💳 Confirmer ma place →
+              </a>
+              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Mobile Money &amp; Wave sécurisé.</p>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:1px;">Ce que votre pack contient</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                ${analysisPackRows(pack)}
+              </table>
+            </td></tr>
+          </table>
+
+          <p style="margin:0;font-size:13px;color:#94A3B8;line-height:1.6;">
+            Sessions live de décorticage : ${ANALYSIS_SESSION_DATES_LABEL}.
+          </p>`;
+
+  await sendEmail({
+    to: email,
+    subject: `🔖 Place réservée — ${packName} (tarif lancement jusqu'au ${ANALYSIS_DEADLINE_LABEL})`,
+    html: analysisEmailShell({
+      title: `Place réservée — ${packName}`,
+      preheader: 'Votre place est tenue — confirmez-la pour débloquer les analyses',
+      heroEmoji: '🔖',
+      heroTitle: 'Place réservée !',
+      heroSub: 'Dernière étape : confirmez votre règlement pour débloquer les analyses.',
+      body,
+    }),
+    text: `Bonjour ${name}, votre place sur le ${packName} (${ANALYSIS_PACK_SCOPE[pack]}) est réservée mais pas encore confirmée. Tarif de lancement : ${fmtXof(price)} au lieu de ${fmtXof(full)}, jusqu'au ${ANALYSIS_DEADLINE_LABEL}. Confirmez ici : ${payUrl}. Sessions live de décorticage : ${ANALYSIS_SESSION_DATES_LABEL}.`,
+  });
+}
+
+/** Paiement confirmé — accès aux analyses, aux sessions live et aux templates. */
+export async function sendAnalysisPackConfirmationEmail({
+  email, firstName, pack, amount,
+}: AnalysisPackEmailParams): Promise<void> {
+  const name = firstName || 'Investisseur';
+  const packName = ANALYSIS_PACK_NAMES[pack];
+  const paid = amount ?? analysisPackPrice(pack);
+
+  const body = `
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;font-weight:600;">Bonjour ${name},</p>
+          <p style="margin:0 0 20px;font-size:15px;color:#374151;line-height:1.7;">
+            Votre <strong>${packName}</strong> est confirmé — paiement reçu (${fmtXof(paid)}).
+            Vous recevez les analyses livrées, le rapport PDF et le tableau de synthèse, puis nous vous
+            retrouvons en session live pour les décortiquer ensemble.
+          </p>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#ECFDF5;border:1px solid #A7F3D0;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:1px;">Votre pack — ${ANALYSIS_PACK_SCOPE[pack]}</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                ${analysisPackRows(pack)}
+              </table>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:20px 24px;">
+              <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;">Le même standard sur chaque action</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                ${ANALYSIS_DELIVERABLES.map((d) => `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">• ${d}</td></tr>`).join('\n                ')}
+              </table>
+            </td></tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:18px 22px;">
+              <p style="margin:0;font-size:14px;color:#1E3A8A;line-height:1.7;">📅 <strong>Sessions live de décorticage :</strong> ${ANALYSIS_SESSION_DATES_LABEL}.
+              Le lien de connexion vous est envoyé par email et WhatsApp avant chaque session, avec un rappel 24h avant.</p>
+            </td></tr>
+          </table>
+
+          <p style="margin:0;font-size:13px;color:#94A3B8;line-height:1.6;">
+            Les analyses ne constituent pas un conseil en investissement — elles vous donnent la méthode et les chiffres pour décider vous-même.
+          </p>`;
+
+  await sendEmail({
+    to: email,
+    subject: `✅ ${packName} confirmé — vos analyses arrivent`,
+    html: analysisEmailShell({
+      title: `${packName} confirmé`,
+      preheader: 'Paiement reçu — vos analyses, vos sessions live et vos templates',
+      heroEmoji: '✅',
+      heroTitle: 'Votre pack est confirmé !',
+      heroSub: 'Analyses livrées, sessions live de décorticage et templates de valorisation.',
+      body,
+    }),
+    text: `Bonjour ${name}, votre ${packName} est confirmé (paiement de ${fmtXof(paid)} reçu). Périmètre : ${ANALYSIS_PACK_SCOPE[pack]}. Vous recevez les analyses, le rapport PDF et le tableau de synthèse, les templates de valorisation, et vos sessions live de décorticage : ${ANALYSIS_SESSION_DATES_LABEL}. Les analyses ne constituent pas un conseil en investissement.`,
   });
 }

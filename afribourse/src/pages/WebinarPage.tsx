@@ -1,10 +1,12 @@
-import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   CheckCircle, ChevronDown, TrendingUp, BookOpen,
   Users, BarChart3, Award, Zap, MessageSquare, Calendar, Linkedin,
 } from 'lucide-react';
 import PricingPacks, { type PackId } from '../components/learning/PricingPacks';
+import AnalysisPacks from '../components/learning/AnalysisPacks';
+import type { AnalysisPackId } from '../config/analysisPacks';
 
 // ─── Données ──────────────────────────────────────────────────────────────────
 
@@ -221,6 +223,14 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
   const registrationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const isBudget = variant === 'budget';
+  const location = useLocation();
+
+  // Retour depuis le paiement des analyses (/webinaires#analyses) → défile jusqu'à l'étagère
+  useEffect(() => {
+    if (!location.hash) return;
+    const t = setTimeout(() => document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+    return () => clearTimeout(t);
+  }, [location.hash]);
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -230,6 +240,9 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
 
   // CTA généraux → présentation des packs (l'offre)
   const scrollToRegistration = () => scrollToId('packs');
+
+  // Étagère 2 (analyses) → réservation puis paiement maintenant ou plus tard
+  const handleChooseAnalysis = (id: AnalysisPackId) => navigate(`/analyses/paiement?pack=${id}`);
 
   // Choix d'un pack → page de paiement (le lead est capturé à l'étape contact du paiement)
   const handleChoosePack = (id: PackId) => {
@@ -266,6 +279,9 @@ export default function WebinarPage({ variant }: { variant?: 'budget' } = {}) {
 
       {/* ── Les 3 packs (good-better-best) — inscriptions en ligne ──────── */}
       <PricingPacks onChoose={handleChoosePack} variant={variant} />
+
+      {/* ── Étagère 2 — J'accède aux analyses (offre limitée) ───────────── */}
+      <AnalysisPacks onChoose={handleChooseAnalysis} />
 
 
       {/* ── Témoignages (affichés uniquement si renseignés) ──────────────── */}

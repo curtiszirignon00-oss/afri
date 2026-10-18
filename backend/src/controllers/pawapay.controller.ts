@@ -12,9 +12,16 @@ import {
 } from '../services/pawapay.service';
 
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
-import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail, sendWebinarConfirmationEmail } from '../services/email.service';
+import { sendWebinarPaymentConfirmEmail, sendInstallmentProgressEmail, sendWebinarConfirmationEmail, sendAnalysisPackConfirmationEmail } from '../services/email.service';
 import { buildInstallmentPayUrl } from './installment.controller';
-import { CURRENT_COHORT } from './webinar.controller';
+import { CURRENT_COHORT, checkAnalysisSeat } from './webinar.controller';
+import {
+  ANALYSIS_PACK_ID,
+  CURRENT_ANALYSIS_SERIES,
+  analysisPackPrice,
+  isAnalysisPack,
+  type AnalysisPackId,
+} from '../config/analysisPacks';
 import { buildUserData, sendMetaEvent } from '../services/meta-capi.service';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
@@ -315,20 +322,25 @@ export async function handleDepositCallback(req: Request, res: Response) {
           let reg = await prisma.webinarRegistration.findFirst({ where });
           // Filet de sécurité : aucun inscrit trouvé mais paiement pack reçu (ex: acheteur sans compte
           // dont la pré-inscription a échoué) → on crée l'inscription à partir des métadonnées du paiement.
-          if (!reg && registrationEmail && (payment.planId === PACK_ID || INDIVIDUAL_WEBINAR_PRICES[payment.planId])) {
+          if (!reg && registrationEmail && (payment.planId === PACK_ID || payment.planId === ANALYSIS_PACK_ID || INDIVIDUAL_WEBINAR_PRICES[payment.planId])) {
             const isPackReg = payment.planId === PACK_ID;
+            const isAnalysisReg = payment.planId === ANALYSIS_PACK_ID;
             reg = await prisma.webinarRegistration.create({
               data: {
                 webinarId: payment.planId,
-                type: isPackReg ? 'pack' : 'webinar',
+                type: isAnalysisReg ? 'analyses' : isPackReg ? 'pack' : 'webinar',
                 firstName: meta?.registrationName ?? null,
                 email: registrationEmail,
                 phone: payment.phone || null,
                 userId: payment.userId ?? null,
                 paymentStatus: 'pending',
-                pack: isPackReg && ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string) ? (meta?.pack as string) : null,
+                pack: isPackReg && ['starter', 'parcours', 'investisseur'].includes(meta?.pack as string)
+                  ? (meta?.pack as string)
+                  : isAnalysisReg && isAnalysisPack(meta?.pack)
+                    ? (meta?.pack as string)
+                    : null,
                 variant: meta?.variant === 'budget' ? 'budget' : null,
-                cohort: meta?.variant === 'budget' ? CURRENT_COHORT : null,
+                cohort: isAnalysisReg ? CURRENT_ANALYSIS_SERIES : meta?.variant === 'budget' ? CURRENT_COHORT : null,
               },
             });
             log.info('[PawaPay] Inscription créée depuis le paiement (filet de sécurité)', { depositId, planId: payment.planId, email: registrationEmail });
@@ -340,7 +352,15 @@ export async function handleDepositCallback(req: Request, res: Response) {
             });
 
             // Après paiement → email de CONFIRMATION D'INSCRIPTION (bienvenue + programme complet)
-            if (payment.planId === PACK_ID) {
+            if (payment.planId === ANALYSIS_PACK_ID) {
+              // Étagère 2 — packs d'analyses : email de confirmation dédié
+              sendAnalysisPackConfirmationEmail({
+                email: reg.email,
+                firstName: reg.firstName ?? '',
+                pack: (reg.pack ?? (meta?.pack as string)) as AnalysisPackId,
+                amount: Number(payment.amount) || undefined,
+              }).catch((err) => log.error('[ANALYSES] Échec email confirmation pack analyses', { err, depositId }));
+            } else if (payment.planId === PACK_ID) {
               sendWebinarConfirmationEmail({
                 email: reg.email,
                 firstName: reg.firstName ?? '',
@@ -556,6 +576,16 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
     } else {
       finalAmount = PACK_PRICE_FULL;
     }
+  } else if (planId === ANALYSIS_PACK_ID) {
+    // Étagère 2 — packs d'analyses : prix toujours calculé côté serveur
+    // (tarif de lancement tant que l'offre court, plein tarif ensuite).
+    if (!isAnalysisPack(req.body.pack)) {
+      return res.status(400).json({ error: 'Pack d’analyses invalide' });
+    }
+    const analysisTier = req.body.pack as AnalysisPackId;
+    const seatError = await checkAnalysisSeat(analysisTier, registrationEmail ? String(registrationEmail).trim().toLowerCase() : null);
+    if (seatError) return res.status(409).json({ error: seatError });
+    finalAmount = analysisPackPrice(analysisTier);
   } else if (INDIVIDUAL_WEBINAR_PRICES[planId]) {
     // Webinaire à l'unité : prix fixé côté serveur
     finalAmount = INDIVIDUAL_WEBINAR_PRICES[planId];
@@ -577,18 +607,23 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
 
   // Pack cohorte OU webinaire à l'unité : enregistrer/compléter l'inscrit dès la tentative de
   // paiement (garantit que TOUTE tentative apparaît au dashboard, avec nom/email/tel même sans compte).
-  if ((planId === PACK_ID || INDIVIDUAL_WEBINAR_PRICES[planId]) && registrationEmail) {
+  if ((planId === PACK_ID || planId === ANALYSIS_PACK_ID || INDIVIDUAL_WEBINAR_PRICES[planId]) && registrationEmail) {
     try {
       const isPack = planId === PACK_ID;
+      const isAnalysisOrder = planId === ANALYSIS_PACK_ID;
       const regEmail = String(registrationEmail).trim().toLowerCase();
-      const regTier = isPack && ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? String(req.body.pack) : null;
+      const regTier = isPack && ['starter', 'parcours', 'investisseur'].includes(req.body.pack)
+        ? String(req.body.pack)
+        : isAnalysisOrder && isAnalysisPack(req.body.pack)
+          ? String(req.body.pack)
+          : null;
       const regName = registrationName ? String(registrationName).trim() : null;
       const existingReg = await prisma.webinarRegistration.findFirst({ where: { webinarId: planId, email: regEmail } });
       if (!existingReg) {
         await prisma.webinarRegistration.create({
           data: {
             webinarId: planId,
-            type: isPack ? 'pack' : 'webinar',
+            type: isAnalysisOrder ? 'analyses' : isPack ? 'pack' : 'webinar',
             firstName: regName,
             email: regEmail,
             phone: phone ?? null,
@@ -596,7 +631,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
             paymentStatus: 'pending',
             pack: regTier,
             variant: isBudgetVariant ? 'budget' : null,
-            cohort: isBudgetVariant ? CURRENT_COHORT : null,
+            cohort: isAnalysisOrder ? CURRENT_ANALYSIS_SERIES : isBudgetVariant ? CURRENT_COHORT : null,
           },
         });
       } else {
@@ -609,7 +644,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
             pack: existingReg.pack ?? regTier,
             userId: existingReg.userId ?? userId,
             variant: existingReg.variant ?? (isBudgetVariant ? 'budget' : null),
-            cohort: isBudgetVariant ? CURRENT_COHORT : existingReg.cohort,
+            cohort: isAnalysisOrder ? CURRENT_ANALYSIS_SERIES : isBudgetVariant ? CURRENT_COHORT : existingReg.cohort,
           },
         });
       }
@@ -640,11 +675,12 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         phone: phone ?? '',
         status: 'PENDING',
         userPromoId: activePromoId ?? undefined,
-        metadata: (registrationEmail || registrationName || referralCode || isBudgetVariant || (planId === PACK_ID && req.body.pack)) ? {
+        metadata: (registrationEmail || registrationName || referralCode || isBudgetVariant || ((planId === PACK_ID || planId === ANALYSIS_PACK_ID) && req.body.pack)) ? {
           ...(registrationEmail ? { registrationEmail } : {}),
           ...(registrationName ? { registrationName: String(registrationName).trim() } : {}),
           ...(referralCode ? { referralCode: String(referralCode).toUpperCase() } : {}),
           ...(planId === PACK_ID && ['starter', 'parcours', 'investisseur'].includes(req.body.pack) ? { pack: String(req.body.pack) } : {}),
+          ...(planId === ANALYSIS_PACK_ID && isAnalysisPack(req.body.pack) ? { pack: String(req.body.pack) } : {}),
           ...(isBudgetVariant ? { variant: 'budget' } : {}),
         } : undefined,
       },

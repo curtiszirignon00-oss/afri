@@ -5,8 +5,16 @@ import {
   sendWebinarConfirmationEmail,
   sendWebinarZoomLinkEmail,
   sendCohortPreregistrationEmail,
+  sendAnalysisPackReservationEmail,
 } from '../services/email.service';
 import { isOnlineRegClosed } from '../config/promo';
+import {
+  ANALYSIS_PACK_ID,
+  ANALYSIS_PACK_IDS,
+  ANALYSIS_SEAT_LIMIT,
+  CURRENT_ANALYSIS_SERIES,
+  type AnalysisPackId,
+} from '../config/analysisPacks';
 
 // Identifiant de la cohorte courante (pré-inscriptions liste d'attente)
 const COHORT_ID = 'cohorte-juillet-2026';
@@ -27,6 +35,33 @@ const currentCohortWhere = {
     { cohort: null, created_at: { gte: COHORT_OPENED_AT } },
   ],
 };
+
+/** Places prises pour un pack d'analyses (étagère 2) sur la série courante.
+ *  Comme pour la cohorte budget : toute réservation occupe une place, payée ou non. */
+async function getAnalysisReserved(pack: AnalysisPackId): Promise<number> {
+  const count = await prisma.webinarRegistration.count({
+    where: {
+      webinarId: ANALYSIS_PACK_ID,
+      pack,
+      cohort: CURRENT_ANALYSIS_SERIES,
+    },
+  });
+  return Math.min(ANALYSIS_SEAT_LIMIT, count);
+}
+
+/** Refuse la place si le pack d'analyses est complet. Retourne un message d'erreur, ou null. */
+export async function checkAnalysisSeat(pack: AnalysisPackId, email?: string | null): Promise<string | null> {
+  if (email) {
+    const own = await prisma.webinarRegistration.findFirst({
+      where: { webinarId: ANALYSIS_PACK_ID, email, pack, cohort: CURRENT_ANALYSIS_SERIES },
+    });
+    if (own) return null; // la personne occupe déjà cette place
+  }
+  const reserved = await getAnalysisReserved(pack);
+  return reserved >= ANALYSIS_SEAT_LIMIT
+    ? 'Ce pack d’analyses est complet — plus de place sur cette série.'
+    : null;
+}
 
 // Événements présentiels : 20 places max par ville (comptées sur les PAIEMENTS effectifs)
 export const PRESENTIEL_LIMIT = 20;
@@ -62,6 +97,10 @@ export async function getCohortSeats(_req: Request, res: Response, next: NextFun
       const reserved = await getBudgetReserved(t);
       data[t] = { reserved, limit: BUDGET_SEAT_LIMIT, soldOut: reserved >= BUDGET_SEAT_LIMIT };
     }
+    for (const t of ANALYSIS_PACK_IDS) {
+      const reserved = await getAnalysisReserved(t);
+      data[`analyses-${t}`] = { reserved, limit: ANALYSIS_SEAT_LIMIT, soldOut: reserved >= ANALYSIS_SEAT_LIMIT };
+    }
     for (const id of PRESENTIEL_IDS) {
       const reserved = await getPresentielReserved(id);
       data[id] = { reserved, limit: PRESENTIEL_LIMIT, soldOut: reserved >= PRESENTIEL_LIMIT };
@@ -76,7 +115,9 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
   try {
     const { webinarId, name, firstName, lastName, email, phone, type, earlyBird, referralCode, pack, variant } = req.body;
     const userId = (req as any).user?.id ?? null;
-    const resolvedPack = ['starter', 'parcours', 'investisseur'].includes(pack) ? pack : null;
+    const isAnalysis = webinarId === ANALYSIS_PACK_ID;
+    const allowedPacks = isAnalysis ? (ANALYSIS_PACK_IDS as string[]) : ['starter', 'parcours', 'investisseur'];
+    const resolvedPack = allowedPacks.includes(pack) ? pack : null;
     const isBudget = variant === 'budget';
 
     if (!webinarId || !email) {
@@ -95,6 +136,15 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
     const existing = await prisma.webinarRegistration.findFirst({
       where: { webinarId, email },
     });
+
+    // Étagère 2 (analyses) : refuser si le pack est complet sur la série courante
+    if (isAnalysis) {
+      if (!resolvedPack) {
+        return res.status(400).json({ message: 'Pack d’analyses invalide.' });
+      }
+      const seatError = await checkAnalysisSeat(resolvedPack as AnalysisPackId, email);
+      if (seatError) return res.status(409).json({ message: seatError });
+    }
 
     // Cohorte budget : inscriptions en ligne closes après la deadline (ce soir minuit)
     if (isBudget && isOnlineRegClosed()) {
@@ -129,8 +179,8 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
           userId: userId ?? existing.userId,
           pack: resolvedPack ?? existing.pack,
           variant: isBudget ? 'budget' : existing.variant,
-          // Rattache la personne à la cohorte courante → sa place est comptée dès la réservation
-          cohort: isBudget ? CURRENT_COHORT : existing.cohort,
+          // Rattache la personne à la cohorte/série courante → sa place est comptée dès la réservation
+          cohort: isAnalysis ? CURRENT_ANALYSIS_SERIES : isBudget ? CURRENT_COHORT : existing.cohort,
         },
       });
       logger.info({ webinarId, email, userId }, '[WEBINAR] Préinscription mise à jour (déjà existante)');
@@ -148,7 +198,7 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
           referralCode: referralCode ?? null,
           pack: resolvedPack,
           variant: isBudget ? 'budget' : null,
-          cohort: isBudget ? CURRENT_COHORT : null,
+          cohort: isAnalysis ? CURRENT_ANALYSIS_SERIES : isBudget ? CURRENT_COHORT : null,
         },
       });
       logger.info({ webinarId, type: type ?? 'webinar', email, userId }, '[WEBINAR] Préinscription créée');
@@ -157,7 +207,17 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
     // Email de PRÉ-INSCRIPTION (avant paiement) — uniquement pour le Pack cohorte.
     // Pour les webinaires à l'unité, l'email de confirmation est envoyé après paiement (webhook).
     // On ne renvoie pas ce mail à quelqu'un ayant déjà payé.
-    const isPackPreregistration = webinarId === 'pack-parcours-investisseur' || resolvedPack !== null;
+    // Étagère 2 (analyses) : email de réservation dédié
+    if (isAnalysis && existing?.paymentStatus !== 'paid') {
+      sendAnalysisPackReservationEmail({
+        email,
+        firstName: resolvedFirstName || '',
+        pack: resolvedPack as AnalysisPackId,
+      }).catch((err) => logger.error({ err, email }, '[ANALYSES] Échec envoi email réservation'));
+    }
+
+    const isPackPreregistration = !isAnalysis
+      && (webinarId === 'pack-parcours-investisseur' || resolvedPack !== null);
     if (isPackPreregistration && existing?.paymentStatus !== 'paid') {
       sendCohortPreregistrationEmail({
         email,

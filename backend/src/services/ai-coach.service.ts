@@ -1,8 +1,10 @@
 import { log } from '../config/logger';
 /**
  * AfribourseChatService — Service IA centralisé (SIMBA)
- * Provider principal : Groq (llama-3.3-70b-versatile / llama-3.1-8b-instant)
- * Fallback         : HuggingFace Inference API (si plan Pro actif)
+ * Provider : Groq
+ *   - SIMBA Coach éducatif : SIMBA_COACH_MODEL   (llama-3.3-70b-versatile)
+ *   - SIMBA Analyste       : SIMBA_ANALYST_MODEL (deepseek-r1-distill-qwen-32b, repli llama-3.3-70b)
+ * Voir ../ai/models.ts
  */
 
 import Groq from 'groq-sdk';
@@ -16,6 +18,7 @@ import {
   QuizQuestion,
 } from '../ai/systemPrompt';
 import { buildContextualPrompt } from '../ai/ragService';
+import { SIMBA_COACH_MODEL, createAnalystCompletion, stripReasoning } from '../ai/models';
 
 export type { UserContext, PortfolioHolding, QuizQuestion };
 
@@ -33,7 +36,7 @@ export interface ChatResult {
 export interface ChatOptions {
   maxTokens?: number;
   temperature?: number;
-  forceModel?: string;         // forcer un modèle Groq spécifique
+  analyst?: boolean;           // router vers SIMBA Analyste (modèle de raisonnement)
   jsonMode?: boolean;          // activer response_format json_object (Groq)
   skipRag?: boolean;           // désactiver l'enrichissement RAG (quiz, portfolio…)
 }
@@ -45,38 +48,12 @@ class AfribourseChatService {
     this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
   }
 
-  // ─── Routing de modèle ──────────────────────────────────────────────────────
-
-  // Mots-clés sémantiques qui signalent une requête complexe même si la phrase est courte
-  private static readonly COMPLEX_KEYWORDS = [
-    'compare', 'analyse', 'analysé', 'analyser', 'secteur', 'dividende',
-    'portefeuille', 'performance', 'historique', 'ratio', 'top', 'flop',
-    'fondamentaux', 'bilan', 'rentabilité', 'valorisation', 'croissance',
-    'risque', 'volatilité', 'rendement', 'per', 'roe', 'roa', 'eps',
-    'vs', 'versus', 'comparer', 'différence', 'mieux',
-  ];
-
-  private selectModel(userMessage: string, forceModel?: string): string {
-    if (forceModel) return forceModel;
-    const msg = userMessage.toLowerCase();
-    const isComplex =
-      userMessage.length > 120 ||
-      AfribourseChatService.COMPLEX_KEYWORDS.some((kw) => msg.includes(kw));
-    return isComplex
-      ? (process.env.GROQ_MODEL || 'llama-3.3-70b-versatile')
-      : (process.env.GROQ_MODEL_FAST || 'llama-3.1-8b-instant');
-  }
-
   // ─── Appel Groq ─────────────────────────────────────────────────────────────
 
   private async callGroq(messages: Message[], options: ChatOptions = {}): Promise<string> {
     if (!process.env.GROQ_API_KEY) throw new Error('GROQ_API_KEY not set');
 
-    const lastUser = [...messages].reverse().find((m) => m.role === 'user');
-    const model = this.selectModel(lastUser?.content ?? '', options.forceModel);
-
     const params: any = {
-      model,
       messages,
       max_tokens: options.maxTokens ?? 600,
       temperature: options.temperature ?? 0.7,
@@ -86,7 +63,12 @@ class AfribourseChatService {
       params.response_format = { type: 'json_object' };
     }
 
-    const completion = await this.groq.chat.completions.create(params);
+    if (options.analyst) {
+      const completion = await createAnalystCompletion(this.groq, params);
+      return stripReasoning(completion.choices[0]?.message?.content ?? '');
+    }
+
+    const completion = await this.groq.chat.completions.create({ ...params, model: SIMBA_COACH_MODEL });
     return completion.choices[0]?.message?.content ?? '';
   }
 
@@ -148,7 +130,7 @@ class AfribourseChatService {
       PORTFOLIO_ANALYSIS_PROMPT(portfolio),
       [],
       userContext,
-      { maxTokens: 500, forceModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile' },
+      { maxTokens: 500 },
     );
   }
 
@@ -167,7 +149,6 @@ class AfribourseChatService {
         maxTokens: 400,
         temperature: 0.5,
         jsonMode: true,
-        forceModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
       },
     );
     try {
@@ -245,8 +226,9 @@ Fournis une analyse structurée en 4 points :
 4. **Indicateur clé** : l'indicateur le plus pertinent à surveiller pour cette action et pourquoi.`;
 
     return this.chat(prompt, [], {}, {
-      maxTokens: 500,
-      forceModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+      maxTokens: 1500,          // modèle de raisonnement : la réflexion masquée consomme aussi des tokens
+      temperature: 0.5,
+      analyst: true,
       skipRag: true, // RAG déjà injecté manuellement ci-dessus
     });
   }

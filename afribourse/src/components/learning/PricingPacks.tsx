@@ -149,7 +149,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
         )}
 
         {/* En-tête */}
-        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Choisis ton parcours</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Étagère 1 · J'apprends la méthode — choisis ton parcours</p>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3" style={{ letterSpacing: '-0.01em' }}>
           3 niveaux d'accompagnement
         </h2>
