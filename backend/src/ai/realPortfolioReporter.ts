@@ -8,6 +8,7 @@
  * de screening : le modèle ne dispose que des chiffres du portefeuille.
  */
 import { getDashboard, getTransactions } from '../services/real-portfolio/real-portfolio.service';
+import { CONVERSATION_RULES } from './systemPrompt';
 
 const fmt = (n: number) => Math.round(n).toLocaleString('fr-FR').replace(/ | /g, ' ');
 const pct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)} %`;
@@ -70,5 +71,7 @@ ${txLines}
 ## FORMAT
 - Français, tutoiement, ton neutre et précis ; commence directement par la réponse
 - 120-300 mots ; chiffres clés en **gras** ; listes à tirets ; tableau markdown de 4 colonnes max si utile
-- Termine par cette ligne exacte en italique : ${REAL_PORTFOLIO_DISCLAIMER}`;
+- Termine par cette ligne exacte en italique : ${REAL_PORTFOLIO_DISCLAIMER}
+
+${CONVERSATION_RULES}`;
 }

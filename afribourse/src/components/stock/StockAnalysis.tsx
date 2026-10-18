@@ -131,7 +131,7 @@ function buildScoreContext(
 
   const techLines = [
     tech.rsi != null              ? `  · RSI(14): ${tech.rsi.toFixed(1)}` : null,
-    tech.macdHistogram != null    ? `  · MACD Histogramme: ${tech.macdHistogram > 0 ? '+' : ''}${tech.macdHistogram.toFixed(3)}` : null,
+    tech.macdHistogram != null    ? `  · MACD Histogramme: ${tech.macdHistogram > 0 ? '+' : ''}${tech.macdHistogram.toFixed(1)} FCFA${tech.macdHistogramPct != null ? ` (${tech.macdHistogramPct > 0 ? '+' : ''}${tech.macdHistogramPct.toFixed(2)} % du cours)` : ''}` : null,
     tech.priceVsMA20Pct != null   ? `  · Prix vs MA20: ${tech.priceVsMA20Pct > 0 ? '+' : ''}${tech.priceVsMA20Pct.toFixed(1)}%` : null,
     tech.priceVsMA50Pct != null   ? `  · Prix vs MA50: ${tech.priceVsMA50Pct > 0 ? '+' : ''}${tech.priceVsMA50Pct.toFixed(1)}%` : null,
     tech.bbPosition != null       ? `  · Position Bandes Bollinger: ${tech.bbPosition.toFixed(0)}%` : null,
@@ -216,7 +216,9 @@ const StockAnalysis: React.FC<StockAnalysisProps> = ({ data, fundamentals, annua
       volumeRatio = avg20 > 0 ? Math.round((last.volume / avg20) * 100) : null;
     }
 
-    return { rsi, macdHistogram, bbPosition, priceVsMA20Pct, priceVsMA50Pct, volumeRatio };
+    const macdHistogramPct = macdHistogram != null && last.close > 0 ? (macdHistogram / last.close) * 100 : null;
+
+    return { rsi, macdHistogram, macdHistogramPct, bbPosition, priceVsMA20Pct, priceVsMA50Pct, volumeRatio };
   }, [data]);
 
   // ── Build fundamental input ────────────────────────────────────────────────

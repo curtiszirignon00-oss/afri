@@ -5,6 +5,7 @@
 
 import prisma from '../config/prisma';
 import type { AnalystToolName } from '../ai/analystTools';
+import { fmtFCFA, fmtMillionsFCFA, fmtLargeFCFA, marketCapFCFA, plausibleRatio, PLAUSIBLE_RANGES } from '../ai/format';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -13,13 +14,7 @@ const PERIOD_TO_DAYS: Record<string, number> = {
   '6M': 180, '1Y': 365, '3Y': 1095, '5Y': 1825,
 };
 
-const formatFCFA = (n: number | null | undefined): string | null => {
-  if (n == null) return null;
-  if (n >= 1_000_000_000_000) return `${(n / 1_000_000_000_000).toFixed(2)} Mds FCFA`;
-  if (n >= 1_000_000_000)     return `${(n / 1_000_000_000).toFixed(2)} Mrds FCFA`;
-  if (n >= 1_000_000)         return `${(n / 1_000_000).toFixed(2)} M FCFA`;
-  return `${n.toLocaleString('fr-FR')} FCFA`;
-};
+// Montants : voir ai/format.ts (revenue, net_income, book_value… sont stockés en MILLIONS de FCFA)
 
 // ─── Tool 1 : Données complètes d'un titre ────────────────────────────────────
 
@@ -36,32 +31,36 @@ async function getStockData({ symbol }: { symbol: string }) {
 
   if (!stock) return { error: `Titre "${sym}" introuvable sur la BRVM.` };
 
+  const ratio = (m: string) => plausibleRatio(m, (fundamentals as any)?.[m]) ?? 'N/D';
+  const shares = fundamentals?.shares_outstanding ?? stock.shares_outstanding;
+
   return {
     symbol: stock.symbol,
     name: stock.company_name,
     sector: stock.sector,
     country: stock.country,
-    current_price: `${stock.current_price?.toLocaleString('fr-FR')} FCFA`,
-    previous_close: `${stock.previous_close?.toLocaleString('fr-FR')} FCFA`,
+    current_price: fmtFCFA(stock.current_price),
+    previous_close: fmtFCFA(stock.previous_close),
     daily_change_pct: stock.daily_change_percent,
-    volume_today: stock.volume,
-    market_cap: formatFCFA(stock.market_cap),
+    volume_today_shares: stock.volume,
+    // Recalculée (cours × actions) : les champs market_cap stockés ont des unités hétérogènes
+    market_cap: fmtLargeFCFA(marketCapFCFA(stock.current_price, shares, fundamentals?.market_cap)),
     fundamentals_year: fundamentals?.year ?? 'N/D',
-    pe_ratio: fundamentals?.pe_ratio ?? 'N/D',
-    pb_ratio: fundamentals?.pb_ratio ?? 'N/D',
-    eps: fundamentals?.eps ? `${fundamentals.eps.toLocaleString('fr-FR')} FCFA` : 'N/D',
-    book_value: fundamentals?.book_value ? `${fundamentals.book_value.toLocaleString('fr-FR')} FCFA` : 'N/D',
-    dividend_yield_pct: fundamentals?.dividend_yield ?? 'N/D',
+    pe_ratio: ratio('pe_ratio'),
+    pb_ratio: ratio('pb_ratio'),
+    eps_per_share: fundamentals?.eps != null ? fmtFCFA(fundamentals.eps) : 'N/D',
+    equity_book_value: fmtMillionsFCFA(fundamentals?.book_value),
+    dividend_yield_pct: ratio('dividend_yield'),
     ex_dividend_date: fundamentals?.ex_dividend_date?.toISOString().split('T')[0] ?? 'N/D',
-    roe_pct: fundamentals?.roe ?? 'N/D',
-    roa_pct: fundamentals?.roa ?? 'N/D',
-    profit_margin_pct: fundamentals?.profit_margin ?? 'N/D',
-    debt_to_equity: fundamentals?.debt_to_equity ?? 'N/D',
-    revenue: formatFCFA(fundamentals?.revenue),
-    net_income: formatFCFA(fundamentals?.net_income),
-    ebitda: formatFCFA(fundamentals?.ebitda),
-    free_cash_flow: formatFCFA(fundamentals?.free_cash_flow),
-    shares_outstanding: fundamentals?.shares_outstanding?.toLocaleString('fr-FR') ?? 'N/D',
+    roe_pct: ratio('roe'),
+    roa_pct: ratio('roa'),
+    profit_margin_pct: ratio('profit_margin'),
+    debt_to_equity: ratio('debt_to_equity'),
+    revenue: fmtMillionsFCFA(fundamentals?.revenue),
+    net_income: fmtMillionsFCFA(fundamentals?.net_income),
+    ebitda: fmtMillionsFCFA(fundamentals?.ebitda),
+    free_cash_flow: fmtMillionsFCFA(fundamentals?.free_cash_flow),
+    shares_outstanding: shares ?? 'N/D',
   };
 }
 
@@ -108,12 +107,12 @@ async function getHistoricalPerformance({ symbol, period }: { symbol: string; pe
     period,
     start_date: prices[0].date.toISOString().split('T')[0],
     end_date:   prices[prices.length - 1].date.toISOString().split('T')[0],
-    start_price: `${first.toLocaleString('fr-FR')} FCFA`,
-    end_price:   `${last.toLocaleString('fr-FR')} FCFA`,
+    start_price: fmtFCFA(first),
+    end_price:   fmtFCFA(last),
     performance_pct: parseFloat(perf.toFixed(2)),
-    high_period: `${high.toLocaleString('fr-FR')} FCFA`,
-    low_period:  `${low.toLocaleString('fr-FR')} FCFA`,
-    avg_daily_volume: Math.round(avgVol),
+    high_period: fmtFCFA(high),
+    low_period:  fmtFCFA(low),
+    avg_daily_volume_shares: Math.round(avgVol),
     brvm_composite_perf_pct: brvmPerf != null ? parseFloat(brvmPerf.toFixed(2)) : 'N/D',
     outperformance_vs_brvm_pct: outperformance != null ? parseFloat(outperformance.toFixed(2)) : 'N/D',
     data_points: prices.length,
@@ -124,6 +123,7 @@ async function getHistoricalPerformance({ symbol, period }: { symbol: string; pe
 
 async function compareStocks({ symbols, metrics }: { symbols: string[]; metrics?: string[] }) {
   const syms = symbols.map((s) => s.toUpperCase());
+  // roe / roa / profit_margin / dividend_yield en %, eps en FCFA par action
   const ALL_METRICS = ['pe_ratio', 'pb_ratio', 'roe', 'roa', 'profit_margin',
     'dividend_yield', 'debt_to_equity', 'eps', 'market_cap'];
   const selectedMetrics = metrics?.length ? metrics : ALL_METRICS;
@@ -146,23 +146,24 @@ async function compareStocks({ symbols, metrics }: { symbols: string[]; metrics?
     const fund  = latestFundamentals[sym];
     if (!stock) return { symbol: sym, error: 'Titre introuvable' };
 
+    // Unités explicites dans les libellés pour que le modèle ne les confonde pas
     const metricMap: Record<string, any> = {
-      pe_ratio:      fund?.pe_ratio,
-      pb_ratio:      fund?.pb_ratio,
-      roe:           fund?.roe,
-      roa:           fund?.roa,
-      profit_margin: fund?.profit_margin,
-      dividend_yield: fund?.dividend_yield,
-      debt_to_equity: fund?.debt_to_equity,
-      eps:           fund?.eps,
-      market_cap:    stock.market_cap,
+      pe_ratio:      plausibleRatio('pe_ratio', fund?.pe_ratio),
+      pb_ratio:      plausibleRatio('pb_ratio', fund?.pb_ratio),
+      roe:           plausibleRatio('roe', fund?.roe),
+      roa:           plausibleRatio('roa', fund?.roa),
+      profit_margin: plausibleRatio('profit_margin', fund?.profit_margin),
+      dividend_yield: plausibleRatio('dividend_yield', fund?.dividend_yield),
+      debt_to_equity: plausibleRatio('debt_to_equity', fund?.debt_to_equity),
+      eps:           fund?.eps != null ? fmtFCFA(fund.eps) : null,
+      market_cap:    fmtLargeFCFA(marketCapFCFA(stock.current_price, fund?.shares_outstanding ?? stock.shares_outstanding, fund?.market_cap)),
     };
 
     const result: Record<string, any> = {
       symbol: sym,
       name: stock.company_name,
       sector: stock.sector,
-      current_price: stock.current_price,
+      current_price: fmtFCFA(stock.current_price),
       daily_change_pct: stock.daily_change_percent,
       fundamentals_year: fund?.year ?? 'N/D',
     };
@@ -200,14 +201,8 @@ async function getSectorBenchmark({ symbol }: { symbol: string }) {
   }
   const peers = Object.values(latestByTicker);
 
-  // Bornes plausibles : une valeur hors bornes est une erreur de saisie ou d'unité
-  // (ex. ROE stocké en fraction chez un pair, en % chez un autre) et fausse la référence.
-  const PLAUSIBLE: Record<string, [number, number]> = {
-    pe_ratio: [0, 200], pb_ratio: [0, 30], roe: [-200, 200], roa: [-100, 100],
-    profit_margin: [-200, 100], dividend_yield: [0, 30], debt_to_equity: [0, 50],
-  };
-  const isPlausible = (m: string, v: unknown): v is number =>
-    typeof v === 'number' && Number.isFinite(v) && v >= PLAUSIBLE[m][0] && v <= PLAUSIBLE[m][1];
+  // Bornes plausibles partagées (ai/format.ts) : hors bornes ⇒ erreur de saisie ou d'unité
+  const isPlausible = (m: string, v: unknown): v is number => plausibleRatio(m, v) != null && m in PLAUSIBLE_RANGES;
 
   // Médiane plutôt que moyenne : un seul pair atypique ne déplace plus la référence sectorielle
   const median = (key: string): { value: number | null; n: number } => {

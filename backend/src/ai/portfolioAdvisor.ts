@@ -7,6 +7,7 @@
  */
 
 import { prisma } from '../config/database';
+import { CONVERSATION_RULES } from './systemPrompt';
 
 export type AdvisorWalletType = 'SANDBOX' | 'CONCOURS';
 
@@ -72,9 +73,10 @@ export async function loadAdvisorContext(
   userId: string,
   walletType: AdvisorWalletType = 'SANDBOX',
 ): Promise<AdvisorContext | null> {
+  // Même sélection que le dashboard (portfolio.service › findPortfolioByUserId) : le plus ancien du type
   const portfolio = await prisma.portfolio.findFirst({
     where: { userId, wallet_type: walletType },
-    orderBy: { created_at: 'desc' },
+    orderBy: { created_at: 'asc' },
     include: {
       positions: true,
       transactions: { orderBy: { created_at: 'desc' }, take: 15 },
@@ -233,11 +235,11 @@ Tu es pédagogue : chaque constat s'accompagne du « pourquoi » et du concept f
 ## PORTEFEUILLE (${walletLabel} — données Afribourse temps réel)
 
 ### Vue d'ensemble
-- Capital de départ : ${fmt(ctx.initialBalance)} F
+- Capital de référence : ${fmt(ctx.initialBalance)} F (capital initial + bonus reçus sur la plateforme ; la performance se mesure par rapport à ce montant)
 - Valeur totale : ${fmt(ctx.totalValue)} F (actions ${fmt(ctx.stocksValue)} F · liquidités ${fmt(ctx.cashBalance)} F, soit ${ctx.cashPercent.toFixed(1)} %)
 - Performance totale : ${sign(ctx.totalGainLoss)}${fmt(ctx.totalGainLoss)} F (${pctStr(ctx.totalGainLossPercent)})
   - Latente (positions ouvertes) : ${sign(ctx.unrealizedGainLoss)}${fmt(ctx.unrealizedGainLoss)} F (${pctStr(ctx.unrealizedPercent)})
-  - Réalisée (ventes + bonus) : ${sign(ctx.realizedGainLoss)}${fmt(ctx.realizedGainLoss)} F
+  - Réalisée (ventes clôturées) : ${sign(ctx.realizedGainLoss)}${fmt(ctx.realizedGainLoss)} F
 
 ### Positions (triées par poids)
 ${posTable}
@@ -282,55 +284,84 @@ Utilise-les dès qu'une question porte sur la qualité, la valorisation, le divi
 - 150-350 mots sauf demande explicite ; chiffres clés en **gras** ; listes à tirets
 - Tableau markdown bienvenu pour comparer des titres (4 colonnes max : la fenêtre est étroite)
 - Termine par une question ou une action concrète
-- Termine par cette ligne en italique : _Analyse éducative sur portefeuille simulé — pas un conseil en investissement réglementé._`;
+- Termine par cette ligne en italique : _Analyse éducative sur portefeuille simulé — pas un conseil en investissement réglementé._
+
+${CONVERSATION_RULES}`;
 }
 
 // ─── Lien Analyste ↔ portefeuille : situation de l'utilisateur sur un titre ────
 
+const WALLET_LABELS: Record<AdvisorWalletType, string> = {
+  SANDBOX: "portefeuille d'apprentissage",
+  CONCOURS: 'portefeuille Challenge',
+};
+
 /**
- * Bloc de prompt décrivant la position de l'utilisateur sur `symbol` (tous ses
- * portefeuilles) et son profil de risque. null si rien de pertinent.
+ * Bloc de prompt décrivant la détention de `symbol` dans CHAQUE portefeuille actif
+ * de l'utilisateur, en distinguant celui qu'il regarde (`currentWallet`).
+ * Bug corrigé : un titre détenu uniquement dans le portefeuille Challenge était
+ * présenté comme détenu alors que l'utilisateur consultait son portefeuille
+ * d'apprentissage (où il ne l'a pas).
  */
-export async function buildAnalystUserBlock(userId: string, symbol: string): Promise<string | null> {
+export async function buildAnalystUserBlock(
+  userId: string,
+  symbol: string,
+  currentWallet: AdvisorWalletType = 'SANDBOX',
+): Promise<string | null> {
   const ticker = symbol.toUpperCase();
-  const [portfolios, stock, profile] = await Promise.all([
+  const [portfolios, profile] = await Promise.all([
     prisma.portfolio.findMany({
       where: { userId },
+      orderBy: { created_at: 'asc' },
       select: { wallet_type: true, cash_balance: true, positions: { select: { stock_ticker: true, quantity: true, average_buy_price: true } } },
     }),
-    prisma.stock.findUnique({ where: { symbol: ticker }, select: { current_price: true } }),
     prisma.investorProfile.findUnique({ where: { user_id: userId }, select: { risk_profile: true, investment_horizon: true } }),
   ]);
 
-  const lines: string[] = [];
-  const price = stock?.current_price ?? 0;
-
+  // Un seul portefeuille par type : le plus ancien, exactement comme le dashboard
+  const byWallet = new Map<AdvisorWalletType, (typeof portfolios)[number]>();
   for (const pf of portfolios) {
-    const pos = pf.positions.find((p) => p.stock_ticker === ticker && p.quantity > 0);
-    if (!pos) continue;
-    // Poids approximatif : les autres lignes sont valorisées au PRU (pas de requête de cours supplémentaire)
-    const others = pf.positions
-      .filter((p) => p.stock_ticker !== ticker)
-      .reduce((acc, p) => acc + p.quantity * p.average_buy_price, 0);
-    const value = pos.quantity * price;
-    const total = pf.cash_balance + others + value;
-    const pl = price > 0 && pos.average_buy_price > 0 ? ((price - pos.average_buy_price) / pos.average_buy_price) * 100 : null;
-    const label = pf.wallet_type === 'CONCOURS' ? 'Portefeuille Challenge' : "Portefeuille d'apprentissage";
-    lines.push(
-      `- ${label} : ${pos.quantity} titres, PRU ${fmt(pos.average_buy_price)} F`
-      + (pl != null ? `, P/L latent ${pctStr(pl)}` : '')
-      + (total > 0 ? `, ≈ ${((value / total) * 100).toFixed(1)} % du portefeuille` : ''),
-    );
+    const w = pf.wallet_type as AdvisorWalletType;
+    if (!byWallet.has(w)) byWallet.set(w, pf);
   }
+
+  // Cours réels de toutes les lignes, pour un poids exact
+  const tickers = [...new Set([...byWallet.values()].flatMap((pf) => pf.positions.map((p) => p.stock_ticker)).concat(ticker))];
+  const prices = new Map(
+    (await prisma.stock.findMany({ where: { symbol: { in: tickers } }, select: { symbol: true, current_price: true } }))
+      .map((s) => [s.symbol, s.current_price]),
+  );
+  const priceOf = (t: string, fallback: number) => (prices.get(t) && prices.get(t)! > 0 ? prices.get(t)! : fallback);
+
+  const describe = (wallet: AdvisorWalletType): string | null => {
+    const pf = byWallet.get(wallet);
+    if (!pf) return null;
+    const pos = pf.positions.find((p) => p.stock_ticker === ticker && p.quantity > 0);
+    if (!pos) return `ne détient PAS ${ticker}`;
+    const price = priceOf(ticker, pos.average_buy_price);
+    const value = pos.quantity * price;
+    const total = pf.cash_balance + pf.positions.reduce((acc, p) => acc + (p.quantity > 0 ? p.quantity * priceOf(p.stock_ticker, p.average_buy_price) : 0), 0);
+    const pl = pos.average_buy_price > 0 ? ((price - pos.average_buy_price) / pos.average_buy_price) * 100 : null;
+    return `détient ${fmt(pos.quantity)} titres ${ticker}, PRU ${fmt(pos.average_buy_price)} F`
+      + (pl != null ? `, P/L latent ${pctStr(pl)}` : '')
+      + (total > 0 ? `, ${((value / total) * 100).toFixed(1).replace('.', ',')} % de ce portefeuille` : '');
+  };
+
+  const current = describe(currentWallet);
+  const otherWallet: AdvisorWalletType = currentWallet === 'SANDBOX' ? 'CONCOURS' : 'SANDBOX';
+  const other = describe(otherWallet);
 
   const profileLine = profile?.risk_profile || profile?.investment_horizon
     ? `- Profil : ${profile?.risk_profile ? RISK_LABELS[profile.risk_profile] ?? profile.risk_profile : 'N/D'} · horizon ${profile?.investment_horizon ? HORIZON_LABELS[profile.investment_horizon] ?? profile.investment_horizon : 'N/D'}`
     : null;
 
-  if (!lines.length && !profileLine) return null;
+  const lines = [
+    `- Portefeuille affiché à l'écran (${WALLET_LABELS[currentWallet]}) : ${current ?? `aucun ${WALLET_LABELS[currentWallet]} actif`}`,
+    other ? `- Autre portefeuille (${WALLET_LABELS[otherWallet]}, non affiché) : ${other}` : null,
+    profileLine,
+  ].filter(Boolean);
 
-  return `## SITUATION DE L'UTILISATEUR SUR ${ticker} (portefeuille simulé)
-${lines.length ? lines.join('\n') : `- Ne détient pas ${ticker} actuellement.`}
-${profileLine ?? ''}
-Utilise ces éléments pour personnaliser ta réponse quand c'est pertinent (exposition, PRU, cohérence avec son profil), sans jamais lui ordonner d'acheter ou de vendre.`.trim();
+  return `## SITUATION DE L'UTILISATEUR SUR ${ticker} (portefeuilles simulés)
+${lines.join('\n')}
+Règles : parle par défaut du portefeuille affiché. Si tu évoques l'autre portefeuille, nomme-le explicitement (« dans ton ${WALLET_LABELS[otherWallet]} »). Ne mentionne la détention que si elle est pertinente pour la question, et sans jamais ordonner d'acheter ou de vendre.`;
 }

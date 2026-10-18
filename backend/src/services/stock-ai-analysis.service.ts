@@ -12,6 +12,12 @@ import { log } from '../config/logger';
 import { prisma } from '../config/database';
 import { chatService, StockData } from './ai-coach.service';
 import { SIMBA_ANALYST_MODEL } from '../ai/models';
+import { marketCapFCFA } from '../ai/format';
+
+// À incrémenter quand le prompt ou les calculs changent : les analyses en cache
+// générées avec l'ancienne version sont alors ignorées et régénérées.
+const ANALYSIS_VERSION = 'v2-units';
+const cacheTag = () => `${SIMBA_ANALYST_MODEL}@${ANALYSIS_VERSION}`;
 
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -37,7 +43,7 @@ export async function buildStockData(ticker: string): Promise<{ data: StockData;
     prisma.stockFundamental.findUnique({
       where: { stock_ticker: ticker },
       select: {
-        market_cap: true, pe_ratio: true, pb_ratio: true, dividend_yield: true,
+        market_cap: true, shares_outstanding: true, pe_ratio: true, pb_ratio: true, dividend_yield: true,
         eps: true, roe: true, roa: true, profit_margin: true,
         revenue: true, net_income: true, book_value: true, year: true,
       },
@@ -89,10 +95,8 @@ export async function buildStockData(ticker: string): Promise<{ data: StockData;
     return v;
   };
 
-  // market_cap du fundamental est en M FCFA → convertir en FCFA pour cohérence
-  const marketCapFCFA = fundamental?.market_cap != null
-    ? fundamental.market_cap * 1_000_000
-    : dbStock.market_cap || undefined;
+  // Capitalisation = cours × nombre d'actions : les champs market_cap stockés ont des unités hétérogènes
+  const capFCFA = marketCapFCFA(price, fundamental?.shares_outstanding, fundamental?.market_cap) ?? undefined;
 
   const data: StockData = {
     company_name:         dbStock.company_name.slice(0, 100),
@@ -102,7 +106,7 @@ export async function buildStockData(ticker: string): Promise<{ data: StockData;
     current_price:        price,
     daily_change_percent: plausible('Variation journalière (%)', dbStock.daily_change_percent, -50, 50),
     volume:               dbStock.volume ?? undefined,
-    market_cap:           marketCapFCFA,
+    market_cap:           capFCFA,
     pe_ratio:             plausible('PER', fundamental?.pe_ratio, 0, 200),
     roe:                  plausible('ROE (%)', fundamental?.roe, -200, 200),
     roa:                  plausible('ROA (%)', fundamental?.roa, -100, 100),
@@ -125,7 +129,7 @@ export async function buildStockData(ticker: string): Promise<{ data: StockData;
 
 export async function getCachedAnalysis(ticker: string, maxAgeMs = CACHE_TTL_MS): Promise<StockAnalysisResult | null> {
   const row = await prisma.stockAIAnalysis.findUnique({ where: { stock_ticker: ticker } });
-  if (!row || Date.now() - row.generated_at.getTime() > maxAgeMs) return null;
+  if (!row || row.model !== cacheTag() || Date.now() - row.generated_at.getTime() > maxAgeMs) return null;
   return { text: row.content, generatedAt: row.generated_at, cached: true, dataWarnings: row.data_warnings };
 }
 
@@ -148,11 +152,11 @@ export function generateAndStore(ticker: string): Promise<StockAnalysisResult | 
     await prisma.stockAIAnalysis.upsert({
       where: { stock_ticker: ticker },
       create: {
-        stock_ticker: ticker, content: result.text, model: SIMBA_ANALYST_MODEL,
+        stock_ticker: ticker, content: result.text, model: cacheTag(),
         data_warnings: built.warnings, generated_at: generatedAt,
       },
       update: {
-        content: result.text, model: SIMBA_ANALYST_MODEL,
+        content: result.text, model: cacheTag(),
         data_warnings: built.warnings, generated_at: generatedAt,
       },
     });

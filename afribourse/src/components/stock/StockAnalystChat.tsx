@@ -4,6 +4,7 @@ import { Stock } from '../../types';
 import SimbaFreeBadge from '../SimbaFreeBadge';
 import SimbaMessageList from '../simba/SimbaMessageList';
 import { useSimbaChat } from '../../hooks/useSimbaChat';
+import { useChallengeContext } from '../../contexts/ChallengeContext';
 
 interface StockAnalystChatProps {
   stock: Stock;
@@ -23,6 +24,8 @@ const ANALYST_SUGGESTIONS = [
 export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpen, onClose, scoreContext, initialQuestion }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Portefeuille affiché (apprentissage / Challenge) : SIMBA ne confond plus la détention entre les deux
+  const { walletMode } = useChallengeContext();
 
   // Une conversation mémorisée par titre ; l'historique est conservé côté serveur
   const { messages, isStreaming, status, paywallHit, hasConversation, send, resetConversation, rate } = useSimbaChat({
@@ -30,7 +33,7 @@ export const StockAnalystChat: React.FC<StockAnalystChatProps> = ({ stock, isOpe
     contextKey: stock.symbol,
     welcome: `Je suis SIMBA, votre analyste IA. Je connais les données de **${stock.company_name}** (${stock.symbol}) et votre position éventuelle sur ce titre. Posez-moi vos questions sur la valorisation, les ratios, les risques ou la stratégie.`,
     enabled: isOpen,
-    extraBody: { symbol: stock.symbol, scoreContext },
+    extraBody: { symbol: stock.symbol, scoreContext, walletType: walletMode },
     feedbackEndpoint: 'analyst',
   });
 

@@ -26,6 +26,19 @@ Tu travailles pour Afribourse. Tu parles principalement en français avec un ton
 ⚠️ Analyse et éducation uniquement — pas un conseil en investissement réglementé. Tout investissement comporte des risques de perte en capital.
 `.trim();
 
+// ─── Règles de conversation — communes à tous les chats avec mémoire ─────────
+// Bug constaté : après un rechargement, le modèle refaisait l'analyse du message
+// précédent au lieu de répondre à la nouvelle remarque (« je ne possède pas CFAC »).
+
+export const CONVERSATION_RULES = `
+## CONVERSATION
+- L'historique ci-dessous est DÉJÀ traité. Réponds UNIQUEMENT au DERNIER message de l'utilisateur.
+- Ne refais pas une analyse, un tableau ou une comparaison déjà donnés, sauf si l'utilisateur le demande explicitement.
+- Si le dernier message est une remarque, une correction ou une contestation (« je ne possède pas ce titre », « c'est faux »…) :
+  vérifie le point dans les données de ce prompt, reconnais clairement une erreur s'il y en a une, sinon explique d'où vient l'information — puis réponds à sa remarque, brièvement.
+- Une réponse courte est préférable quand le message est court.
+`.trim();
+
 // ─── Tuteur Pédagogique ───────────────────────────────────────────────────────
 
 export interface TutorUserContext {
@@ -98,7 +111,7 @@ ${contextBlock}
 ---`
     : '';
 
-  return [SIMBA_BASE_IDENTITY, roleBlock, ctxSection, learnerBlock ?? '', ragSection]
+  return [SIMBA_BASE_IDENTITY, roleBlock, ctxSection, learnerBlock ?? '', ragSection, CONVERSATION_RULES]
     .filter(Boolean)
     .join('\n\n');
 }
@@ -150,7 +163,7 @@ Tu es SIMBA, l'analyste financier quantitatif d'Afribourse, spécialisé sur la 
 - Ton ton est professionnel, factuel et direct
 - Tu réponds en français sauf si l'utilisateur écrit en anglais
 {symbol_context}
-## TES OUTILS (utilise-les systématiquement — jamais de mémoire)
+## TES OUTILS (pour tout chiffre — jamais de mémoire)
 - **getStockData(symbol)** → cours, ratios (P/E, P/B, EPS), rentabilité (ROE, ROA), bilan, dividende
 - **getHistoricalPerformance(symbol, period)** → perf historique vs BRVM Composite
 - **compareStocks(symbols, metrics?)** → tableau comparatif multi-titres
@@ -158,11 +171,13 @@ Tu es SIMBA, l'analyste financier quantitatif d'Afribourse, spécialisé sur la 
 - **getTopPerformers(period, sector?, limit?, direction?)** → top/flop BRVM
 
 ## RÈGLES ABSOLUES
-1. TOUJOURS appeler un outil pour récupérer les données — jamais de chiffres de mémoire
+1. Tout chiffre (cours, ratio, performance) vient d'un outil ou de ce prompt — jamais de mémoire. Pas besoin d'outil pour répondre à une remarque, une correction ou une question de compréhension
 2. Citer les valeurs exactes avec unités (%, FCFA, x pour les multiples)
 3. Pour toute comparaison multi-titres : utiliser compareStocks en un seul appel
 4. Ne jamais recommander d'acheter ou de vendre un titre spécifiquement
 5. Si une donnée retourne "N/D" : le dire explicitement, ne pas spéculer
+6. Unités : les outils renvoient des montants déjà formatés (FCFA, M FCFA, Mds FCFA) — reprends-les tels quels, sans conversion
+7. Détention : ne dis JAMAIS que l'utilisateur possède un titre si la section « SITUATION DE L'UTILISATEUR » ne l'indique pas pour le portefeuille concerné
 
 ## FORMAT DES RÉPONSES
 - Comparaisons multi-titres → tableau markdown obligatoire
@@ -182,13 +197,13 @@ export function buildAnalystPrompt(
   userBlock?: string | null, // position de l'utilisateur sur le titre + profil
 ): string {
   const symbolCtx = currentSymbol
-    ? `\n## CONTEXTE ACTUEL\nL'utilisateur consulte la fiche du titre : **${currentSymbol}**. Commence par ce titre sauf instruction contraire.\n`
+    ? `\n## CONTEXTE ACTUEL\nL'utilisateur consulte la fiche du titre : **${currentSymbol}**. Ses questions portent par défaut sur ce titre.\n`
     : '';
   const scoreCtx = scoreContext
     ? `\n## SCORE DE CONFIANCE HYBRIDE (calculé en temps réel par Afribourse)\nL'utilisateur voit le score suivant sur son écran. Utilise ces données précises pour répondre à ses questions sur le score, les signaux et les piliers :\n\n${scoreContext}\n`
     : '';
   const userCtx = userBlock ? `\n${userBlock}\n` : '';
-  return ANALYST_SYSTEM_PROMPT.replace('{symbol_context}', symbolCtx + scoreCtx + userCtx);
+  return ANALYST_SYSTEM_PROMPT.replace('{symbol_context}', symbolCtx + scoreCtx + userCtx) + '\n\n' + CONVERSATION_RULES;
 }
 
 // ─── A. Coach Éducatif — Explication de Concepts ─────────────────────────────

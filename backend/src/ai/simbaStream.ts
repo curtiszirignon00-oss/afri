@@ -110,6 +110,17 @@ export interface StreamResult {
   text: string;
   toolCallsCount: number;
   tokensUsed: number;
+  /** Le client s'est déconnecté (rafraîchissement, fermeture) : génération interrompue */
+  aborted?: boolean;
+}
+
+interface StreamOpts {
+  models: string[];
+  maxTokens: number;
+  source: string;
+  temperature?: number;
+  /** Arrête la génération dès que le client n'écoute plus (évite tokens perdus et mémoire incohérente) */
+  shouldStop?: () => boolean;
 }
 
 interface StreamCallbacks {
@@ -125,7 +136,7 @@ interface StreamCallbacks {
 export async function streamToolLoop(
   groq: Groq,
   messages: any[],
-  opts: { models: string[]; maxTokens: number; source: string; temperature?: number },
+  opts: StreamOpts,
   cb: StreamCallbacks,
 ): Promise<StreamResult> {
   const MAX_ITER = 6;
@@ -133,6 +144,7 @@ export async function streamToolLoop(
   let tokensUsed = 0;
 
   for (let iter = 0; iter < MAX_ITER; iter++) {
+    if (opts.shouldStop?.()) return { text: '', toolCallsCount, tokensUsed, aborted: true };
     const stream = await openStream(groq, {
       messages,
       tools: ANALYST_TOOLS,
@@ -145,6 +157,7 @@ export async function streamToolLoop(
     const calls: { id: string; name: string; args: string }[] = [];
 
     for await (const chunk of stream) {
+      if (opts.shouldStop?.()) return { text: content, toolCallsCount, tokensUsed, aborted: true };
       const choice = chunk.choices?.[0];
       const delta = choice?.delta;
       if (delta?.content) {
@@ -190,7 +203,7 @@ export async function streamToolLoop(
 export async function streamCompletion(
   groq: Groq,
   messages: any[],
-  opts: { models: string[]; maxTokens: number; source: string; temperature?: number },
+  opts: StreamOpts,
   onDelta: (text: string) => void,
 ): Promise<StreamResult> {
   const stream = await openStream(groq, {
@@ -202,6 +215,7 @@ export async function streamCompletion(
   let text = '';
   let tokensUsed = 0;
   for await (const chunk of stream) {
+    if (opts.shouldStop?.()) return { text, toolCallsCount: 0, tokensUsed, aborted: true };
     const piece = chunk.choices?.[0]?.delta?.content;
     if (piece) { text += piece; onDelta(piece); }
     const usage = chunk.x_groq?.usage ?? chunk.usage;

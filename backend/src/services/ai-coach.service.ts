@@ -18,6 +18,7 @@ import {
   QuizQuestion,
 } from '../ai/systemPrompt';
 import { buildContextualPrompt } from '../ai/ragService';
+import { fmtFCFA, fmtLargeFCFA, fmtMillionsFCFA, fmtInt } from '../ai/format';
 import { SIMBA_COACH_MODEL, createAnalystCompletion, trackedCompletion, tokensOf, reasoningParams, stripReasoning } from '../ai/models';
 
 export type { UserContext, PortfolioHolding, QuizQuestion };
@@ -178,18 +179,10 @@ class AfribourseChatService {
   // ─── Analyse de Marché (avec enrichissement RAG DB) ─────────────────────────
 
   async analyzeMarket(stock: StockData): Promise<ChatResult> {
-    const capStr = stock.market_cap
-      ? `${(stock.market_cap / 1_000_000_000).toFixed(2)} Mds FCFA`
-      : 'N/D';
-
-    // Formater les montants en millions de FCFA
-    const fmtM = (v?: number | null) => v != null
-      ? (v >= 1000 ? `${(v / 1000).toFixed(0)} Mds` : `${v.toFixed(0)} M`) + ' FCFA'
-      : 'N/D';
-
-    // Séparateur de milliers en espace simple : sans lui, le modèle lisait « 43500 » comme 435 000
-    const fmtInt = (v: number) => Math.round(v).toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g, ' ');
-    const fmtFCFA = (v?: number | null) => (v != null ? `${fmtInt(v)} FCFA` : 'N/D');
+    // market_cap en FCFA bruts ; revenue / net_income (fiche et historique) en MILLIONS de FCFA.
+    // Formatage partagé (ai/format.ts) : espaces simples, sinon le modèle lit mal les nombres.
+    const capStr = fmtLargeFCFA(stock.market_cap);
+    const fmtM = fmtMillionsFCFA;
 
     // Historique annuel (3 dernières années)
     const annualLines = (stock.annual_data ?? []).slice(0, 3).map((a) => {

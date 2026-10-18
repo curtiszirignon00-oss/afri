@@ -11,6 +11,8 @@
 export interface TechnicalScoreInput {
   rsi?: number | null;
   macdHistogram?: number | null;
+  /** Histogramme MACD en % du dernier cours (utilisé pour la note : comparable entre titres) */
+  macdHistogramPct?: number | null;
   /** (close - bbLower) / (bbUpper - bbLower) * 100  →  [0–100] */
   bbPosition?: number | null;
   /** (close - ma20) / ma20 * 100 */
@@ -114,11 +116,15 @@ function normalizeRSI(v: number): number {
   return 90;
 }
 
+// Histogramme MACD exprimé en % du cours : en FCFA bruts, il dépend du prix du titre
+// (±1 000 F sur SNTS à 43 500 F, ±5 F sur un titre à 500 F) et des seuils fixes
+// saturaient les titres chers. Seuils calés sur la distribution BRVM (16 920 séances :
+// médiane +0,04 %, p10 −1,1 %, p90 +2,2 %).
 function normalizeMACD(h: number): number {
-  if (h > 80)  return 90; if (h > 50)  return 82; if (h > 25) return 74;
-  if (h > 10)  return 65; if (h > 2)   return 57; if (h >= 0) return 52;
-  if (h > -2)  return 47; if (h > -10) return 42; if (h > -25) return 34;
-  if (h > -50) return 24; if (h > -80) return 16;
+  if (h > 3)    return 90; if (h > 1.5)  return 82; if (h > 0.8) return 74;
+  if (h > 0.4)  return 65; if (h > 0.1)  return 57; if (h >= 0)  return 52;
+  if (h > -0.1) return 47; if (h > -0.4) return 42; if (h > -0.8) return 34;
+  if (h > -1.5) return 24; if (h > -3)   return 16;
   return 8;
 }
 
@@ -238,8 +244,8 @@ function techScore(inp: TechnicalScoreInput): { score: number | null; count: num
 
   if (inp.rsi != null)
     rows.push({ score: normalizeRSI(inp.rsi), weight: W.rsi, name: 'RSI (14)', rawValue: inp.rsi.toFixed(1) });
-  if (inp.macdHistogram != null)
-    rows.push({ score: normalizeMACD(inp.macdHistogram), weight: W.macd, name: 'MACD Histogramme', rawValue: `${inp.macdHistogram >= 0 ? '+' : ''}${inp.macdHistogram.toFixed(0)}` });
+  if (inp.macdHistogramPct != null)
+    rows.push({ score: normalizeMACD(inp.macdHistogramPct), weight: W.macd, name: 'MACD Histogramme', rawValue: `${inp.macdHistogramPct >= 0 ? '+' : ''}${inp.macdHistogramPct.toFixed(2)} %` });
   if (inp.priceVsMA20Pct != null)
     rows.push({ score: normalizeMADev(inp.priceVsMA20Pct), weight: W.ma20, name: 'Prix vs MA20', rawValue: `${inp.priceVsMA20Pct >= 0 ? '+' : ''}${inp.priceVsMA20Pct.toFixed(1)}%` });
   if (inp.priceVsMA50Pct != null)

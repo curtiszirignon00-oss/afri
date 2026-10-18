@@ -46,7 +46,7 @@ interface StreamedChatOptions {
   buildMessages: (question: string, history: { role: 'user' | 'assistant'; content: string }[]) =>
     Promise<{ messages: any[] } | { directReply: string }>;
   /** Lance le modèle ; `emit` diffuse le texte, `status` / `reset` sont optionnels */
-  run: (messages: any[], emit: (t: string) => void, status: (l: string) => void, reset: () => void) => Promise<StreamResult>;
+  run: (messages: any[], emit: (t: string) => void, status: (l: string) => void, reset: () => void, shouldStop: () => boolean) => Promise<StreamResult>;
   /** Retient les N premiers caractères pour nettoyer l'intro (« Bonjour, je suis SIMBA… ») */
   introFilter?: (text: string) => string;
 }
@@ -108,7 +108,7 @@ async function handleStreamedChat(req: AuthenticatedRequest, res: Response, next
 
     let result: StreamResult;
     try {
-      result = await opts.run(built.messages, emit, status, reset);
+      result = await opts.run(built.messages, emit, status, reset, () => sse!.isClosed);
       flushHeld();
     } catch (err: any) {
       log.error(`[SIMBA-Stream:${opts.kind}] échec :`, err?.message);
@@ -122,8 +122,19 @@ async function handleStreamedChat(req: AuthenticatedRequest, res: Response, next
       return sse.end();
     }
 
+    // Client parti en cours de réponse : rien n'est mémorisé (il ne l'a pas vue en entier)
+    if (result.aborted) {
+      trackAICall({
+        userId, sessionId, endpoint: opts.kind, provider: 'aborted',
+        responseTimeMs: Date.now() - t0, tokensUsed: result.tokensUsed || undefined,
+        blocked: false, question, success: true,
+      }).catch(() => {});
+      return sse.end();
+    }
+
     let finalText = stripReasoning(emitted);
-    if (!finalText) {
+    const answered = !!finalText;
+    if (!answered) {
       finalText = 'La requête est trop complexe. Reformulez ou posez une question plus ciblée.';
       sse.send('delta', { text: finalText });
     }
@@ -136,11 +147,13 @@ async function handleStreamedChat(req: AuthenticatedRequest, res: Response, next
     sse.send('done', { messageId, toolCallsCount: result.toolCallsCount });
     sse.end();
 
-    await appendExchange(userId, opts.kind, opts.contextKey, question, safe, messageId);
+    // Seuls les échanges réellement aboutis entrent dans la mémoire : une question restée
+    // sans vraie réponse pousserait le modèle à y répondre au tour suivant.
+    if (answered) await appendExchange(userId, opts.kind, opts.contextKey, question, safe, messageId);
     trackAICall({
       userId, sessionId, endpoint: opts.kind, provider: 'groq',
       responseTimeMs: Date.now() - t0, tokensUsed: result.tokensUsed || undefined,
-      blocked: false, question, success: !!emitted,
+      blocked: false, question, success: answered,
     }).catch(() => {});
   } catch (error) {
     if (sse) {
@@ -156,20 +169,22 @@ async function handleStreamedChat(req: AuthenticatedRequest, res: Response, next
 // ─── SIMBA Analyste ───────────────────────────────────────────────────────────
 
 export function streamAnalyst(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const { symbol, scoreContext } = req.body as { symbol?: unknown; scoreContext?: unknown };
+  const { symbol, scoreContext, walletType } = req.body as { symbol?: unknown; scoreContext?: unknown; walletType?: unknown };
   const ticker = typeof symbol === 'string' && symbol.trim() ? symbol.toUpperCase().trim().slice(0, 20) : null;
+  // Portefeuille affiché à l'écran : SIMBA distingue la détention dans celui-ci et dans l'autre
+  const currentWallet: AdvisorWalletType = walletType === 'CONCOURS' ? 'CONCOURS' : 'SANDBOX';
 
   return handleStreamedChat(req, res, next, {
     kind: 'analyst',
     contextKey: ticker ?? 'general',
     maxLength: 1500,
     buildMessages: async (question, history) => {
-      const userBlock = ticker ? await buildAnalystUserBlock(req.user!.id, ticker).catch(() => null) : null;
+      const userBlock = ticker ? await buildAnalystUserBlock(req.user!.id, ticker, currentWallet).catch(() => null) : null;
       const system = buildAnalystPrompt(ticker, typeof scoreContext === 'string' ? scoreContext : undefined, userBlock);
       return { messages: [{ role: 'system', content: system }, ...history, { role: 'user', content: question }] };
     },
-    run: (messages, emit, status, reset) => streamToolLoop(groq, messages, {
-      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 2000, source: 'analyst',
+    run: (messages, emit, status, reset, shouldStop) => streamToolLoop(groq, messages, {
+      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 2000, source: 'analyst', shouldStop,
     }, { onDelta: emit, onStatus: status, onReset: reset }),
   });
 }
@@ -190,8 +205,8 @@ export function streamPortfolio(req: AuthenticatedRequest, res: Response, next: 
       }
       return { messages: [{ role: 'system', content: buildPortfolioAdvisorPrompt(ctx) }, ...history, { role: 'user', content: question }] };
     },
-    run: (messages, emit, status, reset) => streamToolLoop(groq, messages, {
-      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 2000, source: 'portfolio',
+    run: (messages, emit, status, reset, shouldStop) => streamToolLoop(groq, messages, {
+      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 2000, source: 'portfolio', shouldStop,
     }, { onDelta: emit, onStatus: status, onReset: reset }),
   });
 }
@@ -211,8 +226,8 @@ export function streamRealPortfolio(req: AuthenticatedRequest, res: Response, ne
       }
       return { messages: [{ role: 'system', content: system }, ...history, { role: 'user', content: question }] };
     },
-    run: (messages, emit) => streamCompletion(groq, messages, {
-      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 1500, source: 'real-portfolio', temperature: 0.2,
+    run: (messages, emit, _status, _reset, shouldStop) => streamCompletion(groq, messages, {
+      models: [SIMBA_ANALYST_MODEL, SIMBA_ANALYST_FALLBACK_MODEL], maxTokens: 1500, source: 'real-portfolio', temperature: 0.2, shouldStop,
     }, emit),
   });
 }
@@ -234,8 +249,8 @@ export function streamTutor(req: AuthenticatedRequest, res: Response, next: Next
       const system = buildTutorSystemPrompt(ctx, contextBlock, learnerBlock);
       return { messages: [{ role: 'system', content: system }, ...history, { role: 'user', content: question }] };
     },
-    run: (messages, emit) => streamCompletion(groq, messages, {
-      models: [SIMBA_COACH_MODEL, SIMBA_COACH_FALLBACK_MODEL], maxTokens: 700, source: 'tutor', temperature: 0.6,
+    run: (messages, emit, _status, _reset, shouldStop) => streamCompletion(groq, messages, {
+      models: [SIMBA_COACH_MODEL, SIMBA_COACH_FALLBACK_MODEL], maxTokens: 700, source: 'tutor', temperature: 0.6, shouldStop,
     }, emit),
     introFilter: stripTutorIntro,
   });
