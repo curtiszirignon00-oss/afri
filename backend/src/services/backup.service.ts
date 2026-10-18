@@ -231,8 +231,7 @@ async function backupTransactions(backupPath: string): Promise<number> {
  * patrimoniales sensibles, pas d'export Excel lisible).
  */
 async function backupRealPortfolios(backupPath: string): Promise<number> {
-  log.debug('
-🏦 Sauvegarde des portefeuilles réels...');
+  log.debug('\n🏦 Sauvegarde des portefeuilles réels...');
 
   const portfolios = await prisma.realPortfolio.findMany({
     include: { transactions: true, cash: true, imports: true },
