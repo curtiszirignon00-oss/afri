@@ -39,7 +39,7 @@ export const CONVERSATION_RULES = `
 - Une réponse courte est préférable quand le message est court.
 `.trim();
 
-// ─── Tuteur Pédagogique ───────────────────────────────────────────────────────
+// ─── Tuteur Pédagogique PEDAGO ───────────────────────────────────────────────────────
 
 export interface TutorUserContext {
   level?: ExperienceLevel;
