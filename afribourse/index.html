@@ -22,7 +22,10 @@
     <meta charset="UTF-8" />
     <!-- Empêche Google Translate de modifier le DOM React (cause insertBefore crash) -->
     <meta name="google" content="notranslate" />
-    <link rel="icon" type="image/png" href="/images/logo_afribourse.png" />
+    <!-- Favicons carrés (Google exige un carré, multiple de 48 px, pour l'afficher dans les résultats) -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>AfriBourse (Africbourse) — BRVM : Cours des Actions, Simulateur &amp; Formation</title>
     <meta name="description" content="AfriBourse (africbourse.com) — plateforme brvm pour suivre les cours des actions brvm, simuler votre portefeuille et apprendre à investir sur la Bourse Régionale des Valeurs Mobilières (UEMOA)." />
@@ -33,7 +36,7 @@
     <meta property="og:site_name"    content="AfriBourse" />
     <meta property="og:title"        content="AfriBourse — BRVM : Cours des Actions &amp; Formation" />
     <meta property="og:description"  content="Suivez les cours des actions brvm, simulez votre portefeuille et apprenez à investir sur la Bourse Régionale des Valeurs Mobilières (UEMOA)." />
-    <meta property="og:image"        content="https://africbourse.com/images/logo_afribourse.png" />
+    <meta property="og:image"        content="https://africbourse.com/logo-512.png" />
     <meta property="og:image:width"  content="512" />
     <meta property="og:image:height" content="512" />
     <meta property="og:url"          content="https://africbourse.com" />
@@ -41,14 +44,14 @@
     <meta name="twitter:site"        content="@AfriBourseStart" />
     <meta name="twitter:title"       content="AfriBourse — Plateforme d'Investissement BRVM" />
     <meta name="twitter:description" content="Investissez sur la BRVM avec le simulateur AfriBourse." />
-    <meta name="twitter:image"       content="https://africbourse.com/images/logo_afribourse.png" />
+    <meta name="twitter:image"       content="https://africbourse.com/logo-512.png" />
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#10B981" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AfriBourse" />
-    <link rel="apple-touch-icon" href="/images/logo_afribourse.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
     <!-- Facebook Pixel Code -->
     <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); fbq('init', '875398595570569'); fbq('track', 'PageView');</script>
@@ -72,7 +75,7 @@
           "url": "https://africbourse.com",
           "logo": {
             "@type": "ImageObject",
-            "url": "https://africbourse.com/images/logo_afribourse.png",
+            "url": "https://africbourse.com/logo-512.png",
             "width": 512,
             "height": 512
           },

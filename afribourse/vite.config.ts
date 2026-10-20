@@ -64,6 +64,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: [
         'images/logo_afribourse.png',
+        'favicon.ico',
+        'favicon-96x96.png',
+        'apple-touch-icon.png',
         'AppImages/android/android-launchericon-192-192.png',
         'AppImages/android/android-launchericon-512-512.png',
       ],
