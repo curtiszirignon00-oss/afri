@@ -7,7 +7,6 @@ import {
   sendCohortPreregistrationEmail,
   sendAnalysisPackReservationEmail,
 } from '../services/email.service';
-import { isOnlineRegClosed } from '../config/promo';
 import {
   ANALYSIS_PACK_ID,
   ANALYSIS_PACK_IDS,
@@ -144,11 +143,6 @@ export async function preregisterWebinar(req: Request, res: Response, next: Next
       }
       const seatError = await checkAnalysisSeat(resolvedPack as AnalysisPackId, email);
       if (seatError) return res.status(409).json({ message: seatError });
-    }
-
-    // Cohorte budget : inscriptions en ligne closes après la deadline (ce soir minuit)
-    if (isBudget && isOnlineRegClosed()) {
-      return res.status(409).json({ message: 'Les inscriptions en ligne sont terminées.' });
     }
 
     // Cohorte budget : refuser si le pack est complet — sauf si cette personne occupe déjà

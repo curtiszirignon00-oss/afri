@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle, Landmark, Gift, Star, Trophy, Flame, Users } from 'lucide-react';
-import { applyPromo, promoPercent, isPromoActive, formatCountdown } from '../../utils/promo';
-import { usePromoCountdown } from '../../hooks/usePromoCountdown';
-import { budgetPrice, budgetDiscountPct, BUDGET_SEAT_LIMIT, PACK_TIER_FULL as BUDGET_FULL, onlineRegOpen, onlineRemainingMs } from '../../config/budgetPricing';
+import { CheckCircle, Landmark, Gift, Star, Trophy, Users } from 'lucide-react';
+import { BUDGET_SEAT_LIMIT } from '../../config/budgetPricing';
+import { installmentFirst, installmentTotal } from '../../config/packInstallments';
 import { API_BASE_URL } from '../../config/api';
 
 type SeatInfo = { reserved: number; limit: number; soldOut: boolean };
@@ -96,10 +95,8 @@ const PACKS: Pack[] = [
 function fmt(n: number) { return n.toLocaleString('fr-FR'); }
 
 const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget' }> = ({ onChoose, variant }) => {
-  const promo = usePromoCountdown();
   const isBudget = variant === 'budget';
   const [seats, setSeats] = useState<Record<string, SeatInfo> | null>(null);
-  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!isBudget) return;
@@ -109,45 +106,9 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
       .catch(() => { /* silencieux */ });
   }, [isBudget]);
 
-  // Compte à rebours live jusqu'à la clôture des inscriptions en ligne (ce soir minuit)
-  useEffect(() => {
-    if (!isBudget) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [isBudget]);
-
-  const regOpen = onlineRegOpen(now);
-
   return (
     <section id="packs" className="px-4 sm:px-6 py-14 bg-gray-50 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
-        {/* Bandeau promo flash (page standard uniquement) */}
-        {!isBudget && promo.active && (
-          <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
-            <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
-              <Flame className="w-5 h-5" /> OFFRE FLASH 24H — Starter <span className="underline">-50%</span> · Parcours & Investisseur <span className="underline">-30%</span>
-            </p>
-            <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">Se termine dans <span className="font-mono font-extrabold text-white">{promo.label}</span></p>
-          </div>
-        )}
-
-        {/* Bandeau offre -50% pré-inscription (cohorte octobre) */}
-        {isBudget && (
-          regOpen ? (
-            <div className="mb-8 rounded-2xl bg-gradient-to-r from-red-600 to-orange-500 px-5 py-4 text-white text-center shadow-lg">
-              <p className="text-sm sm:text-base font-extrabold flex items-center justify-center gap-2 flex-wrap">
-                <Flame className="w-5 h-5" /> Cohorte Octobre — <span className="underline">-50%</span> en pré-inscription jusqu'au <span className="underline">25 septembre</span>
-              </p>
-              <p className="text-xs sm:text-sm font-semibold mt-1 text-orange-100">L'offre se termine dans <span className="font-mono font-extrabold text-white">{formatCountdown(onlineRemainingMs(now))}</span></p>
-            </div>
-          ) : (
-            <div className="mb-8 rounded-2xl bg-gray-700 px-5 py-4 text-white text-center shadow-lg">
-              <p className="text-sm sm:text-base font-extrabold">L'offre -50% en pré-inscription est terminée</p>
-              <p className="text-xs sm:text-sm font-semibold mt-1 text-gray-300">Merci de votre intérêt — contactez-nous pour rejoindre la cohorte d'octobre.</p>
-            </div>
-          )
-        )}
-
         {/* En-tête */}
         <p className="text-xs font-bold uppercase tracking-widest text-blue-600 text-center mb-3">Étagère 1 · J'apprends la méthode — choisis ton parcours</p>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 text-center mb-3" style={{ letterSpacing: '-0.01em' }}>
@@ -192,36 +153,17 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                   </div>
                   <p className={`text-sm mb-4 leading-snug ${dark ? 'text-blue-100' : 'text-gray-500'}`}>« {p.tagline} »</p>
 
-                  {/* Prix */}
-                  {(() => {
-                    const flashActive = isPromoActive();
-                    const discounted = isBudget || flashActive;
-                    const pct = isBudget ? budgetDiscountPct(p.id) : promoPercent(p.id);
-                    const fullRef = isBudget ? BUDGET_FULL[p.id] : p.price;
-                    const price = isBudget ? budgetPrice(p.id) : applyPromo(p.id, p.price);
-                    const monthly = applyPromo(p.id, p.monthly);
-                    return (
-                      <>
-                        <div className="mb-1 flex items-baseline gap-2 flex-wrap">
-                          <span className={`text-3xl font-extrabold ${dark ? 'text-white' : 'text-gray-900'}`}>{fmt(price)}</span>
-                          <span className={`text-sm font-semibold ${dark ? 'text-blue-200' : 'text-gray-500'}`}>XOF</span>
-                          {discounted && pct > 0 && (
-                            <>
-                              <span className={`text-base line-through font-semibold ${dark ? 'text-blue-300/70' : 'text-gray-400'}`}>{fmt(fullRef)}</span>
-                              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
-                            </>
-                          )}
-                        </div>
-                        <p className={`text-xs font-semibold mb-4 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
-                          {isBudget
-                            ? 'Réservation gratuite · payez maintenant ou plus tard'
-                            : flashActive
-                              ? 'Offre flash — paiement en une fois'
-                              : `ou dès ${fmt(monthly)} XOF/mois (paiement en 3×, +5 000)`}
-                        </p>
-                      </>
-                    );
-                  })()}
+                  {/* Prix — plein tarif, payable en 1 fois ou en 3 fois */}
+                  <div className="mb-1 flex items-baseline gap-2 flex-wrap">
+                    <span className={`text-3xl font-extrabold ${dark ? 'text-white' : 'text-gray-900'}`}>{fmt(p.price)}</span>
+                    <span className={`text-sm font-semibold ${dark ? 'text-blue-200' : 'text-gray-500'}`}>XOF</span>
+                  </div>
+                  <p className={`text-xs font-semibold mb-1 ${dark ? 'text-amber-200' : 'text-emerald-600'}`}>
+                    ou en 3 fois dès {fmt(installmentFirst(p.id))} XOF — total {fmt(installmentTotal(p.id))} XOF
+                  </p>
+                  <p className={`text-[11px] mb-4 ${dark ? 'text-blue-200' : 'text-gray-400'}`}>
+                    Réservation gratuite · vous choisissez 1 fois ou 3 fois au paiement
+                  </p>
 
                   {/* Places restantes (cohorte budget) */}
                   {isBudget && seats?.[p.id] && (() => {
@@ -244,7 +186,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                   {/* CTA */}
                   <button
                     onClick={() => onChoose(p.id)}
-                    disabled={isBudget && (!regOpen || seats?.[p.id]?.soldOut)}
+                    disabled={isBudget && seats?.[p.id]?.soldOut}
                     className={`w-full py-3 rounded-xl font-extrabold text-sm transition-all active:scale-95 mb-5 disabled:opacity-50 disabled:cursor-not-allowed ${
                       dark
                         ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 hover:from-amber-300 hover:to-orange-300 shadow-lg'
@@ -254,7 +196,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
                     }`}
                   >
                     {isBudget
-                      ? (!regOpen ? 'Offre -50% terminée' : seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →')
+                      ? (seats?.[p.id]?.soldOut ? 'Cohorte complète' : '🎟️ Réserver ma place →')
                       : `${p.cta} →`}
                   </button>
 
@@ -293,7 +235,7 @@ const PricingPacks: React.FC<{ onChoose: (id: PackId) => void; variant?: 'budget
 
         {/* Réassurance commune */}
         <p className="text-center text-xs text-gray-500 mt-8">
-          ✓ Satisfait ou remboursé 7 jours&nbsp;&nbsp;·&nbsp;&nbsp;Paiement Mobile Money sécurisé&nbsp;&nbsp;·&nbsp;&nbsp;Places limitées à 50 par session
+          ✓ Satisfait ou remboursé 7 jours&nbsp;&nbsp;·&nbsp;&nbsp;Paiement Mobile Money sécurisé — en 1 fois ou en 3 fois&nbsp;&nbsp;·&nbsp;&nbsp;Places limitées à {BUDGET_SEAT_LIMIT} par pack
         </p>
       </div>
     </section>

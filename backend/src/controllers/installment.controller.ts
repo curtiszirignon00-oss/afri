@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
 import { initiateDeposit, initiatePaymentPageSession } from '../services/pawapay.service';
-import { isPromoActive } from '../config/promo';
 import type { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 // ── Paramètres du paiement échelonné (Pack Parcours) ──────────────────────────
@@ -14,8 +13,8 @@ export const INSTALLMENT_INTERVAL_DAYS = 30;
 const PENDING_LOCK_MS = 3 * 60 * 1000; // anti double-paiement (3 min)
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
 
-// Échéancier 3× par pack — TOUJOURS au plein tarif + 5 000 de frais d'échelonnement.
-// Le paiement en 3 fois n'est pas éligible à la réduction de pré-inscription.
+// Échéancier 3× par pack — plein tarif + 5 000 de frais d'échelonnement.
+// Proposé au choix de l'utilisateur, à côté du paiement en 1 fois.
 export const INSTALLMENT_SURCHARGE = 5000;
 const PACK_TIER_INSTALLMENTS: Record<string, number[]> = {
   starter:      [25000, 25000, 25000], // 75 000  = 70 000 + 5 000
@@ -196,11 +195,6 @@ async function initiateInstallment(
 export async function startInstallmentPlan(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Connexion requise pour payer en plusieurs fois.' });
-
-  // Pendant l'offre flash, le paiement en 3 fois est désactivé
-  if (isPromoActive()) {
-    return res.status(403).json({ error: "Le paiement en 3 fois n'est pas disponible pendant l'offre flash. Profitez du tarif remisé en un seul paiement." });
-  }
 
   const { name, firstName, lastName, email, phone, correspondent, payPhone, currency = 'XOF' } = req.body;
   const resolvedEmail = (email ?? req.user?.email ?? '').trim().toLowerCase();

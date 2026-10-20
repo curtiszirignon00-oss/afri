@@ -1,35 +1,17 @@
-// Cohorte "budget" (page /webinaires-eco) — prix dédiés + places limitées.
-// Doit rester synchronisé avec backend (PACK_TIER_BUDGET + BUDGET_SEAT_*).
-export const PACK_TIER_BUDGET: Record<string, number> = {
-  starter: 35000,      // -50% (70 000)
-  parcours: 50000,     // -50% (100 000)
-  investisseur: 75000, // -50% (150 000)
-};
+// Page /webinaires-eco — mêmes prix que /webinaires (plein tarif), avec places limitées.
+// Le tarif -50 % en pré-inscription et la date de clôture des inscriptions en ligne ont
+// été retirés le 20 octobre 2026 : la réservation et le paiement sont ouverts en permanence.
 
-// Cohorte septembre : 20 pré-inscriptions max par pack
-export const BUDGET_SEAT_LIMIT = 20;
-
-// Cohorte OCTOBRE 2026 — offre -50% (pré-inscription) valable jusqu'au 25 septembre inclus.
-// Doit rester synchronisé avec backend/src/config/promo.ts (ONLINE_REG_DEADLINE_ISO).
-export const ONLINE_DEADLINE_ISO = '2026-09-26T00:00:00Z';
-export function onlineDeadlineMs(): number { return new Date(ONLINE_DEADLINE_ISO).getTime(); }
-export function onlineRegOpen(now: number = Date.now()): boolean { return now < onlineDeadlineMs(); }
-export function onlineRemainingMs(now: number = Date.now()): number { return Math.max(0, onlineDeadlineMs() - now); }
-
-/** Prix comptant "normal" (pour l'affichage barré). */
+/** Prix comptant par pack (plein tarif). */
 export const PACK_TIER_FULL: Record<string, number> = {
   starter: 70000,
   parcours: 100000,
   investisseur: 150000,
 };
 
-export function budgetPrice(tier: string): number {
-  return PACK_TIER_BUDGET[tier] ?? 0;
-}
+/** Places par pack sur la cohorte courante (une réservation occupe une place). */
+export const BUDGET_SEAT_LIMIT = 20;
 
-export function budgetDiscountPct(tier: string): number {
-  const full = PACK_TIER_FULL[tier];
-  const b = PACK_TIER_BUDGET[tier];
-  if (!full || !b) return 0;
-  return Math.round((1 - b / full) * 100);
+export function packPrice(tier: string): number {
+  return PACK_TIER_FULL[tier] ?? 0;
 }

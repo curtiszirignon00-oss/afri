@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ShieldCheck, Users, Zap, Flame } from 'lucide-react';
+import { X, ShieldCheck, Users, Zap } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { applyPromo, promoPercent, isPromoActive } from '../utils/promo';
-import { usePromoCountdown } from '../hooks/usePromoCountdown';
+import { installmentFirst } from '../config/packInstallments';
 
 // Versionné — incrémenter pour forcer le re-affichage sur tous les comptes
 const POPUP_KEY = 'afb_webinar_announcement_v5';
@@ -49,8 +48,6 @@ export default function WebinarAnnouncementPopup() {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
-  const promo = usePromoCountdown();
-  const promoActive = promo.active;
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -93,15 +90,6 @@ export default function WebinarAnnouncementPopup() {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Bandeau promo flash */}
-        {promoActive && (
-          <div className="bg-gradient-to-r from-red-600 to-orange-500 px-5 py-2 text-white text-center">
-            <p className="text-xs font-extrabold flex items-center justify-center gap-1.5 flex-wrap">
-              <Flame className="w-3.5 h-3.5" /> OFFRE FLASH 24H · Starter -50% · Parcours & Investisseur -30% · <span className="font-mono">{promo.label}</span>
-            </p>
-          </div>
-        )}
-
         {/* Header */}
         <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 px-6 pt-6 pb-5 text-white">
           <div className="flex items-center gap-2 mb-3">
@@ -114,8 +102,9 @@ export default function WebinarAnnouncementPopup() {
             Formation investissement BRVM 🎓
           </h2>
           <p className="text-blue-200 text-sm leading-relaxed">
-            3 niveaux disponibles — du <strong className="text-white">Starter ({formatPrice(applyPromo('starter', 70000))})</strong> à
-            l'<strong className="text-white">Investisseur ({formatPrice(applyPromo('investisseur', 150000))})</strong>.
+            3 niveaux disponibles — du <strong className="text-white">Starter ({formatPrice(70000)})</strong> à
+            l'<strong className="text-white">Investisseur ({formatPrice(150000)})</strong>.
+            Payable en 1 fois ou en 3 fois.
             1ère session le <strong className="text-white">samedi 8 août</strong>.
           </p>
         </div>
@@ -144,12 +133,8 @@ export default function WebinarAnnouncementPopup() {
                 <p className="text-[10px] text-gray-400 leading-snug truncate">{p.summary}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className={`text-sm font-extrabold ${p.popular ? 'text-violet-800' : 'text-gray-900'}`}>{formatPrice(applyPromo(p.id, p.price))}</p>
-                {promoActive && promoPercent(p.id) > 0 ? (
-                  <p className="text-[10px] text-gray-400"><span className="line-through">{formatPrice(p.price)}</span> <span className="text-red-600 font-bold">-{promoPercent(p.id)}%</span></p>
-                ) : (
-                  <p className="text-[10px] text-gray-400">ou {formatPrice(p.installmentAmount)}/mois</p>
-                )}
+                <p className={`text-sm font-extrabold ${p.popular ? 'text-violet-800' : 'text-gray-900'}`}>{formatPrice(p.price)}</p>
+                <p className="text-[10px] text-gray-400">ou 3 × dès {formatPrice(installmentFirst(p.id))}</p>
               </div>
             </div>
           ))}

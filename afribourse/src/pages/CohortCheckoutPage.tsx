@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, ArrowLeft, Flame } from 'lucide-react';
-import { applyPromo, promoPercent } from '../utils/promo';
-import { usePromoCountdown } from '../hooks/usePromoCountdown';
-import { budgetPrice, budgetDiscountPct } from '../config/budgetPricing';
+import { CheckCircle, Loader2, AlertCircle, ArrowLeft, CalendarClock } from 'lucide-react';
+import { installmentSchedule, installmentTotal } from '../config/packInstallments';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
@@ -99,11 +97,11 @@ export default function CohortCheckoutPage() {
   const [tier, setTier] = useState(resolveTier(searchParams.get('pack')));
   const tierCfg = PACK_TIERS[tier];
   const PACK_NAME = tierCfg.name;
-  const promo = usePromoCountdown();
   const isBudget = searchParams.get('variant') === 'budget';
-  const price = isBudget ? budgetPrice(tier) : applyPromo(tier, tierCfg.full);
-  const pct = isBudget ? budgetDiscountPct(tier) : promoPercent(tier);
-  const showDiscount = isBudget || (promo.active && pct > 0);
+  // Plein tarif sur les deux pages — le 3× est proposé au choix sur l'étape paiement.
+  const price = tierCfg.full;
+  const schedule3x = installmentSchedule(tier);
+  const total3x = installmentTotal(tier);
 
   const lead = readLead();
   const initName = lead?.name || (userProfile as any)?.profile?.full_name || (userProfile as any)?.profile?.username || '';
@@ -119,6 +117,8 @@ export default function CohortCheckoutPage() {
   const [waPhone, setWaPhone] = useState(initPhone);
   // Budget : on affiche TOUJOURS le formulaire de pré-inscription d'abord (pré-rempli si infos connues).
   const [step, setStep] = useState<'form' | 'reserved' | 'payment'>(isBudget ? 'form' : (infoComplete ? 'payment' : 'form'));
+  // Choix du mode de paiement sur l'étape paiement : 1 fois ou 3 fois
+  const [payMode, setPayMode] = useState<'single' | 'installment'>('single');
   const [payOperator, setPayOperator] = useState<string | null>(null);
   const [payDialCode, setPayDialCode] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initDial : '+225');
   const [payPhone, setPayPhone] = useState(PAYMENT_DIAL_CODES.some((c) => c.code === initDial) ? initPhone : '');
@@ -233,10 +233,10 @@ export default function CohortCheckoutPage() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Pré-inscription enregistrée ✓</h1>
           <p className="text-sm text-gray-600 mb-2">
-            Votre place au <strong>{PACK_NAME}</strong> est réservée pour la <strong>cohorte d'octobre</strong> (démarrage le <strong>10 octobre</strong>).
+            Votre place au <strong>{PACK_NAME}</strong> est réservée pour la prochaine cohorte.
           </p>
           <p className="text-sm text-gray-600 mb-6">
-            Confirmez dès maintenant en réglant votre paiement, ou continuez à explorer — vous recevez aussi un email avec votre lien de paiement (réglez avant le 25 septembre pour profiter du tarif -50%).
+            Confirmez dès maintenant en réglant votre pack — <strong>en 1 fois</strong> ou <strong>en 3 fois</strong> — ou plus tard avec le lien de paiement reçu par email. Les places sont limitées.
           </p>
           <button onClick={() => setStep('payment')} className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity mb-2 flex items-center justify-center gap-2">
             💳 Payer maintenant — {formatPrice(price)}
@@ -263,23 +263,11 @@ export default function CohortCheckoutPage() {
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
-              {showDiscount && (
-                <>
-                  <span className="text-lg line-through text-blue-300/80 font-semibold">{formatPrice(tierCfg.full)}</span>
-                  <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-red-500 text-white">-{pct}%</span>
-                </>
-              )}
             </div>
             <p className="text-blue-200 text-xs mt-1">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation</p>
-            {isBudget ? (
-              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5" /> Tarif spécial -50% réservé
-              </p>
-            ) : promo.active && pct > 0 && (
-              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5" /> Offre -{pct}% — se termine dans <span className="font-mono">{promo.label}</span>
-              </p>
-            )}
+            <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
+              <CalendarClock className="w-3.5 h-3.5" /> En 1 fois, ou en 3 fois dès {formatPrice(schedule3x[0])}
+            </p>
           </div>
 
           {/* Pack + résumé — toujours visibles (changement de pack possible à tout moment) */}
@@ -354,13 +342,6 @@ export default function CohortCheckoutPage() {
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4" /> {isBudget ? 'Réserver ma place' : 'Continuer vers le paiement'}</>}
               </button>
 
-              {!isBudget && (
-                <div className="text-center pt-1">
-                  <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="text-xs font-semibold text-blue-600 hover:underline">
-                    Ou payer en 3 fois <span className="text-gray-400 font-normal">(plein tarif +5 000)</span>
-                  </button>
-                </div>
-              )}
             </div>
           )}
 
@@ -369,10 +350,55 @@ export default function CohortCheckoutPage() {
             <div className="p-6 space-y-4">
               <div className={`${isBudget ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-blue-50 border-blue-200 text-blue-800'} border rounded-xl p-3 text-sm`}>
                 {isBudget ? '✅ Place réservée · Payez maintenant ou plus tard pour la confirmer' : '✅ Inscription enregistrée · Payez pour confirmer votre place'}
-                <span className="block font-bold mt-0.5">{formatPrice(price)}{isBudget ? ' · démarrage le 10 octobre' : ''}</span>
               </div>
 
+              {/* Choix du mode de paiement */}
               {(payStatus === 'idle' || payStatus === 'initiating') && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-700 mb-2">Comment souhaitez-vous payer ?</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setPayMode('single')}
+                      className={`rounded-xl border-2 p-3 text-left transition-all ${payMode === 'single' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                      <span className={`block text-xs font-extrabold ${payMode === 'single' ? 'text-blue-800' : 'text-gray-700'}`}>En 1 fois</span>
+                      <span className="block text-sm font-extrabold text-gray-900 mt-0.5">{formatPrice(price)}</span>
+                      <span className="block text-[10px] text-emerald-600 font-semibold mt-0.5">Le moins cher</span>
+                    </button>
+                    <button type="button" onClick={() => setPayMode('installment')}
+                      className={`rounded-xl border-2 p-3 text-left transition-all ${payMode === 'installment' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                      <span className={`block text-xs font-extrabold ${payMode === 'installment' ? 'text-blue-800' : 'text-gray-700'}`}>En 3 fois</span>
+                      <span className="block text-sm font-extrabold text-gray-900 mt-0.5">dès {formatPrice(schedule3x[0])}</span>
+                      <span className="block text-[10px] text-gray-500 font-semibold mt-0.5">total {formatPrice(total3x)}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Échéancier 3× + redirection vers la page dédiée */}
+              {payMode === 'installment' && (payStatus === 'idle' || payStatus === 'initiating') && (
+                <div className="space-y-3">
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Votre échéancier</p>
+                    <ul className="space-y-1.5">
+                      {schedule3x.map((amount, i) => (
+                        <li key={i} className="flex items-center justify-between text-xs text-gray-700">
+                          <span>{i === 0 ? "Aujourd'hui" : `Dans ${i * 30} jours`}</span>
+                          <span className="font-bold text-gray-900">{formatPrice(amount)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="text-[11px] text-gray-400 mt-2">
+                      Total {formatPrice(total3x)} — plein tarif {formatPrice(price)} + 5 000 de frais d'échelonnement.
+                    </p>
+                  </div>
+                  <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)}
+                    className="w-full py-3 rounded-xl font-bold text-white text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 flex items-center justify-center gap-2">
+                    <CalendarClock className="w-4 h-4" /> Continuer en 3 fois — {formatPrice(schedule3x[0])} aujourd'hui
+                  </button>
+                  <p className="text-center text-[11px] text-gray-400">Un compte AfriBourse est requis pour le suivi des échéances.</p>
+                </div>
+              )}
+
+              {payMode === 'single' && (payStatus === 'idle' || payStatus === 'initiating') && (
                 <>
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">Pays</label>
@@ -433,13 +459,8 @@ export default function CohortCheckoutPage() {
                 </>
               )}
 
-              {payStatus === 'idle' && !OFFLINE_PAYMENT_CODES.includes(payDialCode) && (
+              {payStatus === 'idle' && (payMode === 'installment' || !OFFLINE_PAYMENT_CODES.includes(payDialCode)) && (
                 <div className="text-center pt-1 space-y-2">
-                  {!promo.active && (
-                    <button onClick={() => navigate(`/parcours/paiement-3-fois?pack=${tier}`)} className="block w-full text-xs font-semibold text-blue-600 hover:underline">
-                      Ou payer en 3 fois <span className="text-gray-400 font-normal">(plein tarif +5 000, sans réduction)</span>
-                    </button>
-                  )}
                   {isBudget && (
                     <button onClick={() => navigate('/webinaires-eco')} className="block w-full text-xs font-semibold text-gray-500 hover:text-gray-700 hover:underline">
                       Payer plus tard — continuer sur la page webinaire

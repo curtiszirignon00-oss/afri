@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { prisma } from '../config/database';
 import { log } from '../config/logger';
-import { applyPromo, isOnlineRegClosed } from '../config/promo';
 import {
   initiateDeposit,
   initiateRefund,
@@ -44,17 +43,11 @@ const PACK_ID = 'pack-parcours-investisseur';
 const PACK_PRICE_FULL = 35000;
 const PACK_PRICE_REFERRAL = 24500;
 
-// Offre cohorte juillet — -10% pour les préinscrits jusqu'au 3 juillet
-const PACK_PRICE_COHORT = 31500;
 const COHORT_REG_ID = 'cohorte-juillet-2026';
-const COHORT_DISCOUNT_DEADLINE = new Date('2026-07-03T23:59:59Z');
 
-// Prix par pack (good-better-best) — comptant
+// Prix par pack (good-better-best) — comptant, plein tarif sur les deux pages webinaires.
+// Le paiement en 3 fois est géré par installment.controller (plein tarif + 5 000 de frais).
 const PACK_TIER_FULL: Record<string, number> = { starter: 70000, parcours: 100000, investisseur: 150000 };
-const PACK_TIER_COHORT: Record<string, number> = { starter: 31500, parcours: 45000, investisseur: 67500 }; // -10%
-
-// Variante "budget" — cohorte septembre (page /webinaires-eco), -50% sur tous les packs
-export const PACK_TIER_BUDGET: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
 
 // Webinaires à l'unité + événements présentiels — prix officiels (source de vérité côté serveur)
 export const INDIVIDUAL_WEBINAR_PRICES: Record<string, number> = {
@@ -520,12 +513,9 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id ?? null;
 
   const { planId, planName, currency, correspondent, phone, registrationEmail, registrationName, referralCode } = req.body;
+  // `variant: 'budget'` identifie seulement la page d'origine (/webinaires-eco) pour le
+  // comptage des places — il n'a plus d'effet sur le prix.
   const isBudgetVariant = req.body.variant === 'budget';
-
-  // Cohorte budget en ligne : inscriptions closes après la deadline (ce soir minuit)
-  if (isBudgetVariant && isOnlineRegClosed()) {
-    return res.status(409).json({ error: 'Les inscriptions en ligne sont terminées.' });
-  }
 
   // Wave passe par la Payment Page hébergée : le numéro y est saisi par le client,
   // il n'est donc pas requis côté API.
@@ -569,10 +559,7 @@ export async function createDeposit(req: AuthenticatedRequest, res: Response) {
         log.info('[REFERRAL] Code ambassadeur appliqué au paiement', { userId, code: referralCode, finalAmount });
       }
     } else if (tier) {
-      // Variante "budget" (cohorte prospects, prix dédiés) OU promo 24h éventuelle
-      finalAmount = isBudgetVariant
-        ? PACK_TIER_BUDGET[tier]
-        : applyPromo(tier, PACK_TIER_FULL[tier]);
+      finalAmount = PACK_TIER_FULL[tier];
     } else {
       finalAmount = PACK_PRICE_FULL;
     }

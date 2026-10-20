@@ -90,6 +90,7 @@ interface TooltipProps {
   mouseY: number;
   period: Period;
   totalCap: number;
+  changesReady: boolean;
 }
 
 // ─── Secteurs & couleurs BRVM réels ──────────────────────────────────────────
@@ -138,6 +139,21 @@ function formatDay(iso: string, opts: Intl.DateTimeFormatOptions): string {
   // Dates de référence au format YYYY-MM-DD (UTC) : midi UTC évite tout décalage de jour
   const d = iso.length === 10 ? new Date(`${iso}T12:00:00Z`) : new Date(iso);
   return d.toLocaleDateString('fr-FR', { ...opts, timeZone: 'UTC' });
+}
+
+/**
+ * Capitalisation en FCFA depuis le flux /stocks : cours × nombre de titres, à défaut
+ * capitalisation des fondamentaux normalisée (< 1e9 ⇒ exprimée en millions). Même règle
+ * que marketCapFCFA côté serveur ; stock.market_cap n'est pas fiable. Ne dépend pas de la
+ * période : en mode capitalisation la disposition reste identique quelle que soit la durée.
+ */
+function stockCap(s: Stock): number | null {
+  const fund   = s.fundamentals?.[0];
+  const shares = fund?.shares_outstanding ?? s.shares_outstanding;
+  if (s.current_price > 0 && shares && shares > 0) return s.current_price * shares;
+  const fundCap = fund?.market_cap;
+  if (fundCap && fundCap > 0) return fundCap < 1e9 ? fundCap * 1e6 : fundCap;
+  return null;
 }
 
 /**
@@ -219,7 +235,7 @@ function squarify<T>(items: T[], weightOf: (t: T) => number, rect: Rect): Array<
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
-function Tooltip({ cell, mouseX, mouseY, period, totalCap }: TooltipProps) {
+function Tooltip({ cell, mouseX, mouseY, period, totalCap, changesReady }: TooltipProps) {
   const { stock } = cell;
   const sectorColor = SECTOR_COLORS[stock.sector || ''] || '#64748b';
   const def = PERIOD_BY_KEY[period];
@@ -274,7 +290,7 @@ function Tooltip({ cell, mouseX, mouseY, period, totalCap }: TooltipProps) {
         <TooltipStat label="Prix" value={formatPrice(stock.current_price)} color="#f1f5f9" />
         <TooltipStat
           label={`Var. ${def.short}`}
-          value={formatChange(stock.change)}
+          value={changesReady ? formatChange(stock.change) : '—'}
           color={stock.change === null ? '#64748b' : stock.change >= 0 ? '#22c55e' : '#ef4444'}
         />
         {stock.basePrice ? (
@@ -294,7 +310,7 @@ function Tooltip({ cell, mouseX, mouseY, period, totalCap }: TooltipProps) {
         {period === '1D' && (
           <TooltipStat label="Volume" value={(stock.volume || 0).toLocaleString('fr-FR')} color="#94a3b8" />
         )}
-        {stock.change === null && (
+        {changesReady && stock.change === null && (
           <div style={{ gridColumn: '1 / -1', color: '#64748b', fontSize: 10 }}>
             Historique insuffisant sur la période.
           </div>
@@ -406,7 +422,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
       return {
         ...s,
         change,
-        cap: it?.market_cap && it.market_cap > 0 ? it.market_cap : null,
+        cap: stockCap(s) ?? (it?.market_cap && it.market_cap > 0 ? it.market_cap : null),
         basePrice: period === '1D' ? (s.previous_close > 0 ? s.previous_close : null) : (it?.base_price ?? null),
         baseDate: it?.base_date ?? null,
         adjusted: !!it?.adjusted,
@@ -480,13 +496,14 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   const aggregate    = useMemo(() => aggregateChange(sectorStocks), [sectorStocks]);
   const marketChange = aggregate.value ?? 0;
 
-  // Les variations de période et les capitalisations viennent du serveur
-  const needsServerData = period !== '1D' || sizeMode === 'cap';
-  const serverPending   = needsServerData && !mapData;
-  const serverFailed    = serverPending && mapQuery.isError;
-  // En 1D les variations sont déjà là mais pas les caps : attendre évite un badge
-  // en moyenne simple qui bascule ensuite en moyenne pondérée
-  const badgeReady      = !!mapData || mapQuery.isError;
+  // Seules les variations hors 1D viennent du serveur. La capitalisation (taille en mode
+  // capitalisation) vient de /stocks : la carte par capitalisation s'affiche toujours,
+  // seules ses couleurs attendent les variations de la période.
+  const changesPending = period !== '1D' && !mapData && !mapQuery.isError;
+  const changesFailed  = period !== '1D' && !mapData && mapQuery.isError;
+  const changesReady   = !changesPending && !changesFailed;
+  const sizePending    = sizeMode === 'change' && !changesReady;
+  const errorDetail    = mapQuery.error instanceof Error ? mapQuery.error.message : '';
 
   const subtitleDate = period === '1D'
     ? `SÉANCE DU ${formatDay(mapData?.as_of ?? new Date().toISOString(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}`
@@ -693,7 +710,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     const isHovered  = hoveredCell?.stock.symbol === stock.symbol;
     const showTicker = cw > 50  && ch > 30;
     const showChange = cw > 60  && ch > 50;
-    const showName   = cw > 110 && ch > 80;
+    const wantName   = cw > 110 && ch > 80;
     // Petites cases (fréquentes en mode capitalisation) : ticker seul, taille ajustée
     const compact    = !showTicker && cw > 24 && ch > 13;
 
@@ -719,6 +736,9 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
       : blockTop + tickerFS;
     const changeY    = tickerY + gap + changeFS;
     const nameY      = showLogo ? logoY - 5 : tickerY - tickerFS - 5;
+    const nameFS     = Math.min(cw * 0.07, ch * 0.09, 9);
+    // Le nom ne doit pas déborder au-dessus de la case (il passerait sous le bandeau secteur)
+    const showName   = wantName && nameY - nameFS >= y + GAP;
     const compactFS  = Math.min((cw - 4) / (stock.symbol.length * 0.62), ch * 0.6, 10);
 
     return (
@@ -773,7 +793,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           <text
             x={x + cw / 2} y={nameY}
             textAnchor="middle" fill="rgba(255,255,255,0.5)"
-            fontSize={Math.min(cw * 0.07, ch * 0.09, 9)}
+            fontSize={nameFS}
             fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
           >
             {stock.company_name.length > 20 ? stock.company_name.slice(0, 18) + '…' : stock.company_name}
@@ -810,7 +830,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             fontSize={changeFS}
             fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
           >
-            {formatChange(stock.change)}
+            {changesReady ? formatChange(stock.change) : '—'}
           </text>
         )}
       </g>
@@ -820,9 +840,9 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   // ── Rendu d'un bloc secteur (mode capitalisation) ─────────────────────────
   function renderSectorBlock(b: SectorBlock) {
     const color   = SECTOR_COLORS[b.name] || '#94a3b8';
-    const chg     = formatChange(b.change);
+    const chg     = changesReady ? formatChange(b.change) : '';
     const roomFor = (b.width - 12) / 5.6; // ~5,6 px par caractère à 9 px (monospace)
-    const showChg = roomFor >= chg.length + 6;
+    const showChg = chg !== '' && roomFor >= chg.length + 6;
     const maxName = Math.floor(roomFor - (showChg ? chg.length + 2 : 0));
     const name    = b.name.toUpperCase();
     return (
@@ -916,7 +936,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             }}>
               BRVM MARKET MAP
             </span>
-            {!serverPending && badgeReady && aggregate.value !== null && (
+            {changesReady && aggregate.value !== null && (
               <span
                 title={aggregate.weighted
                   ? 'Variation pondérée par la capitalisation boursière'
@@ -933,11 +953,14 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             )}
           </div>
           <div style={{ color: '#475569', fontSize: 10, marginTop: 4, letterSpacing: 1 }}>
-            BRVM • {serverPending ? '…' : shownStocks.length} TITRES • {subtitleDate}
-            {!serverPending && missingCount > 0 && (
+            BRVM • {sizePending ? '…' : shownStocks.length} TITRES • {subtitleDate}
+            {!sizePending && missingCount > 0 && (
               <span style={{ color: '#334155' }}>
                 {' '}• {missingCount} {sizeMode === 'cap' ? 'SANS CAPITALISATION' : 'SANS HISTORIQUE'}
               </span>
+            )}
+            {sizeMode === 'cap' && changesPending && (
+              <span style={{ color: '#0ea5e9' }}>{' '}• CALCUL DES VARIATIONS…</span>
             )}
           </div>
         </div>
@@ -993,7 +1016,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           <button
             className="mm-action-btn"
             onClick={handleDownload}
-            disabled={isCapturing || serverPending || !cells.length}
+            disabled={isCapturing || !changesReady || !cells.length}
             title="Télécharger en PNG"
           >
             <Download style={{ width: 12, height: 12 }} />
@@ -1005,7 +1028,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             <button
               className="mm-action-btn"
               onClick={() => setShowShare(v => !v)}
-              disabled={serverPending}
+              disabled={!changesReady}
               title="Partager"
               style={copied ? { borderColor: '#22c55e44', color: '#22c55e' } : {}}
             >
@@ -1102,24 +1125,35 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
         ))}
       </div>
 
+      {/* ── Variations indisponibles en mode capitalisation : la carte reste affichée ── */}
+      {sizeMode === 'cap' && changesFailed && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap',
+          marginBottom: 8, padding: '8px 12px', borderRadius: 8, fontSize: 11,
+          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b',
+        }}>
+          <span>
+            Variations {def.phrase} indisponibles{errorDetail ? ` (${errorDetail})` : ''} — taille = capitalisation, couleurs grisées.
+          </span>
+          <button className="mm-action-btn" onClick={() => mapQuery.refetch()}>Réessayer</button>
+        </div>
+      )}
+
       {/* ── Treemap SVG ── */}
       <div
         style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', position: 'relative' }}
         onMouseMove={handleMouseMove}
       >
-        {serverPending ? (
+        {sizePending ? (
           <div style={{
             aspectRatio: `${W} / ${H}`, background: '#0a0e17',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
             color: '#475569', fontSize: 12, letterSpacing: 1, padding: 16, textAlign: 'center',
           }}>
-            {serverFailed ? (
+            {changesFailed ? (
               <>
-                <span>
-                  {period === '1D'
-                    ? 'IMPOSSIBLE DE CHARGER LES CAPITALISATIONS.'
-                    : `IMPOSSIBLE DE CALCULER LES VARIATIONS ${def.phrase.toUpperCase()}.`}
-                </span>
+                <span>IMPOSSIBLE DE CALCULER LES VARIATIONS {def.phrase.toUpperCase()}.</span>
+                {errorDetail && <span style={{ fontSize: 10, color: '#334155' }}>{errorDetail}</span>}
                 <button className="mm-action-btn" onClick={() => mapQuery.refetch()}>Réessayer</button>
               </>
             ) : (
@@ -1186,6 +1220,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           mouseY={mousePos.y}
           period={period}
           totalCap={sizeMode === 'cap' ? totalCap : 0}
+          changesReady={changesReady}
         />
       )}
     </div>

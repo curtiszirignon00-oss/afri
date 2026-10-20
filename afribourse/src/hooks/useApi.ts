@@ -104,11 +104,14 @@ export interface Stock {
   previous_close: number;
   daily_change_percent: number;
   volume: number;
-  market_cap: number;
+  market_cap: number; // unités incohérentes en base : préférer cours × shares_outstanding
+  shares_outstanding?: number | null;
   logo_url?: string | null;
   fundamentals?: Array<{
     pe_ratio?: number | null;
     dividend_yield?: number | null;
+    market_cap?: number | null;          // tantôt en millions, tantôt en FCFA
+    shares_outstanding?: number | null;
   }>;
 }
 

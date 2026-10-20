@@ -1,24 +1,22 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, Loader2, AlertCircle, Lock, ShieldCheck, CalendarClock, ArrowLeft, Flame } from 'lucide-react';
-import { applyPromo, promoPercent } from '../utils/promo';
-import { usePromoCountdown } from '../hooks/usePromoCountdown';
+import { CheckCircle, Loader2, AlertCircle, Lock, ShieldCheck, CalendarClock, ArrowLeft } from 'lucide-react';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useAuth } from '../contexts/AuthContext';
 import { usePawaPayment, getCorrespondent, getAvailableCountries, getCurrency } from '../hooks/usePawaPayment';
 import { analytics } from '../services/analytics';
 import { metaPixel } from '../utils/metaPixel';
+import { installmentSchedule, INSTALLMENT_SURCHARGE } from '../config/packInstallments';
 
 const PACK_ID = 'pack-parcours-investisseur';
 
-// Échéancier 3× par pack — toujours au plein tarif + 5 000 de frais d'échelonnement.
-// Le 3× n'est pas éligible à la réduction de pré-inscription.
-const INSTALLMENT_SURCHARGE = 5000;
+
+// Échéancier 3× par pack — plein tarif + 5 000 de frais d'échelonnement (cf. config/packInstallments).
 const PACK_TIERS: Record<string, { name: string; single: number; installments: number[] }> = {
-  starter:      { name: 'Pack Starter',      single: 70000,  installments: [25000, 25000, 25000] }, // 75 000
-  parcours:     { name: 'Pack Parcours',     single: 100000, installments: [35000, 35000, 35000] }, // 105 000
-  investisseur: { name: 'Pack Investisseur', single: 150000, installments: [55000, 50000, 50000] }, // 155 000
+  starter:      { name: 'Pack Starter',      single: 70000,  installments: installmentSchedule('starter') },
+  parcours:     { name: 'Pack Parcours',     single: 100000, installments: installmentSchedule('parcours') },
+  investisseur: { name: 'Pack Investisseur', single: 150000, installments: installmentSchedule('investisseur') },
 };
 function resolveTier(p: string | null): string {
   return p && PACK_TIERS[p] ? p : 'starter';
@@ -87,9 +85,7 @@ export default function InstallmentStartPage() {
   const tier = resolveTier(searchParams.get('pack'));
   const tierCfg = PACK_TIERS[tier];
   const PLAN_NAME = tierCfg.name;
-  const promo = usePromoCountdown();
-  const pct = promoPercent(tier);
-  // 3× : toujours plein tarif + 5 000 (aucune réduction de pré-inscription)
+  // 3× : plein tarif + 5 000 de frais d'échelonnement
   const INSTALLMENTS = tierCfg.installments;
   const TOTAL = INSTALLMENTS.reduce((a, b) => a + b, 0);
   const SINGLE = tierCfg.single;
@@ -235,29 +231,6 @@ export default function InstallmentStartPage() {
     );
   }
 
-  // Pendant l'offre flash, le paiement en 3× est désactivé — on redirige vers le paiement unique remisé
-  if (promo.active) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-r from-red-600 to-orange-500 text-white flex items-center justify-center mx-auto mb-4">
-            <Flame className="w-7 h-7" />
-          </div>
-          <h1 className="text-xl font-extrabold text-gray-900 mb-2">Offre flash en cours 🔥</h1>
-          <p className="text-sm text-gray-600 mb-1">Pendant l'offre flash, seul le <strong>paiement en une fois</strong> est disponible — au tarif remisé (jusqu'à -50%).</p>
-          <p className="text-xs text-gray-400 mb-6">Se termine dans <span className="font-mono font-bold text-gray-600">{promo.label}</span></p>
-          <button onClick={() => navigate(`/parcours/cohorte-juillet?pack=${tier}`)}
-            className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90 transition-opacity">
-            Profiter de l'offre →
-          </button>
-          <button onClick={() => navigate('/webinaires-eco')} className="mt-3 block w-full text-xs text-gray-400 hover:text-gray-600">
-            Retour aux webinaires
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-10 px-4">
       <div className="max-w-lg mx-auto">
@@ -272,13 +245,8 @@ export default function InstallmentStartPage() {
             <h1 className="text-2xl font-extrabold leading-snug">{PLAN_NAME}</h1>
             <p className="text-blue-200 text-sm mt-1">{formatPrice(TOTAL)} répartis en 3 mensualités</p>
             <p className="mt-2 text-xs font-semibold text-amber-200">
-              Plein tarif ({formatPrice(SINGLE)}) + {formatPrice(INSTALLMENT_SURCHARGE)} de frais d'échelonnement — les réductions de pré-inscription ne s'appliquent pas au 3×.
+              Plein tarif ({formatPrice(SINGLE)}) + {formatPrice(INSTALLMENT_SURCHARGE)} de frais d'échelonnement. Le paiement en 1 fois revient moins cher.
             </p>
-            {promo.active && pct > 0 && (
-              <p className="mt-2 text-xs font-bold text-amber-200 flex items-center gap-1.5">
-                <Flame className="w-3.5 h-3.5" /> Offre -{pct}% appliquée — se termine dans <span className="font-mono">{promo.label}</span>
-              </p>
-            )}
           </div>
 
           {/* ── Conditions ── */}

@@ -189,7 +189,7 @@ const FAQ = [
   },
   {
     q: "C'est quoi la facilité de paiement en 3 fois ?",
-    a: "Vous pouvez régler le parcours en 3 versements : 15 000 XOF aujourd'hui, puis 10 000 XOF et 10 000 XOF. Vous accédez au parcours dès le 1er paiement, et nous vous relançons pour les échéances suivantes (par email et WhatsApp).",
+    a: "Au moment de payer, vous choisissez : en 1 fois, ou en 3 versements mensuels. En 3 fois, le pack est au plein tarif plus 5 000 XOF de frais d'échelonnement — Starter 25 000 × 3, Parcours 35 000 × 3, Investisseur 55 000 puis 50 000 et 50 000. Vous accédez au parcours dès le 1er versement, et nous vous relançons pour les échéances suivantes (par email et WhatsApp).",
   },
   {
     q: 'Le pack est-il remboursable ?',

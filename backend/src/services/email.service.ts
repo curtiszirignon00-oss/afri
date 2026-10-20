@@ -1,7 +1,6 @@
 import { log } from '../config/logger';
 import transporter, { smtpReady } from '../config/mailer';
 import config from '../config/environnement';
-import { applyPromo } from '../config/promo';
 import {
   ANALYSIS_PACK_FULL,
   ANALYSIS_PACK_NAMES,
@@ -4221,10 +4220,10 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
 
   // Pack Parcours Investisseur — Cohorte Juillet 2026 (contenu selon le pack)
   const tierCfg = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
-  // Promo 24h éventuelle : afficher le montant réellement payé
+  // Montant réellement payé si connu (1 fois ou total 3 fois), sinon plein tarif du pack
   const packAmount = amountOverride != null
     ? `${amountOverride.toLocaleString('fr-FR')} XOF`
-    : tierCfg ? `${applyPromo(pack as string, tierCfg.full).toLocaleString('fr-FR')} XOF` : '70 000 XOF';
+    : tierCfg ? `${tierCfg.full.toLocaleString('fr-FR')} XOF` : '70 000 XOF';
   const packName = tierCfg ? tierCfg.name : 'Pack Parcours Investisseur';
   // Sessions / heures / webinaires & avantages en plus selon le pack (+2 sessions, +6h par palier)
   const tierDetails: Record<string, { sessions: number; hours: number; extras: string[] }> = {
@@ -4720,8 +4719,8 @@ const PACK_TIER_PRICES: Record<string, { name: string; full: number; cohort: num
   parcours:     { name: 'Pack Parcours',     full: 100000, cohort: 100000 },
   investisseur: { name: 'Pack Investisseur', full: 150000, cohort: 150000 },
 };
-// Prix cohorte "budget" (page /webinaires-eco) — sync avec pawapay.controller PACK_TIER_BUDGET
-const PACK_TIER_BUDGET_PRICES: Record<string, number> = { starter: 35000, parcours: 50000, investisseur: 75000 };
+// Échéancier 3× par pack — plein tarif + 5 000 de frais (sync installment.controller)
+const PACK_TIER_INSTALLMENT_TOTALS: Record<string, number> = { starter: 75000, parcours: 105000, investisseur: 155000 };
 function fmtXof(n: number) { return n.toLocaleString('fr-FR') + ' XOF'; }
 
 export async function sendCohortPreregistrationEmail({
@@ -4733,7 +4732,7 @@ export async function sendCohortPreregistrationEmail({
   const cohortLabel = isBudget ? 'Cohorte Octobre 2026' : 'Cohorte Août 2026';
   const cohortMonth = isBudget ? "d'octobre" : "d'août";
   const startDate = isBudget ? '10 octobre' : '8 août';
-  const payDeadline = isBudget ? '25 septembre' : '7 août';
+  const installmentTotal = pack && PACK_TIER_INSTALLMENT_TOTALS[pack] ? PACK_TIER_INSTALLMENT_TOTALS[pack] : null;
   const progRows = isBudget
     ? `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>10 octobre</strong> — S1 · Fondamentaux de la bourse</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>24–25 octobre</strong> — S2 & S3 · Analyse fondamentale</td></tr>
@@ -4747,7 +4746,7 @@ export async function sendCohortPreregistrationEmail({
   const payUrl = `${base}/parcours/cohorte-juillet${pack ? `?pack=${pack}` : ''}${isBudget ? `${pack ? '&' : '?'}variant=budget` : ''}`;
   const tier = pack && PACK_TIER_PRICES[pack] ? PACK_TIER_PRICES[pack] : null;
   const packTitle = tier ? tier.name : 'Parcours Investisseur BRVM';
-  const displayPrice = tier ? (isBudget ? (PACK_TIER_BUDGET_PRICES[pack as string] ?? Math.round(tier.full / 2)) : tier.full) : null;
+  const displayPrice = tier ? tier.full : null;
   const priceLine = displayPrice != null ? `<strong style="color:#0F172A;font-size:20px;">${fmtXof(displayPrice)}</strong>` : '';
 
   const html = `<!DOCTYPE html>
@@ -4786,9 +4785,7 @@ export async function sendCohortPreregistrationEmail({
 
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;margin-bottom:24px;">
             <tr><td style="padding:16px 20px;">
-              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Important :</strong> ${isBudget
-                ? `votre tarif réduit est garanti jusqu'au <strong>${payDeadline}</strong>. Réglez <strong>en 1 fois</strong> avant cette date pour conserver la réduction — la cohorte démarre le <strong>${startDate}</strong>.`
-                : `pour participer à la cohorte qui démarre le <strong>${startDate}</strong>, votre paiement doit être effectué <strong>avant le ${payDeadline}</strong>. Passé ce délai, votre place n'est plus garantie.`}</p>
+              <p style="margin:0;font-size:14px;color:#991B1B;line-height:1.6;">⏰ <strong>Important :</strong> votre place n’est pas encore confirmée. La cohorte démarre le <strong>${startDate}</strong> et les places sont limitées — réglez votre pack pour la sécuriser, <strong>en 1 fois</strong> ou <strong>en 3 fois</strong>.</p>
             </td></tr>
           </table>
 
@@ -4796,6 +4793,7 @@ export async function sendCohortPreregistrationEmail({
             <tr><td style="padding:18px 22px;text-align:center;">
               <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:1px;">${tier.name}</p>
               <p style="margin:0;font-size:15px;color:#374151;">${priceLine}</p>
+              ${installmentTotal ? `<p style="margin:6px 0 0;font-size:13px;color:#64748B;">ou <strong style="color:#0F172A;">3 versements</strong> — total ${fmtXof(installmentTotal)} (frais d’échelonnement de 5 000 XOF)</p>` : ''}
             </td></tr>
           </table>` : ''}
 
@@ -4805,7 +4803,7 @@ export async function sendCohortPreregistrationEmail({
               <a href="${payUrl}" style="display:inline-block;background:linear-gradient(135deg,#2563EB 0%,#4F46E5 100%);color:#fff;font-size:15px;font-weight:800;text-decoration:none;padding:15px 36px;border-radius:12px;">
                 💳 Finaliser mon paiement →
               </a>
-              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Mobile Money &amp; Wave sécurisé.${isBudget ? ' Le tarif réduit s\'applique au <strong>paiement en 1 fois</strong> uniquement — le paiement en 3 fois reste possible au plein tarif (+5 000 XOF), sans réduction.' : ' Paiement en 1 fois, ou en 3 fois (plein tarif +5 000 XOF).'}</p>
+              <p style="margin:8px 0 0;font-size:12px;color:#94A3B8;">Mobile Money &amp; Wave sécurisé. Vous choisissez sur la page : <strong>paiement en 1 fois</strong> ou <strong>en 3 fois</strong> (+5 000 XOF de frais d’échelonnement).</p>
             </td></tr>
           </table>
 
@@ -4838,9 +4836,7 @@ export async function sendCohortPreregistrationEmail({
     to: email,
     subject: `📝 Pré-inscription reçue — finalisez votre paiement (${packTitle})`,
     html,
-    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte ${cohortMonth}) est enregistrée. Votre place n'est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. IMPORTANT : ${isBudget
-      ? `votre tarif réduit est garanti jusqu'au ${payDeadline}. Réglez en 1 fois avant cette date pour conserver la réduction (la cohorte démarre le ${startDate}). Le paiement en 3 fois reste possible au plein tarif (+5 000 XOF), sans réduction.`
-      : `pour participer à la cohorte qui démarre le ${startDate}, payez avant le ${payDeadline} (au-delà, votre place n'est plus garantie). Paiement en 1 fois, ou en 3 fois (plein tarif +5 000 XOF).`} Vous recevrez ensuite votre confirmation d'inscription.`,
+    text: `Bonjour ${name}, votre pré-inscription au ${packTitle} (cohorte ${cohortMonth}) est enregistrée. Votre place n’est pas encore confirmée — finalisez votre paiement ici : ${payUrl}. La cohorte démarre le ${startDate} et les places sont limitées. Vous choisissez votre mode de paiement sur la page : en 1 fois${displayPrice != null ? ` (${fmtXof(displayPrice)})` : ''}, ou en 3 fois${installmentTotal ? ` (total ${fmtXof(installmentTotal)}, frais d’échelonnement de 5 000 XOF)` : ''}. Vous recevrez ensuite votre confirmation d’inscription.`,
   });
 }
 
