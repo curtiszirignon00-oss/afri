@@ -1,30 +1,95 @@
 // src/components/markets/BRVMMarketMap.tsx
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Download, Share2, Check, Copy } from 'lucide-react';
-import type { Stock } from '../../hooks/useApi';
+import { apiFetch, type Stock } from '../../hooks/useApi';
 import { getStockLogo } from '../../utils/stockLogos';
-import { API_BASE_URL } from '../../config/api';
 
-type Period = '1D' | '1W' | '1M';
-const PERIOD_LABELS: Record<Period, string> = { '1D': 'JOUR', '1W': 'SEMAINE', '1M': 'MOIS' };
+// ─── Périodes ─────────────────────────────────────────────────────────────────
+type Period = '1D' | '1W' | '1M' | '3M' | '6M' | 'YTD' | '1Y' | '3Y' | '5Y';
+type Steps = [number, number, number];
+
+interface PeriodDef {
+  key: Period;
+  short: string;   // bouton
+  label: string;   // en-tête
+  phrase: string;  // textes de partage
+  steps: Steps;    // seuils de couleur : une variation de 3 % est forte sur un jour, banale sur un an
+}
+
+const PERIODS: PeriodDef[] = [
+  { key: '1D',  short: '1J',  label: 'JOUR',                  phrase: "aujourd'hui",           steps: [0.5, 1.5, 3] },
+  { key: '1W',  short: '1S',  label: '1 SEMAINE',             phrase: 'sur 1 semaine',         steps: [1, 3, 6] },
+  { key: '1M',  short: '1M',  label: '1 MOIS',                phrase: 'sur 1 mois',            steps: [2, 5, 10] },
+  { key: '3M',  short: '3M',  label: '3 MOIS',                phrase: 'sur 3 mois',            steps: [3, 8, 15] },
+  { key: '6M',  short: '6M',  label: '6 MOIS',                phrase: 'sur 6 mois',            steps: [5, 12, 25] },
+  { key: 'YTD', short: 'YTD', label: 'DEPUIS LE 1ER JANVIER', phrase: 'depuis le 1er janvier', steps: [5, 12, 25] },
+  { key: '1Y',  short: '1A',  label: '1 AN',                  phrase: 'sur 1 an',              steps: [8, 20, 40] },
+  { key: '3Y',  short: '3A',  label: '3 ANS',                 phrase: 'sur 3 ans',             steps: [15, 35, 70] },
+  { key: '5Y',  short: '5A',  label: '5 ANS',                 phrase: 'sur 5 ans',             steps: [20, 50, 100] },
+];
+const PERIOD_BY_KEY = Object.fromEntries(PERIODS.map(p => [p.key, p])) as Record<Period, PeriodDef>;
+
+/** YTD : l'échelle suit le nombre de jours écoulés depuis le 1er janvier. */
+function stepsFor(period: Period): Steps {
+  if (period !== 'YTD') return PERIOD_BY_KEY[period].steps;
+  const now = new Date();
+  const days = (now.getTime() - Date.UTC(now.getUTCFullYear(), 0, 1)) / 86_400_000;
+  const ref: Period = days <= 10 ? '1W' : days <= 45 ? '1M' : days <= 120 ? '3M' : days <= 240 ? '6M' : '1Y';
+  return PERIOD_BY_KEY[ref].steps;
+}
+
+type SizeMode  = 'change' | 'cap';
+type ColorMode = 'change' | 'sector';
+
+// ─── Données serveur (GET /stocks/market-map) ────────────────────────────────
+interface MarketMapItem {
+  symbol: string;
+  change_percent: number | null;
+  base_price: number | null;
+  base_date: string | null;
+  current_price: number;
+  market_cap: number | null;
+  adjusted: boolean;
+  suspect: boolean;
+}
+
+interface MarketMapResponse {
+  period: Period;
+  reference_date: string | null;
+  as_of: string | null;
+  items: MarketMapItem[];
+}
 
 // ─── Types internes ───────────────────────────────────────────────────────────
-type StockWithPeriod = Stock & { _period_change?: number };
+type MapStock = Stock & {
+  change: number | null;    // variation sur la période ; null = historique insuffisant
+  cap: number | null;       // capitalisation FCFA (cours × titres), null = inconnue
+  basePrice: number | null;
+  baseDate: string | null;
+  adjusted: boolean;
+  suspect: boolean;
+};
 
-interface TreemapCell {
-  stock: StockWithPeriod;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+interface Rect { x: number; y: number; width: number; height: number }
+
+interface TreemapCell extends Rect {
+  stock: MapStock;
+}
+
+interface SectorBlock extends Rect {
+  name: string;
+  change: number | null;
+  header: number;
 }
 
 interface TooltipProps {
   cell: TreemapCell;
   mouseX: number;
   mouseY: number;
-  periodLabel: string;
+  period: Period;
+  totalCap: number;
 }
 
 // ─── Secteurs & couleurs BRVM réels ──────────────────────────────────────────
@@ -37,113 +102,133 @@ const SECTOR_COLORS: Record<string, string> = {
   'Industriels':                  '#ec4899',
   'Services Publics':             '#06b6d4',
 };
+const NO_SECTOR = 'Autres';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function getChangeColor(change: number): string {
-  if (change >= 3)    return '#16a34a';
-  if (change >= 1.5)  return '#22c55e';
-  if (change >= 0.5)  return '#4ade80';
-  if (change >= 0)    return '#86efac';
-  if (change >= -0.5) return '#fca5a5';
-  if (change >= -1.5) return '#f87171';
-  if (change >= -3)   return '#ef4444';
-  return '#b91c1c';
+const GREENS  = ['#86efac', '#4ade80', '#22c55e', '#16a34a']; // faible → fort
+const REDS    = ['#fca5a5', '#f87171', '#ef4444', '#b91c1c'];
+const NEUTRAL = '#475569'; // inchangé : fréquent à la BRVM (titres peu liquides)
+const NO_DATA = '#1e293b';
+
+function getChangeColor(change: number | null, [s1, s2, s3]: Steps): string {
+  if (change === null) return NO_DATA;
+  if (Math.abs(change) < 0.005) return NEUTRAL;
+  const a = Math.abs(change);
+  const i = a >= s3 ? 3 : a >= s2 ? 2 : a >= s1 ? 1 : 0;
+  return change > 0 ? GREENS[i] : REDS[i];
 }
 
-function formatChange(v: number): string {
+function formatChange(v: number | null): string {
+  if (v === null) return 'N/D';
   return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 }
 
 function formatMarketCap(v: number): string {
-  if (v >= 1_000_000_000_000) return `${(v / 1_000_000_000_000).toFixed(1)}T`;
-  if (v >= 1_000_000_000)     return `${(v / 1_000_000_000).toFixed(1)}Mds`;
-  if (v >= 1_000_000)         return `${(v / 1_000_000).toFixed(0)}M`;
-  return `${v.toLocaleString('fr-FR')}`;
+  const nf = (n: number, d: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  if (v >= 1e9) return `${nf(v / 1e9, v >= 1e11 ? 0 : 1)} Mds F`;
+  if (v >= 1e6) return `${nf(v / 1e6, 0)} M F`;
+  return `${v.toLocaleString('fr-FR')} F`;
 }
 
 function formatPrice(v: number): string {
-  return new Intl.NumberFormat('fr-FR').format(v) + ' F';
+  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(v) + ' F';
 }
 
-// ─── Poids = |variation %|, minimum 0.3 pour rester visible ─────────────────
-function weight(st: Stock & { _period_change?: number }): number {
-  const v = st._period_change ?? st.daily_change_percent;
-  return Math.max(Math.abs(v), 0.3);
+function formatDay(iso: string, opts: Intl.DateTimeFormatOptions): string {
+  // Dates de référence au format YYYY-MM-DD (UTC) : midi UTC évite tout décalage de jour
+  const d = iso.length === 10 ? new Date(`${iso}T12:00:00Z`) : new Date(iso);
+  return d.toLocaleDateString('fr-FR', { ...opts, timeZone: 'UTC' });
 }
 
-// ─── Squarified Treemap – surface ∝ |variation %| ────────────────────────────
-function squarify(stocks: (Stock & { _period_change?: number })[], x: number, y: number, W: number, H: number): TreemapCell[] {
-  if (!stocks.length) return [];
+/**
+ * Variation agrégée pondérée par la capitalisation, comme un indice :
+ * Σ cap actuelle / Σ cap en début de période − 1, avec cap début = cap / (1 + r).
+ * Pondérer par la cap actuelle surpondérerait les titres qui ont monté.
+ * Repli sur la moyenne simple si aucune capitalisation n'est connue.
+ */
+function aggregateChange(list: MapStock[]): { value: number | null; weighted: boolean } {
+  let now = 0;
+  let before = 0;
+  for (const s of list) {
+    if (s.change === null || !s.cap || s.change <= -100) continue;
+    now    += s.cap;
+    before += s.cap / (1 + s.change / 100);
+  }
+  if (before > 0) return { value: (now / before - 1) * 100, weighted: true };
+  const known = list.filter(s => s.change !== null);
+  if (!known.length) return { value: null, weighted: false };
+  return { value: known.reduce((sum, s) => sum + (s.change as number), 0) / known.length, weighted: false };
+}
 
-  const sorted = [...stocks].sort((a, b) => weight(b) - weight(a));
-  const cells: TreemapCell[] = [];
+// ─── Squarified treemap générique ────────────────────────────────────────────
+function squarify<T>(items: T[], weightOf: (t: T) => number, rect: Rect): Array<Rect & { item: T }> {
+  const nodes = items
+    .map(item => ({ item, w: weightOf(item) }))
+    .filter(n => n.w > 0 && Number.isFinite(n.w))
+    .sort((a, b) => b.w - a.w);
+  const out: Array<Rect & { item: T }> = [];
 
-  function layout(items: Stock[], cx: number, cy: number, cw: number, ch: number) {
-    if (!items.length) return;
-    if (items.length === 1) {
-      cells.push({ stock: items[0], x: cx, y: cy, width: cw, height: ch });
+  function layout(list: typeof nodes, x: number, y: number, w: number, h: number) {
+    if (!list.length) return;
+    if (list.length === 1) {
+      out.push({ item: list[0].item, x, y, width: w, height: h });
       return;
     }
 
-    const rowTotal = items.reduce((s, st) => s + weight(st), 0);
-    const horiz = cw >= ch;
+    const total = list.reduce((s, n) => s + n.w, 0);
+    const horiz = w >= h;          // plus large que haut → bande verticale à gauche
+    const side  = horiz ? h : w;
 
-    let bestSplit = 1;
+    let split = 1;
     let bestWorst = Infinity;
-
-    for (let i = 1; i <= items.length; i++) {
-      const row = items.slice(0, i);
-      const rt = row.reduce((s, st) => s + weight(st), 0);
-      const side    = horiz ? ch : cw;
-      const rowSide = horiz ? cw * (rt / rowTotal) : ch * (rt / rowTotal);
+    let rowSum = 0;
+    for (let i = 0; i < list.length; i++) {
+      rowSum += list[i].w;
+      const rowSide = (horiz ? w : h) * (rowSum / total);
       let worst = 0;
-      for (const st of row) {
-        const frac     = weight(st) / rt;
-        const cellSide = side * frac;
-        const r        = Math.max(rowSide / cellSide, cellSide / rowSide);
-        worst = Math.max(worst, r);
+      for (let j = 0; j <= i; j++) {
+        const cellSide = side * (list[j].w / rowSum);
+        worst = Math.max(worst, rowSide / cellSide, cellSide / rowSide);
       }
-      if (worst < bestWorst) { bestWorst = worst; bestSplit = i; }
+      if (worst < bestWorst) { bestWorst = worst; split = i + 1; }
       else break;
     }
 
-    const row  = items.slice(0, bestSplit);
-    const rest = items.slice(bestSplit);
-    const rt   = row.reduce((s, st) => s + weight(st), 0);
-    const frac = rt / rowTotal;
+    const row  = list.slice(0, split);
+    const rt   = row.reduce((s, n) => s + n.w, 0);
+    const frac = rt / total;
 
     let off = 0;
-    for (const st of row) {
-      const sf = weight(st) / rt;
+    for (const n of row) {
+      const sf = n.w / rt;
       if (horiz) {
-        cells.push({ stock: st, x: cx, y: cy + off, width: cw * frac, height: ch * sf });
-        off += ch * sf;
+        out.push({ item: n.item, x, y: y + off, width: w * frac, height: h * sf });
+        off += h * sf;
       } else {
-        cells.push({ stock: st, x: cx + off, y: cy, width: cw * sf, height: ch * frac });
-        off += cw * sf;
+        out.push({ item: n.item, x: x + off, y, width: w * sf, height: h * frac });
+        off += w * sf;
       }
     }
 
-    if (rest.length) {
-      if (horiz) layout(rest, cx + cw * frac, cy, cw * (1 - frac), ch);
-      else       layout(rest, cx, cy + ch * frac, cw, ch * (1 - frac));
-    }
+    if (horiz) layout(list.slice(split), x + w * frac, y, w * (1 - frac), h);
+    else       layout(list.slice(split), x, y + h * frac, w, h * (1 - frac));
   }
 
-  layout(sorted, x, y, W, H);
-  return cells;
+  layout(nodes, rect.x, rect.y, rect.width, rect.height);
+  return out;
 }
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
-function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
+function Tooltip({ cell, mouseX, mouseY, period, totalCap }: TooltipProps) {
   const { stock } = cell;
   const sectorColor = SECTOR_COLORS[stock.sector || ''] || '#64748b';
-  const displayChange = stock._period_change ?? stock.daily_change_percent;
+  const def = PERIOD_BY_KEY[period];
+  const left = Math.min(mouseX + 16, (typeof window !== 'undefined' ? window.innerWidth : 1200) - 260);
   return (
     <div
       style={{
         position: 'fixed',
-        left: mouseX + 16,
+        left: Math.max(8, left),
         top: mouseY - 20,
         zIndex: 9999,
         pointerEvents: 'none',
@@ -152,6 +237,7 @@ function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
         borderRadius: 12,
         padding: '14px 18px',
         minWidth: 230,
+        maxWidth: 260,
         backdropFilter: 'blur(12px)',
         boxShadow: `0 0 30px ${sectorColor}33, 0 8px 32px rgba(0,0,0,0.6)`,
         fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
@@ -185,16 +271,44 @@ function Tooltip({ cell, mouseX, mouseY, periodLabel }: TooltipProps) {
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px' }}>
-        <TooltipStat label="Prix"        value={formatPrice(stock.current_price)}        color="#f1f5f9" />
+        <TooltipStat label="Prix" value={formatPrice(stock.current_price)} color="#f1f5f9" />
         <TooltipStat
-          label={`Var. ${periodLabel}`}
-          value={formatChange(displayChange)}
-          color={displayChange >= 0 ? '#22c55e' : '#ef4444'}
+          label={`Var. ${def.short}`}
+          value={formatChange(stock.change)}
+          color={stock.change === null ? '#64748b' : stock.change >= 0 ? '#22c55e' : '#ef4444'}
         />
-        {stock.market_cap ? (
-          <TooltipStat label="Cap. Boursière" value={formatMarketCap(stock.market_cap)} color="#94a3b8" />
+        {stock.basePrice ? (
+          <TooltipStat
+            label={period === '1D' ? 'Clôture veille' : stock.baseDate ? `Réf. ${formatDay(stock.baseDate, { day: '2-digit', month: '2-digit', year: '2-digit' })}` : 'Référence'}
+            value={formatPrice(stock.basePrice)}
+            color="#94a3b8"
+          />
         ) : null}
-        <TooltipStat label="Volume" value={(stock.volume || 0).toLocaleString('fr-FR')} color="#94a3b8" />
+        {stock.cap ? (
+          <TooltipStat
+            label="Cap. Boursière"
+            value={totalCap > 0 ? `${formatMarketCap(stock.cap)} · ${((stock.cap / totalCap) * 100).toFixed(1)}%` : formatMarketCap(stock.cap)}
+            color="#94a3b8"
+          />
+        ) : null}
+        {period === '1D' && (
+          <TooltipStat label="Volume" value={(stock.volume || 0).toLocaleString('fr-FR')} color="#94a3b8" />
+        )}
+        {stock.change === null && (
+          <div style={{ gridColumn: '1 / -1', color: '#64748b', fontSize: 10 }}>
+            Historique insuffisant sur la période.
+          </div>
+        )}
+        {stock.adjusted && (
+          <div style={{ gridColumn: '1 / -1', color: '#94a3b8', fontSize: 10 }}>
+            Cours de référence ajusté d'une opération sur titres.
+          </div>
+        )}
+        {stock.suspect && (
+          <div style={{ gridColumn: '1 / -1', color: '#f59e0b', fontSize: 10 }}>
+            ⚠ Écart inhabituel : possible split non référencé.
+          </div>
+        )}
         {stock.sector && (
           <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
             <span style={{
@@ -237,30 +351,24 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   const [selectedSector, setSelectedSector] = useState('Tous');
   const [hoveredCell,    setHoveredCell]    = useState<TreemapCell | null>(null);
   const [mousePos,       setMousePos]       = useState({ x: 0, y: 0 });
-  const [colorMode,      setColorMode]      = useState<'change' | 'sector'>('change');
+  const [colorMode,      setColorMode]      = useState<ColorMode>('change');
+  const [sizeMode,       setSizeMode]       = useState<SizeMode>('change');
   const [period,         setPeriod]         = useState<Period>('1D');
-  const [periodChanges,  setPeriodChanges]  = useState<Map<string, number>>(new Map());
-  const [periodLoading,  setPeriodLoading]  = useState(false);
 
-  // Fetch period changes when period != '1D'
-  useEffect(() => {
-    if (period === '1D') {
-      setPeriodChanges(new Map());
-      return;
-    }
-    let cancelled = false;
-    setPeriodLoading(true);
-    fetch(`${API_BASE_URL}/stocks/period-changes?period=${period}`)
-      .then(r => r.json())
-      .then((data: { symbol: string; change_percent: number }[]) => {
-        if (cancelled) return;
-        const map = new Map(data.map(d => [d.symbol, d.change_percent]));
-        setPeriodChanges(map);
-      })
-      .catch(() => {/* silently keep previous data */})
-      .finally(() => { if (!cancelled) setPeriodLoading(false); });
-    return () => { cancelled = true; };
-  }, [period]);
+  const def   = PERIOD_BY_KEY[period];
+  const steps = useMemo(() => stepsFor(period), [period]);
+
+  // Variations de période + capitalisations fiables. Pas de placeholderData :
+  // afficher les chiffres de la période précédente sous le nouveau libellé serait faux.
+  const mapQuery = useQuery({
+    queryKey: ['market-map', period],
+    queryFn: () => apiFetch<MarketMapResponse>('/stocks/market-map', { params: { period } }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+  const mapData = mapQuery.data;
 
   // ── export / partage ──
   const svgRef          = useRef<SVGSVGElement>(null);
@@ -281,42 +389,112 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     return () => document.removeEventListener('mousedown', onOutside);
   }, [showShare]);
 
-  // ── Données filtrées ──────────────────────────────────────────────────────
+  // ── Données ───────────────────────────────────────────────────────────────
   const availableSectors = useMemo(() => {
     const set = new Set(stocks.map(s => s.sector).filter(Boolean) as string[]);
     return ['Tous', ...Array.from(set).sort()];
   }, [stocks]);
 
-  const filteredStocks = useMemo((): StockWithPeriod[] => {
-    const base = selectedSector === 'Tous'
-      ? [...stocks]
-      : stocks.filter(s => s.sector === selectedSector);
-    return base
-      .filter(s => s.daily_change_percent !== undefined && s.daily_change_percent !== null)
-      .map(s => ({
+  const mapStocks = useMemo((): MapStock[] => {
+    const items = new Map((mapData?.items ?? []).map(i => [i.symbol, i]));
+    return stocks.map(s => {
+      const it = items.get(s.symbol);
+      // 1D : variation du flux /stocks (rafraîchi toutes les 30 s), le serveur ne sert ici que la cap
+      const change = period === '1D'
+        ? (Number.isFinite(s.daily_change_percent) ? s.daily_change_percent : null)
+        : (it?.change_percent ?? null);
+      return {
         ...s,
-        _period_change: period !== '1D' ? (periodChanges.get(s.symbol) ?? 0) : undefined,
-      }))
-      .sort((a, b) => Math.abs((b._period_change ?? b.daily_change_percent)) - Math.abs((a._period_change ?? a.daily_change_percent)));
-  }, [stocks, selectedSector, period, periodChanges]);
+        change,
+        cap: it?.market_cap && it.market_cap > 0 ? it.market_cap : null,
+        basePrice: period === '1D' ? (s.previous_close > 0 ? s.previous_close : null) : (it?.base_price ?? null),
+        baseDate: it?.base_date ?? null,
+        adjusted: !!it?.adjusted,
+        suspect: !!it?.suspect,
+      };
+    });
+  }, [stocks, mapData, period]);
+
+  const sectorStocks = useMemo(
+    () => (selectedSector === 'Tous' ? mapStocks : mapStocks.filter(s => s.sector === selectedSector)),
+    [mapStocks, selectedSector],
+  );
+
+  // Titres affichés : en mode variation, il faut une variation ; en mode cap, une capitalisation
+  const shownStocks = useMemo(
+    () => sectorStocks.filter(s => (sizeMode === 'cap' ? s.cap !== null : s.change !== null)),
+    [sectorStocks, sizeMode],
+  );
+  const missingCount = sectorStocks.length - shownStocks.length;
+  const noChangeCount = shownStocks.filter(s => s.change === null).length;
 
   const W = 900;
   const H = 520;
   const GAP = 2;
 
-  const cells = useMemo(() => squarify(filteredStocks, 0, 0, W, H), [filteredStocks]);
+  const totalCap = useMemo(() => shownStocks.reduce((s, st) => s + (st.cap ?? 0), 0), [shownStocks]);
+
+  const { cells, sectorBlocks } = useMemo((): { cells: TreemapCell[]; sectorBlocks: SectorBlock[] } => {
+    const toCells = (list: Array<Rect & { item: MapStock }>): TreemapCell[] =>
+      list.map(({ item, ...r }) => ({ stock: item, ...r }));
+
+    if (sizeMode === 'change') {
+      // Surface ∝ |variation| ; plancher pour que les titres inchangés restent visibles
+      const floor = steps[0] * 0.6;
+      return {
+        cells: toCells(squarify(shownStocks, s => Math.max(Math.abs(s.change ?? 0), floor), { x: 0, y: 0, width: W, height: H })),
+        sectorBlocks: [],
+      };
+    }
+
+    if (selectedSector !== 'Tous') {
+      return { cells: toCells(squarify(shownStocks, s => s.cap ?? 0, { x: 0, y: 0, width: W, height: H })), sectorBlocks: [] };
+    }
+
+    // Surface ∝ capitalisation, regroupée par secteur (blocs secteur puis titres à l'intérieur)
+    const groups = new Map<string, MapStock[]>();
+    for (const s of shownStocks) {
+      const key = s.sector || NO_SECTOR;
+      groups.set(key, [...(groups.get(key) ?? []), s]);
+    }
+    const sectorList = Array.from(groups, ([name, list]) => ({
+      name, list, cap: list.reduce((sum, s) => sum + (s.cap ?? 0), 0),
+    }));
+
+    const blocks: SectorBlock[] = [];
+    const allCells: TreemapCell[] = [];
+    for (const { item, ...r } of squarify(sectorList, g => g.cap, { x: 0, y: 0, width: W, height: H })) {
+      const header = r.height > 44 && r.width > 70 ? 16 : 0;
+      blocks.push({ ...r, name: item.name, change: aggregateChange(item.list).value, header });
+      allCells.push(...toCells(squarify(item.list, s => s.cap ?? 0, {
+        x: r.x + 1, y: r.y + header, width: Math.max(r.width - 2, 0), height: Math.max(r.height - header - 1, 0),
+      })));
+    }
+    return { cells: allCells, sectorBlocks: blocks };
+  }, [shownStocks, sizeMode, selectedSector, steps]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     setMousePos({ x: e.clientX, y: e.clientY });
   }, []);
 
-  const marketChange = useMemo(() => {
-    const total = filteredStocks.reduce((s, st) => s + (st.market_cap || 0), 0);
-    if (!total) return 0;
-    return filteredStocks.reduce(
-      (sum, st) => sum + (st._period_change ?? st.daily_change_percent) * ((st.market_cap || 0) / total), 0
-    );
-  }, [filteredStocks]);
+  const aggregate    = useMemo(() => aggregateChange(sectorStocks), [sectorStocks]);
+  const marketChange = aggregate.value ?? 0;
+
+  // Les variations de période et les capitalisations viennent du serveur
+  const needsServerData = period !== '1D' || sizeMode === 'cap';
+  const serverPending   = needsServerData && !mapData;
+  const serverFailed    = serverPending && mapQuery.isError;
+  // En 1D les variations sont déjà là mais pas les caps : attendre évite un badge
+  // en moyenne simple qui bascule ensuite en moyenne pondérée
+  const badgeReady      = !!mapData || mapQuery.isError;
+
+  const subtitleDate = period === '1D'
+    ? `SÉANCE DU ${formatDay(mapData?.as_of ?? new Date().toISOString(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}`
+    : mapData?.reference_date
+      ? `VARIATION ${def.phrase.toUpperCase()} • RÉF. CLÔTURE DU ${formatDay(mapData.reference_date, { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase()}`
+      : `VARIATION ${def.phrase.toUpperCase()}`;
+
+  const shareLabel = `${formatChange(marketChange)} ${def.phrase}`;
 
   // ── Inline images → base64 pour l'export (logos bloqués par CORS sinon) ──
   async function inlineSvgImages(svgEl: SVGSVGElement): Promise<void> {
@@ -399,7 +577,10 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
 
         ctx.font      = '11px monospace';
         ctx.fillStyle = '#475569';
-        ctx.fillText('BRVM Market Map • afribourse.com', 36, CH - 13);
+        ctx.fillText(
+          `BRVM Market Map • ${def.label}${sizeMode === 'cap' ? ' • PAR CAPITALISATION' : ''} • afribourse.com`,
+          36, CH - 13,
+        );
 
         // Badge variation à droite
         const badge   = `${marketChange >= 0 ? '+' : ''}${marketChange.toFixed(2)}%`;
@@ -430,7 +611,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
       const url = URL.createObjectURL(blob);
       const a   = document.createElement('a');
       a.href     = url;
-      a.download = `brvm-market-map-${new Date().toISOString().slice(0, 10)}.png`;
+      a.download = `brvm-market-map-${period.toLowerCase()}${sizeMode === 'cap' ? '-cap' : ''}-${new Date().toISOString().slice(0, 10)}.png`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -445,7 +626,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     if (!blob) { setIsCapturing(false); return; }
 
     const file = new File([blob], 'brvm-market-map.png', { type: 'image/png' });
-    const shareText = `📊 BRVM Market Map – ${formatChange(marketChange)} aujourd'hui\nSuivez le marché sur AfriBourse`;
+    const shareText = `📊 BRVM Market Map – ${shareLabel}\nSuivez le marché sur AfriBourse`;
 
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ title: 'BRVM Market Map – AfriBourse', text: shareText, files: [file] })
@@ -460,14 +641,14 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
   // ── Twitter / X ───────────────────────────────────────────────────────────
   function handleTwitter() {
     setShowShare(false);
-    const text = `📊 BRVM Market Map – ${formatChange(marketChange)} aujourd'hui\n#BRVM #Finance #AfriBourse\n${window.location.origin}/markets`;
+    const text = `📊 BRVM Market Map – ${shareLabel}\n#BRVM #Finance #AfriBourse\n${window.location.origin}/markets`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,width=600,height=400');
   }
 
   // ── WhatsApp ──────────────────────────────────────────────────────────────
   function handleWhatsApp() {
     setShowShare(false);
-    const text = `📊 *BRVM Market Map* – ${formatChange(marketChange)} aujourd'hui\nSuivez le marché africain sur AfriBourse 👉 ${window.location.origin}/markets`;
+    const text = `📊 *BRVM Market Map* – ${shareLabel}\nSuivez le marché africain sur AfriBourse 👉 ${window.location.origin}/markets`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   }
 
@@ -486,8 +667,8 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     setTimeout(() => setCopied(false), 2000);
   }
 
-  // ── Loading / Empty states ────────────────────────────────────────────────
-  if (loading || periodLoading) {
+  // ── Loading state (liste des actions) ─────────────────────────────────────
+  if (loading) {
     return (
       <div style={{
         background: '#070b14', borderRadius: 12, padding: 40,
@@ -501,23 +682,194 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
     );
   }
 
-  if (!filteredStocks.length) {
+  // ── Rendu d'une case titre ────────────────────────────────────────────────
+  function renderCell(cell: TreemapCell) {
+    const { stock, x, y, width: cw, height: ch } = cell;
+    if (cw < 1 || ch < 1) return null;
+
+    const bgColor = colorMode === 'sector'
+      ? (SECTOR_COLORS[stock.sector || ''] || '#64748b')
+      : getChangeColor(stock.change, steps);
+    const isHovered  = hoveredCell?.stock.symbol === stock.symbol;
+    const showTicker = cw > 50  && ch > 30;
+    const showChange = cw > 60  && ch > 50;
+    const showName   = cw > 110 && ch > 80;
+    // Petites cases (fréquentes en mode capitalisation) : ticker seul, taille ajustée
+    const compact    = !showTicker && cw > 24 && ch > 13;
+
+    // Logo proportionnel
+    const logoPath   = getStockLogo(stock.symbol, stock.logo_url);
+    const showLogo   = !!logoPath && cw > 55 && ch > 55;
+    const logoSize   = showLogo ? Math.min(cw * 0.38, ch * 0.42, 48) : 0;
+    const clipId     = `clip-${stock.symbol}`;
+
+    // Calcul du bloc texte + logo centré verticalement
+    const tickerFS   = Math.min(cw * 0.15, ch * 0.2, 16);
+    const changeFS   = Math.min(cw * 0.1, ch * 0.13, 12);
+    const gap        = 3;
+    const blockH     = showLogo
+      ? logoSize + (showTicker ? gap + tickerFS : 0) + (showChange ? gap + changeFS : 0)
+      : (showTicker ? tickerFS : 0) + (showChange ? gap + changeFS : 0);
+    const blockTop   = y + (ch - blockH) / 2;
+
+    const logoX      = x + (cw - logoSize) / 2;
+    const logoY      = blockTop;
+    const tickerY    = showLogo
+      ? blockTop + logoSize + gap + tickerFS
+      : blockTop + tickerFS;
+    const changeY    = tickerY + gap + changeFS;
+    const nameY      = showLogo ? logoY - 5 : tickerY - tickerFS - 5;
+    const compactFS  = Math.min((cw - 4) / (stock.symbol.length * 0.62), ch * 0.6, 10);
+
     return (
-      <div style={{
-        background: '#070b14', borderRadius: 12, padding: 40,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#475569', fontFamily: "'IBM Plex Mono', monospace", minHeight: 300, fontSize: 13,
-      }}>
-        Aucune donnée disponible pour ce secteur.
-      </div>
+      <g key={stock.symbol} onClick={() => navigate(`/stock/${stock.symbol}`)} style={{ cursor: 'pointer' }}>
+        {/* Fond */}
+        <rect
+          className="mm-cell"
+          x={x + GAP / 2}   y={y + GAP / 2}
+          width={Math.max(cw - GAP, 0)}  height={Math.max(ch - GAP, 0)}
+          fill={bgColor}    fillOpacity={isHovered ? 0.95 : 0.75}
+          rx={3}
+          onMouseEnter={() => setHoveredCell(cell)}
+          onMouseLeave={() => setHoveredCell(null)}
+        />
+        {/* Bordure hover */}
+        {isHovered && (
+          <rect
+            x={x + GAP / 2} y={y + GAP / 2}
+            width={Math.max(cw - GAP, 0)} height={Math.max(ch - GAP, 0)}
+            fill="none" stroke={bgColor === NO_DATA ? '#64748b' : bgColor} strokeWidth={2} strokeOpacity={0.9} rx={3}
+            style={{ pointerEvents: 'none' }}
+          />
+        )}
+
+        {/* Logo proportionnel */}
+        {showLogo && logoPath && (
+          <>
+            <defs>
+              <clipPath id={clipId}>
+                <rect x={logoX} y={logoY} width={logoSize} height={logoSize} rx={logoSize * 0.15} />
+              </clipPath>
+            </defs>
+            {/* Fond blanc semi-transparent derrière le logo */}
+            <rect
+              x={logoX} y={logoY} width={logoSize} height={logoSize}
+              rx={logoSize * 0.15} fill="rgba(255,255,255,0.9)"
+              style={{ pointerEvents: 'none' }}
+            />
+            <image
+              href={logoPath}
+              x={logoX} y={logoY}
+              width={logoSize} height={logoSize}
+              clipPath={`url(#${clipId})`}
+              preserveAspectRatio="xMidYMid meet"
+              style={{ pointerEvents: 'none' }}
+            />
+          </>
+        )}
+
+        {/* Nom entreprise (grandes cases) */}
+        {showName && (
+          <text
+            x={x + cw / 2} y={nameY}
+            textAnchor="middle" fill="rgba(255,255,255,0.5)"
+            fontSize={Math.min(cw * 0.07, ch * 0.09, 9)}
+            fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
+          >
+            {stock.company_name.length > 20 ? stock.company_name.slice(0, 18) + '…' : stock.company_name}
+          </text>
+        )}
+
+        {/* Symbole */}
+        {showTicker && (
+          <text
+            x={x + cw / 2} y={tickerY}
+            textAnchor="middle" fill="white"
+            fontSize={tickerFS} fontWeight="700"
+            fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
+          >
+            {stock.symbol}
+          </text>
+        )}
+        {compact && compactFS >= 5 && (
+          <text
+            x={x + cw / 2} y={y + ch / 2 + compactFS * 0.35}
+            textAnchor="middle" fill="white"
+            fontSize={compactFS} fontWeight="700"
+            fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
+          >
+            {stock.symbol}
+          </text>
+        )}
+
+        {/* Variation */}
+        {showChange && (
+          <text
+            x={x + cw / 2} y={changeY}
+            textAnchor="middle" fill="rgba(255,255,255,0.85)"
+            fontSize={changeFS}
+            fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
+          >
+            {formatChange(stock.change)}
+          </text>
+        )}
+      </g>
     );
   }
+
+  // ── Rendu d'un bloc secteur (mode capitalisation) ─────────────────────────
+  function renderSectorBlock(b: SectorBlock) {
+    const color   = SECTOR_COLORS[b.name] || '#94a3b8';
+    const chg     = formatChange(b.change);
+    const roomFor = (b.width - 12) / 5.6; // ~5,6 px par caractère à 9 px (monospace)
+    const showChg = roomFor >= chg.length + 6;
+    const maxName = Math.floor(roomFor - (showChg ? chg.length + 2 : 0));
+    const name    = b.name.toUpperCase();
+    return (
+      <g key={`sector-${b.name}`} style={{ pointerEvents: 'none' }}>
+        <rect x={b.x + 0.5} y={b.y + 0.5} width={Math.max(b.width - 1, 0)} height={Math.max(b.height - 1, 0)}
+          fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth={1} />
+        {b.header > 0 && maxName >= 3 && (
+          <>
+            <rect x={b.x + 1} y={b.y + 1} width={Math.max(b.width - 2, 0)} height={b.header - 1} fill="#0d1220" />
+            <text x={b.x + 6} y={b.y + 11.5} fontSize={9} fontWeight={700} letterSpacing={0.5} fill={color}
+              fontFamily="'IBM Plex Mono',monospace">
+              {name.length > maxName ? name.slice(0, Math.max(maxName - 1, 1)) + '…' : name}
+            </text>
+            {showChg && (
+              <text x={b.x + b.width - 6} y={b.y + 11.5} fontSize={9} fontWeight={600} textAnchor="end"
+                fill={b.change === null ? '#64748b' : b.change >= 0 ? '#22c55e' : '#ef4444'}
+                fontFamily="'IBM Plex Mono',monospace">
+                {chg}
+              </text>
+            )}
+          </>
+        )}
+      </g>
+    );
+  }
+
+  const [s1, s2, s3] = steps;
+  const fmtStep = (v: number) => v.toLocaleString('fr-FR');
+  const legendChange = [
+    { color: REDS[3],   label: `<-${fmtStep(s3)}%` },
+    { color: REDS[2],   label: `-${fmtStep(s2)}→-${fmtStep(s3)}` },
+    { color: REDS[1],   label: `-${fmtStep(s1)}→-${fmtStep(s2)}` },
+    { color: REDS[0],   label: `0→-${fmtStep(s1)}` },
+    { color: NEUTRAL,   label: '0%' },
+    { color: GREENS[0], label: `0→+${fmtStep(s1)}` },
+    { color: GREENS[1], label: `+${fmtStep(s1)}→+${fmtStep(s2)}` },
+    { color: GREENS[2], label: `+${fmtStep(s2)}→+${fmtStep(s3)}` },
+    { color: GREENS[3], label: `>+${fmtStep(s3)}%` },
+    ...(noChangeCount > 0 ? [{ color: NO_DATA, label: 'N/D' }] : []),
+  ];
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ background: '#070b14', borderRadius: 12, fontFamily: "'IBM Plex Mono','Courier New',monospace", color: '#f1f5f9', padding: '20px 16px' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
         .mm-cell { cursor: pointer; }
         .mm-cell:hover { filter: brightness(1.28); }
         .mm-filter-btn {
@@ -533,6 +885,8 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           font-family: inherit; transition: all 0.2s;
         }
         .mm-mode-btn.active { border-color: #0ea5e9; color: #0ea5e9; background: rgba(14,165,233,0.08); }
+        .mm-period-btn { padding: 4px 8px; }
+        .mm-group-label { color: #334155; font-size: 9px; letter-spacing: 1px; margin-right: 2px; }
         .mm-action-btn {
           display: flex; align-items: center; gap: 5px;
           background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
@@ -562,34 +916,44 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             }}>
               BRVM MARKET MAP
             </span>
-            <span style={{
-              background: marketChange >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-              color: marketChange >= 0 ? '#22c55e' : '#ef4444',
-              border: `1px solid ${marketChange >= 0 ? '#22c55e44' : '#ef444444'}`,
-              borderRadius: 6, padding: '3px 10px', fontSize: 13, fontWeight: 600,
-            }}>
-              {formatChange(marketChange)}
-            </span>
+            {!serverPending && badgeReady && aggregate.value !== null && (
+              <span
+                title={aggregate.weighted
+                  ? 'Variation pondérée par la capitalisation boursière'
+                  : 'Moyenne simple (capitalisations indisponibles)'}
+                style={{
+                  background: marketChange >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                  color: marketChange >= 0 ? '#22c55e' : '#ef4444',
+                  border: `1px solid ${marketChange >= 0 ? '#22c55e44' : '#ef444444'}`,
+                  borderRadius: 6, padding: '3px 10px', fontSize: 13, fontWeight: 600,
+                }}
+              >
+                {formatChange(marketChange)}
+              </span>
+            )}
           </div>
           <div style={{ color: '#475569', fontSize: 10, marginTop: 4, letterSpacing: 1 }}>
-            BRVM • {filteredStocks.length} TITRES •{' '}
-            {period === '1D'
-              ? new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
-              : `VARIATION SUR ${period === '1W' ? '7 JOURS' : '30 JOURS'}`}
+            BRVM • {serverPending ? '…' : shownStocks.length} TITRES • {subtitleDate}
+            {!serverPending && missingCount > 0 && (
+              <span style={{ color: '#334155' }}>
+                {' '}• {missingCount} {sizeMode === 'cap' ? 'SANS CAPITALISATION' : 'SANS HISTORIQUE'}
+              </span>
+            )}
           </div>
         </div>
 
         {/* Contrôles droite */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {/* Sélecteur de période */}
-          <div style={{ display: 'flex', gap: 3 }}>
-            {(['1D', '1W', '1M'] as Period[]).map(p => (
+          <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            {PERIODS.map(p => (
               <button
-                key={p}
-                className={`mm-mode-btn${period === p ? ' active' : ''}`}
-                onClick={() => setPeriod(p)}
+                key={p.key}
+                className={`mm-mode-btn mm-period-btn${period === p.key ? ' active' : ''}`}
+                onClick={() => setPeriod(p.key)}
+                title={p.label.charAt(0) + p.label.slice(1).toLowerCase()}
               >
-                {PERIOD_LABELS[p]}
+                {p.short}
               </button>
             ))}
           </div>
@@ -597,8 +961,23 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           {/* Séparateur */}
           <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
 
+          {/* Taille des cases */}
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+            <span className="mm-group-label">TAILLE</span>
+            <button className={`mm-mode-btn${sizeMode === 'change' ? ' active' : ''}`} onClick={() => setSizeMode('change')}>
+              |VARIATION|
+            </button>
+            <button className={`mm-mode-btn${sizeMode === 'cap' ? ' active' : ''}`} onClick={() => setSizeMode('cap')}>
+              CAPITALISATION
+            </button>
+          </div>
+
+          {/* Séparateur */}
+          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)' }} />
+
           {/* Mode couleur */}
-          <div style={{ display: 'flex', gap: 5 }}>
+          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+            <span className="mm-group-label">COULEUR</span>
             <button className={`mm-mode-btn${colorMode === 'change' ? ' active' : ''}`} onClick={() => setColorMode('change')}>
               % VARIATION
             </button>
@@ -614,7 +993,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           <button
             className="mm-action-btn"
             onClick={handleDownload}
-            disabled={isCapturing}
+            disabled={isCapturing || serverPending || !cells.length}
             title="Télécharger en PNG"
           >
             <Download style={{ width: 12, height: 12 }} />
@@ -626,6 +1005,7 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
             <button
               className="mm-action-btn"
               onClick={() => setShowShare(v => !v)}
+              disabled={serverPending}
               title="Partager"
               style={copied ? { borderColor: '#22c55e44', color: '#22c55e' } : {}}
             >
@@ -724,153 +1104,61 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
 
       {/* ── Treemap SVG ── */}
       <div
-        style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', position: 'relative' }}
         onMouseMove={handleMouseMove}
       >
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${W} ${H}`}
-          width="100%"
-          style={{ display: 'block', background: '#0a0e17' }}
-        >
-          {cells.map((cell) => {
-            const { stock, x, y, width: cw, height: ch } = cell;
-            if (cw < 1 || ch < 1) return null;
-
-            const displayChange = stock._period_change ?? stock.daily_change_percent;
-            const bgColor    = colorMode === 'sector'
-              ? (SECTOR_COLORS[stock.sector || ''] || '#64748b')
-              : getChangeColor(displayChange);
-            const isHovered  = hoveredCell?.stock.symbol === stock.symbol;
-            const showTicker = cw > 50  && ch > 30;
-            const showChange = cw > 60  && ch > 50;
-            const showName   = cw > 110 && ch > 80;
-
-            // Logo proportionnel
-            const logoPath   = getStockLogo(stock.symbol, stock.logo_url);
-            const showLogo   = !!logoPath && cw > 55 && ch > 55;
-            const logoSize   = showLogo ? Math.min(cw * 0.38, ch * 0.42, 48) : 0;
-            const clipId     = `clip-${stock.symbol}`;
-
-            // Calcul du bloc texte + logo centré verticalement
-            const tickerFS   = Math.min(cw * 0.15, ch * 0.2, 16);
-            const changeFS   = Math.min(cw * 0.1, ch * 0.13, 12);
-            const gap        = 3;
-            const blockH     = showLogo
-              ? logoSize + (showTicker ? gap + tickerFS : 0) + (showChange ? gap + changeFS : 0)
-              : (showTicker ? tickerFS : 0) + (showChange ? gap + changeFS : 0);
-            const blockTop   = y + (ch - blockH) / 2;
-
-            const logoX      = x + (cw - logoSize) / 2;
-            const logoY      = blockTop;
-            const tickerY    = showLogo
-              ? blockTop + logoSize + gap + tickerFS
-              : blockTop + tickerFS;
-            const changeY    = tickerY + gap + changeFS;
-            const nameY      = showLogo ? logoY - 5 : tickerY - tickerFS - 5;
-
-            return (
-              <g key={stock.symbol} onClick={() => navigate(`/stock/${stock.symbol}`)} style={{ cursor: 'pointer' }}>
-                {/* Fond */}
-                <rect
-                  className="mm-cell"
-                  x={x + GAP / 2}   y={y + GAP / 2}
-                  width={cw - GAP}  height={ch - GAP}
-                  fill={bgColor}    fillOpacity={isHovered ? 0.95 : 0.75}
-                  rx={3}
-                  onMouseEnter={() => setHoveredCell(cell)}
-                  onMouseLeave={() => setHoveredCell(null)}
-                />
-                {/* Bordure hover */}
-                {isHovered && (
-                  <rect
-                    x={x + GAP / 2} y={y + GAP / 2}
-                    width={cw - GAP} height={ch - GAP}
-                    fill="none" stroke={bgColor} strokeWidth={2} strokeOpacity={0.9} rx={3}
-                    style={{ pointerEvents: 'none' }}
-                  />
-                )}
-
-                {/* Logo proportionnel */}
-                {showLogo && logoPath && (
-                  <>
-                    <defs>
-                      <clipPath id={clipId}>
-                        <rect x={logoX} y={logoY} width={logoSize} height={logoSize} rx={logoSize * 0.15} />
-                      </clipPath>
-                    </defs>
-                    {/* Fond blanc semi-transparent derrière le logo */}
-                    <rect
-                      x={logoX} y={logoY} width={logoSize} height={logoSize}
-                      rx={logoSize * 0.15} fill="rgba(255,255,255,0.9)"
-                      style={{ pointerEvents: 'none' }}
-                    />
-                    <image
-                      href={logoPath}
-                      x={logoX} y={logoY}
-                      width={logoSize} height={logoSize}
-                      clipPath={`url(#${clipId})`}
-                      preserveAspectRatio="xMidYMid meet"
-                      style={{ pointerEvents: 'none' }}
-                    />
-                  </>
-                )}
-
-                {/* Nom entreprise (grandes cases) */}
-                {showName && (
-                  <text
-                    x={x + cw / 2} y={nameY}
-                    textAnchor="middle" fill="rgba(255,255,255,0.5)"
-                    fontSize={Math.min(cw * 0.07, ch * 0.09, 9)}
-                    fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
-                  >
-                    {stock.company_name.length > 20 ? stock.company_name.slice(0, 18) + '…' : stock.company_name}
-                  </text>
-                )}
-
-                {/* Symbole */}
-                {showTicker && (
-                  <text
-                    x={x + cw / 2} y={tickerY}
-                    textAnchor="middle" fill="white"
-                    fontSize={tickerFS} fontWeight="700"
-                    fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
-                  >
-                    {stock.symbol}
-                  </text>
-                )}
-
-                {/* Variation */}
-                {showChange && (
-                  <text
-                    x={x + cw / 2} y={changeY}
-                    textAnchor="middle" fill="rgba(255,255,255,0.85)"
-                    fontSize={changeFS}
-                    fontFamily="'IBM Plex Mono',monospace" style={{ pointerEvents: 'none' }}
-                  >
-                    {formatChange(displayChange)}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </svg>
+        {serverPending ? (
+          <div style={{
+            aspectRatio: `${W} / ${H}`, background: '#0a0e17',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
+            color: '#475569', fontSize: 12, letterSpacing: 1, padding: 16, textAlign: 'center',
+          }}>
+            {serverFailed ? (
+              <>
+                <span>
+                  {period === '1D'
+                    ? 'IMPOSSIBLE DE CHARGER LES CAPITALISATIONS.'
+                    : `IMPOSSIBLE DE CALCULER LES VARIATIONS ${def.phrase.toUpperCase()}.`}
+                </span>
+                <button className="mm-action-btn" onClick={() => mapQuery.refetch()}>Réessayer</button>
+              </>
+            ) : (
+              <>
+                <div style={{ width: 32, height: 32, border: '3px solid #1e3a5f', borderTopColor: '#0ea5e9', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                <span>CALCUL DES VARIATIONS…</span>
+              </>
+            )}
+          </div>
+        ) : !cells.length ? (
+          <div style={{
+            aspectRatio: `${W} / ${H}`, background: '#0a0e17',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#475569', fontSize: 13, padding: 16, textAlign: 'center',
+          }}>
+            {sizeMode === 'cap'
+              ? 'Aucune capitalisation disponible pour cette sélection.'
+              : 'Aucune donnée disponible pour cette période et ce secteur.'}
+          </div>
+        ) : (
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${W} ${H}`}
+            width="100%"
+            style={{ display: 'block', background: '#0a0e17' }}
+          >
+            {cells.map(renderCell)}
+            {sectorBlocks.map(renderSectorBlock)}
+          </svg>
+        )}
       </div>
 
       {/* ── Légende ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', marginTop: 10 }}>
         {colorMode === 'change' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 9, color: '#475569', letterSpacing: 1, flexWrap: 'wrap' }}>
-            {[
-              { color: '#16a34a', label: '>+3%' },
-              { color: '#22c55e', label: '+1.5→+3%' },
-              { color: '#86efac', label: '0→+1.5%' },
-              { color: '#fca5a5', label: '0→-1.5%' },
-              { color: '#ef4444', label: '-1.5→-3%' },
-              { color: '#b91c1c', label: '<-3%' },
-            ].map(({ color, label }) => (
+            {legendChange.map(({ color, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4, marginRight: 8 }}>
-                <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: color }} />
+                <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: color, opacity: 0.85 }} />
                 <span>{label}</span>
               </div>
             ))}
@@ -886,13 +1174,19 @@ export default function BRVMMarketMap({ stocks, loading = false }: BRVMMarketMap
           </div>
         )}
         <div style={{ marginLeft: 'auto', fontSize: 9, color: '#334155' }}>
-          SURFACE ∝ |VARIATION %|
+          {sizeMode === 'cap' ? 'SURFACE ∝ CAPITALISATION BOURSIÈRE' : 'SURFACE ∝ |VARIATION %|'}
         </div>
       </div>
 
       {/* ── Tooltip ── */}
       {hoveredCell && (
-        <Tooltip cell={hoveredCell} mouseX={mousePos.x} mouseY={mousePos.y} periodLabel={PERIOD_LABELS[period]} />
+        <Tooltip
+          cell={hoveredCell}
+          mouseX={mousePos.x}
+          mouseY={mousePos.y}
+          period={period}
+          totalCap={sizeMode === 'cap' ? totalCap : 0}
+        />
       )}
     </div>
   );

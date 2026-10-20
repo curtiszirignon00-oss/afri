@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import {
   useRealDashboard, useRealHistory, useRealTransactions, useUpdateRealCash, useUpdateRealSettings, useDeleteRealPortfolio,
+  useRealPortfolioDiscovery, useRecordDiscovery,
 } from '../hooks/useRealPortfolio';
 import type { DraftRow, RealPositionLine } from '../services/realPortfolioApi';
 import { newRowId } from '../components/real-portfolio/draft';
@@ -54,6 +55,14 @@ export default function RealPortfolioPage() {
   useEffect(() => {
     apiFetch<MarketIndex[]>('/indices/latest').then(setIndices).catch(() => setIndices([]));
   }, []);
+
+  // Visiter la page = fonctionnalité découverte : l'encart « Nouveau » et la pastille du menu disparaissent.
+  const discovery = useRealPortfolioDiscovery(true);
+  const recordDiscovery = useRecordDiscovery();
+  const bannerPending = discovery.data ? !discovery.data.bannerDismissed : false;
+  useEffect(() => {
+    if (bannerPending) recordDiscovery.mutate('banner_dismissed');
+  }, [bannerPending]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const lineAllocation = useMemo(() => {
     if (!data) return [];

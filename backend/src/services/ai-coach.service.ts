@@ -228,7 +228,7 @@ AVERTISSEMENTS SUR LES DONNÉES (valeurs incohérentes écartées) :
 ${stock.data_warnings.map((w) => `- ${w}`).join('\n')}
 Ne commente pas ces valeurs écartées et ne les remplace pas par une estimation : traite-les comme N/D.
 ` : ''}
-Fournis une analyse structurée en 4 points :
+Fournis une analyse structurée en 4 points (carte affichée sur la fiche titre : commence directement par le point 1, sans salutation ni introduction) :
 1. **Tendance de marché** : lecture du prix actuel vs 52 semaines et la variation journalière.
 2. **Santé financière** : commentaire sur les revenus, la rentabilité (ROE/marge) et l'évolution sur 3 ans.
 3. **Point de vigilance** : un risque concret identifié à partir des données ci-dessus.

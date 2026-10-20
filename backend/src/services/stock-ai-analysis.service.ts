@@ -16,7 +16,7 @@ import { marketCapFCFA } from '../ai/format';
 
 // À incrémenter quand le prompt ou les calculs changent : les analyses en cache
 // générées avec l'ancienne version sont alors ignorées et régénérées.
-const ANALYSIS_VERSION = 'v2-units';
+const ANALYSIS_VERSION = 'v3-units-nogreeting';
 const cacheTag = () => `${SIMBA_ANALYST_MODEL}@${ANALYSIS_VERSION}`;
 
 export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

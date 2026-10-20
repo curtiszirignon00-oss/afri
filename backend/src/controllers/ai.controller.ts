@@ -416,7 +416,8 @@ async function runAnalystToolLoop(
             }
           } catch (err: any) {
             log.error(`[SIMBA Tool Error] ${toolName}:`, err?.message);
-            result = { error: `Erreur technique sur ${toolName}: ${err?.message}` };
+            result = { error: "Consultation impossible pour le moment (erreur technique). Ne conclus PAS que la donnée "
+              + "n'existe pas ou vaut N/D : dis que les données n'ont pas pu être consultées et propose de réessayer." };
           }
 
           messages.push({

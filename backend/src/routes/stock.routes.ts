@@ -13,14 +13,16 @@ import {
   getShareholders,
   getAnnualFinancials,
   getComparisonHistory,
-  getMarketPeriodChanges
+  getMarketPeriodChanges,
+  getMarketMap
 } from "../controllers/stock.controller";
 
 const router = Router();
 
 router.get('/', getStocks);                      // Route pour lister toutes les actions
 router.get('/comparison-history', getComparisonHistory); // Route pour historique de comparaison
-router.get('/period-changes', getMarketPeriodChanges);   // GET /api/stocks/period-changes?period=1W|1M
+router.get('/period-changes', getMarketPeriodChanges);   // GET /api/stocks/period-changes?period=1W|1M|… (ancien format)
+router.get('/market-map', getMarketMap);                 // GET /api/stocks/market-map?period=1D|1W|1M|3M|6M|YTD|1Y|3Y|5Y
 router.get('/:symbol', getStock);                // Route pour voir une action par son symbole
 
 // ========================================

@@ -179,7 +179,12 @@ export function streamAnalyst(req: AuthenticatedRequest, res: Response, next: Ne
     contextKey: ticker ?? 'general',
     maxLength: 1500,
     buildMessages: async (question, history) => {
-      const userBlock = ticker ? await buildAnalystUserBlock(req.user!.id, ticker, currentWallet).catch(() => null) : null;
+      const userBlock = ticker
+        ? await buildAnalystUserBlock(req.user!.id, ticker, currentWallet).catch((err) => {
+            log.error('[SIMBA-Analyst] situation portefeuille illisible :', err?.message);
+            return `## SITUATION DE L'UTILISATEUR SUR ${ticker}\n- Données de portefeuille temporairement indisponibles : si l'utilisateur demande ce qu'il détient, réponds que tu ne peux pas le vérifier pour le moment.`;
+          })
+        : null;
       const system = buildAnalystPrompt(ticker, typeof scoreContext === 'string' ? scoreContext : undefined, userBlock);
       return { messages: [{ role: 'system', content: system }, ...history, { role: 'user', content: question }] };
     },

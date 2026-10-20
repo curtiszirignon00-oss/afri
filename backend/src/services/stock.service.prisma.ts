@@ -6,6 +6,7 @@ import { Prisma } from '@prisma/client';
 import { StockData } from "./scraping.service";
 import { cacheGet, cacheSet, cacheInvalidatePattern, hashFilters, CACHE_TTL, CACHE_KEYS } from './cache.service';
 import { isWithinBRVMCollectionWindow, clampToSessionEnd } from '../config/brvmMarket';
+import { marketCapFCFA } from '../ai/format';
 
 // <-- AJOUT : Mapping des secteurs pour assignation automatique lors du scraping
 const SECTOR_MAPPING: Record<string, string> = {
@@ -664,43 +665,185 @@ export async function getAnnualFinancials(symbol: string, yearsBack: number = 5)
     throw error;
   }
 }
+// ─── Carte de marché : variations par période ────────────────────────────────
+
+export const MARKET_MAP_PERIODS = ['1D', '1W', '1M', '3M', '6M', 'YTD', '1Y', '3Y', '5Y'] as const;
+export type MarketMapPeriod = typeof MARKET_MAP_PERIODS[number];
+
+export function isMarketMapPeriod(v: unknown): v is MarketMapPeriod {
+  return typeof v === 'string' && (MARKET_MAP_PERIODS as readonly string[]).includes(v);
+}
+
+export interface MarketMapItem {
+  symbol: string;
+  change_percent: number | null; // null = historique insuffisant (pas 0 : un titre inchangé n'est pas un titre inconnu)
+  base_price: number | null;     // cours de référence, ajusté des splits vérifiés
+  base_date: string | null;      // YYYY-MM-DD de la clôture de référence
+  current_price: number;
+  market_cap: number | null;     // FCFA, cours × nombre de titres
+  adjusted: boolean;             // un split / une attribution vérifié(e) a été appliqué(e)
+  suspect: boolean;              // écart de cours anormal sans opération référencée
+}
+
+export interface MarketMapData {
+  period: MarketMapPeriod;
+  reference_date: string | null;
+  as_of: string | null;
+  items: MarketMapItem[];
+}
+
+const DAY_MS = 86_400_000;
+const SPLIT_TYPES = ['SPLIT', 'REVERSE_SPLIT', 'BONUS'];
+
+function utcMidnight(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+}
+
+/** Recule de n mois civils ; le jour est borné au dernier jour du mois cible (31 mars − 1 M → 28/29 févr.). */
+function subMonthsUTC(d: Date, n: number): Date {
+  const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - n, 1));
+  const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), Math.min(d.getUTCDate(), lastDay)));
+}
+
 /**
- * Calcule la variation % de chaque action sur une période (semaine ou mois)
- * en comparant le prix actuel au premier prix disponible dans la fenêtre.
+ * Date de référence d'une période. La variation se mesure contre la dernière
+ * clôture connue À cette date (incluse) : prendre la première séance qui suit
+ * ferait perdre le mouvement de cette séance.
  */
-export async function getMarketPeriodChanges(period: '1W' | '1M') {
-  const days = period === '1W' ? 7 : 30;
-  const since = new Date();
-  since.setDate(since.getDate() - days);
+export function periodReferenceDate(period: Exclude<MarketMapPeriod, '1D'>, now = new Date()): Date {
+  const today = utcMidnight(now);
+  switch (period) {
+    case '1W':  return new Date(today.getTime() - 7 * DAY_MS);
+    case '1M':  return subMonthsUTC(today, 1);
+    case '3M':  return subMonthsUTC(today, 3);
+    case '6M':  return subMonthsUTC(today, 6);
+    case 'YTD': return new Date(Date.UTC(today.getUTCFullYear() - 1, 11, 31));
+    case '1Y':  return subMonthsUTC(today, 12);
+    case '3Y':  return subMonthsUTC(today, 36);
+    case '5Y':  return subMonthsUTC(today, 60);
+  }
+}
+
+/**
+ * Variation de chaque action sur la période + capitalisation fiable.
+ *
+ * - 1D : variation officielle du jour (daily_change_percent), comme le reste du site.
+ * - Autres : cours actuel vs dernière clôture ≤ date de référence, cherchée dans une
+ *   fenêtre bornée (jours fériés, séances manquantes). Au-delà, ou si le titre n'était
+ *   pas encore coté : change_percent = null.
+ * - Les cours de référence antérieurs à un split / une attribution vérifié(e) sont
+ *   divisés par le ratio (même règle que le moteur du portefeuille réel).
+ */
+export async function getMarketMapData(period: MarketMapPeriod): Promise<MarketMapData> {
+  const cacheKey = `stocks:market-map:${period}`;
+  const cached = await cacheGet<MarketMapData>(cacheKey);
+  if (cached) return cached;
 
   const stocks = await prisma.stock.findMany({
     where: { is_active: true },
-    select: { symbol: true, current_price: true }
-  });
-
-  const histories = await prisma.stockHistory.findMany({
-    where: {
-      stock_ticker: { in: stocks.map(s => s.symbol) },
-      date: { gte: since }
+    select: {
+      symbol: true, current_price: true, previous_close: true, daily_change_percent: true,
+      shares_outstanding: true, updated_at: true,
+      fundamentals: { select: { shares_outstanding: true, market_cap: true }, take: 1 },
     },
-    orderBy: { date: 'asc' },
-    select: { stock_ticker: true, close: true }
   });
+  const symbols = stocks.map(s => s.symbol);
 
-  // Pour chaque action, on prend le PREMIER close de la période (le plus ancien)
-  const basePrice = new Map<string, number>();
-  for (const h of histories) {
-    if (!basePrice.has(h.stock_ticker)) {
-      basePrice.set(h.stock_ticker, h.close);
-    }
+  const asOf = stocks.reduce<Date | null>(
+    (max, s) => (s.updated_at && (!max || s.updated_at > max) ? s.updated_at : max), null,
+  );
+
+  const capOf = (s: typeof stocks[number]) => {
+    const fund = s.fundamentals[0];
+    return marketCapFCFA(s.current_price, fund?.shares_outstanding ?? s.shares_outstanding, fund?.market_cap);
+  };
+
+  let data: MarketMapData;
+
+  if (period === '1D') {
+    data = {
+      period,
+      reference_date: null,
+      as_of: asOf?.toISOString() ?? null,
+      items: stocks.map(s => ({
+        symbol: s.symbol,
+        change_percent: s.current_price > 0 ? s.daily_change_percent : null,
+        base_price: s.previous_close > 0 ? s.previous_close : null,
+        base_date: null,
+        current_price: s.current_price,
+        market_cap: capOf(s),
+        adjusted: false,
+        suspect: false,
+      })),
+    };
+  } else {
+    const now = new Date();
+    const ref = periodReferenceDate(period, now);
+    const spanDays = (utcMidnight(now).getTime() - ref.getTime()) / DAY_MS;
+    const toleranceDays = Math.max(10, Math.min(31, Math.round(spanDays * 0.1)));
+
+    const [rows, actions] = await Promise.all([
+      prisma.stockHistory.findMany({
+        where: {
+          stock_ticker: { in: symbols },
+          date: { gte: new Date(ref.getTime() - toleranceDays * DAY_MS), lt: new Date(ref.getTime() + DAY_MS) },
+          close: { gt: 0 },
+        },
+        orderBy: { date: 'desc' },
+        select: { stock_ticker: true, date: true, close: true },
+      }),
+      prisma.corporateAction.findMany({
+        where: { stock_ticker: { in: symbols }, verified: true, type: { in: SPLIT_TYPES }, ex_date: { lte: now } },
+        select: { stock_ticker: true, ex_date: true, ratio: true },
+      }),
+    ]);
+
+    // Tri décroissant → la première ligne rencontrée est la dernière clôture ≤ référence
+    const base = new Map<string, { date: Date; close: number }>();
+    for (const r of rows) if (!base.has(r.stock_ticker)) base.set(r.stock_ticker, { date: r.date, close: r.close });
+
+    data = {
+      period,
+      reference_date: ref.toISOString().slice(0, 10),
+      as_of: asOf?.toISOString() ?? null,
+      items: stocks.map(s => {
+        const b = base.get(s.symbol);
+        const cap = capOf(s);
+        if (!b || !(s.current_price > 0)) {
+          return {
+            symbol: s.symbol, change_percent: null, base_price: null, base_date: null,
+            current_price: s.current_price, market_cap: cap, adjusted: false, suspect: false,
+          };
+        }
+        const factor = actions
+          .filter(a => a.stock_ticker === s.symbol && a.ratio && a.ratio > 0 && a.ex_date > b.date)
+          .reduce((f, a) => f * (a.ratio as number), 1);
+        const basePrice = b.close / factor;
+        const growth = s.current_price / basePrice;
+        return {
+          symbol: s.symbol,
+          change_percent: Math.round((growth - 1) * 10_000) / 100,
+          base_price: Math.round(basePrice * 100) / 100,
+          base_date: b.date.toISOString().slice(0, 10),
+          current_price: s.current_price,
+          market_cap: cap,
+          adjusted: factor !== 1,
+          // Division / multiplication du cours par ~3+ sans opération vérifiée : split probable non référencé
+          suspect: factor === 1 && (growth < 0.35 || growth > 4),
+        };
+      }),
+    };
   }
 
-  return stocks.map(s => {
-    const base = basePrice.get(s.symbol);
-    if (!base || base === 0) return { symbol: s.symbol, change_percent: 0 };
-    const pct = ((s.current_price - base) / base) * 100;
-    return { symbol: s.symbol, change_percent: parseFloat(pct.toFixed(2)) };
-  });
+  await cacheSet(cacheKey, data, CACHE_TTL.STOCKS);
+  return data;
+}
+
+/** Ancien format (tableau symbol / change_percent) conservé pour les clients déjà déployés. */
+export async function getMarketPeriodChanges(period: Exclude<MarketMapPeriod, '1D'>) {
+  const { items } = await getMarketMapData(period);
+  return items.map(({ symbol, change_percent }) => ({ symbol, change_percent }));
 }
 
 export async function getHistoryForComparison(symbols: string[], period: number) {

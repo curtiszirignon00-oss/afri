@@ -8,7 +8,9 @@
 
 import Groq from 'groq-sdk';
 import { log } from '../config/logger';
-import { trackedCompletion } from '../ai/models';
+import { trackedCompletion, shortTextParams, stripReasoning } from '../ai/models';
+
+const FAST_MODEL = process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b';
 
 // ─── Singleton ────────────────────────────────────────────────────────────────
 
@@ -53,10 +55,12 @@ export async function generatePulseQuestion(stock: StockSummary): Promise<string
       ? `${stock.current_price.toLocaleString('fr-FR')} FCFA`
       : '';
 
+    // Budget large + réflexion minimale : à 120 tokens, gpt-oss renvoyait une réponse vide
     const chat = await trackedCompletion(getGroq(), {
-      model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
-      max_tokens: 120,
+      model: FAST_MODEL,
+      max_tokens: 400,
       temperature: 0.7,
+      ...shortTextParams(FAST_MODEL),
       messages: [
         { role: 'system', content: SIMBA_MICRO_SYSTEM },
         {
@@ -66,7 +70,8 @@ export async function generatePulseQuestion(stock: StockSummary): Promise<string
       ],
     } as any, 'pulse-question');
 
-    return chat.choices[0]?.message?.content?.trim() ?? fallbackPulseQuestion(stock);
+    // `||` et non `??` : une réponse vide doit aussi déclencher la question de secours
+    return stripReasoning(chat.choices[0]?.message?.content ?? '') || fallbackPulseQuestion(stock);
   } catch (err: any) {
     log.warn('[simba-micro] generatePulseQuestion fallback :', err?.message);
     return fallbackPulseQuestion(stock);
@@ -92,10 +97,12 @@ export async function generateWatchlistSummary(
       })
       .join('\n');
 
+    // Budget large + réflexion minimale : à 200 tokens, le résumé était coupé en pleine phrase
     const chat = await trackedCompletion(getGroq(), {
-      model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
-      max_tokens: 200,
+      model: FAST_MODEL,
+      max_tokens: 600,
       temperature: 0.5,
+      ...shortTextParams(FAST_MODEL),
       messages: [
         { role: 'system', content: SIMBA_MICRO_SYSTEM },
         {
@@ -105,7 +112,9 @@ export async function generateWatchlistSummary(
       ],
     } as any, 'watchlist-summary');
 
-    return chat.choices[0]?.message?.content?.trim() ?? '';
+    // Résumé tronqué (finish_reason « length ») : on préfère ne rien afficher plutôt qu'une phrase coupée
+    if (chat.choices[0]?.finish_reason === 'length') return '';
+    return stripReasoning(chat.choices[0]?.message?.content ?? '');
   } catch (err: any) {
     log.warn('[simba-micro] generateWatchlistSummary fallback :', err?.message);
     return '';

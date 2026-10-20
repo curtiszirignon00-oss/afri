@@ -98,6 +98,15 @@ export function tokensOf(completion: ChatCompletion | null | undefined): number 
   return completion?.usage?.total_tokens ?? null;
 }
 
+/**
+ * Paramètres pour les textes courts (question Pulse, résumé watchlist).
+ * gpt-oss raisonne avant d'écrire et sa réflexion consomme max_tokens : avec 120-200
+ * tokens, la réponse sortait vide ou coupée en pleine phrase. Réflexion minimale ici.
+ */
+export function shortTextParams(model: string): Record<string, unknown> {
+  return /gpt-oss/i.test(model) ? { reasoning_effort: 'low' } : reasoningParams(model);
+}
+
 /** Filet de sécurité : retire tout bloc <think>…</think> résiduel */
 export function stripReasoning(text: string): string {
   return text.replace(/<think>[\s\S]*?(<\/think>|$)/gi, '').trim();

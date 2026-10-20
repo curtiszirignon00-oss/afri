@@ -5,6 +5,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
 import EmailVerificationBanner from './EmailVerificationBanner';
+import { useRealPortfolioDiscovery } from '../hooks/useRealPortfolio';
 import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
 import {
   useUnseenNewsCount,
@@ -51,6 +52,12 @@ export default function Header() {
 
   // Compte effectif selon l'état de connexion
   const communityBadge = isLoggedIn ? (unseenCommunityCount ?? 0) : unseenCommunityPublic;
+
+  // Portefeuille réel : pastille « Nouveau » tant que la fonctionnalité n'est pas découverte
+  const { data: rpDiscovery } = useRealPortfolioDiscovery(isLoggedIn);
+  const realPortfolioIsNew = !!rpDiscovery && !rpDiscovery.hasPortfolio && !rpDiscovery.bannerDismissed && !rpDiscovery.guideCompleted;
+  const newPill = <span className="ml-auto px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold uppercase leading-none">Nouveau</span>;
+  const newDot = <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden="true" />;
 
   // ✅ Fonction de déconnexion simplifiée
   const handleLogout = async () => {
@@ -203,9 +210,10 @@ export default function Header() {
                       {/* Bouton Mon Compte */}
                       <button
                         onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-                        className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
+                        className="relative flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
                       >
                         <span>Mon Compte</span>
+                        {realPortfolioIsNew && newDot}
                       </button>
                     </div>
                   ) : (
@@ -221,7 +229,7 @@ export default function Header() {
                   {/* Dropdown Menu (Desktop) */}
                   {isLoggedIn && accountMenuOpen && (
                     <div 
-                      className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1"
+                      className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1"
                       onMouseLeave={() => setAccountMenuOpen(false)}
                     >
                       <button
@@ -238,6 +246,7 @@ export default function Header() {
                       >
                         <Wallet className="w-4 h-4 text-indigo-500" />
                         <span>Portefeuille réel</span>
+                        {realPortfolioIsNew && newPill}
                       </button>
 
                       <button
@@ -310,6 +319,7 @@ export default function Header() {
                           </div>
                         )}
                       </button>
+                      {realPortfolioIsNew && newDot}
 
                       {/* Mini-menu mobile */}
                       {mobileAccountOpen && (
@@ -333,6 +343,7 @@ export default function Header() {
                             >
                               <Wallet className="w-4 h-4 text-indigo-500" />
                               Portefeuille réel
+                              {realPortfolioIsNew && <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500" aria-label="Nouveau" />}
                             </button>
                             <button
                               onClick={() => { navigate('/webinaires-eco'); setMobileAccountOpen(false); }}

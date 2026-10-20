@@ -83,9 +83,12 @@ async function generateSimbaQuestion(stock: StockSummary): Promise<string> {
       ? `${stock.current_price.toLocaleString('fr-FR')} FCFA`
       : '';
 
+    // gpt-oss raisonne avant d'écrire : à 120 tokens la réponse sortait vide → réflexion minimale, budget large
+    const model = process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b';
     const chat = await groq.chat.completions.create({
-      model: process.env.GROQ_MODEL_FAST || 'openai/gpt-oss-20b',
-      max_tokens: 120,
+      model,
+      max_tokens: 400,
+      ...(/gpt-oss/i.test(model) ? { reasoning_effort: 'low' as const } : {}),
       messages: [
         {
           role: 'system',
@@ -99,7 +102,8 @@ async function generateSimbaQuestion(stock: StockSummary): Promise<string> {
       ],
     });
 
-    return chat.choices[0]?.message?.content?.trim() ?? fallbackQuestion(stock);
+    // `||` : une réponse vide déclenche aussi la question de secours
+    return chat.choices[0]?.message?.content?.trim() || fallbackQuestion(stock);
   } catch {
     return fallbackQuestion(stock);
   }

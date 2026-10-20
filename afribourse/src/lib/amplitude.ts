@@ -130,3 +130,17 @@ export function trackPinnedPostClicked(postId: string) {
 export function trackSimilarProfileClicked(targetProfileId: string, dnaType?: string) {
   amplitude.track('similar_profile_clicked', { target_profile_id: targetProfileId, dna_type: dnaType });
 }
+
+// ── Portefeuille réel : découverte ────────────────────────────────────────────
+
+export function trackRealPortfolioGuide(
+  action: 'shown' | 'step' | 'import_clicked' | 'later' | 'closed',
+  props: { audience?: 'new' | 'existing'; trigger?: 'auto' | 'banner' | 'menu'; step?: number } = {},
+) {
+  amplitude.track('real_portfolio_guide', { action, ...props });
+}
+
+export function trackRealPortfolioBanner(action: 'shown' | 'discover_clicked' | 'import_clicked' | 'dismissed') {
+  amplitude.track('real_portfolio_banner', { action });
+}
+

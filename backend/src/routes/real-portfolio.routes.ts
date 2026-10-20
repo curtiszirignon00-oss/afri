@@ -9,6 +9,7 @@ import { requireEmailVerifiedForWrite } from '../middlewares/emailVerification.m
 import {
   uploadStatement, parseFile, mapAndValidate, validate, commit, removeTransaction,
   updateCash, updateSettings, removePortfolio, getDashboard, getTransactions, getHistory,
+  getDiscovery, postDiscovery,
 } from '../controllers/real-portfolio.controller';
 
 const router = Router();
@@ -28,6 +29,10 @@ router.use(auth);
 router.get('/', getDashboard);
 router.get('/transactions', getTransactions);
 router.get('/history', getHistory);
+
+// Découverte de la fonctionnalité : état du guide et de l'encart « Nouveau »
+router.get('/discovery', getDiscovery);
+router.post('/discovery', postDiscovery);
 
 router.post('/parse', realPortfolioLimiter, uploadStatement, parseFile);
 router.post('/map', realPortfolioLimiter, mapAndValidate);

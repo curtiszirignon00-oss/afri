@@ -28,6 +28,7 @@ import EmailVerificationModal from './EmailVerificationModal';
 import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
 import DashboardWebinarWidget from './dashboard/DashboardWebinarWidget';
 import WelcomeModal from './onboarding/WelcomeModal';
+import RealPortfolioDiscovery from './real-portfolio/discovery/RealPortfolioDiscovery';
 import PulseDot from './onboarding/PulseDot';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 // Gamification imports
@@ -598,6 +599,9 @@ export default function DashboardPage() {
             </div>
           </Card>
         )}
+
+        {/* Portefeuille réel : encart « Nouveau » (comptes existants) + guide de découverte */}
+        <RealPortfolioDiscovery />
 
         {/* <-- NOUVEAU: Vue d'Ensemble - Le Solde Principal */}
         <Card className={`mb-8 text-white ${

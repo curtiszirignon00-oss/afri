@@ -171,12 +171,25 @@ export async function getAnnualFinancials(req: Request, res: Response, next: Nex
 }
 export async function getMarketPeriodChanges(req: Request, res: Response, next: NextFunction) {
   try {
-    const period = (req.query.period as '1W' | '1M') || '1W';
-    if (!['1W', '1M'].includes(period)) {
-      return res.status(400).json({ message: "Period must be 1W or 1M" });
+    const period = req.query.period ?? '1W';
+    if (!stockService.isMarketMapPeriod(period) || period === '1D') {
+      return res.status(400).json({ message: `Period must be one of ${stockService.MARKET_MAP_PERIODS.slice(1).join(', ')}` });
     }
     const changes = await stockService.getMarketPeriodChanges(period);
     return res.status(200).json(changes);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function getMarketMap(req: Request, res: Response, next: NextFunction) {
+  try {
+    const period = req.query.period ?? '1D';
+    if (!stockService.isMarketMapPeriod(period)) {
+      return res.status(400).json({ message: `Period must be one of ${stockService.MARKET_MAP_PERIODS.join(', ')}` });
+    }
+    const data = await stockService.getMarketMapData(period);
+    return res.status(200).json(data);
   } catch (error) {
     return next(error);
   }

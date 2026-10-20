@@ -100,7 +100,9 @@ export async function executeAnalystTool(name: string, rawArgs: string): Promise
     return await TOOL_EXECUTORS[toolName](args);
   } catch (err: any) {
     log.error(`[SIMBA Tool Error] ${toolName}:`, err?.message);
-    return { error: `Erreur technique sur ${toolName}: ${err?.message}` };
+    // Jamais le message brut (Prisma…) : le modèle le lisait comme une donnée absente (« N/D »)
+    return { error: "Consultation impossible pour le moment (erreur technique). Ne conclus PAS que la donnée "
+        + "n'existe pas ou vaut N/D : dis que les données n'ont pas pu être consultées et propose de réessayer." };
   }
 }
 

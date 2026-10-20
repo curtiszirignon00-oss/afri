@@ -2784,3 +2784,19 @@ model RealImportBatch {
   @@index([portfolioId])
   @@map("real_import_batches")
 }
+
+// Annonce de fonctionnalité vue / fermée, par utilisateur (guide de découverte,
+// encart « Nouveau »). Côté serveur pour ne pas réafficher sur un autre appareil.
+model FeatureAnnouncement {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String    @db.ObjectId
+  feature             String // ex. "real-portfolio"
+  guide_seen_at       DateTime?
+  guide_completed     Boolean   @default(false)
+  banner_dismissed_at DateTime?
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  @@unique([userId, feature])
+  @@map("feature_announcements")
+}

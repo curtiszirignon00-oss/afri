@@ -125,6 +125,16 @@ export interface RealTransaction {
 
 export interface HistoryPoint { date: string; value: number; invested: number }
 
+export type DiscoveryEvent = 'guide_seen' | 'guide_completed' | 'banner_dismissed';
+export interface DiscoveryState {
+  /** new = compte créé après le lancement de la fonctionnalité. */
+  audience: 'new' | 'existing';
+  hasPortfolio: boolean;
+  guideSeen: boolean;
+  guideCompleted: boolean;
+  bannerDismissed: boolean;
+}
+
 export class RealPortfolioApiError extends Error {
   constructor(public status: number, message: string, public report?: ValidationReport) {
     super(message);
@@ -178,4 +188,7 @@ export const realPortfolioApi = {
   updateCash: (amount: number) => call('/cash', json('PUT', { amount })),
   updateSettings: (body: { name?: string; broker?: string | null; declaredCapital?: number | null }) => call('', json('PATCH', body)),
   deletePortfolio: () => call<void>('', { method: 'DELETE' }),
+
+  getDiscovery: () => call<DiscoveryState>('/discovery'),
+  recordDiscovery: (event: DiscoveryEvent) => call<DiscoveryState>('/discovery', json('POST', { event })),
 };

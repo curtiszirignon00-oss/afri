@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { log } from '../config/logger';
 import * as service from '../services/real-portfolio/real-portfolio.service';
 import { RealPortfolioError } from '../services/real-portfolio/real-portfolio.service';
+import { getDiscoveryState, recordDiscoveryEvent } from '../services/real-portfolio/discovery.service';
 import { parseStatementFile, toDraftRows } from '../services/real-portfolio/parsers';
 import { toIso } from '../services/real-portfolio/dates';
 import type { DraftRow } from '../services/real-portfolio/types';
@@ -150,3 +151,12 @@ export const getDashboard = handle(async (req, res) => {
 export const getTransactions = handle(async (req, res) => res.json(await service.getTransactions(uid(req))));
 
 export const getHistory = handle(async (req, res) => res.json(await service.getHistory(uid(req))));
+
+// ─── Découverte (guide + encart « Nouveau ») ───────────────────────────────
+
+export const getDiscovery = handle(async (req, res) => res.json(await getDiscoveryState(uid(req))));
+
+export const postDiscovery = handle(async (req, res) => {
+  const { event } = z.object({ event: z.enum(['guide_seen', 'guide_completed', 'banner_dismissed']) }).parse(req.body);
+  return res.json(await recordDiscoveryEvent(uid(req), event));
+});

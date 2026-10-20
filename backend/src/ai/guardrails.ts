@@ -8,29 +8,37 @@
 // ─── Topics bloqués ───────────────────────────────────────────────────────────
 
 interface BlockedTopic {
-  keywords: string[];
+  patterns: RegExp[]; // testés sur le message en minuscules
   message: string;
 }
 
+// Expressions précises (et non mots isolés) : « levier », « garanti » ou « sans risque »
+// bloquaient des questions légitimes — effet de levier de la dette sur le ROE (enseigné
+// dans les modules), taux sans risque (valorisation), obligation garantie…
 const BLOCKED_TOPICS: BlockedTopic[] = [
   {
-    keywords: ['crypto', 'bitcoin', 'ethereum', 'nft', 'altcoin', 'solana', 'binance coin'],
+    patterns: [/\bcrypto/, /\bbitcoin/, /\bethereum\b/, /\bnft\b/, /\baltcoin/, /\bsolana\b/, /\bbinance\b/],
     message: 'Je suis spécialisé sur la BRVM et les marchés de la zone UEMOA. Les cryptomonnaies ne font pas partie de mon périmètre. Souhaitez-vous en savoir plus sur les actions ou obligations cotées à la BRVM ?',
   },
   {
-    keywords: ['manipulation', 'manipulation de marché', 'insider', 'délit d\'initié'],
+    patterns: [/manipul\w* (de |du |des |le |la |les )?(march|cours)/, /\binsider\b/, /d[eé]lit d['’ ]?initi[eé]/],
     message: 'Ce sujet concerne des pratiques illégales que je ne peux pas aborder. Si vous avez des doutes sur des irrégularités de marché, contactez le CREPMF (régulateur de la BRVM).',
   },
   {
-    keywords: ['garanti', 'garantie de rendement', 'sans risque', 'rendement garanti', '100% sûr'],
+    patterns: [
+      /(rendement|gain|gains|profit|profits|bénéfice|benefice|plus-value|revenu)s? garanti/,
+      /garanti\w* (à|a) 100/,
+      /(placement|investissement|gain|gains|profit|argent|rendement)s? sans risque/,
+      /100 ?% (sûr|sur)\b/,
+    ],
     message: 'Aucun investissement ne peut garantir un rendement. Tout placement comporte un risque de perte en capital. Je vous invite à explorer notre simulateur pour comprendre les risques.',
   },
   {
-    keywords: ['forex', 'options binaires', 'cfd', 'trading haute fréquence', 'levier', 'margin trading'],
+    patterns: [/\bforex\b/, /options? binaires?/, /\bcfds?\b/, /trading (à |a )?haute fréquence/, /margin trading/, /trading (à|a|avec) (effet de )?levier/, /\blevier (x ?)?\d+/],
     message: 'Ces produits financiers ne sont pas disponibles sur la BRVM. Mon domaine d\'expertise se limite aux actions et obligations cotées sur le marché UEMOA.',
   },
   {
-    keywords: ['pyramide', 'ponzi', 'mlm', 'investissement miraculeux', 'enrichissement rapide'],
+    patterns: [/\bponzi\b/, /pyramide (de ponzi|financi)/, /\bmlm\b/, /investissement miraculeux/, /enrichissement rapide/],
     message: 'Je ne peux pas traiter ce type de demande. Méfiez-vous des promesses de gains rapides, elles sont souvent associées à des arnaques financières.',
   },
 ];
@@ -55,11 +63,11 @@ export function preProcessMessage(userMessage: string): PreProcessResult {
   const lower = userMessage.toLowerCase();
 
   for (const topic of BLOCKED_TOPICS) {
-    const matched = topic.keywords.find((kw) => lower.includes(kw));
+    const matched = topic.patterns.find((re) => re.test(lower));
     if (matched) {
       return {
         blocked: true,
-        reason: matched,
+        reason: matched.source,
         fallbackMessage: topic.message,
       };
     }
