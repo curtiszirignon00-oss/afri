@@ -339,6 +339,38 @@ export async function getTopStocks(limit: number = 6) {
  * @param symbol - Le symbole de l'action (ex: SLBC)
  * @param period - Période: '1M' | '3M' | '6M' | '1Y' | 'ALL'
  */
+/**
+ * Bougie journalière de la séance en cours, agrégée depuis les snapshots intraday.
+ *
+ * La bougie du jour n'est écrite en base qu'à 18h00 (cron saveCurrentDayHistory).
+ * Sans ce calcul, de l'ouverture jusqu'à 18h le graphique J1 n'avait pas de
+ * bougie du jour : le front la fabriquait avec la clôture de la veille et le
+ * cours courant, sans plus haut ni plus bas de séance — un décrochage intraday
+ * (ex. SNTS 41 880 → 39 995 → 41 745) était visible en H1 mais pas en J1.
+ *
+ * Mêmes conventions que getIntradayHourly() : snapshots hors séance écartés,
+ * ouverture = premier prix observé (fixing 09h45), volume = dernier cumul du jour.
+ */
+export async function getLiveSessionBar(symbol: string, now: Date = new Date()) {
+  const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const rawSnapshots = await prisma.intradaySnapshot.findMany({
+    where: { stock_ticker: symbol, timestamp: { gte: dayStart, lte: now } },
+    orderBy: { timestamp: 'asc' },
+  });
+  const snapshots = rawSnapshots.filter(s => isWithinBRVMCollectionWindow(s.timestamp));
+  if (snapshots.length === 0) return null;
+
+  const prices = snapshots.map(s => s.price);
+  return {
+    dateKey: dayStart.toISOString().slice(0, 10),
+    open: prices[0],
+    high: Math.max(...prices),
+    low: Math.min(...prices),
+    close: prices[prices.length - 1],
+    volume: snapshots[snapshots.length - 1].volume,
+  };
+}
+
 export async function getStockHistory(
   symbol: string,
   period: '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1Y'
@@ -411,6 +443,39 @@ export async function getStockHistory(
       if (!dateMap.has(dateKey) || record.date > dateMap.get(dateKey)!.date) {
         dateMap.set(dateKey, record);
       }
+    }
+
+    // Séance en cours : bougie provisoire tirée de l'intraday tant que la
+    // bougie officielle de 18h00 n'existe pas ; si elle existe déjà, on
+    // s'assure seulement qu'elle couvre les extrêmes de séance.
+    try {
+      const live = await getLiveSessionBar(symbol, now);
+      if (live) {
+        const existing = dateMap.get(live.dateKey);
+        if (existing) {
+          dateMap.set(live.dateKey, {
+            ...existing,
+            high: Math.max(existing.high, live.high),
+            low: Math.min(existing.low, live.low),
+          });
+        } else {
+          dateMap.set(live.dateKey, {
+            id: `live-${symbol}-${live.dateKey}`,
+            stock_ticker: symbol,
+            date: new Date(live.dateKey + 'T00:00:00.000Z'),
+            open: live.open,
+            high: live.high,
+            low: live.low,
+            close: live.close,
+            volume: live.volume,
+            created_at: now,
+            stockId: history[history.length - 1]?.stockId ?? '',
+          } as typeof history[0]);
+        }
+      }
+    } catch (err) {
+      // L'historique reste servi même si l'intraday est indisponible
+      log.error(`⚠️ Bougie de séance indisponible pour ${symbol}:`, err);
     }
 
     // Retourner avec des dates normalisées (YYYY-MM-DD à minuit UTC)
