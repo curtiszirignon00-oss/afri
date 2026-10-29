@@ -859,7 +859,8 @@ export async function getMarketMapData(period: MarketMapPeriod): Promise<MarketM
         select: { stock_ticker: true, date: true, close: true },
       }),
       prisma.corporateAction.findMany({
-        where: { stock_ticker: { in: symbols }, verified: true, type: { in: SPLIT_TYPES }, ex_date: { lte: now } },
+        // history_adjusted : l'historique est déjà dans la base post-split, ne pas rediviser
+        where: { stock_ticker: { in: symbols }, verified: true, type: { in: SPLIT_TYPES }, ex_date: { lte: now }, history_adjusted: { not: true } },
         select: { stock_ticker: true, ex_date: true, ratio: true },
       }),
     ]);

@@ -75,8 +75,16 @@ export async function loadMarketContext(
       : Promise.resolve([]),
   ]);
 
+  // Le moteur raisonne sur l'historique brut : on remultiplie les séances antérieures
+  // aux splits dont l'historique a été ajusté en base (history_adjusted).
+  const rebase = (ticker: string, date: string) => actions
+    .filter(a => a.history_adjusted && a.stock_ticker === ticker && a.ratio && a.ratio > 0 && date < toIso(a.ex_date))
+    .reduce((f, a) => f * (a.ratio as number), 1);
   const bars = new Map<string, Bar[]>();
-  histories.forEach((h, i) => bars.set(tickers[i], h.map(b => ({ date: toIso(b.date), low: b.low, high: b.high, close: b.close }))));
+  histories.forEach((h, i) => bars.set(tickers[i], h.map(b => {
+    const date = toIso(b.date), f = rebase(tickers[i], date);
+    return { date, low: b.low * f, high: b.high * f, close: b.close * f };
+  })));
 
   const splits = new Map<string, SplitEvent[]>();
   const dividends = new Map<string, DividendEvent[]>();

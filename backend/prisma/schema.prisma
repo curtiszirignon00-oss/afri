@@ -2687,6 +2687,10 @@ model CorporateAction {
   amount       Float? // DIVIDEND : montant net par action (XOF)
   source       String?
   verified     Boolean  @default(false)
+  // true : StockHistory / IntradaySnapshot antérieurs à ex_date ont déjà été divisés
+  // par ratio en base (scripts/applyStockSplit.ts). Les lecteurs qui ajustent
+  // eux-mêmes l'historique brut (carte de marché, portefeuille réel) en tiennent compte.
+  history_adjusted Boolean @default(false)
   note         String?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
