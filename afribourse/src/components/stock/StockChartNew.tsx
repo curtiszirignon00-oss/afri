@@ -5,7 +5,7 @@ import { useIntradayHistory } from '../../hooks/useStockDetails';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ChartType, TimeInterval, OHLCVData, PriceChange } from '../../types/chart.types';
 import type { CandleResolution } from '../../utils/chartDataAdapter';
-import type { IntradayInterval } from '../../services/stockApi';
+import type { IntradayInterval, StockSplit } from '../../services/stockApi';
 import { applyResolution, RESOLUTION_LABEL, filterDataByInterval } from '../../utils/chartDataAdapter';
 import ChartShareModal from './ChartShareModal';
 import ChartDrawingToolbar from './ChartDrawingToolbar';
@@ -25,6 +25,10 @@ interface StockChartProps {
   currentInterval?: TimeInterval;
   isLoading?: boolean;
   theme?: 'light' | 'dark';
+  /** Fractionnements du titre : la bascule Ajusté / Brut n'apparaît que s'il y en a */
+  splits?: StockSplit[];
+  adjusted?: boolean;
+  onAdjustedChange?: (adjusted: boolean) => void;
 }
 
 // Chaque entrée définit :
@@ -103,6 +107,9 @@ export default function StockChartNew({
   currentInterval = '1Y',
   isLoading = false,
   theme = 'light',
+  splits = [],
+  adjusted = true,
+  onAdjustedChange,
 }: StockChartProps) {
   const { userProfile } = useAuth();
   const isPremium = userProfile?.subscriptionTier && userProfile.subscriptionTier !== 'free';
@@ -139,8 +146,12 @@ export default function StockChartNew({
     symbol,
     intradayInterval !== null,
     400,
-    intradayInterval ?? '1h'
+    intradayInterval ?? '1h',
+    adjusted
   );
+  const splitsLabel = splits
+    .map(s => `${s.ratio >= 1 ? `1:${s.ratio}` : `${Math.round(1 / s.ratio)}:1`} le ${s.ex_date.split('-').reverse().join('/')}`)
+    .join(', ');
   const hasIntraday = intradayInterval !== null && (intradayResp?.data?.length ?? 0) > 0;
 
   // Données agrégées selon la résolution de bougie sélectionnée
@@ -503,7 +514,28 @@ export default function StockChartNew({
           </div>
 
           {/* Boutons d'action */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {splits.length > 0 && onAdjustedChange && (
+              <div
+                className={`flex ${buttonBgClasses} rounded-lg p-1`}
+                title={`Fractionnement ${splitsLabel}. Ajusté : cours antérieurs ramenés à la base actuelle. Brut : cours tels que cotés à l'époque.`}
+              >
+                {([true, false] as const).map(value => (
+                  <button
+                    key={String(value)}
+                    onClick={() => onAdjustedChange(value)}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                      adjusted === value
+                        ? `${buttonActiveBgClasses} shadow-sm`
+                        : `${mutedTextClasses} ${buttonHoverBgClasses}`
+                    }`}
+                  >
+                    {value ? 'Ajusté' : 'Brut'}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <button
               onClick={() => setShowIndicators(!showIndicators)}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 text-xs font-medium ${

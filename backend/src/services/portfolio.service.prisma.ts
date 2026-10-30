@@ -2,6 +2,7 @@ import { log } from '../config/logger';
 // backend/src/services/portfolio.service.prisma.ts
 
 import prisma from '../config/prisma';
+import { adjustHistoryRows } from './splitAdjust.service';
 import { Portfolio, Position, Transaction } from '@prisma/client';
 
 // --- Find/Create Portfolio (Keep existing functions) ---
@@ -315,7 +316,9 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
     const tickers = Array.from(new Set(transactions.map(tx => tx.stock_ticker)));
 
     // 5. Pré-charger TOUS les prix historiques pour tous les tickers en une seule requête
-    const allStockHistory = await prisma.stockHistory.findMany({
+    // Cours ajustés aux fractionnements : les transactions antérieures à un split
+    // sont enregistrées dans la base post-split (scripts/applyStockSplit.ts)
+    const allStockHistory = await adjustHistoryRows(await prisma.stockHistory.findMany({
       where: {
         stock_ticker: { in: tickers },
         date: { gte: startDate, lte: today }
@@ -326,7 +329,7 @@ export async function getPortfolioHistory(userId: string, walletType?: string): 
         close: true
       },
       orderBy: { date: 'asc' }
-    });
+    }));
 
     // 6. Organiser les prix historiques par ticker et date pour un accès rapide
     const pricesByTickerAndDate = new Map<string, Map<string, number>>();

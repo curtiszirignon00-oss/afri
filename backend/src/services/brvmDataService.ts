@@ -4,6 +4,7 @@
  */
 
 import prisma from '../config/prisma';
+import { adjustForSplits } from './splitAdjust.service';
 import type { AnalystToolName } from '../ai/analystTools';
 import { fmtFCFA, fmtMillionsFCFA, fmtLargeFCFA, marketCapFCFA, plausibleRatio, PLAUSIBLE_RANGES } from '../ai/format';
 
@@ -71,7 +72,7 @@ async function getHistoricalPerformance({ symbol, period }: { symbol: string; pe
   const days = PERIOD_TO_DAYS[period] ?? 30;
   const since = new Date(Date.now() - days * 86_400_000);
 
-  const [prices, brvmPrices] = await Promise.all([
+  const [rawPrices, brvmPrices] = await Promise.all([
     prisma.stockHistory.findMany({
       where: { stock_ticker: sym, date: { gte: since } },
       orderBy: { date: 'asc' },
@@ -83,6 +84,8 @@ async function getHistoricalPerformance({ symbol, period }: { symbol: string; pe
       select: { date: true, close: true },
     }),
   ]);
+
+  const prices = await adjustForSplits(rawPrices, () => sym, p => p.date);
 
   if (!prices.length) {
     return { error: `Pas de données historiques pour "${sym}" sur la période ${period}.` };
@@ -279,11 +282,12 @@ async function getTopPerformers({
 
   const perfs = await Promise.all(
     stocks.map(async (stock: any) => {
-      const firstPrice = await prisma.stockHistory.findFirst({
+      const firstRaw = await prisma.stockHistory.findFirst({
         where: { stock_ticker: stock.symbol, date: { gte: since } },
         orderBy: { date: 'asc' },
         select: { close: true, date: true },
       });
+      const [firstPrice] = firstRaw ? await adjustForSplits([firstRaw], () => stock.symbol, r => r.date) : [];
       if (!firstPrice || !stock.current_price) return null;
       const perf = ((stock.current_price - firstPrice.close) / firstPrice.close) * 100;
       return {

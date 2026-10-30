@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import Groq from 'groq-sdk';
 import { log } from '../config/logger';
 import { trackedCompletion } from '../ai/models';
+import { adjustHistoryRows } from './splitAdjust.service';
 
 const prisma = new PrismaClient();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY ?? '' });
@@ -743,11 +744,12 @@ export async function getStockDataForYear(tickers: string[], year: number, scena
   const endOfYear   = new Date(year, 11, 31);
 
   const [histories, fundamentalsList] = await Promise.all([
+    // Cours ajustés aux fractionnements, comme les BNPA d'AnnualFinancials
     Promise.all(tickers.map(ticker =>
       prisma.stockHistory.findFirst({
         where: { stock_ticker: ticker, date: { gte: startOfYear, lte: endOfYear } },
         orderBy: { date: 'desc' },
-      }),
+      }).then(async h => (h ? (await adjustHistoryRows([h]))[0] : h)),
     )),
     prisma.annualFinancials.findMany({
       where: { stock_ticker: { in: tickers }, year },

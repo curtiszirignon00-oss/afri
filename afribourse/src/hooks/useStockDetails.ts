@@ -15,10 +15,10 @@ import type { IntradayInterval } from '../services/stockApi';
 /**
  * Hook pour récupérer l'historique de prix d'une action
  */
-export function useStockHistory(symbol: string, period: Period = '1Y') {
+export function useStockHistory(symbol: string, period: Period = '1Y', adjusted: boolean = true) {
   return useQuery({
-    queryKey: ['stock-history', symbol, period],
-    queryFn: () => fetchStockHistory(symbol, period),
+    queryKey: ['stock-history', symbol, period, adjusted],
+    queryFn: () => fetchStockHistory(symbol, period, adjusted),
     enabled: !!symbol, // Ne lance la requête que si le symbole existe
     staleTime: 5 * 60 * 1000, // Considère les données comme fraîches pendant 5 minutes
     gcTime: 10 * 60 * 1000 // Garde en cache pendant 10 minutes
@@ -34,11 +34,12 @@ export function useIntradayHistory(
   symbol: string,
   enabled: boolean = true,
   days: number = 400,
-  interval: IntradayInterval = '1h'
+  interval: IntradayInterval = '1h',
+  adjusted: boolean = true
 ) {
   return useQuery({
-    queryKey: ['stock-intraday', symbol, days, interval],
-    queryFn: () => fetchIntradayHistory(symbol, days, interval),
+    queryKey: ['stock-intraday', symbol, days, interval, adjusted],
+    queryFn: () => fetchIntradayHistory(symbol, days, interval, adjusted),
     enabled: !!symbol && enabled,
     staleTime: 5 * 60 * 1000, // le scraper alimente toutes les 15 min
     gcTime: 10 * 60 * 1000

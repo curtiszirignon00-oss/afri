@@ -3,6 +3,7 @@ import { log } from '../config/logger';
 // Service pour sauvegarder l'historique quotidien à partir du scraper existant
 
 import prisma from '../config/prisma';
+import { adjustHistoryRows } from './splitAdjust.service';
 import { scrapeStock, StockData } from './scraping.service';
 import { normalizeSymbol } from './stock.service.prisma';
 import { isWithinBRVMCollectionWindow, getBRVMPhase, isBRVMTradingDay } from '../config/brvmMarket';
@@ -276,7 +277,7 @@ export async function getStockHistoryData(symbol: string, days: number = 30) {
       }
     });
 
-    return history;
+    return adjustHistoryRows(history);
 
   } catch (error) {
     log.error(`❌ Erreur récupération historique ${symbol}:`, error);

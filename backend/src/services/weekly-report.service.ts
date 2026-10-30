@@ -1,5 +1,6 @@
 import { log } from '../config/logger';
 import { prisma } from '../config/database';
+import { adjustHistoryRows } from './splitAdjust.service';
 import { sendWeeklyReportEmail } from './email.service';
 import { getPortfolioStatsForUser } from './portfolio-summary.service';
 import { getLearningStatsForUser } from './learning-summary.service';
@@ -46,11 +47,11 @@ async function getWeeklyMarketData(): Promise<WeeklyMarketData> {
   sevenDaysAgo.setHours(0, 0, 0, 0);
 
   // Récupérer l'historique de la semaine pour tous les titres actifs
-  const history = await prisma.stockHistory.findMany({
+  const history = await adjustHistoryRows(await prisma.stockHistory.findMany({
     where: { date: { gte: sevenDaysAgo } },
     orderBy: { date: 'asc' },
     select: { stock_ticker: true, date: true, close: true },
-  });
+  }));
 
   // Grouper par ticker : premier et dernier close de la semaine
   const byTicker = new Map<string, { first: number; last: number }>();

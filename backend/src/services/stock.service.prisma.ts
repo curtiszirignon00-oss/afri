@@ -7,6 +7,7 @@ import { StockData } from "./scraping.service";
 import { cacheGet, cacheSet, cacheInvalidatePattern, hashFilters, CACHE_TTL, CACHE_KEYS } from './cache.service';
 import { isWithinBRVMCollectionWindow, clampToSessionEnd } from '../config/brvmMarket';
 import { marketCapFCFA } from '../ai/format';
+import { adjustForSplits, adjustHistoryRows } from './splitAdjust.service';
 
 // <-- AJOUT : Mapping des secteurs pour assignation automatique lors du scraping
 const SECTOR_MAPPING: Record<string, string> = {
@@ -373,7 +374,9 @@ export async function getLiveSessionBar(symbol: string, now: Date = new Date()) 
 
 export async function getStockHistory(
   symbol: string,
-  period: '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1Y'
+  period: '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL' = '1Y',
+  /** false : cours bruts tels que cotés, sans ajustement aux fractionnements */
+  adjusted = true
 ) {
   try {
     // Calculer la date de début selon la période
@@ -408,7 +411,7 @@ export async function getStockHistory(
         startDate = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth(), now.getUTCDate()));
     }
 
-    const history = await prisma.stockHistory.findMany({
+    const rawHistory = await prisma.stockHistory.findMany({
       where: {
         stock_ticker: symbol,
         date: {
@@ -420,6 +423,7 @@ export async function getStockHistory(
         date: 'asc'
       }
     });
+    const history = adjusted ? await adjustHistoryRows(rawHistory) : rawHistory;
 
     // Normaliser les dates et dédupliquer
     // Les imports Excel ont créé des dates à 22:00/23:00 UTC (timezone locale)
@@ -528,7 +532,9 @@ const INTRADAY_BUCKET_SECONDS: Record<IntradayInterval, number> = {
 export async function getIntradayHourly(
   symbol: string,
   days: number = 30,
-  interval: IntradayInterval = '1h'
+  interval: IntradayInterval = '1h',
+  /** false : cours bruts tels que cotés, sans ajustement aux fractionnements */
+  adjusted = true
 ) {
   try {
     const bucketSeconds = INTRADAY_BUCKET_SECONDS[interval] ?? INTRADAY_BUCKET_SECONDS['1h'];
@@ -544,7 +550,8 @@ export async function getIntradayHourly(
     });
 
     // Ne garder que les snapshots pris pendant une séance de cotation réelle
-    const snapshots = rawSnapshots.filter(s => isWithinBRVMCollectionWindow(s.timestamp));
+    const inSession = rawSnapshots.filter(s => isWithinBRVMCollectionWindow(s.timestamp));
+    const snapshots = adjusted ? await adjustForSplits(inSession, s => s.stock_ticker, s => s.timestamp) : inSession;
 
     if (snapshots.length === 0) return [];
 
@@ -612,18 +619,19 @@ export async function get52WeekHighLow(symbol: string): Promise<{ high52w: numbe
     const now = new Date();
     const startDate = new Date(Date.UTC(now.getUTCFullYear() - 1, now.getUTCMonth(), now.getUTCDate()));
 
-    const result = await prisma.stockHistory.aggregate({
+    // Lignes chargées (≈ 250 séances) plutôt qu'un aggregate : un fractionnement
+    // dans l'année doit être ajusté avant de prendre les extrêmes.
+    const rows = await adjustHistoryRows(await prisma.stockHistory.findMany({
       where: {
         stock_ticker: symbol,
         date: { gte: startDate, lte: now }
       },
-      _max: { high: true },
-      _min: { low: true }
-    });
+      select: { stock_ticker: true, date: true, high: true, low: true }
+    }));
 
     return {
-      high52w: result._max.high ?? null,
-      low52w: result._min.low ?? null
+      high52w: rows.length ? Math.max(...rows.map(r => r.high)) : null,
+      low52w: rows.length ? Math.min(...rows.map(r => r.low)) : null
     };
   } catch (error) {
     log.error(`❌ Erreur lors du calcul 52 semaines de ${symbol}:`, error);
@@ -916,11 +924,11 @@ export async function getHistoryForComparison(symbols: string[], period: number)
   try {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - period);
-    const history = await prisma.stockHistory.findMany({
+    const history = await adjustHistoryRows(await prisma.stockHistory.findMany({
       where: { stock_ticker: { in: symbols }, date: { gte: startDate } },
       orderBy: { date: 'asc' },
       select: { stock_ticker: true, date: true, close: true }
-    });
+    }));
     const groupedByDate: Record<string, any> = {};
     history.forEach(record => {
       const dateKey = record.date.toISOString().split('T')[0];

@@ -10,6 +10,7 @@
 
 import { log } from '../config/logger';
 import { prisma } from '../config/database';
+import { adjustHistoryRows } from './splitAdjust.service';
 import { chatService, StockData } from './ai-coach.service';
 import { SIMBA_ANALYST_MODEL } from '../ai/models';
 import { marketCapFCFA } from '../ai/format';
@@ -63,8 +64,8 @@ export async function buildStockData(ticker: string): Promise<{ data: StockData;
         stock_ticker: ticker,
         date: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
       },
-      select: { high: true, low: true },
-    }),
+      select: { stock_ticker: true, date: true, high: true, low: true },
+    }).then(adjustHistoryRows),
   ]);
   if (!dbStock) return null;
 

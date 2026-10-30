@@ -9,6 +9,7 @@
 //   - agreger les runs publies d'un meme secteur pour la valorisation relative
 
 import prisma from '../config/prisma';
+import { adjustHistoryRows } from './splitAdjust.service';
 import { Prisma, StatementPeriod } from '@prisma/client';
 
 /**
@@ -129,8 +130,8 @@ export async function computeRegressionBeta(
     prisma.stockHistory.findMany({
       where: { stock_ticker: ticker, date: { gte: from } },
       orderBy: { date: 'asc' },
-      select: { date: true, close: true }
-    }),
+      select: { stock_ticker: true, date: true, close: true }
+    }).then(adjustHistoryRows),
     prisma.marketIndexHistory.findMany({
       where: { index_name: indexName, date: { gte: from } },
       orderBy: { date: 'asc' },

@@ -10,6 +10,7 @@
  */
 
 import prisma from '../config/prisma';
+import { adjustHistoryRows } from './splitAdjust.service';
 import { log } from '../config/logger';
 import {
   sendReengagementEmail0,
@@ -27,11 +28,11 @@ async function getWeeklyTopMovers(): Promise<
 > {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const histories = await prisma.stockHistory.findMany({
+  const histories = await adjustHistoryRows(await prisma.stockHistory.findMany({
     where: { date: { gte: sevenDaysAgo } },
     select: { stock_ticker: true, close: true, date: true },
     orderBy: { date: 'asc' },
-  });
+  }));
 
   const oldestByTicker = new Map<string, number>();
   for (const h of histories) {

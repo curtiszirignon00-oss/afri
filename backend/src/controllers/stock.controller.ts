@@ -3,6 +3,7 @@
 import { Response, Request, NextFunction } from "express";
 import * as stockService from "../services/stock.service.prisma"; // <-- On utilise le service Prisma
 import { parsePagination } from '../utils/pagination.util';
+import { getSplitsFor } from '../services/splitAdjust.service';
 
 // Pour la route: GET /api/stocks
 export async function getStocks(req: Request, res: Response, next: NextFunction) {
@@ -55,11 +56,19 @@ export async function getStockHistory(req: Request, res: Response, next: NextFun
     const symbol = req.params.symbol.toUpperCase();
     const period = (req.query.period as '1D' | '5D' | '1M' | '3M' | '6M' | '1Y' | 'ALL') || '1Y';
 
-    const history = await stockService.getStockHistory(symbol, period);
+    // ?adjusted=false : cours bruts, sans ajustement aux fractionnements
+    const adjusted = req.query.adjusted !== 'false';
+
+    const [history, splits] = await Promise.all([
+      stockService.getStockHistory(symbol, period, adjusted),
+      getSplitsFor(symbol),
+    ]);
 
     return res.status(200).json({
       symbol,
       period,
+      adjusted,
+      splits,
       data: history
     });
   } catch (error) {
@@ -74,10 +83,11 @@ export async function getStockIntraday(req: Request, res: Response, next: NextFu
     // Plafond aligne sur la retention des snapshots (voir purgeOldIntradaySnapshots)
     const days = Math.min(400, Math.max(1, parseInt(req.query.days as string) || 30));
     const interval = req.query.interval === '15m' ? '15m' : '1h';
+    const adjusted = req.query.adjusted !== 'false';
 
-    const data = await stockService.getIntradayHourly(symbol, days, interval);
+    const data = await stockService.getIntradayHourly(symbol, days, interval, adjusted);
 
-    return res.status(200).json({ symbol, days, interval, data });
+    return res.status(200).json({ symbol, days, interval, adjusted, data });
   } catch (error) {
     return next(error);
   }

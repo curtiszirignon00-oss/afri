@@ -5,6 +5,7 @@
  */
 
 import prisma from '../config/prisma';
+import { adjustHistoryRows } from './splitAdjust.service';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -281,8 +282,8 @@ export async function getWatchlistScores(userId: string): Promise<TickerScore[]>
       date: { gte: cutoff },
     },
     orderBy: { date: 'asc' },
-    select: { stock_ticker: true, close: true, volume: true },
-  });
+    select: { stock_ticker: true, date: true, close: true, volume: true },
+  }).then(adjustHistoryRows);
 
   // Group by ticker
   const historyMap: Record<string, { close: number; volume: number }[]> = {};

@@ -46,6 +46,7 @@ import {
 import { useStockPageNudge, markComparatorUsed } from '../hooks/useNudgeTriggers';
 import { flashButton, highlightSection, focusInput } from '../utils/nudgeUtils';
 import { Period } from '../services/stockApi';
+import type { StockSplit } from '../services/stockApi';
 
 type StockDetailPageEnhancedProps = {};
 
@@ -122,7 +123,14 @@ export default function StockDetailPageEnhanced() {
 
   // Hooks React Query pour charger les données
   // enabled: !!symbol empêche les requêtes si symbol est vide
-  const { data: historyData, isLoading: historyLoading } = useStockHistory(symbol || '', selectedPeriod);
+  // Cours ajustés aux fractionnements (défaut) ou bruts, tels que cotés
+  const [priceAdjusted, setPriceAdjusted] = useState(true);
+  const { data: historyData, isLoading: historyLoading } = useStockHistory(symbol || '', selectedPeriod, priceAdjusted);
+  // Derniers fractionnements connus : la bascule reste affichée pendant le rechargement
+  const splitsRef = useRef<StockSplit[]>([]);
+  const splitsSymbolRef = useRef<string | undefined>(symbol);
+  if (splitsSymbolRef.current !== symbol) { splitsSymbolRef.current = symbol; splitsRef.current = []; }
+  if (historyData?.splits) splitsRef.current = historyData.splits;
   const { data: fundamentals, isLoading: fundamentalsLoading } = useStockFundamentals(symbol || '');
   const { data: companyInfo, isLoading: companyLoading } = useCompanyInfo(symbol || '');
   const { data: newsData, isLoading: newsLoading } = useStockNews(symbol || '', 10);
@@ -844,6 +852,9 @@ export default function StockDetailPageEnhanced() {
               data={lightweightData}
               dailyChangePercent={stock.daily_change_percent}
               isLoading={historyLoading}
+              splits={splitsRef.current}
+              adjusted={priceAdjusted}
+              onAdjustedChange={setPriceAdjusted}
               theme="light"
               onVariationChange={(change) => setChartVariation({ percent: change.percent, isPositive: change.isPositive })}
               onIntervalChange={(interval) => {

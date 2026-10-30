@@ -13,9 +13,15 @@ export type StockHistoryData = {
   volume: number;
 };
 
+/** Fractionnement d'action (1 ancienne = ratio nouvelles), ajusté côté backend. */
+export type StockSplit = { ex_date: string; ratio: number };
+
 export type StockHistoryResponse = {
   symbol: string;
   period: Period;
+  /** false : cours bruts tels que cotés ; true : ajustés aux fractionnements */
+  adjusted?: boolean;
+  splits?: StockSplit[];
   data: StockHistoryData[];
 };
 
@@ -106,10 +112,11 @@ export type AnnualFinancialsResponse = {
  */
 export async function fetchStockHistory(
   symbol: string,
-  period: Period = '1Y'
+  period: Period = '1Y',
+  adjusted: boolean = true
 ): Promise<StockHistoryResponse> {
   const response = await authFetch(
-    `${API_BASE_URL}/stocks/${symbol}/history?period=${period}`,
+    `${API_BASE_URL}/stocks/${symbol}/history?period=${period}${adjusted ? '' : '&adjusted=false'}`,
     { credentials: 'include' }
   );
 
@@ -147,10 +154,11 @@ export type IntradayHistoryResponse = {
 export async function fetchIntradayHistory(
   symbol: string,
   days: number = 30,
-  interval: IntradayInterval = '1h'
+  interval: IntradayInterval = '1h',
+  adjusted: boolean = true
 ): Promise<IntradayHistoryResponse> {
   const response = await authFetch(
-    `${API_BASE_URL}/stocks/${symbol}/intraday?days=${days}&interval=${interval}`,
+    `${API_BASE_URL}/stocks/${symbol}/intraday?days=${days}&interval=${interval}${adjusted ? '' : '&adjusted=false'}`,
     { credentials: 'include' }
   );
 

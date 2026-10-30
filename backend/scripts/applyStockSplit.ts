@@ -3,19 +3,23 @@
  *
  *   npx tsx scripts/applyStockSplit.ts SNTS 2026-10-26 10            (simulation, lecture seule)
  *   npx tsx scripts/applyStockSplit.ts SNTS 2026-10-26 10 --apply    (écriture)
+ *   npx tsx scripts/applyStockSplit.ts SNTS 2026-10-26 10 --restore-raw [--apply]
+ *     Remet les cours bruts en base pour un split appliqué par l'ancienne version
+ *     du script (historique divisé en base, history_adjusted=true).
  *
  * ratio = nombre d'actions nouvelles pour 1 ancienne (1:10 → 10 ; regroupement 10:1 → 0.1).
  * ex_date = première séance cotée dans la nouvelle base.
  *
+ * StockHistory / IntradaySnapshot restent BRUTS : l'ajustement se fait à la lecture
+ * (services/splitAdjust.service.ts), avec une bascule « Ajusté / Brut » sur le graphique.
+ *
  * Effets (une seule transaction Mongo) :
- *  - CorporateAction SPLIT vérifiée, history_adjusted=true (la carte de marché et le
- *    portefeuille réel ne rajustent donc pas l'historique une seconde fois) ;
- *  - StockHistory et IntradaySnapshot antérieurs : cours ÷ ratio, volumes × ratio ;
+ *  - CorporateAction SPLIT vérifiée ;
  *  - simulateur : Transaction antérieures (qté × ratio, prix ÷ ratio) et Position
  *    (qté × ratio, PRU ÷ ratio ; les achats/ventes postérieurs sont rejoués) ;
  *  - alertes de prix actives ÷ ratio, alertes déclenchées à tort par le split réarmées ;
  *  - données par action : shares_outstanding × ratio, BNPA / dividende / ANC par action ÷ ratio.
- * Idempotent : refuse de tourner si le split est déjà enregistré avec history_adjusted.
+ * Idempotent : refuse de tourner si le split est déjà enregistré.
  */
 import prisma from '../src/config/prisma';
 import { cacheDelete, cacheInvalidatePattern } from '../src/services/cache.service';
@@ -47,8 +51,12 @@ async function main() {
   const existing = await prisma.corporateAction.findUnique({
     where: { stock_ticker_type_ex_date: { stock_ticker: ticker, type, ex_date: exDate } },
   });
-  if (existing?.history_adjusted) {
-    console.log('Déjà appliqué (CorporateAction history_adjusted=true). Rien à faire.');
+  if (args.includes('--restore-raw')) {
+    await restoreRaw(ticker, exDate, historyCut, ratio, existing, apply);
+    return;
+  }
+  if (existing) {
+    console.log('Déjà appliqué (CorporateAction présente). Rien à faire.');
     return;
   }
 
@@ -58,17 +66,15 @@ async function main() {
     orderBy: { date: 'asc' },
     select: { date: true, close: true, volume: true },
   });
-  console.log('Historique autour de l’ex-date (brut actuel → après) :');
+  console.log('Historique autour de l’ex-date (brut en base → servi ajusté) :');
   for (const r of around) {
     const adj = r.date < historyCut;
     console.log(`  ${r.date.toISOString().slice(0, 16)}  ${String(r.close).padStart(9)} → ${adj ? round(r.close / ratio, 2) : r.close}${adj ? '' : '  (inchangé)'}`);
   }
   console.log(`Cours actuel : ${stock.current_price} (clôture préc. ${stock.previous_close})\n`);
 
-  const histCount = await prisma.stockHistory.count({ where: { stock_ticker: ticker, date: { lt: historyCut } } });
-  const intraCount = await prisma.intradaySnapshot.count({ where: { stock_ticker: ticker, timestamp: { lt: exDate } } });
   const txBefore = await prisma.transaction.count({ where: { stock_ticker: ticker, created_at: { lt: exDate } } });
-  console.log(`StockHistory à ajuster : ${histCount} séances ; IntradaySnapshot : ${intraCount} ; transactions simulateur : ${txBefore}`);
+  console.log(`Transactions simulateur à ajuster : ${txBefore}`);
 
   // --- Positions du simulateur --------------------------------------------------------
   const positions = await prisma.position.findMany({ where: { stock_ticker: ticker } });
@@ -144,16 +150,8 @@ async function main() {
   const ops = [
     prisma.corporateAction.upsert({
       where: { stock_ticker_type_ex_date: { stock_ticker: ticker, type, ex_date: exDate } },
-      update: { ratio, verified: true, history_adjusted: true, source },
-      create: { stock_ticker: ticker, type, ex_date: exDate, ratio, verified: true, history_adjusted: true, source },
-    }),
-    prisma.stockHistory.updateMany({
-      where: { stock_ticker: ticker, date: { lt: historyCut } },
-      data: { open: { divide: ratio }, high: { divide: ratio }, low: { divide: ratio }, close: { divide: ratio }, volume: { multiply: ratio } },
-    }),
-    prisma.intradaySnapshot.updateMany({
-      where: { stock_ticker: ticker, timestamp: { lt: exDate } },
-      data: { price: { divide: ratio }, volume: { multiply: ratio } },
+      update: { ratio, verified: true, source },
+      create: { stock_ticker: ticker, type, ex_date: exDate, ratio, verified: true, source },
     }),
     prisma.transaction.updateMany({
       where: { stock_ticker: ticker, created_at: { lt: exDate } },
@@ -191,6 +189,54 @@ async function main() {
   await cacheDelete(`stock:${ticker}`);
   await cacheInvalidatePattern('stocks:*');
   console.log(`\n✅ Split appliqué (${ops.length} opérations). Caches stock:${ticker} et stocks:* vidés.`);
+}
+
+/** Remultiplie l'historique divisé en base par l'ancienne version du script. */
+async function restoreRaw(
+  ticker: string, exDate: Date, historyCut: Date, ratio: number,
+  existing: { id: string; history_adjusted: boolean } | null, apply: boolean,
+) {
+  if (!existing?.history_adjusted) {
+    console.log('Historique déjà brut (history_adjusted=false ou split absent). Rien à faire.');
+    return;
+  }
+  const around = await prisma.stockHistory.findMany({
+    where: { stock_ticker: ticker, date: { gte: new Date(exDate.getTime() - 10 * 864e5), lte: new Date(exDate.getTime() + 10 * 864e5) } },
+    orderBy: { date: 'asc' },
+    select: { date: true, close: true },
+  });
+  console.log('Historique autour de l’ex-date (ajusté en base → brut) :');
+  for (const r of around) {
+    const back = r.date < historyCut;
+    console.log(`  ${r.date.toISOString().slice(0, 16)}  ${String(r.close).padStart(9)} → ${back ? round(r.close * ratio, 2) : r.close}${back ? '' : '  (inchangé)'}`);
+  }
+  if (!apply) {
+    console.log('\nSimulation terminée. Relancer avec --restore-raw --apply pour écrire.');
+    return;
+  }
+  // Pipeline d'update Mongo : prix arrondis à 4 décimales, volumes (Int) arrondis à l'entier
+  const back = (f: string) => ({ $round: [{ $multiply: [`$${f}`, ratio] }, 4] });
+  const vol = { $toInt: { $round: [{ $divide: ['$volume', ratio] }, 0] } };
+  const h = await prisma.$runCommandRaw({
+    update: 'stock_history',
+    updates: [{
+      q: { stock_ticker: ticker, date: { $lt: { $date: historyCut.toISOString() } } },
+      u: [{ $set: { open: back('open'), high: back('high'), low: back('low'), close: back('close'), volume: vol } }],
+      multi: true,
+    }],
+  });
+  const i = await prisma.$runCommandRaw({
+    update: 'intraday_snapshots',
+    updates: [{
+      q: { stock_ticker: ticker, timestamp: { $lt: { $date: exDate.toISOString() } } },
+      u: [{ $set: { price: back('price'), volume: vol } }],
+      multi: true,
+    }],
+  });
+  await prisma.corporateAction.update({ where: { id: existing.id }, data: { history_adjusted: false } });
+  await cacheDelete(`stock:${ticker}`);
+  await cacheInvalidatePattern('stocks:*');
+  console.log(`\n✅ Cours bruts restaurés : ${(h as { nModified?: number }).nModified} séances, ${(i as { nModified?: number }).nModified} points intraday. history_adjusted=false.`);
 }
 
 main()
