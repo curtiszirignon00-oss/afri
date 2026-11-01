@@ -26,6 +26,7 @@ import SilentErrorBoundary from './components/SilentErrorBoundary';
 // Composants chemin critique (eager) — visibles dès le premier paint
 import Header from './components/Header';
 import MobileBottomNav from './components/MobileBottomNav';
+import { isGlassRoute } from './utils/glassRoutes';
 import HomePage from './components/HomePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
@@ -208,7 +209,8 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      <main className="flex-grow pb-16 lg:pb-0" style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
+      {/* Portefeuille réel (dashboard + import) : fond verre sur toute la hauteur, sous la barre mobile comprise */}
+      <main className={`flex-grow pb-16 lg:pb-0 ${isGlassRoute(location.pathname) ? 'glass-theme' : ''}`} style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}

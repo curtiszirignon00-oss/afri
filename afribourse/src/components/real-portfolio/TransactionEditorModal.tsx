@@ -1,6 +1,6 @@
 // src/components/real-portfolio/TransactionEditorModal.tsx
 // Ajout / modification de transactions après l'import : même tableau de
-// validation, même moteur de cohérence que l'import.
+// validation, même moteur de cohérence que l'import. Panneau en verre sombre.
 
 import { useEffect, useState } from 'react';
 import { X, ShieldCheck, Loader2 } from 'lucide-react';
@@ -45,17 +45,17 @@ export default function TransactionEditorModal({ open, title, initialRows, onClo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/55 backdrop-blur-sm p-0 sm:p-4" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="w-full sm:max-w-4xl max-h-[92vh] overflow-y-auto bg-white rounded-t-2xl sm:rounded-2xl shadow-xl"
+        className="w-full sm:max-w-4xl max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl text-white bg-stone-900/85 border border-white/15 backdrop-blur-2xl shadow-2xl shadow-black/50"
         onClick={e => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-white flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100" aria-label="Fermer"><X className="w-5 h-5" /></button>
+        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 border-b border-white/10 bg-stone-900/90 backdrop-blur-xl">
+          <h3 className="text-lg font-bold">{title}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full text-white/60 hover:bg-white/10 hover:text-white" aria-label="Fermer"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-4 sm:p-5">
           <ValidationTable
@@ -69,12 +69,12 @@ export default function TransactionEditorModal({ open, title, initialRows, onClo
             defaultDate={new Date().toISOString().slice(0, 10)}
           />
         </div>
-        <div className="sticky bottom-0 bg-white flex justify-end gap-2 px-5 py-4 border-t border-gray-100">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700">Annuler</button>
+        <div className="sticky bottom-0 flex justify-end gap-2 px-5 py-4 border-t border-white/10 bg-stone-900/90 backdrop-blur-xl">
+          <button onClick={onClose} className="glass-pill px-4 py-2 rounded-full text-sm font-medium hover:bg-white/20">Annuler</button>
           <button
             disabled={!canCommit || busy}
             onClick={save}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-stone-900 text-sm font-semibold hover:bg-white/90 disabled:opacity-40"
           >
             {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />} Enregistrer
           </button>

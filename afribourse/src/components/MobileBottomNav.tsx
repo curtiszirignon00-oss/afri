@@ -4,6 +4,7 @@ import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
 import { useUnseenNewsCount, useUnseenCommunityPublicCount } from '../hooks/useContentUnseen';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealPortfolioIsNew } from './real-portfolio/PortfolioSurfaceSwitch';
+import { isGlassRoute } from '../utils/glassRoutes';
 
 const TABS = [
   { key: 'community', label: 'Communauté', icon: Users,            path: '/community' },
@@ -32,14 +33,20 @@ export default function MobileBottomNav() {
   // Le portefeuille réel vit sous l'onglet central (bascule Simulateur / Réel en tête de page) :
   // le header mobile n'a plus de place pour un lien dédié.
   const realPortfolioIsNew = useRealPortfolioIsNew();
-  const onRealPortfolio = location.pathname.startsWith('/portefeuille-reel');
+  const onRealPortfolio = isGlassRoute(location.pathname);
+  // Sur les pages en verre, la barre passe en verre sombre pour prolonger le fond.
+  const glass = onRealPortfolio;
   const active = onRealPortfolio
     ? TABS.findIndex(t => t.key === 'dashboard')
     : TABS.findIndex(t => location.pathname.startsWith(t.path));
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 lg:hidden bg-white border-t border-slate-100 shadow-[0_-1px_8px_rgba(0,0,0,0.06)]"
+      className={`fixed bottom-0 inset-x-0 z-50 lg:hidden border-t ${
+        glass
+          ? 'bg-stone-900/60 border-white/10 backdrop-blur-xl shadow-[0_-8px_24px_rgba(0,0,0,0.35)]'
+          : 'bg-white border-slate-100 shadow-[0_-1px_8px_rgba(0,0,0,0.06)]'
+      }`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-stretch">
@@ -60,23 +67,27 @@ export default function MobileBottomNav() {
                 }
               }}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 relative cursor-pointer transition-colors duration-150 ${
-                isActive ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+                glass
+                  ? (isActive ? 'text-orange-300' : 'text-white/55 hover:text-white/80')
+                  : (isActive ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600')
               }`}
               aria-label={tab.label}
             >
               {/* Indicateur actif */}
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-indigo-600" />
+                <span className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full ${glass ? 'bg-orange-300' : 'bg-indigo-600'}`} />
               )}
 
               {/* Icône centrale surélevée */}
               {isCenter ? (
                 <span className={`relative w-12 h-12 -mt-5 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-150 ${
-                  isActive
-                    ? 'bg-indigo-600 shadow-indigo-200'
-                    : 'bg-slate-800 shadow-slate-300'
+                  glass
+                    ? 'bg-white shadow-black/40'
+                    : isActive
+                      ? 'bg-indigo-600 shadow-indigo-200'
+                      : 'bg-slate-800 shadow-slate-300'
                 }`}>
-                  <Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
+                  <Icon className={`w-5 h-5 ${glass ? 'text-stone-900' : 'text-white'}`} strokeWidth={1.8} />
                   {realPortfolioIsNew && !onRealPortfolio && (
                     <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" aria-label="Nouveau : portefeuille réel" />
                   )}
@@ -92,7 +103,7 @@ export default function MobileBottomNav() {
                 </div>
               )}
 
-              <span className={`text-[10px] font-medium leading-none ${isCenter ? 'mt-1' : ''} ${isActive ? 'text-indigo-600' : ''}`}>
+              <span className={`text-[10px] font-medium leading-none ${isCenter ? 'mt-1' : ''} ${isActive ? (glass ? 'text-orange-300' : 'text-indigo-600') : ''}`}>
                 {tab.label}
               </span>
             </button>

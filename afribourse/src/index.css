@@ -217,10 +217,12 @@ textarea {
    Fond sombre chaud façon photo floutée + cartes en verre dépoli.
    Tout est scopé sous .glass-theme : le reste de l'app n'est pas touché. */
 .glass-theme {
-  position: relative;
-  isolation: isolate;
+  /* Pas d'isolation ni de pseudo-élément fixe : les modales « fixed » rendues
+     dedans doivent rester au-dessus du header. Le grain est un calque du fond. */
   color: #fff;
+  color-scheme: dark; /* champs date, listes déroulantes, barres de défilement */
   background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     radial-gradient(60rem 40rem at 10% -10%, rgba(234, 136, 74, 0.45), transparent 60%),
     radial-gradient(50rem 35rem at 95% 15%, rgba(120, 90, 160, 0.35), transparent 60%),
     radial-gradient(55rem 40rem at 50% 110%, rgba(196, 120, 70, 0.35), transparent 60%),
@@ -228,16 +230,7 @@ textarea {
     linear-gradient(160deg, #1b1714 0%, #26201c 40%, #1a1a20 100%);
   background-attachment: fixed;
 }
-.glass-theme::before {
-  /* grain léger pour casser l'aplat des dégradés */
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.06;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
+.glass-theme select option { background: #26201c; color: #fff; }
 .glass-card {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
   border: 1px solid rgba(255, 255, 255, 0.16);

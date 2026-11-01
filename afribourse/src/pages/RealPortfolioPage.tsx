@@ -89,7 +89,7 @@ export default function RealPortfolioPage() {
   }, [data]);
 
   if (isLoading) {
-    return <div className="glass-theme min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-300" /></div>;
+    return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-300" /></div>;
   }
   if (error) {
     return <div className="max-w-3xl mx-auto px-4 py-16 text-center text-red-700">{(error as Error).message}</div>;
@@ -98,7 +98,7 @@ export default function RealPortfolioPage() {
   // ─── Aucun portefeuille réel : invitation à importer ─────────────────────
   if (!data) {
     return (
-      <div className="glass-theme min-h-screen">
+      <div className="min-h-screen">
         <div className="max-w-3xl mx-auto px-4 py-6 md:py-12">
           <PortfolioSurfaceSwitch active="real" variant="glass" className="mb-5" />
           <div className="glass-card rounded-3xl p-6 md:p-10 text-center">
@@ -165,7 +165,7 @@ export default function RealPortfolioPage() {
 
   return (
     <>
-      <div className="glass-theme min-h-screen">
+      <div className="min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 space-y-5 pb-28">
           <PortfolioSurfaceSwitch active="real" variant="glass" />
 

@@ -14,6 +14,7 @@ import {
 import ValidationTable from '../components/real-portfolio/ValidationTable';
 import QuickStartCard, { type QuickStartValues } from '../components/real-portfolio/QuickStartCard';
 import { emptyRow, newRowId, useDraftValidation } from '../components/real-portfolio/draft';
+import { compressImage } from '../components/real-portfolio/compressImage';
 import { clearImportDraft, hasContent, loadImportDraft, saveImportDraft, type ImportDraft } from '../components/real-portfolio/importDraft';
 import {
   realPortfolioApi, RealPortfolioApiError,
@@ -188,7 +189,7 @@ export default function RealPortfolioImportPage() {
     trackRealPortfolioImport('source_selected', { source: 'DOCUMENT', mode, fileType: file.type });
     setReading(true);
     try {
-      const t = await realPortfolioApi.extractDocument(file);
+      const t = await realPortfolioApi.extractDocument(await compressImage(file));
       const docMode = t.suggestedMode;
       const docDate = docMode === 'SNAPSHOT' && t.detectedDate && t.detectedDate <= today() ? t.detectedDate : snapshotDate;
       if (docMode !== mode) {
@@ -300,28 +301,29 @@ export default function RealPortfolioImportPage() {
   const showQuickStart = step === 'mode' && !existing && !loadingExisting;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-4 py-6 md:py-10 space-y-6">
-        <button onClick={() => navigate(existing ? '/portefeuille-reel' : '/dashboard')} className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900">
+    <div className="min-h-screen">
+      <div className="max-w-5xl mx-auto px-4 py-6 md:py-10 space-y-6 pb-24">
+        <button onClick={() => navigate(existing ? '/portefeuille-reel' : '/dashboard')} className="glass-pill inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm text-white/80 hover:bg-white/20">
           <ArrowLeft className="w-4 h-4" /> Retour
         </button>
 
         <header>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{existing ? 'Importer des lignes' : 'Importer mon portefeuille réel'}</h1>
-          <p className="mt-1 text-gray-600">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-300/90">Portefeuille réel</p>
+          <h1 className="mt-1 text-2xl md:text-3xl font-bold">{existing ? 'Importer des lignes' : 'Importer mon portefeuille réel'}</h1>
+          <p className="mt-1 text-white/65">
             Chaque ligne est contrôlée contre l'historique BRVM (cotation à la date, fourchette du jour, splits). Rien n'est enregistré tant qu'une ligne ⛔ subsiste.
           </p>
         </header>
 
         {draftOffer && step !== 'review' && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
-            <History className="w-5 h-5 text-indigo-600 shrink-0" />
-            <p className="flex-1 text-sm text-indigo-900">
+          <div className="glass-card flex flex-col sm:flex-row sm:items-center gap-3 rounded-2xl p-4">
+            <History className="w-5 h-5 text-orange-300 shrink-0" />
+            <p className="flex-1 text-sm text-white/85">
               Vous avez un import en cours : <strong>{draftOffer.rows.length} ligne(s)</strong>, enregistré le {new Date(draftOffer.savedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}.
             </p>
             <div className="flex gap-2">
-              <button onClick={discardDraft} className="px-3 py-1.5 rounded-lg text-sm text-indigo-700 hover:bg-indigo-100">Effacer</button>
-              <button onClick={() => restoreDraft(draftOffer)} className="px-4 py-1.5 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">Reprendre</button>
+              <button onClick={discardDraft} className="px-3 py-1.5 rounded-full text-sm text-white/70 hover:bg-white/10">Effacer</button>
+              <button onClick={() => restoreDraft(draftOffer)} className="px-4 py-1.5 rounded-full bg-white text-stone-900 text-sm font-semibold hover:bg-white/90">Reprendre</button>
             </div>
           </div>
         )}
@@ -329,7 +331,7 @@ export default function RealPortfolioImportPage() {
         {showQuickStart && (
           <>
             <QuickStartCard busy={busy} onSubmit={quickStart} />
-            <p className="text-sm font-medium text-gray-500 text-center">— ou importez tout votre portefeuille —</p>
+            <p className="text-sm font-medium text-white/50 text-center">— ou importez tout votre portefeuille —</p>
           </>
         )}
 
@@ -342,24 +344,24 @@ export default function RealPortfolioImportPage() {
             <button
               key={m}
               onClick={() => { changeMode(m); if (step === 'mode') setStep('source'); }}
-              className={`text-left rounded-2xl border-2 p-5 transition-all ${mode === m && step !== 'mode' ? 'border-indigo-600 bg-indigo-50/60 shadow-sm' : 'border-gray-200 bg-white hover:border-indigo-300'}`}
+              className={`glass-card text-left rounded-3xl p-5 transition-all hover:-translate-y-0.5 ${mode === m && step !== 'mode' ? '!border-orange-300/60 ring-1 ring-orange-300/40' : 'hover:!border-white/30'}`}
             >
               <div className="flex items-center gap-3">
-                <span className={`p-2 rounded-xl ${mode === m && step !== 'mode' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'}`}><Icon className="w-5 h-5" /></span>
-                <span className="text-lg font-semibold text-gray-900">{title}</span>
+                <span className={`p-2 rounded-full border ${mode === m && step !== 'mode' ? 'bg-white text-stone-900 border-white' : 'bg-white/10 text-orange-200 border-white/15'}`}><Icon className="w-5 h-5" /></span>
+                <span className="text-lg font-semibold">{title}</span>
               </div>
-              <p className="mt-2 text-sm text-gray-600">{text}</p>
+              <p className="mt-2 text-sm text-white/65">{text}</p>
             </button>
           ))}
         </section>
         {step !== 'mode' && (
-          <p className="text-xs text-gray-500 -mt-3">
+          <p className="text-xs text-white/50 -mt-3">
             Vous pourrez passer du snapshot au relevé complet plus tard sans tout réimporter : chaque ligne de snapshot devient une transaction d'ouverture datée.
           </p>
         )}
 
         {switchingToTransactions && step !== 'mode' && (
-          <label className="flex items-start gap-2 rounded-xl bg-blue-50 border border-blue-100 p-3 text-sm text-blue-900">
+          <label className="glass-inset flex items-start gap-2 rounded-2xl p-3 text-sm text-white/85">
             <input type="checkbox" checked={replaceOpenings} onChange={e => setReplaceOpenings(e.target.checked)} className="mt-0.5" />
             <span>Remplacer mes lignes d'ouverture (snapshot) par ce relevé. Décochez pour seulement compléter l'historique.</span>
           </label>
@@ -371,44 +373,44 @@ export default function RealPortfolioImportPage() {
             <div
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); onDocument(e.dataTransfer.files?.[0]); }}
-              className="relative sm:col-span-3 lg:col-span-1 rounded-2xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-white p-6 text-center"
+              className="glass-card relative sm:col-span-3 lg:col-span-1 rounded-3xl p-6 text-center !border-orange-300/40"
             >
-              <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[11px] font-bold uppercase tracking-wide">
+              <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-400 text-stone-900 text-[11px] font-bold uppercase tracking-wide">
                 <Sparkles className="w-3 h-3" /> Le plus simple
               </span>
-              <ScanText className="w-8 h-8 mx-auto text-indigo-600" />
-              <p className="mt-2 font-semibold text-gray-900">Photo, capture ou PDF</p>
-              <p className="text-sm text-gray-600">Votre relevé SGI ou une capture de votre appli : le tableau est lu automatiquement, puis vérifié ligne par ligne.</p>
-              <input ref={docRef} type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf" className="hidden" onChange={e => onDocument(e.target.files?.[0])} />
-              <button disabled={reading} onClick={() => docRef.current?.click()} className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-60">
+              <ScanText className="w-8 h-8 mx-auto text-orange-300" />
+              <p className="mt-2 font-semibold">Photo, capture ou PDF</p>
+              <p className="text-sm text-white/65">Votre relevé SGI ou une capture de votre appli : le tableau est lu automatiquement, puis vérifié ligne par ligne.</p>
+              <input ref={docRef} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="hidden" onChange={e => onDocument(e.target.files?.[0])} />
+              <button disabled={reading} onClick={() => docRef.current?.click()} className="mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-stone-900 font-semibold hover:bg-white/90 shadow-lg shadow-black/20 disabled:opacity-60">
                 {reading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} {reading ? 'Lecture en cours…' : 'Choisir une image ou un PDF'}
               </button>
-              <p className="mt-3 text-[11px] text-gray-500">Lecture par une IA (Google Gemini). AfriBourse ne conserve pas le document. 10 Mo max.</p>
+              <p className="mt-3 text-[11px] text-white/50">Lecture par l'IA de SIMBA. AfriBourse ne conserve pas le document. PDF scanné : envoyez plutôt une photo.</p>
             </div>
             <div
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); onFile(e.dataTransfer.files?.[0]); }}
-              className="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6 text-center"
+              className="glass-card rounded-3xl p-6 text-center !border-dashed !border-white/30"
             >
-              <FileSpreadsheet className="w-8 h-8 mx-auto text-indigo-600" />
-              <p className="mt-2 font-semibold text-gray-900">Fichier CSV ou Excel</p>
-              <p className="text-sm text-gray-600">Export de votre SGI ou tableur personnel (2 Mo max). Colonnes reconnues automatiquement.</p>
+              <FileSpreadsheet className="w-8 h-8 mx-auto text-orange-300" />
+              <p className="mt-2 font-semibold">Fichier CSV ou Excel</p>
+              <p className="text-sm text-white/65">Export de votre SGI ou tableur personnel (2 Mo max). Colonnes reconnues automatiquement.</p>
               <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx,.xls,.ods" className="hidden" onChange={e => onFile(e.target.files?.[0])} />
-              <button disabled={busy} onClick={() => fileRef.current?.click()} className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-60">
+              <button disabled={busy} onClick={() => fileRef.current?.click()} className="glass-pill mt-4 inline-flex items-center gap-2 px-5 py-2 rounded-full font-medium hover:bg-white/20 disabled:opacity-60">
                 {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Choisir un fichier
               </button>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
-              <PencilLine className="w-8 h-8 mx-auto text-indigo-600" />
-              <p className="mt-2 font-semibold text-gray-900">Saisie manuelle</p>
-              <p className="text-sm text-gray-600">Quelques lignes ? Saisissez-les directement, la vérification se fait au fil de la frappe.</p>
-              <button onClick={startManual} className="mt-4 px-4 py-2 rounded-lg border border-gray-300 font-medium text-gray-800 hover:bg-gray-50">Saisir mes lignes</button>
+            <div className="glass-card rounded-3xl p-6 text-center">
+              <PencilLine className="w-8 h-8 mx-auto text-orange-300" />
+              <p className="mt-2 font-semibold">Saisie manuelle</p>
+              <p className="text-sm text-white/65">Quelques lignes ? Saisissez-les directement, la vérification se fait au fil de la frappe.</p>
+              <button onClick={startManual} className="glass-pill mt-4 px-5 py-2 rounded-full font-medium hover:bg-white/20">Saisir mes lignes</button>
             </div>
             {mode === 'SNAPSHOT' && (
-              <label className="sm:col-span-3 flex flex-wrap items-center gap-2 text-sm text-gray-700">
+              <label className="sm:col-span-3 flex flex-wrap items-center gap-2 text-sm text-white/80">
                 Positions arrêtées au
-                <input type="date" value={snapshotDate} max={today()} onChange={e => setSnapshotDate(e.target.value)} className="rounded-md border border-gray-200 px-2 py-1" />
-                <span className="text-gray-500">(date de votre relevé de positions)</span>
+                <input type="date" value={snapshotDate} max={today()} onChange={e => setSnapshotDate(e.target.value)} className="glass-input rounded-lg px-2 py-1" />
+                <span className="text-white/50">(date de votre relevé de positions)</span>
               </label>
             )}
           </section>
@@ -416,19 +418,19 @@ export default function RealPortfolioImportPage() {
 
         {/* Mapping de colonnes */}
         {step === 'mapping' && table && (
-          <section className="rounded-2xl bg-white border border-gray-200 p-5 space-y-4">
+          <section className="glass-card rounded-3xl p-5 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-gray-900">Correspondance des colonnes — {table.fileName}</h2>
-              <span className="text-sm text-gray-500">{table.rows.length} lignes détectées</span>
+              <h2 className="text-lg font-semibold">Correspondance des colonnes — {table.fileName}</h2>
+              <span className="text-sm text-white/55">{table.rows.length} lignes détectées</span>
             </div>
             <div className="grid sm:grid-cols-2 gap-3">
               {fieldsFor(mode).map(f => (
                 <label key={f} className="text-sm">
-                  <span className="block text-gray-700 mb-1">{FIELD_LABELS[f]}{['ticker', 'quantity'].includes(f) || (f === 'date' && mode === 'TRANSACTIONS') ? ' *' : ''}</span>
+                  <span className="block text-white/70 mb-1">{FIELD_LABELS[f]}{['ticker', 'quantity'].includes(f) || (f === 'date' && mode === 'TRANSACTIONS') ? ' *' : ''}</span>
                   <select
                     value={mapping[f] ?? ''}
                     onChange={e => setMapping({ ...mapping, [f]: e.target.value || undefined })}
-                    className="w-full rounded-md border border-gray-200 px-2 py-1.5 bg-white"
+                    className="glass-input w-full rounded-lg px-2 py-1.5"
                   >
                     <option value="">— Aucune —</option>
                     {table.headers.map(h => <option key={h} value={h}>{h}</option>)}
@@ -437,27 +439,27 @@ export default function RealPortfolioImportPage() {
               ))}
               {mode === 'SNAPSHOT' && (
                 <label className="text-sm">
-                  <span className="block text-gray-700 mb-1">Positions arrêtées au</span>
-                  <input type="date" value={snapshotDate} max={today()} onChange={e => setSnapshotDate(e.target.value)} className="w-full rounded-md border border-gray-200 px-2 py-1.5" />
+                  <span className="block text-white/70 mb-1">Positions arrêtées au</span>
+                  <input type="date" value={snapshotDate} max={today()} onChange={e => setSnapshotDate(e.target.value)} className="glass-input w-full rounded-lg px-2 py-1.5" />
                 </label>
               )}
             </div>
             {mode === 'TRANSACTIONS' && !mapping.side && (
-              <p className="text-sm text-amber-800 bg-amber-50 rounded-lg px-3 py-2">Sans colonne « sens », toutes les lignes seront lues comme des achats (modifiable ensuite).</p>
+              <p className="text-sm text-amber-100 bg-amber-400/10 border border-amber-300/25 rounded-xl px-3 py-2">Sans colonne « sens », toutes les lignes seront lues comme des achats (modifiable ensuite).</p>
             )}
-            <div className="overflow-x-auto rounded-lg border border-gray-100">
+            <div className="overflow-x-auto rounded-xl border border-white/10">
               <table className="min-w-full text-xs">
-                <thead className="bg-gray-50"><tr>{table.headers.map(h => <th key={h} className="px-2 py-1.5 text-left font-medium text-gray-600 whitespace-nowrap">{h}</th>)}</tr></thead>
+                <thead className="bg-white/5"><tr>{table.headers.map(h => <th key={h} className="px-2 py-1.5 text-left font-medium text-white/60 whitespace-nowrap">{h}</th>)}</tr></thead>
                 <tbody>
                   {table.rows.slice(0, 5).map((r, i) => (
-                    <tr key={i} className="border-t border-gray-100">{table.headers.map(h => <td key={h} className="px-2 py-1 whitespace-nowrap text-gray-700">{String(r[h] ?? '')}</td>)}</tr>
+                    <tr key={i} className="border-t border-white/10">{table.headers.map(h => <td key={h} className="px-2 py-1 whitespace-nowrap text-white/80">{String(r[h] ?? '')}</td>)}</tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <div className="flex flex-wrap gap-2 justify-end">
-              <button onClick={() => { setTable(null); setStep('source'); }} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700">Autre fichier</button>
-              <button disabled={!mappingReady || busy} onClick={applyMapping} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium disabled:opacity-50">
+              <button onClick={() => { setTable(null); setStep('source'); }} className="glass-pill px-4 py-2 rounded-full text-sm hover:bg-white/20">Autre fichier</button>
+              <button disabled={!mappingReady || busy} onClick={applyMapping} className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white text-stone-900 text-sm font-semibold hover:bg-white/90 disabled:opacity-40">
                 {busy && <Loader2 className="w-4 h-4 animate-spin" />} Vérifier les lignes
               </button>
             </div>
@@ -468,12 +470,12 @@ export default function RealPortfolioImportPage() {
         {step === 'review' && (
           <section className="space-y-4">
             {source === 'DOCUMENT' && (
-              <p className="flex items-start gap-2 rounded-xl bg-indigo-50 border border-indigo-100 px-4 py-3 text-sm text-indigo-900">
+              <p className="glass-card flex items-start gap-2 rounded-2xl px-4 py-3 text-sm text-white/85">
                 <ScanText className="w-4 h-4 mt-0.5 shrink-0" />
                 Lignes lues dans {fileName ?? 'votre document'}. Comparez-les avec votre relevé : l'IA peut se tromper sur un chiffre.
               </p>
             )}
-            <div className="rounded-2xl bg-white border border-gray-200 p-4 md:p-5">
+            <div className="glass-card rounded-3xl p-4 md:p-5">
               <ValidationTable
                 rows={rows}
                 onChange={setRows}
@@ -482,34 +484,34 @@ export default function RealPortfolioImportPage() {
                 mode={mode}
                 defaultDate={mode === 'SNAPSHOT' ? snapshotDate : today()}
               />
-              {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+              {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
             </div>
 
-            <div className="rounded-2xl bg-white border border-gray-200 p-4 md:p-5 grid sm:grid-cols-2 gap-3">
+            <div className="glass-card rounded-3xl p-4 md:p-5 grid sm:grid-cols-2 gap-3">
               {!existing && (
                 <>
                   <label className="text-sm">
-                    <span className="block text-gray-700 mb-1">Nom du portefeuille</span>
-                    <input value={name} maxLength={80} onChange={e => setName(e.target.value)} className="w-full rounded-md border border-gray-200 px-2 py-1.5" />
+                    <span className="block text-white/70 mb-1">Nom du portefeuille</span>
+                    <input value={name} maxLength={80} onChange={e => setName(e.target.value)} className="glass-input w-full rounded-lg px-2 py-1.5" />
                   </label>
                   <label className="text-sm">
-                    <span className="block text-gray-700 mb-1">SGI (facultatif)</span>
-                    <input value={broker} maxLength={80} onChange={e => setBroker(e.target.value)} placeholder="ex. votre société de gestion et d'intermédiation" className="w-full rounded-md border border-gray-200 px-2 py-1.5" />
+                    <span className="block text-white/70 mb-1">SGI (facultatif)</span>
+                    <input value={broker} maxLength={80} onChange={e => setBroker(e.target.value)} placeholder="ex. votre société de gestion et d'intermédiation" className="glass-input w-full rounded-lg px-2 py-1.5" />
                   </label>
                 </>
               )}
               <label className="text-sm">
-                <span className="block text-gray-700 mb-1">Liquidité disponible sur le compte (F CFA)</span>
-                <input inputMode="numeric" value={cash} onChange={e => setCash(e.target.value)} placeholder="0" className="w-full rounded-md border border-gray-200 px-2 py-1.5" />
+                <span className="block text-white/70 mb-1">Liquidité disponible sur le compte (F CFA)</span>
+                <input inputMode="numeric" value={cash} onChange={e => setCash(e.target.value)} placeholder="0" className="glass-input w-full rounded-lg px-2 py-1.5" />
               </label>
               <label className="text-sm">
-                <span className="block text-gray-700 mb-1">Valeur totale indiquée par votre SGI (facultatif)</span>
-                <input inputMode="numeric" value={declared} onChange={e => setDeclared(e.target.value)} placeholder="Contrôle Σ lignes + liquidité" className="w-full rounded-md border border-gray-200 px-2 py-1.5" />
+                <span className="block text-white/70 mb-1">Valeur totale indiquée par votre SGI (facultatif)</span>
+                <input inputMode="numeric" value={declared} onChange={e => setDeclared(e.target.value)} placeholder="Contrôle Σ lignes + liquidité" className="glass-input w-full rounded-lg px-2 py-1.5" />
               </label>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="flex items-start gap-2 text-xs text-gray-500 max-w-xl">
+              <p className="flex items-start gap-2 text-xs text-white/50 max-w-xl">
                 <Info className="w-4 h-4 shrink-0 mt-0.5" />
                 Vos données restent privées : elles ne sont visibles que par vous, n'apparaissent dans aucun classement et ne génèrent pas d'XP.
                 Votre saisie est gardée sur cet appareil si vous quittez la page.
@@ -517,7 +519,7 @@ export default function RealPortfolioImportPage() {
               <button
                 disabled={!canCommit || busy}
                 onClick={commit}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-stone-900 font-semibold hover:bg-white/90 shadow-lg shadow-black/25 disabled:opacity-40 disabled:cursor-not-allowed"
                 title={!canCommit ? 'Corrigez les lignes ⛔ pour enregistrer' : undefined}
               >
                 {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
