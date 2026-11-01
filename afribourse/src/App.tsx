@@ -159,6 +159,7 @@ function Layout() {
   usePageTracking();
 
   // Détermine si le Header/Footer doit être affiché
+  const glass = isGlassRoute(location.pathname);
   const showLayout = !['/signup', '/login', '/survey', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
@@ -209,8 +210,10 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      {/* Portefeuille réel (dashboard + import) : fond verre sur toute la hauteur, sous la barre mobile comprise */}
-      <main className={`flex-grow pb-16 lg:pb-0 ${isGlassRoute(location.pathname) ? 'glass-theme' : ''}`} style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
+      {/* Portefeuille réel (dashboard + import) : un seul fond verre continu pour la page et le footer,
+          sous la barre mobile comprise. Ailleurs, display:contents laisse le flex de la page intact. */}
+      <div className={glass ? 'glass-theme flex-grow flex flex-col' : 'contents'}>
+      <main className="flex-grow pb-16 lg:pb-0" style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}
@@ -424,7 +427,9 @@ function Layout() {
       </main>
 
       {showLayout && (
-        <footer className="bg-gray-900 text-white mt-auto">
+        <footer className={glass
+          ? 'glass-adapt text-white mt-auto pb-24 lg:pb-20 border-t border-white/10 bg-black/25 backdrop-blur-xl'
+          : 'bg-gray-900 text-white mt-auto'}>
           <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
               {/* Section AfriBourse */}
@@ -505,6 +510,7 @@ function Layout() {
           </div>
         </footer>
       )}
+      </div>
 
     </div>
   );

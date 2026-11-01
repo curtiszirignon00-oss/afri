@@ -270,6 +270,7 @@ textarea {
 }
 .glass-theme .glass-adapt .border-gray-100,
 .glass-theme .glass-adapt .border-gray-200,
+.glass-theme .glass-adapt .border-gray-800,
 .glass-theme .glass-adapt .border-slate-100,
 .glass-theme .glass-adapt .border-slate-200 {
   border-color: rgba(255, 255, 255, 0.12);

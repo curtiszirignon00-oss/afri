@@ -15,6 +15,19 @@ amplitude.initAll('445eb89bf34759faaed0372e035fdbff', {
 
 captureUTMParams()
 
+// Après un deploy, un onglet ouvert référence d'anciens chunks qui n'existent
+// plus : Vite émet vite:preloadError avant même que React ne voie l'erreur.
+// On recharge une fois (anti-boucle 30 s, même clé que l'ErrorBoundary).
+window.addEventListener('vite:preloadError', (event) => {
+  const KEY = 'afribourse_chunk_reload_attempt'
+  try {
+    if (Date.now() - Number(sessionStorage.getItem(KEY) || 0) < 30_000) return
+    sessionStorage.setItem(KEY, String(Date.now()))
+  } catch { /* stockage indisponible : on recharge quand même */ }
+  event.preventDefault()
+  window.location.reload()
+})
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
