@@ -40,28 +40,28 @@ export default function RealValueChart({ points, loading, isSnapshot }: Props) {
   const base = first?.value || 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 md:p-6">
+    <div className="glass-card rounded-3xl p-5 md:p-6 h-full">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2"><ChartIcon className="w-5 h-5 text-indigo-600" /> Évolution du portefeuille</h2>
+          <h2 className="text-lg font-bold flex items-center gap-2"><ChartIcon className="w-5 h-5 text-orange-300" /> Évolution du portefeuille</h2>
           {first && last && (
-            <p className={`text-sm font-medium ${change >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-sm font-medium ${change >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
               {change >= 0 ? '+' : ''}{fmt(change)} F de variation de valeur sur la période{base > 0 ? ` (${((change / base) * 100).toFixed(2)} %)` : ''}, hors apports et retraits
             </p>
           )}
         </div>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="glass-pill flex gap-1 rounded-full p-1">
           {FILTERS.map(f => (
-            <button key={f.key} onClick={() => setFilter(f.key)} className={`px-2.5 py-1 text-xs font-semibold rounded-md ${filter === f.key ? 'bg-white shadow text-indigo-700' : 'text-gray-600'}`}>{f.key}</button>
+            <button key={f.key} onClick={() => setFilter(f.key)} className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${filter === f.key ? 'bg-white text-stone-900 shadow' : 'text-white/70 hover:text-white'}`}>{f.key}</button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <div className="h-72 animate-pulse bg-gray-50 rounded-xl" />
+        <div className="h-72 animate-pulse bg-white/5 rounded-2xl" />
       ) : data.length < 2 ? (
-        <div className="h-72 flex flex-col items-center justify-center text-center text-gray-500 text-sm px-6">
-          <ChartIcon className="w-10 h-10 text-gray-300 mb-2" />
+        <div className="h-72 flex flex-col items-center justify-center text-center text-white/55 text-sm px-6">
+          <ChartIcon className="w-10 h-10 text-white/25 mb-2" />
           {isSnapshot
             ? "Historique limité : en mode snapshot, la courbe démarre à la date d'arrêté de vos positions. Importez votre relevé de transactions pour reconstituer l'historique complet."
             : 'Pas encore assez de données pour tracer une courbe.'}
@@ -72,20 +72,23 @@ export default function RealValueChart({ points, loading, isSnapshot }: Props) {
             <ComposedChart data={data} margin={{ left: 0, right: 8, top: 8 }}>
               <defs>
                 <linearGradient id="rpValue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#fb923c" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#fb923c" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} tickFormatter={d => new Date(d).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })} minTickGap={40} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtShort} width={52} domain={['auto', 'auto']} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.55)' }} axisLine={false} tickLine={false} tickFormatter={d => new Date(d).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' })} minTickGap={40} />
+              <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.55)' }} axisLine={false} tickLine={false} tickFormatter={fmtShort} width={52} domain={['auto', 'auto']} />
               <Tooltip
+                contentStyle={{ background: 'rgba(28,25,23,0.85)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, color: '#fff' }}
+                labelStyle={{ color: 'rgba(255,255,255,0.7)' }}
+                cursor={{ stroke: 'rgba(255,255,255,0.25)' }}
                 formatter={(v, name) => [`${fmt(Number(v))} F`, String(name)]}
                 labelFormatter={d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="value" name="Valeur des titres" stroke="#4f46e5" strokeWidth={2} fill="url(#rpValue)" />
-              <Line type="stepAfter" dataKey="invested" name="Coût de revient" stroke="#94a3b8" strokeDasharray="5 4" dot={false} />
+              <Legend wrapperStyle={{ fontSize: 12, color: 'rgba(255,255,255,0.75)' }} />
+              <Area type="monotone" dataKey="value" name="Valeur des titres" stroke="#fb923c" strokeWidth={2.5} fill="url(#rpValue)" />
+              <Line type="stepAfter" dataKey="invested" name="Coût de revient" stroke="rgba(255,255,255,0.55)" strokeDasharray="5 4" dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
