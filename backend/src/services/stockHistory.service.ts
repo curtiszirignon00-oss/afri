@@ -167,6 +167,13 @@ export async function saveIntradaySnapshots(stocks: StockData[]) {
   }
 
   try {
+    // En début de séance (09h45, 10h00…), la page source affiche encore la
+    // clôture ET le volume cumulé de la séance précédente tant qu'elle n'est
+    // pas rafraîchie. Ces relevés périmés créaient une fausse mèche vers la
+    // veille (géante le jour d'un fractionnement) : on les écarte.
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const prevSession = await previousSessionByTicker(today);
+
     const snapshots = stocks
       .filter(s => s.symbol && s.lastPrice !== null)
       .map(s => ({
@@ -175,7 +182,11 @@ export async function saveIntradaySnapshots(stocks: StockData[]) {
         timestamp: now,
         price: s.lastPrice as number,
         volume: s.volume ?? 0,
-      }));
+      }))
+      .filter(s => {
+        const prev = prevSession.get(s.stock_ticker);
+        return !(prev && prev.volume > 0 && s.volume === prev.volume && s.price === prev.close);
+      });
 
     if (snapshots.length === 0) {
       return { success: true, savedCount: 0 };
@@ -188,6 +199,29 @@ export async function saveIntradaySnapshots(stocks: StockData[]) {
     log.error('❌ Erreur sauvegarde snapshots intraday:', error);
     throw error;
   }
+}
+
+/**
+ * Clôture et volume de la dernière séance enregistrée avant `today`, par titre.
+ * Les dates d'historique peuvent être stockées à 22h/23h UTC la veille : la
+ * borne recule donc de 3 h pour ne pas prendre la séance du jour.
+ */
+async function previousSessionByTicker(today: Date) {
+  const rows = await prisma.stockHistory.findMany({
+    where: {
+      date: {
+        lt: new Date(today.getTime() - 3 * 3600 * 1000),
+        gte: new Date(today.getTime() - 15 * 86400 * 1000),
+      },
+    },
+    orderBy: { date: 'desc' },
+    select: { stock_ticker: true, close: true, volume: true },
+  });
+  const map = new Map<string, { close: number; volume: number }>();
+  for (const r of rows) {
+    if (!map.has(r.stock_ticker)) map.set(r.stock_ticker, { close: r.close, volume: r.volume });
+  }
+  return map;
 }
 
 /**

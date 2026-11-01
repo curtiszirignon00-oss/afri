@@ -504,6 +504,37 @@ const INTRADAY_BUCKET_SECONDS: Record<IntradayInterval, number> = {
 };
 
 /**
+ * Écarte les premiers relevés d'une séance qui recopient le dernier relevé de
+ * la séance précédente (même prix ET même volume cumulé) : la page source n'est
+ * pas encore rafraîchie à l'ouverture. Sans ce filtre, la première bougie part
+ * de la clôture de la veille (mèche fantôme, géante le jour d'un fractionnement).
+ * Comparaison sur les cours BRUTS, avant ajustement aux fractionnements.
+ */
+function dropStaleOpeningSnapshots<T extends { timestamp: Date; price: number; volume: number }>(snaps: T[]): T[] {
+  const out: T[] = [];
+  let dayKey = '';
+  let prevDayLast: T | null = null;
+  let lastOfDay: T | null = null;
+  let stillOpening = false;
+  for (const s of snaps) {
+    const key = s.timestamp.toISOString().slice(0, 10);
+    if (key !== dayKey) {
+      prevDayLast = lastOfDay;
+      dayKey = key;
+      stillOpening = true;
+    }
+    lastOfDay = s;
+    if (stillOpening && prevDayLast && prevDayLast.volume > 0 &&
+        s.price === prevDayLast.price && s.volume === prevDayLast.volume) {
+      continue;
+    }
+    stillOpening = false;
+    out.push(s);
+  }
+  return out;
+}
+
+/**
  * Agrège les snapshots intraday en bougies de 15 min ou 1 h.
  * @param symbol - Symbole de l'action (ex: SLBC)
  * @param days - Nombre de jours calendaires à couvrir (défaut 30)
@@ -550,7 +581,9 @@ export async function getIntradayHourly(
     });
 
     // Ne garder que les snapshots pris pendant une séance de cotation réelle
-    const inSession = rawSnapshots.filter(s => isWithinBRVMCollectionWindow(s.timestamp));
+    const inSession = dropStaleOpeningSnapshots(
+      rawSnapshots.filter(s => isWithinBRVMCollectionWindow(s.timestamp))
+    );
     const snapshots = adjusted ? await adjustForSplits(inSession, s => s.stock_ticker, s => s.timestamp) : inSession;
 
     if (snapshots.length === 0) return [];
