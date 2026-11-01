@@ -3,6 +3,7 @@ import { Users, BarChart2, LayoutDashboard, Newspaper, GraduationCap } from 'luc
 import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
 import { useUnseenNewsCount, useUnseenCommunityPublicCount } from '../hooks/useContentUnseen';
 import { useAuth } from '../contexts/AuthContext';
+import { useRealPortfolioIsNew } from './real-portfolio/PortfolioSurfaceSwitch';
 
 const TABS = [
   { key: 'community', label: 'Communauté', icon: Users,            path: '/community' },
@@ -28,7 +29,13 @@ export default function MobileBottomNav() {
     news:      unseenNewsCount,
   };
 
-  const active = TABS.findIndex(t => location.pathname.startsWith(t.path));
+  // Le portefeuille réel vit sous l'onglet central (bascule Simulateur / Réel en tête de page) :
+  // le header mobile n'a plus de place pour un lien dédié.
+  const realPortfolioIsNew = useRealPortfolioIsNew();
+  const onRealPortfolio = location.pathname.startsWith('/portefeuille-reel');
+  const active = onRealPortfolio
+    ? TABS.findIndex(t => t.key === 'dashboard')
+    : TABS.findIndex(t => location.pathname.startsWith(t.path));
 
   return (
     <nav
@@ -64,12 +71,15 @@ export default function MobileBottomNav() {
 
               {/* Icône centrale surélevée */}
               {isCenter ? (
-                <span className={`w-12 h-12 -mt-5 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-150 ${
+                <span className={`relative w-12 h-12 -mt-5 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-150 ${
                   isActive
                     ? 'bg-indigo-600 shadow-indigo-200'
                     : 'bg-slate-800 shadow-slate-300'
                 }`}>
                   <Icon className="w-5 h-5 text-white" strokeWidth={1.8} />
+                  {realPortfolioIsNew && !onRealPortfolio && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" aria-label="Nouveau : portefeuille réel" />
+                  )}
                 </span>
               ) : (
                 <div className="relative">

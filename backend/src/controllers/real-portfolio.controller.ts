@@ -10,6 +10,7 @@ import { RealPortfolioError } from '../services/real-portfolio/real-portfolio.se
 import { getDiscoveryState, recordDiscoveryEvent } from '../services/real-portfolio/discovery.service';
 import { parseStatementFile, toDraftRows } from '../services/real-portfolio/parsers';
 import { toIso } from '../services/real-portfolio/dates';
+import { DOCUMENT_MIME, DocumentExtractionError, extractFromDocument } from '../services/real-portfolio/document-extractor';
 import type { DraftRow } from '../services/real-portfolio/types';
 
 const uid = (req: Request) => (req as any).user?.id as string;
@@ -42,7 +43,7 @@ const draftSchema = z.object({
 });
 
 const commitSchema = draftSchema.extend({
-  source: z.enum(['MANUAL', 'CSV', 'XLSX']).optional(),
+  source: z.enum(['MANUAL', 'CSV', 'XLSX', 'DOCUMENT']).optional(),
   fileName: z.string().max(200).nullable().optional(),
   name: z.string().max(80).optional(),
   broker: z.string().max(80).nullable().optional(),
@@ -96,6 +97,26 @@ export const parseFile = handle(async (req, res) => {
     return res.json({ ...table, fileName: file.originalname });
   } catch (e: any) {
     return res.status(400).json({ message: e?.message || 'Fichier illisible.' });
+  }
+});
+
+export const uploadDocument = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => cb(null, DOCUMENT_MIME.test(file.mimetype)),
+}).single('file');
+
+/** POST /extract — capture, photo ou PDF de relevé lu par l'IA → même tableau que /parse. Rien n'est enregistré. */
+export const extractDocument = handle(async (req, res) => {
+  const file = (req as any).file as Express.Multer.File | undefined;
+  if (!file) return res.status(400).json({ message: 'Image (JPG, PNG, WebP) ou PDF attendu (10 Mo max).' });
+  try {
+    const table = await extractFromDocument(file.mimetype, file.buffer);
+    return res.json({ ...table, fileName: file.originalname });
+  } catch (e: any) {
+    if (e instanceof DocumentExtractionError) return res.status(422).json({ message: e.message });
+    log.error('[real-portfolio] extraction document', e);
+    return res.status(502).json({ message: 'La lecture du document a échoué. Réessayez, ou utilisez un fichier CSV/Excel ou la saisie manuelle.' });
   }
 });
 

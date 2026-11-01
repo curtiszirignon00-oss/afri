@@ -13,7 +13,7 @@ export type ColumnMapping = Partial<Record<MappedField, string>>;
 
 export interface ParsedTable {
   parserId: string;
-  source: 'CSV' | 'XLSX' | `SGI_${string}`;
+  source: 'CSV' | 'XLSX' | 'DOCUMENT' | `SGI_${string}`;
   headers: string[];
   rows: Record<string, unknown>[];
   suggestedMapping: ColumnMapping;

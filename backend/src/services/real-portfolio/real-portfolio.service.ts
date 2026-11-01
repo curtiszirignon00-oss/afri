@@ -92,7 +92,7 @@ export async function validateDraft(userId: string, rows: DraftRow[], opts: Draf
 
 export interface CommitInput extends DraftOptions {
   rows: DraftRow[];
-  source?: 'MANUAL' | 'CSV' | 'XLSX';
+  source?: 'MANUAL' | 'CSV' | 'XLSX' | 'DOCUMENT';
   fileName?: string | null;
   name?: string;
   broker?: string | null;

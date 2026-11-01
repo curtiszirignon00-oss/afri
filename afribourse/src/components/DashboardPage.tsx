@@ -29,6 +29,7 @@ import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
 import DashboardWebinarWidget from './dashboard/DashboardWebinarWidget';
 import WelcomeModal from './onboarding/WelcomeModal';
 import RealPortfolioDiscovery from './real-portfolio/discovery/RealPortfolioDiscovery';
+import PortfolioSurfaceSwitch from './real-portfolio/PortfolioSurfaceSwitch';
 import PulseDot from './onboarding/PulseDot';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 // Gamification imports
@@ -559,6 +560,8 @@ export default function DashboardPage() {
       <WelcomeModal />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <PortfolioSurfaceSwitch active="sim" className="mb-6" />
+
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>

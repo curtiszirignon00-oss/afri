@@ -181,6 +181,23 @@ export default function Header() {
                 <span>Webinaires</span>
               </Link>
 
+              {/* Portefeuille réel - Desktop (icône seule en lg, libellé en xl). Sur mobile : bascule en tête du dashboard. */}
+              {!loading && isLoggedIn && (
+                <Link
+                  to="/portefeuille-reel"
+                  title="Portefeuille réel"
+                  className={`relative hidden lg:flex items-center gap-2 px-3 xl:px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
+                    location.pathname.startsWith('/portefeuille-reel')
+                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-700'
+                  }`}
+                >
+                  <Wallet className="w-4 h-4 text-indigo-500" />
+                  <span className="hidden xl:inline">Portefeuille réel</span>
+                  {realPortfolioIsNew && newDot}
+                </Link>
+              )}
+
               {/* Notification Bell - Only for logged in users */}
               {!loading && isLoggedIn && (
                 <div className="hidden lg:block">
@@ -213,7 +230,6 @@ export default function Header() {
                         className="relative flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
                       >
                         <span>Mon Compte</span>
-                        {realPortfolioIsNew && newDot}
                       </button>
                     </div>
                   ) : (

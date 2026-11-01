@@ -140,6 +140,19 @@ export function trackRealPortfolioGuide(
   amplitude.track('real_portfolio_guide', { action, ...props });
 }
 
+/** Entonnoir d'import du portefeuille réel : où les utilisateurs décrochent. */
+export type RealPortfolioImportAction =
+  | 'page_viewed' | 'mode_selected' | 'source_selected'
+  | 'file_parsed' | 'file_failed' | 'document_extracted' | 'document_failed'
+  | 'mapping_applied' | 'review_shown'
+  | 'quick_start_submitted' | 'draft_restored' | 'draft_discarded'
+  | 'commit_clicked' | 'commit_succeeded' | 'commit_blocked' | 'commit_failed'
+  | 'abandoned';
+
+export function trackRealPortfolioImport(action: RealPortfolioImportAction, props: Record<string, string | number | boolean | null | undefined> = {}) {
+  amplitude.track('real_portfolio_import', { action, ...props });
+}
+
 export function trackRealPortfolioBanner(action: 'shown' | 'discover_clicked' | 'import_clicked' | 'dismissed') {
   amplitude.track('real_portfolio_banner', { action });
 }

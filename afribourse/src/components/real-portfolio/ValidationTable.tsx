@@ -18,7 +18,7 @@ const STATUS = {
 } as const;
 
 let stockListPromise: Promise<{ symbol: string; company_name: string }[]> | null = null;
-function useStockOptions() {
+export function useStockOptions() {
   const [stocks, setStocks] = useState<{ symbol: string; company_name: string }[]>([]);
   useEffect(() => {
     stockListPromise ??= apiFetch<{ symbol: string; company_name: string }[]>('/stocks').catch(() => []);

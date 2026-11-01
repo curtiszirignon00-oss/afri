@@ -7,7 +7,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { auth } from '../middlewares/auth.middleware';
 import { requireEmailVerifiedForWrite } from '../middlewares/emailVerification.middleware';
 import {
-  uploadStatement, parseFile, mapAndValidate, validate, commit, removeTransaction,
+  uploadStatement, parseFile, uploadDocument, extractDocument, mapAndValidate, validate, commit, removeTransaction,
   updateCash, updateSettings, removePortfolio, getDashboard, getTransactions, getHistory,
   getDiscovery, postDiscovery,
 } from '../controllers/real-portfolio.controller';
@@ -24,6 +24,16 @@ const realPortfolioLimiter = rateLimit({
   message: { message: 'Trop de requêtes. Réessayez dans une minute.' },
 });
 
+// Lecture de document par l'IA (appel facturé) : 15 par heure et par utilisateur.
+const extractLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: any) => req.user?.id || ipKeyGenerator(req),
+  message: { message: 'Limite de lecture de documents atteinte. Réessayez dans une heure ou utilisez la saisie manuelle.' },
+});
+
 router.use(auth);
 
 router.get('/', getDashboard);
@@ -35,6 +45,7 @@ router.get('/discovery', getDiscovery);
 router.post('/discovery', postDiscovery);
 
 router.post('/parse', realPortfolioLimiter, uploadStatement, parseFile);
+router.post('/extract', extractLimiter, uploadDocument, extractDocument);
 router.post('/map', realPortfolioLimiter, mapAndValidate);
 router.post('/validate', realPortfolioLimiter, validate);
 

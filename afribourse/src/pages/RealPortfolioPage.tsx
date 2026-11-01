@@ -22,6 +22,7 @@ import RealPositionsTable from '../components/real-portfolio/RealPositionsTable'
 import RealTransactionsList from '../components/real-portfolio/RealTransactionsList';
 import TransactionEditorModal from '../components/real-portfolio/TransactionEditorModal';
 import SimbaRealReport from '../components/real-portfolio/SimbaRealReport';
+import PortfolioSurfaceSwitch from '../components/real-portfolio/PortfolioSurfaceSwitch';
 import { sharePercentOnly } from '../components/real-portfolio/share';
 import DashboardPriceAlerts from '../components/price-alerts/DashboardPriceAlerts';
 import DashboardWebinarWidget from '../components/dashboard/DashboardWebinarWidget';
@@ -98,7 +99,8 @@ export default function RealPortfolioPage() {
   if (!data) {
     return (
       <div className="glass-theme min-h-screen">
-        <div className="max-w-3xl mx-auto px-4 py-12">
+        <div className="max-w-3xl mx-auto px-4 py-6 md:py-12">
+          <PortfolioSurfaceSwitch active="real" variant="glass" className="mb-5" />
           <div className="glass-card rounded-3xl p-6 md:p-10 text-center">
             <span className="inline-flex p-3 rounded-2xl bg-white/15 border border-white/15 text-orange-200"><Wallet className="w-8 h-8" /></span>
             <h1 className="mt-4 text-3xl font-bold">Suivez votre vrai portefeuille BRVM</h1>
@@ -165,6 +167,8 @@ export default function RealPortfolioPage() {
     <>
       <div className="glass-theme min-h-screen">
         <div className="max-w-7xl mx-auto px-4 py-6 md:py-8 space-y-5 pb-28">
+          <PortfolioSurfaceSwitch active="real" variant="glass" />
+
           {/* En-tête */}
           <section id="rp-overview" className="glass-card relative z-30 rounded-3xl p-5 md:p-7 scroll-mt-24">
             <div className="flex flex-wrap items-start justify-between gap-4">

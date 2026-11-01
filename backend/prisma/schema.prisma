@@ -2779,7 +2779,7 @@ model RealImportBatch {
   portfolioId   String        @db.ObjectId
   portfolio     RealPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   mode          String // SNAPSHOT | TRANSACTIONS
-  source        String // MANUAL | CSV | XLSX
+  source        String // MANUAL | CSV | XLSX | DOCUMENT
   file_name     String?
   row_count     Int
   warning_count Int           @default(0)

@@ -55,13 +55,18 @@ export interface ValidationReport {
 
 export interface ParsedTable {
   parserId: string;
-  source: 'CSV' | 'XLSX';
+  source: 'CSV' | 'XLSX' | 'DOCUMENT';
   headers: string[];
   rows: Record<string, unknown>[];
   suggestedMapping: ColumnMapping;
   suggestedMode: ImportMode;
   fileName: string;
+  /** Document lu par l'IA : date d'arrêté et solde espèces s'ils figurent sur le relevé. */
+  detectedDate?: string | null;
+  detectedCash?: number | null;
 }
+
+export type ImportSource = 'MANUAL' | 'CSV' | 'XLSX' | 'DOCUMENT';
 
 export interface RealPositionLine {
   ticker: string;
@@ -176,13 +181,19 @@ export const realPortfolioApi = {
     fd.append('file', file);
     return call<ParsedTable>('/parse', { method: 'POST', body: fd });
   },
+  /** Capture, photo ou PDF de relevé lu par l'IA → même tableau que parseFile. */
+  extractDocument(file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    return call<ParsedTable>('/extract', { method: 'POST', body: fd });
+  },
   mapRows: (body: { rows: Record<string, unknown>[]; mapping: ColumnMapping; mode: ImportMode; snapshotDate?: string }) =>
     call<{ rows: DraftRow[]; report: ValidationReport }>('/map', json('POST', body)),
   validate: (body: { rows: DraftRow[]; mode?: ImportMode; declaredCapital?: number | null; cash?: number | null; replaceOpenings?: boolean; deletedIds?: string[] }) =>
     call<ValidationReport>('/validate', json('POST', body)),
   commit: (body: {
     rows: DraftRow[]; mode?: ImportMode; declaredCapital?: number | null; cash?: number | null; replaceOpenings?: boolean;
-    source?: 'MANUAL' | 'CSV' | 'XLSX'; fileName?: string | null; name?: string; broker?: string | null;
+    source?: ImportSource; fileName?: string | null; name?: string; broker?: string | null;
   }) => call<{ portfolioId: string; report: ValidationReport }>('/commit', json('POST', body)),
   deleteTransaction: (id: string) => call<{ report: ValidationReport }>(`/transactions/${id}`, { method: 'DELETE' }),
   updateCash: (amount: number) => call('/cash', json('PUT', { amount })),
