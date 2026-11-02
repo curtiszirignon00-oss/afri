@@ -69,7 +69,7 @@ export async function getAmbassadorStats(req: Request, res: Response, next: Next
       select: { refereeEmail: true, status: true, purchasedAt: true, createdAt: true },
     });
 
-    const baseUrl = process.env.FRONTEND_URL ?? 'https://afribourse.com';
+    const baseUrl = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
     return res.json({
       hasCode: true,
       isPackParticipant: user.isPackParticipant,
@@ -111,7 +111,7 @@ export async function adminCreateReferralCode(req: Request, res: Response, next:
     });
 
     if (existing) {
-      const baseUrl = process.env.FRONTEND_URL ?? 'https://afribourse.com';
+      const baseUrl = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
       return res.json({
         message: 'Code ambassadeur déjà actif.',
         code: existing.code,
@@ -136,7 +136,7 @@ export async function adminCreateReferralCode(req: Request, res: Response, next:
       });
     }
 
-    const baseUrl = process.env.FRONTEND_URL ?? 'https://afribourse.com';
+    const baseUrl = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
     logger.info({ userId: user.id, email: user.email, code }, '[REFERRAL] Code ambassadeur créé par admin');
 
     return res.status(201).json({
@@ -162,7 +162,7 @@ export async function adminListReferrals(req: Request, res: Response, next: Next
       },
     });
 
-    const baseUrl = process.env.FRONTEND_URL ?? 'https://afribourse.com';
+    const baseUrl = process.env.FRONTEND_URL ?? 'https://www.africbourse.com';
     const data = codes.map((c) => ({
       id: c.id,
       code: c.code,

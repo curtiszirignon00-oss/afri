@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/glossary';
 
 const glossaryTerms = [
@@ -118,8 +118,8 @@ export default function GlossaryPage() {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Glossaire de l'Investisseur", "item": "https://africbourse.com/glossary" }
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Glossaire de l'Investisseur", "item": "https://www.africbourse.com/glossary" }
           ]
         })}</script>
       </Helmet>

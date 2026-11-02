@@ -60,13 +60,13 @@ export function AchievementUnlockModal({
   const shareText = `${achievement.icon || '🏆'} J'ai débloqué le badge "${achievement.name}" sur AfriBourse !`;
 
   const handleShareWhatsApp = () => {
-    const text = encodeURIComponent(shareText + '\n\nRejoins-moi sur https://africbourse.com');
+    const text = encodeURIComponent(shareText + '\n\nRejoins-moi sur https://www.africbourse.com');
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
   const handleShareX = () => {
     const text = encodeURIComponent(shareText);
-    const url = encodeURIComponent('https://africbourse.com');
+    const url = encodeURIComponent('https://www.africbourse.com');
     window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
   };
 

@@ -30,6 +30,7 @@ import { findNewsByTicker } from '../data/newsData';
 // Contenus des onglets — lazy: seul l'onglet actif est chargé
 const StockOverview = lazy(() => import('./stock/StockOverview'));
 const StockNews = lazy(() => import('./stock/StockNews'));
+import StockArticlesLinks from './stock/StockArticlesLinks';
 const StockFundamentals = lazy(() => import('./stock/StockFundamentals'));
 const StockAnalysis = lazy(() => import('./stock/StockAnalysis'));
 import { convertToLightweightData } from '../utils/simpleLightweightAdapter';
@@ -567,19 +568,24 @@ export default function StockDetailPageEnhanced() {
   const technicalSignal = calculateTechnicalSignal();
 
   const ogImageUrl = `https://afribourse-api.onrender.com/api/og/image/stock/${symbol ?? ''}`;
-  const ogPageUrl  = `https://africbourse.com/stock/${symbol ?? ''}`;
+  const ogPageUrl  = `https://www.africbourse.com/stock/${(symbol ?? '').toUpperCase()}`;
+  // Titre Google : nom de la société + ticker (le prix reste dans og:title pour les partages)
+  const seoTitle = stock
+    ? `${stock.symbol} — ${stock.company_name} : cours de l'action, analyse BRVM | AfriBourse`
+    : `${symbol} — cours de l'action BRVM | AfriBourse`;
   const ogTitle = stock
     ? `${stock.symbol} — ${new Intl.NumberFormat('fr-FR').format(stock.current_price)} FCFA (${stock.daily_change_percent >= 0 ? '+' : ''}${stock.daily_change_percent?.toFixed(2)}%) | AfriBourse`
     : `${symbol} — AfriBourse`;
   const ogDescription = stock
-    ? `${stock.company_name} sur la BRVM. Cours en temps réel, graphiques, fondamentaux et actualités.`
+    ? `Action ${stock.company_name} (${stock.symbol}) sur la BRVM : cours en temps réel, graphiques, fondamentaux, analyses et actualités.`
     : `Retrouvez le cours de ${symbol} sur AfriBourse.`;
 
   return (
     <>
     <Helmet>
-      <title>{ogTitle}</title>
+      <title>{seoTitle}</title>
       <meta name="description"            content={ogDescription}/>
+      {stock && <meta name="keywords" content={`${stock.symbol}, action ${stock.symbol}, cours ${stock.symbol}, ${stock.company_name}, action ${stock.company_name}, ${stock.symbol} BRVM, analyse ${stock.symbol}, BRVM`}/>}
       <meta property="og:type"            content="website"/>
       <meta property="og:site_name"       content="AfriBourse"/>
       <meta property="og:title"           content={ogTitle}/>
@@ -961,6 +967,9 @@ export default function StockDetailPageEnhanced() {
               )}
               {activeTab === 'news' && <StockNews news={newsData || []} isLoading={newsLoading} ticker={symbol} />}
             </Suspense>
+
+            {/* Toujours rendu (hors onglets) : liens vers nos analyses de cette action */}
+            <StockArticlesLinks symbol={stock.symbol} companyName={stock.company_name} />
           </div>
 
           {/* Colonne latérale - Panel d'ordre (DESKTOP ONLY) */}

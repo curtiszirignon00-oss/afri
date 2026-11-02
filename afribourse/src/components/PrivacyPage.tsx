@@ -2,7 +2,7 @@ import React from 'react';
 import { Shield, Lock, Eye, Database, UserCheck, FileText, AlertCircle } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 
 const PrivacyPage: React.FC = () => {
   return (

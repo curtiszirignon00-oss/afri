@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/learn';
 import {
     BookOpen,
@@ -1528,22 +1528,22 @@ export default function LearnPage() {
                   "@context": "https://schema.org",
                   "@type": "BreadcrumbList",
                   "itemListElement": [
-                    { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
-                    { "@type": "ListItem", "position": 2, "name": "Formation", "item": "https://africbourse.com/learn" }
+                    { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.africbourse.com/" },
+                    { "@type": "ListItem", "position": 2, "name": "Formation", "item": "https://www.africbourse.com/learn" }
                   ]
                 })}</script>
                 <script type="application/ld+json">{JSON.stringify({
                   "@context": "https://schema.org",
                   "@type": "Course",
-                  "@id": "https://africbourse.com/learn#course",
+                  "@id": "https://www.africbourse.com/learn#course",
                   "name": "Formation Investissement BRVM",
                   "description": "Formation complète en investissement boursier sur la BRVM. 20 modules couvrant les bases, l'analyse technique, fondamentale et les stratégies avancées.",
-                  "url": "https://africbourse.com/learn",
+                  "url": "https://www.africbourse.com/learn",
                   "provider": {
                     "@type": "EducationalOrganization",
-                    "@id": "https://africbourse.com/#organization",
+                    "@id": "https://www.africbourse.com/#organization",
                     "name": "AfriBourse",
-                    "url": "https://africbourse.com"
+                    "url": "https://www.africbourse.com"
                   },
                   "inLanguage": "fr",
                   "isAccessibleForFree": true,

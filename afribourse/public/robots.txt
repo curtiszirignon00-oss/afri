@@ -25,4 +25,4 @@ Disallow: /verifier-email
 Disallow: /mot-de-passe-oublie
 Disallow: /reinitialiser-mot-de-passe
 
-Sitemap: https://africbourse.com/sitemap.xml
+Sitemap: https://www.africbourse.com/sitemap.xml

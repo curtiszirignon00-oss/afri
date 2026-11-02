@@ -14,7 +14,7 @@ interface ChartShareModalProps {
   changeValue: number;
 }
 
-const SITE_BASE = 'https://africbourse.com';
+const SITE_BASE = 'https://www.africbourse.com';
 
 export default function ChartShareModal({
   isOpen,

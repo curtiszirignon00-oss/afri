@@ -22,7 +22,7 @@ interface Props {
 }
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const SITE_URL = import.meta.env.VITE_FRONTEND_URL || 'https://africbourse.com';
+const SITE_URL = import.meta.env.VITE_FRONTEND_URL || 'https://www.africbourse.com';
 
 function isNew(cert: Certificate): boolean {
   if (cert.status === 'downloaded' || cert.status === 'shared') return false;

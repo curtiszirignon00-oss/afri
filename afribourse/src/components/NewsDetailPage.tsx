@@ -14,8 +14,9 @@ import HtmlArticleRenderer from './HtmlArticleRenderer';
 import RelatedArticles from './news/RelatedArticles';
 import NewsAuthGate from './news/NewsAuthGate';
 import { useAuth } from '../contexts/AuthContext';
+import { isSearchCrawler, PAYWALL_CLASS, paywallJsonLd, useCompanyNames, buildTickerSeo, withMention } from './news/articleSeo';
 
-const SITE_URL = 'https://afribourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -104,7 +105,10 @@ function ShareButton() {
 
 function DBArticlePage({ article }: { article: DBArticle }) {
   const { isLoggedIn, loading: authLoading } = useAuth();
-  const gated = !authLoading && !isLoggedIn;
+  const crawler = isSearchCrawler();
+  const gated = !authLoading && !isLoggedIn && !crawler;
+  // Article réservé aux membres → déclaré comme contenu payant aux moteurs
+  const membersOnly = !isLoggedIn;
 
   const blocks: ContentBlock[] | null = (() => {
     if (!article.rich_content) return null;
@@ -122,7 +126,10 @@ function DBArticlePage({ article }: { article: DBArticle }) {
     } catch { /* ignore */ }
   }, [article.id, gated]);
 
-  const canonicalUrl = `${SITE_URL}/news/${article.slug}`;
+  const canonicalUrl = `${SITE_URL}/news/${article.slug || article.id}`;
+  const tickerNames = useCompanyNames(article.tickers ?? []);
+  const tickerSeo = buildTickerSeo(article.tickers ?? [], tickerNames);
+  const metaDescription = withMention(article.summary ?? article.title, tickerSeo.mention);
   const ogImage = article.image_url ?? `https://afribourse-api.onrender.com/api/og/image/page/news`;
   const publishedIso = article.published_at ? new Date(article.published_at).toISOString() : undefined;
   const formattedDate = article.published_at
@@ -170,7 +177,8 @@ function DBArticlePage({ article }: { article: DBArticle }) {
     <>
       <Helmet>
         <title>{article.title} | AfriBourse</title>
-        <meta name="description" content={article.summary ?? article.title} />
+        <meta name="description" content={metaDescription} />
+        <meta name="keywords" content={tickerSeo.keywords} />
         <link rel="canonical" href={canonicalUrl} />
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="AfriBourse" />
@@ -192,6 +200,8 @@ function DBArticlePage({ article }: { article: DBArticle }) {
           author: { '@type': 'Person', name: article.author ?? 'AfriBourse' },
           publisher: { '@type': 'Organization', name: 'AfriBourse', url: SITE_URL },
           mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+          ...(tickerSeo.about.length ? { about: tickerSeo.about } : {}),
+          ...(membersOnly ? paywallJsonLd : {}),
         })}</script>
       </Helmet>
 
@@ -214,7 +224,7 @@ function DBArticlePage({ article }: { article: DBArticle }) {
             <div className="max-w-4xl mx-auto">{headerBlock}</div>
 
             <div className="mt-2">
-              <HtmlArticleRenderer html={article.content!} />
+              <div className={PAYWALL_CLASS}><HtmlArticleRenderer html={article.content!} /></div>
             </div>
 
             <div className="max-w-4xl mx-auto">
@@ -232,13 +242,15 @@ function DBArticlePage({ article }: { article: DBArticle }) {
               <NewsAuthGate variant="article" />
             ) : (
               <>
-                {blocks ? (
-                  <BlockRenderer blocks={blocks} variant="module" />
-                ) : article.content ? (
-                  <HtmlArticleRenderer html={article.content} />
-                ) : (
-                  <p className="text-slate-400 italic">Aucun contenu disponible.</p>
-                )}
+                <div className={PAYWALL_CLASS}>
+                  {blocks ? (
+                    <BlockRenderer blocks={blocks} variant="module" />
+                  ) : article.content ? (
+                    <HtmlArticleRenderer html={article.content} />
+                  ) : (
+                    <p className="text-slate-400 italic">Aucun contenu disponible.</p>
+                  )}
+                </div>
 
                 <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
 
@@ -309,6 +321,10 @@ function DBArticlePage({ article }: { article: DBArticle }) {
 
 function BRVMArticlePage({ article }: { article: BRVMArticle }) {
   const canonicalUrl = `${SITE_URL}/news/${article.id}`;
+  const tickerList = article.tickers.map(t => t.ticker);
+  const tickerNames = useCompanyNames(tickerList);
+  const tickerSeo = buildTickerSeo(tickerList, tickerNames);
+  const metaDescription = withMention(article.summary, tickerSeo.mention);
   const ogImage = article.image_url ?? `https://afribourse-api.onrender.com/api/og/image/page/news`;
   const publishedIso = new Date(article.publishedAt).toISOString();
   const formattedDate = new Date(article.publishedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -332,7 +348,8 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
     <>
       <Helmet>
         <title>{article.title} | AfriBourse</title>
-        <meta name="description" content={article.summary} />
+        <meta name="description" content={metaDescription} />
+        <meta name="keywords" content={[tickerSeo.keywords, ...article.tags].join(', ')} />
         <link rel="canonical" href={canonicalUrl} />
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="AfriBourse" />
@@ -354,6 +371,8 @@ function BRVMArticlePage({ article }: { article: BRVMArticle }) {
           author: { '@type': 'Organization', name: 'AfriBourse Research' },
           publisher: { '@type': 'Organization', name: 'AfriBourse', url: SITE_URL },
           mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+          keywords: article.tags.join(', '),
+          ...(tickerSeo.about.length ? { about: tickerSeo.about } : {}),
         })}</script>
       </Helmet>
 

@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/markets';
 import { trackStockSearch } from '../lib/amplitude';
 import { metaPixel } from '../utils/metaPixel';
@@ -338,11 +338,11 @@ export default function MarketsPageRefactored() {
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FinancialService",
-          "@id": "https://africbourse.com/markets#financialservice",
+          "@id": "https://www.africbourse.com/markets#financialservice",
           "name": "AfriBourse — Marchés BRVM",
           "description": "Suivi des cours de la BRVM (Bourse Régionale des Valeurs Mobilières) en temps réel pour les investisseurs d'Afrique de l'Ouest.",
-          "url": "https://africbourse.com/markets",
-          "provider": { "@id": "https://africbourse.com/#organization" },
+          "url": "https://www.africbourse.com/markets",
+          "provider": { "@id": "https://www.africbourse.com/#organization" },
           "areaServed": { "@type": "Place", "name": "UEMOA — Union Économique et Monétaire Ouest-Africaine" },
           "serviceType": "Suivi des marchés boursiers BRVM",
           "inLanguage": "fr"

@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TrendingUp } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { lazyWithRetry as lazy } from './lib/lazyWithRetry';
+import DefaultCanonical from './components/seo/DefaultCanonical';
 
 // Query Client
 import { queryClient } from './lib/queryClient';
@@ -57,6 +58,7 @@ const GlossaryPage = lazy(() => import('./components/GlossaryPage'));
 const AboutPage = lazy(() => import('./components/AboutPage'));
 const ContactPage = lazy(() => import('./components/ContactPage'));
 const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
+const NotFoundPage = lazy(() => import('./components/NotFoundPage'));
 const HelpCenterPage = lazy(() => import('./components/HelpCenterPage'));
 const SubscriptionPage = lazy(() => import('./components/SubscriptionPage'));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage'));
@@ -214,6 +216,7 @@ function Layout() {
           sous la barre mobile comprise. Ailleurs, display:contents laisse le flex de la page intact. */}
       <div className={glass ? 'glass-theme flex-grow flex flex-col' : 'contents'}>
       <main className="flex-grow pb-16 lg:pb-0" style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
+        <DefaultCanonical />
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}
@@ -422,6 +425,9 @@ function Layout() {
               </AdminRoute>
             }
           />
+
+          {/* Toute URL inconnue → vraie page 404 (noindex) */}
+          <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </main>

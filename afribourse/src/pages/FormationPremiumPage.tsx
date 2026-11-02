@@ -10,7 +10,7 @@ import PaymentModal from '../components/payment/PaymentModal';
 import { analytics } from '../services/analytics';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/formation';
 
 const PLAN_ID = 'premium-modules';

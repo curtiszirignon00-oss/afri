@@ -19,7 +19,7 @@ import { useCommunities, useUserCommunities, COMMUNITY_CATEGORIES, type Communit
 import { useAuth } from '../contexts/AuthContext';
 import CreateCommunityModal from '../components/community/CreateCommunityModal';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/communities';
 
 export default function CommunitiesPage() {

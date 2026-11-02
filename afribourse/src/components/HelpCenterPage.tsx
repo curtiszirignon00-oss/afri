@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/help';
 import { useNavigate } from 'react-router-dom';
 
@@ -169,8 +169,8 @@ const HelpCenterPage: React.FC = () => {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Centre d'Aide", "item": "https://africbourse.com/help" }
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Centre d'Aide", "item": "https://www.africbourse.com/help" }
           ]
         })}</script>
         <script type="application/ld+json">{JSON.stringify({

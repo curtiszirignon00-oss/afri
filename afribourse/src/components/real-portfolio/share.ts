@@ -4,7 +4,7 @@
 import toast from 'react-hot-toast';
 
 export async function sharePercentOnly(text: string): Promise<void> {
-  const url = 'https://africbourse.com';
+  const url = 'https://www.africbourse.com';
   try {
     if (navigator.share) {
       await navigator.share({ text, url });

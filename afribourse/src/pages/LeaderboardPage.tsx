@@ -8,7 +8,7 @@ import {
 import { apiClient } from '../lib/api-client';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/classement';
 
 interface LeaderboardEntry {

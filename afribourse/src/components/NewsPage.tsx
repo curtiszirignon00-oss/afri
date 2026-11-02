@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, ChevronRight, Newspaper, BarChart2, X, Search } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/news';
 import { API_BASE_URL } from '../config/api';
 import OptimizedImage from './ui/OptimizedImage';
@@ -319,8 +319,8 @@ export default function NewsPage() {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Actualités Financières", "item": "https://africbourse.com/news" }
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Actualités Financières", "item": "https://www.africbourse.com/news" }
           ]
         })}</script>
       </Helmet>

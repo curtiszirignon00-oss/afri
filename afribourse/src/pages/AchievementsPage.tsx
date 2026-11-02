@@ -439,8 +439,8 @@ export default function AchievementsPage() {
       <meta name="description"         content="Débloquez des badges en investissant sur la BRVM et progressez sur AfriBourse."/>
       <meta property="og:title"        content="Mes Badges — AfriBourse"/>
       <meta property="og:description"  content="Débloquez des badges en investissant sur la BRVM et progressez sur AfriBourse."/>
-      <meta property="og:url"          content="https://africbourse.com/achievements"/>
-      <meta property="og:image"        content="https://africbourse.com/images/logo_afribourse.png"/>
+      <meta property="og:url"          content="https://www.africbourse.com/achievements"/>
+      <meta property="og:image"        content="https://www.africbourse.com/images/logo_afribourse.png"/>
       <meta name="twitter:card"        content="summary_large_image"/>
     </Helmet>
     <div className="min-h-screen bg-gray-50">

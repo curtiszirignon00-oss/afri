@@ -282,8 +282,8 @@ export default function ProfilePage() {
           <meta name="description"        content="Profil investisseur AfriBourse — portefeuille, badges et performances sur la BRVM."/>
           <meta property="og:title"       content={profileTitle}/>
           <meta property="og:description" content="Profil investisseur AfriBourse — portefeuille, badges et performances sur la BRVM."/>
-          <meta property="og:url"         content={profileData.profile?.username ? `https://africbourse.com/u/${profileData.profile.username}` : `https://africbourse.com/profile${userId ? `/${userId}` : ''}`}/>
-          <meta property="og:image"       content={profileData.profile?.username ? `${import.meta.env.VITE_API_URL || 'https://api.africbourse.com/api'}/og/image/profile/${profileData.profile.username}` : "https://africbourse.com/images/logo_afribourse.png"}/>
+          <meta property="og:url"         content={profileData.profile?.username ? `https://www.africbourse.com/u/${profileData.profile.username}` : `https://www.africbourse.com/profile${userId ? `/${userId}` : ''}`}/>
+          <meta property="og:image"       content={profileData.profile?.username ? `${import.meta.env.VITE_API_URL || 'https://api.africbourse.com/api'}/og/image/profile/${profileData.profile.username}` : "https://www.africbourse.com/images/logo_afribourse.png"}/>
           <meta name="twitter:card"       content="summary_large_image"/>
         </Helmet>
         <div className="min-h-[calc(100vh-5rem)] bg-gray-50">

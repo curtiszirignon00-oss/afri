@@ -6,7 +6,7 @@ import type { MarketIndex } from '../types';
 import { lazyWithRetry } from '../lib/lazyWithRetry';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/indices';
 
 // IndexChart importe lightweight-charts (~150 KB) — chargé seulement au clic sur une carte
@@ -63,8 +63,8 @@ export default function IndicesPage() {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
-            { "@type": "ListItem", "position": 2, "name": "Indices BRVM", "item": "https://africbourse.com/indices" }
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "Indices BRVM", "item": "https://www.africbourse.com/indices" }
           ]
         })}</script>
       </Helmet>

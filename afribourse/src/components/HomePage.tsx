@@ -2,7 +2,7 @@
 import { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/home';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

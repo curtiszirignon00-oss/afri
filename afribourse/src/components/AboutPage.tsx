@@ -4,7 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/about';
 
 const AboutPage: React.FC = () => {
@@ -53,8 +53,8 @@ const AboutPage: React.FC = () => {
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://africbourse.com/" },
-            { "@type": "ListItem", "position": 2, "name": "À propos", "item": "https://africbourse.com/about" }
+            { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.africbourse.com/" },
+            { "@type": "ListItem", "position": 2, "name": "À propos", "item": "https://www.africbourse.com/about" }
           ]
         })}</script>
       </Helmet>

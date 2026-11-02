@@ -18,7 +18,7 @@ interface ShareModalProps {
     shareUrl?: string;
 }
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 
 export default function ShareModal({ isOpen, onClose, shareData, shareUrl }: ShareModalProps) {
     const [customMessage, setCustomMessage] = useState('');

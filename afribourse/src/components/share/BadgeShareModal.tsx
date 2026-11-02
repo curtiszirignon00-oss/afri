@@ -14,7 +14,7 @@ interface BadgeShareModalProps {
     unlockedDate?: string;
 }
 
-const ACHIEVEMENTS_URL = 'https://africbourse.com/achievements';
+const ACHIEVEMENTS_URL = 'https://www.africbourse.com/achievements';
 
 const RARITY_LABELS: Record<string, string> = {
     common: 'Commun', rare: 'Rare', epic: 'Épique', legendary: 'Légendaire'

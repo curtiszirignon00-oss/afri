@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { metaPixel } from '../utils/metaPixel';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/contact';
 
 const ContactPage: React.FC = () => {

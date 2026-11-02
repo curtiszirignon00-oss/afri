@@ -9,7 +9,7 @@
 //   Les utilisateurs normaux passent directement vers le SPA React.
 
 const API_URL = 'https://afribourse-api.onrender.com/api';
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 
 const SOCIAL_CRAWLERS = [
   'whatsapp',

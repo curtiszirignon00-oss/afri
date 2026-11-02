@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://africbourse.com';
+const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/community';
 import { Users, Globe, MessageCircle, Loader2, RefreshCw, Plus, Lock, Shield, ChevronRight, Sparkles, UserPlus, CheckCircle, UserCheck, X, Calendar, Tag, UserRound, PenSquare } from 'lucide-react';
 import { apiClient } from '../lib/api-client';

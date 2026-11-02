@@ -102,10 +102,10 @@ export default function Header() {
       {isLoggedIn && <EmailVerificationBanner />}
 
       <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 lg:h-20">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 2xl:px-14">
+          <div className="flex justify-between items-center gap-6 xl:gap-10 h-16 lg:h-20">
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center shrink-0">
               <button
                 onClick={() => { navigate('/'); setActiveMegaMenu(null); }}
                 className="flex flex-col items-start"
@@ -123,7 +123,7 @@ export default function Header() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-1">
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -170,7 +170,7 @@ export default function Header() {
             </nav>
 
             {/* Action Buttons (Login/Signup/Account/Logout) */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3 xl:gap-4 shrink-0">
 
               {/* Bouton Webinaire - Desktop */}
               <Link
@@ -209,7 +209,7 @@ export default function Header() {
               {!loading && (
                 <div className="hidden lg:relative lg:flex items-center">
                   {isLoggedIn ? (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-3">
                       {/* Bouton Profil */}
                       <button
                         onClick={() => navigate('/profile')}
