@@ -39,6 +39,10 @@ export interface Stock {
   volume: number;
   market_cap: number;
   logo_url?: string | null;
+  /** false = titre radié de la BRVM */
+  is_active?: boolean;
+  /** Date de suspension de cotation par la BRVM ; null = cotation normale */
+  trading_suspended_at?: string | null;
 }
 
 export interface StockFundamental {

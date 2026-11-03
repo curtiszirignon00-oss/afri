@@ -53,6 +53,27 @@ export async function createPortfolio(userId: string, data: Partial<Portfolio> =
   }
 }
 
+// --- Statut de cotation ---
+
+type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+/** Refuse tout ordre sur un titre radié (is_active = false) ou suspendu par la BRVM. */
+async function assertTradable(tx: TxClient, stockTicker: string): Promise<void> {
+  const stock = await tx.stock.findUnique({
+    where: { symbol: stockTicker },
+    select: { is_active: true, trading_suspended_at: true },
+  });
+  if (!stock) {
+    throw new Error(`Titre ${stockTicker} introuvable.`);
+  }
+  if (!stock.is_active) {
+    throw new Error(`${stockTicker} n'est plus coté à la BRVM : aucun ordre n'est possible.`);
+  }
+  if (stock.trading_suspended_at) {
+    throw new Error(`La cotation de ${stockTicker} est suspendue par la BRVM : les ordres sont bloqués jusqu'à sa reprise.`);
+  }
+}
+
 // --- Buy Stock Logic ---
 
 export async function buyStock(
@@ -64,6 +85,8 @@ export async function buyStock(
 ): Promise<{ portfolio: Portfolio, transaction: Transaction }> {
   // We use Prisma Transaction to ensure all database operations succeed or fail together
   return prisma.$transaction(async (tx) => {
+    await assertTradable(tx, stockTicker);
+
     // 1. Get all user portfolios, sorted by creation date (oldest first)
     const allPortfolios = await tx.portfolio.findMany({
       where: { userId: userId },
@@ -160,6 +183,8 @@ export async function sellStock(
   walletType: 'SANDBOX' | 'CONCOURS' = 'SANDBOX'
 ): Promise<{ portfolio: Portfolio, transaction: Transaction }> {
   return prisma.$transaction(async (tx) => {
+    await assertTradable(tx, stockTicker);
+
     // 1. Get all user portfolios, sorted by creation date (oldest first)
     const allPortfolios = await tx.portfolio.findMany({
       where: { userId: userId },

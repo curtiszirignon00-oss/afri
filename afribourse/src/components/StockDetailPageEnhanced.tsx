@@ -495,6 +495,15 @@ export default function StockDetailPageEnhanced() {
 
   const totalCost = stock ? quantity * stock.current_price : 0;
 
+  // Le serveur refuse aussi ces ordres ; l'interface l'annonce avant la tentative
+  const tradingBlockedReason = !stock
+    ? null
+    : stock.is_active === false
+      ? "Ce titre n'est plus coté à la BRVM : aucun ordre n'est possible."
+      : stock.trading_suspended_at
+        ? "Cotation suspendue par la BRVM jusqu'à nouvel ordre : les ordres sont bloqués."
+        : null;
+
   // Calcul des sentiments et signaux (gardé de l'ancienne version)
   function calculateMarketSentiment(): { score: number; label: string; color: string } {
     if (!stock) return { score: 0, label: 'Neutre', color: 'yellow' };
@@ -1059,10 +1068,17 @@ export default function StockDetailPageEnhanced() {
                 </div>
               )}
 
+              {tradingBlockedReason && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start space-x-2 text-xs">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-amber-800">{tradingBlockedReason}</p>
+                </div>
+              )}
+
               {/* Bouton achat */}
               <button
                 onClick={handleBuy}
-                disabled={!portfolio || totalCost > (portfolio?.cash_balance ?? 0) || isBuying}
+                disabled={!portfolio || !!tradingBlockedReason || totalCost > (portfolio?.cash_balance ?? 0) || isBuying}
                 className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isBuying ? (
@@ -1218,6 +1234,13 @@ export default function StockDetailPageEnhanced() {
                   </p>
                 )}
 
+                {tradingBlockedReason && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start space-x-2 text-sm mb-4">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                    <p className="text-amber-800">{tradingBlockedReason}</p>
+                  </div>
+                )}
+
                 {/* Erreur inline */}
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start space-x-2 text-sm mb-4">
@@ -1239,7 +1262,7 @@ export default function StockDetailPageEnhanced() {
                       handleBuy();
                       setShowMobileOrder(false);
                     }}
-                    disabled={totalCost > portfolio.cash_balance || isBuying}
+                    disabled={!!tradingBlockedReason || totalCost > portfolio.cash_balance || isBuying}
                     className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isBuying ? 'Achat...' : 'Confirmer'}

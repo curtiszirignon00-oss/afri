@@ -98,21 +98,66 @@ export function normalizeSymbol(symbol: string): string {
   return SYMBOL_ALIASES[upper] ?? upper;
 }
 
+/**
+ * Ecart relatif toléré entre la clôture officielle en base et celle déduite de
+ * la variation. La variation publiée est arrondie au centième de % : l'écart dû
+ * à l'arrondi reste < 0,01 %. Au-delà, l'historique ne correspond pas à la
+ * référence du jour (séance manquante en base, ajustement de cours de référence
+ * après dividende ou split) et on garde la valeur déduite.
+ */
+const PREVIOUS_CLOSE_TOLERANCE = 0.001;
+
+/** Dernière clôture officielle strictement antérieure à aujourd'hui (UTC), par titre. */
+async function getLastOfficialCloses(): Promise<Map<string, number>> {
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  // 15 jours couvrent les ponts et fériés ; au-delà, la valeur déduite prend le relais
+  const since = new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000);
+
+  const rows = await prisma.stockHistory.findMany({
+    where: { date: { gte: since, lt: today } },
+    select: { stock_ticker: true, date: true, close: true },
+    orderBy: { date: 'desc' },
+  });
+
+  const closes = new Map<string, number>();
+  for (const row of rows) {
+    if (!closes.has(row.stock_ticker) && row.close > 0) closes.set(row.stock_ticker, row.close);
+  }
+  return closes;
+}
+
 export async function saveStocks(stocksData: StockData[]) {
   try {
+    let officialCloses = new Map<string, number>();
+    try {
+      officialCloses = await getLastOfficialCloses();
+    } catch (err) {
+      log.error('⚠️ Clôtures officielles indisponibles (previous_close déduit de la variation):', err);
+    }
+
     for (const data of stocksData) {
       if (!data.symbol || data.lastPrice === null) continue;
 
       // Un code alternatif cote source ne doit pas creer un doublon de fiche
       const symbol = normalizeSymbol(data.symbol);
 
-      // Calcule le "previous_close" en inversant la variation.
+      // Déduit le "previous_close" en inversant la variation.
       // `last - last * pct` est faux : la variation se rapporte au cours de la
       // veille, pas au cours du jour. L'ecart est invisible a +0,5% mais reel
       // des que la valeur bouge (BBGC a +7,48% : 6712 au lieu de 6750).
-      const previousClose = data.change
+      const derivedClose = data.change
         ? data.lastPrice / (1 + data.change / 100)
         : data.lastPrice;
+
+      // La variation publiée étant arrondie, la valeur déduite est approchée
+      // (STBC le 02/11/2026 : 21499,36 au lieu de 21500). On lui préfère la
+      // clôture officielle en base quand elles concordent.
+      const officialClose = officialCloses.get(symbol);
+      const previousClose =
+        officialClose && Math.abs(officialClose - derivedClose) / officialClose <= PREVIOUS_CLOSE_TOLERANCE
+          ? officialClose
+          : Math.round(derivedClose);
 
       // <-- AJOUT : Récupérer le secteur depuis le mapping
       const sector = SECTOR_MAPPING[symbol] || null;

@@ -666,6 +666,9 @@ model Stock {
   // cohérence du portefeuille réel. null = inconnue : le moteur se replie sur l'historique.
   listed_at   DateTime?
   delisted_at DateTime?
+  // Suspension de cotation décidée par la BRVM : le titre reste visible mais
+  // aucun ordre n'est accepté. null = cotation normale.
+  trading_suspended_at DateTime?
 
   created_at DateTime? @default(now())
   updated_at DateTime? @updatedAt
