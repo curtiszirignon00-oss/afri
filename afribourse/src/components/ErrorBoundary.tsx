@@ -1,23 +1,11 @@
 // src/components/ErrorBoundary.tsx
+// Filet de DERNIER RECOURS (crash du layout ou d'un provider). Les crashs de page sont
+// normalement absorbés par RouteErrorBoundary, qui garde la navigation visible.
+// Monté au-dessus du Router et d'AuthProvider : pas de hooks ici, on lit le rôle via errorViewer.
 import { Component, ErrorInfo, ReactNode } from 'react';
-
-// Unregister SW + wipe all caches before reloading so the SW cannot re-serve
-// stale HTML for JS chunk requests (iOS WebKit rejects text/html for ES modules).
-async function clearSwAndReload() {
-  try {
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
-    }
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-    }
-  } catch (_) {
-    // ignore — reload anyway
-  }
-  window.location.reload();
-}
+import { isChunkLoadError, claimAutoReload, clearSwAndReload } from '../lib/chunkErrors';
+import { isViewerAdmin } from '../lib/errorViewer';
+import AdminErrorDetails from './errors/AdminErrorDetails';
 
 interface Props {
   children: ReactNode;
@@ -28,27 +16,12 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
-  showDetails: boolean;
-}
-
-// Détecte les erreurs spécifiques de chargement de chunk lazy (réseau flaky, deploy en cours)
-function isChunkLoadError(error: Error | null): boolean {
-  if (!error) return false;
-  const msg = error.message || '';
-  const name = error.name || '';
-  return (
-    name === 'ChunkLoadError' ||
-    /Loading chunk \d+ failed/i.test(msg) ||
-    /Failed to fetch dynamically imported module/i.test(msg) ||
-    /error loading dynamically imported module/i.test(msg) ||
-    /is not a valid javascript mime type/i.test(msg)
-  );
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null, showDetails: false };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -60,16 +33,9 @@ export default class ErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
 
     // Pour les chunk-load errors : tentative auto de rechargement après court délai (one-shot)
-    if (isChunkLoadError(error)) {
-      const KEY = 'afribourse_chunk_reload_attempt';
-      const lastAttempt = Number(sessionStorage.getItem(KEY) || 0);
-      const now = Date.now();
-      // Anti-boucle : pas plus d'un reload auto par 30s
-      if (now - lastAttempt > 30_000) {
-        sessionStorage.setItem(KEY, String(now));
-        console.info('[ErrorBoundary] chunk-load error détecté, SW clear + rechargement automatique');
-        setTimeout(() => clearSwAndReload(), 600);
-      }
+    if (isChunkLoadError(error) && claimAutoReload()) {
+      console.info('[ErrorBoundary] chunk-load error détecté, SW clear + rechargement automatique');
+      setTimeout(() => clearSwAndReload(), 600);
     }
   }
 
@@ -79,69 +45,50 @@ export default class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      const { error, errorInfo, showDetails } = this.state;
+      const { error, errorInfo } = this.state;
       const chunkLoad = isChunkLoadError(error);
 
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
-          <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 sm:p-8">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
-              Une erreur est survenue
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              {chunkLoad ? 'Nouvelle version disponible' : 'Oups, un petit souci'}
             </h2>
-            <p className="text-gray-600 mb-4 text-sm text-center">
+            <p className="text-gray-600 mb-6 text-sm">
               {chunkLoad
-                ? 'Un module de l\'application n\'a pas pu être chargé. Cela peut arriver après une mise à jour ou avec une connexion instable. Rechargez la page.'
-                : 'Un problème temporaire est apparu. Rechargez la page pour continuer.'}
+                ? 'AfriBourse vient d’être mis à jour. Rechargez la page pour continuer.'
+                : 'L’application a rencontré un problème temporaire. Rechargez la page : vos données sont en sécurité.'}
             </p>
 
-            {error && (
-              <div className="mb-4">
-                <button
-                  type="button"
-                  onClick={() => this.setState({ showDetails: !showDetails })}
-                  className="text-xs text-gray-500 hover:text-gray-700 underline"
-                >
-                  {showDetails ? 'Masquer les détails' : 'Afficher les détails techniques'}
-                </button>
-                {showDetails && (
-                  <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 break-words">
-                    <div className="font-semibold mb-1">{error.name || 'Error'}</div>
-                    <div className="font-mono whitespace-pre-wrap">{error.message}</div>
-                    {error.stack && (
-                      <details className="mt-2">
-                        <summary className="cursor-pointer text-gray-500">Stack</summary>
-                        <pre className="mt-1 text-[10px] overflow-x-auto whitespace-pre-wrap">{error.stack}</pre>
-                      </details>
-                    )}
-                    {errorInfo?.componentStack && (
-                      <details className="mt-2">
-                        <summary className="cursor-pointer text-gray-500">Composants</summary>
-                        <pre className="mt-1 text-[10px] overflow-x-auto whitespace-pre-wrap">{errorInfo.componentStack}</pre>
-                      </details>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => (chunkLoad ? clearSwAndReload() : window.location.reload())}
+                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Recharger la page
+              </button>
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/'; }}
+                className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Retour à l’accueil
+              </button>
+            </div>
 
-            <button
-              onClick={() => {
-                this.setState({ hasError: false, error: null, errorInfo: null });
-                if (isChunkLoadError(this.state.error)) {
-                  clearSwAndReload();
-                } else {
-                  window.location.reload();
-                }
-              }}
-              className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Recharger la page
-            </button>
+            <p className="text-xs text-gray-400 mt-5">
+              Le problème persiste ? <a href="/contact" className="underline hover:text-gray-600">Contactez-nous</a>
+            </p>
+
+            {error && isViewerAdmin() && (
+              <AdminErrorDetails error={error} componentStack={errorInfo?.componentStack} />
+            )}
           </div>
         </div>
       );

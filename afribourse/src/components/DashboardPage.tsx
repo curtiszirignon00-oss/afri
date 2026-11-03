@@ -199,7 +199,7 @@ export default function DashboardPage() {
       const [profileData, watchlistItems, transactionsData, indicesData, rankData, learningData] = await Promise.all([
         apiFetch<any>('/users/me').catch(err => {
           console.error('Profile fetch error:', err);
-          if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          if (err.status === 401 || err.message.includes('401') || err.message.includes('Unauthorized')) {
             navigate('/login');
             throw err;
           }

@@ -11,6 +11,7 @@ import { Component, ErrorInfo, ReactNode } from 'react';
 interface Props {
   children: ReactNode;
   name?: string; // pour les logs
+  fallback?: ReactNode; // rendu de secours (null par défaut)
 }
 
 interface State {
@@ -33,7 +34,7 @@ export default class SilentErrorBoundary extends Component<Props, State> {
   }
 
   render() {
-    if (this.state.hasError) return null;
+    if (this.state.hasError) return this.props.fallback ?? null;
     return this.props.children;
   }
 }

@@ -4,6 +4,7 @@ import { setAuthToken, getAuthToken, setRefreshToken, getRefreshToken } from '..
 import * as amplitude from '@amplitude/unified';
 import { trackLogout } from '../lib/amplitude';
 import { metaPixelIdentify } from '../utils/metaPixel';
+import { setViewerIsAdmin } from '../lib/errorViewer';
 
 // --- Types ---
 interface UserProfile {
@@ -89,6 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isLoggedInRef = useRef(initialHasSession);
   // Vrai uniquement après qu'un checkAuth() ait réussi — empêche "session expirée" pendant la phase optimiste
   const authConfirmedRef = useRef(false);
+
+  // Rôle recopié pour l'ErrorBoundary global (monté au-dessus de ce provider)
+  useEffect(() => {
+    setViewerIsAdmin(userProfile?.role === 'admin');
+  }, [userProfile?.role]);
 
   // Planifie un refresh proactif du token avant son expiration
   const scheduleTokenRefresh = (issuedAt: number = Date.now()) => {

@@ -23,6 +23,7 @@ import { NudgeProvider } from './contexts/NudgeContext';
 // Error Boundary
 import ErrorBoundary from './components/ErrorBoundary';
 import SilentErrorBoundary from './components/SilentErrorBoundary';
+import RouteErrorBoundary from './components/RouteErrorBoundary';
 
 // Composants chemin critique (eager) — visibles dès le premier paint
 import Header from './components/Header';
@@ -145,6 +146,18 @@ function RouteLoader() {
   );
 }
 
+// En-tête minimal si le vrai Header crashe : on garde au moins un moyen de naviguer
+function FallbackHeader() {
+  return (
+    <header className="fixed top-0 inset-x-0 z-40 h-16 bg-white border-b border-gray-200 flex items-center px-4">
+      <a href="/" className="flex items-center gap-2 font-bold text-gray-900">
+        <TrendingUp className="w-6 h-6 text-blue-600" />
+        AfriBourse
+      </a>
+    </header>
+  );
+}
+
 // Composant Layout pour le Header et Footer
 function Layout() {
   const location = useLocation();
@@ -171,19 +184,28 @@ function Layout() {
       <Toaster position="top-center" />
       <ScrollToTop />
 
+      {/* Popups globaux isolés : leur crash ne doit jamais emporter toute l'app */}
       {/* Popup de bienvenue pour les utilisateurs récupérés */}
       {isLoggedIn && showWelcomePopup && (
-        <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
+        <SilentErrorBoundary name="WelcomePopup">
+          <WelcomePopup onClose={() => setShowWelcomePopup(false)} />
+        </SilentErrorBoundary>
       )}
 
       {/* Annonce webinaires — affiché une fois par utilisateur connecté */}
-      <WebinarAnnouncementPopup />
+      <SilentErrorBoundary name="WebinarAnnouncementPopup">
+        <WebinarAnnouncementPopup />
+      </SilentErrorBoundary>
 
       {/* Popup certificat — affiché à la connexion si certificat en attente */}
-      <CertificatePopup />
+      <SilentErrorBoundary name="CertificatePopup">
+        <CertificatePopup />
+      </SilentErrorBoundary>
 
       {/* Modal session expirée — affiché globalement, hors flux de pages */}
-      <SessionExpiredModal />
+      <SilentErrorBoundary name="SessionExpiredModal">
+        <SessionExpiredModal />
+      </SilentErrorBoundary>
 
       {/* Onboarding guidé nouveaux utilisateurs — global, persistant entre les pages */}
       <SilentErrorBoundary name="OnboardingChecklist">
@@ -202,8 +224,16 @@ function Layout() {
         </Suspense>
       </SilentErrorBoundary>
 
-      {showLayout && <Header />}
-      {showLayout && <MobileBottomNav />}
+      {showLayout && (
+        <SilentErrorBoundary name="Header" fallback={<FallbackHeader />}>
+          <Header />
+        </SilentErrorBoundary>
+      )}
+      {showLayout && (
+        <SilentErrorBoundary name="MobileBottomNav">
+          <MobileBottomNav />
+        </SilentErrorBoundary>
+      )}
 
       {/* Discovery survey popup for users who haven't completed it */}
       <SilentErrorBoundary name="SurveyPopup">
@@ -217,6 +247,7 @@ function Layout() {
       <div className={glass ? 'glass-theme flex-grow flex flex-col' : 'contents'}>
       <main className="flex-grow pb-16 lg:pb-0" style={{ paddingTop: 'var(--app-top-h, 4rem)' }}>
         <DefaultCanonical />
+        <RouteErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<RouteLoader />}>
           <Routes>
           {/* Routes publiques */}
@@ -430,6 +461,7 @@ function Layout() {
           <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
+        </RouteErrorBoundary>
       </main>
 
       {showLayout && (

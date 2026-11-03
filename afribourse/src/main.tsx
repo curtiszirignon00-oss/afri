@@ -1,5 +1,8 @@
 // src/main.tsx
+// DOIT rester le premier import : polyfills + stockage de secours pour les vieux mobiles
+import './lib/polyfills'
 import * as amplitude from '@amplitude/unified'
+import { claimAutoReload } from './lib/chunkErrors'
 import { captureUTMParams } from './lib/amplitude'
 import { applyTranslateSurvivalPatch } from './lib/translateSurvivalPatch'
 
@@ -17,13 +20,9 @@ captureUTMParams()
 
 // Après un deploy, un onglet ouvert référence d'anciens chunks qui n'existent
 // plus : Vite émet vite:preloadError avant même que React ne voie l'erreur.
-// On recharge une fois (anti-boucle 30 s, même clé que l'ErrorBoundary).
+// On recharge une fois (anti-boucle 30 s partagée avec lazyWithRetry et l'ErrorBoundary).
 window.addEventListener('vite:preloadError', (event) => {
-  const KEY = 'afribourse_chunk_reload_attempt'
-  try {
-    if (Date.now() - Number(sessionStorage.getItem(KEY) || 0) < 30_000) return
-    sessionStorage.setItem(KEY, String(Date.now()))
-  } catch { /* stockage indisponible : on recharge quand même */ }
+  if (!claimAutoReload()) return
   event.preventDefault()
   window.location.reload()
 })

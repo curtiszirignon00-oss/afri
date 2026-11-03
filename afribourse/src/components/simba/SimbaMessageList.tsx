@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Lock, ThumbsDown, ThumbsUp, Zap } from 'lucide-react';
 import type { SimbaUIMessage } from '../../hooks/useSimbaChat';
+import SilentErrorBoundary from '../SilentErrorBoundary';
 
 // Classes Tailwind écrites en entier (pas de concaténation) pour être conservées au build
 const ACCENTS = {
@@ -55,12 +56,23 @@ const MARKDOWN_COMPONENTS = {
   ),
 };
 
+// remark-gfm (autolien des emails) construit une regex avec lookbehind à chaque parse :
+// Safari < 16.4 (iPhone bloqués en iOS 15) jette une SyntaxError en plein rendu.
+// Sans GFM, on perd seulement tableaux/barré/autoliens — le reste du markdown s'affiche.
+const SUPPORTS_LOOKBEHIND = (() => {
+  try { new RegExp('(?<=a)b'); return true; } catch { return false; }
+})();
+const REMARK_PLUGINS = SUPPORTS_LOOKBEHIND ? [remarkGfm] : [];
+
 export function SimbaMarkdown({ text }: { text: string }) {
   return (
     <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-headings:mt-3 prose-headings:mb-1.5 prose-headings:text-sm text-slate-700">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS as any}>
-        {text}
-      </ReactMarkdown>
+      {/* key={text} : la boundary retente le markdown à chaque nouveau morceau du flux */}
+      <SilentErrorBoundary key={text} name="SimbaMarkdown" fallback={<p className="whitespace-pre-wrap">{text}</p>}>
+        <ReactMarkdown remarkPlugins={REMARK_PLUGINS} components={MARKDOWN_COMPONENTS as any}>
+          {text}
+        </ReactMarkdown>
+      </SilentErrorBoundary>
     </div>
   );
 }

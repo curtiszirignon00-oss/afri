@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { API_BASE_URL, getCsrfToken, fetchCsrfToken, getAuthToken } from '../config/api';
 import { SESSION_EXPIRED_EVENT } from '../contexts/AuthContext';
 import { RateLimitError } from '../lib/errors';
+import { toUserMessage, NETWORK_MESSAGE, UNAVAILABLE_MESSAGE } from '../lib/userFacingError';
 
 // ========================================
 // 🔧 FONCTION UTILITAIRE FETCH
@@ -42,11 +43,18 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
   };
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    credentials: 'include', // Cookie httpOnly envoyé automatiquement
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...fetchOptions,
+      credentials: 'include', // Cookie httpOnly envoyé automatiquement
+      headers,
+    });
+  } catch (networkErr) {
+    // « Failed to fetch » / « Load failed » → message lisible (souvent affiché tel quel en toast)
+    console.warn('[apiFetch] erreur réseau', endpoint, networkErr);
+    throw new Error(NETWORK_MESSAGE);
+  }
 
   // Retry automatique si token CSRF expiré (403) — renouvelle et retente une fois
   if (response.status === 403 && isMutation) {
@@ -56,7 +64,10 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
     const retryResponse = await fetch(url, { ...fetchOptions, credentials: 'include', headers });
     if (!retryResponse.ok) {
       const errorData = await retryResponse.json().catch(() => ({}));
-      throw new Error(errorData.error || errorData.message || `Erreur ${retryResponse.status}`);
+      throw new Error(toUserMessage({
+        status: retryResponse.status,
+        message: errorData.error || errorData.message || `Erreur ${retryResponse.status}`,
+      }));
     }
     return retryResponse.json();
   }
@@ -81,13 +92,20 @@ export async function apiFetch<T>(endpoint: string, options: FetchOptions = {}):
       throw new RateLimitError(method === 'GET');
     }
 
-    const errorMessage = errorData.error || errorData.message || `Erreur ${response.status}`;
+    // Message métier du serveur conservé ; 5xx, 401 et messages techniques traduits
+    const errorMessage = toUserMessage({
+      status: response.status,
+      message: errorData.error || errorData.message || `Erreur ${response.status}`,
+    });
     const err = new Error(errorMessage);
     (err as any).status = response.status;
     throw err;
   }
 
-  return response.json();
+  // HTML au lieu de JSON (cold start Render, portail captif opérateur…)
+  return response.json().catch(() => {
+    throw new Error(UNAVAILABLE_MESSAGE);
+  });
 }
 
 // ========================================

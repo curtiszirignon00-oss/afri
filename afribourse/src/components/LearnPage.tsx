@@ -37,6 +37,8 @@ import { useCreatePost } from '../hooks/useSocial';
 import confetti from 'canvas-confetti';
 import PremiumPaywall from './PremiumPaywall';
 import { AITutor } from './AITutor';
+import SilentErrorBoundary from './SilentErrorBoundary';
+import { toUserMessage } from '../lib/userFacingError';
 import { BlockRenderer } from './BlockRenderer';
 import { ContentBlock } from '../data/brvm2026News';
 import { useAnalytics, ACTION_TYPES } from '../hooks/useAnalytics';
@@ -348,7 +350,7 @@ export default function LearnPage() {
 
         } catch (err: any) {
             console.error('Erreur chargement données:', err);
-            setError(err.message || "Une erreur est survenue.");
+            setError(toUserMessage(err, 'Impossible de charger les modules. Réessayez.'));
             setModules([]);
             setAllModules([]);
             setProgress([]);
@@ -490,7 +492,7 @@ export default function LearnPage() {
             }
 
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || 'Erreur lors de la soumission du quiz');
             }
 
@@ -608,7 +610,7 @@ export default function LearnPage() {
 
         } catch (error: any) {
             console.error('Erreur lors de la soumission du quiz:', error);
-            toast.error(error.message || 'Erreur lors de la soumission du quiz', { id: toastId });
+            toast.error(toUserMessage(error, 'Erreur lors de la soumission du quiz. Réessayez.'), { id: toastId });
         }
     }, [selectedModule, quizState.answers, loadData, progress, triggerSimbaMotivation, trackAction]);
 
@@ -772,7 +774,7 @@ export default function LearnPage() {
             // Rollback si l'API échoue
             setProgress(previousProgress);
             console.error('Erreur complétion:', err);
-            toast.error(err?.message || "Erreur lors du marquage du module.");
+            toast.error(toUserMessage(err, "Le module n'a pas pu être marqué comme terminé. Réessayez."));
         }
     }, [isLoggedIn, loadData, selectedModule, trackAction, triggerSimbaMotivation]);
 
@@ -1427,6 +1429,7 @@ export default function LearnPage() {
                     {!showAITutor && !quizState.isActive && !quizState.showResults && (
                         <button
                             onClick={() => setShowAITutor(true)}
+                            aria-label="Ouvrir le Tuteur IA"
                             className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-white p-3 sm:p-4 rounded-full shadow-xl border border-slate-100 text-blue-600 hover:text-blue-700 transition-transform hover:scale-110 z-40 group"
                         >
                             <MessageSquarePlus className="w-6 h-6" />
@@ -1436,7 +1439,9 @@ export default function LearnPage() {
                         </button>
                     )}
 
-                    {/* Composant AI Tutor — fermé automatiquement pendant le quiz */}
+                    {/* Composant AI Tutor — fermé automatiquement pendant le quiz.
+                        Isolé : un crash du tuteur ne doit pas emporter la leçon. */}
+                    <SilentErrorBoundary name="AITutor">
                     <AITutor
                         userContext={{
                             currentModule: selectedModule?.title,
@@ -1448,6 +1453,7 @@ export default function LearnPage() {
                         isOpen={showAITutor && !quizState.isActive && !quizState.showResults}
                         onClose={() => { setShowAITutor(false); setIsMotivationMode(false); }}
                     />
+                    </SilentErrorBoundary>
 
                     {/* Paywall Premium pour Coach IA */}
                     <PremiumPaywall

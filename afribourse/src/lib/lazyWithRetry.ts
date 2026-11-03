@@ -1,4 +1,5 @@
 import { ComponentType, lazy } from 'react';
+import { isChunkLoadError, claimAutoReload, clearSwAndReload } from './chunkErrors';
 
 // Wrapper autour de React.lazy avec retry réseau et auto-reload après deploy.
 //
@@ -11,41 +12,7 @@ import { ComponentType, lazy } from 'react';
 //    l'index.html à jour.
 //
 // Stratégie : 1 retry après 500ms. Si l'erreur persiste ET ressemble à un chunk-load,
-// on déclenche un window.location.reload() (one-shot par session, anti-boucle).
-
-const RELOAD_FLAG = 'afribourse_lazy_reload_attempt';
-
-function isChunkLoadError(err: unknown): boolean {
-  if (!err || typeof err !== 'object') return false;
-  const e = err as { name?: string; message?: string };
-  const msg = e.message || '';
-  return (
-    e.name === 'ChunkLoadError' ||
-    /Loading chunk \d+ failed/i.test(msg) ||
-    /Failed to fetch dynamically imported module/i.test(msg) ||
-    /error loading dynamically imported module/i.test(msg) ||
-    /is not a valid javascript mime type/i.test(msg)
-  );
-}
-
-// Unregister SW + clear all caches before reloading so the SW can't re-serve
-// stale HTML for JS chunk requests (iOS WebKit rejects text/html for ES modules).
-async function clearSwAndReload(): Promise<never> {
-  try {
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
-    }
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-    }
-  } catch (_) {
-    // ignore — reload anyway
-  }
-  window.location.reload();
-  return new Promise(() => {}) as never;
-}
+// on déclenche un window.location.reload() (one-shot, anti-boucle partagée — cf. chunkErrors).
 
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>
@@ -61,13 +28,9 @@ export function lazyWithRetry<T extends ComponentType<any>>(
         return await factory();
       } catch (err2) {
         // Second échec : si c'est un chunk-load (probable deploy/cache stale), on recharge
-        if (isChunkLoadError(err2) && typeof window !== 'undefined') {
-          const last = Number(sessionStorage.getItem(RELOAD_FLAG) || 0);
-          if (Date.now() - last > 30_000) {
-            sessionStorage.setItem(RELOAD_FLAG, String(Date.now()));
-            console.error('[lazyWithRetry] chunk introuvable après retry, reload SW+cache clear');
-            return clearSwAndReload();
-          }
+        if (isChunkLoadError(err2) && typeof window !== 'undefined' && claimAutoReload()) {
+          console.error('[lazyWithRetry] chunk introuvable après retry, reload SW+cache clear');
+          return clearSwAndReload();
         }
         throw err2;
       }
