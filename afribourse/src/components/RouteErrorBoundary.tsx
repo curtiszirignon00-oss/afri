@@ -8,6 +8,7 @@ import { AlertTriangle, ArrowLeft, Home, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { isChunkLoadError, clearSwAndReload } from '../lib/chunkErrors';
 import AdminErrorDetails from './errors/AdminErrorDetails';
+import { reportClientError } from '../lib/errorReporter';
 
 interface Props {
   children: ReactNode;
@@ -18,11 +19,12 @@ interface Props {
 interface State {
   error: Error | null;
   componentStack: string | null;
+  code: string | null;
   retries: number;
 }
 
 export default class RouteErrorBoundary extends Component<Props, State> {
-  state: State = { error: null, componentStack: null, retries: 0 };
+  state: State = { error: null, componentStack: null, code: null, retries: 0 };
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
@@ -30,26 +32,29 @@ export default class RouteErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('[RouteErrorBoundary]', error, info?.componentStack);
-    this.setState({ componentStack: info?.componentStack ?? null });
+    // Chunk après deploy : attendu, pas un bug → pas de remontée
+    const code = isChunkLoadError(error) ? null : reportClientError(error, 'route', info?.componentStack);
+    this.setState({ componentStack: info?.componentStack ?? null, code });
   }
 
   componentDidUpdate(prev: Props) {
     if (prev.resetKey !== this.props.resetKey && this.state.error) {
-      this.setState({ error: null, componentStack: null, retries: 0 });
+      this.setState({ error: null, componentStack: null, code: null, retries: 0 });
     }
   }
 
   private retry = () => {
-    this.setState((s) => ({ error: null, componentStack: null, retries: s.retries + 1 }));
+    this.setState((s) => ({ error: null, componentStack: null, code: null, retries: s.retries + 1 }));
   };
 
   render() {
-    const { error, componentStack, retries } = this.state;
+    const { error, componentStack, code, retries } = this.state;
     if (!error) return this.props.children;
     return (
       <RouteErrorFallback
         error={error}
         componentStack={componentStack}
+        code={code}
         // Après deux essais infructueux, un rechargement complet a plus de chances de réussir
         onRetry={retries < 2 && !isChunkLoadError(error) ? this.retry : null}
       />
@@ -60,10 +65,12 @@ export default class RouteErrorBoundary extends Component<Props, State> {
 function RouteErrorFallback({
   error,
   componentStack,
+  code,
   onRetry,
 }: {
   error: Error;
   componentStack: string | null;
+  code: string | null;
   onRetry: (() => void) | null;
 }) {
   const navigate = useNavigate();
@@ -114,6 +121,7 @@ function RouteErrorFallback({
 
         <p className="text-xs text-gray-400 mt-5">
           Le problème persiste ? <a href="/contact" className="underline hover:text-gray-600">Contactez-nous</a>
+          {code && <> en indiquant le code <span className="font-mono font-semibold text-gray-500">{code}</span></>}
         </p>
 
         {isAdmin && <AdminErrorDetails error={error} componentStack={componentStack} />}

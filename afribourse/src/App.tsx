@@ -1,6 +1,6 @@
 // src/App.tsx
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -62,6 +62,7 @@ const PrivacyPage = lazy(() => import('./components/PrivacyPage'));
 const NotFoundPage = lazy(() => import('./components/NotFoundPage'));
 const HelpCenterPage = lazy(() => import('./components/HelpCenterPage'));
 const SubscriptionPage = lazy(() => import('./components/SubscriptionPage'));
+const PremiumWaitlistPage = lazy(() => import('./pages/PremiumWaitlistPage'));
 const CheckoutPage = lazy(() => import('./components/CheckoutPage'));
 const DashboardPage = lazy(() => import('./components/DashboardPage'));
 const TransactionsPage = lazy(() => import('./components/TransactionsPage'));
@@ -285,7 +286,8 @@ function Layout() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/help" element={<HelpCenterPage />} />
-          <Route path="/subscriptions" element={<Navigate to="/" replace />} />
+          {/* Abonnement Premium indisponible pour le moment → liste d'attente */}
+          <Route path="/subscriptions" element={<PremiumWaitlistPage />} />
           <Route path="/essai-gratuit" element={<TrialClaimPage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/communities" element={<CommunitiesPage />} />

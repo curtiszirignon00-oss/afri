@@ -2807,3 +2807,32 @@ model FeatureAnnouncement {
   @@unique([userId, feature])
   @@map("feature_announcements")
 }
+
+// ================================================================
+// ERREURS CLIENT (front) — remontées automatiquement, groupées par empreinte
+// Alimenté par POST /api/client-errors, consulté dans le dashboard admin.
+// ================================================================
+model ClientError {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  fingerprint String   @unique // sha1(kind|name|message normalisé|1re frame normalisée)
+  kind        String // render | route | silent | window | unhandledrejection
+  name        String?
+  message     String
+  stack       String? // dernière occurrence (tronquée)
+  componentStack String?
+  route       String // dernier chemin où l'erreur est survenue
+  release     String? // hash du bundle index-*.js
+  count       Int      @default(1)
+  userIds     String[] // utilisateurs touchés (plafonné à 50)
+  codes       String[] // derniers codes AB-XXXX montrés aux utilisateurs (plafonné à 30)
+  lastUserEmail String?
+  lastUserAgent String?
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  firstSeen   DateTime @default(now())
+  lastSeen    DateTime @default(now())
+
+  @@index([resolved, lastSeen])
+  @@index([codes])
+  @@map("client_errors")
+}

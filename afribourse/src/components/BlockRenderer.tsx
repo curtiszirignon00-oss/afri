@@ -2,6 +2,7 @@ import React from 'react';
 import { ContentBlock } from '../data/brvm2026News';
 import { ChartById } from './charts/SGBCICharts';
 import InvestorProfileQuiz from './InvestorProfileQuiz';
+import SilentErrorBoundary from './SilentErrorBoundary';
 
 // variant 'news' = panneau latéral compact (texte xs/sm)
 // variant 'module' = lecture pleine page (texte sm/base, espacement généreux)
@@ -14,11 +15,22 @@ interface Props {
 }
 
 export function BlockRenderer({ blocks, variant = 'news', onModuleComplete }: Props) {
+  // Chaque bloc est isolé : un bloc mal saisi (liste sans items, tableau sans rows…)
+  // est ignoré au lieu de faire tomber tout le module ou l'article.
   return (
     <div className={`space-y-${variant === 'module' ? '5' : '3'}`}>
-      {blocks.map((block, i) => renderBlock(block, i, variant, onModuleComplete))}
+      {(blocks ?? []).filter(Boolean).map((block, i) => (
+        <SilentErrorBoundary key={i} name={`Block:${block.type}`}>
+          <SafeBlock block={block} index={i} variant={variant} onModuleComplete={onModuleComplete} />
+        </SilentErrorBoundary>
+      ))}
     </div>
   );
+}
+
+// renderBlock doit s'exécuter DANS la boundary (comme composant enfant), pas pendant le rendu du parent
+function SafeBlock({ block, index, variant, onModuleComplete }: { block: ContentBlock; index: number; variant: Variant; onModuleComplete?: () => void }) {
+  return <>{renderBlock(block, index, variant, onModuleComplete)}</>;
 }
 
 function renderBlock(block: ContentBlock, i: number, v: Variant, onModuleComplete?: () => void): React.ReactNode {

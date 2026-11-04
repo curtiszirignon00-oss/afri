@@ -6,6 +6,7 @@ import { Component, ErrorInfo, ReactNode } from 'react';
 import { isChunkLoadError, claimAutoReload, clearSwAndReload } from '../lib/chunkErrors';
 import { isViewerAdmin } from '../lib/errorViewer';
 import AdminErrorDetails from './errors/AdminErrorDetails';
+import { reportClientError } from '../lib/errorReporter';
 
 interface Props {
   children: ReactNode;
@@ -16,12 +17,13 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  code: string | null;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, error: null, errorInfo: null, code: null };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -30,7 +32,8 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('[ErrorBoundary]', error, errorInfo);
-    this.setState({ errorInfo });
+    const code = isChunkLoadError(error) ? null : reportClientError(error, 'render', errorInfo?.componentStack);
+    this.setState({ errorInfo, code });
 
     // Pour les chunk-load errors : tentative auto de rechargement après court délai (one-shot)
     if (isChunkLoadError(error) && claimAutoReload()) {
@@ -45,7 +48,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
-      const { error, errorInfo } = this.state;
+      const { error, errorInfo, code } = this.state;
       const chunkLoad = isChunkLoadError(error);
 
       return (
@@ -84,6 +87,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
             <p className="text-xs text-gray-400 mt-5">
               Le problème persiste ? <a href="/contact" className="underline hover:text-gray-600">Contactez-nous</a>
+              {code && <> en indiquant le code <span className="font-mono font-semibold text-gray-500">{code}</span></>}
             </p>
 
             {error && isViewerAdmin() && (

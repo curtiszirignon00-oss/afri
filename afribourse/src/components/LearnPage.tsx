@@ -170,11 +170,13 @@ export default function LearnPage() {
 
     const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
     const [quizLoading, setQuizLoading] = useState(false);
+    const [quizSubmitting, setQuizSubmitting] = useState(false);
+    const submittingQuizRef = useRef(false);
+    const completingRef = useRef(false);
     const [quizPassingScore, setQuizPassingScore] = useState(70);
 
     const [showAITutor, setShowAITutor] = useState(false);
     const [isMotivationMode, setIsMotivationMode] = useState(false);
-    const [showPremiumPaywall, setShowPremiumPaywall] = useState(false);
     const [showModulePaywall, setShowModulePaywall] = useState(false);
     const [showCertificate, setShowCertificate] = useState(false);
     const [showCertPaywall, setShowCertPaywall] = useState(false);
@@ -259,7 +261,7 @@ export default function LearnPage() {
             case 'debutant': return 'Débutant';
             case 'intermediaire': return 'Intermédiaire';
             case 'avance': return 'Avancé';
-            default: return level.charAt(0).toUpperCase() + level.slice(1);
+            default: return level ? level.charAt(0).toUpperCase() + level.slice(1) : '';
         }
     };
 
@@ -303,7 +305,9 @@ export default function LearnPage() {
             }
             const quizData = await response.json();
 
-            setQuizQuestions(quizData.questions || []);
+            // Question sans id ou sans options = quiz bloqué ou crash au rendu : on l'écarte
+            const questions = Array.isArray(quizData?.questions) ? quizData.questions : [];
+            setQuizQuestions(questions.filter((q: any) => q?.id && Array.isArray(q.options)));
             setQuizPassingScore(quizData.passing_score || 70);
         } catch (error) {
             console.error('Erreur lors du chargement du quiz:', error);
@@ -362,6 +366,19 @@ export default function LearnPage() {
     useEffect(() => {
         loadData();
     }, [loadData]);
+
+    // Session restaurée après le premier chargement (iOS : le token n'est en mémoire
+    // qu'après /me) → la progression avait été chargée « anonyme » (vide = modules
+    // verrouillés). On la recharge en silence dès que l'utilisateur est connu.
+    // Si le profil était déjà connu au montage, le token l'était aussi : pas de rechargement.
+    const progressUserRef = useRef<string | null>(userProfile?.id ?? null);
+    useEffect(() => {
+        const id = userProfile?.id ?? null;
+        if (id && id !== progressUserRef.current) {
+            progressUserRef.current = id;
+            loadData(true);
+        }
+    }, [userProfile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Détection rétroactive : si un module est déjà complété quand l'onboarding démarre
     useEffect(() => {
@@ -474,6 +491,10 @@ export default function LearnPage() {
 
     const submitQuiz = useCallback(async () => {
         if (!selectedModule) return;
+        // Double tap = 2 tentatives consommées côté serveur (max 2 / 8 h) : verrou immédiat
+        if (submittingQuizRef.current) return;
+        submittingQuizRef.current = true;
+        setQuizSubmitting(true);
 
         const toastId = toast.loading('Validation du quiz en cours...');
 
@@ -534,14 +555,16 @@ export default function LearnPage() {
                     colors: ['#4ADE80', '#22C55E', '#3B82F6', '#8B5CF6']
                 });
 
-                // Show XP gain toast
-                const xpGained = result.score === 100 ? 100 : 50;
-                showXPGainToast({
-                    xpGained,
-                    bonusXP: result.score === 100 ? { reason: 'Quiz parfait', amount: 50 } : undefined,
-                    newAchievements: result.newAchievements || [],
-                    levelUp: result.levelUp || undefined
-                });
+                // XP réellement crédités par le backend (0 si le module était déjà validé)
+                const xpGained: number = result.gamification?.xpGained ?? 0;
+                if (xpGained > 0) {
+                    showXPGainToast({
+                        xpGained,
+                        bonusXP: result.gamification?.bonusXP ?? undefined,
+                        newAchievements: result.gamification?.newAchievements || [],
+                        levelUp: result.levelUp || undefined
+                    });
+                }
 
                 // Célébrations selon contexte
                 const completedBefore = progress.filter(p => p.is_completed && p.quiz_score != null).length;
@@ -611,6 +634,9 @@ export default function LearnPage() {
         } catch (error: any) {
             console.error('Erreur lors de la soumission du quiz:', error);
             toast.error(toUserMessage(error, 'Erreur lors de la soumission du quiz. Réessayez.'), { id: toastId });
+        } finally {
+            submittingQuizRef.current = false;
+            setQuizSubmitting(false);
         }
     }, [selectedModule, quizState.answers, loadData, progress, triggerSimbaMotivation, trackAction]);
 
@@ -670,6 +696,10 @@ export default function LearnPage() {
             toast.error("Connectez-vous pour marquer un module comme terminé.");
             return;
         }
+        // Double tap / déjà terminé : ne pas rejouer toasts, XP et célébrations
+        if (completingRef.current) return;
+        if (progress.some(p => p.module.slug === moduleSlug && p.is_completed)) return;
+        completingRef.current = true;
 
         // Sauvegarde pour rollback éventuel
         const previousProgress = progress;
@@ -775,8 +805,10 @@ export default function LearnPage() {
             setProgress(previousProgress);
             console.error('Erreur complétion:', err);
             toast.error(toUserMessage(err, "Le module n'a pas pu être marqué comme terminé. Réessayez."));
+        } finally {
+            completingRef.current = false;
         }
-    }, [isLoggedIn, loadData, selectedModule, trackAction, triggerSimbaMotivation]);
+    }, [isLoggedIn, loadData, selectedModule, trackAction, triggerSimbaMotivation, progress, allModules]);
 
     useEffect(() => {
         if (selectedModule && (selectedModule.order_index ?? 0) >= 1 && (selectedModule.order_index ?? 0) !== 13) {
@@ -1043,10 +1075,19 @@ export default function LearnPage() {
                                         </div>
                                     )}
 
+                                    {/* Nouvelle série de questions en cours de chargement (« Réessayer ») :
+                                        on n'affiche pas l'ancienne série, sinon les réponses mélangent les deux */}
+                                    {quizState.isActive && quizLoading && (
+                                        <div className="py-12 text-center">
+                                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
+                                            <p className="text-gray-600">Chargement des questions...</p>
+                                        </div>
+                                    )}
+
                                     {/* Quiz en cours */}
                                     {(() => {
                                         const currentIndex = Object.keys(quizState.answers).length;
-                                        return quizState.isActive && currentIndex < quizQuestions.length && (
+                                        return quizState.isActive && !quizLoading && currentIndex < quizQuestions.length && (
                                             <div id="quiz-container" className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border-2 border-indigo-200">
                                                 <div className="mb-6">
                                                     <div className="flex items-center justify-between mb-4">
@@ -1092,7 +1133,7 @@ export default function LearnPage() {
                                     })()}
 
                                     {/* Bouton soumettre */}
-                                    {quizState.isActive && Object.keys(quizState.answers).length === quizQuestions.length && (
+                                    {quizState.isActive && !quizLoading && quizQuestions.length > 0 && Object.keys(quizState.answers).length === quizQuestions.length && (
                                         <div className="bg-white rounded-2xl shadow-xl p-8 text-center border-2 border-green-200">
                                             <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
                                             <h4 className="text-2xl font-bold text-gray-900 mb-3">
@@ -1103,10 +1144,11 @@ export default function LearnPage() {
                                             </p>
                                             <button
                                                 onClick={submitQuiz}
-                                                className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold text-lg shadow-lg"
+                                                disabled={quizSubmitting}
+                                                className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-semibold text-lg shadow-lg disabled:opacity-60 disabled:cursor-wait"
                                             >
                                                 <Target className="w-6 h-6" />
-                                                <span>Voir mon score</span>
+                                                <span>{quizSubmitting ? 'Validation…' : 'Voir mon score'}</span>
                                             </button>
                                         </div>
                                     )}
@@ -1145,7 +1187,7 @@ export default function LearnPage() {
                                                             {quizState.score}%
                                                         </div>
                                                         <p className="text-gray-600">
-                                                            Minimum requis: <strong>70%</strong>
+                                                            Minimum requis: <strong>{quizPassingScore}%</strong>
                                                         </p>
                                                     </>
                                                 )}
@@ -1340,7 +1382,7 @@ export default function LearnPage() {
                         {!quizState.isActive && !quizState.showResults && (
                         <div className="px-4 sm:px-8 py-3 sm:py-4 bg-blue-50 border-t border-blue-100">
                             <button
-                                onClick={() => setShowPremiumPaywall(true)}
+                                onClick={() => setShowAITutor(true)}
                                 className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
                             >
                                 <HelpCircle className="w-5 h-5" />
@@ -1352,7 +1394,8 @@ export default function LearnPage() {
                         {/* Commentaires du module - Cachés pendant le quiz et les résultats */}
                         {!quizState.isActive && !quizState.showResults && (
                         <div className="px-4 sm:px-8 py-4">
-                            <ArticleInteractions articleId={selectedModule.id} />
+                            {/* key : repartir de zéro à chaque module (sinon les commentaires du module précédent restent affichés) */}
+                            <ArticleInteractions key={selectedModule.id} articleId={selectedModule.id} />
                         </div>
                         )}
 
@@ -1454,14 +1497,6 @@ export default function LearnPage() {
                         onClose={() => { setShowAITutor(false); setIsMotivationMode(false); }}
                     />
                     </SilentErrorBoundary>
-
-                    {/* Paywall Premium pour Coach IA */}
-                    <PremiumPaywall
-                        isOpen={showPremiumPaywall}
-                        onClose={() => setShowPremiumPaywall(false)}
-                        feature="Poser vos questions au Coach IA. Passez à Investisseur+ et apprenez plus vite"
-                        plan="investisseur-plus"
-                    />
 
                     {/* Paywall Premium pour modules avancés */}
                     <PremiumPaywall
@@ -1577,7 +1612,7 @@ export default function LearnPage() {
             <PremiumPaywall
                 isOpen={showCertPaywall}
                 onClose={() => setShowCertPaywall(false)}
-                feature="Télécharger et partager votre certificat officiel AfriBourse. Passez à Investisseur+ pour débloquer votre attestation de réussite."
+                feature="Le téléchargement et le partage du certificat officiel AfriBourse sont réservés aux abonnés Premium"
                 plan="investisseur-plus"
             />
             <div className="mb-8 sm:mb-12">

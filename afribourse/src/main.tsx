@@ -3,6 +3,7 @@
 import './lib/polyfills'
 import * as amplitude from '@amplitude/unified'
 import { claimAutoReload } from './lib/chunkErrors'
+import { installGlobalErrorHandlers } from './lib/errorReporter'
 import { captureUTMParams } from './lib/amplitude'
 import { applyTranslateSurvivalPatch } from './lib/translateSurvivalPatch'
 
@@ -17,6 +18,9 @@ amplitude.initAll('445eb89bf34759faaed0372e035fdbff', {
 })
 
 captureUTMParams()
+
+// Erreurs JS non gérées (hors rendu React) → remontées au dashboard admin
+installGlobalErrorHandlers()
 
 // Après un deploy, un onglet ouvert référence d'anciens chunks qui n'existent
 // plus : Vite émet vite:preloadError avant même que React ne voie l'erreur.

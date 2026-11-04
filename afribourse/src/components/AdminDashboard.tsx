@@ -45,6 +45,7 @@ import ModerationSection from './moderation/ModerationSection';
 import AdminArticleEditor from './AdminArticleEditor';
 import AdminCertificates from './admin/AdminCertificates';
 import AdminAmbassadors from './admin/AdminAmbassadors';
+import AdminClientErrors from './admin/AdminClientErrors';
 
 interface UserStats {
   total: number;
@@ -1369,6 +1370,9 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl p-8 text-center text-gray-400">Chargement des stats trial…</div>
           )}
         </div>
+
+        {/* Erreurs côté utilisateurs (remontées automatiquement) */}
+        <AdminClientErrors />
 
         {/* ═══════════════════════════════════════════ */}
         {/* AI FEEDBACK — POUCES LEVÉ / BAISSÉ         */}

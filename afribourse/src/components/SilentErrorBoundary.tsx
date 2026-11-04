@@ -1,4 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { reportClientError } from '../lib/errorReporter';
+import { isChunkLoadError } from '../lib/chunkErrors';
 
 // ErrorBoundary "silencieuse" pour les composants non critiques (popups différés,
 // prompts PWA, modales d'onboarding…). Si leur chargement lazy échoue ou si elles
@@ -31,6 +33,10 @@ export default class SilentErrorBoundary extends Component<Props, State> {
       error,
       info?.componentStack
     );
+    // Invisible pour l'utilisateur, mais l'admin doit le savoir (sauf chunk après deploy)
+    if (!isChunkLoadError(error)) {
+      reportClientError(error, 'silent', `[${this.props.name ?? 'SilentErrorBoundary'}]${info?.componentStack ?? ''}`);
+    }
   }
 
   render() {

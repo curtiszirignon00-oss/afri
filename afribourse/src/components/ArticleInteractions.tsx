@@ -2,17 +2,28 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, MessageCircle, Send, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { authFetch, API_BASE_URL } from '../config/api';
+import toast from 'react-hot-toast';
+import { toUserMessage } from '../lib/userFacingError';
 
 type Comment = {
   id: string;
   text: string;
   created_at: string;
-  user: { id: string; name: string; lastname: string };
+  // Peut manquer sur d'anciens documents (utilisateur supprimé, champ absent)
+  user?: { id: string; name?: string | null; lastname?: string | null } | null;
 };
 
-function getInitials(name: string, lastname: string): string {
-  return `${name.charAt(0)}${lastname.charAt(0)}`.toUpperCase();
+function getInitials(name?: string | null, lastname?: string | null): string {
+  return `${(name ?? '').charAt(0)}${(lastname ?? '').charAt(0)}`.toUpperCase() || '?';
 }
+
+function authorName(c: Comment): string {
+  const full = `${c.user?.name ?? ''} ${c.user?.lastname ?? ''}`.trim();
+  return full || 'Utilisateur';
+}
+
+// Erreur HTTP → message lisible (401 = session expirée)
+const httpError = (res: Response) => Object.assign(new Error(), { status: res.status });
 
 function relTime(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
@@ -38,11 +49,11 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
   const [submitting, setSubmitting] = useState(false);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
 
-  // Fetch like state on mount
+  // Fetch like state on mount — authFetch (Bearer) : sur iOS le cookie cross-site est
+  // bloqué, sans token « liked » restait faux et un tap retirait le like au lieu de l'ajouter.
+  // Rechargé quand la session est restaurée.
   useEffect(() => {
-    fetch(`${API_BASE_URL}/articles/${encodeURIComponent(articleId)}/likes`, {
-      credentials: 'include',
-    })
+    authFetch(`${API_BASE_URL}/articles/${encodeURIComponent(articleId)}/likes`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data) {
@@ -51,12 +62,10 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         }
       })
       .catch(() => {});
-  }, [articleId]);
+  }, [articleId, userProfile?.id]);
 
   const fetchComments = useCallback(() => {
-    fetch(`${API_BASE_URL}/articles/${encodeURIComponent(articleId)}/comments`, {
-      credentials: 'include',
-    })
+    authFetch(`${API_BASE_URL}/articles/${encodeURIComponent(articleId)}/comments`)
       .then(r => r.ok ? r.json() : [])
       .then((data: Comment[]) => {
         setComments(Array.isArray(data) ? data : []);
@@ -76,9 +85,11 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         const data = await res.json();
         setLiked(data.liked);
         setLikeCount(data.count);
+      } else {
+        throw httpError(res);
       }
-    } catch {
-      // silent
+    } catch (err) {
+      toast.error(toUserMessage(err, 'Votre « j’aime » n’a pas pu être enregistré. Réessayez.'));
     } finally {
       setLikeLoading(false);
     }
@@ -106,9 +117,12 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
         const newComment: Comment = await res.json();
         setComments(prev => [...prev, newComment]);
         setCommentText('');
+      } else {
+        throw httpError(res);
       }
-    } catch {
-      // silent
+    } catch (err) {
+      // Avant : échec silencieux → « le bouton commenter ne marche pas »
+      toast.error(toUserMessage(err, 'Votre commentaire n’a pas pu être publié. Réessayez.'));
     } finally {
       setSubmitting(false);
     }
@@ -122,9 +136,11 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
       );
       if (res.ok) {
         setComments(prev => prev.filter(c => c.id !== commentId));
+      } else {
+        throw httpError(res);
       }
-    } catch {
-      // silent
+    } catch (err) {
+      toast.error(toUserMessage(err, 'Le commentaire n’a pas pu être supprimé. Réessayez.'));
     }
   };
 
@@ -169,18 +185,18 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
           {comments.map(comment => (
             <div key={comment.id} className="flex gap-2.5">
               <div className="shrink-0 w-7 h-7 rounded-full bg-[#00D4A8]/15 flex items-center justify-center text-[10px] font-bold text-[#00D4A8]">
-                {getInitials(comment.user.name, comment.user.lastname)}
+                {getInitials(comment.user?.name, comment.user?.lastname)}
               </div>
               <div className="flex-1 bg-slate-50 rounded-xl px-3 py-2 min-w-0">
                 <div className="flex items-baseline justify-between gap-2 flex-wrap">
                   <span className="text-xs font-semibold text-slate-800">
-                    {comment.user.name} {comment.user.lastname}
+                    {authorName(comment)}
                   </span>
                   <span className="text-[10px] text-slate-400">{relTime(comment.created_at)}</span>
                 </div>
                 <p className="text-xs text-slate-700 mt-0.5 leading-relaxed break-words">{comment.text}</p>
               </div>
-              {isLoggedIn && (userProfile?.id === comment.user.id || userProfile?.role === 'admin') && (
+              {isLoggedIn && (userProfile?.id === comment.user?.id || userProfile?.role === 'admin') && (
                 <button
                   onClick={() => handleDelete(comment.id)}
                   className="shrink-0 text-slate-300 hover:text-red-400 transition-colors p-1 self-start mt-0.5"
@@ -205,7 +221,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
                   onChange={e => setCommentText(e.target.value)}
                   placeholder="Ajouter un commentaire…"
                   maxLength={1000}
-                  className="flex-1 text-xs border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00D4A8] focus:ring-1 focus:ring-[#00D4A8]/20 bg-white placeholder:text-slate-400"
+                  className="flex-1 min-w-0 text-base sm:text-xs border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00D4A8] focus:ring-1 focus:ring-[#00D4A8]/20 bg-white placeholder:text-slate-400"
                 />
                 <button
                   type="submit"
@@ -218,7 +234,7 @@ export default function ArticleInteractions({ articleId }: { articleId: string }
             </form>
           ) : (
             <p className="text-xs text-center text-slate-400 py-2">
-              <a href="/login" className="text-[#00D4A8] hover:underline font-medium">Connectez-vous</a> pour commenter
+              <a href={`/login?redirect=${encodeURIComponent(window.location.pathname)}`} className="text-[#00D4A8] hover:underline font-medium">Connectez-vous</a> pour commenter
             </p>
           )}
         </div>
