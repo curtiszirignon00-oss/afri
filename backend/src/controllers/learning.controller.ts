@@ -62,7 +62,17 @@ export class LearningController {
                 return res.status(401).json({ message: "Utilisateur non authentifié. L'ID utilisateur est manquant." });
             }
 
-            const progress = await learningService.markModuleAsCompleted(userId, slug);
+            const { progress, alreadyCompleted } = await learningService.markModuleAsCompleted(userId, slug);
+
+            // Déjà terminé (double tap, rechargement) : pas de nouvelles récompenses
+            if (alreadyCompleted) {
+                return res.status(200).json({
+                    message: `Module ${slug} déjà terminé.`,
+                    progress,
+                    alreadyCompleted: true,
+                    gamification: { xpGained: 0, bonusXP: null, newAchievements: [] }
+                });
+            }
 
             // ========== GAMIFICATION TRIGGERS ==========
             let xpGained = 0;
@@ -200,8 +210,9 @@ export class LearningController {
             let newAchievements: string[] = [];
 
             try {
-                // Score >= 80% = quiz passé
-                const passed = result.score >= 80;
+                // Même seuil que la validation du module (QUIZ_PASSING_SCORE = 70 %).
+                // Récompenses une seule fois : pas de XP pour un module déjà validé.
+                const passed = result.passed && !result.wasCompleted;
                 const perfect = result.score === 100;
 
                 if (passed) {

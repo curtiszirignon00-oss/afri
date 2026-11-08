@@ -21,6 +21,10 @@ const allowedAttributes = {
     '*': ['class'],
 };
 
+// Seuil de réussite unique pour TOUS les quiz (affiché côté front, validation, XP).
+// Le champ quiz.passing_score en base (souvent 80 via les scripts de création) est ignoré.
+export const QUIZ_PASSING_SCORE = 70;
+
 export class LearningServicePrisma {
 
     // Utilitaire de sécurisation du contenu HTML
@@ -127,8 +131,17 @@ export class LearningServicePrisma {
         const moduleId = module.id;
         const now = new Date();
 
+        // Idempotent : un module déjà terminé n'est pas re-terminé (ni completed_at écrasé,
+        // ni XP redonnés par le contrôleur sur double tap / rechargement).
+        const existing = await prisma.learningProgress.findUnique({
+            where: { userId_moduleId: { userId, moduleId } },
+        });
+        if (existing?.is_completed) {
+            return { progress: existing, alreadyCompleted: true };
+        }
+
         // Utiliser upsert pour simplifier le logic: créer ou mettre à jour
-        return prisma.learningProgress.upsert({
+        const progress = await prisma.learningProgress.upsert({
             where: {
                 // Cette clé doit exister comme @@unique([userId, moduleId]) dans schema.prisma
                 userId_moduleId: {
@@ -149,6 +162,7 @@ export class LearningServicePrisma {
                 last_accessed_at: now,
             },
         });
+        return { progress, alreadyCompleted: false };
     }
 
     // --- 4. RÉCUPÉRER LA PROGRESSION D'UN UTILISATEUR ---
@@ -196,6 +210,7 @@ export class LearningServicePrisma {
             // Retourner le quiz avec seulement les questions sélectionnées
             return {
                 ...quiz,
+                passing_score: QUIZ_PASSING_SCORE,
                 questions: selectedQuestions
             };
         } catch (error) {
@@ -302,7 +317,10 @@ export class LearningServicePrisma {
 
             const totalQuestions = questionIds.length;
             const score = Math.round((correctCount / totalQuestions) * 100);
-            const passed = score >= quiz.passing_score;
+            const passed = score >= QUIZ_PASSING_SCORE;
+            // Un module déjà validé le reste : rater une nouvelle tentative ne doit pas
+            // reverrouiller les modules suivants
+            const wasCompleted = existingProgress?.is_completed === true;
 
             // Calculer les nouvelles tentatives
             const newAttempts = existingProgress ? existingProgress.quiz_attempts + 1 : 1;
@@ -326,8 +344,8 @@ export class LearningServicePrisma {
                     quiz_attempts: newAttempts,
                     missed_questions: missedQuestions,
                     last_quiz_attempt_at: new Date(),
-                    is_completed: passed,
-                    completed_at: passed ? new Date() : null,
+                    is_completed: passed || wasCompleted,
+                    completed_at: wasCompleted ? existingProgress?.completed_at : passed ? new Date() : null,
                     last_accessed_at: new Date(),
                     time_spent_minutes: timeSpent ? (existingProgress?.time_spent_minutes || 0) + timeSpent : existingProgress?.time_spent_minutes
                 },
@@ -356,7 +374,8 @@ export class LearningServicePrisma {
             return {
                 score,
                 passed,
-                passingScore: quiz.passing_score,
+                wasCompleted,
+                passingScore: QUIZ_PASSING_SCORE,
                 correctAnswers: correctCount,
                 totalQuestions: totalQuestions,
                 attempts: progress.quiz_attempts,

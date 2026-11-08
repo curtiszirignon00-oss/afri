@@ -5,6 +5,7 @@ import { uploadSingleImage } from '../config/upload.config';
 import { listModules, createModule, updateModule, issueCertificate, listCertificatesAdmin, revokeCertificate, resendCertificateEmail } from '../controllers/certificate.controller';
 import { adminCreateReferralCode, adminListReferrals, adminUpdateReferralStatus } from '../controllers/referral.controller';
 import { admin } from '../middlewares/auth.middleware';
+import { getClientErrors, updateClientError } from '../controllers/client-errors.controller';
 
 const router = Router();
 
@@ -25,6 +26,10 @@ router.get('/trial-stats', admin, getTrialStats);
 
 // Statistiques feedback IA (pouces levé/baissé)
 router.get('/ai-feedback-stats', admin, getAIFeedbackStats);
+
+// Erreurs côté utilisateurs (remontées par le front, groupées par empreinte)
+router.get('/client-errors', admin, getClientErrors);
+router.patch('/client-errors/:id', admin, updateClientError);
 
 // Campagne email — lancement webinaires (admin uniquement, irréversible)
 router.post('/send-webinar-launch-email', admin, sendWebinarLaunchCampaign);

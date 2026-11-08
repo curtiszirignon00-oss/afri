@@ -48,6 +48,7 @@ import reviewRoutes from './routes/reviews.routes';
 import subscriptionRoutes from './routes/subscription.routes';
 import adminRoutes from './routes/admin.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import clientErrorRoutes from './routes/client-errors.routes'; // Erreurs front remontées automatiquement
 import priceAlertRoutes from './routes/price-alert.routes';
 import socialRoutes from './routes/social.routes';
 import investorProfileRoutes from './routes/investor-profile.routes';
@@ -245,6 +246,8 @@ class App {
       '/webinars/preregister',
       // Relais Meta CAPI — appelé par le navigateur (visiteur potentiellement anonyme)
       '/meta/track',
+      // Remontée des erreurs front — envoyée en keepalive, souvent pendant un crash (pas de token CSRF fiable)
+      '/client-errors',
     ]);
     this.app?.use('/api/', (req, res, next) => {
       // req.path est relatif au préfixe /api/ (ex: /login pour /api/login)
@@ -304,6 +307,7 @@ class App {
     this.app?.use('/api/subscriptions', subscriptionRoutes); // Tracking abonnements
     this.app?.use('/api/admin', adminRoutes);              // Admin dashboard
     this.app?.use('/api/analytics', analyticsRoutes);       // Analytics tracking
+    this.app?.use('/api/client-errors', clientErrorRoutes); // Erreurs front remontées (dashboard admin)
     this.app?.use('/api/price-alerts', priceAlertRoutes);   // Price alerts
     this.app?.use('/api/social', socialRoutes);              // Social features (posts, likes, comments)
     this.app?.use('/api/investor-profile', investorProfileRoutes); // Investor DNA & onboarding

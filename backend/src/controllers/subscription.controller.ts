@@ -32,6 +32,16 @@ export const logSubscriptionIntent = async (req: AuthRequest, res: Response) => 
       });
     }
 
+    // Liste d'attente Premium (abonnement indisponible) : une seule inscription par utilisateur
+    if (source === 'waitlist') {
+      const existing = await prisma.subscriptionIntent.findFirst({
+        where: { userId, source: 'waitlist' },
+      });
+      if (existing) {
+        return res.status(200).json({ success: true, message: 'Déjà inscrit', alreadyRegistered: true, data: existing });
+      }
+    }
+
     // Créer l'intention d'abonnement
     const intent = await prisma.subscriptionIntent.create({
       data: {
