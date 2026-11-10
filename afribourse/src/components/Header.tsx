@@ -219,6 +219,19 @@ export default function Header() {
                         <Badge count={communityBadge} />
                       )}
                     </button>
+
+                    {/* Panneau ancré sous l'onglet (pt-2 = pont de survol invisible) */}
+                    {activeMegaMenu === item.id && ActiveMegaMenuComponent && (
+                      <div
+                        className="absolute left-1/2 top-full -translate-x-1/2 pt-1 z-50"
+                        onMouseEnter={cancelClose}
+                        onClick={(e) => {
+                          if ((e.target as HTMLElement).closest('a,button')) closeMegaMenuNow();
+                        }}
+                      >
+                        <ActiveMegaMenuComponent />
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -456,21 +469,6 @@ export default function Header() {
         </div>
       </header>
       </div>
-
-      {/* Mega Menus - rendered inside the sticky wrapper so they attach to the header */}
-      {ActiveMegaMenuComponent && (
-        <div
-          className="relative"
-          onMouseEnter={cancelClose}
-          onMouseLeave={scheduleCloseMegaMenu}
-          onClick={(e) => {
-            // Un clic sur un lien/bouton du méga-menu ferme le menu
-            if ((e.target as HTMLElement).closest('a,button')) closeMegaMenuNow();
-          }}
-        >
-          <ActiveMegaMenuComponent />
-        </div>
-      )}
     </div>
   );
 }

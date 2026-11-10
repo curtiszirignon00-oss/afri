@@ -19,7 +19,7 @@ import MarketHours from './markets/MarketHours';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import { useMarketsPageNudge, markScreenerUsed } from '../hooks/useNudgeTriggers';
@@ -62,6 +62,22 @@ export default function MarketsPageRefactored() {
 
   // Vue : liste ou carte de marché
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  // Liens profonds depuis le menu du header : ?vue=carte, ?onglet=hausses|baisses|secteurs
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const vue = searchParams.get('vue');
+    if (vue === 'carte') setViewMode('map');
+    else if (vue === 'liste') setViewMode('list');
+    const onglet = searchParams.get('onglet');
+    const tabMap: Record<string, 'all' | 'gainers' | 'losers' | 'sectors'> = {
+      toutes: 'all', hausses: 'gainers', baisses: 'losers', secteurs: 'sectors',
+    };
+    if (onglet && tabMap[onglet]) {
+      setActiveTab(tabMap[onglet]);
+      setViewMode('list');
+    }
+  }, [searchParams]);
 
   // Nudges contextuels — avec callbacks qui activent directement les features
   useMarketsPageNudge({
