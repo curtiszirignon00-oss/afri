@@ -1,6 +1,6 @@
 import { TrendingUp, BookOpen, User, BarChart3, LogOut, LayoutDashboard, Activity, Users, Settings, Star, Video, Wallet } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LearnMegaMenu, NewsMegaMenu, MarketsMegaMenu, CommunityMegaMenu } from './MegaMenus';
 import NotificationDropdown from './notifications/NotificationDropdown';
@@ -41,6 +41,59 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPage = location.pathname.replace('/', '') || 'home';
+
+  // --- Ouverture/fermeture des menus au survol avec délai de grâce ---
+  // Sans délai, quitter le bouton pour descendre vers le méga-menu (rendu SOUS le header)
+  // fermait le menu avant que le curseur ne l'atteigne → header inavigable.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelClose = useCallback(() => {
+    if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
+  }, []);
+  const openMegaMenu = useCallback((id: string) => { cancelClose(); setActiveMegaMenu(id); }, [cancelClose]);
+  const scheduleCloseMegaMenu = useCallback(() => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setActiveMegaMenu(null), 300);
+  }, [cancelClose]);
+  const closeMegaMenuNow = useCallback(() => { cancelClose(); setActiveMegaMenu(null); }, [cancelClose]);
+
+  const accountTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
+  const cancelAccountClose = () => {
+    if (accountTimer.current) { clearTimeout(accountTimer.current); accountTimer.current = null; }
+  };
+  const scheduleAccountClose = () => {
+    cancelAccountClose();
+    accountTimer.current = setTimeout(() => setAccountMenuOpen(false), 400);
+  };
+
+  // Fermer les menus à chaque changement de page
+  useEffect(() => {
+    closeMegaMenuNow();
+    setAccountMenuOpen(false);
+    setMobileAccountOpen(false);
+  }, [location.pathname, closeMegaMenuNow]);
+
+  // Échap ferme tout ; clic en dehors ferme le menu compte
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { closeMegaMenuNow(); setAccountMenuOpen(false); }
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) setAccountMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [closeMegaMenuNow]);
+
+  // Nettoyage des timers au démontage
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (accountTimer.current) clearTimeout(accountTimer.current);
+  }, []);
 
   // ✅ Utilisation du hook useAuth
   const { isLoggedIn, logout, loading, userProfile } = useAuth();
@@ -107,7 +160,7 @@ export default function Header() {
             {/* Logo */}
             <div className="flex items-center shrink-0">
               <button
-                onClick={() => { navigate('/'); setActiveMegaMenu(null); }}
+                onClick={() => { navigate('/'); closeMegaMenuNow(); }}
                 className="flex flex-col items-start"
               >
                 <div className="flex items-center space-x-2">
@@ -123,19 +176,21 @@ export default function Header() {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+            {/* self-stretch : la zone de survol couvre toute la hauteur du header,
+                sans « trou » entre le bouton et le méga-menu affiché juste en dessous */}
+            <nav className="hidden lg:flex self-stretch items-stretch gap-1 xl:gap-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
                   <div
                     key={item.id}
-                    className="relative"
-                    onMouseEnter={() => item.hasMegaMenu && setActiveMegaMenu(item.id)}
-                    onMouseLeave={() => setActiveMegaMenu(null)}
-                    onFocus={() => item.hasMegaMenu && setActiveMegaMenu(item.id)}
-                    onBlur={(e) => { 
+                    className="relative flex items-center"
+                    onMouseEnter={() => item.hasMegaMenu && openMegaMenu(item.id)}
+                    onMouseLeave={scheduleCloseMegaMenu}
+                    onFocus={() => item.hasMegaMenu && openMegaMenu(item.id)}
+                    onBlur={(e) => {
                       if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                        setActiveMegaMenu(null);
+                        scheduleCloseMegaMenu();
                       }
                     }}
                     tabIndex={-1}
@@ -143,7 +198,7 @@ export default function Header() {
                     <button
                       onClick={() => {
                         navigate(`/${item.id}`);
-                        setActiveMegaMenu(null);
+                        closeMegaMenuNow();
                         if (item.id === 'news')      markNewsVisited();
                         if (item.id === 'community') markCommunityVisited();
                       }}
@@ -207,7 +262,12 @@ export default function Header() {
 
               {/* Desktop Account/Login Button */}
               {!loading && (
-                <div className="hidden lg:relative lg:flex items-center">
+                <div
+                  ref={accountRef}
+                  className="hidden lg:relative lg:flex items-center"
+                  onMouseEnter={cancelAccountClose}
+                  onMouseLeave={() => { if (accountMenuOpen) scheduleAccountClose(); }}
+                >
                   {isLoggedIn ? (
                     <div className="flex items-center gap-3">
                       {/* Bouton Profil */}
@@ -244,9 +304,8 @@ export default function Header() {
                   
                   {/* Dropdown Menu (Desktop) */}
                   {isLoggedIn && accountMenuOpen && (
-                    <div 
-                      className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1"
-                      onMouseLeave={() => setAccountMenuOpen(false)}
+                    <div
+                      className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 before:absolute before:-top-2 before:inset-x-0 before:h-2 before:content-['']"
                     >
                       <button
                         onClick={() => { navigate('/dashboard'); setAccountMenuOpen(false); }}
@@ -400,7 +459,15 @@ export default function Header() {
 
       {/* Mega Menus - rendered inside the sticky wrapper so they attach to the header */}
       {ActiveMegaMenuComponent && (
-        <div className="relative" onMouseLeave={() => setActiveMegaMenu(null)}>
+        <div
+          className="relative"
+          onMouseEnter={cancelClose}
+          onMouseLeave={scheduleCloseMegaMenu}
+          onClick={(e) => {
+            // Un clic sur un lien/bouton du méga-menu ferme le menu
+            if ((e.target as HTMLElement).closest('a,button')) closeMegaMenuNow();
+          }}
+        >
           <ActiveMegaMenuComponent />
         </div>
       )}
