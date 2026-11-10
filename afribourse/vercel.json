@@ -182,6 +182,10 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/webinaires", "destination": "/webinaires-eco", "permanent": true },
+    { "source": "/webinaires/:path*", "destination": "/webinaires-eco", "permanent": true }
+  ],
   "rewrites": [
     {
       "source": "/sitemap.xml",

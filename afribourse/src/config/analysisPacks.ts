@@ -13,7 +13,7 @@ export const ANALYSIS_SEAT_LIMIT = 20;
 export const ANALYSIS_DEADLINE_ISO = '2026-10-31T23:59:59Z';
 export const ANALYSIS_DEADLINE_LABEL = '31 octobre';
 // TODO DATES À CONFIRMER — sessions live de décorticage.
-export const ANALYSIS_SESSION_DATES_LABEL = 'novembre 2026';
+export const ANALYSIS_SESSION_DATES_LABEL = 'décembre 2026';
 
 export function analysisDeadlineMs(): number { return new Date(ANALYSIS_DEADLINE_ISO).getTime(); }
 export function analysisOfferOpen(now: number = Date.now()): boolean { return now < analysisDeadlineMs(); }

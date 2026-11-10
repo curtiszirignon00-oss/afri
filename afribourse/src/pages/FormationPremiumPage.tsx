@@ -9,13 +9,14 @@ import { useAuth } from '../contexts/AuthContext';
 import PaymentModal from '../components/payment/PaymentModal';
 import { analytics } from '../services/analytics';
 import { Helmet } from 'react-helmet-async';
+import { FORMATION_PRICE, FORMATION_FREE_COUNT, FORMATION_PREMIUM_COUNT, FORMATION_FREE_RANGE, FORMATION_PREMIUM_RANGE } from '../config/formation';
 
 const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/formation';
 
 const PLAN_ID = 'premium-modules';
 const PLAN_NAME = 'Formation Complète';
-const AMOUNT = '15000';
+const AMOUNT = String(FORMATION_PRICE);
 const COUNTDOWN_KEY = 'formation_countdown_end';
 const COUNTDOWN_DURATION = 23 * 60 * 60 + 47 * 60 + 13;
 
@@ -26,39 +27,41 @@ const OPERATORS = [
   { id: 'moov-money',  label: 'Moov Money',   emoji: '🟢', bg: '#007A5E' },
 ];
 
+// Titres = modules réellement publiés (n = order_index affiché dans l'Académie).
+// Le seuil gratuit/payant vient de config/formation.ts — garder les deux listes alignées.
 const FREE_MODULES = [
-  { n: 'M0', title: 'Introduction à la BRVM & aux marchés africains' },
-  { n: 'M1', title: 'Comprendre les actions & obligations' },
-  { n: 'M2', title: 'Ouvrir un compte et passer son premier ordre' },
-  { n: 'M3', title: 'Les acteurs du marché : qui fait quoi ?' },
-  { n: 'M4', title: 'Les instruments : actions, obligations & OPCVM' },
-  { n: 'M5', title: 'Passer un ordre de bourse — délais & méthodes' },
-  { n: 'M6', title: 'Psychologie & biais : le mental du gagnant' },
+  { n: 'M0', title: 'Prêt pour le décollage ? (Mindset)' },
+  { n: 'M1', title: "Les Fondations — Qu'est-ce que la Bourse et la BRVM ?" },
+  { n: 'M2', title: 'La BRVM en chiffres — Pourquoi investir maintenant' },
+  { n: 'M3', title: 'Le Temps, votre meilleur allié — Objectifs & horizon' },
+  { n: 'M4', title: 'Les Acteurs du jeu — Qui fait quoi sur le marché ?' },
+  { n: 'M5', title: 'Les Instruments : actions, obligations & OPCVM' },
+  { n: 'M6', title: 'Lire les informations de marché — Décrypter une fiche valeur' },
+  { n: 'M7', title: 'Passer un ordre sur la BRVM — Entrer sur le marché' },
+  { n: 'M8', title: 'Le Mental du gagnant — Psychologie & biais comportementaux' },
 ];
 
 const PREMIUM_MODULES = [
-  { n: 'M7',  title: 'Analyse Fondamentale', sub: 'Lire les états financiers comme un pro' },
-  { n: 'M8',  title: "L'Évaluation d'Entreprise", sub: "DCF, PER, VCB — projeter l'avenir" },
-  { n: 'M9',  title: "L'Analyse Extra-Financière", sub: 'ESG, gouvernance, contexte macro' },
-  { n: 'M10', title: "L'Art du Timing", sub: 'Analyse technique & graphiques avancés' },
-  { n: 'M11', title: 'Maîtrise du Risque', sub: 'Gestion de portefeuille & diversification' },
-  { n: 'M12', title: "L'Architecte du Risque", sub: 'Stop-loss, position sizing avancé' },
-  { n: 'M13', title: 'Outils, Actualités & Fiscalité', sub: 'Screener, news, implications fiscales' },
-  { n: 'M14', title: 'Contexte Économique', sub: 'Sentir le pouls du marché UEMOA' },
-  { n: 'M15', title: "Stratégie d'Investissement Intégrée", sub: 'Construire votre approche personnelle' },
-  { n: 'M16', title: 'Préparation & Infrastructure', sub: 'Outils, plateformes, workflow professionnel' },
-  { n: 'M17', title: 'Psychologie Avancée du Trading', sub: 'Discipline, routine, gestion des émotions' },
-  { n: 'M18', title: 'Portefeuille Modèle BRVM', sub: 'Étude de cas avec allocation réelle' },
-  { n: 'M19', title: "Certification & Plan d'Action", sub: 'Valider et déployer vos compétences' },
+  { n: 'M9',  title: 'Analyse Fondamentale', sub: 'Devenir un analyste éclairé' },
+  { n: 'M10', title: "L'Évaluation d'Entreprise", sub: "Projeter l'avenir — valorisation avancée" },
+  { n: 'M11', title: "L'Analyse Extra-Financière", sub: 'Comprendre le contexte' },
+  { n: 'M12', title: "L'Art du Timing", sub: 'Analyse technique et lecture du marché' },
+  { n: 'M13', title: 'Maîtrise du Risque', sub: 'Gestion de portefeuille' },
+  { n: 'M14', title: "L'Art de l'Architecte", sub: 'Gestion avancée du risque' },
+  { n: 'M15', title: 'Outils, Actualités & Fiscalité', sub: 'Les outils et la fiscalité de l’investisseur' },
+  { n: 'M16', title: 'Contexte Économique', sub: 'Sentir le pouls du marché UEMOA' },
+  { n: 'M17', title: "La Stratégie d'Investissement Intégrée", sub: 'Construire votre approche personnelle' },
+  { n: 'M18', title: 'Préparation & Infrastructure Financière', sub: 'Préparer son capital et ses outils' },
+  { n: 'M19', title: 'Stratégie de Sélection & Déploiement', sub: 'Choisir ses titres et investir' },
 ];
 
 const BENEFITS = [
-  { icon: () => <Brain className="w-6 h-6" />, title: '13 modules avancés', desc: 'Du fondamental au technique, en passant par la psychologie' },
+  { icon: () => <Brain className="w-6 h-6" />, title: `${FORMATION_PREMIUM_COUNT} modules avancés`, desc: 'Du fondamental au technique, jusqu’à la stratégie de portefeuille' },
   { icon: () => <CheckCircle className="w-6 h-6" />, title: 'Quiz inclus', desc: 'Validez vos connaissances après chaque module' },
   { icon: () => <Clock className="w-6 h-6" />, title: 'Accès à vie', desc: 'Paiement unique, sans abonnement, sans expiration' },
   { icon: () => <BarChart3 className="w-6 h-6" />, title: 'Études de cas BRVM', desc: "Exemples réels tirés des marchés d'Afrique de l'Ouest" },
   { icon: () => <Shield className="w-6 h-6" />, title: 'Mises à jour incluses', desc: 'Contenu mis à jour quand les marchés évoluent' },
-  { icon: () => <BookOpen className="w-6 h-6" />, title: '20 modules au total', desc: 'M0–M6 gratuits + M7–M19 débloqués en un seul paiement' },
+  { icon: () => <BookOpen className="w-6 h-6" />, title: '20 modules au total', desc: `${FORMATION_FREE_RANGE} gratuits + ${FORMATION_PREMIUM_RANGE} débloqués en un seul paiement` },
 ];
 
 const TESTIMONIALS = [
@@ -71,7 +74,7 @@ const TESTIMONIALS = [
     initials: 'AF', name: 'Aminata Fofana', title: 'Étudiante en finance, Dakar', color: '#4CAF96',
   },
   {
-    text: "J'ai terminé les 13 modules en 3 semaines. Maintenant je passe mes ordres avec conviction. Mon portefeuille a progressé de 18% en 6 mois — pas de chance, de méthode.",
+    text: "J'ai terminé les modules avancés en 3 semaines. Maintenant je passe mes ordres avec conviction. Mon portefeuille a progressé de 18% en 6 mois — pas de chance, de méthode.",
     initials: 'MB', name: 'Marc Bello', title: 'Entrepreneur, Abidjan', color: '#7C6AF8',
   },
 ];
@@ -79,11 +82,11 @@ const TESTIMONIALS = [
 const FAQ = [
   {
     q: 'Est-ce vraiment un paiement unique ?',
-    a: 'Oui, sans exception. Vous payez 15 000 FCFA une seule fois et accédez aux modules M7–M19 à vie. Aucun abonnement, aucun renouvellement automatique.',
+    a: `Oui, sans exception. Vous payez 15 000 FCFA une seule fois et accédez aux modules ${FORMATION_PREMIUM_RANGE} à vie. Aucun abonnement, aucun renouvellement automatique.`,
   },
   {
     q: 'Le certificat est-il inclus dans les 15 000 FCFA ?',
-    a: "Non, le certificat AfriBourse est une option séparée à 15 000 FCFA supplémentaires. Il est disponible après avoir complété tous les modules et réussi les quiz. Les 15 000 FCFA de la formation donnent accès uniquement aux modules M7–M19.",
+    a: `Non, le certificat AfriBourse est une option séparée à 15 000 FCFA supplémentaires. Il est disponible après avoir complété tous les modules et réussi les quiz. Les 15 000 FCFA de la formation donnent accès uniquement aux modules ${FORMATION_PREMIUM_RANGE}.`,
   },
   {
     q: 'Quand mon accès est-il activé ?',
@@ -243,7 +246,7 @@ export default function FormationPremiumPage() {
         </h1>
 
         <p style={{ fontSize: 17, color: C.textSub, lineHeight: 1.65, marginBottom: 24, maxWidth: 580 }}>
-          13 modules avancés conçus pour les marchés africains. Analyse fondamentale, technique, gestion du risque, psychologie — tout ce que les 7 modules gratuits ne couvrent pas.
+          {FORMATION_PREMIUM_COUNT} modules avancés conçus pour les marchés africains. Analyse fondamentale, valorisation, analyse technique, gestion du risque, stratégie — tout ce que les {FORMATION_FREE_COUNT} modules gratuits ne couvrent pas.
         </p>
 
         {/* Danger box */}
@@ -310,7 +313,7 @@ export default function FormationPremiumPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 16 }}>
           {[
             { icon: '📉', label: 'Investir sans formation', price: '500 000+ FCFA', desc: 'Pertes moyennes évitables sur les 2 premières années', textColor: C.red, bg: C.redBg, borderColor: C.redBorder },
-            { icon: '🎓', label: 'Cette formation', price: '15 000 FCFA', desc: 'Accès à vie, 13 modules, quiz inclus', textColor: C.gold, bg: C.goldBg, borderColor: C.goldBorder, highlight: true },
+            { icon: '🎓', label: 'Cette formation', price: '15 000 FCFA', desc: `Accès à vie, ${FORMATION_PREMIUM_COUNT} modules, quiz inclus`, textColor: C.gold, bg: C.goldBg, borderColor: C.goldBorder, highlight: true },
             { icon: '🏫', label: 'École de finance', price: '500 000+ FCFA', desc: 'Frais de scolarité par semestre, sans pratique BRVM', textColor: C.textSub, bg: C.bgSub, borderColor: C.border },
           ].map((item) => (
             <div key={item.label} style={{ background: item.bg, border: `1px solid ${item.borderColor}`, borderRadius: 14, padding: '22px 18px', textAlign: 'center', position: 'relative' }}>
@@ -470,7 +473,7 @@ export default function FormationPremiumPage() {
               <span style={{ color: C.textMuted, fontSize: 14 }}>FCFA</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {['M0 à M6 accessibles', '7 modules · quiz inclus', 'Accès immédiat sans paiement'].map((f) => (
+              {[`${FORMATION_FREE_RANGE} accessibles`, `${FORMATION_FREE_COUNT} modules · quiz inclus`, 'Accès immédiat sans paiement'].map((f) => (
                 <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.textSub }}>
                   <CheckCircle style={{ width: 14, height: 14, color: C.green, flexShrink: 0 }} /> {f}
                 </li>
@@ -496,7 +499,7 @@ export default function FormationPremiumPage() {
             </div>
             <p style={{ fontSize: 12, color: C.textMuted, marginBottom: 16 }}>Paiement unique · accès à vie</p>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 22px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {['M7 à M19 débloqués', '13 modules avancés + quiz', 'Mises à jour incluses à vie', 'Études de cas BRVM réels'].map((f) => (
+              {[`${FORMATION_PREMIUM_RANGE} débloqués`, `${FORMATION_PREMIUM_COUNT} modules avancés + quiz`, 'Mises à jour incluses à vie', 'Études de cas BRVM réels'].map((f) => (
                 <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: C.textSub }}>
                   <CheckCircle style={{ width: 14, height: 14, color: C.goldLight, flexShrink: 0 }} /> {f}
                 </li>
@@ -536,7 +539,7 @@ export default function FormationPremiumPage() {
         {/* Bundle note */}
         <div style={{ background: C.bgSub, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <BookOpen style={{ width: 18, height: 18, color: C.goldLight, flexShrink: 0 }} />
-          <p style={{ fontSize: 13, color: C.textSub }}>M0–M6 restent toujours <strong>gratuits</strong>. Vous payez une fois pour débloquer M7–M19 en plus.</p>
+          <p style={{ fontSize: 13, color: C.textSub }}>{FORMATION_FREE_RANGE} restent toujours <strong>gratuits</strong>. Vous payez une fois pour débloquer {FORMATION_PREMIUM_RANGE} en plus.</p>
         </div>
       </section>
 

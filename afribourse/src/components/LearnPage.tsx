@@ -31,6 +31,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import {
+    isFormationPremiumModule, FORMATION_UNLOCK_TIERS, FORMATION_PRICE_LABEL,
+    FORMATION_FREE_COUNT, FORMATION_PREMIUM_COUNT, FORMATION_FREE_RANGE, FORMATION_PREMIUM_RANGE,
+} from '../config/formation';
 import toast from 'react-hot-toast';
 import { API_BASE_URL, authFetch } from '../config/api';
 import { useCreatePost } from '../hooks/useSocial';
@@ -181,8 +185,8 @@ export default function LearnPage() {
     const [showCertificate, setShowCertificate] = useState(false);
     const [showCertPaywall, setShowCertPaywall] = useState(false);
 
-    const isPremiumModule = (orderIndex: number) => orderIndex >= 9;
-    const userHasPremium = ['premium', 'max', 'pro', 'formation'].includes(userProfile?.subscriptionTier ?? '');
+    const isPremiumModule = (orderIndex: number) => isFormationPremiumModule(orderIndex);
+    const userHasPremium = FORMATION_UNLOCK_TIERS.includes(userProfile?.subscriptionTier ?? '');
     const userHasInvestisseurPlus = ['investisseur-plus', 'premium', 'pro', 'max'].includes(userProfile?.subscriptionTier ?? '');
 
     // Ouvre SIMBA en mode motivation après le premier module complété (une seule fois par compte)
@@ -294,7 +298,13 @@ export default function LearnPage() {
     const loadModuleQuiz = useCallback(async (moduleSlug: string) => {
         setQuizLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
+            const response = await authFetch(`${API_BASE_URL}/learning-modules/${moduleSlug}/quiz`);
+            if (response.status === 403) {
+                // Module payant non débloqué (contrôle serveur)
+                setQuizQuestions([]);
+                setShowModulePaywall(true);
+                return;
+            }
             if (response.status === 404) {
                 // Pas de quiz pour ce module, pas d'erreur
                 setQuizQuestions([]);
@@ -327,7 +337,8 @@ export default function LearnPage() {
         const progressUrl = `${API_BASE_URL}/learning-modules/progress`;
 
         try {
-            const allModulesPromise = fetch(allModulesUrl).then(res => {
+            // authFetch : le serveur ne renvoie le contenu des modules payants qu'aux acheteurs
+            const allModulesPromise = authFetch(allModulesUrl).then(res => {
                 if (!res.ok) throw new Error(`Erreur ${res.status}: Impossible de charger les modules.`);
                 return res.json();
             });
@@ -1502,7 +1513,7 @@ export default function LearnPage() {
                     <PremiumPaywall
                         isOpen={showModulePaywall}
                         onClose={() => setShowModulePaywall(false)}
-                        feature="Ce module fait partie du bloc Formation Complète (M7–M19)"
+                        feature={`Ce module fait partie de la Formation Complète (${FORMATION_PREMIUM_RANGE})`}
                         plan="premium-modules"
                     />
                 </div>
@@ -1548,22 +1559,22 @@ export default function LearnPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
             <Helmet>
-                <title>Formation Investissement BRVM — 20 Modules Gratuits | AfriBourse</title>
-                <meta name="description" content="Apprenez à investir sur la BRVM avec 20 modules structurés, des quiz, un tuteur IA et des certificats. Formation gratuite en investissement boursier pour l'Afrique de l'Ouest." />
+                <title>Formation Investissement BRVM — 20 Modules, 9 Gratuits | AfriBourse</title>
+                <meta name="description" content="Apprenez à investir sur la BRVM avec 20 modules structurés, des quiz, un tuteur IA et des certificats. 9 modules gratuits pour démarrer, puis la Formation Complète en accès à vie." />
                 <meta name="keywords" content="brvm, formation brvm, apprendre brvm, investir brvm, brvm formation gratuite, cours brvm gratuit, brvm bourse débutant, comment investir brvm, brvm action formation, bourse afrique formation, UEMOA investissement formation, éducation financière Afrique" />
                 <link rel="canonical" href={`${SITE_URL}/learn`} />
                 <meta property="og:type" content="website" />
                 <meta property="og:site_name" content="AfriBourse" />
-                <meta property="og:title" content="Formation Investissement BRVM — 20 Modules Gratuits | AfriBourse" />
-                <meta property="og:description" content="20 modules de formation gratuits sur l'investissement BRVM, avec quiz, tuteur IA et certificats." />
+                <meta property="og:title" content="Formation Investissement BRVM — 20 Modules, 9 Gratuits | AfriBourse" />
+                <meta property="og:description" content="20 modules sur l'investissement BRVM dont 9 gratuits, avec quiz, tuteur IA et certificats." />
                 <meta property="og:image" content={OG_IMAGE} />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:url" content={`${SITE_URL}/learn`} />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:site" content="@AfriBourse" />
-                <meta name="twitter:title" content="Formation BRVM Gratuite — 20 Modules | AfriBourse" />
-                <meta name="twitter:description" content="20 modules sur l'investissement BRVM. Quiz, tuteur IA, certificats. 100% gratuit." />
+                <meta name="twitter:title" content="Formation BRVM — 9 Modules Gratuits | AfriBourse" />
+                <meta name="twitter:description" content="20 modules sur l'investissement BRVM, dont 9 gratuits. Quiz, tuteur IA, certificats." />
                 <meta name="twitter:image" content={OG_IMAGE} />
                 <script type="application/ld+json">{JSON.stringify({
                   "@context": "https://schema.org",
@@ -1887,6 +1898,21 @@ export default function LearnPage() {
                 </div>
             )}
 
+            {!loading && !error && !userHasPremium && (
+                <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white px-4 py-3 sm:px-5">
+                    <p className="text-sm text-gray-700">
+                        <strong className="text-gray-900">{FORMATION_FREE_COUNT} modules gratuits</strong> ({FORMATION_FREE_RANGE}) pour bien démarrer ·{' '}
+                        <strong className="text-amber-700">{FORMATION_PREMIUM_COUNT} modules avancés</strong> ({FORMATION_PREMIUM_RANGE}) dans la Formation Complète.
+                    </p>
+                    <button
+                        onClick={() => navigate('/formation')}
+                        className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white hover:bg-amber-600 transition-colors"
+                    >
+                        <Crown className="w-4 h-4" /> {FORMATION_PRICE_LABEL} · accès à vie
+                    </button>
+                </div>
+            )}
+
             {!loading && !error && (
                 <div className="relative">
                     {/* Fleche gauche - visible seulement sur mobile quand on peut scroller */}
@@ -1931,18 +1957,22 @@ export default function LearnPage() {
                             const isUnlocked = isModuleUnlocked(module);
                             const previousModule = getPreviousIncompleteModule(module);
                             const hasQuiz = module.has_quiz;
+                            // Module payant non débloqué : le paywall prime sur le verrou de progression,
+                            // pour que l'offre soit visible là où l'intention d'achat est la plus forte.
+                            const isPaywalled = isPremiumModule(module.order_index ?? 0) && !userHasPremium && !isCompleted;
+                            const isSequenceLocked = !isUnlocked && !isPaywalled;
 
                             return (
                                 <button
                                     key={module.id}
                                     onClick={() => {
-                                        if (!isUnlocked) {
-                                            toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
+                                        if (isPaywalled) {
+                                            setShowModulePaywall(true);
                                             return;
                                         }
 
-                                        if (isPremiumModule(module.order_index ?? 0) && !userHasPremium && !isCompleted) {
-                                            setShowModulePaywall(true);
+                                        if (!isUnlocked) {
+                                            toast.error(`Veuillez d'abord compléter "${previousModule?.title}"`);
                                             return;
                                         }
 
@@ -1955,26 +1985,20 @@ export default function LearnPage() {
 
                                         setSelectedModule(module);
                                     }}
-                                    disabled={!isUnlocked}
+                                    disabled={isSequenceLocked}
                                     className={`bg-white rounded-2xl shadow-lg border-2 p-5 sm:p-6 transition-all text-left flex flex-col h-full group relative overflow-hidden w-[280px] sm:w-[320px] md:w-auto flex-shrink-0 md:flex-shrink snap-start ${isCompleted
                                         ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl hover:-translate-y-1'
+                                        : isPaywalled
+                                        ? 'border-amber-300 bg-gradient-to-br from-amber-50/60 to-white hover:border-amber-400 hover:shadow-xl hover:-translate-y-1'
                                         : isUnlocked
                                             ? 'border-gray-200 hover:border-blue-400 hover:shadow-xl hover:-translate-y-1'
                                             : 'border-gray-200 opacity-60 cursor-not-allowed'
                                         }`}
                                 >
-                                    {!isUnlocked && (
+                                    {isSequenceLocked && (
                                         <div className="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px] flex items-center justify-center z-10">
                                             <div className="bg-white rounded-full p-4 shadow-xl">
                                                 <Lock className="w-8 h-8 text-gray-600" />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {isPremiumModule(module.order_index ?? 0) && !userHasPremium && !isCompleted && isUnlocked && (
-                                        <div className="absolute inset-0 bg-amber-900/10 backdrop-blur-[1px] flex items-center justify-center z-10">
-                                            <div className="bg-white rounded-full p-4 shadow-xl">
-                                                <Crown className="w-8 h-8 text-amber-500" />
                                             </div>
                                         </div>
                                     )}
@@ -1996,14 +2020,14 @@ export default function LearnPage() {
                                                 </div>
                                             )}
 
-                                            {!isUnlocked && (
+                                            {isSequenceLocked && (
                                                 <div className="flex items-center space-x-1 bg-gray-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
                                                     <Lock className="w-3.5 h-3.5" />
                                                     <span>Verrouillé</span>
                                                 </div>
                                             )}
 
-                                            {isPremiumModule(module.order_index ?? 0) && !isCompleted && !userHasPremium && (
+                                            {isPaywalled && (
                                                 <div className="flex items-center space-x-1 bg-amber-500 text-white px-2.5 py-1 rounded-full text-xs font-semibold">
                                                     <Crown className="w-3.5 h-3.5" />
                                                     <span>Premium</span>
@@ -2052,7 +2076,16 @@ export default function LearnPage() {
                                         </div>
                                     </div>
 
-                                    {!isUnlocked && previousModule && (
+                                    {isPaywalled ? (
+                                        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-amber-500 px-3 py-2.5 text-white shadow-sm group-hover:bg-amber-600 transition-colors">
+                                            <span className="flex items-center gap-1.5 text-xs font-semibold">
+                                                <Lock className="w-3.5 h-3.5" /> Formation Complète
+                                            </span>
+                                            <span className="text-xs font-extrabold whitespace-nowrap">
+                                                {FORMATION_PRICE_LABEL} · Débloquer →
+                                            </span>
+                                        </div>
+                                    ) : isSequenceLocked && previousModule && (
                                         <div className="mt-3 pt-3 border-t-2 border-gray-200">
                                             <p className="text-xs text-gray-600 font-medium">
                                                 🔒 Complétez d'abord "{previousModule.title}"

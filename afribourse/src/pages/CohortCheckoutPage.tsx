@@ -259,7 +259,7 @@ export default function CohortCheckoutPage() {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-6 text-white">
-            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">{isBudget ? 'Cohorte Octobre 2026' : 'Cohorte Août 2026'}</p>
+            <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">{isBudget ? 'Cohorte Décembre 2026' : 'Cohorte Août 2026'}</p>
             <h1 className="text-2xl font-extrabold leading-snug">{PACK_NAME}</h1>
             <div className="mt-2 flex items-baseline gap-2 flex-wrap">
               <span className="text-3xl font-extrabold">{formatPrice(price)}</span>
@@ -292,7 +292,7 @@ export default function CohortCheckoutPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
               <p className="font-semibold">{tierCfg.sessions} sessions live · {tierCfg.hours}h de formation · Communauté · Certificat</p>
-              <p className="text-xs mt-0.5">1ère session le {isBudget ? 'samedi 10 octobre' : 'samedi 8 août'}.</p>
+              <p className="text-xs mt-0.5">1ère session le {isBudget ? 'samedi 12 décembre' : 'samedi 8 août'}.</p>
             </div>
 
 

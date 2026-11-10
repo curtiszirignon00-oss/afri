@@ -135,7 +135,7 @@ export default function AnalysisCheckoutPage() {
     });
   };
 
-  const backToOffer = () => navigate('/webinaires#analyses');
+  const backToOffer = () => navigate('/webinaires-eco#analyses');
 
   if (payStatus === 'completed') {
     return (

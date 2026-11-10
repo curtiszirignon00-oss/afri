@@ -17,7 +17,7 @@ export default function ParcoursPage() {
       );
     }
     // Toujours rediriger vers la page webinaires
-    navigate('/webinaires', { replace: true });
+    navigate('/webinaires-eco', { replace: true });
   }, []);
 
   return null;

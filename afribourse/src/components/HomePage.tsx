@@ -217,7 +217,7 @@ export default function HomePage() {
       id: 2,
       question: 'Combien faut-il pour commencer à investir ?',
       answer:
-        'Vous pouvez commencer avec aussi peu que 50 000 FCFA. AfriBourse vous aide à démarrer progressivement avec des formations gratuites et un simulateur de portefeuille.',
+        'Vous pouvez commencer avec aussi peu que 50 000 FCFA. AfriBourse vous aide à démarrer progressivement avec 9 modules de formation gratuits et un simulateur de portefeuille.',
     },
     {
       id: 3,
@@ -436,7 +436,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-lg md:text-2xl text-indigo-100 mb-10 max-w-3xl mx-auto leading-relaxed">
-                Formations gratuites, 1M de cash virtuel pour créer votre premier portefeuille, données en temps réel et analyses d'experts pour vous aider à investir intelligemment sur la BRVM
+                9 modules de formation gratuits, 1M de cash virtuel pour créer votre premier portefeuille, données en temps réel et analyses d'experts pour vous aider à investir intelligemment sur la BRVM
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

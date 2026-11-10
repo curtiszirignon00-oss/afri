@@ -302,7 +302,7 @@ export const PAGE_CONFIGS: Record<string, PageOGData> = {
   },
   learn: {
     title: 'Formation BRVM',
-    subtitle: '20 modules gratuits · Quiz · Certifications',
+    subtitle: '20 modules dont 9 gratuits · Quiz · Certifications',
     category: 'Formation',
     icon: '🎓',
     accentColor: '#8B5CF6',

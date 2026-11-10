@@ -11,6 +11,20 @@ import * as achievementService from '../services/achievement.service';
 import * as weeklyChallengeService from '../services/weekly-challenge.service';
 import { prisma } from '../config/database';
 import { cacheInvalidatePattern } from '../services/cache.service';
+import {
+    getFormationAccess, canReadModule, lockModule,
+    FORMATION_REQUIRED_CODE, FORMATION_REQUIRED_MESSAGE,
+} from '../services/formation-access.service';
+
+/** Vérifie l'accès à un module payant. Renvoie true si une réponse 403 a été envoyée. */
+async function denyIfLocked(req: Request, res: Response, slug: string): Promise<boolean> {
+    const module = await learningService.getModuleBySlug(slug);
+    if (!module) return false; // laisser le handler renvoyer son propre 404
+    const access = await getFormationAccess((req as any).user?.id);
+    if (canReadModule(module, access)) return false;
+    res.status(403).json({ message: FORMATION_REQUIRED_MESSAGE, code: FORMATION_REQUIRED_CODE });
+    return true;
+}
 
 // Instancie le service une seule fois
 const learningService = new LearningServicePrisma();
@@ -22,8 +36,12 @@ export class LearningController {
         try {
             const difficulty = req.query.difficulty as string | undefined;
 
-            const modules = await learningService.getPublishedModules(difficulty); 
-            return res.status(200).json(modules);
+            const modules = await learningService.getPublishedModules(difficulty);
+            const access = await getFormationAccess((req as any).user?.id);
+            const visible = modules.map((m) => (canReadModule(m, access) ? m : lockModule(m)));
+            // Réponse personnalisée selon l'utilisateur : jamais en cache partagé
+            res.setHeader('Cache-Control', 'private, no-store');
+            return res.status(200).json(visible);
 
         } catch (error) {
             // CORRECTION TS7030: Retour explicite
@@ -43,6 +61,15 @@ export class LearningController {
                 // CORRECTION TS7030: Retour explicite
                 return res.status(404).json({ message: 'Module non trouvé.' });
             }
+            const access = await getFormationAccess((req as any).user?.id);
+            res.setHeader('Cache-Control', 'private, no-store');
+            if (!canReadModule(module, access)) {
+                return res.status(403).json({
+                    message: FORMATION_REQUIRED_MESSAGE,
+                    code: FORMATION_REQUIRED_CODE,
+                    module: lockModule(module),
+                });
+            }
             return res.status(200).json(module);
         } catch (error) {
             // CORRECTION TS7030: Retour explicite
@@ -61,6 +88,8 @@ export class LearningController {
                 // CORRECTION TS7030: Retour explicite
                 return res.status(401).json({ message: "Utilisateur non authentifié. L'ID utilisateur est manquant." });
             }
+
+            if (await denyIfLocked(req, res, slug)) return;
 
             const { progress, alreadyCompleted } = await learningService.markModuleAsCompleted(userId, slug);
 
@@ -159,6 +188,8 @@ export class LearningController {
         try {
             const { slug } = req.params;
 
+            if (await denyIfLocked(req, res, slug)) return;
+
             const quiz = await learningService.getModuleQuiz(slug);
 
             if (!quiz) {
@@ -201,6 +232,8 @@ export class LearningController {
             if (!answers) {
                 return res.status(400).json({ message: "Réponses invalides." });
             }
+
+            if (await denyIfLocked(req, res, slug)) return;
 
             const result = await learningService.submitQuiz(userId, slug, answers, timeSpent);
 

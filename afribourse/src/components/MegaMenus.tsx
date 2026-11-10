@@ -3,7 +3,7 @@
 // libellé + une ligne de description, vrais <Link> (SEO, clic molette, accessibilité),
 // une seule zone « mise en avant » par menu, uniquement des pages qui existent.
 import {
-  BookOpen, GraduationCap, TrendingUp, TrendingDown, BarChart3, Clock, Video, BookA, LifeBuoy,
+  BookOpen, Crown, TrendingUp, TrendingDown, BarChart3, Clock, Video, BookA, LifeBuoy,
   LayoutGrid, LineChart, PieChart, MessageCircle, Users, Trophy, Award, Medal, Newspaper, ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE_URL } from '../config/api';
 import { BRVM_NEWS } from '../data/brvm2026News';
+import { FORMATION_FREE_COUNT, FORMATION_PREMIUM_COUNT, FORMATION_PRICE_LABEL } from '../config/formation';
 
 type MarketIndex = {
   id: string;
@@ -91,9 +92,9 @@ function Footer({ to, label, hint }: { to: string; label: string; hint?: React.R
 
 export function LearnMegaMenu() {
   const items: MenuItem[] = [
-    { to: '/learn',         icon: BookOpen,      label: 'Modules gratuits',  desc: 'Les bases de la BRVM, pas à pas' },
-    { to: '/parcours',      icon: GraduationCap, label: 'Parcours certifiant', desc: 'Formation complète + certificat' },
-    { to: '/webinaires-eco', icon: Video,        label: 'Webinaires',        desc: 'Sessions live avec des experts' },
+    { to: '/learn',         icon: BookOpen,      label: 'Académie',          desc: `${FORMATION_FREE_COUNT} modules gratuits pour démarrer` },
+    { to: '/formation',     icon: Crown,         label: 'Formation Complète', desc: `${FORMATION_PREMIUM_COUNT} modules avancés · ${FORMATION_PRICE_LABEL}` },
+    { to: '/webinaires-eco', icon: Video,        label: 'Webinaires live',   desc: 'Parcours en cohorte + certificat' },
     { to: '/time-machine',  icon: Clock,         label: 'Time Machine',      desc: "Rejouez l'histoire de la BRVM", isNew: true },
     { to: '/glossary',      icon: BookA,         label: 'Glossaire',         desc: 'Tous les termes de la bourse' },
     { to: '/help',          icon: LifeBuoy,      label: "Centre d'aide",     desc: 'Questions fréquentes' },

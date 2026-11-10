@@ -12,7 +12,7 @@ const STATIC_ROUTES = [
   { path: '/learn',         changefreq: 'weekly',  priority: '0.8' },
   { path: '/glossary',      changefreq: 'monthly', priority: '0.7' },
   { path: '/formation',     changefreq: 'weekly',  priority: '0.7' },
-  { path: '/webinaires',    changefreq: 'weekly',  priority: '0.7' },
+  { path: '/webinaires-eco', changefreq: 'weekly',  priority: '0.7' },
   { path: '/parcours',      changefreq: 'weekly',  priority: '0.6' },
   { path: '/essai-gratuit', changefreq: 'monthly', priority: '0.6' },
   { path: '/community',     changefreq: 'daily',   priority: '0.6' },

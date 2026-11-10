@@ -3873,7 +3873,7 @@ export async function sendWebinarLaunchEmail({
   name,
 }: { email: string; name: string }): Promise<void> {
   const displayName = name || 'Investisseur';
-  const webinarUrl = 'https://www.africbourse.com/webinaires';
+  const webinarUrl = 'https://www.africbourse.com/webinaires-eco';
 
   const html = `
     <!DOCTYPE html>
@@ -4258,37 +4258,37 @@ function getWebinarCfg(webinarId: string, _earlyBird: boolean, pack?: string | n
     heroGradient: 'linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 40%,#7C3AED 100%)',
     heroLabel: `${packName} · ${det.sessions} sessions · Communauté · Certificat`,
     heroTitle: '🎓 Bienvenue dans le Parcours !',
-    heroSub: `D'ici mi-septembre, vous aurez suivi ${det.sessions} sessions live (${det.hours}h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.`,
+    heroSub: `D'ici fin décembre, vous aurez suivi ${det.sessions} sessions live (${det.hours}h de formation), reçu vos plans d'action personnalisés, accédé au Deal Flow exclusif et intégré la Communauté Afribourse.`,
     accentColor: '#1D4ED8',
     accentLight: '#EFF6FF',
     accentBorder: '#BFDBFE',
     intro: 'Vous avez pris une décision importante aujourd\'hui.',
     recap: `
       <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;width:40%;">Pack</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">${packName} · ${det.sessions} sessions · ${det.hours}h</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 8 août 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">22-23 août 2026 · 09h00-12h00 GMT</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">5-6 septembre 2026 · 09h00-12h00 GMT</td></tr>`,
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Session 1 — Fondamentaux</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">Samedi 12 décembre 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 2 & 3 — Analyse fondamentale</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">19-20 décembre 2026 · 09h00-12h00 GMT</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#64748B;">Sessions 4 & 5 — Analyse technique</td><td style="padding:10px 0;border-bottom:1px solid #F1F5F9;font-size:14px;color:#0F172A;font-weight:600;">26-27 décembre 2026 · 09h00-12h00 GMT</td></tr>`,
     prep: `
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>${det.sessions} sessions live · ${det.hours}h de formation</strong> (base : 8 août + 22-23 août + 5-6 septembre)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>${det.sessions} sessions live · ${det.hours}h de formation</strong> (base : 12 décembre + 19-20 décembre + 26-27 décembre)</p>
       ${extrasHtml}
-      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif mi-septembre)</p>
+      <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Communauté Afribourse</strong> — 3 mois d'accès (actif fin décembre)</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Plans d'Action personnalisés</strong> — livrés après chaque thème</p>
       <p style="margin:0 0 10px;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Deal Flow hebdomadaire</strong> — 12 éditions exclusives</p>
-      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible fin septembre si quiz complété</p>`,
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">✓ <strong>Certificat Investisseur BRVM Niveau 1</strong> — disponible mi-janvier 2027 si quiz complété</p>`,
     after: `
       <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
         <tr style="background-color:#F8FAFC;">
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Date</td>
           <td style="padding:8px 12px;font-size:13px;color:#1D4ED8;font-weight:700;border-bottom:1px solid #E2E8F0;">Livrable</td>
         </tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 8 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 9 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">22-23 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 24 août</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">5-6 septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 7 septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 8 septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
-        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Fin septembre</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Sam. 12 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Session 1 live — Fondamentaux (3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Dim. 13 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #1 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">19-20 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 2 & 3 — Analyse fondamentale (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 21 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #2 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">26-27 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Sessions 4 & 5 — Analyse technique (2×3H)</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Lun. 28 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Plan d'Action #3 par email</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;border-bottom:1px solid #F1F5F9;">Mar. 29 déc.</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;border-bottom:1px solid #F1F5F9;">Accès Communauté + 1ère édition Deal Flow</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#64748B;">Mi-janvier 2027</td><td style="padding:8px 12px;font-size:13px;color:#0F172A;">Certificat Investisseur BRVM Niveau 1</td></tr>
       </table>`,
     learning: [
       'S1 : Comprendre la BRVM, ses acteurs et ses mécanismes',
@@ -4467,7 +4467,7 @@ const WEBINAR_LABELS: Record<string, { title: string; date: string; accentColor:
   'w3-technique-juin':           { title: 'Analyse technique',                       date: '15–16 août 2026',     accentColor: '#EA580C' },
   'w3a-technique-juin':          { title: 'Analyse technique — Partie 1',            date: '15 août 2026',        accentColor: '#EA580C' },
   'w3b-technique-juin':          { title: 'Analyse technique — Partie 2',            date: '16 août 2026',        accentColor: '#EA580C' },
-  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '8 août → 6 septembre', accentColor: '#1D4ED8' },
+  'pack-parcours-investisseur':  { title: 'Pack Parcours Investisseur BRVM',         date: '12 → 27 décembre 2026', accentColor: '#1D4ED8' },
   'webinaire-introduction-bourse':  { title: 'Webinaire — Introduction à la Bourse',                    date: 'À venir', accentColor: '#1D4ED8' },
   'webinaire-fondamentaux-analyse': { title: 'Webinaire — Les Fondamentaux : Analyser & Valoriser une Action', date: 'À venir (2 sessions)', accentColor: '#059669' },
   'webinaire-analyse-technique':    { title: "Webinaire — L'Analyse Technique : Lire le Marché",         date: 'À venir (2 sessions)', accentColor: '#EA580C' },
@@ -4728,15 +4728,15 @@ export async function sendCohortPreregistrationEmail({
 }: CohortPreregistrationParams): Promise<void> {
   const name = firstName || 'Investisseur';
   const isBudget = variant === 'budget';
-  // Cohorte octobre pour la variante budget (offre -50% jusqu'au 25 sept), cohorte août pour le standard
-  const cohortLabel = isBudget ? 'Cohorte Octobre 2026' : 'Cohorte Août 2026';
-  const cohortMonth = isBudget ? "d'octobre" : "d'août";
-  const startDate = isBudget ? '10 octobre' : '8 août';
+  // Cohorte décembre pour la variante budget (/webinaires-eco), cohorte août pour l'ancien standard
+  const cohortLabel = isBudget ? 'Cohorte Décembre 2026' : 'Cohorte Août 2026';
+  const cohortMonth = isBudget ? 'de décembre' : "d'août";
+  const startDate = isBudget ? 'samedi 12 décembre' : '8 août';
   const installmentTotal = pack && PACK_TIER_INSTALLMENT_TOTALS[pack] ? PACK_TIER_INSTALLMENT_TOTALS[pack] : null;
   const progRows = isBudget
-    ? `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>10 octobre</strong> — S1 · Fondamentaux de la bourse</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>24–25 octobre</strong> — S2 & S3 · Analyse fondamentale</td></tr>
-                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>7–8 novembre</strong> — S4 & S5 · Analyse technique</td></tr>
+    ? `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>Samedi 12 décembre</strong> — S1 · Fondamentaux de la bourse</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>19–20 décembre</strong> — S2 & S3 · Analyse fondamentale</td></tr>
+                <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>26–27 décembre</strong> — S4 & S5 · Analyse technique</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">🎓 Certificat « Investisseur BRVM — Niveau 1 »</td></tr>`
     : `<tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>8 août</strong> — S1 · Fondamentaux de la bourse</td></tr>
                 <tr><td style="padding:6px 0;font-size:14px;color:#374151;">📅 <strong>22–23 août</strong> — S2 & S3 · Analyse fondamentale</td></tr>
@@ -5287,7 +5287,7 @@ export async function sendPackParcoursBRVMEmail({
   name,
 }: { email: string; name: string }): Promise<void> {
   const firstName = (name || 'Investisseur').split(' ')[0];
-  const webinarUrl = 'https://www.africbourse.com/webinaires';
+  const webinarUrl = 'https://www.africbourse.com/webinaires-eco';
 
   const html = `
     <!DOCTYPE html>
@@ -6792,7 +6792,7 @@ export async function sendInvitationNouveauxInscritsEmail({
   <!-- ── CTA ── -->
   <tr>
     <td style="background-color:#ffffff;padding:0 32px 36px;text-align:center;">
-      <a href="https://www.africbourse.com/webinaires" style="display:inline-block;background-color:#00D4A8;color:#0A1628;font-size:16px;font-weight:700;text-decoration:none;padding:16px 40px;border-radius:8px;letter-spacing:0.01em;">Je réserve ma place →</a>
+      <a href="https://www.africbourse.com/webinaires-eco" style="display:inline-block;background-color:#00D4A8;color:#0A1628;font-size:16px;font-weight:700;text-decoration:none;padding:16px 40px;border-radius:8px;letter-spacing:0.01em;">Je réserve ma place →</a>
       <div style="margin-top:10px;font-size:12px;color:#94A3B8;">Préinscription sans paiement · Vous décidez ensuite</div>
     </td>
   </tr>
@@ -6823,7 +6823,7 @@ export async function sendInvitationNouveauxInscritsEmail({
             <span style="font-family:Georgia,serif;font-size:14px;font-weight:700;color:#00D4A8;">Afri</span><span style="font-family:Georgia,serif;font-size:14px;font-weight:700;color:#fff;">Bourse</span>
           </td>
           <td align="right">
-            <a href="https://www.africbourse.com/webinaires" style="font-size:11px;color:#8898AA;text-decoration:none;margin-left:14px;">Webinaires</a>
+            <a href="https://www.africbourse.com/webinaires-eco" style="font-size:11px;color:#8898AA;text-decoration:none;margin-left:14px;">Webinaires</a>
             <a href="https://www.africbourse.com" style="font-size:11px;color:#8898AA;text-decoration:none;margin-left:14px;">Site web</a>
           </td>
         </tr>
@@ -6842,7 +6842,7 @@ export async function sendInvitationNouveauxInscritsEmail({
     to: email,
     subject: '📈 Le marché BRVM explose — et vous n\'êtes pas encore positionné',
     html,
-    text: `Bonjour ${firstName},\n\nVous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment.\n\nLa BRVM a progressé de près de 99% sur les 5 dernières années. Pendant que la plupart des épargnants laissaient leur argent dormir.\n\nC'est exactement le moment où il faut se positionner : quand le marché monte, mais avant que tout le monde s'y intéresse.\n\nNous avons créé le Parcours Investisseur BRVM — un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée.\n\nCe que vous obtenez :\n• 5 webinaires live avec des analystes BRVM\n• Un plan d'action personnalisé après chaque session\n• Le Deal Flow chaque semaine\n• Une communauté d'investisseurs\n• L'accompagnement pour ouvrir votre compte\n• Votre Certificat Investisseur BRVM Niveau 1\n\nÀ partir de 70 000 XOF.\n\n→ Réservez votre place (préinscription gratuite) : https://www.africbourse.com/webinaires\n\nLa prochaine cohorte démarre bientôt. Places limitées à 20 personnes.\n\nCurtis Zirignon\nFondateur — Afribourse\n\nP.S. — Le chiffre de 99% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé. Ceux qui se forment maintenant prennent une longueur d'avance.`,
+    text: `Bonjour ${firstName},\n\nVous l'avez sûrement senti : quelque chose se passe sur les marchés africains en ce moment.\n\nLa BRVM a progressé de près de 99% sur les 5 dernières années. Pendant que la plupart des épargnants laissaient leur argent dormir.\n\nC'est exactement le moment où il faut se positionner : quand le marché monte, mais avant que tout le monde s'y intéresse.\n\nNous avons créé le Parcours Investisseur BRVM — un accompagnement de 90 jours qui vous fait passer de zéro à votre première action achetée.\n\nCe que vous obtenez :\n• 5 webinaires live avec des analystes BRVM\n• Un plan d'action personnalisé après chaque session\n• Le Deal Flow chaque semaine\n• Une communauté d'investisseurs\n• L'accompagnement pour ouvrir votre compte\n• Votre Certificat Investisseur BRVM Niveau 1\n\nÀ partir de 70 000 XOF.\n\n→ Réservez votre place (préinscription gratuite) : https://www.africbourse.com/webinaires-eco\n\nLa prochaine cohorte démarre bientôt. Places limitées à 20 personnes.\n\nCurtis Zirignon\nFondateur — Afribourse\n\nP.S. — Le chiffre de 99% sur 5 ans n'est pas une promesse de rendement futur. C'est un fait passé. Ceux qui se forment maintenant prennent une longueur d'avance.`,
   });
 }
 
@@ -6948,7 +6948,7 @@ export async function sendSegmentCEmail({
 }: { email: string; name: string }): Promise<void> {
   const firstName = (name && name.trim()) ? name.trim().split(' ')[0] : 'Investisseur';
   const learnUrl    = `${config.app.frontendUrl}/learn`;
-  const webinairesUrl = `${config.app.frontendUrl}/webinaires`;
+  const webinairesUrl = `${config.app.frontendUrl}/webinaires-eco`;
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
@@ -7159,7 +7159,7 @@ export async function sendPerformanceEmail({
   const dashboardUrl  = `${config.app.frontendUrl}/dashboard`;
   const stockUrl      = `${config.app.frontendUrl}/stock/${ticker}`;
   const profileUrl    = `${config.app.frontendUrl}/profile`;
-  const webinairesUrl = `${config.app.frontendUrl}/webinaires`;
+  const webinairesUrl = `${config.app.frontendUrl}/webinaires-eco`;
 
   const pct = Math.round(Math.abs(rendement));
   const isGain = rendement >= 0;

@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { installmentFirst } from '../config/packInstallments';
 
 // Versionné — incrémenter pour forcer le re-affichage sur tous les comptes
-const POPUP_KEY = 'afb_webinar_announcement_v5';
+const POPUP_KEY = 'afb_webinar_announcement_v6'; // v6 = cohorte Décembre 2026 (ré-affiche une fois)
 
 const PACKS = [
   {
@@ -94,7 +94,7 @@ export default function WebinarAnnouncementPopup() {
         <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 px-6 pt-6 pb-5 text-white">
           <div className="flex items-center gap-2 mb-3">
             <span className="bg-blue-500/30 border border-blue-400/40 text-blue-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-              Cohorte Août 2026
+              Cohorte Décembre 2026
             </span>
             <span className="text-blue-300 text-[10px] font-medium">Formation live · BRVM</span>
           </div>
@@ -105,7 +105,7 @@ export default function WebinarAnnouncementPopup() {
             3 niveaux disponibles — du <strong className="text-white">Starter ({formatPrice(70000)})</strong> à
             l'<strong className="text-white">Investisseur ({formatPrice(150000)})</strong>.
             Payable en 1 fois ou en 3 fois.
-            1ère session le <strong className="text-white">samedi 8 août</strong>.
+            1ère session le <strong className="text-white">samedi 12 décembre</strong>.
           </p>
         </div>
 

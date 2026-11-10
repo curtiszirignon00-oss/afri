@@ -1,6 +1,7 @@
 import { X, Zap, Crown, Sparkles, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PremiumWaitlist from './PremiumWaitlist';
+import { FORMATION_PRICE_LABEL, FORMATION_PREMIUM_RANGE, FORMATION_PREMIUM_COUNT } from '../config/formation';
 
 interface PremiumPaywallProps {
   isOpen: boolean;
@@ -10,7 +11,7 @@ interface PremiumPaywallProps {
 }
 
 // Deux cas :
-// - premium-modules (Formation Complète M7–M19) : achat unique disponible → page de paiement /formation
+// - premium-modules (Formation Complète, voir config/formation.ts) : achat unique disponible → page de paiement /formation
 // - investisseur-plus / pro (abonnement) : indisponible pour le moment → liste d'attente
 export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'investisseur-plus' }: PremiumPaywallProps) {
   const navigate = useNavigate();
@@ -21,15 +22,15 @@ export default function PremiumPaywall({ isOpen, onClose, feature, plan = 'inves
 
   const planDetails = isFormation ? {
     name: 'Formation Complète',
-    price: '15 000 FCFA',
+    price: FORMATION_PRICE_LABEL,
     period: '— accès à vie',
     icon: Crown,
     iconColor: 'text-amber-500',
     features: [
-      'Modules M7 à M19 débloqués à vie',
+      `${FORMATION_PREMIUM_COUNT} modules avancés (${FORMATION_PREMIUM_RANGE}) débloqués à vie`,
       'Tous les quiz inclus',
-      'Psychologie & Biais, Analyse Fondamentale...',
-      'Gestion de portefeuille avancée',
+      'Analyse fondamentale, valorisation, analyse technique',
+      'Gestion du risque & stratégie de portefeuille',
       'Paiement unique — aucun abonnement',
     ],
   } : {

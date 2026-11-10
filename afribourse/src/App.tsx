@@ -1,6 +1,6 @@
 // src/App.tsx
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -83,7 +83,6 @@ const SurveyPage = lazy(() => import('./pages/SurveyPage'));
 const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow'));
 const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
 const WebinarPage = lazy(() => import('./pages/WebinarPage'));
-const WebinairesUnitairesPage = lazy(() => import('./pages/WebinairesUnitairesPage'));
 const AnalysisCheckoutPage = lazy(() => import('./pages/AnalysisCheckoutPage'));
 const PaymentLinkPage = lazy(() => import('./pages/PaymentLinkPage'));
 const InstallmentStartPage = lazy(() => import('./pages/InstallmentStartPage'));
@@ -93,6 +92,12 @@ const CohortCheckoutPage = lazy(() => import('./pages/CohortCheckoutPage'));
 const CertificatePage = lazy(() => import('./pages/CertificatePage'));
 const FormationPremiumPage = lazy(() => import('./pages/FormationPremiumPage'));
 const ParcoursPage = lazy(() => import('./pages/ParcoursPage'));
+// Anciennes pages webinaires → /webinaires-eco (conserve ?query et #ancre, ex. #analyses)
+function WebinairesRedirect() {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/webinaires-eco${search}${hash}`} replace />;
+}
+
 
 // Pages auth lazy — l'utilisateur accepte un délai au moment du clic
 const SignupPage = lazy(() => import('./components/SignupPage'));
@@ -264,9 +269,11 @@ function Layout() {
           <Route path="/news/:slug" element={<NewsDetailPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/learn" element={<LearnPage />} />
-          <Route path="/webinaires" element={<WebinarPage />} />
+          {/* Seule page webinaires conservée : /webinaires-eco. Les anciennes URL y redirigent
+              (301 côté Vercel dans vercel.json ; ce Navigate couvre la navigation interne). */}
+          <Route path="/webinaires" element={<WebinairesRedirect />} />
           <Route path="/webinaires-eco" element={<WebinarPage variant="budget" />} />
-          <Route path="/webinaires/individuels" element={<WebinairesUnitairesPage />} />
+          <Route path="/webinaires/*" element={<WebinairesRedirect />} />
           <Route path="/analyses/paiement" element={<AnalysisCheckoutPage />} />
           <Route path="/parcours" element={<ParcoursPage />} />
           <Route path="/pay/:token" element={<PaymentLinkPage />} />
@@ -495,7 +502,7 @@ function Layout() {
                     </a>
                   </li>
                   <li>
-                    <a href="/webinaires" className="text-gray-400 hover:text-white transition-colors">
+                    <a href="/webinaires-eco" className="text-gray-400 hover:text-white transition-colors">
                       Webinaires
                     </a>
                   </li>

@@ -12,6 +12,7 @@ import {
   ANALYSIS_PACK_IDS,
   ANALYSIS_SEAT_LIMIT,
   CURRENT_ANALYSIS_SERIES,
+  ANALYSIS_SOCIAL_PROOF_SEED,
   type AnalysisPackId,
 } from '../config/analysisPacks';
 
@@ -20,14 +21,14 @@ const COHORT_ID = 'cohorte-juillet-2026';
 
 const PACK_WEBINAR_ID = 'pack-parcours-investisseur';
 
-// Cohorte "budget" OCTOBRE (page /webinaires-eco) : 20 pré-inscriptions max par pack.
+// Cohorte "budget" DÉCEMBRE (page /webinaires-eco, début samedi 12/12/2026) : 20 places max par pack.
 const BUDGET_SEAT_LIMIT = 20;
 // Cohorte courante : seules les pré-inscriptions rattachées à ce tag comptent.
 // Pour repartir de 0 sur une future cohorte : changer ce tag (l'historique est conservé).
-export const CURRENT_COHORT = 'oct-2026';
+export const CURRENT_COHORT = 'dec-2026';
 // Filet : les pré-inscriptions prises depuis l'ouverture de cette cohorte mais enregistrées
 // avant l'introduction du tag (cohort = null) restent comptées.
-const COHORT_OPENED_AT = new Date('2026-09-15T00:00:00Z');
+const COHORT_OPENED_AT = new Date('2026-11-10T00:00:00Z');
 const currentCohortWhere = {
   OR: [
     { cohort: CURRENT_COHORT },
@@ -45,7 +46,7 @@ async function getAnalysisReserved(pack: AnalysisPackId): Promise<number> {
       cohort: CURRENT_ANALYSIS_SERIES,
     },
   });
-  return Math.min(ANALYSIS_SEAT_LIMIT, count);
+  return Math.min(ANALYSIS_SEAT_LIMIT, count + (ANALYSIS_SOCIAL_PROOF_SEED[pack] ?? 0));
 }
 
 /** Refuse la place si le pack d'analyses est complet. Retourne un message d'erreur, ou null. */
@@ -66,6 +67,15 @@ export async function checkAnalysisSeat(pack: AnalysisPackId, email?: string | n
 export const PRESENTIEL_LIMIT = 20;
 const PRESENTIEL_IDS = ['presentiel-calavi-benin', 'presentiel-ouaga-bf'];
 
+// Preuve sociale : places déjà affichées comme prises à l'ouverture de la cohorte (5 à 9,
+// différent selon l'offre). Elles s'ajoutent aux vraies réservations et occupent réellement
+// une place → capacité réelle restante = 20 − base. Remettre à 0 pour une cohorte « vierge ».
+const SOCIAL_PROOF_SEED: Record<string, number> = {
+  starter: 7,
+  parcours: 9,
+  investisseur: 5,
+};
+
 /** Places prises pour un pack sur la cohorte courante : TOUTE pré-inscription compte,
  *  qu'elle soit payée ou non (la réservation occupe la place dès l'enregistrement). */
 async function getBudgetReserved(tier: string): Promise<number> {
@@ -77,7 +87,7 @@ async function getBudgetReserved(tier: string): Promise<number> {
       ...currentCohortWhere,
     },
   });
-  return Math.min(BUDGET_SEAT_LIMIT, count);
+  return Math.min(BUDGET_SEAT_LIMIT, count + (SOCIAL_PROOF_SEED[tier] ?? 0));
 }
 
 /** Places occupées pour un événement présentiel = PAIEMENTS confirmés. */

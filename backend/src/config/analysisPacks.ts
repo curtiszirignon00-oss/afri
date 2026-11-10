@@ -30,9 +30,18 @@ export const ANALYSIS_PACK_FULL: Record<AnalysisPackId, number> = {
 /** Places par pack sur la série courante (toute réservation occupe une place). */
 export const ANALYSIS_SEAT_LIMIT = 20;
 
+/** Preuve sociale : places affichées comme déjà prises à l'ouverture de la série (5 à 9,
+ *  différent selon le pack). Elles s'ajoutent aux vraies réservations et occupent réellement
+ *  une place → capacité réelle restante = 20 − base. Remettre à 0 pour une série « vierge ». */
+export const ANALYSIS_SOCIAL_PROOF_SEED: Record<AnalysisPackId, number> = {
+  essentiel: 6,
+  elargi: 8,
+  integral: 5,
+};
+
 /** Série courante : seules les réservations portant ce tag comptent.
  *  Pour repartir de zéro sur une nouvelle série : changer ce tag (l'historique est conservé). */
-export const CURRENT_ANALYSIS_SERIES = 'analyses-s1';
+export const CURRENT_ANALYSIS_SERIES = 'analyses-dec-2026'; // série S1 (sept.–oct.) close le 10/11/2026
 
 // TODO DATE À CONFIRMER — fin du tarif de lancement -50 % (compte à rebours de la page).
 // Doit rester synchronisé avec afribourse/src/config/analysisPacks.ts (ANALYSIS_DEADLINE_ISO).
@@ -42,7 +51,7 @@ export const ANALYSIS_DEADLINE_ISO = '2026-10-31T23:59:59Z';
 export const ANALYSIS_DEADLINE_LABEL = '31 octobre 2026';
 
 // TODO DATES À CONFIRMER — dates des sessions live de décorticage (emails + page).
-export const ANALYSIS_SESSION_DATES_LABEL = 'novembre 2026 — dates communiquées par email et WhatsApp';
+export const ANALYSIS_SESSION_DATES_LABEL = 'décembre 2026 — dates communiquées par email et WhatsApp';
 
 export function analysisDeadlineMs(): number {
   return new Date(ANALYSIS_DEADLINE_ISO).getTime();

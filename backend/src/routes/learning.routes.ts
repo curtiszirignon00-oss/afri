@@ -3,13 +3,14 @@
 import { Router } from 'express';
 import { LearningController } from '../controllers/learning.controller'; 
 // CORRECTION: Importation de la fonction 'auth' au lieu de 'authenticateToken'
-import { auth } from '../middlewares/auth.middleware'; 
+import { auth, optionalAuth } from '../middlewares/auth.middleware';
 
 const router = Router();
 const learningController = new LearningController();
 
 // Route pour obtenir tous les modules
-router.get('/', learningController.getModules.bind(learningController));
+// optionalAuth : le contenu des modules payants n'est renvoyé qu'aux utilisateurs qui y ont accès
+router.get('/', optionalAuth, learningController.getModules.bind(learningController));
 
 // ADMIN — Vider le cache (POST /api/learning-modules/cache/clear?secret=XXX)
 router.post('/cache/clear', learningController.clearCache.bind(learningController));
@@ -25,7 +26,7 @@ router.post('/:slug/complete', auth, learningController.markAsCompleted.bind(lea
 
 // --- ROUTES QUIZ ---
 // Route pour récupérer le quiz d'un module
-router.get('/:slug/quiz', learningController.getModuleQuiz.bind(learningController));
+router.get('/:slug/quiz', optionalAuth, learningController.getModuleQuiz.bind(learningController));
 
 // Route pour soumettre le quiz
 router.post('/:slug/submit-quiz', auth, learningController.submitQuiz.bind(learningController));
@@ -34,6 +35,6 @@ router.post('/:slug/submit-quiz', auth, learningController.submitQuiz.bind(learn
 router.get('/:slug/quiz-attempts', auth, learningController.getQuizAttempts.bind(learningController));
 
 // Route pour obtenir un module par slug (doit être en dernier pour éviter les conflits)
-router.get('/:slug', learningController.getModuleBySlug.bind(learningController));
+router.get('/:slug', optionalAuth, learningController.getModuleBySlug.bind(learningController));
 
 export default router;
