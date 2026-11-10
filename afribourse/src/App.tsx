@@ -36,6 +36,7 @@ import WelcomePopup from './components/WelcomePopup';
 import WebinarAnnouncementPopup from './components/WebinarAnnouncementPopup';
 import CertificatePopup from './components/certificate/CertificatePopup';
 import { OfflineBanner } from './components/pwa/OfflineBanner';
+import WhatsAppGroupCTA from './components/WhatsAppGroupCTA';
 import { SessionExpiredModal } from './components/ui/SessionExpiredModal';
 
 // Time Machine — Apprentissage guidé historique
@@ -481,6 +482,7 @@ function Layout() {
                 <p className="text-gray-400 text-sm leading-relaxed">
                   Apprenez, simulez et investissez en toute confiance.
                 </p>
+                <WhatsAppGroupCTA placement="footer" variant="footer" />
               </div>
 
               {/* Section Navigation */}

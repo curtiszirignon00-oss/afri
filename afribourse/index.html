@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="fr">
   <head>
+    <!-- File d'attente googletag (déclaration officielle Google Publisher Tag).
+         Nous ne chargeons AUCUNE pub, mais certains navigateurs in-app / scripts injectés
+         appellent googletag.cmd.push(...) → « ReferenceError: googletag is not defined »
+         (remonté par le dashboard admin, Safari iOS 13). Sans gpt.js, rien n'est exécuté. -->
+    <script>window.googletag = window.googletag || { cmd: [] };</script>
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-3CH8QXGT0P"></script>
     <script>

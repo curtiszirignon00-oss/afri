@@ -100,7 +100,12 @@ export function installGlobalErrorHandlers(): void {
     // Les erreurs de chargement de ressources (img, script) ne remontent pas jusqu'ici en bubbling
     const value = event.error ?? event.message;
     if (!value || isExpected(value)) return;
-    reportClientError(value, 'window');
+    // Origine du script fautif (ex. « <anonymous> » = script injecté, pas notre bundle) —
+    // affichée dans le dashboard admin, section « Composants ».
+    const source = event.filename
+      ? `[source] ${event.filename}:${event.lineno}:${event.colno}`
+      : '[source] inconnue (script inline, injecté ou eval)';
+    reportClientError(value, 'window', source);
   });
 
   window.addEventListener('unhandledrejection', (event) => {

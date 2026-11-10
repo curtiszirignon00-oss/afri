@@ -12,6 +12,7 @@ import { BRVM_NEWS, BRVMArticle, ImpactType, ContentBlock } from '../data/brvm20
 import ArticleInteractions from './ArticleInteractions';
 import HtmlArticleRenderer from './HtmlArticleRenderer';
 import RelatedArticles from './news/RelatedArticles';
+import WhatsAppGroupCTA from './WhatsAppGroupCTA';
 import NewsAuthGate from './news/NewsAuthGate';
 import { useAuth } from '../contexts/AuthContext';
 import { isSearchCrawler, PAYWALL_CLASS, paywallJsonLd, useCompanyNames, buildTickerSeo, withMention } from './news/articleSeo';
@@ -228,6 +229,7 @@ function DBArticlePage({ article }: { article: DBArticle }) {
             </div>
 
             <div className="max-w-4xl mx-auto">
+              <WhatsAppGroupCTA placement="article" className="mt-10" />
               <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
               <RelatedArticles articleId={article.id} tickers={article.tickers} category={article.category} />
               {footerNote}
@@ -251,6 +253,8 @@ function DBArticlePage({ article }: { article: DBArticle }) {
                     <p className="text-slate-400 italic">Aucun contenu disponible.</p>
                   )}
                 </div>
+
+                <WhatsAppGroupCTA placement="article" className="mt-10" />
 
                 <div className="mt-12"><ArticleInteractions articleId={article.id} /></div>
 

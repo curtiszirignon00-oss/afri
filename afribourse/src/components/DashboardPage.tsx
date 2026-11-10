@@ -27,6 +27,7 @@ import { useEmailVerificationPhase } from '../hooks/useEmailVerificationPhase';
 import EmailVerificationModal from './EmailVerificationModal';
 import SimbaPortfolioAdvisor from './SimbaPortfolioAdvisor';
 import DashboardWebinarWidget from './dashboard/DashboardWebinarWidget';
+import WhatsAppGroupCTA from './WhatsAppGroupCTA';
 import WelcomeModal from './onboarding/WelcomeModal';
 import RealPortfolioDiscovery from './real-portfolio/discovery/RealPortfolioDiscovery';
 import PortfolioSurfaceSwitch from './real-portfolio/PortfolioSurfaceSwitch';
@@ -1249,6 +1250,9 @@ export default function DashboardPage() {
 
             {/* Widget Prochain Webinaire */}
             <DashboardWebinarWidget />
+
+            {/* Groupe WhatsApp (encart statique, pas de popup) */}
+            <WhatsAppGroupCTA placement="dashboard" />
 
             {/* Widget Fil des Relations */}
             {(() => {

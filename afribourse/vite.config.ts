@@ -62,6 +62,11 @@ export default defineConfig({
     stripSourceMappingUrls(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Enregistrement fait UNE fois dans index.html (avec .catch). Le registerSW.js injecté
+      // par le plugin faisait doublon et n'interceptait pas le refus : les robots Google
+      // (Read-Aloud / rendu web) remplacent serviceWorker.register par une promesse rejetée
+      // → « Unhandled rejection: Rejected » remonté au dashboard admin.
+      injectRegister: false,
       includeAssets: [
         'images/logo_afribourse.png',
         'favicon.ico',
