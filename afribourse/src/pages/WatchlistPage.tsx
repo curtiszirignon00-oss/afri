@@ -1,7 +1,7 @@
 // src/pages/WatchlistPage.tsx
 import { useState, useMemo } from 'react';
 import { trackWatchlistAction } from '../lib/amplitude';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Star, TrendingUp, TrendingDown, Edit3, Trash2, Tag,
   StickyNote, DollarSign, Search, RefreshCw, ArrowLeft,
@@ -252,7 +252,6 @@ interface WatchlistCardProps {
 }
 
 function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView = false, sparkData }: WatchlistCardProps) {
-  const navigate = useNavigate();
 
   const posDay = (item.change_pct ?? 0) >= 0;
   const posPnl = (item.pnl_pct ?? 0) >= 0;
@@ -319,11 +318,11 @@ function WatchlistCard({ item, score, onEdit, onRemove, isDark, index, listView 
             <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 ${dotBd} ${posDay ? 'bg-emerald-400' : 'bg-red-400'}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <button onClick={() => navigate(`/stock/${item.stock_ticker}`)}
+            <Link to={`/stock/${item.stock_ticker}`}
               className={`${tName} transition-colors flex items-center gap-1 group/name cursor-pointer`}>
               {item.stock_ticker}
-              <ArrowUpRight className={`w-3 h-3 opacity-0 group-hover/name:opacity-100 ${arrow} transition-opacity`} />
-            </button>
+              <ArrowUpRight className={`w-3 h-3 opacity-0 group-hover/name:opacity-100 ${arrow} transition-opacity`} aria-hidden="true" />
+            </Link>
             <p className={sub}>BRVM · Équité</p>
           </div>
           <div className="flex items-center gap-0.5 flex-shrink-0">

@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 
 const SITE_URL = 'https://www.africbourse.com';
 const OG_IMAGE = 'https://afribourse-api.onrender.com/api/og/image/page/home';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import OptimizedImage from './ui/OptimizedImage';
 import {
@@ -114,7 +114,6 @@ function CountryBadge({ code, name }: { code: string; name: string }) {
 // ---------------------------------------------------------------------------
 
 export default function HomePage() {
-  const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const { showInstructions, closeInstructions, platform } = useInstallPrompt();
   const newsContainerRef = useRef<HTMLDivElement>(null);
@@ -443,14 +442,14 @@ export default function HomePage() {
                 <Button
                   variant="primary"
                   size="lg"
-                  onClick={() => navigate('/markets')}
+                  to={'/markets'}
                 >
                   <BarChart3 className="w-5 h-5 mr-2" />
                   {isLoggedIn ? 'Explorer les marchés' : 'Commencer gratuitement'}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
 
-                <Button variant="secondary" size="lg" onClick={() => navigate('/learn')}>
+                <Button variant="secondary" size="lg" to={'/learn'}>
                   <BookOpen className="w-5 h-5 mr-2" />
                   Apprendre à investir
                 </Button>
@@ -475,9 +474,9 @@ export default function HomePage() {
         </section>
 
         {/* === Bannière annonce === */}
-        <div
-          onClick={() => navigate('/webinaires-eco')}
-          className="bg-indigo-50 border-b border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors duration-150"
+        <Link
+          to={'/webinaires-eco'}
+          className="block bg-indigo-50 border-b border-indigo-100 cursor-pointer hover:bg-indigo-100 transition-colors duration-150"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-3 text-sm">
             <span className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0">
@@ -492,7 +491,7 @@ export default function HomePage() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
             </span>
           </div>
-        </div>
+        </Link>
 
         {/* === Simulateur === */}
         <SimulatorCarousel />
@@ -536,14 +535,14 @@ export default function HomePage() {
                   Rejoue les grands moments de la BRVM avec de l'argent virtuel.
                   Comprends tes erreurs avant de les faire pour de vrai.
                 </p>
-                <button
-                  onClick={() => navigate('/time-machine')}
+                <Link
+                  to={'/time-machine'}
                   className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-white font-bold px-6 py-3 rounded-xl transition-colors duration-150 cursor-pointer text-sm shadow-sm"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /><circle cx="12" cy="12" r="10" /></svg>
                   Remonter le temps
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -568,7 +567,7 @@ export default function HomePage() {
                 <Button
                   variant="success"
                   size="lg"
-                  onClick={() => navigate(isLoggedIn ? '/learn' : '/signup')}
+                  to={isLoggedIn ? '/learn' : '/signup'}
                 >
                   <FileText className="w-5 h-5 mr-2" />
                   {isLoggedIn ? "Accéder à l'Académie" : 'Créer un Compte Gratuit'}
@@ -584,13 +583,13 @@ export default function HomePage() {
                   { label: 'Connaissance BRVM', color: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' },
                   { label: 'Portefeuille', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
                 ].map(item => (
-                  <button
+                  <Link
                     key={item.label}
-                    onClick={() => navigate('/learn')}
+                    to={'/learn'}
                     className={`text-sm font-semibold px-4 py-2 rounded-full border transition-colors duration-150 cursor-pointer ${item.color}`}
                   >
                     {item.label}
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -605,7 +604,7 @@ export default function HomePage() {
                 <h2 className="text-3xl font-bold text-gray-900">Top Performances</h2>
                 <p className="text-gray-600 mt-1">Les actions qui se démarquent aujourd'hui</p>
               </div>
-              <Button variant="ghost" onClick={() => navigate('/markets')}>
+              <Button variant="ghost" to={'/markets'}>
                 Voir le marché
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -618,8 +617,9 @@ export default function HomePage() {
 
                 return (
                   <AnimatedSection key={stock.id} delay={idx * 60}>
-                    <div
-                      onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
+                    <Link
+                      to={`/stock/${stock.symbol}`}
+                      state={stock}
                       className="bg-white rounded-2xl border border-slate-100 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden flex flex-col"
                     >
                       {/* Infos stock */}
@@ -660,7 +660,7 @@ export default function HomePage() {
                           </div>
                         )}
                       </div>
-                    </div>
+                    </Link>
                   </AnimatedSection>
                 );
               })}
@@ -679,7 +679,7 @@ export default function HomePage() {
                 </div>
                 <p className="text-gray-600">Les posts qui font le plus réagir en ce moment</p>
               </div>
-              <Button variant="ghost" onClick={() => navigate('/community')}>
+              <Button variant="ghost" to={'/community'}>
                 Voir la communauté
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -709,9 +709,9 @@ export default function HomePage() {
                 };
                 return (
                   <AnimatedSection key={post.id} delay={idx * 80}>
+                    <Link to="/community" className="block h-full rounded-2xl">
                     <Card
                       hoverable
-                      onClick={() => navigate('/community')}
                       className="cursor-pointer transform hover:-translate-y-1 transition-all duration-300 hover:shadow-xl flex flex-col"
                     >
                       <div className="flex items-center gap-3 mb-3">
@@ -749,6 +749,7 @@ export default function HomePage() {
                         </span>
                       </div>
                     </Card>
+                    </Link>
                   </AnimatedSection>
                 );
               })}
@@ -774,7 +775,7 @@ export default function HomePage() {
               <Button variant="ghost" size="sm" onClick={() => scrollNews('right')}>
                 <ChevronRight className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" onClick={() => navigate('/news')} className="ml-2">
+              <Button variant="ghost" to={'/news'} className="ml-2">
                 Voir tout <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -840,9 +841,9 @@ export default function HomePage() {
                     <div className="w-3 h-3 bg-white border-r border-b border-slate-100 rotate-45 mx-auto -mt-1.5 shadow-sm" />
                   </div>
 
+                  <Link to="/news" className="block h-full rounded-xl">
                   <article
                     className="group h-full bg-white border border-slate-200 rounded-xl hover:border-[#00D4A8] hover:shadow-lg transition-all duration-200 cursor-pointer overflow-hidden flex flex-col"
-                    onClick={() => navigate('/news')}
                   >
                     <div className="h-1 rounded-t-xl" style={{ background: style.bar }} />
 
@@ -883,6 +884,7 @@ export default function HomePage() {
                       </div>
                     </div>
                   </article>
+                  </Link>
                 </div>
               );
             })}
@@ -997,7 +999,7 @@ export default function HomePage() {
 
           <div className="text-center mt-8">
             <p className="text-gray-600 mb-4">Vous avez d'autres questions ?</p>
-            <Button variant="outline" onClick={() => navigate('/help')}>
+            <Button variant="outline" to={'/help'}>
               Consulter notre centre d'aide
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -1017,7 +1019,7 @@ export default function HomePage() {
               <Button
                 variant="secondary"
                 size="lg"
-                onClick={() => navigate(isLoggedIn ? '/markets' : '/signup')}
+                to={isLoggedIn ? '/markets' : '/signup'}
               >
                 {isLoggedIn ? 'Commencer à investir' : 'Créer un compte gratuit'}
                 <ArrowRight className="w-5 h-5 ml-2" />

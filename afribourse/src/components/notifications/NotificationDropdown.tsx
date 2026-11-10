@@ -129,11 +129,15 @@ export default function NotificationDropdown() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Notifications"
+                aria-label={unreadCount > 0
+                    ? `Notifications, ${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`
+                    : 'Notifications'}
+                aria-haspopup="dialog"
+                aria-expanded={isOpen}
             >
-                <Bell className="w-6 h-6 text-gray-600" />
+                <Bell className="w-6 h-6 text-gray-600" aria-hidden="true" />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
+                    <span aria-hidden="true" className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1.5 text-xs font-bold text-white bg-red-500 rounded-full">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -141,7 +145,7 @@ export default function NotificationDropdown() {
 
             {/* Dropdown Panel */}
             {isOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
                         <h3 className="font-semibold text-gray-900">Notifications</h3>
@@ -158,9 +162,10 @@ export default function NotificationDropdown() {
                             )}
                             <button
                                 onClick={() => setIsOpen(false)}
+                                aria-label="Fermer les notifications"
                                 className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
                             >
-                                <X className="w-4 h-4 text-gray-500" />
+                                <X className="w-4 h-4 text-gray-500" aria-hidden="true" />
                             </button>
                         </div>
                     </div>

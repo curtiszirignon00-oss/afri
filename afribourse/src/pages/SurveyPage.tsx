@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, SkipForward, CheckCircle2, ArrowLeft } from 'lucide-react';
-import { useDiscoverySurvey } from '../hooks/useOnboarding';
+import { useDiscoverySurvey, useSkipSurvey } from '../hooks/useOnboarding';
+import { analytics } from '../services/analytics';
+import toast from 'react-hot-toast';
 import { metaPixel } from '../utils/metaPixel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -94,6 +96,18 @@ const QUESTIONS = [
 export default function SurveyPage() {
   const navigate = useNavigate();
   const { mutateAsync: submitSurvey, isPending } = useDiscoverySurvey();
+  const { mutateAsync: skipSurvey, isPending: isSkipping } = useSkipSurvey();
+
+  // « Passer » : débloque l'accès sans profil et mène directement au premier trade guidé.
+  async function handleSkipSurvey() {
+    try {
+      await skipSurvey();
+      analytics.trackAction('survey_skipped', 'Survey passé', { step: String(step) });
+      navigate('/premier-trade');
+    } catch {
+      toast.error('Impossible de passer pour le moment. Réessayez.');
+    }
+  }
 
   const [step, setStep] = useState<Step>(1);
   const [q1, setQ1] = useState<Q1Answer | null>(null);
@@ -160,12 +174,13 @@ export default function SurveyPage() {
               <strong className="text-gray-700">{meta.label}</strong>.
             </p>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/premier-trade')}
               className={`w-full py-4 bg-gradient-to-r ${meta.gradient} text-white rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-shadow text-base`}
             >
-              Accéder à mon dashboard
+              Faire mon premier investissement simulé
               <ChevronRight className="w-5 h-5" />
             </button>
+            <p className="mt-3 text-xs text-gray-400">1 000 000 FCFA virtuels · aucun argent réel · 1 minute</p>
           </div>
         </div>
       </div>
@@ -183,9 +198,19 @@ export default function SurveyPage() {
           <img src="/images/logo_afribourse.png" alt="AfriBourse" className="w-9 h-9 object-contain" />
           <span className="font-bold text-gray-800">AfriBourse</span>
         </div>
-        <span className="text-sm text-gray-400 font-medium">
-          {currentStep} / 3
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400 font-medium">
+            {currentStep} / 3
+          </span>
+          <button
+            onClick={handleSkipSurvey}
+            disabled={isSkipping || isPending}
+            className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-colors disabled:opacity-50"
+          >
+            {isSkipping ? 'Un instant…' : 'Passer'}
+            <SkipForward className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Progress bar */}

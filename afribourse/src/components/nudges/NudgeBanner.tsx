@@ -12,7 +12,7 @@ import type { NudgeConfig } from '../../data/nudges';
 import { pulseElement } from '../../utils/nudgeUtils';
 
 const AUTH_PATHS = [
-  '/login', '/signup', '/survey', '/confirmer-inscription',
+  '/login', '/signup', '/survey', '/premier-trade', '/confirmer-inscription',
   '/renvoyer-confirmation', '/verifier-email',
   '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe',
 ];

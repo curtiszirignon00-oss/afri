@@ -1,12 +1,16 @@
 // src/components/ui/Button.tsx
 import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   fullWidth?: boolean;
+  /** Destination interne : rend un vrai lien (<a href>) au lieu d'un bouton —
+   *  ouverture dans un nouvel onglet possible et lien suivi par les moteurs de recherche. */
+  to?: string;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -19,6 +23,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth = false,
       disabled,
       className = '',
+      to,
       ...props
     },
     ref
@@ -55,6 +60,24 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ${disabled || isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
       ${className}
     `.trim().replace(/\s+/g, ' ');
+
+    if (to && !disabled) {
+      const { onClick, title, id, style, ...rest } = props;
+      void rest;
+      return (
+        <Link
+          to={to}
+          className={classes}
+          onClick={onClick as unknown as React.MouseEventHandler<HTMLAnchorElement>}
+          title={title}
+          id={id}
+          style={style}
+          aria-label={props['aria-label']}
+        >
+          {children}
+        </Link>
+      );
+    }
 
     return (
       <button

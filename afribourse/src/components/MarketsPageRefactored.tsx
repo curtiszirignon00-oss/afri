@@ -19,7 +19,7 @@ import MarketHours from './markets/MarketHours';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { getStockLogo } from '../utils/stockLogos';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 import { useMarketsPageNudge, markScreenerUsed } from '../hooks/useNudgeTriggers';
@@ -442,18 +442,18 @@ export default function MarketsPageRefactored() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-gray-800">Indices BRVM</h2>
-              <button
-                onClick={() => navigate('/indices')}
+              <Link
+                to="/indices"
                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 Voir tous les indices &rarr;
-              </button>
+              </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {marketIndices.map((index) => (
-                <div
+                <Link
                   key={index.id}
-                  onClick={() => navigate('/indices')}
+                  to="/indices"
                   className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow"
                 >
                   <div>
@@ -474,7 +474,7 @@ export default function MarketsPageRefactored() {
                       {index.daily_change_percent.toFixed(2)}%
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -818,9 +818,13 @@ export default function MarketsPageRefactored() {
                       {/* Info action - Sticky column */}
                       <td
                         className="px-3 sm:px-6 py-3 sm:py-4 sticky left-0 bg-white group-hover/row:bg-gray-50 z-10 min-w-[120px] after:content-[''] after:absolute after:top-0 after:right-0 after:bottom-0 after:w-px after:bg-gray-200 md:after:hidden"
-                        onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
                       >
-                        <div className="flex items-center gap-2">
+                        {/* Vrai lien : nouvel onglet possible + suivi par les moteurs de recherche */}
+                        <Link
+                          to={`/stock/${stock.symbol}`}
+                          state={stock}
+                          className="flex items-center gap-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        >
                           {/* Logo */}
                           {(() => {
                             const logo = getStockLogo(stock.symbol, stock.logo_url);
@@ -843,7 +847,7 @@ export default function MarketsPageRefactored() {
                             </span>
                           )}
                           </div>
-                        </div>
+                        </Link>
                       </td>
 
                       {/* Prix */}

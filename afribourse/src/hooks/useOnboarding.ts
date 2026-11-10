@@ -203,6 +203,31 @@ export function useDiscoverySurvey() {
 }
 
 /**
+ * Passer le discovery survey : débloque l'accès sans profil (reproposé plus tard
+ * par SurveyPopup). Le survey perdait ~11 % des inscrits.
+ */
+export function useSkipSurvey() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async () => {
+            const response = await apiClient.post('/investor-profile/survey/skip');
+            return response.data.data;
+        },
+        onSuccess: () => {
+            queryClient.setQueryData(['onboarding', 'status'], (old: any) => ({
+                ...old,
+                completed: true,
+                survey_completed: true,
+                survey_skipped: true,
+                survey_skipped_at: new Date().toISOString(),
+            }));
+            queryClient.invalidateQueries({ queryKey: ['onboarding', 'status'] });
+        },
+    });
+}
+
+/**
  * Get survey status
  */
 export function useSurveyStatus() {

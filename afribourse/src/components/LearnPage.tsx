@@ -30,7 +30,7 @@ import {
     ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     isFormationPremiumModule, FORMATION_UNLOCK_TIERS, FORMATION_PRICE_LABEL,
     FORMATION_FREE_COUNT, FORMATION_PREMIUM_COUNT, FORMATION_FREE_RANGE, FORMATION_PREMIUM_RANGE,
@@ -51,7 +51,7 @@ import ArticleInteractions from './ArticleInteractions';
 
 // Gamification imports
 import { useGamificationSummary } from '../hooks/useGamification';
-import { XPProgressBar, LevelBadge, StreakCounter, showXPGainToast } from './gamification';
+import { showXPGainToast } from './gamification';
 import { useCelebration } from '../contexts/CelebrationContext';
 import { useOnboardingGuideContext } from '../context/OnboardingGuideContext';
 
@@ -481,6 +481,49 @@ export default function LearnPage() {
             document.getElementById('quiz-container')?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
     }, [isLoggedIn, selectedModule, trackAction]);
+
+    // ── Reprise : on retient le dernier module ouvert, par utilisateur ──
+    const lastModuleKey = `afb_learn_last_module_${userProfile?.id ?? 'anon'}`;
+    useEffect(() => {
+        if (!selectedModule) return;
+        try { localStorage.setItem(lastModuleKey, selectedModule.slug); } catch { /* stockage indisponible */ }
+    }, [selectedModule, lastModuleKey]);
+
+    // ── Lien direct : /learn?module=<slug>[&quiz=1] (ex. après le premier trade guidé) ──
+    const [searchParams, setSearchParams] = useSearchParams();
+    const deepLinkRef = useRef<{ slug: string; quiz: boolean } | null>(null);
+    useEffect(() => {
+        const slug = searchParams.get('module');
+        if (slug) deepLinkRef.current = { slug, quiz: searchParams.get('quiz') === '1' };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // 1. Ouvrir le module dès que la liste est chargée
+    useEffect(() => {
+        const dl = deepLinkRef.current;
+        if (!dl || loading || allModules.length === 0 || selectedModule) return;
+        const target = allModules.find((m) => m.slug === dl.slug);
+        if (!target || (isPremiumModule(target.order_index ?? 0) && !userHasPremium && !isModuleCompleted(target.slug))) {
+            deepLinkRef.current = null;
+            setSearchParams({}, { replace: true });
+            if (target) setShowModulePaywall(true);
+            return;
+        }
+        setSelectedModule(target);
+        if (!dl.quiz) {
+            deepLinkRef.current = null;
+            setSearchParams({}, { replace: true });
+        }
+    }, [loading, allModules, selectedModule]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // 2. Démarrer le quiz une fois ses questions chargées
+    useEffect(() => {
+        const dl = deepLinkRef.current;
+        if (!dl?.quiz || !selectedModule || selectedModule.slug !== dl.slug) return;
+        if (quizLoading || quizQuestions.length === 0) return;
+        deepLinkRef.current = null;
+        setSearchParams({}, { replace: true });
+        startQuiz();
+    }, [selectedModule, quizLoading, quizQuestions, startQuiz]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const answerQuestion = useCallback((answerIndex: number) => {
         const currentIndex = Object.keys(quizState.answers).length;
@@ -1523,8 +1566,45 @@ export default function LearnPage() {
 
     // --- AFFICHAGE LISTE DES MODULES ---
     const completedCount = progress.filter(p => p.is_completed).length;
-    const totalModules = modules.length;
-    const progressPercentage = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
+    // Total sur TOUS les modules (et non la catégorie filtrée, qui faisait dépasser 100 %)
+    const totalModules = allModules.filter(m => m.is_published).length || modules.length;
+    const progressPercentage = totalModules > 0 ? Math.min(100, Math.round((completedCount / totalModules) * 100)) : 0;
+
+    // Module de reprise : 1) dernier module ouvert non terminé, 2) dernier module entamé
+    // (quiz tenté) non terminé, 3) premier module non terminé dans l'ordre du parcours.
+    const orderedModules = [...allModules]
+        .filter(m => m.is_published)
+        .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+    const resumeModule: LearningModule | null = (() => {
+        if (orderedModules.length === 0) return null;
+        let lastSlug: string | null = null;
+        try { lastSlug = localStorage.getItem(lastModuleKey); } catch { /* stockage indisponible */ }
+        const lastOpened = lastSlug ? orderedModules.find(m => m.slug === lastSlug && !isModuleCompleted(m.slug)) : undefined;
+        if (lastOpened) return lastOpened;
+        const started = progress
+            .filter(p => !p.is_completed && p.last_accessed_at)
+            .sort((a, b) => new Date(b.last_accessed_at!).getTime() - new Date(a.last_accessed_at!).getTime())[0];
+        const startedModule = started ? orderedModules.find(m => m.slug === started.module.slug) : undefined;
+        if (startedModule) return startedModule;
+        return orderedModules.find(m => !isModuleCompleted(m.slug)) ?? null;
+    })();
+    const hasStarted = completedCount > 0 || progress.length > 0;
+    const resumeIsPaywalled = !!resumeModule
+        && isPremiumModule(resumeModule.order_index ?? 0) && !userHasPremium && !isModuleCompleted(resumeModule.slug);
+
+    const openResumeModule = () => {
+        if (!resumeModule) return;
+        if (!isLoggedIn) { navigate('/signup'); return; }
+        if (resumeIsPaywalled) { setShowModulePaywall(true); return; }
+        trackAction(ACTION_TYPES.START_MODULE, 'Reprise du parcours', {
+            moduleSlug: resumeModule.slug,
+            moduleTitle: resumeModule.title,
+            moduleLevel: resumeModule.difficulty_level,
+            source: 'resume_button',
+        });
+        setSelectedModule(resumeModule);
+        window.scrollTo({ top: 0 });
+    };
 
     // --- Données pour le certificat ---
     const publishedModules = allModules.filter(m => m.is_published);
@@ -1626,115 +1706,85 @@ export default function LearnPage() {
                 feature="Le téléchargement et le partage du certificat officiel AfriBourse sont réservés aux abonnés Premium"
                 plan="investisseur-plus"
             />
-            <div className="mb-8 sm:mb-12">
-                <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
-                    <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4">
-                        Académie de l'Investissement
-                    </h1>
-                    <p className="text-gray-600 text-sm sm:text-lg md:text-xl leading-relaxed mb-5">
-                        Apprenez à investir intelligemment avec nos modules interactifs. Quiz, contenu progressif et audio pour une expérience d'apprentissage complète.
-                    </p>
-                    <a
-                        href="/webinaires-eco"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-md transition-all"
-                    >
-                        <span>🎥</span>
-                        Voir nos webinaires de formation
-                    </a>
-                </div>
+            {/* Paywall Formation Complète (cartes de la liste + bouton Reprendre) */}
+            <PremiumPaywall
+                isOpen={showModulePaywall}
+                onClose={() => setShowModulePaywall(false)}
+                feature={`Ce module fait partie de la Formation Complète (${FORMATION_PREMIUM_RANGE})`}
+                plan="premium-modules"
+            />
 
-                {isLoggedIn && (
-                    <div className="max-w-4xl mx-auto mb-8">
-                        {/* Gamification Stats */}
-                        {gamificationSummary && (
-                            <div className="flex sm:grid sm:grid-cols-3 gap-3 sm:gap-4 mb-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
-                                {/* Level & XP */}
-                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 min-w-[220px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <LevelBadge level={gamificationSummary.xp.level} size="md" />
-                                        <div>
-                                            <p className="text-sm text-gray-500">Niveau {gamificationSummary.xp.level}</p>
-                                            <p className="font-bold text-gray-900">{gamificationSummary.xp.title}</p>
-                                        </div>
-                                    </div>
-                                    <XPProgressBar
-                                        stats={gamificationSummary.xp}
-                                        showDetails={false}
-                                        size="sm"
-                                    />
-                                </div>
+            {/* En-tête compact */}
+            <div className="max-w-4xl mx-auto mb-6">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Académie de l'Investissement</h1>
+                <p className="mt-1 text-sm sm:text-base text-gray-500">
+                    {totalModules || 20} modules courts, des quiz et un certificat — à votre rythme.
+                </p>
+            </div>
 
-                                {/* Streak */}
-                                <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 flex items-center justify-center min-w-[180px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
-                                    <StreakCounter
-                                        streak={gamificationSummary.streak}
-                                        size="md"
-                                        showFreezes={false}
-                                    />
-                                </div>
-
-                                {/* Total XP */}
-                                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl shadow-lg border-2 border-amber-200 p-4 flex flex-col items-center justify-center min-w-[160px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start">
-                                    <Zap className="w-8 h-8 text-amber-600 mb-2" />
-                                    <p className="text-2xl font-bold text-amber-700">{gamificationSummary.xp.total_xp.toLocaleString()}</p>
-                                    <p className="text-sm text-amber-600">XP Total</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Learning Progress */}
-                        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 sm:p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center space-x-2 sm:space-x-3">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
-                                        <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            {/* Reprendre là où l'on s'est arrêté */}
+            {!allModulesCompleted && resumeModule && (
+                <div className="max-w-4xl mx-auto mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-white shadow-lg">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-blue-100">
+                                {!isLoggedIn ? 'Commencer le parcours' : hasStarted ? 'Reprendre là où vous vous êtes arrêté' : 'Commencer le parcours'}
+                            </p>
+                            <p className="mt-1 text-lg font-bold leading-snug line-clamp-2">
+                                Module {resumeModule.order_index ?? 0} · {resumeModule.title}
+                            </p>
+                            {isLoggedIn && (
+                                <div className="mt-3 flex items-center gap-3">
+                                    <div className="h-2 flex-1 rounded-full bg-white/25 overflow-hidden">
+                                        <div className="h-2 rounded-full bg-white transition-all duration-700" style={{ width: `${progressPercentage}%` }} />
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 text-sm sm:text-base">Votre Progression</h3>
-                                        <p className="text-xs sm:text-sm text-gray-600">{completedCount} / {totalModules} modules</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {allModulesCompleted && (
-                                        <button
-                                            onClick={() => userHasInvestisseurPlus ? setShowCertificate(true) : setShowCertPaywall(true)}
-                                            className={`flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${userHasInvestisseurPlus ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-amber-500 hover:bg-amber-600'}`}
-                                        >
-                                            {userHasInvestisseurPlus ? <Award className="w-3.5 h-3.5" /> : <Crown className="w-3.5 h-3.5" />}
-                                            Certificat
-                                        </button>
-                                    )}
-                                    <span className="text-2xl sm:text-3xl font-extrabold text-blue-600">{progressPercentage}%</span>
-                                </div>
-                            </div>
-                            {/* Barre de progression avec objectif certificat */}
-                            <div className="relative">
-                                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                    <div
-                                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-700 ease-out"
-                                        style={{ width: `${progressPercentage}%` }}
-                                    />
-                                </div>
-                                {/* Icône certificat à la fin de la barre */}
-                                <div className="absolute -right-1 -top-3.5 flex flex-col items-center">
-                                    <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-md transition-all ${allModulesCompleted ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-gray-200'}`}>
-                                        {allModulesCompleted
-                                            ? <Award className="w-5 h-5 text-yellow-300" />
-                                            : <Lock className="w-4 h-4 text-gray-400" />
-                                        }
-                                    </div>
-                                    <span className={`text-xs font-semibold mt-1 whitespace-nowrap ${allModulesCompleted ? 'text-indigo-600' : 'text-gray-400'}`}>
-                                        Certificat
+                                    <span className="text-xs font-semibold tabular-nums text-blue-50 whitespace-nowrap">
+                                        {completedCount}/{totalModules} · {progressPercentage} %
                                     </span>
                                 </div>
-                            </div>
+                            )}
                         </div>
+                        <button
+                            onClick={openResumeModule}
+                            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-bold text-blue-700 shadow-md hover:bg-blue-50 active:scale-95 transition"
+                        >
+                            {!isLoggedIn
+                                ? 'Créer mon compte gratuit'
+                                : resumeIsPaywalled
+                                    ? <><Crown className="w-4 h-4 text-amber-500" /> Débloquer la suite</>
+                                    : hasStarted ? 'Continuer' : 'Commencer'}
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
                     </div>
-                )}
+                </div>
+            )}
+
+            {/* Statistiques en une ligne (au lieu de 3 cartes + carte progression + teaser certificat) */}
+            {isLoggedIn && gamificationSummary && (
+                <div className="max-w-4xl mx-auto mb-6 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200 px-3 py-1.5 text-gray-700">
+                        <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+                        Niveau {gamificationSummary.xp.level} · {gamificationSummary.xp.title}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200 px-3 py-1.5 text-gray-700">
+                        🔥 {gamificationSummary.streak.current_streak} jour{gamificationSummary.streak.current_streak > 1 ? 's' : ''}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200 px-3 py-1.5 text-gray-700">
+                        <Zap className="w-3.5 h-3.5 text-amber-500" />
+                        {gamificationSummary.xp.total_xp.toLocaleString('fr-FR')} XP
+                    </span>
+                    {!allModulesCompleted && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200 px-3 py-1.5 text-gray-500">
+                            <Award className="w-3.5 h-3.5 text-indigo-500" />
+                            Certificat : encore {Math.max(0, totalModules - completedCount)} module{totalModules - completedCount > 1 ? 's' : ''}
+                        </span>
+                    )}
+                </div>
+            )}
 
                 {/* Bandeau certificat débloqué */}
                 {allModulesCompleted && (
-                    <div className="max-w-4xl mx-auto mb-8">
+                    <div className="max-w-4xl mx-auto mb-6">
                         {userHasInvestisseurPlus ? (
                             /* Abonné Investisseur+ → certificat disponible */
                             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 sm:p-6 shadow-xl">
@@ -1787,73 +1837,17 @@ export default function LearnPage() {
                     </div>
                 )}
 
-                {!isLoggedIn && (
-                    <div className="max-w-2xl mx-auto bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 mb-8">
-                        <div className="flex items-start space-x-4">
-                            <AlertTriangle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <p className="font-semibold text-yellow-900 mb-1">
-                                    Connectez-vous pour suivre votre progression
-                                </p>
-                                <p className="text-yellow-700 text-sm">
-                                    Créez un compte gratuit pour débloquer les quiz, sauvegarder votre progression et obtenir des certificats.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Teaser certificat — visible tant que le parcours n'est pas complété */}
-            {isLoggedIn && !allModulesCompleted && (
-                <div className="max-w-4xl mx-auto mb-8">
-                    <div className="relative overflow-hidden bg-gradient-to-r from-slate-800 to-indigo-900 rounded-2xl px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-4 shadow-lg">
-                        {/* Halo décoratif */}
-                        <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full opacity-10 blur-2xl pointer-events-none" />
-                        <div className="absolute right-16 -bottom-8 w-28 h-28 bg-purple-500 rounded-full opacity-10 blur-2xl pointer-events-none" />
-
-                        {/* Icône cadenas + award */}
-                        <div className="relative flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14">
-                            <div className="w-full h-full rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                                <Award className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-300" />
-                            </div>
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center border-2 border-slate-800">
-                                <Lock className="w-2.5 h-2.5 text-amber-900" />
-                            </div>
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                            <div className="text-white font-bold text-sm sm:text-base leading-snug">
-                                Certificat officiel à débloquer
-                            </div>
-                            <div className="text-indigo-300 text-xs sm:text-sm mt-0.5">
-                                Complétez les {publishedModules.length - completedCount} modules restants
-                                {!userHasInvestisseurPlus && ' et passez à Investisseur+'} pour obtenir votre attestation de réussite AfriBourse.
-                            </div>
-                        </div>
-
-                        {/* Mini aperçu */}
-                        <div className="hidden sm:flex flex-col items-center flex-shrink-0 bg-white/10 border border-white/20 rounded-xl px-4 py-2 gap-0.5">
-                            <span className="text-xs font-bold text-white/50 uppercase tracking-wider">Récompense</span>
-                            <div className="flex items-center gap-1.5">
-                                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                <span className="text-sm font-bold text-white">Certifié BRVM</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Filtres thématiques */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-10 sticky top-20 z-10">
-                <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
+            <div className="max-w-4xl mx-auto mb-6">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1 snap-x snap-mandatory">
                     {CATEGORIES.map((cat) => (
                         <button
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
-                            className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start ${selectedCategory === cat.id
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            className={`px-3.5 py-1.5 rounded-full font-medium text-sm transition-colors whitespace-nowrap flex-shrink-0 snap-start border ${selectedCategory === cat.id
+                                ? 'bg-gray-900 border-gray-900 text-white'
+                                : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900'
                                 }`}
                         >
                             {cat.label}
@@ -1866,7 +1860,7 @@ export default function LearnPage() {
                     {/* Time Machine */}
                     <button
                         onClick={() => navigate('/time-machine')}
-                        className="flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-sm transition-all transform hover:scale-105 whitespace-nowrap flex-shrink-0 snap-start bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-medium text-sm transition-colors whitespace-nowrap flex-shrink-0 snap-start bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
                     >
                         <Clock className="w-4 h-4" />
                         Time Machine

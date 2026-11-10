@@ -243,6 +243,9 @@ export async function checkOnboardingStatus(userId: string) {
         // KYC (ADN Investisseur) is now optional / tracked separately
         kyc_completed: investorProfile?.onboarding_completed || false,
         survey_completed: userProfile?.survey_completed || false,
+        // Survey passé via « Passer » : accès débloqué, mais à reproposer plus tard
+        survey_skipped: !!(userProfile?.discovery_survey as any)?.skipped,
+        survey_skipped_at: ((userProfile?.discovery_survey as any)?.skipped_at as string | undefined) ?? null,
         profile: investorProfile,
     };
 }

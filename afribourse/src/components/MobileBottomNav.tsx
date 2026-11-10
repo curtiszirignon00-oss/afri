@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Users, BarChart2, LayoutDashboard, Newspaper, GraduationCap } from 'lucide-react';
 import { useUnseenCommunityCount } from '../hooks/useCommunityUnseen';
 import { useUnseenNewsCount, useUnseenCommunityPublicCount } from '../hooks/useContentUnseen';
@@ -16,7 +16,6 @@ const TABS = [
 
 export default function MobileBottomNav() {
   const location  = useLocation();
-  const navigate  = useNavigate();
   const { isLoggedIn } = useAuth();
 
   const { data: unseenCommunityCount } = useUnseenCommunityCount(isLoggedIn);
@@ -42,6 +41,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
+      aria-label="Navigation principale"
       className={`fixed bottom-0 inset-x-0 z-50 lg:hidden border-t ${
         glass
           ? 'bg-stone-900/60 border-white/10 backdrop-blur-xl shadow-[0_-8px_24px_rgba(0,0,0,0.35)]'
@@ -57,21 +57,16 @@ export default function MobileBottomNav() {
           const isCenter    = tab.key === 'dashboard';
 
           return (
-            <button
+            <Link
               key={tab.key}
-              onClick={() => {
-                if (tab.key === 'dashboard' && !isLoggedIn) {
-                  navigate('/login');
-                } else {
-                  navigate(tab.path);
-                }
-              }}
+              to={tab.key === 'dashboard' && !isLoggedIn ? '/login' : tab.path}
+              aria-current={isActive ? 'page' : undefined}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2 relative cursor-pointer transition-colors duration-150 ${
                 glass
                   ? (isActive ? 'text-orange-300' : 'text-white/55 hover:text-white/80')
                   : (isActive ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600')
               }`}
-              aria-label={tab.label}
+              aria-label={badge > 0 ? `${tab.label}, ${badge} nouveauté${badge > 1 ? 's' : ''}` : tab.label}
             >
               {/* Indicateur actif */}
               {isActive && (
@@ -87,16 +82,16 @@ export default function MobileBottomNav() {
                       ? 'bg-indigo-600 shadow-indigo-200'
                       : 'bg-slate-800 shadow-slate-300'
                 }`}>
-                  <Icon className={`w-5 h-5 ${glass ? 'text-stone-900' : 'text-white'}`} strokeWidth={1.8} />
+                  <Icon className={`w-5 h-5 ${glass ? 'text-stone-900' : 'text-white'}`} strokeWidth={1.8} aria-hidden="true" />
                   {realPortfolioIsNew && !onRealPortfolio && (
                     <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-white" aria-label="Nouveau : portefeuille réel" />
                   )}
                 </span>
               ) : (
                 <div className="relative">
-                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.8} />
+                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.2 : 1.8} aria-hidden="true" />
                   {badge > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 flex items-center justify-center px-0.5 text-[9px] font-bold leading-none text-white bg-red-500 rounded-full">
+                    <span aria-hidden="true" className="absolute -top-1.5 -right-1.5 min-w-[14px] h-3.5 flex items-center justify-center px-0.5 text-[9px] font-bold leading-none text-white bg-red-500 rounded-full">
                       {badge > 99 ? '99+' : badge}
                     </span>
                   )}
@@ -106,7 +101,7 @@ export default function MobileBottomNav() {
               <span className={`text-[10px] font-medium leading-none ${isCenter ? 'mt-1' : ''} ${isActive ? (glass ? 'text-orange-300' : 'text-indigo-600') : ''}`}>
                 {tab.label}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>

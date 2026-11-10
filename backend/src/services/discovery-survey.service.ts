@@ -80,6 +80,30 @@ export async function saveDiscoverySurvey(
   return { profile_type, urgency, survey_completed: true };
 }
 
+/**
+ * L'utilisateur passe le survey : l'accès est débloqué (survey_completed = true) mais on
+ * garde la trace du saut (discovery_survey.skipped) pour le lui reproposer plus tard.
+ * Ne remplace jamais un survey déjà répondu.
+ */
+export async function skipDiscoverySurvey(userId: string): Promise<{ survey_completed: true; skipped: boolean }> {
+  const existing = await prisma.userProfile.findUnique({
+    where: { userId },
+    select: { survey_completed: true, discovery_survey: true },
+  });
+  const answered = !!(existing?.discovery_survey as any)?.profile_type;
+  if (existing?.survey_completed && answered) {
+    return { survey_completed: true, skipped: false };
+  }
+
+  const skipData = { skipped: true, skipped_at: new Date().toISOString() };
+  await prisma.userProfile.upsert({
+    where: { userId },
+    create: { userId, discovery_survey: skipData, survey_completed: true },
+    update: { discovery_survey: skipData, survey_completed: true },
+  });
+  return { survey_completed: true, skipped: true };
+}
+
 export async function getSurveySummary(userId: string) {
   const profile = await prisma.userProfile.findUnique({
     where: { userId },

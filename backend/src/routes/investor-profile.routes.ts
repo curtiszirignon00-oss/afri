@@ -33,6 +33,7 @@ router.post('/ai-allocation', auth, investorProfileController.generateAllocation
 
 // Discovery survey (post-registration lightweight survey)
 router.post('/survey/discovery', auth, investorProfileController.surveyDiscovery);
+router.post('/survey/skip', auth, investorProfileController.surveySkip);
 router.get('/survey/status', auth, investorProfileController.getSurveyStatus);
 
 export default router;

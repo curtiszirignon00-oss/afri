@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, SkipForward, CheckCircle2 } from 'lucide-react';
-import { useDiscoverySurvey } from '../../hooks/useOnboarding';
+import { useDiscoverySurvey, useSkipSurvey } from '../../hooks/useOnboarding';
+import { analytics } from '../../services/analytics';
+import toast from 'react-hot-toast';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -113,7 +115,18 @@ export default function DiscoverySurvey({ onComplete }: DiscoverySurveyProps) {
     if (onComplete) {
       onComplete();
     } else {
-      navigate('/dashboard');
+      navigate('/premier-trade');
+    }
+  }
+
+  const { mutateAsync: skipSurvey, isPending: isSkipping } = useSkipSurvey();
+  async function handleSkipSurvey() {
+    try {
+      await skipSurvey();
+      analytics.trackAction('survey_skipped', 'Survey passé', { step: String(step), source: 'onboarding' });
+      if (onComplete) onComplete(); else navigate('/premier-trade');
+    } catch {
+      toast.error('Impossible de passer pour le moment. Réessayez.');
     }
   }
 
@@ -142,7 +155,7 @@ export default function DiscoverySurvey({ onComplete }: DiscoverySurveyProps) {
               onClick={handleGoToDashboard}
               className={`w-full py-3.5 bg-gradient-to-r ${meta.gradient} text-white rounded-xl font-semibold flex items-center justify-center gap-2`}
             >
-              Accéder à mon dashboard
+              {onComplete ? 'Accéder à mon dashboard' : 'Faire mon premier investissement simulé'}
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -167,6 +180,14 @@ export default function DiscoverySurvey({ onComplete }: DiscoverySurveyProps) {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Bienvenue sur AfriBourse</h1>
           <p className="text-gray-500 text-sm">3 questions rapides pour personnaliser votre expérience</p>
+          <button
+            onClick={handleSkipSurvey}
+            disabled={isSkipping}
+            className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-800 underline-offset-4 hover:underline disabled:opacity-50"
+          >
+            {isSkipping ? 'Un instant…' : 'Passer pour l’instant'}
+            <SkipForward className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Progress bar */}

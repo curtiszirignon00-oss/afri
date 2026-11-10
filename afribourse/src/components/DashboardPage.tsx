@@ -1,7 +1,7 @@
 // src/components/DashboardPage.tsx - VERSION AMÉLIORÉE
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { Settings, Wallet, PlusCircle, X, Eye, LineChart as ChartIcon, AlertCircle, TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, ExternalLink, Clock, BookOpen, GraduationCap, Users2, MessageSquare, BarChart2, HelpCircle, Star, Heart } from 'lucide-react'; // <-- AJOUT: Nouvelles icônes
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from 'recharts'; // <-- AJOUT: PieChart pour allocation
 import { Stock, UserProfile, WatchlistItem, Transaction, MarketIndex } from '../types'; // <-- AJOUT: Transaction et MarketIndex
 import { useAuth } from '../contexts/AuthContext';
@@ -841,9 +841,9 @@ export default function DashboardPage() {
                         return (
                           <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                             <td className="py-4 px-2">
-                              <div
+                              <Link
+                                to={`/stock/${position.stock_ticker}`}
                                 className="flex items-center space-x-3 cursor-pointer group"
-                                onClick={() => navigate(`/stock/${position.stock_ticker}`)}
                               >
                                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
                                   {logoUrl ? (
@@ -856,7 +856,7 @@ export default function DashboardPage() {
                                   <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{position.stock_ticker}</p>
                                   <p className="text-xs text-gray-500 group-hover:text-indigo-400 transition-colors">{stockData.company_name}</p>
                                 </div>
-                              </div>
+                              </Link>
                             </td>
                             <td className="py-4 px-2 text-right font-medium text-gray-700">{position.quantity}</td>
                             <td className="py-4 px-2 text-right text-gray-700">{formatNumber(position.average_buy_price)} F</td>

@@ -28,7 +28,7 @@ export default function OnboardingChecklist() {
   const [collapsed, setCollapsed] = useState(false);
 
   if (!isActive || !isChecklistVisible) return null;
-  if (pathname.startsWith('/onboarding') || pathname.startsWith('/survey')) return null;
+  if (pathname.startsWith('/onboarding') || pathname.startsWith('/survey') || pathname.startsWith('/premier-trade')) return null;
 
   const progress = (completedCount / 2) * 100;
   const past48h = startedAt > 0 && Date.now() - startedAt >= MS_48H;

@@ -13,8 +13,14 @@ export default function SurveyPopup() {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
-    // Don't show on the onboarding/survey page itself, or if already done
-    if (!isLoggedIn || isLoading || dismissed || status?.survey_completed || pathname.startsWith('/onboarding') || pathname.startsWith('/survey')) {
+    // Survey passé via « Passer » : on le repropose, mais pas avant 2 jours
+    // (laisser d'abord vivre le premier trade et le premier module).
+    const skippedLongAgo = !!status?.survey_skipped && !!status?.survey_skipped_at
+        && Date.now() - new Date(status.survey_skipped_at).getTime() > 2 * 24 * 60 * 60 * 1000;
+    const surveyDone = !!status?.survey_completed && !skippedLongAgo;
+
+    // Don't show on the onboarding/survey/first-trade pages, or if already done
+    if (!isLoggedIn || isLoading || dismissed || surveyDone || pathname.startsWith('/onboarding') || pathname.startsWith('/survey') || pathname.startsWith('/premier-trade')) {
         return null;
     }
 

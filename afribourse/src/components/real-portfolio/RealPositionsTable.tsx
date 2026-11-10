@@ -1,6 +1,6 @@
 // src/components/real-portfolio/RealPositionsTable.tsx
 import { BarChart3, Share2, PlusCircle, MinusCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import type { RealPositionLine } from '../../services/realPortfolioApi';
 import { getStockLogo } from '../../utils/stockLogos';
 import { sharePercentOnly } from './share';
@@ -16,7 +16,6 @@ interface Props {
 }
 
 export default function RealPositionsTable({ positions, onBuy, onSell }: Props) {
-  const navigate = useNavigate();
 
   return (
     <div className="glass-card rounded-3xl p-5 md:p-6">
@@ -29,13 +28,13 @@ export default function RealPositionsTable({ positions, onBuy, onSell }: Props) 
             const logo = getStockLogo(p.ticker);
             return (
               <div key={p.ticker} className="py-3 px-2 -mx-2 rounded-xl hover:bg-white/5 transition-colors grid grid-cols-[1fr_auto] md:grid-cols-[1.6fr_1fr_1fr_1fr_auto] gap-x-4 gap-y-1 items-center">
-                <button onClick={() => navigate(`/stock/${p.ticker}`)} className="flex items-center gap-3 text-left min-w-0">
+                <Link to={`/stock/${p.ticker}`} className="flex items-center gap-3 text-left min-w-0">
                   {logo ? <img src={logo} alt="" className="w-9 h-9 rounded-xl object-contain bg-white p-0.5 border border-white/20" /> : <span className="w-9 h-9 rounded-xl bg-white/15 border border-white/15 text-orange-200 text-xs font-bold flex items-center justify-center">{p.ticker.slice(0, 3)}</span>}
                   <span className="min-w-0">
                     <span className="block font-semibold">{p.ticker}</span>
                     <span className="block text-xs text-white/55 truncate">{p.name} · {fmt(p.quantity)} titres</span>
                   </span>
-                </button>
+                </Link>
                 <div className="text-right md:text-left">
                   <p className="font-semibold">{fmt(p.marketValue)} F</p>
                   <p className="text-xs text-white/55">{p.weight.toFixed(1)} % du total</p>

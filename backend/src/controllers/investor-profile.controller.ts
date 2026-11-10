@@ -4,7 +4,7 @@ import * as investorProfileService from '../services/investor-profile.service';
 import { computeInvestorScore } from '../services/investor-score.service';
 import { computePassportScore } from '../services/passport-score.service';
 import { generateBRVMAllocation } from '../services/simba-allocation.service';
-import { saveDiscoverySurvey, getSurveySummary } from '../services/discovery-survey.service';
+import { saveDiscoverySurvey, skipDiscoverySurvey, getSurveySummary } from '../services/discovery-survey.service';
 
 // Extend Request interface to include user
 interface AuthRequest extends Request {
@@ -207,6 +207,20 @@ export async function surveyDiscovery(req: AuthRequest, res: Response) {
 
         const result = await saveDiscoverySurvey(userId, { q1, q2: q2 ?? null, q3 });
         return res.status(200).json({ message: 'Sondage enregistré', data: result });
+    } catch {
+        return res.status(500).json({ error: 'Erreur serveur' });
+    }
+}
+
+/**
+ * Skip discovery survey — débloque l'accès sans profil (reproposé plus tard)
+ */
+export async function surveySkip(req: AuthRequest, res: Response) {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+        const result = await skipDiscoverySurvey(userId);
+        return res.status(200).json({ message: 'Sondage passé', data: result });
     } catch {
         return res.status(500).json({ error: 'Erreur serveur' });
     }

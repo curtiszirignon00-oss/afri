@@ -1,7 +1,6 @@
 // src/components/markets/ComparisonCard.tsx
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { X, ExternalLink, TrendingUp, TrendingDown, Award } from 'lucide-react';
-import { Button } from '../ui';
 import type { Stock } from '../../hooks/useApi';
 import { getStockLogo } from '../../utils/stockLogos';
 
@@ -23,7 +22,6 @@ interface ComparisonCardProps {
 }
 
 export default function ComparisonCard({ stock, onRemove, isBest = {}, isWorst = {} }: ComparisonCardProps) {
-    const navigate = useNavigate();
 
     const formatNumber = (num: number, decimals: number = 0): string => {
         return new Intl.NumberFormat('fr-FR', {
@@ -153,14 +151,14 @@ export default function ComparisonCard({ stock, onRemove, isBest = {}, isWorst =
             </div>
 
             {/* Action Button */}
-            <Button
-                onClick={() => navigate(`/stock/${stock.symbol}`, { state: stock })}
-                variant="outline"
-                className="w-full text-sm hover:bg-blue-50 hover:border-blue-400 transition-colors"
+            <Link
+                to={`/stock/${stock.symbol}`}
+                state={stock}
+                className="w-full inline-flex items-center justify-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:border-blue-400 transition-colors"
             >
-                <ExternalLink className="w-3 h-3 mr-1" />
+                <ExternalLink className="w-3 h-3 mr-1" aria-hidden="true" />
                 Voir détails
-            </Button>
+            </Link>
         </div>
     );
 }

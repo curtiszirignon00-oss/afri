@@ -20,6 +20,7 @@ function Badge({ count }: { count: number }) {
   return (
     <span className="min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold leading-none text-white bg-red-500 rounded-full ring-2 ring-white">
       {label}
+      <span className="sr-only">&nbsp;nouveauté{count > 1 ? 's' : ''}</span>
     </span>
   );
 }
@@ -110,7 +111,6 @@ export default function Header() {
   const { data: rpDiscovery } = useRealPortfolioDiscovery(isLoggedIn);
   const realPortfolioIsNew = !!rpDiscovery && !rpDiscovery.hasPortfolio && !rpDiscovery.bannerDismissed && !rpDiscovery.guideCompleted;
   const newPill = <span className="ml-auto px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold uppercase leading-none">Nouveau</span>;
-  const newDot = <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden="true" />;
 
   // ✅ Fonction de déconnexion simplifiée
   const handleLogout = async () => {
@@ -159,26 +159,28 @@ export default function Header() {
           <div className="flex justify-between items-center gap-6 xl:gap-10 h-16 lg:h-20">
             {/* Logo */}
             <div className="flex items-center shrink-0">
-              <button
-                onClick={() => { navigate('/'); closeMegaMenuNow(); }}
+              <Link
+                to="/"
+                onClick={closeMegaMenuNow}
+                aria-label="AfriBourse — accueil"
                 className="flex flex-col items-start"
               >
                 <div className="flex items-center space-x-2">
                   <img
                     src="/images/logo_afribourse.png"
-                    alt="AfriBourse Logo"
+                    alt=""
                     className="w-12 h-12 object-contain"
                   />
                   <span className="text-2xl font-bold text-gray-900">AfriBourse</span>
                 </div>
                 <span className="text-xs text-blue-600 font-semibold ml-10">INVESTIR MIEUX</span>
-              </button>
+              </Link>
             </div>
 
             {/* Desktop Navigation */}
             {/* self-stretch : la zone de survol couvre toute la hauteur du header,
                 sans « trou » entre le bouton et le méga-menu affiché juste en dessous */}
-            <nav className="hidden lg:flex self-stretch items-stretch gap-1 xl:gap-2">
+            <nav aria-label="Navigation principale" className="hidden lg:flex self-stretch items-stretch gap-1 xl:gap-2">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -195,22 +197,23 @@ export default function Header() {
                     }}
                     tabIndex={-1}
                   >
-                    <button
+                    <Link
+                      to={`/${item.id}`}
                       onClick={() => {
-                        navigate(`/${item.id}`);
                         closeMegaMenuNow();
                         if (item.id === 'news')      markNewsVisited();
                         if (item.id === 'community') markCommunityVisited();
                       }}
+                      aria-current={currentPage === item.id ? 'page' : undefined}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
                         currentPage === item.id || activeMegaMenu === item.id
                           ? 'bg-blue-50 text-blue-700'
                           : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                       }`}
-                      aria-haspopup={item.hasMegaMenu ? "true" : "false"}
-                      aria-expanded={activeMegaMenu === item.id}
+                      aria-haspopup={item.hasMegaMenu ? "true" : undefined}
+                      aria-expanded={item.hasMegaMenu ? activeMegaMenu === item.id : undefined}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4" aria-hidden="true" />
                       <span>{item.name}</span>
                       {item.id === 'news' && unseenNewsCount > 0 && (
                         <Badge count={unseenNewsCount} />
@@ -218,7 +221,7 @@ export default function Header() {
                       {item.id === 'community' && communityBadge > 0 && (
                         <Badge count={communityBadge} />
                       )}
-                    </button>
+                    </Link>
 
                     {/* Panneau ancré sous l'onglet (pt-2 = pont de survol invisible) */}
                     {activeMegaMenu === item.id && ActiveMegaMenuComponent && (
@@ -245,7 +248,7 @@ export default function Header() {
                 to="/webinaires-eco"
                 className="hidden lg:flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all font-semibold shadow-sm hover:shadow-md text-sm"
               >
-                <Video className="w-4 h-4" />
+                <Video className="w-4 h-4" aria-hidden="true" />
                 <span>Webinaires</span>
               </Link>
 
@@ -254,15 +257,17 @@ export default function Header() {
                 <Link
                   to="/portefeuille-reel"
                   title="Portefeuille réel"
+                  aria-label={realPortfolioIsNew ? 'Portefeuille réel (nouveau)' : 'Portefeuille réel'}
+                  aria-current={location.pathname.startsWith('/portefeuille-reel') ? 'page' : undefined}
                   className={`relative hidden lg:flex items-center gap-2 px-3 xl:px-4 py-2 rounded-lg border text-sm font-semibold transition-colors ${
                     location.pathname.startsWith('/portefeuille-reel')
                       ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
                       : 'border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-700'
                   }`}
                 >
-                  <Wallet className="w-4 h-4 text-indigo-500" />
-                  <span className="hidden xl:inline">Portefeuille réel</span>
-                  {realPortfolioIsNew && newDot}
+                  <Wallet className="w-4 h-4 text-indigo-500" aria-hidden="true" />
+                  <span className="hidden xl:inline" aria-hidden="true">Portefeuille réel</span>
+                  {realPortfolioIsNew && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden="true" />}
                 </Link>
               )}
 
@@ -284,87 +289,104 @@ export default function Header() {
                   {isLoggedIn ? (
                     <div className="flex items-center gap-3">
                       {/* Bouton Profil */}
-                      <button
-                        onClick={() => navigate('/profile')}
+                      <Link
+                        to="/profile"
+                        aria-label="Mon profil"
+                        title="Mon profil"
                         className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 hover:border-blue-500 transition-all shadow-sm"
-                        title="Mon Profil"
                       >
                         {userProfile?.avatar_url ? (
-                          <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
+                          <img src={userProfile.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-                            <User className="w-5 h-5 text-blue-600" />
+                            <User className="w-5 h-5 text-blue-600" aria-hidden="true" />
                           </div>
                         )}
-                      </button>
+                      </Link>
                       {/* Bouton Mon Compte */}
                       <button
                         onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                        aria-haspopup="menu"
+                        aria-expanded={accountMenuOpen}
+                        aria-controls="account-menu"
                         className="relative flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
                       >
                         <span>Mon Compte</span>
                       </button>
                     </div>
                   ) : (
-                    <button
-                      onClick={() => navigate('/login')}
+                    <Link
+                      to="/login"
                       className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-md hover:shadow-lg"
                     >
-                      <User className="w-5 h-5" />
+                      <User className="w-5 h-5" aria-hidden="true" />
                       <span>Connexion</span>
-                    </button>
+                    </Link>
                   )}
                   
                   {/* Dropdown Menu (Desktop) */}
                   {isLoggedIn && accountMenuOpen && (
                     <div
+                      id="account-menu"
+                      role="menu"
+                      aria-label="Mon compte"
                       className="absolute right-0 top-full mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg py-1 before:absolute before:-top-2 before:inset-x-0 before:h-2 before:content-['']"
                     >
-                      <button
-                        onClick={() => { navigate('/dashboard'); setAccountMenuOpen(false); }}
+                      <Link
+                        to="/dashboard"
+                        role="menuitem"
+                        onClick={() => setAccountMenuOpen(false)}
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <LayoutDashboard className="w-4 h-4" />
+                        <LayoutDashboard className="w-4 h-4" aria-hidden="true" />
                         <span>Tableau de bord</span>
-                      </button>
+                      </Link>
 
-                      <button
-                        onClick={() => { navigate('/portefeuille-reel'); setAccountMenuOpen(false); }}
+                      <Link
+                        to="/portefeuille-reel"
+                        role="menuitem"
+                        onClick={() => setAccountMenuOpen(false)}
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <Wallet className="w-4 h-4 text-indigo-500" />
+                        <Wallet className="w-4 h-4 text-indigo-500" aria-hidden="true" />
                         <span>Portefeuille réel</span>
                         {realPortfolioIsNew && newPill}
-                      </button>
+                      </Link>
 
-                      <button
-                        onClick={() => { navigate('/watchlist'); setAccountMenuOpen(false); }}
+                      <Link
+                        to="/watchlist"
+                        role="menuitem"
+                        onClick={() => setAccountMenuOpen(false)}
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <Star className="w-4 h-4 text-amber-400" />
+                        <Star className="w-4 h-4 text-amber-400" aria-hidden="true" />
                         <span>Ma Watchlist</span>
-                      </button>
+                      </Link>
 
                       {/* Admin Links - Only visible for admin users */}
                       {userProfile?.role === 'admin' && (
                         <>
                           <div className="border-t border-gray-100 my-1"></div>
 
-                          <button
-                            onClick={() => { navigate('/admin/dashboard'); setAccountMenuOpen(false); }}
+                          <Link
+                            to="/admin/dashboard"
+                            role="menuitem"
+                            onClick={() => setAccountMenuOpen(false)}
                             className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
                           >
-                            <BarChart3 className="w-4 h-4" />
+                            <BarChart3 className="w-4 h-4" aria-hidden="true" />
                             <span>Admin Dashboard</span>
-                          </button>
+                          </Link>
 
-                          <button
-                            onClick={() => { navigate('/admin/analytics'); setAccountMenuOpen(false); }}
+                          <Link
+                            to="/admin/analytics"
+                            role="menuitem"
+                            onClick={() => setAccountMenuOpen(false)}
                             className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-purple-700 hover:bg-purple-50"
                           >
-                            <Activity className="w-4 h-4" />
+                            <Activity className="w-4 h-4" aria-hidden="true" />
                             <span>Analytics</span>
-                          </button>
+                          </Link>
                         </>
                       )}
 
@@ -372,9 +394,10 @@ export default function Header() {
 
                       <button
                         onClick={handleLogout}
+                        role="menuitem"
                         className="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
-                        <LogOut className="w-4 h-4" />
+                        <LogOut className="w-4 h-4" aria-hidden="true" />
                         <span>Déconnexion</span>
                       </button>
                     </div>
@@ -397,17 +420,20 @@ export default function Header() {
                       <button
                         onClick={() => setMobileAccountOpen(o => !o)}
                         className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border-2 border-slate-200 active:border-blue-400 transition-all cursor-pointer"
-                        aria-label="Mon compte"
+                        aria-label={realPortfolioIsNew ? 'Mon compte (nouveauté : portefeuille réel)' : 'Mon compte'}
+                        aria-haspopup="menu"
+                        aria-expanded={mobileAccountOpen}
+                        aria-controls="mobile-account-menu"
                       >
                         {userProfile?.avatar_url ? (
-                          <img src={userProfile.avatar_url} alt="Profil" className="w-full h-full object-cover" />
+                          <img src={userProfile.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-blue-50 flex items-center justify-center">
-                            <User className="w-4 h-4 text-blue-600" />
+                            <User className="w-4 h-4 text-blue-600" aria-hidden="true" />
                           </div>
                         )}
                       </button>
-                      {realPortfolioIsNew && newDot}
+                      {realPortfolioIsNew && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" aria-hidden="true" />}
 
                       {/* Mini-menu mobile */}
                       {mobileAccountOpen && (
@@ -417,35 +443,42 @@ export default function Header() {
                             className="fixed inset-0 z-40"
                             onClick={() => setMobileAccountOpen(false)}
                           />
-                          <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-50">
-                            <button
-                              onClick={() => { navigate('/profile'); setMobileAccountOpen(false); }}
+                          <div id="mobile-account-menu" role="menu" aria-label="Mon compte" className="absolute right-0 top-full mt-2 w-44 bg-white border border-slate-100 rounded-xl shadow-xl py-1 z-50">
+                            <Link
+                              to="/profile"
+                              role="menuitem"
+                              onClick={() => setMobileAccountOpen(false)}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
                             >
-                              <User className="w-4 h-4 text-slate-400" />
+                              <User className="w-4 h-4 text-slate-400" aria-hidden="true" />
                               Mon profil
-                            </button>
-                            <button
-                              onClick={() => { navigate('/portefeuille-reel'); setMobileAccountOpen(false); }}
+                            </Link>
+                            <Link
+                              to="/portefeuille-reel"
+                              role="menuitem"
+                              onClick={() => setMobileAccountOpen(false)}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
                             >
-                              <Wallet className="w-4 h-4 text-indigo-500" />
+                              <Wallet className="w-4 h-4 text-indigo-500" aria-hidden="true" />
                               Portefeuille réel
-                              {realPortfolioIsNew && <span className="ml-auto w-2 h-2 rounded-full bg-emerald-500" aria-label="Nouveau" />}
-                            </button>
-                            <button
-                              onClick={() => { navigate('/webinaires-eco'); setMobileAccountOpen(false); }}
+                              {realPortfolioIsNew && <><span className="ml-auto w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" /><span className="sr-only"> (nouveau)</span></>}
+                            </Link>
+                            <Link
+                              to="/webinaires-eco"
+                              role="menuitem"
+                              onClick={() => setMobileAccountOpen(false)}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
                             >
-                              <Video className="w-4 h-4 text-orange-500" />
+                              <Video className="w-4 h-4 text-orange-500" aria-hidden="true" />
                               Webinaires
-                            </button>
+                            </Link>
                             <div className="border-t border-slate-100 my-1" />
                             <button
                               onClick={() => { handleLogout(); setMobileAccountOpen(false); }}
+                              role="menuitem"
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                             >
-                              <LogOut className="w-4 h-4" />
+                              <LogOut className="w-4 h-4" aria-hidden="true" />
                               Déconnexion
                             </button>
                           </div>
@@ -453,13 +486,13 @@ export default function Header() {
                       )}
                     </>
                   ) : (
-                    <button
-                      onClick={() => navigate('/login')}
+                    <Link
+                      to="/login"
                       className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 text-slate-700 bg-transparent rounded-lg text-sm font-semibold hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer"
                     >
-                      <User className="w-4 h-4" />
+                      <User className="w-4 h-4" aria-hidden="true" />
                       Connexion
-                    </button>
+                    </Link>
                   )}
                 </div>
               )}

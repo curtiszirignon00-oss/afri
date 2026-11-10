@@ -1,6 +1,6 @@
 // src/App.tsx
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -80,6 +80,7 @@ const ChallengeCommunityPage = lazy(() => import('./pages/ChallengeCommunityPage
 const AchievementsPage = lazy(() => import('./pages/AchievementsPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const SurveyPage = lazy(() => import('./pages/SurveyPage'));
+const FirstTradePage = lazy(() => import('./pages/FirstTradePage'));
 const OnboardingFlow = lazy(() => import('./components/onboarding/OnboardingFlow'));
 const DiscoverySurvey = lazy(() => import('./components/onboarding/DiscoverySurvey'));
 const WebinarPage = lazy(() => import('./pages/WebinarPage'));
@@ -182,7 +183,7 @@ function Layout() {
 
   // Détermine si le Header/Footer doit être affiché
   const glass = isGlassRoute(location.pathname);
-  const showLayout = !['/signup', '/login', '/survey', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
+  const showLayout = !['/signup', '/login', '/survey', '/premier-trade', '/confirmer-inscription', '/renvoyer-confirmation', '/verifier-email', '/mot-de-passe-oublie', '/reinitialiser-mot-de-passe'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col overflow-x-clip">
@@ -365,6 +366,15 @@ function Layout() {
           {/* Routes d'authentification */}
           {/* Survey onboarding nouveaux utilisateurs — sans header */}
           <Route path="/survey" element={<SurveyPage />} />
+          {/* Premier trade simulé guidé (après le survey) → puis quiz du module 1 — sans header */}
+          <Route
+            path="/premier-trade"
+            element={
+              <ProtectedRoute requireOnboarding={false}>
+                <FirstTradePage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Routes d'authentification */}
           <Route path="/signup" element={<SignupPage />} />
@@ -497,29 +507,29 @@ function Layout() {
                 <h4 className="text-lg font-semibold mb-4">Navigation</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="/learn" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/learn" className="text-gray-400 hover:text-white transition-colors">
                       Apprendre
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/webinaires-eco" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/webinaires-eco" className="text-gray-400 hover:text-white transition-colors">
                       Webinaires
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/markets" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/markets" className="text-gray-400 hover:text-white transition-colors">
                       Marchés
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/news" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/news" className="text-gray-400 hover:text-white transition-colors">
                       Actualités
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/glossary" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/glossary" className="text-gray-400 hover:text-white transition-colors">
                       Glossaire
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
@@ -529,19 +539,19 @@ function Layout() {
                 <h4 className="text-lg font-semibold mb-4">Informations</h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="/about" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
                       À propos
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
                       Contact
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+                    <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">
                       Confidentialité
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
