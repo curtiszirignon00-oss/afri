@@ -2,7 +2,7 @@
 // DOIT rester le premier import : polyfills + stockage de secours pour les vieux mobiles
 import './lib/polyfills'
 import * as amplitude from '@amplitude/unified'
-import { claimAutoReload } from './lib/chunkErrors'
+import { claimAutoReload, markReloadScheduled } from './lib/chunkErrors'
 import { installGlobalErrorHandlers } from './lib/errorReporter'
 import { captureUTMParams } from './lib/amplitude'
 import { applyTranslateSurvivalPatch } from './lib/translateSurvivalPatch'
@@ -27,6 +27,9 @@ installGlobalErrorHandlers()
 // On recharge une fois (anti-boucle 30 s partagée avec lazyWithRetry et l'ErrorBoundary).
 window.addEventListener('vite:preloadError', (event) => {
   if (!claimAutoReload()) return
+  // Attention : preventDefault() fait résoudre l'import() à undefined au lieu de rejeter.
+  // lazyWithRetry le détecte (isReloadScheduled) et garde le fallback Suspense jusqu'au reload.
+  markReloadScheduled()
   event.preventDefault()
   window.location.reload()
 })

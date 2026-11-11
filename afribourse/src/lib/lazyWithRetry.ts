@@ -1,5 +1,5 @@
 import { ComponentType, lazy } from 'react';
-import { isChunkLoadError, claimAutoReload, clearSwAndReload } from './chunkErrors';
+import { isChunkLoadError, claimAutoReload, clearSwAndReload, isReloadScheduled } from './chunkErrors';
 
 // Wrapper autour de React.lazy avec retry réseau et auto-reload après deploy.
 //
@@ -17,15 +17,26 @@ import { isChunkLoadError, claimAutoReload, clearSwAndReload } from './chunkErro
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>
 ): ReturnType<typeof lazy<T>> {
+  // Quand main.tsx intercepte vite:preloadError (preventDefault + reload), Vite résout
+  // l'import() à undefined au lieu de rejeter : React.lazy lirait alors `.default` d'undefined
+  // (« Cannot read properties of undefined (reading 'default') »). On valide le module.
+  const load = async (): Promise<{ default: T }> => {
+    const mod = await factory();
+    if (mod && mod.default) return mod;
+    // Reload déjà lancé : on reste sur le fallback Suspense jusqu'au rechargement.
+    if (isReloadScheduled()) return new Promise<never>(() => {});
+    throw new Error('Failed to fetch dynamically imported module (module vide)');
+  };
+
   return lazy(async () => {
     try {
-      return await factory();
+      return await load();
     } catch (err) {
       // Premier échec : on retente une fois après un court délai
       console.warn('[lazyWithRetry] échec import, retry dans 500ms', err);
       await new Promise((r) => setTimeout(r, 500));
       try {
-        return await factory();
+        return await load();
       } catch (err2) {
         // Second échec : si c'est un chunk-load (probable deploy/cache stale), on recharge
         if (isChunkLoadError(err2) && typeof window !== 'undefined' && claimAutoReload()) {

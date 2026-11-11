@@ -22,6 +22,11 @@ export function isChunkLoadError(err: unknown): boolean {
   );
 }
 
+// Un reload est en cours (déclenché par vite:preloadError ou lazyWithRetry).
+let reloadScheduled = false;
+export function markReloadScheduled(): void { reloadScheduled = true; }
+export function isReloadScheduled(): boolean { return reloadScheduled; }
+
 /** true si aucun reload auto n'a eu lieu dans les 30 dernières secondes (et le note). */
 export function claimAutoReload(): boolean {
   try {
@@ -46,6 +51,7 @@ export async function clearSwAndReload(): Promise<never> {
   } catch (_) {
     // ignore — reload anyway
   }
+  reloadScheduled = true;
   window.location.reload();
   return new Promise(() => {}) as never;
 }
